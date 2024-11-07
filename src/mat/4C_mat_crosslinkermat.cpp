@@ -49,9 +49,9 @@ Mat::PAR::CrosslinkerMat::CrosslinkerMat(const Core::Mat::PAR::Parameter::Data& 
         "possible.");
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::CrosslinkerMat::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::CrosslinkerMat::create_material()
 {
-  return Teuchos::make_rcp<Mat::CrosslinkerMat>(this);
+  return std::make_shared<Mat::CrosslinkerMat>(this);
 }
 
 Mat::CrosslinkerMatType Mat::CrosslinkerMatType::instance_;
@@ -107,7 +107,7 @@ void Mat::CrosslinkerMat::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

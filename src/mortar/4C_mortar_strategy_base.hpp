@@ -19,7 +19,8 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -69,16 +70,16 @@ namespace Mortar
     virtual ~StratDataContainer() = default;
 
     //! Return underlying problem dof row map (not only interfaces)
-    Teuchos::RCP<Epetra_Map>& prob_dofs_ptr() { return probdofs_; }
-    Teuchos::RCP<const Epetra_Map> prob_dofs_ptr() const { return probdofs_; }
+    std::shared_ptr<Epetra_Map>& prob_dofs_ptr() { return probdofs_; }
+    std::shared_ptr<const Epetra_Map> prob_dofs_ptr() const { return probdofs_; }
 
     //! Return underlying problem node row map (not only interfaces)
-    Teuchos::RCP<Epetra_Map>& prob_nodes_ptr() { return probnodes_; }
-    Teuchos::RCP<const Epetra_Map> prob_nodes_ptr() const { return probnodes_; }
+    std::shared_ptr<Epetra_Map>& prob_nodes_ptr() { return probnodes_; }
+    std::shared_ptr<const Epetra_Map> prob_nodes_ptr() const { return probnodes_; }
 
     //! Return communicator
-    Teuchos::RCP<const Epetra_Comm>& comm_ptr() { return comm_; }
-    Teuchos::RCP<const Epetra_Comm> comm_ptr() const { return comm_; }
+    std::shared_ptr<const Epetra_Comm>& comm_ptr() { return comm_; }
+    std::shared_ptr<const Epetra_Comm> comm_ptr() const { return comm_; }
 
     //! Return containing contact input parameters
     Teuchos::ParameterList& s_contact() { return scontact_; }
@@ -118,13 +119,13 @@ namespace Mortar
 
    private:
     //! Underlying problem dof row map (not only interfaces)
-    Teuchos::RCP<Epetra_Map> probdofs_;
+    std::shared_ptr<Epetra_Map> probdofs_;
 
     //! Underlying problem node row map (not only interfaces)
-    Teuchos::RCP<Epetra_Map> probnodes_;
+    std::shared_ptr<Epetra_Map> probnodes_;
 
     //! Communicator
-    Teuchos::RCP<const Epetra_Comm> comm_;
+    std::shared_ptr<const Epetra_Comm> comm_;
 
     //! Containing contact input parameters
     Teuchos::ParameterList scontact_;
@@ -202,10 +203,10 @@ namespace Mortar
     \param maxdof (in): Highest dof number in global problem
 
     */
-    StrategyBase(const Teuchos::RCP<Mortar::StratDataContainer>& data_ptr,
+    StrategyBase(const std::shared_ptr<Mortar::StratDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params, const int spatialDim,
-        const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
+        const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
     //! @name Access methods
     //! @{
@@ -223,12 +224,12 @@ namespace Mortar
     const Epetra_Comm& get_comm() const { return *comm_; }
 
     //! Get the underlying problem dof row map
-    const Teuchos::RCP<Epetra_Map>& problem_dofs() { return probdofs_; }
-    Teuchos::RCP<const Epetra_Map> problem_dofs() const { return probdofs_; }
+    const std::shared_ptr<Epetra_Map>& problem_dofs() { return probdofs_; }
+    std::shared_ptr<const Epetra_Map> problem_dofs() const { return probdofs_; }
 
     //! Get the underlying problem node row map
-    const Teuchos::RCP<Epetra_Map>& problem_nodes() { return probnodes_; }
-    Teuchos::RCP<const Epetra_Map> problem_nodes() const { return probnodes_; }
+    const std::shared_ptr<Epetra_Map>& problem_nodes() { return probnodes_; }
+    std::shared_ptr<const Epetra_Map> problem_nodes() const { return probnodes_; }
 
     //@}
 
@@ -242,39 +243,41 @@ namespace Mortar
     // As the base class Mortar::StrategyBase is always called from the control routine
     // (time integrator), these functions need to be defined purely virtual here.
 
-    virtual Teuchos::RCP<const Epetra_Map> slave_row_nodes_ptr() const = 0;
-    virtual Teuchos::RCP<const Epetra_Map> active_row_nodes() const = 0;
-    virtual Teuchos::RCP<const Epetra_Map> active_row_dofs() const = 0;
-    virtual Teuchos::RCP<const Epetra_Map> non_redist_slave_row_dofs() const = 0;
-    virtual Teuchos::RCP<const Epetra_Map> non_redist_master_row_dofs() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> slave_row_nodes_ptr() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> active_row_nodes() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> active_row_dofs() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> non_redist_slave_row_dofs() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> non_redist_master_row_dofs() const = 0;
     virtual bool active_set_converged() const = 0;
-    virtual void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+    virtual void apply_force_stiff_cmt(std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& kt,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
         bool predictor = false) = 0;
     virtual void assemble_mortar() = 0;
-    virtual void collect_maps_for_preconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
-        Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap,
-        Teuchos::RCP<Epetra_Map>& ActiveDofMap) const = 0;
+    virtual void collect_maps_for_preconditioner(std::shared_ptr<Epetra_Map>& MasterDofMap,
+        std::shared_ptr<Epetra_Map>& SlaveDofMap, std::shared_ptr<Epetra_Map>& InnerDofMap,
+        std::shared_ptr<Epetra_Map>& ActiveDofMap) const = 0;
     virtual double constraint_norm() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_normal_stress() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_tangential_stress() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_normal_force() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_tangential_force() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> d_matrix() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> contact_normal_stress() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> contact_tangential_stress()
+        const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> contact_normal_force() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> contact_tangential_force()
+        const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::SparseMatrix> d_matrix() const = 0;
     virtual void do_read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) = 0;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> dis) = 0;
     virtual void do_write_restart(
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>& restart_vectors,
+        std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>& restart_vectors,
         bool forcedrestart = false) const = 0;
-    virtual void evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dis) = 0;
-    virtual void evaluate_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dis) = 0;
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> evaluate_normals(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dis) = 0;
+    virtual void evaluate(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& feff,
+        std::shared_ptr<Core::LinAlg::Vector<double>> dis) = 0;
+    virtual void evaluate_meshtying(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& feff,
+        std::shared_ptr<Core::LinAlg::Vector<double>> dis) = 0;
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> evaluate_normals(
+        std::shared_ptr<Core::LinAlg::Vector<double>> dis) = 0;
     virtual void evaluate_reference_state() = 0;
     virtual void evaluate_relative_movement() = 0;
     virtual void predict_relative_movement() = 0;
@@ -282,21 +285,22 @@ namespace Mortar
     virtual void initialize_and_evaluate_interface() = 0;
     virtual void initialize_mortar() = 0;
     virtual void initialize() = 0;
-    virtual void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff) = 0;
+    virtual void initialize_uzawa(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& feff) = 0;
     virtual double initial_penalty() const = 0;
     virtual void interface_forces(bool output = false) = 0;
     virtual double inttime() const = 0;
     virtual void inttime_init() = 0;
     virtual bool is_in_contact() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier_old() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> constraint_rhs() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier_increment()
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> lagrange_multiplier() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> lagrange_multiplier_old() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> constraint_rhs() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> lagrange_multiplier_increment()
         const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> mesh_initialization() = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> m_matrix() const = 0;
-    virtual void mortar_coupling(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dis) = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> mesh_initialization() = 0;
+    virtual std::shared_ptr<const Core::LinAlg::SparseMatrix> m_matrix() const = 0;
+    virtual void mortar_coupling(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& dis) = 0;
     virtual int number_of_active_nodes() const = 0;
     virtual int number_of_slip_nodes() const = 0;
     virtual void compute_contact_stresses() = 0;
@@ -309,34 +313,36 @@ namespace Mortar
     \param[in] outputParams Parameter list with stuff required by interfaces to write output
     */
     virtual void postprocess_quantities_per_interface(
-        Teuchos::RCP<Teuchos::ParameterList> outputParams) const = 0;
+        std::shared_ptr<Teuchos::ParameterList> outputParams) const = 0;
 
     virtual void print(std::ostream& os) const = 0;
     virtual void print_active_set() const = 0;
-    virtual void recover(Teuchos::RCP<Core::LinAlg::Vector<double>> disi) = 0;
-    virtual bool redistribute_contact(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) = 0;
+    virtual void recover(std::shared_ptr<Core::LinAlg::Vector<double>> disi) = 0;
+    virtual bool redistribute_contact(std::shared_ptr<const Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel) = 0;
     virtual void redistribute_meshtying() = 0;
     virtual void reset_active_set() = 0;
     virtual void reset_penalty() = 0;
     virtual void modify_penalty() = 0;
     virtual void restrict_meshtying_zone() = 0;
-    virtual void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fd,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& blocksol,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& blockrhs) = 0;
+    virtual void build_saddle_point_system(std::shared_ptr<Core::LinAlg::SparseOperator> kdd,
+        std::shared_ptr<Core::LinAlg::Vector<double>> fd,
+        std::shared_ptr<Core::LinAlg::Vector<double>> sold,
+        std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps,
+        std::shared_ptr<Epetra_Operator>& blockMat,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& blocksol,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& blockrhs) = 0;
     virtual void update_displacements_and_l_mincrements(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> blocksol) = 0;
-    virtual void save_reference_state(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) = 0;
+        std::shared_ptr<Core::LinAlg::Vector<double>> sold,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> blocksol) = 0;
+    virtual void save_reference_state(std::shared_ptr<const Core::LinAlg::Vector<double>> dis) = 0;
     virtual void set_state(
         const enum Mortar::StateType& statename, const Core::LinAlg::Vector<double>& vec) = 0;
-    virtual Teuchos::RCP<const Epetra_Map> slip_row_nodes() const = 0;
-    virtual void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps) = 0;
+    virtual std::shared_ptr<const Epetra_Map> slip_row_nodes() const = 0;
+    virtual void store_dirichlet_status(
+        std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmaps) = 0;
     virtual void store_nodal_quantities(Mortar::StrategyBase::QuantityType type) = 0;
-    virtual void update(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) = 0;
+    virtual void update(std::shared_ptr<const Core::LinAlg::Vector<double>> dis) = 0;
     virtual void update_active_set() = 0;
     virtual void update_active_set_semi_smooth(const bool firstStepPredictor = false) = 0;
     virtual void update_uzawa_augmented_lagrange() = 0;
@@ -354,30 +360,27 @@ namespace Mortar
     // wear stuff
     virtual bool weighted_wear() const { return false; }
     virtual bool wear_both_discrete() const { return false; }
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> wear_rhs() const
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> wear_rhs() const { return nullptr; }
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> wear_m_rhs() const
     {
-      return Teuchos::null;
+      return nullptr;
     }
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> wear_m_rhs() const
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> w_solve_incr() const
     {
-      return Teuchos::null;
+      return nullptr;
     }
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> w_solve_incr() const
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> wm_solve_incr() const
     {
-      return Teuchos::null;
+      return nullptr;
     }
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> wm_solve_incr() const
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> contact_wear() const
     {
-      return Teuchos::null;
-    }
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_wear() const
-    {
-      return Teuchos::null;
+      return nullptr;
     }
     virtual void reset_wear() {}
     virtual void output_wear() {}
-    virtual Teuchos::RCP<const Epetra_Map> master_slip_nodes() const { return Teuchos::null; }
-    virtual Teuchos::RCP<const Epetra_Map> master_active_nodes() const { return Teuchos::null; }
+    virtual std::shared_ptr<const Epetra_Map> master_slip_nodes() const { return nullptr; }
+    virtual std::shared_ptr<const Epetra_Map> master_active_nodes() const { return nullptr; }
 
     // constraint preconditioner functions
     bool is_saddle_point_system() const override = 0;
@@ -416,14 +419,14 @@ namespace Mortar
      *  If you have any questions concerning this, do not hesitate and ask me.
      *                                                          hiermeier 05/16 */
     //! @{
-    Teuchos::RCP<Epetra_Map>&
+    std::shared_ptr<Epetra_Map>&
         probdofs_;  //!< ref. to underlying problem dof row map (not only interfaces)
-    Teuchos::RCP<Epetra_Map>&
+    std::shared_ptr<Epetra_Map>&
         probnodes_;  //!< ref. to underlying problem node row map (not only interfaces)
 
-    Teuchos::RCP<const Epetra_Comm>& comm_;  //!< ref. to communicator
-    Teuchos::ParameterList& scontact_;       //!< ref. to containing contact input parameters
-    int& dim_;                               //!< ref. to dimension of problem (2D or 3D)
+    std::shared_ptr<const Epetra_Comm>& comm_;  //!< ref. to communicator
+    Teuchos::ParameterList& scontact_;          //!< ref. to containing contact input parameters
+    int& dim_;                                  //!< ref. to dimension of problem (2D or 3D)
     double& alphaf_;   //!< ref. to generalized-alpha parameter (0.0 for statics)
     bool& parredist_;  //!< ref. to flag indicating parallel redistribution status
     int& maxdof_;      //!< ref. to highest dof number in problem discretization
@@ -432,7 +435,7 @@ namespace Mortar
 
    private:
     //! pointer to the data container object
-    Teuchos::RCP<Mortar::StratDataContainer> data_ptr_;
+    std::shared_ptr<Mortar::StratDataContainer> data_ptr_;
 
   };  // class StrategyBase
 }  // namespace Mortar

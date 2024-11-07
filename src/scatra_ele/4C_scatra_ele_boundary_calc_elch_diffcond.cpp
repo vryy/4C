@@ -48,7 +48,7 @@ Discret::Elements::ScaTraEleBoundaryCalcElchDiffCond<distype,
     :  // constructor of base class
       myelectrode::ScaTraEleBoundaryCalcElchElectrode(numdofpernode, numscal, disname),
       // initialization of diffusion manager
-      dmedc_(Teuchos::make_rcp<ScaTraEleDiffManagerElchDiffCond>(my::numscal_))
+      dmedc_(std::make_shared<ScaTraEleDiffManagerElchDiffCond>(my::numscal_))
 {
 }
 
@@ -76,7 +76,7 @@ int Discret::Elements::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::eval
     case ScaTra::BoundaryAction::calc_elch_boundary_kinetics:
     {
       // access material of parent element
-      Teuchos::RCP<Core::Mat::Material> material = ele->parent_element()->material();
+      std::shared_ptr<Core::Mat::Material> material = ele->parent_element()->material();
 
       // extract porosity from material and store in diffusion manager
       if (material->material_type() == Core::Materials::m_elchmat)
@@ -85,7 +85,7 @@ int Discret::Elements::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::eval
 
         for (int iphase = 0; iphase < elchmat->num_phase(); ++iphase)
         {
-          Teuchos::RCP<const Core::Mat::Material> phase =
+          std::shared_ptr<const Core::Mat::Material> phase =
               elchmat->phase_by_id(elchmat->phase_id(iphase));
 
           if (phase->material_type() == Core::Materials::m_elchphase)
@@ -132,7 +132,7 @@ int Discret::Elements::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::eval
     const double scalar)
 {
   // get material of parent element
-  Teuchos::RCP<Core::Mat::Material> mat = ele->parent_element()->material();
+  std::shared_ptr<Core::Mat::Material> mat = ele->parent_element()->material();
 
   if (mat->material_type() == Core::Materials::m_elchmat)
   {
@@ -141,7 +141,7 @@ int Discret::Elements::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::eval
     for (int iphase = 0; iphase < actmat->num_phase(); ++iphase)
     {
       const int phaseid = actmat->phase_id(iphase);
-      Teuchos::RCP<const Core::Mat::Material> singlemat = actmat->phase_by_id(phaseid);
+      std::shared_ptr<const Core::Mat::Material> singlemat = actmat->phase_by_id(phaseid);
 
       if (singlemat->material_type() == Core::Materials::m_elchphase)
       {
@@ -205,13 +205,13 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchDiffCond<distype,
         ephinp,  ///< nodal values of concentration and electric potential
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
     double timefac,                                           ///< time factor
-    Teuchos::RCP<const Core::Mat::Material> material,         ///< material
-    Teuchos::RCP<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
-    const int nume,                                  ///< number of transferred electrons
-    const std::vector<int> stoich,                   ///< stoichiometry of the reaction
-    const int kinetics,                              ///< desired electrode kinetics model
-    const double pot0,                               ///< electrode potential on metal side
-    const double frt,                                ///< factor F/RT
+    std::shared_ptr<const Core::Mat::Material> material,      ///< material
+    std::shared_ptr<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
+    const int nume,                                     ///< number of transferred electrons
+    const std::vector<int> stoich,                      ///< stoichiometry of the reaction
+    const int kinetics,                                 ///< desired electrode kinetics model
+    const double pot0,                                  ///< electrode potential on metal side
+    const double frt,                                   ///< factor F/RT
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {
@@ -323,16 +323,16 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchDiffCond<distype,
  *-------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 double Discret::Elements::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::get_valence(
-    const Teuchos::RCP<const Core::Mat::Material>& material,  // element material
-    const int k                                               // species number
+    const std::shared_ptr<const Core::Mat::Material>& material,  // element material
+    const int k                                                  // species number
 ) const
 {
   double valence(0.);
 
   if (material->material_type() == Core::Materials::m_elchmat)
   {
-    const Teuchos::RCP<const Mat::ElchMat> elchmat =
-        Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(material);
+    const std::shared_ptr<const Mat::ElchMat> elchmat =
+        std::dynamic_pointer_cast<const Mat::ElchMat>(material);
 
     // safety check
     if (elchmat->num_phase() != 1)
@@ -341,24 +341,24 @@ double Discret::Elements::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::g
     // loop over phases
     for (int iphase = 0; iphase < elchmat->num_phase(); ++iphase)
     {
-      const Teuchos::RCP<const Mat::ElchPhase> phase =
-          Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(
+      const std::shared_ptr<const Mat::ElchPhase> phase =
+          std::dynamic_pointer_cast<const Mat::ElchPhase>(
               elchmat->phase_by_id(elchmat->phase_id(iphase)));
 
       // loop over species within phase
       for (int imat = 0; imat < phase->num_mat(); ++imat)
       {
-        const Teuchos::RCP<const Core::Mat::Material> species =
+        const std::shared_ptr<const Core::Mat::Material> species =
             phase->mat_by_id(phase->mat_id(imat));
 
         if (species->material_type() == Core::Materials::m_newman)
         {
-          valence = Teuchos::rcp_static_cast<const Mat::Newman>(species)->valence();
+          valence = std::static_pointer_cast<const Mat::Newman>(species)->valence();
           if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
         }
         else if (species->material_type() == Core::Materials::m_ion)
         {
-          valence = Teuchos::rcp_static_cast<const Mat::Ion>(species)->valence();
+          valence = std::static_pointer_cast<const Mat::Ion>(species)->valence();
           if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
         }
         else

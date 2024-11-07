@@ -36,15 +36,15 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
         Core::IO::VisualizationParameters visualization_params,
-        Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
+        std::shared_ptr<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
             output_params_ptr)
     : output_params_ptr_(output_params_ptr),
-      output_writer_base_ptr_(Teuchos::null),
+      output_writer_base_ptr_(nullptr),
       visualization_params_(std::move(visualization_params))
 {
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ =
-      Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
+      std::make_shared<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
 
           "beam-to-solid-volume", visualization_params_);
 
@@ -57,7 +57,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
   {
     if (output_params_ptr_->get_nodal_force_output_flag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("nodal-forces", "btsv-nodal-forces");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
@@ -68,7 +68,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
     if (output_params_ptr_->get_mortar_lambda_discret_output_flag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("mortar", "btsv-mortar");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
@@ -82,7 +82,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
     if (output_params_ptr_->get_mortar_lambda_continuous_output_flag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer(
               "mortar-continuous", "btsv-mortar-continuous");
       auto& visualization_data = visualization_writer->get_visualization_data();
@@ -99,7 +99,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
     if (output_params_ptr_->get_integration_points_output_flag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer(
               "integration-points", "btsv-integration-points");
       auto& visualization_data = visualization_writer->get_visualization_data();
@@ -114,7 +114,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
     if (output_params_ptr_->get_segmentation_output_flag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("segmentation", "btsv-segmentation");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
@@ -168,15 +168,16 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 {
   // Parameter list that will be passed to all contact pairs when they create their visualization.
   Teuchos::ParameterList visualization_params;
-  visualization_params.set<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
-      "btsv-output_params_ptr", output_params_ptr_);
+  visualization_params
+      .set<std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+          "btsv-output_params_ptr", output_params_ptr_);
 
 
   // Add the nodal forces resulting from beam contact. The forces are split up into beam and solid
   // nodes.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
       output_writer_base_ptr_->get_visualization_writer("btsv-nodal-forces");
-  if (visualization != Teuchos::null)
+  if (visualization != nullptr)
     add_beam_interaction_nodal_forces(visualization, beam_contact->discret_ptr(),
         beam_contact->beam_interaction_data_state().get_dis_np()->get_ptr_of_MultiVector(),
         Core::LinAlg::MultiVector<double>(
@@ -189,40 +190,41 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
   for (auto& assembly_manager : beam_contact->get_assembly_managers())
   {
     // Add pair specific output for direct assembly managers.
-    auto direct_assembly_manager = Teuchos::rcp_dynamic_cast<
+    auto direct_assembly_manager = std::dynamic_pointer_cast<
         BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(assembly_manager);
-    if (not(direct_assembly_manager == Teuchos::null))
+    if (not(direct_assembly_manager == nullptr))
     {
       for (const auto& pair : direct_assembly_manager->get_contact_pairs())
         pair->get_pair_visualization(output_writer_base_ptr_, visualization_params);
     }
 
     // Add pair specific output for indirect assembly managers.
-    auto indirect_assembly_manager = Teuchos::rcp_dynamic_cast<
+    auto indirect_assembly_manager = std::dynamic_pointer_cast<
         BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(assembly_manager);
-    if (not(indirect_assembly_manager == Teuchos::null))
+    if (not(indirect_assembly_manager == nullptr))
     {
       // Get the global vector with the Lagrange Multiplier values and add it to the parameter
       // list that will be passed to the pairs.
-      Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
+      std::shared_ptr<Core::LinAlg::Vector<double>> lambda =
           indirect_assembly_manager->get_mortar_manager()->get_global_lambda_col();
-      visualization_params.set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("lambda", lambda);
+      visualization_params.set<std::shared_ptr<Core::LinAlg::Vector<double>>>("lambda", lambda);
 
       // The pairs will need the mortar manager to extract their Lambda DOFs.
-      visualization_params.set<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+      visualization_params.set<std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager>>(
           "mortar_manager", indirect_assembly_manager->get_mortar_manager());
 
       // This map is used to ensure, that each discrete Lagrange multiplier is only written once
       // per beam element.
-      Teuchos::RCP<std::unordered_set<int>> beam_tracker =
-          Teuchos::make_rcp<std::unordered_set<int>>();
-      visualization_params.set<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker", beam_tracker);
+      std::shared_ptr<std::unordered_set<int>> beam_tracker =
+          std::make_shared<std::unordered_set<int>>();
+      visualization_params.set<std::shared_ptr<std::unordered_set<int>>>(
+          "beam_tracker", beam_tracker);
 
       // This map is used to ensure, that the continuous Lagrange multiplier field is only written
       // once per beam element.
-      Teuchos::RCP<std::unordered_set<int>> beam_tracker_2d_3d_continuous =
-          Teuchos::rcp(new std::unordered_set<int>());
-      visualization_params.set<Teuchos::RCP<std::unordered_set<int>>>(
+      std::shared_ptr<std::unordered_set<int>> beam_tracker_2d_3d_continuous =
+          std::make_shared<std::unordered_set<int>>();
+      visualization_params.set<std::shared_ptr<std::unordered_set<int>>>(
           "beam_tracker_2d_3d_continuous", beam_tracker_2d_3d_continuous);
 
       // Add the pair specific output.

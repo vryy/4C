@@ -8,7 +8,8 @@
 #include "4C_contact_nitsche_utils.hpp"
 
 #include <Epetra_FECrsMatrix.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -18,14 +19,14 @@ template <Core::FE::CellType parent_distype>
 template <int num_dof_per_node>
 void Mortar::ElementNitscheData<parent_distype>::assemble_rhs(Mortar::Element* mele,
     const Core::LinAlg::Matrix<Core::FE::num_nodes<parent_distype> * num_dof_per_node, 1>& rhs,
-    std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc) const
+    std::vector<int>& dofs, std::shared_ptr<Epetra_FEVector> fc) const
 {
   const int nen = Core::FE::num_nodes<parent_distype>;
 
   if (num_dof_per_node * nen > dofs.size())
     FOUR_C_THROW("num_dof_per_node*nen>dofs.size() %d > %d", num_dof_per_node * nen, dofs.size());
 
-  if (fc != Teuchos::null)
+  if (fc != nullptr)
   {
     for (int n = 0; n < nen; ++n)
       fc->SumIntoGlobalValues(
@@ -40,11 +41,11 @@ template <int num_dof_per_node>
 void Mortar::ElementNitscheData<parent_distype>::assemble_matrix(Mortar::Element* mele,
     const std::unordered_map<int,
         Core::LinAlg::Matrix<Core::FE::num_nodes<parent_distype> * num_dof_per_node, 1>>& k,
-    std::vector<int>& dofs, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) const
+    std::vector<int>& dofs, std::shared_ptr<Core::LinAlg::SparseMatrix> kc) const
 {
   const int nen = Core::FE::num_nodes<parent_distype>;
 
-  if (kc != Teuchos::null)
+  if (kc != nullptr)
   {
     for (auto& p : k)
     {
@@ -65,7 +66,7 @@ void Mortar::ElementNitscheData<parent_distype>::assemble_matrix(Mortar::Element
 
 template <Core::FE::CellType parent_distype>
 void Mortar::ElementNitscheData<parent_distype>::assemble_rhs(
-    Mortar::Element* mele, CONTACT::VecBlockType row, Teuchos::RCP<Epetra_FEVector> fc) const
+    Mortar::Element* mele, CONTACT::VecBlockType row, std::shared_ptr<Epetra_FEVector> fc) const
 {
   switch (row)
   {
@@ -96,7 +97,7 @@ void Mortar::ElementNitscheData<parent_distype>::assemble_rhs(
 
 template <Core::FE::CellType parent_distype>
 void Mortar::ElementNitscheData<parent_distype>::assemble_matrix(Mortar::Element* mele,
-    CONTACT::MatBlockType block, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) const
+    CONTACT::MatBlockType block, std::shared_ptr<Core::LinAlg::SparseMatrix> kc) const
 {
   switch (block)
   {

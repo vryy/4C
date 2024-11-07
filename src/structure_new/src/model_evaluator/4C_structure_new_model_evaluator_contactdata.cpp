@@ -21,7 +21,7 @@ Solid::ModelEvaluator::ContactData::ContactData()
       mortar_action_(Mortar::eval_none),
       var_type_(Inpar::CONTACT::var_unknown),
       coupling_scheme_(Inpar::CONTACT::CouplingScheme::unknown),
-      str_data_ptr_(Teuchos::null)
+      str_data_ptr_(nullptr)
 {
   // empty constructor
 }
@@ -29,7 +29,7 @@ Solid::ModelEvaluator::ContactData::ContactData()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Solid::ModelEvaluator::ContactData::init(
-    const Teuchos::RCP<const Solid::ModelEvaluator::Data>& str_data_ptr)
+    const std::shared_ptr<const Solid::ModelEvaluator::Data>& str_data_ptr)
 {
   issetup_ = false;
   str_data_ptr_ = str_data_ptr;

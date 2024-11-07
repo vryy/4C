@@ -59,9 +59,9 @@ namespace Solid
       Base();
 
       /// initialize (all already existing) class variables
-      virtual void init(const Teuchos::RCP<Solid::TimeInt::BaseDataIO> dataio,
-          const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> datasdyn,
-          const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> dataglobalstate);
+      virtual void init(const std::shared_ptr<Solid::TimeInt::BaseDataIO> dataio,
+          const std::shared_ptr<Solid::TimeInt::BaseDataSDyn> datasdyn,
+          const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> dataglobalstate);
 
       /// setup of the new class variables
       void setup() override;
@@ -94,7 +94,7 @@ namespace Solid
       /// @name General access methods
       ///@{
       /// Access discretization (structure only)
-      Teuchos::RCP<Core::FE::Discretization> discretization() override;
+      std::shared_ptr<Core::FE::Discretization> discretization() override;
 
       /// Access to pointer to DoF row map of the discretization (structure only)
       const Epetra_Map* dof_row_map_view() override
@@ -104,7 +104,7 @@ namespace Solid
       }
 
       /// DoF map of structural vector of unknowns
-      Teuchos::RCP<const Epetra_Map> dof_row_map() override
+      std::shared_ptr<const Epetra_Map> dof_row_map() override
       {
         check_init();
         return dataglobalstate_->dof_row_map();
@@ -112,25 +112,25 @@ namespace Solid
 
       //! DoF map of vector of unknowns
       //! Alternative method capable of multiple DoF sets
-      Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override
+      std::shared_ptr<const Epetra_Map> dof_row_map(unsigned nds) override
       {
         check_init();
         return dataglobalstate_->dof_row_map(nds);
       }
 
       /// Access linear structural solver
-      Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override
+      std::shared_ptr<Core::LinAlg::Solver> linear_solver() override
       {
         check_init();
         return datasdyn_->get_lin_solvers()[Inpar::Solid::model_structure];
       }
 
       /// Return MapExtractor for Dirichlet boundary conditions
-      Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override;
-      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const;
+      std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override;
+      [[nodiscard]] std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const;
 
       //! Return locsys manager
-      Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() override;
+      std::shared_ptr<Core::Conditions::LocsysManager> locsys_manager() override;
 
       //! Return the desired model evaluator (read-only)
       [[nodiscard]] const Solid::ModelEvaluator::Generic& model_evaluator(
@@ -165,7 +165,7 @@ namespace Solid
       /// @name Access global state from outside via adapter (needed for coupled problems)
       ///@{
       /// unknown displacements at \f$t_{n+1}\f$
-      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> disp_np() const override
+      [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> disp_np() const override
       {
         check_init();
         return dataglobalstate_->get_dis_np();
@@ -184,7 +184,7 @@ namespace Solid
        *
        * See also \ref Adapter::StructureNew::set_state
        */
-      Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_disp_np() override
+      std::shared_ptr<Core::LinAlg::Vector<double>> write_access_disp_np() override
       {
         check_init();
         set_state_in_sync_with_nox_group(false);
@@ -192,63 +192,63 @@ namespace Solid
       }
 
       /// known displacements at \f$t_{n}\f$
-      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> disp_n() const override
+      [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> disp_n() const override
       {
         check_init();
         return dataglobalstate_->get_dis_n();
       }
 
       /// write access to displacements at \f$t^{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_disp_n() override
+      std::shared_ptr<Core::LinAlg::Vector<double>> write_access_disp_n() override
       {
         check_init();
         return dataglobalstate_->get_dis_n();
       }
 
       /// unknown velocities at \f$t_{n+1}\f$
-      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> vel_np() const override
+      [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> vel_np() const override
       {
         check_init();
         return dataglobalstate_->get_vel_np();
       }
 
       /// write access to velocities at \f$t^{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_vel_np() override
+      std::shared_ptr<Core::LinAlg::Vector<double>> write_access_vel_np() override
       {
         check_init();
         return dataglobalstate_->get_vel_np();
       }
 
       /// unknown velocities at \f$t_{n}\f$
-      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> vel_n() const override
+      [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> vel_n() const override
       {
         check_init();
         return dataglobalstate_->get_vel_n();
       }
 
       /// write access to velocities at \f$t^{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_vel_n() override
+      std::shared_ptr<Core::LinAlg::Vector<double>> write_access_vel_n() override
       {
         check_init();
         return dataglobalstate_->get_vel_n();
       }
 
       /// known velocities at \f$t_{n-1}\f$
-      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> vel_nm() const override
+      [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> vel_nm() const override
       {
         check_init();
         return dataglobalstate_->get_vel_nm();
       }
 
       /// unknown accelerations at \f$t_{n+1}\f$
-      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> acc_np() const override
+      [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> acc_np() const override
       {
         check_init();
         return dataglobalstate_->get_acc_np();
       }
 
       //! known accelerations at \f$t_{n}\f$
-      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> acc_n() const override
+      [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> acc_n() const override
       {
         check_init();
         return dataglobalstate_->get_acc_n();
@@ -272,17 +272,17 @@ namespace Solid
       }
 
       /// FixMe get constraint manager defined in the structure
-      Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override
+      std::shared_ptr<CONSTRAINTS::ConstrManager> get_constraint_manager() override
       {
         FOUR_C_THROW("Not yet implemented!");
-        return Teuchos::null;
+        return nullptr;
       }
 
       /// FixMe get contact/meshtying manager
-      Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() override
+      std::shared_ptr<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() override
       {
         FOUR_C_THROW("Not yet implemented!");
-        return Teuchos::null;
+        return nullptr;
       }
 
       /// do we have this model
@@ -293,7 +293,7 @@ namespace Solid
 
       /// Add residual increment to Lagrange multipliers stored in Constraint manager (derived)
       /// FixMe Different behavior for the implicit and explicit case!!!
-      void update_iter_incr_constr(Teuchos::RCP<Core::LinAlg::Vector<double>> lagrincr) override
+      void update_iter_incr_constr(std::shared_ptr<Core::LinAlg::Vector<double>> lagrincr) override
       {
         FOUR_C_THROW("Not yet implemented!");
       }
@@ -301,7 +301,7 @@ namespace Solid
       /// Add residual increment to pressures stored in Cardiovascular0D manager (derived)
       /// FixMe Different behavior for the implicit and explicit case!!!
       void update_iter_incr_cardiovascular0_d(
-          Teuchos::RCP<Core::LinAlg::Vector<double>> presincr) override
+          std::shared_ptr<Core::LinAlg::Vector<double>> presincr) override
       {
         FOUR_C_THROW("Not yet implemented!");
       }
@@ -483,7 +483,7 @@ namespace Solid
       /// Output writer related routines (file and screen output)
       /// @{
       /// Access output object
-      Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() override
+      std::shared_ptr<Core::IO::DiscretizationWriter> disc_writer() override
       {
         return data_io().get_output_ptr();
       }
@@ -500,19 +500,19 @@ namespace Solid
       void write_gmsh_struc_output_step() override;
 
       /// create result test for encapsulated structure algorithm
-      Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
+      std::shared_ptr<Core::Utils::ResultTest> create_field_test() override;
 
       /** \brief Get data that is written during restart
        *
        *  This routine is only for simple structure problems!
        *  \date 06/13
        *  \author biehler */
-      void get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> disnp,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> accnp,
-          Teuchos::RCP<std::vector<char>> elementdata,
-          Teuchos::RCP<std::vector<char>> nodedata) override;
+      void get_restart_data(std::shared_ptr<int> step, std::shared_ptr<double> time,
+          std::shared_ptr<Core::LinAlg::Vector<double>> disnp,
+          std::shared_ptr<Core::LinAlg::Vector<double>> velnp,
+          std::shared_ptr<Core::LinAlg::Vector<double>> accnp,
+          std::shared_ptr<std::vector<char>> elementdata,
+          std::shared_ptr<std::vector<char>> nodedata) override;
 
       /** Read restart values
        *
@@ -523,20 +523,22 @@ namespace Solid
       /// Set restart values (deprecated)
       void set_restart(int stepn,  //!< restart step at \f${n}\f$
           double timen,            //!< restart time at \f$t_{n}\f$
-          Teuchos::RCP<Core::LinAlg::Vector<double>>
+          std::shared_ptr<Core::LinAlg::Vector<double>>
               disn,  //!< restart displacements at \f$t_{n}\f$
-          Teuchos::RCP<Core::LinAlg::Vector<double>> veln,  //!< restart velocities at \f$t_{n}\f$
-          Teuchos::RCP<Core::LinAlg::Vector<double>>
-              accn,                                     //!< restart accelerations at \f$t_{n}\f$
-          Teuchos::RCP<std::vector<char>> elementdata,  //!< restart element data
-          Teuchos::RCP<std::vector<char>> nodedata      //!< restart element data
+          std::shared_ptr<Core::LinAlg::Vector<double>>
+              veln,  //!< restart velocities at \f$t_{n}\f$
+          std::shared_ptr<Core::LinAlg::Vector<double>>
+              accn,                                        //!< restart accelerations at \f$t_{n}\f$
+          std::shared_ptr<std::vector<char>> elementdata,  //!< restart element data
+          std::shared_ptr<std::vector<char>> nodedata      //!< restart element data
           ) override;
       /// @}
 
       /// Biofilm related stuff
       /// @{
       /// FixMe set structure displacement vector due to biofilm growth
-      void set_str_gr_disp(Teuchos::RCP<Core::LinAlg::Vector<double>> struct_growth_disp) override
+      void set_str_gr_disp(
+          std::shared_ptr<Core::LinAlg::Vector<double>> struct_growth_disp) override
       {
         FOUR_C_THROW("Currently unsupported!");
       }
@@ -547,8 +549,8 @@ namespace Solid
       /// integrate the current step (implicit and explicit)
       virtual int integrate_step() = 0;
       /// right-hand-side of Newton's method (implicit only)
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override { return get_f(); };
-      [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> get_f() const = 0;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override { return get_f(); };
+      [[nodiscard]] virtual std::shared_ptr<const Core::LinAlg::Vector<double>> get_f() const = 0;
       /// @}
 
      public:
@@ -564,14 +566,14 @@ namespace Solid
       }
 
       /// Get TimIntBase data for global state quantities (read access)
-      [[nodiscard]] Teuchos::RCP<const BaseDataGlobalState> get_data_global_state_ptr() const
+      [[nodiscard]] std::shared_ptr<const BaseDataGlobalState> get_data_global_state_ptr() const
       {
         check_init();
         return dataglobalstate_;
       }
 
       /// Get TimIntBase data for global state quantities (read & write access)
-      Teuchos::RCP<BaseDataGlobalState>& get_data_global_state_ptr()
+      std::shared_ptr<BaseDataGlobalState>& get_data_global_state_ptr()
       {
         check_init();
         return dataglobalstate_;
@@ -584,7 +586,7 @@ namespace Solid
       }
 
       /// Get TimIntBase data for io quantities (read access)
-      [[nodiscard]] Teuchos::RCP<const BaseDataIO> get_data_io_ptr() const
+      [[nodiscard]] std::shared_ptr<const BaseDataIO> get_data_io_ptr() const
       {
         check_init();
         return dataio_;
@@ -597,7 +599,7 @@ namespace Solid
       }
 
       /// Get TimIntBase data or struct dynamics quantitites (read access)
-      [[nodiscard]] Teuchos::RCP<const BaseDataSDyn> get_data_sdyn_ptr() const
+      [[nodiscard]] std::shared_ptr<const BaseDataSDyn> get_data_sdyn_ptr() const
       {
         check_init();
         return datasdyn_;
@@ -624,7 +626,7 @@ namespace Solid
       }
 
       /// return a pointer to the Dirichlet Boundary Condition handler (read access)
-      [[nodiscard]] Teuchos::RCP<const Solid::Dbc> get_dbc_ptr() const
+      [[nodiscard]] std::shared_ptr<const Solid::Dbc> get_dbc_ptr() const
       {
         check_init_setup();
         return dbc_ptr_;
@@ -652,7 +654,7 @@ namespace Solid
       }
 
       /// return a pointer to the Dirichlet Boundary Condition handler (read and write access)
-      const Teuchos::RCP<Solid::Dbc>& dbc_ptr()
+      const std::shared_ptr<Solid::Dbc>& dbc_ptr()
       {
         check_init_setup();
         return dbc_ptr_;
@@ -724,7 +726,7 @@ namespace Solid
       }
 
       /// Get the pointer to global state
-      const Teuchos::RCP<BaseDataGlobalState>& data_global_state_ptr() const
+      const std::shared_ptr<BaseDataGlobalState>& data_global_state_ptr() const
       {
         check_init();
         return dataglobalstate_;
@@ -738,14 +740,14 @@ namespace Solid
       }
 
       /// return a pointer to the input/output data container (read and write access)
-      const Teuchos::RCP<BaseDataIO>& data_io_ptr()
+      const std::shared_ptr<BaseDataIO>& data_io_ptr()
       {
         check_init();
         return dataio_;
       }
 
       /// return a pointer to the structural dynamic data container (read and write access)
-      const Teuchos::RCP<BaseDataSDyn>& data_s_dyn_ptr()
+      const std::shared_ptr<BaseDataSDyn>& data_s_dyn_ptr()
       {
         check_init();
         return datasdyn_;
@@ -766,7 +768,7 @@ namespace Solid
       }
 
       /// return a pointer to the integrator (read and write access)
-      const Teuchos::RCP<Solid::Integrator>& integrator_ptr()
+      const std::shared_ptr<Solid::Integrator>& integrator_ptr()
       {
         check_init_setup();
         return int_ptr_;
@@ -882,15 +884,15 @@ namespace Solid
 
      private:
       /// pointer to the different data containers
-      Teuchos::RCP<BaseDataIO> dataio_;
-      Teuchos::RCP<BaseDataSDyn> datasdyn_;
-      Teuchos::RCP<BaseDataGlobalState> dataglobalstate_;
+      std::shared_ptr<BaseDataIO> dataio_;
+      std::shared_ptr<BaseDataSDyn> datasdyn_;
+      std::shared_ptr<BaseDataGlobalState> dataglobalstate_;
 
       /// pointer to the integrator (implicit or explicit)
-      Teuchos::RCP<Solid::Integrator> int_ptr_;
+      std::shared_ptr<Solid::Integrator> int_ptr_;
 
       /// pointer to the dirichlet boundary condition handler
-      Teuchos::RCP<Solid::Dbc> dbc_ptr_;
+      std::shared_ptr<Solid::Dbc> dbc_ptr_;
     };  // class Base
   }     // namespace TimeInt
 }  // namespace Solid

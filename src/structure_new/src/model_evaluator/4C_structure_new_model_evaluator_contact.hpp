@@ -133,13 +133,13 @@ namespace Solid
       void reset_step_state() override;
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
       //! [derived]
@@ -157,7 +157,7 @@ namespace Solid
       //! @name Call-back routines
       //!@{
 
-      Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_jacobian_block(
+      std::shared_ptr<const Core::LinAlg::SparseMatrix> get_jacobian_block(
           const MatBlockType bt) const;
 
       /** \brief Assemble the structural right-hand side vector
@@ -167,11 +167,11 @@ namespace Solid
        *  \param[in] apply_dbc             Apply Dirichlet boundary conditions
        *
        *  \author hiermeier \date 08/17 */
-      Teuchos::RCP<Core::LinAlg::Vector<double>> assemble_force_of_models(
+      std::shared_ptr<Core::LinAlg::Vector<double>> assemble_force_of_models(
           const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr,
           const bool apply_dbc = false) const;
 
-      virtual Teuchos::RCP<Core::LinAlg::SparseOperator> get_aux_displ_jacobian() const;
+      virtual std::shared_ptr<Core::LinAlg::SparseOperator> get_aux_displ_jacobian() const;
 
       void evaluate_weighted_gap_gradient_error();
 
@@ -181,7 +181,7 @@ namespace Solid
       //!@{
 
       //! Returns a pointer to the underlying contact strategy object
-      const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr();
+      const std::shared_ptr<CONTACT::AbstractStrategy>& strategy_ptr();
 
       //! Returns the underlying contact strategy object
       CONTACT::AbstractStrategy& strategy();
@@ -204,13 +204,13 @@ namespace Solid
       void post_update_step_state();
 
       void extend_lagrange_multiplier_domain(
-          Teuchos::RCP<Core::LinAlg::Vector<double>>& lm_vec) const;
+          std::shared_ptr<Core::LinAlg::Vector<double>>& lm_vec) const;
 
       //! contact evaluation data container
-      Teuchos::RCP<Solid::ModelEvaluator::ContactData> eval_contact_ptr_;
+      std::shared_ptr<Solid::ModelEvaluator::ContactData> eval_contact_ptr_;
 
       //! contact strategy
-      Teuchos::RCP<CONTACT::AbstractStrategy> strategy_ptr_;
+      std::shared_ptr<CONTACT::AbstractStrategy> strategy_ptr_;
 
     };  // class Contact
   }     // namespace ModelEvaluator

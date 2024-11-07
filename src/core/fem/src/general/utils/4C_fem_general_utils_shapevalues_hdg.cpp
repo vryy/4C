@@ -546,10 +546,10 @@ Core::FE::ShapeValuesFaceCache<distype>& Core::FE::ShapeValuesFaceCache<distype>
 }
 
 template <Core::FE::CellType distype>
-Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> Core::FE::ShapeValuesFaceCache<distype>::create(
+std::shared_ptr<Core::FE::ShapeValuesFace<distype>> Core::FE::ShapeValuesFaceCache<distype>::create(
     ShapeValuesFaceParams params)
 {
-  typename std::map<std::size_t, Teuchos::RCP<Core::FE::ShapeValuesFace<distype>>>::iterator i =
+  typename std::map<std::size_t, std::shared_ptr<Core::FE::ShapeValuesFace<distype>>>::iterator i =
       svf_cache_.find(params.to_int());
   if (i != svf_cache_.end())
   {
@@ -557,8 +557,8 @@ Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> Core::FE::ShapeValuesFaceCache<
   }
 
   // this is expensive and should not be done too often
-  Teuchos::RCP<ShapeValuesFace<distype>> svf;
-  svf = Teuchos::make_rcp<ShapeValuesFace<distype>>(params);
+  std::shared_ptr<ShapeValuesFace<distype>> svf;
+  svf = std::make_shared<ShapeValuesFace<distype>>(params);
 
   svf_cache_[params.to_int()] = svf;
 
@@ -583,10 +583,10 @@ Core::FE::ShapeValuesInteriorOnFaceCache<distype>::instance()
 
 
 template <Core::FE::CellType distype>
-Teuchos::RCP<Core::FE::ShapeValuesInteriorOnFace>
+std::shared_ptr<Core::FE::ShapeValuesInteriorOnFace>
 Core::FE::ShapeValuesInteriorOnFaceCache<distype>::create(ShapeValuesFaceParams params)
 {
-  typename std::map<std::size_t, Teuchos::RCP<ShapeValuesInteriorOnFace>>::iterator i =
+  typename std::map<std::size_t, std::shared_ptr<ShapeValuesInteriorOnFace>>::iterator i =
       cache_.find(params.to_int());
   if (i != cache_.end())
   {
@@ -597,14 +597,14 @@ Core::FE::ShapeValuesInteriorOnFaceCache<distype>::create(ShapeValuesFaceParams 
   const int nsd = Core::FE::dim<distype>;
 
   PolynomialSpaceParams polyparams(distype, params.degree_, params.completepoly_);
-  Teuchos::RCP<PolynomialSpace<nsd>> polySpace =
+  std::shared_ptr<PolynomialSpace<nsd>> polySpace =
       Core::FE::PolynomialSpaceCache<nsd>::instance().create(polyparams);
   Core::LinAlg::SerialDenseVector(polySpace->size());
-  Teuchos::RCP<Core::FE::GaussPoints> quadrature = Core::FE::GaussPointCache::instance().create(
+  std::shared_ptr<Core::FE::GaussPoints> quadrature = Core::FE::GaussPointCache::instance().create(
       Core::FE::get_ele_face_shape_type(distype, params.face_), params.quadraturedegree_);
 
-  Teuchos::RCP<ShapeValuesInteriorOnFace> container =
-      Teuchos::make_rcp<ShapeValuesInteriorOnFace>();
+  std::shared_ptr<ShapeValuesInteriorOnFace> container =
+      std::make_shared<ShapeValuesInteriorOnFace>();
   container->shape(polySpace->size(), quadrature->num_points());
 
   Core::LinAlg::Matrix<nsd, nsd> trafo;

@@ -699,7 +699,7 @@ namespace Core::FE
     }
 
    private:
-    Teuchos::RCP<PolynomialSpaceBase<nsd>> polyspace_;
+    std::shared_ptr<PolynomialSpaceBase<nsd>> polyspace_;
   };
 
   /*!
@@ -714,13 +714,13 @@ namespace Core::FE
    public:
     static PolynomialSpaceCache<nsd> &instance();
 
-    Teuchos::RCP<PolynomialSpace<nsd>> create(PolynomialSpaceParams params);
+    std::shared_ptr<PolynomialSpace<nsd>> create(PolynomialSpaceParams params);
 
    private:
     PolynomialSpaceCache() = default;
 
     /// cache of already created polynomial spaces
-    std::map<PolynomialSpaceParams, Teuchos::RCP<PolynomialSpace<nsd>>> ps_cache_;
+    std::map<PolynomialSpaceParams, std::shared_ptr<PolynomialSpace<nsd>>> ps_cache_;
   };
 
   /*!

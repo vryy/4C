@@ -64,8 +64,8 @@ namespace Discret
               ephinp,  ///< nodal values of concentration and electric potential
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
           double timefac,                                           ///< time factor
-          Teuchos::RCP<const Core::Mat::Material> material,         ///< material
-          Teuchos::RCP<Core::Conditions::Condition>
+          std::shared_ptr<const Core::Mat::Material> material,      ///< material
+          std::shared_ptr<Core::Conditions::Condition>
               cond,                       ///< electrode kinetics boundary condition
           const int nume,                 ///< number of transferred electrons
           const std::vector<int> stoich,  ///< stoichiometry of the reaction
@@ -78,8 +78,8 @@ namespace Discret
 
       //! extract valence of species k from element material
       double get_valence(
-          const Teuchos::RCP<const Core::Mat::Material>& material,  //! element material
-          const int k                                               //! species number
+          const std::shared_ptr<const Core::Mat::Material>& material,  //! element material
+          const int k                                                  //! species number
       ) const override;
     };  // class ScaTraEleBoundaryCalcElchNP
   }     // namespace Elements

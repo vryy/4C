@@ -215,11 +215,11 @@ int main(int argc, char *argv[])
   MPI_Init(&argc, &argv);
   Kokkos::ScopeGuard kokkos_guard{};
 
-  Teuchos::RCP<Core::Communication::Communicators> communicators =
+  std::shared_ptr<Core::Communication::Communicators> communicators =
       Core::Communication::create_comm(std::vector<std::string>(argv, argv + argc));
   Global::Problem::instance()->set_communicators(communicators);
-  Teuchos::RCP<Epetra_Comm> lcomm = communicators->local_comm();
-  Teuchos::RCP<Epetra_Comm> gcomm = communicators->global_comm();
+  std::shared_ptr<Epetra_Comm> lcomm = communicators->local_comm();
+  std::shared_ptr<Epetra_Comm> gcomm = communicators->global_comm();
   int ngroups = communicators->num_groups();
 
   if (strcmp(argv[argc - 1], "--interactive") == 0)

@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 */
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params,
+    std::shared_ptr<Core::FE::Discretization> actdis, Teuchos::ParameterList& params,
     const std::string& statistics_outfilename)
     : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
 {
@@ -179,7 +179,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   // push coordinates in vectors (copy zavcoords to a new vector zcoordinates)
   //----------------------------------------------------------------------
   //  {
-  zcoordinates_ = Teuchos::make_rcp<std::vector<double>>();
+  zcoordinates_ = std::make_shared<std::vector<double>>();
 
   for (std::set<double, LineSortCriterion>::iterator coord1 = zavcoords.begin();
        coord1 != zavcoords.end(); ++coord1)
@@ -378,16 +378,16 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   //----------------------------------------------------------------------
   // allocate arrays for sums of mean values
   //----------------------------------------------------------------------
-  zsumw_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  zsumw_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   zsumw_->reshape(1, numzcoor_);
 
-  zsump_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  zsump_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   zsump_->reshape(1, numzcoor_);
 
-  rsumw_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  rsumw_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   rsumw_->reshape(numrstatlocations_, numPosEvaluation);
 
-  rsump_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  rsump_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   rsump_->reshape(numrstatlocations_, numPosEvaluation);
 
 
@@ -397,8 +397,8 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   //----------------------------------------------------------------------
   // initialize output and initially open respective statistics output file
 
-  Teuchos::RCP<std::ofstream> log;
-  Teuchos::RCP<std::ofstream> log_2;
+  std::shared_ptr<std::ofstream> log;
+  std::shared_ptr<std::ofstream> log_2;
 
   if (discret_->get_comm().MyPID() == 0)
   {
@@ -409,11 +409,11 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
     s.append(".flow_statistics_along_z");
     s2.append(".flow_statistics_evaluation_planes");
 
-    log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::out);
+    log = std::make_shared<std::ofstream>(s.c_str(), std::ios::out);
     (*log)
         << "# Statistics for turbulent incompressible flow of blood flowing through a channel\n\n";
 
-    log_2 = Teuchos::make_rcp<std::ofstream>(s2.c_str(), std::ios::out);
+    log_2 = std::make_shared<std::ofstream>(s2.c_str(), std::ios::out);
     (*log_2)
         << "# Statistics for turbulent incompressible flow of blood flowing through a channel\n\n";
 
@@ -608,13 +608,13 @@ void FLD::TurbulenceStatisticsBfda::dump_statistics(int step)
   //----------------------------------------------------------------------------------------------
   // file *.flow_statistics_along_z
   //----------------------------------------------------------------------------------------------
-  Teuchos::RCP<std::ofstream> log;
-  Teuchos::RCP<std::ofstream> log_2;
+  std::shared_ptr<std::ofstream> log;
+  std::shared_ptr<std::ofstream> log_2;
   if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics_along_z");  // s.append(".flow_statistics");
-    log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::out);
+    log = std::make_shared<std::ofstream>(s.c_str(), std::ios::out);
 
     // Output of mean velocity and pressure along z-axis
     (*log) << "Output file of FDA blood flow benchmark - evaluation of z-axis                \n";
@@ -639,7 +639,7 @@ void FLD::TurbulenceStatisticsBfda::dump_statistics(int step)
     //----------------------------------------------------------------------------------------------
     std::string s2(statistics_outfilename_);
     s2.append(".flow_statistics_evaluation_planes");
-    log_2 = Teuchos::make_rcp<std::ofstream>(s2.c_str(), std::ios::out);
+    log_2 = std::make_shared<std::ofstream>(s2.c_str(), std::ios::out);
 
     // Output of mean velocity and pressure of evaluation planes
     (*log_2) << "Output file of FDA blood flow benchmark - evaluation of evaluation planes     \n";

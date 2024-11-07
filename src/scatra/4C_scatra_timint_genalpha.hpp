@@ -23,10 +23,11 @@ namespace ScaTra
   {
    public:
     /// Standard Constructor
-    TimIntGenAlpha(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    TimIntGenAlpha(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     void setup() override;
 
@@ -53,26 +54,26 @@ namespace ScaTra
     void update() override;
 
     void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr) override;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phiaf() override { return phiaf_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> phiaf() override { return phiaf_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phiafnp() override { return phiaf_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> phiafnp() override { return phiaf_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phiam() override { return phiam_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> phiam() override { return phiam_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtam() override { return phidtam_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> phidtam() override { return phidtam_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fs_phi() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> fs_phi() override
     {
-      if (Sep_ != Teuchos::null) Sep_->multiply(false, *phiaf_, *fsphiaf_);
+      if (Sep_ != nullptr) Sep_->multiply(false, *phiaf_, *fsphiaf_);
       return fsphiaf_;
     };
 
-    Teuchos::RCP<Teuchos::ParameterList> scatra_time_parameter_list() override
+    std::shared_ptr<Teuchos::ParameterList> scatra_time_parameter_list() override
     {
-      Teuchos::RCP<Teuchos::ParameterList> timeparams;
-      timeparams = Teuchos::make_rcp<Teuchos::ParameterList>();
+      std::shared_ptr<Teuchos::ParameterList> timeparams;
+      timeparams = std::make_shared<Teuchos::ParameterList>();
       timeparams->set("using stationary formulation", false);
       timeparams->set("using generalized-alpha time integration", true);
       timeparams->set("total time", time_ - (1 - alphaF_) * dta_);
@@ -120,14 +121,14 @@ namespace ScaTra
     double residual_scaling() const override { return 1.0 / (dta_ * genalphafac_); }
 
     /// scalar at time n+alpha_F and n+alpha_M
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phiaf_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phiam_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phiaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phiam_;
 
     /// scalar time derivative at time n+alpha_M
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtam_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phidtam_;
 
     /// fine-scale part at time n+alpha_F
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fsphiaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fsphiaf_;
 
     /// time factors for generalized-alpha time integration
     double alphaM_;

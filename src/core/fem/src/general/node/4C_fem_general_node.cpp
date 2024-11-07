@@ -48,7 +48,7 @@ Core::Nodes::Node::Node(const Core::Nodes::Node& old)
 {
   // we do NOT want a deep copy of the condition_ a condition is
   // only a reference in the node anyway
-  std::map<std::string, Teuchos::RCP<Core::Conditions::Condition>>::const_iterator fool;
+  std::map<std::string, std::shared_ptr<Core::Conditions::Condition>>::const_iterator fool;
   for (fool = old.condition_.begin(); fool != old.condition_.end(); ++fool)
     set_condition(fool->first, fool->second);
 }
@@ -127,7 +127,7 @@ void Core::Nodes::Node::get_condition(
   auto startit = condition_.lower_bound(name);
   auto endit = condition_.upper_bound(name);
   int count = 0;
-  std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>>::const_iterator curr;
+  std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>>::const_iterator curr;
   for (curr = startit; curr != endit; ++curr) out[count++] = curr->second.get();
   if (count != num) FOUR_C_THROW("Mismatch in number of conditions found");
 }

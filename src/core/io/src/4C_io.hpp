@@ -16,9 +16,8 @@
 #include "4C_io_legacy_types.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -67,8 +66,8 @@ namespace Core::IO
   {
    public:
     /// construct reader for a given discretization to read a particular time step
-    DiscretizationReader(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::IO::InputControl> input, int step);
+    DiscretizationReader(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::IO::InputControl> input, int step);
 
     /// destructor
     ~DiscretizationReader() = default;
@@ -82,20 +81,20 @@ namespace Core::IO
      * \param[in] name  name of vector to read in
      * \return          source vector as read in
      */
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> read_vector(std::string name);
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> read_vector(std::string name);
 
     /**
      * \brief read into given vector
      *
      * This method is based on the method
-     * read_multi_vector(Teuchos::RCP<Core::LinAlg::MultiVector<double>> vec, std::string name).
+     * read_multi_vector(std::shared_ptr<Core::LinAlg::MultiVector<double>> vec, std::string name).
      * Also refer to the documentation therein.
      *
      * \param[in,out] vec   target vector to be filled
      * \param[in]     name  name of vector to read in
      */
-    void read_vector(Teuchos::RCP<Core::LinAlg::MultiVector<double>> vec, std::string name);
-    void read_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> vec, std::string name);
+    void read_vector(std::shared_ptr<Core::LinAlg::MultiVector<double>> vec, std::string name);
+    void read_vector(std::shared_ptr<Core::LinAlg::Vector<double>> vec, std::string name);
     /**
      * \brief read in and return multi-vector
      *
@@ -108,7 +107,7 @@ namespace Core::IO
      * \param[in] name  name of vector to read in
      * \return          source vector as read in
      */
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> read_multi_vector(const std::string name);
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> read_multi_vector(const std::string name);
 
     /**
      * \brief read into given multi-vector
@@ -121,11 +120,12 @@ namespace Core::IO
      * \param[in,out] vec   target vector to be filled
      * \param[in]     name  name of vector to read in
      */
-    void read_multi_vector(Teuchos::RCP<Core::LinAlg::MultiVector<double>> vec, std::string name);
+    void read_multi_vector(
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> vec, std::string name);
 
-    /// read into given std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> >
+    /// read into given std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix> >
     void read_serial_dense_matrix(
-        std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& mapdata, std::string name);
+        std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>& mapdata, std::string name);
 
     /// check if an integer value exists in the control file
     int has_int(std::string name);
@@ -146,7 +146,7 @@ namespace Core::IO
     void read_history_data(int step);
 
     /// read a non discretisation based vector of chars
-    void read_char_vector(Teuchos::RCP<std::vector<char>>& charvec, const std::string name);
+    void read_char_vector(std::shared_ptr<std::vector<char>>& charvec, const std::string name);
 
     //! read a non discretisation based vector of doubles
     /*!
@@ -155,7 +155,7 @@ namespace Core::IO
       It is read from proc0 again and then communicated to all present procs.
      */
     void read_redundant_double_vector(
-        Teuchos::RCP<std::vector<double>>& doublevec, const std::string name);
+        std::shared_ptr<std::vector<double>>& doublevec, const std::string name);
 
     //! read a non discretisation based vector of integers
     /*!
@@ -163,7 +163,8 @@ namespace Core::IO
       It is assumed that this is a 'small' vector which has to be present on all procs.
       It is read from proc0 again and then communicated to all present procs.
      */
-    void read_redundant_int_vector(Teuchos::RCP<std::vector<int>>& intvec, const std::string name);
+    void read_redundant_int_vector(
+        std::shared_ptr<std::vector<int>>& intvec, const std::string name);
 
    protected:
     /// empty constructor (only used for the construction of derived classes)
@@ -191,19 +192,19 @@ namespace Core::IO
         MAP*& result_info, MAP*& file_info);
 
     /// open data files.
-    Teuchos::RCP<HDFReader> open_files(const char* filestring, MAP* result_step);
+    std::shared_ptr<HDFReader> open_files(const char* filestring, MAP* result_step);
 
     //! my discretization
-    Teuchos::RCP<Core::FE::Discretization> dis_;
+    std::shared_ptr<Core::FE::Discretization> dis_;
 
     /// my input control file
-    Teuchos::RCP<Core::IO::InputControl> input_;
+    std::shared_ptr<Core::IO::InputControl> input_;
 
     /// control file entry of this step
     MAP* restart_step_;
 
-    Teuchos::RCP<HDFReader> reader_;
-    Teuchos::RCP<HDFReader> meshreader_;
+    std::shared_ptr<HDFReader> reader_;
+    std::shared_ptr<HDFReader> meshreader_;
   };
 
 
@@ -225,8 +226,8 @@ namespace Core::IO
      * @param[in] output_control        output control file
      * @param[in] shape_function_type   shape function type of the underlying fe discretization
      */
-    DiscretizationWriter(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<OutputControl> output_control,
+    DiscretizationWriter(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<OutputControl> output_control,
         const Core::FE::ShapeFunctionType shape_function_type);
 
     /** \brief copy constructor
@@ -236,7 +237,7 @@ namespace Core::IO
      *  \parma[in] type    copy type
      */
     DiscretizationWriter(const Core::IO::DiscretizationWriter& writer,
-        const Teuchos::RCP<OutputControl>& control, enum CopyType type);
+        const std::shared_ptr<OutputControl>& control, enum CopyType type);
 
     /// cleanup, close hdf5 files
     ~DiscretizationWriter();
@@ -282,8 +283,8 @@ namespace Core::IO
       \param vec  : the result data vector
       \param vt   : vector type
     */
-    void write_vector(const std::string name, Teuchos::RCP<const Core::LinAlg::Vector<double>> vec,
-        VectorType vt = dofvector);
+    void write_vector(const std::string name,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vec, VectorType vt = dofvector);
 
     void write_multi_vector(const std::string name, const Core::LinAlg::MultiVector<double>& vec,
         VectorType vt = dofvector);
@@ -373,10 +374,10 @@ namespace Core::IO
     //@}
 
     /// get output control
-    [[nodiscard]] Teuchos::RCP<OutputControl> output() const { return output_; }
+    [[nodiscard]] std::shared_ptr<OutputControl> output() const { return output_; }
 
     /// set output control
-    void set_output(Teuchos::RCP<OutputControl> output);
+    void set_output(std::shared_ptr<OutputControl> output);
 
     /// access discretization
     [[nodiscard]] const Core::FE::Discretization& get_discretization() const;
@@ -400,7 +401,7 @@ namespace Core::IO
     void create_result_file(const int step);
 
     //! my discretization
-    Teuchos::RCP<Core::FE::Discretization> dis_;
+    std::shared_ptr<Core::FE::Discretization> dis_;
 
     int step_;
     double time_;
@@ -422,7 +423,7 @@ namespace Core::IO
     int meshfile_changed_;
 
     //! Control file object
-    Teuchos::RCP<OutputControl> output_;
+    std::shared_ptr<OutputControl> output_;
 
     //! do we want binary output
     bool binio_;

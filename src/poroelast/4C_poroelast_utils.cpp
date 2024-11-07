@@ -61,9 +61,9 @@ bool PoroElast::Utils::is_poro_p1_element(const Core::Elements::Element* actele)
          actele->element_type() == Discret::Elements::WallQuad9PoroP1Type::instance();
 }
 
-Teuchos::RCP<PoroElast::PoroBase> PoroElast::Utils::create_poro_algorithm(
+std::shared_ptr<PoroElast::PoroBase> PoroElast::Utils::create_poro_algorithm(
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm, bool setup_solver,
-    Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
+    std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter)
 {
   Global::Problem* problem = Global::Problem::instance();
 
@@ -75,20 +75,20 @@ Teuchos::RCP<PoroElast::PoroBase> PoroElast::Utils::create_poro_algorithm(
       poroelastdyn, "COUPALGO");
 
   // create an empty Poroelast::Algorithm instance
-  Teuchos::RCP<PoroElast::PoroBase> poroalgo = Teuchos::null;
+  std::shared_ptr<PoroElast::PoroBase> poroalgo = nullptr;
 
   switch (coupling)
   {
     case Inpar::PoroElast::Monolithic:
     {
       // create an PoroElast::Monolithic instance
-      poroalgo = Teuchos::make_rcp<PoroElast::Monolithic>(comm, timeparams, porosity_splitter);
+      poroalgo = std::make_shared<PoroElast::Monolithic>(comm, timeparams, porosity_splitter);
       break;
     }  // monolithic case
     case Inpar::PoroElast::Monolithic_structuresplit:
     {
       // create an PoroElast::MonolithicStructureSplit instance
-      poroalgo = Teuchos::make_rcp<PoroElast::MonolithicStructureSplit>(
+      poroalgo = std::make_shared<PoroElast::MonolithicStructureSplit>(
           comm, timeparams, porosity_splitter);
       break;
     }
@@ -96,27 +96,27 @@ Teuchos::RCP<PoroElast::PoroBase> PoroElast::Utils::create_poro_algorithm(
     {
       // create an PoroElast::MonolithicFluidSplit instance
       poroalgo =
-          Teuchos::make_rcp<PoroElast::MonolithicFluidSplit>(comm, timeparams, porosity_splitter);
+          std::make_shared<PoroElast::MonolithicFluidSplit>(comm, timeparams, porosity_splitter);
       break;
     }
     case Inpar::PoroElast::Monolithic_nopenetrationsplit:
     {
       // create an PoroElast::MonolithicSplitNoPenetration instance
-      poroalgo = Teuchos::make_rcp<PoroElast::MonolithicSplitNoPenetration>(
+      poroalgo = std::make_shared<PoroElast::MonolithicSplitNoPenetration>(
           comm, timeparams, porosity_splitter);
       break;
     }
     case Inpar::PoroElast::Partitioned:
     {
       // create an PoroElast::Partitioned instance
-      poroalgo = Teuchos::make_rcp<PoroElast::Partitioned>(comm, timeparams, porosity_splitter);
+      poroalgo = std::make_shared<PoroElast::Partitioned>(comm, timeparams, porosity_splitter);
       break;
     }
     case Inpar::PoroElast::Monolithic_meshtying:
     {
       // create an PoroElast::MonolithicMeshtying instance
       poroalgo =
-          Teuchos::make_rcp<PoroElast::MonolithicMeshtying>(comm, timeparams, porosity_splitter);
+          std::make_shared<PoroElast::MonolithicMeshtying>(comm, timeparams, porosity_splitter);
       break;
     }
     default:
@@ -131,10 +131,10 @@ Teuchos::RCP<PoroElast::PoroBase> PoroElast::Utils::create_poro_algorithm(
 }
 
 
-Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElast::Utils::build_poro_splitter(
+std::shared_ptr<Core::LinAlg::MapExtractor> PoroElast::Utils::build_poro_splitter(
     Core::FE::Discretization& dis)
 {
-  Teuchos::RCP<Core::LinAlg::MapExtractor> porositysplitter = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::MapExtractor> porositysplitter = nullptr;
 
   // Loop through all elements on processor
   int locporop1 = std::count_if(
@@ -146,7 +146,7 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElast::Utils::build_poro_splitter(
   // Yes, it was. Go ahead for all processors (even if they do not carry any PoroP1 elements)
   if (glonumporop1 > 0)
   {
-    porositysplitter = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+    porositysplitter = std::make_shared<Core::LinAlg::MapExtractor>();
     const int ndim = Global::Problem::instance()->n_dim();
     Core::LinAlg::create_map_extractor_from_discretization(dis, ndim, *porositysplitter);
   }
@@ -187,7 +187,7 @@ void PoroElast::Utils::create_volume_ghosting(Core::FE::Discretization& idiscret
 
   Global::Problem* problem = Global::Problem::instance();
 
-  std::vector<Teuchos::RCP<Core::FE::Discretization>> voldis;
+  std::vector<std::shared_ptr<Core::FE::Discretization>> voldis;
   voldis.push_back(problem->get_dis("structure"));
   voldis.push_back(problem->get_dis("porofluid"));
 
@@ -201,7 +201,7 @@ void PoroElast::Utils::create_volume_ghosting(Core::FE::Discretization& idiscret
     // Fill rdata with existing colmap
 
     const Epetra_Map* elecolmap = voldi->element_col_map();
-    const Teuchos::RCP<Epetra_Map> allredelecolmap =
+    const std::shared_ptr<Epetra_Map> allredelecolmap =
         Core::LinAlg::allreduce_e_map(*voldi->element_row_map());
 
     for (int i = 0; i < elecolmap->NumMyElements(); ++i)
@@ -248,9 +248,9 @@ void PoroElast::Utils::create_volume_ghosting(Core::FE::Discretization& idiscret
   PoroElast::Utils::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
 
   // 4 In case we use
-  Teuchos::RCP<Core::FE::DiscretizationFaces> facediscret =
-      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(voldis[1]);
-  if (facediscret != Teuchos::null) facediscret->fill_complete_faces(true, true, true, true);
+  std::shared_ptr<Core::FE::DiscretizationFaces> facediscret =
+      std::dynamic_pointer_cast<Core::FE::DiscretizationFaces>(voldis[1]);
+  if (facediscret != nullptr) facediscret->fill_complete_faces(true, true, true, true);
 }
 
 void PoroElast::Utils::reconnect_parent_pointers(Core::FE::Discretization& idiscret,
@@ -377,8 +377,8 @@ double PoroElast::Utils::calculate_vector_norm(
 
 void PoroElast::Utils::PoroMaterialStrategy::assign_material2_to1(
     const Coupling::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
-    const std::vector<int>& ids_2, Teuchos::RCP<Core::FE::Discretization> dis1,
-    Teuchos::RCP<Core::FE::Discretization> dis2)
+    const std::vector<int>& ids_2, std::shared_ptr<Core::FE::Discretization> dis1,
+    std::shared_ptr<Core::FE::Discretization> dis2)
 {
   // call default assignment
   Coupling::VolMortar::Utils::DefaultMaterialStrategy::assign_material2_to1(
@@ -414,7 +414,7 @@ void PoroElast::Utils::PoroMaterialStrategy::assign_material2_to1(
     // Copy Initial Porosity from StructPoro Material to FluidPoro Material
     static_cast<Mat::PAR::FluidPoro*>(fluid->material()->parameter())
         ->set_initial_porosity(
-            Teuchos::rcp_static_cast<Mat::StructPoro>(ele1->material())->init_porosity());
+            std::static_pointer_cast<Mat::StructPoro>(ele1->material())->init_porosity());
   }
   else
   {
@@ -425,8 +425,8 @@ void PoroElast::Utils::PoroMaterialStrategy::assign_material2_to1(
 
 void PoroElast::Utils::PoroMaterialStrategy::assign_material1_to2(
     const Coupling::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
-    const std::vector<int>& ids_1, Teuchos::RCP<Core::FE::Discretization> dis1,
-    Teuchos::RCP<Core::FE::Discretization> dis2)
+    const std::vector<int>& ids_1, std::shared_ptr<Core::FE::Discretization> dis1,
+    std::shared_ptr<Core::FE::Discretization> dis2)
 {
   // call default assignment
   Coupling::VolMortar::Utils::DefaultMaterialStrategy::assign_material1_to2(

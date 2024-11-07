@@ -16,8 +16,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/07|
  *----------------------------------------------------------------------*/
-Core::DOFSets::PBCDofSet::PBCDofSet(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes)
-    : DofSet(), perbndcouples_(Teuchos::null), myMaxGID_(-1)
+Core::DOFSets::PBCDofSet::PBCDofSet(std::shared_ptr<std::map<int, std::vector<int>>> couplednodes)
+    : DofSet(), perbndcouples_(nullptr), myMaxGID_(-1)
 {
   set_coupled_nodes(couplednodes);
 }
@@ -38,8 +38,8 @@ int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
     const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
   // temporarily store the slave node set
-  Teuchos::RCP<std::set<int>> tempset = slavenodeids_;
-  slavenodeids_ = Teuchos::make_rcp<std::set<int>>();
+  std::shared_ptr<std::set<int>> tempset = slavenodeids_;
+  slavenodeids_ = std::make_shared<std::set<int>>();
 
   // assign dofs using the empty slave node set. This way the dofrowmap_
   // contains exactly the entries as in a regular dofset
@@ -102,10 +102,10 @@ int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
  |                                                       DA wichmann    |
  *----------------------------------------------------------------------*/
 void Core::DOFSets::PBCDofSet::set_coupled_nodes(
-    Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes)
+    std::shared_ptr<std::map<int, std::vector<int>>> couplednodes)
 {
   perbndcouples_ = couplednodes;
-  slavenodeids_ = Teuchos::make_rcp<std::set<int>>();
+  slavenodeids_ = std::make_shared<std::set<int>>();
 
   for (std::map<int, std::vector<int>>::iterator curr = perbndcouples_->begin();
        curr != perbndcouples_->end(); ++curr)
@@ -126,7 +126,7 @@ void Core::DOFSets::PBCDofSet::set_coupled_nodes(
  *----------------------------------------------------------------------*/
 void Core::DOFSets::PBCDofSet::build_slave_to_master_node_connectivity()
 {
-  perbnd_slavetomaster_ = Teuchos::make_rcp<std::map<int, int>>();
+  perbnd_slavetomaster_ = std::make_shared<std::map<int, int>>();
 
   for (std::map<int, std::vector<int>>::const_iterator masterslavepair = perbndcouples_->begin();
        masterslavepair != perbndcouples_->end(); ++masterslavepair)

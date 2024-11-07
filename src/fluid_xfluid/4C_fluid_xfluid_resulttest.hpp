@@ -55,16 +55,16 @@ namespace FLD
         const Core::LinAlg::Vector<double>& velnp);
 
     /// XFEM discretization
-    Teuchos::RCP<const Core::FE::Discretization> discret_;
+    std::shared_ptr<const Core::FE::Discretization> discret_;
 
     /// solution vector for XFEM discretization
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> velnp_;
 
     /// optional additional discretization for the same field (fluid-fluid coupling)
-    Teuchos::RCP<const Core::FE::Discretization> coupl_discret_;
+    std::shared_ptr<const Core::FE::Discretization> coupl_discret_;
 
     /// solution vector for additional coupling discretization
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> coupl_velnp_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> coupl_velnp_;
 
     /// take care of node numbering off-by-one (will be removed soon)
     const bool node_from_zero_;

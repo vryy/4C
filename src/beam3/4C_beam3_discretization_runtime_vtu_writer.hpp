@@ -16,7 +16,7 @@
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_io_visualization_manager.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 class Epetra_Comm;
 
@@ -76,9 +76,9 @@ class BeamDiscretizationRuntimeOutputWriter
    *
    *  \author grill
    *  \date 03/17 */
-  void initialize(Teuchos::RCP<Core::FE::Discretization> discretization,
+  void initialize(std::shared_ptr<Core::FE::Discretization> discretization,
       bool use_absolute_positions_for_point_coordinates, const unsigned int n_subsegments,
-      Teuchos::RCP<const Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox);
+      std::shared_ptr<const Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox);
 
   /** \brief append triad field determined from given displacement state to output data
    *
@@ -97,7 +97,7 @@ class BeamDiscretizationRuntimeOutputWriter
    *  \author grill
    *  \date 03/17 */
   //  void AppendTangentVectorField(
-  //      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
+  //      std::shared_ptr<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
 
 
   /** \brief append information about element owning processor to output data
@@ -272,20 +272,20 @@ class BeamDiscretizationRuntimeOutputWriter
  private:
   //! discretization containing beam elements of which geometry and result data shall be
   //! visualized
-  Teuchos::RCP<const Core::FE::Discretization> discretization_;
+  std::shared_ptr<const Core::FE::Discretization> discretization_;
 
   //! all local row indices of beam elements in the given discretization
   std::vector<unsigned int> local_row_indices_beam_elements_;
 
   //! periodic bounding box object
-  Teuchos::RCP<const Core::Geo::MeshFree::BoundingBox> periodic_boundingbox_;
+  std::shared_ptr<const Core::Geo::MeshFree::BoundingBox> periodic_boundingbox_;
 
   //! number of points for each element ( in case of periodic boundary conditions
   //! not equal to 1)
   std::vector<int> num_cells_per_element_;
 
   //! the actual vtu writer object that additionally stores the geometry and result data
-  Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager_;
+  std::shared_ptr<Core::IO::VisualizationManager> visualization_manager_;
 
   //! flag indicating whether to use absolute positions for point coordinates
   // false: use reference position

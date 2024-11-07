@@ -85,9 +85,9 @@ namespace Core::LinearSolver
      * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
-    virtual void setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x,
-        Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
-        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector) = 0;
+    virtual void setup(std::shared_ptr<MatrixType> A, std::shared_ptr<VectorType> x,
+        std::shared_ptr<VectorType> b, const bool refactor, const bool reset,
+        std::shared_ptr<Core::LinAlg::KrylovProjector> projector) = 0;
 
     virtual int solve() = 0;
 

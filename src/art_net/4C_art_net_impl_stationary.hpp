@@ -33,7 +33,7 @@ namespace Arteries
     \brief Standard Constructor
 
     */
-    ArtNetImplStationary(Teuchos::RCP<Core::FE::Discretization> dis, const int linsolvernumber,
+    ArtNetImplStationary(std::shared_ptr<Core::FE::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
         Core::IO::DiscretizationWriter& output);
 
@@ -46,7 +46,7 @@ namespace Arteries
     void test_results() override;
 
     // create field test
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test() override;
 
     /// setup the variables to do a new time step
     void time_update() override;
@@ -88,7 +88,7 @@ namespace Arteries
     }
 
     // output
-    void output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
+    void output(bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams) override;
 
     //! output of element radius
     void output_radius();
@@ -105,7 +105,7 @@ namespace Arteries
     void prepare_time_loop() override;
 
     // solve artery system of equation
-    void solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) override;
+    void solve(std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams) override;
 
     // prepare linear solve (apply DBC)
     void prepare_linear_solve() override;
@@ -120,19 +120,19 @@ namespace Arteries
     void solve_scatra() override;
 
     // get solution vector = pressure
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> pressurenp() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> pressurenp() const override
     {
       return pressurenp_;
     }
 
     //! get element volume flow
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> ele_volflow() const { return ele_volflow_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> ele_volflow() const { return ele_volflow_; }
 
     //! get element radius
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> ele_radius() const { return ele_radius_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> ele_radius() const { return ele_radius_; }
 
     //! iterative update of primary variable
-    void update_iter(const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) override
+    void update_iter(const std::shared_ptr<const Core::LinAlg::Vector<double>> inc) override
     {
       pressurenp_->Update(1.0, *inc, 1.0);
       return;
@@ -141,19 +141,19 @@ namespace Arteries
 
    private:
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;
     //! pressure at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pressurenp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> pressurenp_;
     //! pressure increment at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pressureincnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> pressureincnp_;
     //! the vector containing body and surface forces
-    Teuchos::RCP<Core::LinAlg::Vector<double>> neumann_loads_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> neumann_loads_;
     //! volumetric flow (for output)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ele_volflow_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ele_volflow_;
     //! element radius (for output)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ele_radius_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ele_radius_;
     /// underlying scatra problem
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra_;
 
   };  // class ArtNetImplStationary
 }  // namespace Arteries

@@ -18,7 +18,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -45,16 +46,16 @@ namespace Adapter
     FluidAle(const Teuchos::ParameterList& prbdyn, std::string condname);
 
     /// fluid field
-    const Teuchos::RCP<Adapter::Fluid>& fluid_field() override { return fluid_; }
+    const std::shared_ptr<Adapter::Fluid>& fluid_field() override { return fluid_; }
 
     /// ale field
-    const Teuchos::RCP<Adapter::AleFluidWrapper>& ale_field() const { return ale_; }
+    const std::shared_ptr<Adapter::AleFluidWrapper>& ale_field() const { return ale_; }
 
     /// discretization
-    Teuchos::RCP<Core::FE::Discretization> discretization() override;
+    std::shared_ptr<Core::FE::Discretization> discretization() override;
 
     /// fluid interface
-    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override
+    std::shared_ptr<FLD::Utils::MapExtractor> const& interface() const override
     {
       return fluid_->interface();
     }
@@ -72,71 +73,71 @@ namespace Adapter
     double read_restart(int step  ///< step number to restart from
         ) override;
 
-    void nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override;
+    void nonlinear_solve(std::shared_ptr<Core::LinAlg::Vector<double>> idisp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel) override;
 
-    virtual void nonlinear_solve_vol_coupl(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel,
-        Teuchos::RCP<FSI::InterfaceCorrector> icorrector);
+    virtual void nonlinear_solve_vol_coupl(std::shared_ptr<Core::LinAlg::Vector<double>> idisp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel,
+        std::shared_ptr<FSI::InterfaceCorrector> icorrector);
 
-    void apply_interface_values(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override;
+    void apply_interface_values(std::shared_ptr<Core::LinAlg::Vector<double>> idisp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel) override;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt) override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> relaxation_solve(
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp, double dt) override;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces() override;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_veln() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_forces() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_veln() override;
 
     int itemax() const override { return fluid_->itemax(); }
     void set_itemax(int itemax) override { fluid_->set_itemax(itemax); }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
 
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test() override;
 
    protected:
     //! @name Transfer helpers
     //@{
 
     /// field transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_field(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv  ///< ALE vector (to be converted)
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_fluid_field(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv  ///< ALE vector (to be converted)
     ) const;
 
     /// field transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_field(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv  ///< ALE vector (to be converted)
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_fluid_field(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv  ///< ALE vector (to be converted)
     ) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv  ///< Fluid vector (to be converted)
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_ale(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv  ///< Fluid vector (to be converted)
     ) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv  ///< Fluid vector (to be converted)
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_ale(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv  ///< Fluid vector (to be converted)
     ) const;
 
     //@}
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<Coupling::Adapter::CouplingBase> coupfa_;
+    std::shared_ptr<Coupling::Adapter::CouplingBase> coupfa_;
 
     /// coupling of fluid and ale (interface or volume...)
-    Teuchos::RCP<Coupling::Adapter::CouplingBase> icoupfa_;
+    std::shared_ptr<Coupling::Adapter::CouplingBase> icoupfa_;
 
     /// coupling of fluid and ale for the ale update condition
-    Teuchos::RCP<Coupling::Adapter::Coupling> aucoupfa_;
+    std::shared_ptr<Coupling::Adapter::Coupling> aucoupfa_;
 
    private:
     /// problem-specific Fluid-wrapper
-    Teuchos::RCP<Adapter::Fluid> fluid_;
+    std::shared_ptr<Adapter::Fluid> fluid_;
 
     /// problem-specific ALE-wrapper
-    Teuchos::RCP<Adapter::AleFluidWrapper> ale_;
+    std::shared_ptr<Adapter::AleFluidWrapper> ale_;
 
     /// problem specific time parameter list
     const Teuchos::ParameterList& timeparams_;

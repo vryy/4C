@@ -15,7 +15,7 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_stvenantkirchhoff.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -55,10 +55,10 @@ namespace
   }
 
 
-  Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> create_fluid_function(
+  std::shared_ptr<Core::Utils::FunctionOfSpaceTime> create_fluid_function(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
-    if (function_line_defs.size() != 1) return Teuchos::null;
+    if (function_line_defs.size() != 1) return nullptr;
 
     const auto& function_lin_def = function_line_defs.front();
 
@@ -66,15 +66,15 @@ namespace
     {
       double c1 = function_lin_def.container().get<double>("c1");
 
-      return Teuchos::make_rcp<FLD::BeltramiFunction>(c1);
+      return std::make_shared<FLD::BeltramiFunction>(c1);
     }
     else if (function_lin_def.container().get_or("CHANNELWEAKLYCOMPRESSIBLE", false))
     {
-      return Teuchos::make_rcp<FLD::ChannelWeaklyCompressibleFunction>();
+      return std::make_shared<FLD::ChannelWeaklyCompressibleFunction>();
     }
     else if (function_lin_def.container().get_or("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE", false))
     {
-      return Teuchos::make_rcp<FLD::CorrectionTermChannelWeaklyCompressibleFunction>();
+      return std::make_shared<FLD::CorrectionTermChannelWeaklyCompressibleFunction>();
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_POISEUILLE", false))
     {
@@ -93,7 +93,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::make_rcp<FLD::WeaklyCompressiblePoiseuilleFunction>(fparams, L, R, U);
+      return std::make_shared<FLD::WeaklyCompressiblePoiseuilleFunction>(fparams, L, R, U);
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE", false))
     {
@@ -115,7 +115,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::make_rcp<FLD::WeaklyCompressiblePoiseuilleForceFunction>(fparams, L, R, U);
+      return std::make_shared<FLD::WeaklyCompressiblePoiseuilleForceFunction>(fparams, L, R, U);
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW", false))
     {
@@ -128,7 +128,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::make_rcp<FLD::WeaklyCompressibleManufacturedFlowFunction>(fparams);
+      return std::make_shared<FLD::WeaklyCompressibleManufacturedFlowFunction>(fparams);
     }
     else if (function_lin_def.container().get_or(
                  "WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE", false))
@@ -143,7 +143,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::make_rcp<FLD::WeaklyCompressibleManufacturedFlowForceFunction>(fparams);
+      return std::make_shared<FLD::WeaklyCompressibleManufacturedFlowForceFunction>(fparams);
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD", false))
     {
@@ -156,7 +156,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::make_rcp<FLD::WeaklyCompressibleEtienneCFDFunction>(fparams);
+      return std::make_shared<FLD::WeaklyCompressibleEtienneCFDFunction>(fparams);
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE", false))
     {
@@ -169,7 +169,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::make_rcp<FLD::WeaklyCompressibleEtienneCFDForceFunction>(fparams);
+      return std::make_shared<FLD::WeaklyCompressibleEtienneCFDForceFunction>(fparams);
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY", false))
     {
@@ -183,7 +183,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::make_rcp<FLD::WeaklyCompressibleEtienneCFDViscosityFunction>(fparams);
+      return std::make_shared<FLD::WeaklyCompressibleEtienneCFDViscosityFunction>(fparams);
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID", false))
     {
@@ -202,7 +202,7 @@ namespace
       auto fparams_fluid = get_weakly_compressible_fluid_mat_pars(mat_id_fluid);
       auto fparams_struc = get_svk_mat_pars(mat_id_struc);
 
-      return Teuchos::make_rcp<FLD::WeaklyCompressibleEtienneFSIFluidFunction>(
+      return std::make_shared<FLD::WeaklyCompressibleEtienneFSIFluidFunction>(
           fparams_fluid, fparams_struc);
     }
     else if (function_lin_def.container().get_or(
@@ -229,7 +229,7 @@ namespace
       auto fparams_fluid = get_weakly_compressible_fluid_mat_pars(mat_id_fluid);
       auto fparams_struc = get_svk_mat_pars(mat_id_struc);
 
-      return Teuchos::make_rcp<FLD::WeaklyCompressibleEtienneFSIFluidForceFunction>(
+      return std::make_shared<FLD::WeaklyCompressibleEtienneFSIFluidForceFunction>(
           fparams_fluid, fparams_struc);
     }
     else if (function_lin_def.container().get_or(
@@ -256,7 +256,7 @@ namespace
       auto fparams_fluid = get_weakly_compressible_fluid_mat_pars(mat_id_fluid);
       auto fparams_struc = get_svk_mat_pars(mat_id_struc);
 
-      return Teuchos::make_rcp<FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction>(
+      return std::make_shared<FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction>(
           fparams_fluid, fparams_struc);
     }
     else if (function_lin_def.container().get_or("BELTRAMI-UP", false))
@@ -269,7 +269,7 @@ namespace
       // get material
       auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
-      return Teuchos::make_rcp<FLD::BeltramiUP>(fparams);
+      return std::make_shared<FLD::BeltramiUP>(fparams);
     }
     else if (function_lin_def.container().get_or("BELTRAMI-RHS", false))
     {
@@ -282,7 +282,7 @@ namespace
       // get material
       auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
-      return Teuchos::make_rcp<FLD::BeltramiRHS>(fparams, (bool)is_stokes);
+      return std::make_shared<FLD::BeltramiRHS>(fparams, (bool)is_stokes);
     }
     else if (function_lin_def.container().get_or("KIMMOIN-UP", false))
     {
@@ -295,7 +295,7 @@ namespace
       // get material
       auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
-      return Teuchos::make_rcp<FLD::KimMoinUP>(fparams, (bool)is_stationary);
+      return std::make_shared<FLD::KimMoinUP>(fparams, (bool)is_stationary);
     }
     else if (function_lin_def.container().get_or("KIMMOIN-RHS", false))
     {
@@ -309,7 +309,7 @@ namespace
       // get material
       auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
-      return Teuchos::make_rcp<FLD::KimMoinRHS>(fparams, (bool)is_stationary, (bool)is_stokes);
+      return std::make_shared<FLD::KimMoinRHS>(fparams, (bool)is_stationary, (bool)is_stokes);
     }
     else if (function_lin_def.container().get_or("KIMMOIN-STRESS", false))
     {
@@ -323,11 +323,11 @@ namespace
       // get material
       auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
-      return Teuchos::make_rcp<FLD::KimMoinStress>(fparams, (bool)is_stationary, amplitude);
+      return std::make_shared<FLD::KimMoinStress>(fparams, (bool)is_stationary, amplitude);
     }
     else
     {
-      return Teuchos::RCP<Core::Utils::FunctionOfSpaceTime>(nullptr);
+      return std::shared_ptr<Core::Utils::FunctionOfSpaceTime>(nullptr);
     }
   }
 }  // namespace

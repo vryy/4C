@@ -47,9 +47,9 @@ namespace Discret
         // leave, if displacements are not set
         if (!slavedis.has_state(disp_statename_)) return;
         // get state of the global vector
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
             slavedis.get_state(disp_statename_);
-        if (matrix_state == Teuchos::null)
+        if (matrix_state == nullptr)
           FOUR_C_THROW("Cannot get state vector %s", disp_statename_.c_str());
 
         // extract local values of the global vector
@@ -87,9 +87,9 @@ namespace Discret
       )
       {
         // get state of the global vector
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
             slavedis.get_state(vel_statename_);
-        if (matrix_state == Teuchos::null)
+        if (matrix_state == nullptr)
           FOUR_C_THROW("Cannot get state vector %s", vel_statename_.c_str());
 
         // extract local values of the global vectors
@@ -121,9 +121,9 @@ namespace Discret
       )
       {
         // get state of the global vector
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
             slavedis.get_state(veln_statename_);
-        if (matrix_state == Teuchos::null)
+        if (matrix_state == nullptr)
           FOUR_C_THROW("Cannot get state vector %s", veln_statename_.c_str());
 
         // extract local values of the global vectors
@@ -240,9 +240,9 @@ namespace Discret
       )
       {
         // get state of the global vector
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state = cutterdis.get_state(state);
-        if (matrix_state == Teuchos::null)
-          FOUR_C_THROW("Cannot get state vector %s", state.c_str());
+        std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
+            cutterdis.get_state(state);
+        if (matrix_state == nullptr) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
@@ -274,9 +274,9 @@ namespace Discret
       )
       {
         // get state of the global vector
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state = cutterdis.get_state(state);
-        if (matrix_state == Teuchos::null)
-          FOUR_C_THROW("Cannot get state vector %s", state.c_str());
+        std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
+            cutterdis.get_state(state);
+        if (matrix_state == nullptr) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
@@ -353,7 +353,7 @@ namespace Discret
         }
 
         // find element local position of gauss point
-        Teuchos::RCP<Cut::Position> pos =
+        std::shared_ptr<Cut::Position> pos =
             Cut::PositionFactory::build_position<nsd_, slave_distype>(slave_xyze_, xslave);
         pos->compute();
 

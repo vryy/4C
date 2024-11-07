@@ -37,7 +37,7 @@ namespace Adapter
   {
    public:
     /// Constructor
-    StructureTimIntAda(Teuchos::RCP<Solid::TimAda> sta, Teuchos::RCP<Structure> sti);
+    StructureTimIntAda(std::shared_ptr<Solid::TimAda> sta, std::shared_ptr<Structure> sti);
 
     /// @name Time step helpers
     //@{
@@ -57,13 +57,13 @@ namespace Adapter
     //! Access routines
     //{@
 
-    Teuchos::RCP<Solid::TimAda> str_ada() const { return sta_; }
+    std::shared_ptr<Solid::TimAda> str_ada() const { return sta_; }
 
     //@}
 
    private:
     /// the actual structure algorithm
-    Teuchos::RCP<Solid::TimAda> sta_;  // Solid::TimAda is the old time integration
+    std::shared_ptr<Solid::TimAda> sta_;  // Solid::TimAda is the old time integration
 
   };  // class StructureTimIntAda
 

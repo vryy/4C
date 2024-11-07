@@ -32,11 +32,11 @@ void Discret::Elements::ScaTraEleCalcElchDiffCondMultiScale<distype,
     FOUR_C_THROW("Electrode state of charge can only be computed for one transported scalar!");
 
   // extract multi-scale material
-  auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->material());
+  auto elchmat = std::dynamic_pointer_cast<const Mat::ElchMat>(ele->material());
   auto elchphase =
-      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
+      std::dynamic_pointer_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
   auto newmanmultiscale =
-      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
+      std::dynamic_pointer_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
 
   // initialize variables for integrals of concentration, its time derivative, and domain
   double intconcentration(0.0);
@@ -90,11 +90,11 @@ void Discret::Elements::ScaTraEleCalcElchDiffCondMultiScale<distype,
     FOUR_C_THROW("Electrode state of charge can only be computed for one transported scalar!");
 
   // extract multi-scale material
-  auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->material());
+  auto elchmat = std::dynamic_pointer_cast<const Mat::ElchMat>(ele->material());
   auto elchphase =
-      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
+      std::dynamic_pointer_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
   auto newmanmultiscale =
-      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
+      std::dynamic_pointer_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
 
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -143,11 +143,11 @@ void Discret::Elements::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::c
   my::calculate_scalars(ele, scalars, inverting, calc_grad_phi);
 
   // extract multi-scale material
-  auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->material());
+  auto elchmat = std::dynamic_pointer_cast<const Mat::ElchMat>(ele->material());
   auto elchphase =
-      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
+      std::dynamic_pointer_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
   auto newmanmultiscale =
-      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
+      std::dynamic_pointer_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
 
   // initialize variables for integrals of concentration, its time derivative, and domain
   double intconcentration(0.0);
@@ -181,11 +181,11 @@ int Discret::Elements::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
     Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // extract multi-scale material
-  auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->material());
+  auto elchmat = std::dynamic_pointer_cast<const Mat::ElchMat>(ele->material());
   auto elchphase =
-      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
+      std::dynamic_pointer_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
   auto newmanmultiscale =
-      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
+      std::dynamic_pointer_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
 
   // determine and evaluate action
   switch (action)

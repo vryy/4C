@@ -14,7 +14,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -115,26 +115,26 @@ namespace Solid
       void post_output() override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
      private:
-      Teuchos::RCP<Utils::Cardiovascular0DManager> cardvasc0dman_;  //!< Cardiovascular0D manager
+      std::shared_ptr<Utils::Cardiovascular0DManager> cardvasc0dman_;  //!< Cardiovascular0D manager
 
       //! structural displacement at \f$t_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp_ptr_;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disnp_ptr_;
 
       //! cardio contributions to the structural stiffness matrix
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_cardio_ptr_;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_cardio_ptr_;
 
       //! structural rhs contributions of the cardio model at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> fstructcardio_np_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> fstructcardio_np_ptr_;
     };
 
   }  // namespace ModelEvaluator

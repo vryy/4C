@@ -46,12 +46,12 @@ Discret::Elements::ScaTraEleCalcElchScl<distype, probdim>::ScaTraEleCalcElchScl(
       diffcondparams_(Discret::Elements::ScaTraEleParameterElchDiffCond::instance(disname))
 {
   // replace diffusion manager for diffusion-conduciton formulation by diffusion manager for SCLs
-  my::diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManagerElchScl>(my::numscal_);
+  my::diffmanager_ = std::make_shared<ScaTraEleDiffManagerElchScl>(my::numscal_);
 
   // replace internal variable manager for diffusion-conduction by internal variable manager for
   // SCL formulation
   my::scatravarmanager_ =
-      Teuchos::make_rcp<ScaTraEleInternalVariableManagerElchScl<my::nsd_, my::nen_>>(
+      std::make_shared<ScaTraEleInternalVariableManagerElchScl<my::nsd_, my::nen_>>(
           my::numscal_, myelch::elchparams_, diffcondparams_);
 
   // replace utility class for diffusion-conduction formulation by utility class for SCLs
@@ -419,7 +419,7 @@ void Discret::Elements::ScaTraEleCalcElchScl<distype, probdim>::get_material_par
     std::vector<double>& densam, double& visc, const int iquad)
 {
   // extract material from element
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   // evaluate electrolyte material
   if (material->material_type() == Core::Materials::m_elchmat)

@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 Adapter::AleBaseAlgorithm::AleBaseAlgorithm(
-    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
+    const Teuchos::ParameterList& prbdyn, std::shared_ptr<Core::FE::Discretization> actdis)
 {
   setup_ale(prbdyn, actdis);
 }
@@ -45,10 +45,9 @@ Adapter::AleBaseAlgorithm::AleBaseAlgorithm(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void Adapter::AleBaseAlgorithm::setup_ale(
-    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
+    const Teuchos::ParameterList& prbdyn, std::shared_ptr<Core::FE::Discretization> actdis)
 {
-  Teuchos::RCP<Teuchos::Time> t =
-      Teuchos::TimeMonitor::getNewTimer("ALE::AleBaseAlgorithm::setup_ale");
+  auto t = Teuchos::TimeMonitor::getNewTimer("ALE::AleBaseAlgorithm::setup_ale");
   Teuchos::TimeMonitor monitor(*t);
 
   // what's the current problem type?
@@ -68,7 +67,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
   // ---------------------------------------------------------------------------
   // context for output and restart
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->writer();
+  std::shared_ptr<Core::IO::DiscretizationWriter> output = actdis->writer();
 
   // Output for these problems are not necessary because we write
   // restart data at each time step for visualization
@@ -77,8 +76,8 @@ void Adapter::AleBaseAlgorithm::setup_ale(
   // ---------------------------------------------------------------------------
   // set some pointers and variables
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Teuchos::ParameterList> adyn =
-      Teuchos::make_rcp<Teuchos::ParameterList>(Global::Problem::instance()->ale_dynamic_params());
+  std::shared_ptr<Teuchos::ParameterList> adyn =
+      std::make_shared<Teuchos::ParameterList>(Global::Problem::instance()->ale_dynamic_params());
 
   // ---------------------------------------------------------------------------
   // create a linear solver
@@ -90,7 +89,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
         "No linear solver defined for ALE problems. Please set "
         "LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
-  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+  std::shared_ptr<Core::LinAlg::Solver> solver = std::make_shared<Core::LinAlg::Solver>(
       Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -119,7 +118,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
 
   // create the ALE time integrator
   auto aletype = Teuchos::getIntegralValue<Inpar::ALE::AleDynamic>(*adyn, "ALE_TYPE");
-  Teuchos::RCP<ALE::Ale> ale = Teuchos::null;
+  std::shared_ptr<ALE::Ale> ale = nullptr;
   switch (aletype)
   {
     // catch all nonlinear cases
@@ -127,7 +126,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     case Inpar::ALE::laplace_spatial:
     case Inpar::ALE::springs_spatial:
     {
-      ale = Teuchos::make_rcp<ALE::Ale>(actdis, solver, adyn, output);
+      ale = std::make_shared<ALE::Ale>(actdis, solver, adyn, output);
 
       break;
     }
@@ -136,7 +135,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     case Inpar::ALE::laplace_material:
     case Inpar::ALE::springs_material:
     {
-      ale = Teuchos::make_rcp<ALE::AleLinear>(actdis, solver, adyn, output);
+      ale = std::make_shared<ALE::AleLinear>(actdis, solver, adyn, output);
 
       break;
     }
@@ -170,19 +169,19 @@ void Adapter::AleBaseAlgorithm::setup_ale(
           coupling == fsi_iter_mortar_monolithicfluidsplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit_saddlepoint)
       {
-        ale_ = Teuchos::make_rcp<Adapter::AleFsiWrapper>(ale);
+        ale_ = std::make_shared<Adapter::AleFsiWrapper>(ale);
       }
       else if (coupling == fsi_iter_sliding_monolithicfluidsplit or
                coupling == fsi_iter_sliding_monolithicstructuresplit)
       {
-        ale_ = Teuchos::make_rcp<Adapter::AleFsiMshtWrapper>(ale);
+        ale_ = std::make_shared<Adapter::AleFsiMshtWrapper>(ale);
       }
       else if (coupling == fsi_iter_fluidfluid_monolithicstructuresplit or
                coupling == fsi_iter_fluidfluid_monolithicfluidsplit or
                coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nonox or
                coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nonox)
       {
-        ale_ = Teuchos::make_rcp<Adapter::AleXFFsiWrapper>(ale);
+        ale_ = std::make_shared<Adapter::AleXFFsiWrapper>(ale);
       }
       else if (coupling == fsi_iter_stagg_AITKEN_rel_force or
                coupling == fsi_iter_stagg_AITKEN_rel_param or
@@ -193,7 +192,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
                coupling == fsi_iter_stagg_fixed_rel_param or
                coupling == fsi_iter_stagg_steep_desc or coupling == fsi_iter_stagg_steep_desc_force)
       {
-        ale_ = Teuchos::make_rcp<Adapter::AleFluidWrapper>(ale);
+        ale_ = std::make_shared<Adapter::AleFluidWrapper>(ale);
       }
       else
       {
@@ -214,7 +213,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
           coupling == fsi_iter_sliding_monolithicfluidsplit or
           coupling == fsi_iter_sliding_monolithicstructuresplit)
       {
-        ale_ = Teuchos::make_rcp<Adapter::AleFsiWrapper>(ale);
+        ale_ = std::make_shared<Adapter::AleFsiWrapper>(ale);
       }
       else if (coupling == fsi_iter_stagg_AITKEN_rel_force or
                coupling == fsi_iter_stagg_AITKEN_rel_param or
@@ -225,7 +224,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
                coupling == fsi_iter_stagg_fixed_rel_param or
                coupling == fsi_iter_stagg_steep_desc or coupling == fsi_iter_stagg_steep_desc_force)
       {
-        ale_ = Teuchos::make_rcp<Adapter::AleFluidWrapper>(ale);
+        ale_ = std::make_shared<Adapter::AleFluidWrapper>(ale);
       }
       else
       {
@@ -240,14 +239,14 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     case Core::ProblemType::fsi_xfem:
     case Core::ProblemType::fpsi_xfem:
     {
-      ale_ = Teuchos::make_rcp<Adapter::AleFpsiWrapper>(ale);
+      ale_ = std::make_shared<Adapter::AleFpsiWrapper>(ale);
       break;
     }
     case Core::ProblemType::fluid_ale:
     case Core::ProblemType::elch:
     case Core::ProblemType::fluid_xfem:
     {
-      ale_ = Teuchos::make_rcp<Adapter::AleFluidWrapper>(ale);
+      ale_ = std::make_shared<Adapter::AleFluidWrapper>(ale);
       break;
     }
     default:

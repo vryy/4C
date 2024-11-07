@@ -62,8 +62,8 @@ namespace Discret
       void clear_chemotaxis_terms();
 
       //! Get and save all chemotaxtis related class variable
-      virtual void get_chemotaxis_coefficients(
-          const Teuchos::RCP<const Core::Mat::Material> material  //!< pointer to current material
+      virtual void get_chemotaxis_coefficients(const std::shared_ptr<const Core::Mat::Material>
+              material  //!< pointer to current material
       );
 
       //! Get ID of attractant (i.e. scalar which gradient the current scalar shall follow)

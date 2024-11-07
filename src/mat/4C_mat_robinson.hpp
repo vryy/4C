@@ -18,7 +18,7 @@
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -83,7 +83,7 @@ namespace Mat
       //@}
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class Robinson
 
@@ -164,9 +164,9 @@ namespace Mat
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<Robinson>(*this);
+      return std::make_shared<Robinson>(*this);
     }
 
     //! initialise internal stress variables
@@ -349,7 +349,7 @@ namespace Mat
     double density() const override { return params_->density_; }
 
     //! check if history variables are already initialised
-    bool initialized() const { return (isinit_ and (strainplcurr_ != Teuchos::null)); }
+    bool initialized() const { return (isinit_ and (strainplcurr_ != nullptr)); }
 
     void reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp) override;
@@ -421,7 +421,7 @@ namespace Mat
     bool isinit_;
 
     //! pointer to the internal thermal material
-    Teuchos::RCP<Mat::Trait::Thermo> thermo_;
+    std::shared_ptr<Mat::Trait::Thermo> thermo_;
 
     //! current temperature (set by Reinit())
     double current_temperature_{};
@@ -435,30 +435,30 @@ namespace Mat
     //! visco-plastic strain vector Ev^{gp} at t_{n} for every Gauss point gp
     //!    Ev^{gp,T} = [ E_11  E_22  E_33  2*E_12  2*E_23  2*E_31 ]^{gp} */
     //!< \f${\varepsilon}^p_{n}\f$
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>> strainpllast_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>> strainpllast_;
     //! current visco-plastic strain vector Ev^{gp} at t_{n+1} for every Gauss point gp
     //!    Ev^{gp,T} = [ E_11  E_22  E_33  2*E_12  2*E_23  2*E_31 ]^{gp} */
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     //! old back stress vector Alpha^{gp} at t_n for every Gauss point gp
     //!    Alpha^{gp,T} = [ A_11  A_22  A_33  A_12  A_23  A_31 ]^{gp}
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         backstresslast_;  //!< \f${\alpha}_{n}\f$
     //! current back stress vector Alpha^{gp} at t_{n+1} for every Gauss point gp
     //!< \f${\alpha}_{n+1}\f$
     //!    Alpha^{gp,T} = [ A_11  A_22  A_33  A_12  A_23  A_31 ]^{gp} */
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         backstresscurr_;  //!< \f${\alpha}_{n+1}\f$
     //! update vector for MIV iterative increments
     //!          [ kvv  kva ]^{-1}   [ res^v  ]
     //! kvarva = [          ]      . [        ]
     //!          [ kav  kaa ]      . [ res^al ]
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<(2 * NUM_STRESS_3D), 1>>> kvarva_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<(2 * NUM_STRESS_3D), 1>>> kvarva_;
     //! update matrix for MIV iterative increments
     //!              [ kvv  kva ]^{-1}   [ kve ]
     //!    kvakvae = [          ]      . [     ]
     //!              [ kav  kaa ]      . [ kae ]
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<(2 * NUM_STRESS_3D), NUM_STRESS_3D>>> kvakvae_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<(2 * NUM_STRESS_3D), NUM_STRESS_3D>>> kvakvae_;
     //! strain at last evaluation
     std::vector<Core::LinAlg::Matrix<6, 1>> strain_last_;
 

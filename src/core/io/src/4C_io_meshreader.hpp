@@ -82,9 +82,9 @@ namespace Core::IO
      * \param geometrysource [in] selects which reader will be created
      * \param geofilepath    [in] path to the file for the file reader (not used for the others)
      */
-    void add_advanced_reader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input,
-        const std::string& sectionname, const Core::IO::GeometryType geometrysource,
-        const std::string* geofilepath);
+    void add_advanced_reader(std::shared_ptr<Core::FE::Discretization> dis,
+        Core::IO::InputFile& input, const std::string& sectionname,
+        const Core::IO::GeometryType geometrysource, const std::string* geofilepath);
 
     /// do the actual reading
     /*!
@@ -137,7 +137,7 @@ namespace Core::IO
     const Epetra_Comm& comm_;
 
     //! graphs of each discretization
-    std::vector<Teuchos::RCP<const Epetra_CrsGraph>> graph_;
+    std::vector<std::shared_ptr<const Epetra_CrsGraph>> graph_;
 
     /// my element readers
     std::vector<ElementReader> element_readers_;

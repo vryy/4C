@@ -19,9 +19,8 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <functional>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -71,11 +70,11 @@ namespace Coupling::Adapter
     \brief Call parallel redistr. and evaluate volmortar coupl.
 
     */
-    void init(int spatial_dimension, Teuchos::RCP<Core::FE::Discretization> dis1,
-        Teuchos::RCP<Core::FE::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
+    void init(int spatial_dimension, std::shared_ptr<Core::FE::Discretization> dis1,
+        std::shared_ptr<Core::FE::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
         std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofsets12 = nullptr,
         std::pair<int, int>* dofsets21 = nullptr,
-        Teuchos::RCP<VolMortar::Utils::DefaultMaterialStrategy> materialstrategy = Teuchos::null,
+        std::shared_ptr<VolMortar::Utils::DefaultMaterialStrategy> materialstrategy = nullptr,
         bool createauxdofs = true);
 
     /*!
@@ -96,11 +95,12 @@ namespace Coupling::Adapter
 
     */
     void redistribute(const Teuchos::ParameterList& binning_params,
-        Teuchos::RCP<Core::IO::OutputControl> output_control,
+        std::shared_ptr<Core::IO::OutputControl> output_control,
         std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node =
             nullptr,
         std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
-            const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)>
+            const Core::Elements::Element&,
+            std::shared_ptr<const Core::LinAlg::Vector<double>> disnp)>
             determine_relevant_points = nullptr);
 
 
@@ -108,34 +108,34 @@ namespace Coupling::Adapter
     \brief Get coupling matrices for field 1 and 2
 
     */
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_p_matrix12() const { return p12_; };
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_p_matrix21() const { return p21_; };
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> get_p_matrix12() const { return p12_; };
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> get_p_matrix21() const { return p21_; };
 
     /*!
     \brief Mortar mapping for 1 to 2 and 2 to 1 - for vectors
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> apply_vector_mapping12(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> apply_vector_mapping12(
         const Core::LinAlg::Vector<double>& vec) const;
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> apply_vector_mapping21(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> apply_vector_mapping21(
         const Core::LinAlg::Vector<double>& vec) const;
 
     /*!
     \brief Mortar mapping for 1 to 2 and 2 to 1 - for matrices
 
     */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> apply_matrix_mapping12(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> apply_matrix_mapping12(
         const Core::LinAlg::SparseMatrix& mat) const;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> apply_matrix_mapping21(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> apply_matrix_mapping21(
         const Core::LinAlg::SparseMatrix& mat) const;
 
     //@}
 
     //! assign materials
-    void assign_materials(Teuchos::RCP<Core::FE::Discretization> dis1,
-        Teuchos::RCP<Core::FE::Discretization> dis2, const Teuchos::ParameterList& volmortar_params,
-        const Teuchos::ParameterList& cut_params,
-        Teuchos::RCP<VolMortar::Utils::DefaultMaterialStrategy> materialstrategy = Teuchos::null);
+    void assign_materials(std::shared_ptr<Core::FE::Discretization> dis1,
+        std::shared_ptr<Core::FE::Discretization> dis2,
+        const Teuchos::ParameterList& volmortar_params, const Teuchos::ParameterList& cut_params,
+        std::shared_ptr<VolMortar::Utils::DefaultMaterialStrategy> materialstrategy = nullptr);
 
 
     /** \name Conversion between master and slave */
@@ -145,19 +145,19 @@ namespace Coupling::Adapter
 
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
+    std::shared_ptr<Core::LinAlg::Vector<double>> master_to_slave(
         const Core::LinAlg::Vector<double>& mv) const override;
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
+    std::shared_ptr<Core::LinAlg::Vector<double>> slave_to_master(
         const Core::LinAlg::Vector<double>& sv) const override;
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> master_to_slave(
         const Core::LinAlg::MultiVector<double>& mv) const override;
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> slave_to_master(
         const Core::LinAlg::MultiVector<double>& sv) const override;
 
     /// transfer a dof vector from master to slave
@@ -174,10 +174,10 @@ namespace Coupling::Adapter
     //@{
 
     /// the interface dof map of the master side
-    Teuchos::RCP<const Epetra_Map> master_dof_map() const override;
+    std::shared_ptr<const Epetra_Map> master_dof_map() const override;
 
     /// the interface dof map of the slave side
-    Teuchos::RCP<const Epetra_Map> slave_dof_map() const override;
+    std::shared_ptr<const Epetra_Map> slave_dof_map() const override;
 
     //@}
 
@@ -214,19 +214,19 @@ namespace Coupling::Adapter
     // mortar matrices and projector
     // s1 = P12 * s2
     // s2 = P21 * s1
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         p12_;  ///< global Mortar projection matrix P Omega_2 -> Omega_1
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         p21_;  ///< global Mortar projection matrix P Omega_1 -> Omega_2
 
-    Teuchos::RCP<Core::FE::Discretization> masterdis_;
-    Teuchos::RCP<Core::FE::Discretization> slavedis_;
+    std::shared_ptr<Core::FE::Discretization> masterdis_;
+    std::shared_ptr<Core::FE::Discretization> slavedis_;
 
     std::vector<int>* coupleddof12_;
     std::vector<int>* coupleddof21_;
     std::pair<int, int>* dofsets12_;
     std::pair<int, int>* dofsets21_;
-    Teuchos::RCP<VolMortar::Utils::DefaultMaterialStrategy> materialstrategy_;
+    std::shared_ptr<VolMortar::Utils::DefaultMaterialStrategy> materialstrategy_;
 
     int spatial_dimension_{};
   };

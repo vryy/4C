@@ -75,9 +75,9 @@ Mat::PAR::PlasticElastHyper::PlasticElastHyper(const Core::Mat::PAR::Parameter::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticElastHyper::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::PlasticElastHyper::create_material()
 {
-  return Teuchos::make_rcp<Mat::PlasticElastHyper>(this);
+  return std::make_shared<Mat::PlasticElastHyper>(this);
 }
 
 
@@ -127,32 +127,25 @@ Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::beFCpi_;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PlasticElastHyper::PlasticElastHyper()
-    : params_(nullptr),
-      last_plastic_defgrd_inverse_(Teuchos::null),
-      last_alpha_isotropic_(Teuchos::null),
-      last_alpha_kinematic_(Teuchos::null),
-      activity_state_(Teuchos::null)
-{
-}
+Mat::PlasticElastHyper::PlasticElastHyper() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::PlasticElastHyper::PlasticElastHyper(Mat::PAR::PlasticElastHyper* params)
     : params_(params),
-      HepDiss_(Teuchos::null),
-      dHepDissdd_(Teuchos::null),
-      dHepDissdT_(Teuchos::null),
-      dHepDissdTeas_(Teuchos::null)
+      HepDiss_(nullptr),
+      dHepDissdd_(nullptr),
+      dHepDissdT_(nullptr),
+      dHepDissdTeas_(nullptr)
 {
   // make sure the referenced materials in material list have quick access parameters
   std::vector<int>::const_iterator m;
   for (m = mat_params()->matids_.begin(); m != mat_params()->matids_.end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+    std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
+    if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
     potsum_.push_back(sum);
     sum->register_anisotropy_extensions(anisotropy_);
   }
@@ -200,9 +193,9 @@ void Mat::PlasticElastHyper::pack(Core::Communication::PackBuffer& data) const
   for (int i = 0; i < (int)delta_alpha_i_.size(); ++i) add_to_pack(data, delta_alpha_i_.at(i));
 
   // tsi data
-  bool tsi = HepDiss_ != Teuchos::null;
+  bool tsi = HepDiss_ != nullptr;
   add_to_pack(data, (int)tsi);
-  bool tsi_eas = dHepDissdTeas_ != Teuchos::null;
+  bool tsi_eas = dHepDissdTeas_ != nullptr;
   add_to_pack(data, (int)tsi_eas);
   if (tsi) add_to_pack(data, (int)dHepDissdd_->at(0).numRows());
 
@@ -233,7 +226,7 @@ void Mat::PlasticElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   // matid and recover MatParams()
   int matid;
   extract_from_pack(buffer, matid);
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -262,8 +255,8 @@ void Mat::PlasticElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
     for (m = mat_params()->matids_.begin(); m != mat_params()->matids_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+      std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
+      if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
 
@@ -292,21 +285,21 @@ void Mat::PlasticElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   bool tsi_eas = (bool)extract_int(buffer);
   if (!tsi)
   {
-    HepDiss_ = Teuchos::null;
-    dHepDissdd_ = Teuchos::null;
-    dHepDissdT_ = Teuchos::null;
-    dHepDissdTeas_ = Teuchos::null;
+    HepDiss_ = nullptr;
+    dHepDissdd_ = nullptr;
+    dHepDissdT_ = nullptr;
+    dHepDissdTeas_ = nullptr;
   }
   else
   {
     int ngp = last_alpha_isotropic_.size();
-    HepDiss_ = Teuchos::make_rcp<std::vector<double>>(ngp, 0.0);
+    HepDiss_ = std::make_shared<std::vector<double>>(ngp, 0.0);
     int numdofperelement = extract_int(buffer);
-    dHepDissdd_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseVector>>(
+    dHepDissdd_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseVector>>(
         ngp, Core::LinAlg::SerialDenseVector(numdofperelement));
-    dHepDissdT_ = Teuchos::make_rcp<std::vector<double>>(ngp, 0.0);
+    dHepDissdT_ = std::make_shared<std::vector<double>>(ngp, 0.0);
     if (tsi_eas)
-      dHepDissdTeas_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseVector>>(
+      dHepDissdTeas_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseVector>>(
           ngp, Core::LinAlg::SerialDenseVector(numdofperelement / 3));
   }
 
@@ -389,12 +382,12 @@ void Mat::PlasticElastHyper::setup_tsi(const int numgp, const int numdofpereleme
   set_dissipation_mode(mode);
 
   // allocate memory
-  HepDiss_ = Teuchos::make_rcp<std::vector<double>>(numgp, 0.0);
-  dHepDissdd_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseVector>>(
+  HepDiss_ = std::make_shared<std::vector<double>>(numgp, 0.0);
+  dHepDissdd_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseVector>>(
       numgp, Core::LinAlg::SerialDenseVector(numdofperelement));
-  dHepDissdT_ = Teuchos::make_rcp<std::vector<double>>(numgp, 0.0);
+  dHepDissdT_ = std::make_shared<std::vector<double>>(numgp, 0.0);
   if (eas)
-    dHepDissdTeas_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseVector>>(
+    dHepDissdTeas_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseVector>>(
         numgp, Core::LinAlg::SerialDenseVector(numdofperelement / 3));
 
   // no TSI with kinematic hardening yet

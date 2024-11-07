@@ -16,9 +16,9 @@
 #include "4C_porofluidmultiphase_utils.hpp"
 #include "4C_poromultiphase_adapter.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
 
+#include <memory>
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -98,23 +98,23 @@ namespace PoroMultiPhaseScaTra
     void apply_additional_dbc_for_vol_frac_species();
 
     //! access to poro field
-    const Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase>& poro_field() { return poromulti_; }
+    const std::shared_ptr<POROMULTIPHASE::PoroMultiPhase>& poro_field() { return poromulti_; }
 
     //! access to fluid field
-    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& scatra_algo() { return scatra_; }
+    const std::shared_ptr<Adapter::ScaTraBaseAlgorithm>& scatra_algo() { return scatra_; }
 
     //! dof map of vector of unknowns of scatra field
-    virtual Teuchos::RCP<const Epetra_Map> scatra_dof_row_map() const;
+    virtual std::shared_ptr<const Epetra_Map> scatra_dof_row_map() const;
 
     //! handle divergence of solver
     void handle_divergence() const;
 
    private:
     //! underlying poroelast multi phase
-    Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase> poromulti_;
+    std::shared_ptr<POROMULTIPHASE::PoroMultiPhase> poromulti_;
 
     //! underlying scatra problem
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra_;
 
     //! flux-reconstruction method
     Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod fluxreconmethod_;
@@ -133,9 +133,9 @@ namespace PoroMultiPhaseScaTra
     const bool artery_coupl_;
 
     //! additional volume-fraction species Dirichlet conditions
-    Teuchos::RCP<Epetra_Map> add_dirichmaps_volfrac_spec_;
+    std::shared_ptr<Epetra_Map> add_dirichmaps_volfrac_spec_;
 
-    Teuchos::RCP<ScaTra::MeshtyingStrategyArtery> scatramsht_;
+    std::shared_ptr<ScaTra::MeshtyingStrategyArtery> scatramsht_;
 
   };  // PoroMultiPhaseScaTraBase
 

@@ -35,8 +35,8 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     /*!
     \brief Standard Constructor
     */
-    RveMultiPointConstraintManager(
-        Teuchos::RCP<const Core::FE::Discretization> disc_ptr, Core::LinAlg::SparseMatrix* st_ptr);
+    RveMultiPointConstraintManager(std::shared_ptr<const Core::FE::Discretization> disc_ptr,
+        Core::LinAlg::SparseMatrix* st_ptr);
 
     //! @name Public evaluation methods
 
@@ -62,7 +62,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     std::array<double, 2> r_xmxp_, r_ymyp_;
 
     //! Vector with all Conditions
-    std::vector<Teuchos::RCP<Core::Conditions::Condition>>
+    std::vector<std::shared_ptr<Core::Conditions::Condition>>
         point_linear_coupled_equation_conditions_, point_periodic_rve_ref_conditions_,
         line_periodic_rve_conditions_, surface_periodic_rve_conditions_;
 

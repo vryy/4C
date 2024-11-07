@@ -15,7 +15,8 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <map>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -93,33 +94,33 @@ namespace Mat
     const int microdisnum_;
 
     /// microstructure "time integration" classes (one for each micro-discretization)
-    static std::map<int, Teuchos::RCP<MultiScale::MicroStatic>> microstaticmap_;
+    static std::map<int, std::shared_ptr<MultiScale::MicroStatic>> microstaticmap_;
 
     static std::map<int, int> microstaticcounter_;
 
     /// microstructure discretization writer
-    Teuchos::RCP<Core::IO::DiscretizationWriter> micro_output_;
+    std::shared_ptr<Core::IO::DiscretizationWriter> micro_output_;
 
     /// homogenized density
     double density_;
 
     /// my vector of old displacements
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dis_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dis_;
 
     /// my vector of new displacements
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> disn_;
 
     // my EAS history data -> note that microstructure is not parallel
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldalpha_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldfeas_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> old_kaainv_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> old_kda_;
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> lastalpha_;
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldalpha_;
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldfeas_;
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> old_kaainv_;
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> old_kda_;
 
     /// my stresses and strains
-    Teuchos::RCP<std::vector<char>> stress_;
-    Teuchos::RCP<std::vector<char>> strain_;
-    Teuchos::RCP<std::vector<char>> plstrain_;
+    std::shared_ptr<std::vector<char>> stress_;
+    std::shared_ptr<std::vector<char>> strain_;
+    std::shared_ptr<std::vector<char>> plstrain_;
 
     /// old absolute time
     double time_;

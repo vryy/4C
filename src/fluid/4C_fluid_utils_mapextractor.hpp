@@ -52,11 +52,11 @@ namespace FLD
        * \author kruse
        * \date 05/2014
        */
-      void setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
+      void setup(std::shared_ptr<const Epetra_Map>& additionalothermap,
           const FLD::Utils::MapExtractor& extractor);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int>> conditioned_element_map(
+      std::shared_ptr<std::set<int>> conditioned_element_map(
           const Core::FE::Discretization& dis) const;
 
       MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
@@ -98,7 +98,7 @@ namespace FLD
       void setup(const Core::FE::Discretization& dis);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int>> conditioned_element_map(
+      std::shared_ptr<std::set<int>> conditioned_element_map(
           const Core::FE::Discretization& dis) const;
 
       MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
@@ -129,7 +129,7 @@ namespace FLD
       /// setup the whole thing
       void setup(const Core::FE::Discretization& dis);
 
-      void setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
+      void setup(std::shared_ptr<const Epetra_Map>& additionalothermap,
           const FLD::Utils::FsiMapExtractor& extractor);
 
       MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
@@ -147,8 +147,8 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void setup(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> fluidmap,
-          Teuchos::RCP<const Epetra_Map> xfluidmap);
+      void setup(const Epetra_Map& fullmap, std::shared_ptr<const Epetra_Map> fluidmap,
+          std::shared_ptr<const Epetra_Map> xfluidmap);
 
       MAP_EXTRACTOR_VECTOR_METHODS(fluid, cond_fluid)
       MAP_EXTRACTOR_VECTOR_METHODS(x_fluid, cond_xfluid)

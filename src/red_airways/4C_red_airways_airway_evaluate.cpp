@@ -53,7 +53,7 @@ int Discret::Elements::RedAirway::evaluate(Teuchos::ParameterList& params,
   /*
   Here one must add the steps for evaluating an element
   */
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   switch (act)
   {

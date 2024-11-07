@@ -16,15 +16,15 @@
 #include <Epetra_Comm.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <stdexcept>
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  Teuchos::RCP<Core::Communication::Communicators> mock_up_communicators()
+  std::shared_ptr<Core::Communication::Communicators> mock_up_communicators()
   {
     // mock up for command line to create communicators
     std::vector<std::string> argv{
@@ -50,9 +50,9 @@ namespace
           false, false, false, Core::IO::standard, communicators_->local_comm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
-      Teuchos::RCP<Epetra_Map> map = Teuchos::make_rcp<Epetra_Map>(
+      std::shared_ptr<Epetra_Map> map = std::make_shared<Epetra_Map>(
           numberOfElementsToDistribute_, 0, *communicators_->local_comm());
-      epetraVector_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*map, false);
+      epetraVector_ = std::make_shared<Core::LinAlg::Vector<double>>(*map, false);
 
       // fill test Core::LinAlg::Vector<double> with entry equals gid
       int numMyEles = map->NumMyElements();
@@ -69,9 +69,9 @@ namespace
     void TearDown() override { Core::IO::cout.close(); }
 
    public:
-    Teuchos::RCP<Core::Communication::Communicators> communicators_;
+    std::shared_ptr<Core::Communication::Communicators> communicators_;
     const int numberOfElementsToDistribute_ = 791;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> epetraVector_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> epetraVector_;
   };
 
   /**
@@ -91,10 +91,10 @@ namespace
           false, false, false, Core::IO::standard, communicators_->local_comm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
-      Teuchos::RCP<Epetra_Map> rowmap = Teuchos::make_rcp<Epetra_Map>(
+      std::shared_ptr<Epetra_Map> rowmap = std::make_shared<Epetra_Map>(
           numberOfElementsToDistribute_, 0, *communicators_->local_comm());
       int approximateNumberOfNonZeroesPerRow = 3;
-      epetraCrsMatrix_ = Teuchos::make_rcp<Epetra_CrsMatrix>(
+      epetraCrsMatrix_ = std::make_shared<Epetra_CrsMatrix>(
           ::Copy, *rowmap, approximateNumberOfNonZeroesPerRow, false);
 
       // fill tri-diagonal Epetra_CrsMatrix
@@ -137,9 +137,9 @@ namespace
     void TearDown() override { Core::IO::cout.close(); }
 
    public:
-    Teuchos::RCP<Core::Communication::Communicators> communicators_;
+    std::shared_ptr<Core::Communication::Communicators> communicators_;
     const int numberOfElementsToDistribute_ = 673;
-    Teuchos::RCP<Epetra_CrsMatrix> epetraCrsMatrix_;
+    std::shared_ptr<Epetra_CrsMatrix> epetraCrsMatrix_;
   };
 
   /**
@@ -159,11 +159,11 @@ namespace
           false, false, false, Core::IO::standard, communicators_->local_comm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
-      Teuchos::RCP<Epetra_Map> rowmap = Teuchos::make_rcp<Epetra_Map>(
+      std::shared_ptr<Epetra_Map> rowmap = std::make_shared<Epetra_Map>(
           numberOfElementsToDistribute_, 0, *communicators_->local_comm());
       Epetra_Map colmap(2 * numberOfElementsToDistribute_, 0, *communicators_->local_comm());
       int approximateNumberOfNonZeroesPerRow = 6;
-      epetraCrsMatrix_ = Teuchos::make_rcp<Epetra_CrsMatrix>(
+      epetraCrsMatrix_ = std::make_shared<Epetra_CrsMatrix>(
           ::Copy, *rowmap, approximateNumberOfNonZeroesPerRow, false);
 
       // fill rectangular Epetra_CrsMatrix
@@ -217,9 +217,9 @@ namespace
     void TearDown() override { Core::IO::cout.close(); }
 
    public:
-    Teuchos::RCP<Core::Communication::Communicators> communicators_;
+    std::shared_ptr<Core::Communication::Communicators> communicators_;
     const int numberOfElementsToDistribute_ = 673;
-    Teuchos::RCP<Epetra_CrsMatrix> epetraCrsMatrix_;
+    std::shared_ptr<Epetra_CrsMatrix> epetraCrsMatrix_;
   };
 
   TEST_F(SetupCompareParallelVectorsTest, PositiveTestCompareVectors)

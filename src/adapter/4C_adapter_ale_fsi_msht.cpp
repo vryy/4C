@@ -13,10 +13,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Adapter::AleFsiMshtWrapper::AleFsiMshtWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper(ale)
+Adapter::AleFsiMshtWrapper::AleFsiMshtWrapper(std::shared_ptr<Ale> ale) : AleFsiWrapper(ale)
 {
   // create the FSI interface
-  fsiinterface_ = Teuchos::make_rcp<ALE::Utils::FsiMapExtractor>();
+  fsiinterface_ = std::make_shared<ALE::Utils::FsiMapExtractor>();
   fsiinterface_->setup(*discretization());
 
   return;
@@ -24,7 +24,7 @@ Adapter::AleFsiMshtWrapper::AleFsiMshtWrapper(Teuchos::RCP<Ale> ale) : AleFsiWra
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const ALE::Utils::FsiMapExtractor> Adapter::AleFsiMshtWrapper::fsi_interface() const
+std::shared_ptr<const ALE::Utils::FsiMapExtractor> Adapter::AleFsiMshtWrapper::fsi_interface() const
 {
   return fsiinterface_;
 }

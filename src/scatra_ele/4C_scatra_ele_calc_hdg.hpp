@@ -137,13 +137,13 @@ namespace Discret
       );
 
       //! evaluate material
-      virtual void materials(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          Core::LinAlg::SerialDenseMatrix& difftensor,             //!< diffusion tensor
-          Core::LinAlg::SerialDenseVector& ivecn,                  //!< reaction term at time n
-          Core::LinAlg::SerialDenseVector& ivecnp,                 //!< reaction term at time n+1
-          Core::LinAlg::SerialDenseMatrix& ivecnpderiv             //!< reaction term derivative
+      virtual void materials(const std::shared_ptr<const Core::Mat::Material>
+                                 material,              //!< pointer to current material
+          const int k,                                  //!< id of current scalar
+          Core::LinAlg::SerialDenseMatrix& difftensor,  //!< diffusion tensor
+          Core::LinAlg::SerialDenseVector& ivecn,       //!< reaction term at time n
+          Core::LinAlg::SerialDenseVector& ivecnp,      //!< reaction term at time n+1
+          Core::LinAlg::SerialDenseMatrix& ivecnpderiv  //!< reaction term derivative
       )
       {
         return;
@@ -152,9 +152,10 @@ namespace Discret
       //! evaluate material before first timestep
       virtual void prepare_materials(
           Core::Elements::Element* ele,  //!< the element we are dealing with
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>>
+          const std::shared_ptr<const Core::Mat::Material>
+              material,  //!< pointer to current material
+          const int k,   //!< id of current scalar
+          std::shared_ptr<std::vector<Core::LinAlg::SerialDenseMatrix>>
               difftensor  //!< diffusion tensor
       );
 
@@ -173,8 +174,8 @@ namespace Discret
       };
 
       //! local data object
-      Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes_;
-      Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> shapesface_;
+      std::shared_ptr<Core::FE::ShapeValues<distype>> shapes_;
+      std::shared_ptr<Core::FE::ShapeValuesFace<distype>> shapesface_;
 
       //! extracted values from concentrations and gradients
       Core::LinAlg::SerialDenseVector interiorPhin_;
@@ -281,10 +282,10 @@ namespace Discret
         // first come the concentration, then the concentration  gradients, and finally the trace
 
         //! evaluated shape values
-        Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes_;
+        std::shared_ptr<Core::FE::ShapeValues<distype>> shapes_;
 
         //! evaluated shape values on face
-        Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> shapesface_;  /// evaluated shape values
+        std::shared_ptr<Core::FE::ShapeValuesFace<distype>> shapesface_;  /// evaluated shape values
 
         // Element matrices if one wants to compute them on the fly instead of storing them on the
         // element
@@ -326,10 +327,10 @@ namespace Discret
         //! pointer to general scalar transport parameter class
         Discret::Elements::ScaTraEleParameterStd* scatrapara_;
 
-        //      Teuchos::RCP<Discret::Elements::ScaTraEleParameterBase> scatrapara_; //! pointer to
-        //      parameter list
+        //      std::shared_ptr<Discret::Elements::ScaTraEleParameterBase> scatrapara_; //! pointer
+        //      to parameter list
         //! pointer to time parameter list
-        Teuchos::RCP<Discret::Elements::ScaTraEleParameterTimInt> scatraparatimint_;
+        std::shared_ptr<Discret::Elements::ScaTraEleParameterTimInt> scatraparatimint_;
 
         /*========================================================================*/
         //! @name diffusions and reaction coefficient
@@ -350,7 +351,7 @@ namespace Discret
           Core::FE::Discretization& discretization, Core::Elements::LocationArray& la);
 
       //! local solver object
-      Teuchos::RCP<LocalSolver> local_solver_;
+      std::shared_ptr<LocalSolver> local_solver_;
 
       /*========================================================================*/
       //! @name trace and interior concentrations and gradients

@@ -72,7 +72,7 @@ namespace FSI
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const override;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const override;
 
     /// read restart
     void read_restart(int step) final;
@@ -118,11 +118,11 @@ namespace FSI
     Since this is a saddle-point formulation, we also need to extract the Lagrange multipliers
     #lag_mult_ from the monolithic solution vector.
     */
-    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& ax,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& lagx);
+    void extract_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& fx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& ax,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& lagx);
 
 
     /*!
@@ -131,11 +131,11 @@ namespace FSI
     Since this is a saddle-point formulation, we also need to evaluate the Lagrange multipliers
     #lag_mult_.
     */
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
             step_increment  ///< increment between time step n and n+1
         ) override;
 
-    void initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess) final;
+    void initial_guess(std::shared_ptr<Core::LinAlg::Vector<double>> initial_guess) final;
 
    private:
     /*! \brief Create the combined DOF row map for the FSI problem
@@ -154,10 +154,11 @@ namespace FSI
 
     virtual void combine_field_vectors(
         Core::LinAlg::Vector<double>& f,  ///< composed vector containing all field vectors
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> solid_vector,     ///< structural DOFs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vector,     ///< fluid DOFs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> ale_vector,       ///< ale DOFs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> lag_mult_vector,  /// < lagrange multiplier
+        std::shared_ptr<const Core::LinAlg::Vector<double>> solid_vector,  ///< structural DOFs
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_vector,  ///< fluid DOFs
+        std::shared_ptr<const Core::LinAlg::Vector<double>> ale_vector,    ///< ale DOFs
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
+            lag_mult_vector,  /// < lagrange multiplier
         bool fullvectors);
 
     /*! \brief Setup the Dirichlet map extractor
@@ -205,7 +206,7 @@ namespace FSI
      *
      * As for the code, we have a 4x4 system.
      */
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     /// communicator
     const Epetra_Comm& comm_;
@@ -213,37 +214,37 @@ namespace FSI
     /// @name Matrix block transform objects to handle row and column map exchange for matrix blocks
 
     /// Coupling of structure and fluid at the interface
-    Teuchos::RCP<Coupling::Adapter::CouplingMortar> coupling_solid_fluid_mortar_;
+    std::shared_ptr<Coupling::Adapter::CouplingMortar> coupling_solid_fluid_mortar_;
 
     /// Helper variable for the transformation of aleunknowns onto the slave side
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> ale_inner_interf_transform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> ale_inner_interf_transform_;
 
     /// Helper variable for the transformation of fluid unknowns onto the slave side
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fluid_mesh_inner_inner_transform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> fluid_mesh_inner_inner_transform_;
 
     ///@}
 
     /// @name infnorm scaling
     //!@{
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> srowsum_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scolsum_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> arowsum_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acolsum_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> srowsum_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scolsum_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> arowsum_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acolsum_;
 
     //!@}
 
     /// additional ale residual to avoid incremental ale errors
-    Teuchos::RCP<Core::LinAlg::Vector<double>> aleresidual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> aleresidual_;
 
     //! DOF map of Lagrange multiplier unknowns
-    Teuchos::RCP<const Epetra_Map> lag_mult_dof_map_;
+    std::shared_ptr<const Epetra_Map> lag_mult_dof_map_;
 
     //! Lagrange multiplier
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lag_mult_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lag_mult_;
 
     //! Lagrange multiplier from previous time step
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lag_mult_old_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lag_mult_old_;
 
     //! Flag to indicate if Setup has not been called yet
     bool notsetup_;

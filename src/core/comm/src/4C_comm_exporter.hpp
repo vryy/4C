@@ -16,9 +16,9 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -115,7 +115,7 @@ namespace Core::Communication
                                 TargetMap().
     */
     template <typename T>
-    void do_export(std::map<int, Teuchos::RCP<T>>& parobjects);
+    void do_export(std::map<int, std::shared_ptr<T>>& parobjects);
 
     /*!
     \brief Communicate a map of vectors of some basic data type T
@@ -211,7 +211,7 @@ namespace Core::Communication
                                 On output, the map has a distribution of
                                 TargetMap().
     */
-    void do_export(std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& data);
+    void do_export(std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>& data);
 
     /**@}*/
     /*!
@@ -512,12 +512,12 @@ namespace Core::Communication
     };
 
 
-    /// Concrete helper class that handles Teuchos::RCPs to ParObjects
+    /// Concrete helper class that handles std::shared_ptrs to ParObjects
     template <typename T>
     class ParObjectExporterHelper : public ExporterHelper
     {
      public:
-      explicit ParObjectExporterHelper(std::map<int, Teuchos::RCP<T>>& parobjects)
+      explicit ParObjectExporterHelper(std::map<int, std::shared_ptr<T>>& parobjects)
           : parobjects_(parobjects)
       {
       }
@@ -525,7 +525,7 @@ namespace Core::Communication
       void pre_export_test(Exporter* exporter) override
       {
         // test whether type T implements ParObject
-        typename std::map<int, Teuchos::RCP<T>>::iterator curr = parobjects_.begin();
+        typename std::map<int, std::shared_ptr<T>>::iterator curr = parobjects_.begin();
         if (curr != parobjects_.end())
         {
           T* ptr = curr->second.get();
@@ -538,7 +538,7 @@ namespace Core::Communication
 
       bool pack_object(int gid, PackBuffer& sendblock) override
       {
-        typename std::map<int, Teuchos::RCP<T>>::const_iterator curr = parobjects_.find(gid);
+        typename std::map<int, std::shared_ptr<T>>::const_iterator curr = parobjects_.find(gid);
         if (curr != parobjects_.end())
         {
           add_to_pack(sendblock, *curr->second);
@@ -557,7 +557,7 @@ namespace Core::Communication
         T* ptr = dynamic_cast<T*>(o);
         if (!ptr)
           FOUR_C_THROW("typename T in template does not implement ParObject (dynamic_cast failed)");
-        Teuchos::RCP<T> refptr = Teuchos::RCP(ptr);
+        std::shared_ptr<T> refptr(ptr);
         // add object to my map
         parobjects_[gid] = refptr;
       }
@@ -565,19 +565,19 @@ namespace Core::Communication
       void post_export_cleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
-        std::map<int, Teuchos::RCP<T>> newmap;
-        typename std::map<int, Teuchos::RCP<T>>::const_iterator fool;
+        std::map<int, std::shared_ptr<T>> newmap;
+        typename std::map<int, std::shared_ptr<T>>::const_iterator fool;
         for (fool = parobjects_.begin(); fool != parobjects_.end(); ++fool)
           if (exporter->target_map().MyGID(fool->first)) newmap[fool->first] = fool->second;
         swap(newmap, parobjects_);
       }
 
      private:
-      std::map<int, Teuchos::RCP<T>>& parobjects_;
+      std::map<int, std::shared_ptr<T>>& parobjects_;
     };
 
 
-    /// Concrete helper class that handles Teuchos::RCPs to any object
+    /// Concrete helper class that handles std::shared_ptrs to any object
     /**!
        The objects considered here must have a default constructor and must be
        supported by add_to_pack and extract_from_pack
@@ -590,7 +590,8 @@ namespace Core::Communication
     class AnyObjectExporterHelper : public ExporterHelper
     {
      public:
-      explicit AnyObjectExporterHelper(std::map<int, Teuchos::RCP<T>>& objects) : objects_(objects)
+      explicit AnyObjectExporterHelper(std::map<int, std::shared_ptr<T>>& objects)
+          : objects_(objects)
       {
       }
 
@@ -598,7 +599,7 @@ namespace Core::Communication
 
       bool pack_object(int gid, PackBuffer& sendblock) override
       {
-        typename std::map<int, Teuchos::RCP<T>>::const_iterator curr = objects_.find(gid);
+        typename std::map<int, std::shared_ptr<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
           add_to_pack(sendblock, *curr->second);
@@ -609,7 +610,7 @@ namespace Core::Communication
 
       void unpack_object(int gid, UnpackBuffer& buffer) override
       {
-        Teuchos::RCP<T> obj = Teuchos::make_rcp<T>();
+        std::shared_ptr<T> obj = std::make_shared<T>();
         extract_from_pack(buffer, *obj);
 
         // add object to my map
@@ -619,15 +620,15 @@ namespace Core::Communication
       void post_export_cleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
-        std::map<int, Teuchos::RCP<T>> newmap;
-        typename std::map<int, Teuchos::RCP<T>>::const_iterator fool;
+        std::map<int, std::shared_ptr<T>> newmap;
+        typename std::map<int, std::shared_ptr<T>>::const_iterator fool;
         for (fool = objects_.begin(); fool != objects_.end(); ++fool)
           if (exporter->target_map().MyGID(fool->first)) newmap[fool->first] = fool->second;
         swap(newmap, objects_);
       }
 
      private:
-      std::map<int, Teuchos::RCP<T>>& objects_;
+      std::map<int, std::shared_ptr<T>>& objects_;
     };
 
 
@@ -811,7 +812,7 @@ namespace Core::Communication
  |  communicate objects (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
 template <typename T>
-void Core::Communication::Exporter::do_export(std::map<int, Teuchos::RCP<T>>& parobjects)
+void Core::Communication::Exporter::do_export(std::map<int, std::shared_ptr<T>>& parobjects)
 {
   ParObjectExporterHelper<T> helper(parobjects);
   generic_export(helper);

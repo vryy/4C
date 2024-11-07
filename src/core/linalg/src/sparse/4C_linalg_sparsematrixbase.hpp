@@ -32,18 +32,18 @@ namespace Core::LinAlg
 
       \note This method is here for performance reasons.
      */
-    Teuchos::RCP<Epetra_Operator> epetra_operator() override { return sysmat_; }
+    std::shared_ptr<Epetra_Operator> epetra_operator() override { return sysmat_; }
 
     /// return the internal Epetra matrix as Epetra_Operator
-    Teuchos::RCP<Epetra_Operator> epetra_operator() const { return sysmat_; }
+    std::shared_ptr<Epetra_Operator> epetra_operator() const { return sysmat_; }
 
     /// return the internal Epetra_CrsMatrix or Epetra_FECrsMatrix
     /// (down-cast from Epetra_CrsMatrix !) (you should not need this!)
-    Teuchos::RCP<Epetra_CrsMatrix> epetra_matrix() { return sysmat_; }
+    std::shared_ptr<Epetra_CrsMatrix> epetra_matrix() { return sysmat_; }
 
     /// return the internal Epetra_CrsMatrix or Epetra_FECrsMatrix
     /// (down-cast from Epetra_CrsMatrix !) (you should not need this!)
-    Teuchos::RCP<Epetra_CrsMatrix> epetra_matrix() const { return sysmat_; }
+    std::shared_ptr<Epetra_CrsMatrix> epetra_matrix() const { return sysmat_; }
 
     /** \name Attribute set methods */
     //@{
@@ -188,7 +188,7 @@ namespace Core::LinAlg
 
    protected:
     /// internal epetra matrix (Epetra_CrsMatrix or Epetra_FECrsMatrix)
-    Teuchos::RCP<Epetra_CrsMatrix> sysmat_;
+    std::shared_ptr<Epetra_CrsMatrix> sysmat_;
   };
 
 }  // namespace Core::LinAlg

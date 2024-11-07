@@ -23,21 +23,22 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ScaTra::TimIntCardiacMonodomain::TimIntCardiacMonodomain(Teuchos::RCP<Core::FE::Discretization> dis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+ScaTra::TimIntCardiacMonodomain::TimIntCardiacMonodomain(
+    std::shared_ptr<Core::FE::Discretization> dis, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
       // Initialization of electrophysiology variables
-      activation_time_np_(Teuchos::null),
+      activation_time_np_(nullptr),
       activation_threshold_(0.0),
       nb_max_mat_int_state_vars_(0),
-      material_internal_state_np_(Teuchos::null),
-      material_internal_state_np_component_(Teuchos::null),
+      material_internal_state_np_(nullptr),
+      material_internal_state_np_component_(nullptr),
       nb_max_mat_ionic_currents_(0),
-      material_ionic_currents_np_(Teuchos::null),
-      material_ionic_currents_np_component_(Teuchos::null),
+      material_ionic_currents_np_(nullptr),
+      material_ionic_currents_np_component_(nullptr),
       ep_params_(params)
 {
 }
@@ -60,7 +61,7 @@ void ScaTra::TimIntCardiacMonodomain::setup()
       "WRITEMAXINTSTATE");  // number of maximal internal state variables to be postprocessed
   if (nb_max_mat_int_state_vars_)
   {
-    material_internal_state_np_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+    material_internal_state_np_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
         *(discret_->element_row_map()), nb_max_mat_int_state_vars_, true);
     material_internal_state_np_component_ =
         Core::LinAlg::create_vector(*(discret_->element_row_map()), true);
@@ -70,7 +71,7 @@ void ScaTra::TimIntCardiacMonodomain::setup()
       "WRITEMAXIONICCURRENTS");  // number of maximal internal state variables to be postprocessed
   if (nb_max_mat_ionic_currents_)
   {
-    material_ionic_currents_np_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+    material_ionic_currents_np_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
         *(discret_->element_row_map()), nb_max_mat_ionic_currents_, true);
     material_ionic_currents_np_component_ =
         Core::LinAlg::create_vector(*(discret_->element_row_map()), true);
@@ -86,7 +87,7 @@ void ScaTra::TimIntCardiacMonodomain::collect_runtime_output_data()
 
   // electrophysiology
   // Compute and write activation time
-  if (activation_time_np_ != Teuchos::null)
+  if (activation_time_np_ != nullptr)
   {
     for (int k = 0; k < phinp_->MyLength(); k++)
     {
@@ -99,23 +100,23 @@ void ScaTra::TimIntCardiacMonodomain::collect_runtime_output_data()
   }
 
   // Recover internal state of the material (for electrophysiology)
-  if (material_internal_state_np_ != Teuchos::null and nb_max_mat_int_state_vars_)
+  if (material_internal_state_np_ != nullptr and nb_max_mat_int_state_vars_)
   {
     Teuchos::ParameterList params;
     Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::get_material_internal_state, params);
-    params.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("material_internal_state",
+    params.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("material_internal_state",
         material_internal_state_np_);  // Probably do it once at the beginning
     discret_->evaluate(params);
     material_internal_state_np_ =
-        params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("material_internal_state");
+        params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("material_internal_state");
 
     for (int k = 0; k < material_internal_state_np_->NumVectors(); ++k)
     {
       std::ostringstream temp;
       temp << k + 1;
       material_internal_state_np_component_ =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>((*material_internal_state_np_)(k));
+          std::make_shared<Core::LinAlg::Vector<double>>((*material_internal_state_np_)(k));
 
       visualization_writer().append_result_data_vector_with_context(
           *material_internal_state_np_component_, Core::IO::OutputEntity::element,
@@ -124,23 +125,23 @@ void ScaTra::TimIntCardiacMonodomain::collect_runtime_output_data()
   }
 
   // Recover internal ionic currents of the material (for electrophysiology)
-  if (material_ionic_currents_np_ != Teuchos::null and nb_max_mat_ionic_currents_)
+  if (material_ionic_currents_np_ != nullptr and nb_max_mat_ionic_currents_)
   {
     Teuchos::ParameterList params;
     Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::get_material_ionic_currents, params);
-    params.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("material_ionic_currents",
+    params.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("material_ionic_currents",
         material_ionic_currents_np_);  // Probably do it once at the beginning
     discret_->evaluate(params);
     material_internal_state_np_ =
-        params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("material_ionic_currents");
+        params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("material_ionic_currents");
 
     for (int k = 0; k < material_ionic_currents_np_->NumVectors(); ++k)
     {
       std::ostringstream temp;
       temp << k + 1;
       material_ionic_currents_np_component_ =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>((*material_ionic_currents_np_)(k));
+          std::make_shared<Core::LinAlg::Vector<double>>((*material_ionic_currents_np_)(k));
 
       visualization_writer().append_result_data_vector_with_context(
           *material_ionic_currents_np_component_, Core::IO::OutputEntity::element,
@@ -166,7 +167,7 @@ void ScaTra::TimIntCardiacMonodomain::element_material_time_update()
   discret_->set_state("phinp", phinp_);
 
   // go to elements
-  discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
   discret_->clear_state();
 }
 
@@ -196,7 +197,7 @@ void ScaTra::TimIntCardiacMonodomain::set_element_specific_scatra_parameters(
 void ScaTra::TimIntCardiacMonodomain::write_restart() const
 {
   // Compute and write activation time
-  if (activation_time_np_ != Teuchos::null)
+  if (activation_time_np_ != nullptr)
   {
     for (int k = 0; k < phinp_->MyLength(); k++)
     {

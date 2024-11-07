@@ -23,8 +23,9 @@
 #include "4C_linalg_vector.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -105,19 +106,19 @@ namespace CONTACT
     \brief Get different node or element maps
 
     */
-    inline Teuchos::RCP<Epetra_Map> row_nodes() const { return noderowmap_; }
-    inline Teuchos::RCP<Epetra_Map> col_nodes() const { return nodecolmap_; }
-    inline Teuchos::RCP<Epetra_Map> full_nodes() const { return nodefullmap_; }
-    inline Teuchos::RCP<Epetra_Map> row_elements() const { return elerowmap_; }
-    inline Teuchos::RCP<Epetra_Map> col_elements() const { return elecolmap_; }
-    inline Teuchos::RCP<Epetra_Map> full_elements() const { return elefullmap_; }
+    inline std::shared_ptr<Epetra_Map> row_nodes() const { return noderowmap_; }
+    inline std::shared_ptr<Epetra_Map> col_nodes() const { return nodecolmap_; }
+    inline std::shared_ptr<Epetra_Map> full_nodes() const { return nodefullmap_; }
+    inline std::shared_ptr<Epetra_Map> row_elements() const { return elerowmap_; }
+    inline std::shared_ptr<Epetra_Map> col_elements() const { return elecolmap_; }
+    inline std::shared_ptr<Epetra_Map> full_elements() const { return elefullmap_; }
     // template<int numnodes, int numnodalvalues>
-    inline const std::vector<Teuchos::RCP<Beam3contactinterface>>& pairs() const
+    inline const std::vector<std::shared_ptr<Beam3contactinterface>>& pairs() const
     {
       return oldpairs_;
     }
 
-    inline Teuchos::RCP<Beam3ContactOctTree> oc_tree() const { return tree_; }
+    inline std::shared_ptr<Beam3ContactOctTree> oc_tree() const { return tree_; }
 
     /*!
     \brief Get list of beam contact input parameters
@@ -269,7 +270,7 @@ namespace CONTACT
     Core::FE::Discretization& pdiscret_;
 
     //! contact discretization (basically a copy)
-    Teuchos::RCP<Core::FE::Discretization> btsoldiscret_;
+    std::shared_ptr<Core::FE::Discretization> btsoldiscret_;
 
     //! the Comm interface of the problem discretization
     const Epetra_Comm& pdiscomm_;
@@ -278,59 +279,59 @@ namespace CONTACT
     std::map<int, int> dofoffsetmap_;
 
     //! node and element maps
-    Teuchos::RCP<Epetra_Map> noderowmap_;
-    Teuchos::RCP<Epetra_Map> nodecolmap_;
-    Teuchos::RCP<Epetra_Map> nodefullmap_;
-    Teuchos::RCP<Epetra_Map> elerowmap_;
-    Teuchos::RCP<Epetra_Map> elecolmap_;
-    Teuchos::RCP<Epetra_Map> elefullmap_;
+    std::shared_ptr<Epetra_Map> noderowmap_;
+    std::shared_ptr<Epetra_Map> nodecolmap_;
+    std::shared_ptr<Epetra_Map> nodefullmap_;
+    std::shared_ptr<Epetra_Map> elerowmap_;
+    std::shared_ptr<Epetra_Map> elecolmap_;
+    std::shared_ptr<Epetra_Map> elefullmap_;
 
     //! occtree for contact search
-    Teuchos::RCP<Beam3ContactOctTree> tree_;
+    std::shared_ptr<Beam3ContactOctTree> tree_;
 
     //! occtree for search of potential-based interaction pairs
-    Teuchos::RCP<Beam3ContactOctTree> pottree_;
+    std::shared_ptr<Beam3ContactOctTree> pottree_;
 
     //! vector of contact pairs (pairs of elements, which might get in contact)
-    std::vector<Teuchos::RCP<Beam3contactinterface>> pairs_;
+    std::vector<std::shared_ptr<Beam3contactinterface>> pairs_;
     //! vector of contact pairs of last time step. After update() oldpairs_ is identical with pairs_
     //! until a new time
     // step starts. Therefore oldpairs_ can be used for output at the end of a time step after
     // Upadte() is called.
-    std::vector<Teuchos::RCP<Beam3contactinterface>> oldpairs_;
+    std::vector<std::shared_ptr<Beam3contactinterface>> oldpairs_;
 
     //! vector of close beam to solid contact pairs (pairs of elements, which might get in contact)
-    std::vector<Teuchos::RCP<Beam3tosolidcontactinterface>> btsolpairs_;
+    std::vector<std::shared_ptr<Beam3tosolidcontactinterface>> btsolpairs_;
     //! vector of beam to solid contact pairs of last time step. After update() oldpairs_ is
     //! identical with btsolpairs_ until a
     // new time step starts. Therefore oldbtsolpairs_ can be used for output at the end of a time
     // step after Upadte() is called.
-    std::vector<Teuchos::RCP<Beam3tosolidcontactinterface>> oldbtsolpairs_;
+    std::vector<std::shared_ptr<Beam3tosolidcontactinterface>> oldbtsolpairs_;
     //! total vector of solid contact elements
-    std::vector<Teuchos::RCP<CONTACT::Element>> solcontacteles_;
+    std::vector<std::shared_ptr<CONTACT::Element>> solcontacteles_;
     //! total vector of solid contact nodes
-    std::vector<Teuchos::RCP<CONTACT::Node>> solcontactnodes_;
+    std::vector<std::shared_ptr<CONTACT::Node>> solcontactnodes_;
 
     //! total vector of solid meshtying elements
-    std::vector<Teuchos::RCP<Mortar::Element>> solmeshtyingeles_;
+    std::vector<std::shared_ptr<Mortar::Element>> solmeshtyingeles_;
     //! total vector of solid meyhtying nodes
-    std::vector<Teuchos::RCP<Mortar::Node>> solmeshtyingnodes_;
+    std::vector<std::shared_ptr<Mortar::Node>> solmeshtyingnodes_;
 
     //! 2D-map with pointers on the contact pairs_. This map is necessary, to call a contact pair
     //! directly by the two element-iD's of the pair.
     // It is not needed at the moment due to the direct neigbour determination in the constructor
     // but may be useful for future operations
     // beam-to-beam pair map
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>> contactpairmap_;
+    std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>> contactpairmap_;
 
     // beam-to-beam pair map of last time step
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>> oldcontactpairmap_;
+    std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>> oldcontactpairmap_;
 
     // beam-to-solid contact pair map
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3tosolidcontactinterface>> btsolpairmap_;
+    std::map<std::pair<int, int>, std::shared_ptr<Beam3tosolidcontactinterface>> btsolpairmap_;
 
     // beam-to-solid pair map of last time step
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3tosolidcontactinterface>> oldbtsolpairmap_;
+    std::map<std::pair<int, int>, std::shared_ptr<Beam3tosolidcontactinterface>> oldbtsolpairmap_;
 
     //! parameter list for beam contact options
     Teuchos::ParameterList sbeamcontact_;
@@ -363,13 +364,13 @@ namespace CONTACT
     double maxeleradius_;
 
     //! contact forces of current time step
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fc_;
 
     //! contact forces of previous time step (for generalized alpha)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcold_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fcold_;
 
     //! contact stiffness matrix of current time step
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> stiffc_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> stiffc_;
 
     //! time integration parameter (0.0 for statics)
     double alphaf_;
@@ -417,10 +418,10 @@ namespace CONTACT
     double totpenaltywork_;
 
     //! current displacement vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dis_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dis_;
 
     //! displacement vector of last time step
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dis_old_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dis_old_;
 
     //! inf-norm of dis_ - dis_old_
     double maxdeltadisp_;
@@ -428,8 +429,8 @@ namespace CONTACT
     double totalmaxdeltadisp_;
 
     //! parameters of the potential law to be applied: Phi(r)~ \sum_i (k_i * r^(-m_i))
-    Teuchos::RCP<std::vector<double>> ki_;
-    Teuchos::RCP<std::vector<double>> mi_;
+    std::shared_ptr<std::vector<double>> ki_;
+    std::shared_ptr<std::vector<double>> mi_;
 
     //! line charge conditions
     std::vector<Core::Conditions::Condition*> linechargeconds_;

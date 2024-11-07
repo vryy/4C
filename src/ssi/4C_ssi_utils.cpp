@@ -219,7 +219,7 @@ Teuchos::ParameterList SSI::Utils::modify_sca_tra_params(const Teuchos::Paramete
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SSI::Utils::SSIMatrices::SSIMatrices(Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps,
+SSI::Utils::SSIMatrices::SSIMatrices(std::shared_ptr<const SSI::Utils::SSIMaps> ssi_maps,
     const Core::LinAlg::MatrixType ssi_matrixtype, const Core::LinAlg::MatrixType scatra_matrixtype,
     const bool is_scatra_manifold)
     : is_scatra_manifold_(is_scatra_manifold),
@@ -332,11 +332,11 @@ void SSI::Utils::SSIMatrices::complete_scatra_manifold_scatra_matrix()
   switch (scatra_matrixtype_)
   {
     case Core::LinAlg::MatrixType::sparse:
-      scatra_manifold_scatra_matrix()()->complete(*scatra_dofrowmap_, *scatramanifold_dofrowmap_);
+      scatra_manifold_scatra_matrix()->complete(*scatra_dofrowmap_, *scatramanifold_dofrowmap_);
       break;
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
-      scatra_manifold_scatra_matrix()()->complete();
+      scatra_manifold_scatra_matrix()->complete();
       break;
     default:
       FOUR_C_THROW("Not supported Core::LinAlg::MatrixType!");
@@ -443,12 +443,12 @@ void SSI::Utils::SSIMatrices::clear_matrices()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::Utils::SSIVectors::SSIVectors(
-    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps, const bool is_scatra_manifold)
+    std::shared_ptr<const SSI::Utils::SSIMaps> ssi_maps, const bool is_scatra_manifold)
     : increment_(Core::LinAlg::create_vector(*(ssi_maps->maps_sub_problems()->full_map()), true)),
       is_scatra_manifold_(is_scatra_manifold),
       manifold_residual_(is_scatra_manifold ? Core::LinAlg::create_vector(
                                                   *(ssi_maps->scatra_manifold_dof_row_map()), true)
-                                            : Teuchos::null),
+                                            : nullptr),
       residual_(Core::LinAlg::create_vector(*(ssi_maps->maps_sub_problems()->full_map()), true)),
       scatra_residual_(Core::LinAlg::create_vector(*(ssi_maps->scatra_dof_row_map()), true)),
       structure_residual_(Core::LinAlg::create_vector(*(ssi_maps->structure_dof_row_map()), true))
@@ -499,28 +499,28 @@ void SSI::Utils::SSIMatrices::initialize_system_matrix(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SSI::Utils::SSIMatrices::setup_block_matrix(
+std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> SSI::Utils::SSIMatrices::setup_block_matrix(
     const Core::LinAlg::MultiMapExtractor& row_map, const Core::LinAlg::MultiMapExtractor& col_map)
 {
   const int expected_entries_per_row = 81;
   const bool explicitdirichlet = false;
   const bool savegraph = true;
 
-  return Teuchos::make_rcp<
+  return std::make_shared<
       Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
       col_map, row_map, expected_entries_per_row, explicitdirichlet, savegraph);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> SSI::Utils::SSIMatrices::setup_sparse_matrix(
+std::shared_ptr<Core::LinAlg::SparseMatrix> SSI::Utils::SSIMatrices::setup_sparse_matrix(
     const Epetra_Map& row_map)
 {
   const int expected_entries_per_row = 27;
   const bool explicitdirichlet = false;
   const bool savegraph = true;
 
-  return Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  return std::make_shared<Core::LinAlg::SparseMatrix>(
       row_map, expected_entries_per_row, explicitdirichlet, savegraph);
 }
 
@@ -534,26 +534,25 @@ SSI::Utils::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
                                       : Core::LinAlg::MatrixType::undefined),
       ssi_matrixtype_(ssi_mono_algorithm.matrix_type())
 {
-  std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps(
-      ssi_mono_algorithm.is_scatra_manifold() ? 3 : 2, Teuchos::null);
-  Teuchos::RCP<const Epetra_Map> merged_map;
+  std::vector<std::shared_ptr<const Epetra_Map>> partial_maps(
+      ssi_mono_algorithm.is_scatra_manifold() ? 3 : 2, nullptr);
+  std::shared_ptr<const Epetra_Map> merged_map;
 
   partial_maps[get_problem_position(Subproblem::scalar_transport)] =
-      Teuchos::make_rcp<Epetra_Map>(*ssi_mono_algorithm.scatra_field()->dof_row_map());
+      std::make_shared<Epetra_Map>(*ssi_mono_algorithm.scatra_field()->dof_row_map());
   partial_maps[get_problem_position(Subproblem::structure)] =
-      Teuchos::make_rcp<Epetra_Map>(*ssi_mono_algorithm.structure_field()->dof_row_map());
+      std::make_shared<Epetra_Map>(*ssi_mono_algorithm.structure_field()->dof_row_map());
   if (ssi_mono_algorithm.is_scatra_manifold())
   {
     partial_maps[get_problem_position(Subproblem::manifold)] =
-        Teuchos::make_rcp<Epetra_Map>(*ssi_mono_algorithm.scatra_manifold()->dof_row_map());
+        std::make_shared<Epetra_Map>(*ssi_mono_algorithm.scatra_manifold()->dof_row_map());
     auto temp_map = Core::LinAlg::merge_map(partial_maps[0], partial_maps[1], false);
     merged_map = Core::LinAlg::merge_map(temp_map, partial_maps[2], false);
   }
   else
     merged_map = Core::LinAlg::merge_map(partial_maps[0], partial_maps[1], false);
 
-  maps_sub_problems_ =
-      Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(*merged_map, partial_maps);
+  maps_sub_problems_ = std::make_shared<Core::LinAlg::MultiMapExtractor>(*merged_map, partial_maps);
   // check global map extractor
   maps_sub_problems_->check_for_valid_map_extractor();
 
@@ -561,9 +560,9 @@ SSI::Utils::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
   {
     case Core::LinAlg::MatrixType::block_field:
     {
-      auto block_map_structure = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(
+      auto block_map_structure = std::make_shared<Core::LinAlg::MultiMapExtractor>(
           *ssi_mono_algorithm.structure_field()->discretization()->dof_row_map(),
-          std::vector<Teuchos::RCP<const Epetra_Map>>(
+          std::vector<std::shared_ptr<const Epetra_Map>>(
               1, ssi_mono_algorithm.structure_field()->dof_row_map()));
 
       block_map_structure->check_for_valid_map_extractor();
@@ -574,9 +573,9 @@ SSI::Utils::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
       {
         case Core::LinAlg::MatrixType::sparse:
         {
-          auto block_map_scatra = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(
+          auto block_map_scatra = std::make_shared<Core::LinAlg::MultiMapExtractor>(
               *ssi_mono_algorithm.scatra_field()->discretization()->dof_row_map(),
-              std::vector<Teuchos::RCP<const Epetra_Map>>(
+              std::vector<std::shared_ptr<const Epetra_Map>>(
                   1, ssi_mono_algorithm.scatra_field()->dof_row_map()));
 
           block_map_scatra->check_for_valid_map_extractor();
@@ -586,9 +585,9 @@ SSI::Utils::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
 
           if (ssi_mono_algorithm.is_scatra_manifold())
           {
-            auto block_map_scatra_manifold = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(
+            auto block_map_scatra_manifold = std::make_shared<Core::LinAlg::MultiMapExtractor>(
                 *ssi_mono_algorithm.scatra_manifold()->discretization()->dof_row_map(),
-                std::vector<Teuchos::RCP<const Epetra_Map>>(
+                std::vector<std::shared_ptr<const Epetra_Map>>(
                     1, ssi_mono_algorithm.scatra_manifold()->dof_row_map()));
 
             block_map_scatra_manifold->check_for_valid_map_extractor();
@@ -611,7 +610,7 @@ SSI::Utils::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
           }
           else
           {
-            block_maps_sub_problems_.insert(std::make_pair(Subproblem::manifold, Teuchos::null));
+            block_maps_sub_problems_.insert(std::make_pair(Subproblem::manifold, nullptr));
           }
 
           break;
@@ -630,9 +629,9 @@ SSI::Utils::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
 
     case Core::LinAlg::MatrixType::sparse:
     {
-      block_maps_sub_problems_.insert(std::make_pair(Subproblem::structure, Teuchos::null));
-      block_maps_sub_problems_.insert(std::make_pair(Subproblem::scalar_transport, Teuchos::null));
-      block_maps_sub_problems_.insert(std::make_pair(Subproblem::manifold, Teuchos::null));
+      block_maps_sub_problems_.insert(std::make_pair(Subproblem::structure, nullptr));
+      block_maps_sub_problems_.insert(std::make_pair(Subproblem::scalar_transport, nullptr));
+      block_maps_sub_problems_.insert(std::make_pair(Subproblem::manifold, nullptr));
       break;
     }
 
@@ -740,8 +739,8 @@ void SSI::Utils::SSIMaps::create_and_check_block_maps_sub_problems(
       block_map_scatra()->num_maps() + block_map_structure()->num_maps() +
       (ssi_mono_algorithm.is_scatra_manifold() ? block_map_scatra_manifold()->num_maps() : 0);
 
-  std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_system_matrix(
-      num_blocks_systemmatrix, Teuchos::null);
+  std::vector<std::shared_ptr<const Epetra_Map>> partial_maps_system_matrix(
+      num_blocks_systemmatrix, nullptr);
 
   for (int i = 0; i < block_map_scatra()->num_maps(); ++i)
 
@@ -763,7 +762,7 @@ void SSI::Utils::SSIMaps::create_and_check_block_maps_sub_problems(
     }
   }
 
-  block_map_system_matrix_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(
+  block_map_system_matrix_ = std::make_shared<Core::LinAlg::MultiMapExtractor>(
       *maps_sub_problems_->full_map(), partial_maps_system_matrix);
 
   block_map_system_matrix_->check_for_valid_map_extractor();
@@ -771,43 +770,44 @@ void SSI::Utils::SSIMaps::create_and_check_block_maps_sub_problems(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> SSI::Utils::SSIMaps::block_map_scatra() const
+std::shared_ptr<const Core::LinAlg::MultiMapExtractor> SSI::Utils::SSIMaps::block_map_scatra() const
 {
   return block_maps_sub_problems_.at(Subproblem::scalar_transport);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> SSI::Utils::SSIMaps::block_map_scatra_manifold()
-    const
+std::shared_ptr<const Core::LinAlg::MultiMapExtractor>
+SSI::Utils::SSIMaps::block_map_scatra_manifold() const
 {
   return block_maps_sub_problems_.at(Subproblem::manifold);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> SSI::Utils::SSIMaps::block_map_structure() const
+std::shared_ptr<const Core::LinAlg::MultiMapExtractor> SSI::Utils::SSIMaps::block_map_structure()
+    const
 {
   return block_maps_sub_problems_.at(Subproblem::structure);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::Utils::SSIMaps::scatra_dof_row_map() const
+std::shared_ptr<const Epetra_Map> SSI::Utils::SSIMaps::scatra_dof_row_map() const
 {
   return maps_sub_problems()->Map(SSIMaps::get_problem_position(Subproblem::scalar_transport));
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::Utils::SSIMaps::scatra_manifold_dof_row_map() const
+std::shared_ptr<const Epetra_Map> SSI::Utils::SSIMaps::scatra_manifold_dof_row_map() const
 {
   return maps_sub_problems()->Map(SSIMaps::get_problem_position(Subproblem::manifold));
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::Utils::SSIMaps::structure_dof_row_map() const
+std::shared_ptr<const Epetra_Map> SSI::Utils::SSIMaps::structure_dof_row_map() const
 {
   return maps_sub_problems()->Map(SSIMaps::get_problem_position(Subproblem::structure));
 }
@@ -816,7 +816,7 @@ Teuchos::RCP<const Epetra_Map> SSI::Utils::SSIMaps::structure_dof_row_map() cons
  *---------------------------------------------------------------------------------*/
 void SSI::Utils::check_consistency_of_ssi_interface_contact_condition(
     const std::vector<Core::Conditions::Condition*>& conditionsToBeTested,
-    Teuchos::RCP<Core::FE::Discretization>& structdis)
+    std::shared_ptr<Core::FE::Discretization>& structdis)
 {
   // get conditions to check against
   std::vector<Core::Conditions::Condition*> s2ikinetics_conditions;
@@ -904,7 +904,7 @@ void SSI::Utils::check_consistency_of_ssi_interface_contact_condition(
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 SSI::Utils::SSIMeshTying::SSIMeshTying(const std::string& conditionname_coupling,
-    Teuchos::RCP<Core::FE::Discretization> dis, const bool build_slave_slave_transformation,
+    std::shared_ptr<Core::FE::Discretization> dis, const bool build_slave_slave_transformation,
     const bool check_over_constrained)
     : comm_(dis->get_comm()),
       do_print_(dis->get_comm().MyPID() == 0),
@@ -916,8 +916,8 @@ SSI::Utils::SSIMeshTying::SSIMeshTying(const std::string& conditionname_coupling
       dis, conditionname_coupling, build_slave_slave_transformation, check_over_constrained);
 
   // construct full slave, master, and interior maps
-  std::vector<Teuchos::RCP<const Epetra_Map>> slave_maps;
-  std::vector<Teuchos::RCP<const Epetra_Map>> master_maps;
+  std::vector<std::shared_ptr<const Epetra_Map>> slave_maps;
+  std::vector<std::shared_ptr<const Epetra_Map>> master_maps;
   for (const auto& meshtying : meshtying_handlers_)
   {
     slave_maps.emplace_back(meshtying->slave_master_coupling()->slave_dof_map());
@@ -933,9 +933,9 @@ SSI::Utils::SSIMeshTying::SSIMeshTying(const std::string& conditionname_coupling
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::Utils::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::Discretization> dis,
-    const std::string& name_meshtying_condition, const bool build_slave_slave_transformation,
-    const bool check_over_constrained)
+void SSI::Utils::SSIMeshTying::setup_mesh_tying_handlers(
+    std::shared_ptr<Core::FE::Discretization> dis, const std::string& name_meshtying_condition,
+    const bool build_slave_slave_transformation, const bool check_over_constrained)
 {
   Teuchos::Time timer("MeshtypingHandlers", true);
   const double t0 = timer.wallTime();
@@ -1005,7 +1005,7 @@ void SSI::Utils::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::
     }
 
     // setup coupling adapter
-    auto coupling_adapter = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+    auto coupling_adapter = std::make_shared<Coupling::Adapter::Coupling>();
     const int num_dofs =
         static_cast<int>(static_cast<double>(dis->dof_row_map()->NumGlobalElements()) /
                          static_cast<double>(dis->node_row_map()->NumGlobalElements()));
@@ -1018,16 +1018,16 @@ void SSI::Utils::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::
     auto interior_map = Core::LinAlg::split_map(
         *dis->dof_row_map(), *Core::LinAlg::merge_map(slave_map, master_map));
 
-    std::vector<Teuchos::RCP<const Epetra_Map>> maps(0, Teuchos::null);
+    std::vector<std::shared_ptr<const Epetra_Map>> maps(0, nullptr);
     maps.emplace_back(interior_map);
     maps.emplace_back(slave_map);
     maps.emplace_back(master_map);
 
     auto coupling_map_extractor =
-        Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(*dis->dof_row_map(), maps);
+        std::make_shared<Core::LinAlg::MultiMapExtractor>(*dis->dof_row_map(), maps);
     coupling_map_extractor->check_for_valid_map_extractor();
 
-    auto slave_slave_transformation = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+    auto slave_slave_transformation = std::make_shared<Coupling::Adapter::Coupling>();
     if (build_slave_slave_transformation)
     {
       // coupling adapter between new slave nodes (master) and old slave nodes from input file
@@ -1045,7 +1045,7 @@ void SSI::Utils::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::
     }
 
     // combine coupling adapters and multimap extractor to mesh tying object
-    meshtying_handlers_.emplace_back(Teuchos::make_rcp<SSIMeshTyingHandler>(
+    meshtying_handlers_.emplace_back(std::make_shared<SSIMeshTyingHandler>(
         coupling_adapter, coupling_map_extractor, slave_slave_transformation));
   }
 
@@ -1262,7 +1262,7 @@ void SSI::Utils::SSIMeshTying::get_num_assigned_slave_to_master_nodes(
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 void SSI::Utils::SSIMeshTying::define_master_slave_pairing(
-    Teuchos::RCP<Core::FE::Discretization> dis,
+    std::shared_ptr<Core::FE::Discretization> dis,
     const std::vector<std::vector<int>>& grouped_matching_nodes, std::vector<int>& master_gids,
     std::map<int, int>& slave_master_pair, const bool check_over_constrained) const
 {
@@ -1376,10 +1376,10 @@ void SSI::Utils::SSIMeshTying::find_slave_slave_transformation_nodes(Core::FE::D
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 void SSI::Utils::SSIMeshTying::check_slave_side_has_dirichlet_conditions(
-    Teuchos::RCP<const Epetra_Map> struct_dbc_map) const
+    std::shared_ptr<const Epetra_Map> struct_dbc_map) const
 {
   // check if slave side dofs are part of DBC maps
-  std::vector<Teuchos::RCP<const Epetra_Map>> maps(2, Teuchos::null);
+  std::vector<std::shared_ptr<const Epetra_Map>> maps(2, nullptr);
   maps[0] = struct_dbc_map;
   for (const auto& meshtying : meshtying_handlers_)
   {
@@ -1392,15 +1392,15 @@ void SSI::Utils::SSIMeshTying::check_slave_side_has_dirichlet_conditions(
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 SSI::Utils::SSIMeshTyingHandler::SSIMeshTyingHandler(
-    Teuchos::RCP<Coupling::Adapter::Coupling> slave_master_coupling,
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> slave_master_extractor,
-    Teuchos::RCP<Coupling::Adapter::Coupling> slave_slave_transformation)
+    std::shared_ptr<Coupling::Adapter::Coupling> slave_master_coupling,
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> slave_master_extractor,
+    std::shared_ptr<Coupling::Adapter::Coupling> slave_slave_transformation)
     : slave_master_coupling_(std::move(slave_master_coupling)),
       slave_master_extractor_(std::move(slave_master_extractor)),
       slave_slave_transformation_(std::move(slave_slave_transformation))
 {
   slave_side_converter_ =
-      Teuchos::make_rcp<Coupling::Adapter::CouplingSlaveConverter>(*slave_master_coupling_);
+      std::make_shared<Coupling::Adapter::CouplingSlaveConverter>(*slave_master_coupling_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

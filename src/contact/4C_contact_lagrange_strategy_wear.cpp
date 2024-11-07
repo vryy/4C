@@ -33,10 +33,10 @@ FOUR_C_NAMESPACE_OPEN
  | ctor (public)                                             farah 09/13|
  *----------------------------------------------------------------------*/
 Wear::LagrangeStrategyWear::LagrangeStrategyWear(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces, int dim,
-    Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
+    std::vector<std::shared_ptr<CONTACT::Interface>> interfaces, int dim,
+    std::shared_ptr<const Epetra_Comm> comm, double alphaf, int maxdof)
     : LagrangeStrategy(
           data_ptr, dof_row_map, NodeRowMap, params, interfaces, dim, comm, alphaf, maxdof),
       weightedwear_(false),
@@ -50,9 +50,8 @@ Wear::LagrangeStrategyWear::LagrangeStrategyWear(
   // cast to  wearinterfaces
   for (int z = 0; z < (int)interfaces.size(); ++z)
   {
-    interface_.push_back(Teuchos::rcp_dynamic_cast<Wear::WearInterface>(interfaces[z]));
-    if (interface_[z] == Teuchos::null)
-      FOUR_C_THROW("LagrangeStrategyWear: Interface-cast failed!");
+    interface_.push_back(std::dynamic_pointer_cast<Wear::WearInterface>(interfaces[z]));
+    if (interface_[z] == nullptr) FOUR_C_THROW("LagrangeStrategyWear: Interface-cast failed!");
   }
 
   // set wear contact status
@@ -114,20 +113,20 @@ void Wear::LagrangeStrategyWear::setup_wear(bool redistributed, bool init)
 
   // make sure to remove all existing maps first
   // (do NOT remove map of non-interface dofs after redistribution)
-  gminvolvednodes_ = Teuchos::null;  // all involved master nodes
-  gminvolveddofs_ = Teuchos::null;   // all involved master dofs
-  gwdofrowmap_ = Teuchos::null;
-  gwmdofrowmap_ = Teuchos::null;
-  gslipn_ = Teuchos::null;        // vector dummy for wear - slave slip dofs
-  gsdofnrowmap_ = Teuchos::null;  // vector dummy for wear - slave all dofs
-  gwinact_ = Teuchos::null;       // vector dummy for wear - slave inactive dofss
+  gminvolvednodes_ = nullptr;  // all involved master nodes
+  gminvolveddofs_ = nullptr;   // all involved master dofs
+  gwdofrowmap_ = nullptr;
+  gwmdofrowmap_ = nullptr;
+  gslipn_ = nullptr;        // vector dummy for wear - slave slip dofs
+  gsdofnrowmap_ = nullptr;  // vector dummy for wear - slave all dofs
+  gwinact_ = nullptr;       // vector dummy for wear - slave inactive dofss
 
-  gmdofnrowmap_ = Teuchos::null;  // vector dummy for wear - master all dofs
-  gmslipn_ = Teuchos::null;
-  gwminact_ = Teuchos::null;
+  gmdofnrowmap_ = nullptr;  // vector dummy for wear - master all dofs
+  gmslipn_ = nullptr;
+  gwminact_ = nullptr;
 
-  galldofnrowmap_ = Teuchos::null;
-  gwalldofrowmap_ = Teuchos::null;
+  galldofnrowmap_ = nullptr;
+  gwalldofrowmap_ = nullptr;
 
   // make numbering of LM dofs consecutive and unique across N interfaces
   int offset_if = 0;
@@ -237,8 +236,8 @@ void Wear::LagrangeStrategyWear::setup_wear(bool redistributed, bool init)
     if (!redistributed)
     {
       // setup Lagrange multiplier vectors
-      w_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
-      wincr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
+      w_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
+      wincr_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
     }
 
     // In the redistribution case, first check if the vectors and
@@ -248,26 +247,26 @@ void Wear::LagrangeStrategyWear::setup_wear(bool redistributed, bool init)
     else
     {
       // setup Lagrange multiplier vectors
-      if (w_ == Teuchos::null)
+      if (w_ == nullptr)
       {
-        w_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
+        w_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
       }
       else
       {
-        Teuchos::RCP<Core::LinAlg::Vector<double>> neww =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
+        std::shared_ptr<Core::LinAlg::Vector<double>> neww =
+            std::make_shared<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
         Core::LinAlg::export_to(*w_, *neww);
         w_ = neww;
       }
 
-      if (wincr_ == Teuchos::null)
+      if (wincr_ == nullptr)
       {
-        wincr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
+        wincr_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
       }
       else
       {
-        Teuchos::RCP<Core::LinAlg::Vector<double>> newwincr =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
+        std::shared_ptr<Core::LinAlg::Vector<double>> newwincr =
+            std::make_shared<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
         Core::LinAlg::export_to(*wincr_, *newwincr);
         wincr_ = newwincr;
       }
@@ -280,8 +279,8 @@ void Wear::LagrangeStrategyWear::setup_wear(bool redistributed, bool init)
       if (!redistributed)
       {
         // setup Lagrange multiplier vectors
-        wm_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
-        wmincr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
+        wm_ = std::make_shared<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
+        wmincr_ = std::make_shared<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
       }
 
       // In the redistribution case, first check if the vectors and
@@ -291,26 +290,26 @@ void Wear::LagrangeStrategyWear::setup_wear(bool redistributed, bool init)
       else
       {
         // setup Lagrange multiplier vectors
-        if (wm_ == Teuchos::null)
+        if (wm_ == nullptr)
         {
-          wm_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
+          wm_ = std::make_shared<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
         }
         else
         {
-          Teuchos::RCP<Core::LinAlg::Vector<double>> neww =
-              Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
+          std::shared_ptr<Core::LinAlg::Vector<double>> neww =
+              std::make_shared<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
           Core::LinAlg::export_to(*wm_, *neww);
           wm_ = neww;
         }
 
-        if (wmincr_ == Teuchos::null)
+        if (wmincr_ == nullptr)
         {
-          wmincr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
+          wmincr_ = std::make_shared<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
         }
         else
         {
-          Teuchos::RCP<Core::LinAlg::Vector<double>> newwincr =
-              Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
+          std::shared_ptr<Core::LinAlg::Vector<double>> newwincr =
+              std::make_shared<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
           Core::LinAlg::export_to(*wmincr_, *newwincr);
           wmincr_ = newwincr;
         }
@@ -319,8 +318,8 @@ void Wear::LagrangeStrategyWear::setup_wear(bool redistributed, bool init)
   }
 
   // output wear ... this is for the unweighted wear*n vector
-  wearoutput_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  wearoutput2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
+  wearoutput_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  wearoutput2_ = std::make_shared<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
 
   return;
 }
@@ -337,15 +336,15 @@ void Wear::LagrangeStrategyWear::initialize_mortar()
   /**********************************************************************/
   /* initialize Dold and Mold if not done already                       */
   /**********************************************************************/
-  if (dold_ == Teuchos::null)
+  if (dold_ == nullptr)
   {
-    dold_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
+    dold_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
     dold_->zero();
     dold_->complete();
   }
-  if (mold_ == Teuchos::null)
+  if (mold_ == nullptr)
   {
-    mold_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100);
+    mold_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100);
     mold_->zero();
     mold_->complete(*gmdofrowmap_, *gsdofrowmap_);
   }
@@ -353,10 +352,10 @@ void Wear::LagrangeStrategyWear::initialize_mortar()
   /**********************************************************************/
   /* (re)setup global Mortar Core::LinAlg::SparseMatrices and Core::LinAlg::Vectors  */
   /**********************************************************************/
-  dmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
-  d2matrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  dmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
+  d2matrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
-  mmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100);
+  mmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100);
 
   // global gap
   wgap_ = Core::LinAlg::create_vector(*gsnoderowmap_, true);
@@ -372,14 +371,14 @@ void Wear::LagrangeStrategyWear::initialize_mortar()
   if (friction_ && is_dual_quad_slave_trafo())
   {
     // initialize Dold and Mold if not done already
-    if (doldmod_ == Teuchos::null)
+    if (doldmod_ == nullptr)
     {
-      doldmod_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
+      doldmod_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
       doldmod_->zero();
       doldmod_->complete();
     }
     // setup of dmatrixmod_
-    dmatrixmod_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
+    dmatrixmod_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
   }
 
   return;
@@ -468,18 +467,18 @@ void Wear::LagrangeStrategyWear::initialize()
   CONTACT::LagrangeStrategy::initialize();
 
   // (re)setup global tangent matrix
-  tmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivet_, 3);
+  tmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gactivet_, 3);
 
   if (wearimpl_ and !wearprimvar_)
   {
     // create matrices for implicite wear: these matrices are due to
     // the gap-change in the compl. fnc.
     // Here are only the lin. w.r.t. the lagr. mult.
-    wlinmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactiven_, 3);
-    wlinmatrixsl_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gslipt_, 3);
+    wlinmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gactiven_, 3);
+    wlinmatrixsl_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gslipt_, 3);
 
 #ifdef CONSISTENTSTICK
-    wlinmatrixst_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gstickt, 3);
+    wlinmatrixst_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gstickt, 3);
 #endif
   }
 
@@ -489,15 +488,15 @@ void Wear::LagrangeStrategyWear::initialize()
     if (sswear_)
     {
       // basic matrices
-      twmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactiven_, 100);  // gsdofnrowmap_
-      ematrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactiven_, 100);   // gsdofnrowmap_
+      twmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gactiven_, 100);  // gsdofnrowmap_
+      ematrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gactiven_, 100);   // gsdofnrowmap_
 
       // linearizations w.r.t d and z
-      lintdis_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      lintdis_ = std::make_shared<Core::LinAlg::SparseMatrix>(
           *gactiven_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
-      lintlm_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      lintlm_ = std::make_shared<Core::LinAlg::SparseMatrix>(
           *gactiven_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
-      linedis_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      linedis_ = std::make_shared<Core::LinAlg::SparseMatrix>(
           *gactiven_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
     }
 
@@ -505,21 +504,21 @@ void Wear::LagrangeStrategyWear::initialize()
     else
     {
       // basic matrices
-      twmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gslipn_, 100);  // gsdofnrowmap_
-      ematrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gslipn_, 100);   // gsdofnrowmap_
+      twmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gslipn_, 100);  // gsdofnrowmap_
+      ematrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gslipn_, 100);   // gsdofnrowmap_
 
       // linearizations w.r.t d and z
-      lintdis_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      lintdis_ = std::make_shared<Core::LinAlg::SparseMatrix>(
           *gslipn_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
-      lintlm_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      lintlm_ = std::make_shared<Core::LinAlg::SparseMatrix>(
           *gslipn_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
-      linedis_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      linedis_ = std::make_shared<Core::LinAlg::SparseMatrix>(
           *gslipn_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
     }
 
     // linearizations w.r.t w
-    smatrixW_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactiven_, 3);  // gactiven_
-    linslip_w_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gslipt_, 3);
+    smatrixW_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gactiven_, 3);  // gactiven_
+    linslip_w_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gslipt_, 3);
 
     // w - rhs
     inactive_wear_rhs_ = Core::LinAlg::create_vector(*gwinact_, true);
@@ -533,22 +532,22 @@ void Wear::LagrangeStrategyWear::initialize()
     if (wearbothpv_)
     {
       // basic matrices
-      twmatrix_m_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      twmatrix_m_ = std::make_shared<Core::LinAlg::SparseMatrix>(
           *gmslipn_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);  // gsdofnrowmap_
-      ematrix_m_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      ematrix_m_ = std::make_shared<Core::LinAlg::SparseMatrix>(
           *gmslipn_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);  // gsdofnrowmap_
 
       // linearizations w.r.t d and z
-      lintdis_m_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      lintdis_m_ = std::make_shared<Core::LinAlg::SparseMatrix>(
           *gmslipn_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
-      lintlm_m_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      lintlm_m_ = std::make_shared<Core::LinAlg::SparseMatrix>(
           *gmslipn_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
-      linedis_m_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      linedis_m_ = std::make_shared<Core::LinAlg::SparseMatrix>(
           *gmslipn_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
       // w - rhs
-      inactive_wear_rhs_m_ = Teuchos::make_rcp<Epetra_FEVector>(*gwminact_);
-      wear_cond_rhs_m_ = Teuchos::make_rcp<Epetra_FEVector>(*gmslipn_);
+      inactive_wear_rhs_m_ = std::make_shared<Epetra_FEVector>(*gwminact_);
+      wear_cond_rhs_m_ = std::make_shared<Epetra_FEVector>(*gmslipn_);
     }
   }
 
@@ -560,8 +559,8 @@ void Wear::LagrangeStrategyWear::initialize()
  | Internal state variable approach!                                    |
  *----------------------------------------------------------------------*/
 void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& feff, Core::LinAlg::Vector<double>& gact)
+    std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& feff, Core::LinAlg::Vector<double>& gact)
 {
   auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
@@ -570,14 +569,14 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     FOUR_C_THROW("Condensation only for dual LM");
 
   // get stick map
-  Teuchos::RCP<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
+  std::shared_ptr<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
 
   /********************************************************************/
   /* (1) Multiply Mortar matrices: m^ = inv(d) * m                    */
   /********************************************************************/
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> invd =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dmatrix_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> diag =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> invd =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*dmatrix_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> diag =
       Core::LinAlg::create_vector(*gsdofrowmap_, true);
   int err = 0;
 
@@ -620,21 +619,21 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   /********************************************************************/
 
   // we want to split k into 3 groups s,m,n = 9 blocks
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
 
   // temporarily we need the blocks ksmsm, ksmn, knsm
   // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> ksmsm, ksmn, knsm;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> ksmsm, ksmn, knsm;
 
-  // some temporary Teuchos::RCPs
-  Teuchos::RCP<Epetra_Map> tempmap;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx2;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx3;
+  // some temporary std::shared_ptrs
+  std::shared_ptr<Epetra_Map> tempmap;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx1;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx2;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx3;
 
   // split into slave/master part + structure part
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffmatrix =
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kteff);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kteffmatrix =
+      std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(kteff);
   if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
@@ -664,10 +663,10 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   /********************************************************************/
 
   // we want to split f into 3 groups s.m,n
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fs, fm, fn;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fs, fm, fn;
 
   // temporarily we need the group sm
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fsm;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fsm;
 
   // do the vector splitting smn -> sm+n
   if (parallel_redistribution_status())
@@ -675,8 +674,8 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     // split and transform to redistributed maps
     Core::LinAlg::split_vector(
         *problem_dofs(), *feff, non_redist_gsmdofrowmap_, fsm, gndofrowmap_, fn);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fsmtemp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsmdofrowmap_);
+    std::shared_ptr<Core::LinAlg::Vector<double>> fsmtemp =
+        std::make_shared<Core::LinAlg::Vector<double>>(*gsmdofrowmap_);
     Core::LinAlg::export_to(*fsm, *fsmtemp);
     fsm = fsmtemp;
   }
@@ -691,8 +690,8 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   int mset = gmdofrowmap_->NumGlobalElements();
 
   // we want to split fsm into 2 groups s,m
-  fs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  fm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
+  fs = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  fm = std::make_shared<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
 
   // do the vector splitting sm -> s+m
   Core::LinAlg::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
@@ -715,11 +714,11 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   if (is_dual_quad_slave_trafo())
   {
     // modify dmatrix_, invd_ and mhatmatrix_
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> temp2 =
         Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp3 =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> temp3 =
         Core::LinAlg::matrix_multiply(*trafo_, false, *invd_, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp4 =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> temp4 =
         Core::LinAlg::matrix_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
     dmatrix_ = temp2;
     invd_ = temp3;
@@ -730,13 +729,13 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   /* (5) Split slave quantities into active / inactive, stick / slip  */
   /********************************************************************/
   // we want to split kssmod into 2 groups a,i = 4 blocks
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kaa, kai, kia, kii;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kaa, kai, kia, kii;
 
   // we want to split ksn / ksm / kms into 2 groups a,i = 2 blocks
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kan, kin, kam, kim, kma, kmi;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kan, kin, kam, kim, kma, kmi;
 
   // we will get the i rowmap as a by-product
-  Teuchos::RCP<Epetra_Map> gidofs;
+  std::shared_ptr<Epetra_Map> gidofs;
 
   // do the splitting
   Core::LinAlg::split_matrix2x2(
@@ -749,17 +748,17 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
       kms, gmdofrowmap_, tempmap, gactivedofs_, gidofs, kma, kmi, tempmtx1, tempmtx2);
 
   // we want to split kaa into 2 groups sl,st = 4 blocks
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslsl, kslst, kstsl, kstst, kast, kasl;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslsl, kslst, kstsl, kstst, kast, kasl;
 
   // we want to split kan / kam / kai into 2 groups sl,st = 2 blocks
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> ksln, kstn, kslm, kstm, ksli, ksti;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> ksln, kstn, kslm, kstm, ksli, ksti;
 
-  // some temporary Teuchos::RCPs
-  Teuchos::RCP<Epetra_Map> temp1map;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1mtx4, temp1mtx5;
+  // some temporary std::shared_ptrs
+  std::shared_ptr<Epetra_Map> temp1map;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> temp1mtx4, temp1mtx5;
 
   // we will get the stick rowmap as a by-product
-  Teuchos::RCP<Epetra_Map> gstdofs;
+  std::shared_ptr<Epetra_Map> gstdofs;
 
   Core::LinAlg::split_matrix2x2(
       kaa, gactivedofs_, gidofs, gstdofs, gslipdofs_, kast, kasl, temp1mtx4, temp1mtx5);
@@ -771,19 +770,19 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   const int slipset = gslipdofs_->NumGlobalElements();
 
   // we want to split fs into 2 groups a,i
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fa =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fi =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fa =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gactivedofs_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fi =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gidofs);
 
   // do the vector splitting s -> a+i
   Core::LinAlg::split_vector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
 
   // we want to split fa into 2 groups sl,st
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fsl =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipdofs_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fst =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstdofs);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fsl =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gslipdofs_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fst =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gstdofs);
 
   // do the vector splitting a -> sl+st
   if (aset) Core::LinAlg::split_vector(*gactivedofs_, *fa, gslipdofs_, fsl, gstdofs, fst);
@@ -793,7 +792,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   /********************************************************************/
 
   // active, stick and slip part of invd
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> invda, invdsl, invdst;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> invda, invdsl, invdst;
   Core::LinAlg::split_matrix2x2(
       invd_, gactivedofs_, gidofs, gactivedofs_, gidofs, invda, tempmtx1, tempmtx2, tempmtx3);
   Core::LinAlg::split_matrix2x2(
@@ -802,18 +801,19 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
       invda, gactivedofs_, gidofs, gstdofs, gslipdofs_, invdst, tempmtx1, tempmtx2, tempmtx3);
 
   // for Implicit Wear
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> wa, wi, wsl, wst;          // split lin.matrix for Cgap
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> wsla, wsli, wslsl, wslst;  // split lin.matrix for Cslip
+  std::shared_ptr<Core::LinAlg::SparseMatrix> wa, wi, wsl, wst;  // split lin.matrix for Cgap
+  std::shared_ptr<Core::LinAlg::SparseMatrix> wsla, wsli, wslsl,
+      wslst;  // split lin.matrix for Cslip
   Core::LinAlg::Vector<double> fw(*gactiven_);
   Core::LinAlg::Vector<double> fwsl(*gslipt_);
 
   // implicit wear
   if (wearimpl_)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> za =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zi =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
+    std::shared_ptr<Core::LinAlg::Vector<double>> za =
+        std::make_shared<Core::LinAlg::Vector<double>>(*gactivedofs_);
+    std::shared_ptr<Core::LinAlg::Vector<double>> zi =
+        std::make_shared<Core::LinAlg::Vector<double>>(*gidofs);
 
     Core::LinAlg::split_vector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
 
@@ -835,33 +835,33 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   }
 
   // coupling part of dmatrix (only nonzero for 3D quadratic case!)
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> dai;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> dai;
   Core::LinAlg::split_matrix2x2(
       dmatrix_, gactivedofs_, gidofs, gactivedofs_, gidofs, tempmtx1, dai, tempmtx2, tempmtx3);
 
   // do the multiplication dhat = invda * dai
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> dhat =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
   if (aset && iset)
     dhat = Core::LinAlg::matrix_multiply(*invda, false, *dai, false, false, false, true);
   dhat->complete(*gidofs, *gactivedofs_);
 
   // active part of mmatrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrixa;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mmatrixa;
   Core::LinAlg::split_matrix2x2(mmatrix_, gactivedofs_, gidofs, gmdofrowmap_, tempmap, mmatrixa,
       tempmtx1, tempmtx2, tempmtx3);
 
   // do the multiplication mhataam = invda * mmatrixa
   // (this is only different from mhata for 3D quadratic case!)
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mhataam =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
   if (aset)
     mhataam = Core::LinAlg::matrix_multiply(*invda, false, *mmatrixa, false, false, false, true);
   mhataam->complete(*gmdofrowmap_, *gactivedofs_);
 
   // for the case without full linearization, we still need the
   // "classical" active part of mhat, which is isolated here
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mhata;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mhata;
   Core::LinAlg::split_matrix2x2(mhatmatrix_, gactivedofs_, gidofs, gmdofrowmap_, tempmap, mhata,
       tempmtx1, tempmtx2, tempmtx3);
 
@@ -884,42 +884,42 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
   //-------------------------------------------------------- SECOND LINE
   // kmn: add T(mhataam)*kan
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnmod =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmnmod =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
   kmnmod->add(*kmn, false, 1.0, 1.0);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmnadd =
       Core::LinAlg::matrix_multiply(*mhataam, true, *kan, false, false, false, true);
   kmnmod->add(*kmnadd, false, 1.0, 1.0);
   kmnmod->complete(kmn->domain_map(), kmn->row_map());
 
   // kmm: add T(mhataam)*kam
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmmod =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmmmod =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
   kmmmod->add(*kmm, false, 1.0, 1.0);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmmadd =
       Core::LinAlg::matrix_multiply(*mhataam, true, *kam, false, false, false, true);
   kmmmod->add(*kmmadd, false, 1.0, 1.0);
   kmmmod->complete(kmm->domain_map(), kmm->row_map());
 
   // kmi: add T(mhataam)*kai
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmimod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmimod;
   if (iset)
   {
-    kmimod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
+    kmimod = std::make_shared<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
     kmimod->add(*kmi, false, 1.0, 1.0);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kmiadd =
         Core::LinAlg::matrix_multiply(*mhataam, true, *kai, false, false, false, true);
     kmimod->add(*kmiadd, false, 1.0, 1.0);
     kmimod->complete(kmi->domain_map(), kmi->row_map());
   }
 
   // kma: add T(mhataam)*kaa
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmamod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmamod;
   if (aset)
   {
-    kmamod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
+    kmamod = std::make_shared<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
     kmamod->add(*kma, false, 1.0, 1.0);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kmaadd =
         Core::LinAlg::matrix_multiply(*mhataam, true, *kaa, false, false, false, true);
     kmamod->add(*kmaadd, false, 1.0, 1.0);
     kmamod->complete(kma->domain_map(), kma->row_map());
@@ -927,38 +927,38 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
   //--------------------------------------------------------- THIRD LINE
   // kin: subtract T(dhat)*kan
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kinmod =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kinmod =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*gidofs, 100);
   kinmod->add(*kin, false, 1.0, 1.0);
   if (aset && iset)
   {
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kinadd =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kinadd =
         Core::LinAlg::matrix_multiply(*dhat, true, *kan, false, false, false, true);
     kinmod->add(*kinadd, false, -1.0, 1.0);
   }
   kinmod->complete(kin->domain_map(), kin->row_map());
 
   // kim: subtract T(dhat)*kam
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kimmod =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kimmod =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*gidofs, 100);
   kimmod->add(*kim, false, 1.0, 1.0);
   if (aset && iset)
   {
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kimadd =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kimadd =
         Core::LinAlg::matrix_multiply(*dhat, true, *kam, false, false, false, true);
     kimmod->add(*kimadd, false, -1.0, 1.0);
   }
   kimmod->complete(kim->domain_map(), kim->row_map());
 
   // kii: subtract T(dhat)*kai
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kiimod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kiimod;
   if (iset)
   {
-    kiimod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
+    kiimod = std::make_shared<Core::LinAlg::SparseMatrix>(*gidofs, 100);
     kiimod->add(*kii, false, 1.0, 1.0);
     if (aset)
     {
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> kiiadd =
+      std::shared_ptr<Core::LinAlg::SparseMatrix> kiiadd =
           Core::LinAlg::matrix_multiply(*dhat, true, *kai, false, false, false, true);
       kiimod->add(*kiiadd, false, -1.0, 1.0);
     }
@@ -966,12 +966,12 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   }
 
   // kia: subtract T(dhat)*kaa
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kiamod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kiamod;
   if (iset && aset)
   {
-    kiamod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
+    kiamod = std::make_shared<Core::LinAlg::SparseMatrix>(*gidofs, 100);
     kiamod->add(*kia, false, 1.0, 1.0);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kiaadd =
         Core::LinAlg::matrix_multiply(*dhat, true, *kaa, false, false, false, true);
     kiamod->add(*kiaadd, false, -1.0, 1.0);
     kiamod->complete(kia->domain_map(), kia->row_map());
@@ -980,10 +980,10 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   //-------------------------------------------------------- FOURTH LINE
 
   // create matrices for implicit wear
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kgnmod;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kgmmod;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kgimod;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kgaamod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kgnmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kgmmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kgimod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kgaamod;
 
   // implicit wear
   if (wearimpl_)
@@ -1016,7 +1016,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   // blocks for complementary conditions (stick nodes)
 
   // kstn: multiply with linstickLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kstnmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kstnmod;
   if (stickset)
   {
     kstnmod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
@@ -1024,7 +1024,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   }
 
   // kstm: multiply with linstickLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kstmmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kstmmod;
   if (stickset)
   {
     kstmmod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
@@ -1032,7 +1032,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   }
 
   // ksti: multiply with linstickLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kstimod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kstimod;
   if (stickset && iset)
   {
     kstimod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
@@ -1040,7 +1040,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   }
 
   // kstsl: multiply with linstickLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kstslmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kstslmod;
   if (stickset && slipset)
   {
     kstslmod =
@@ -1049,7 +1049,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   }
 
   // kststmod: multiply with linstickLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kststmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kststmod;
   if (stickset)
   {
     kststmod =
@@ -1061,7 +1061,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   // blocks for complementary conditions (slip nodes)
 
   // ksln: multiply with linslipLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslnmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslnmod;
   if (slipset)
   {
     kslnmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
@@ -1069,7 +1069,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   }
 
   // kslm: multiply with linslipLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslmmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslmmod;
   if (slipset)
   {
     kslmmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
@@ -1077,7 +1077,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   }
 
   // ksli: multiply with linslipLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslimod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslimod;
   if (slipset && iset)
   {
     kslimod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
@@ -1085,7 +1085,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   }
 
   // kslsl: multiply with linslipLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslslmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslslmod;
   if (slipset)
   {
     kslslmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
@@ -1093,7 +1093,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   }
 
   // slstmod: multiply with linslipLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslstmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslstmod;
   if (slipset && stickset)
   {
     kslstmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
@@ -1101,10 +1101,10 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   }
 
   // create matrices for implicit wear
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslwnmod;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslwmmod;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslwimod;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslwaamod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslwnmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslwmmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslwimod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslwaamod;
 
   // implicit wear
   if (wearimpl_)
@@ -1210,46 +1210,46 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   fimod.Update(1.0, *fi, -1.0);
 
   //-------------------------------------------------------- FOURTH LINE
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fgmod;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fgmod;
   // implicit wear
   if (wearimpl_)
   {
     if (aset)
     {
-      fgmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactiven_);
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
+      fgmod = std::make_shared<Core::LinAlg::Vector<double>>(*gactiven_);
+      std::shared_ptr<Core::LinAlg::SparseMatrix> temp1 =
           Core::LinAlg::matrix_multiply(*wa, false, *invda, true, false, false, true);
       temp1->multiply(false, *fa, *fgmod);
     }
   }
   //--------------------------------------------------------- FIFTH LINE
-  Teuchos::RCP<Epetra_Map> gstickdofs =
+  std::shared_ptr<Epetra_Map> gstickdofs =
       Core::LinAlg::split_map(*gactivedofs_, *gslipdofs_);  // get global stick dofs
 
   // split the lagrange multiplier vector in stick and slip part
-  Teuchos::RCP<Core::LinAlg::Vector<double>> za =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> zi =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> zst =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickdofs);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> zsl =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipdofs_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> za =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gactivedofs_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> zi =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gidofs);
+  std::shared_ptr<Core::LinAlg::Vector<double>> zst =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gstickdofs);
+  std::shared_ptr<Core::LinAlg::Vector<double>> zsl =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gslipdofs_);
 
   Core::LinAlg::split_vector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
   Core::LinAlg::split_vector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec1;
+  std::shared_ptr<Core::LinAlg::Vector<double>> tempvec1;
 
   // fst: mutliply with linstickLM
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fstmod;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fstmod;
   if (stickset)
   {
-    fstmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickt);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
+    fstmod = std::make_shared<Core::LinAlg::Vector<double>>(*gstickt);
+    std::shared_ptr<Core::LinAlg::SparseMatrix> temp1 =
         Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
     temp1->multiply(false, *fa, *fstmod);
 
-    tempvec1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickt);
+    tempvec1 = std::make_shared<Core::LinAlg::Vector<double>>(*gstickt);
 
     linstickLM_->multiply(false, *zst, *tempvec1);
     fstmod->Update(-1.0, *tempvec1, 1.0);
@@ -1257,17 +1257,17 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
   //--------------------------------------------------------- SIXTH LINE
   // fsl: mutliply with linslipLM
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fslmod;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fslwmod;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fslmod;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fslwmod;
 
   if (slipset)
   {
-    fslmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipt_);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
+    fslmod = std::make_shared<Core::LinAlg::Vector<double>>(*gslipt_);
+    std::shared_ptr<Core::LinAlg::SparseMatrix> temp =
         Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
     temp->multiply(false, *fa, *fslmod);
 
-    tempvec1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipt_);
+    tempvec1 = std::make_shared<Core::LinAlg::Vector<double>>(*gslipt_);
 
     linslipLM_->multiply(false, *zsl, *tempvec1);
 
@@ -1276,8 +1276,8 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     // implicit wear
     if (wearimpl_)
     {
-      fslwmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipt_);
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
+      fslwmod = std::make_shared<Core::LinAlg::Vector<double>>(*gslipt_);
+      std::shared_ptr<Core::LinAlg::SparseMatrix> temp2 =
           Core::LinAlg::matrix_multiply(*wsla, false, *invda, true, false, false, true);
       temp2->multiply(false, *fa, *fslwmod);
     }
@@ -1363,9 +1363,11 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   /* (10) Global setup of kteffnew (including contact)                */
   /********************************************************************/
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-      *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> feffnew = Core::LinAlg::create_vector(*problem_dofs());
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kteffnew =
+      std::make_shared<Core::LinAlg::SparseMatrix>(
+          *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype());
+  std::shared_ptr<Core::LinAlg::Vector<double>> feffnew =
+      Core::LinAlg::create_vector(*problem_dofs());
 
   //--------------------------------------------------------- FIRST LINE
   // add n submatrices to kteffnew
@@ -1457,23 +1459,23 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
   //--------------------------------------------------------- THIRD LINE
   // add i subvector to feffnew
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fimodexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fimodexp;
   if (iset)
   {
-    fimodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+    fimodexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(fimod, *fimodexp);
     feffnew->Update(1.0, *fimodexp, 1.0);
   }
 
   //-------------------------------------------------------- FOURTH LINE
   // add weighted gap vector to feffnew, if existing
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gexp;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fwexp;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fgmodexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> gexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fwexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fgmodexp;
 
   if (aset)
   {
-    gexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+    gexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(gact, *gexp);
     feffnew->Update(-1.0, *gexp, 1.0);
 
@@ -1481,11 +1483,11 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     if (wearimpl_)
     {
       // commented due to incremental solution algorithm.
-      fwexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+      fwexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(fw, *fwexp);
       feffnew->Update(+1.0, *fwexp, 1.0);
 
-      fgmodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+      fgmodexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fgmod, *fgmodexp);
       feffnew->Update(-1.0, *fgmodexp, +1.0);
     }
@@ -1493,10 +1495,10 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
   //--------------------------------------------------------- FIFTH LINE
   // add st subvector to feffnew
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fstmodexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fstmodexp;
   if (stickset)
   {
-    fstmodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+    fstmodexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fstmod, *fstmodexp);
     feffnew->Update(1.0, *fstmodexp, +1.0);
   }
@@ -1512,14 +1514,14 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   //--------------------------------------------------------- SIXTH LINE
 
   // add a subvector to feffnew
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fslmodexp;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fwslexp;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fslwmodexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fslmodexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fwslexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fslwmodexp;
 
 
   if (slipset)
   {
-    fslmodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+    fslmodexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fslmod, *fslmodexp);
     feffnew->Update(1.0, *fslmodexp, 1.0);
   }
@@ -1529,14 +1531,14 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   {
     if (slipset)
     {
-      fslwmodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+      fslwmodexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fslwmod, *fslwmodexp);
       feffnew->Update(+1.0, *fslwmodexp, 1.0);
     }
     // commented due to incremental solution algorithm
     if (slipset)
     {
-      fwslexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+      fwslexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(fwsl, *fwslexp);
       feffnew->Update(-1.0, *fwslexp, 1.0);
     }
@@ -1560,8 +1562,8 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
  | condense wear and lm. for discr. wear algorithm           farah 10/13|
  *----------------------------------------------------------------------*/
 void Wear::LagrangeStrategyWear::condense_wear_discr(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& feff, Core::LinAlg::Vector<double>& gact)
+    std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& feff, Core::LinAlg::Vector<double>& gact)
 {
   auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
   auto wearshapefcn = Teuchos::getIntegralValue<Inpar::Wear::WearShape>(params(), "WEAR_SHAPEFCN");
@@ -1572,14 +1574,14 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   if (wearshapefcn != Inpar::Wear::wear_shape_dual) FOUR_C_THROW("Condensation only for dual wear");
 
   // get stick map
-  Teuchos::RCP<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
+  std::shared_ptr<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
 
   /********************************************************************/
   /* (1a) Multiply Mortar matrices: m^ = inv(d) * m                    */
   /********************************************************************/
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> invd =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dmatrix_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> diag =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> invd =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*dmatrix_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> diag =
       Core::LinAlg::create_vector(*gsdofrowmap_, true);
   int err = 0;
 
@@ -1621,21 +1623,21 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   /********************************************************************/
 
   // we want to split k into 3 groups s,m,n = 9 blocks
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
 
   // temporarily we need the blocks ksmsm, ksmn, knsm
   // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> ksmsm, ksmn, knsm;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> ksmsm, ksmn, knsm;
 
-  // some temporary Teuchos::RCPs
-  Teuchos::RCP<Epetra_Map> tempmap;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx2;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx3;
+  // some temporary std::shared_ptrs
+  std::shared_ptr<Epetra_Map> tempmap;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx1;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx2;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx3;
 
   // split into slave/master part + structure part
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffmatrix =
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kteff);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kteffmatrix =
+      std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(kteff);
   if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
@@ -1665,10 +1667,10 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   /********************************************************************/
 
   // we want to split f into 3 groups s.m,n
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fs, fm, fn;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fs, fm, fn;
 
   // temporarily we need the group sm
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fsm;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fsm;
 
   // do the vector splitting smn -> sm+n
   if (parallel_redistribution_status())
@@ -1676,8 +1678,8 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
     // split and transform to redistributed maps
     Core::LinAlg::split_vector(
         *problem_dofs(), *feff, non_redist_gsmdofrowmap_, fsm, gndofrowmap_, fn);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fsmtemp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsmdofrowmap_);
+    std::shared_ptr<Core::LinAlg::Vector<double>> fsmtemp =
+        std::make_shared<Core::LinAlg::Vector<double>>(*gsmdofrowmap_);
     Core::LinAlg::export_to(*fsm, *fsmtemp);
     fsm = fsmtemp;
   }
@@ -1692,8 +1694,8 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   const int mset = gmdofrowmap_->NumGlobalElements();
 
   // we want to split fsm into 2 groups s,m
-  fs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  fm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
+  fs = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  fm = std::make_shared<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
 
   // do the vector splitting sm -> s+m
   Core::LinAlg::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
@@ -1716,11 +1718,11 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   if (is_dual_quad_slave_trafo())
   {
     // modify dmatrix_, invd_ and mhatmatrix_
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> temp2 =
         Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp3 =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> temp3 =
         Core::LinAlg::matrix_multiply(*trafo_, false, *invd_, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp4 =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> temp4 =
         Core::LinAlg::matrix_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
     dmatrix_ = temp2;
     invd_ = temp3;
@@ -1731,13 +1733,13 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   /* (5a) Split slave quantities into active / inactive, stick / slip  */
   /********************************************************************/
   // we want to split kssmod into 2 groups a,i = 4 blocks
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kaa, kai, kia, kii;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kaa, kai, kia, kii;
 
   // we want to split ksn / ksm / kms into 2 groups a,i = 2 blocks
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kan, kin, kam, kim, kma, kmi;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kan, kin, kam, kim, kma, kmi;
 
   // we will get the i rowmap as a by-product
-  Teuchos::RCP<Epetra_Map> gidofs;
+  std::shared_ptr<Epetra_Map> gidofs;
 
   // do the splitting
   Core::LinAlg::split_matrix2x2(
@@ -1750,17 +1752,17 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
       kms, gmdofrowmap_, tempmap, gactivedofs_, gidofs, kma, kmi, tempmtx1, tempmtx2);
 
   // we want to split kaa into 2 groups sl,st = 4 blocks
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslsl, kslst, kstsl, kstst, kast, kasl;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslsl, kslst, kstsl, kstst, kast, kasl;
 
   // we want to split kan / kam / kai into 2 groups sl,st = 2 blocks
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> ksln, kstn, kslm, kstm, ksli, ksti;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> ksln, kstn, kslm, kstm, ksli, ksti;
 
-  // some temporary Teuchos::RCPs
-  Teuchos::RCP<Epetra_Map> temp1map;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1mtx4, temp1mtx5;
+  // some temporary std::shared_ptrs
+  std::shared_ptr<Epetra_Map> temp1map;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> temp1mtx4, temp1mtx5;
 
   // we will get the stick rowmap as a by-product
-  Teuchos::RCP<Epetra_Map> gstdofs;
+  std::shared_ptr<Epetra_Map> gstdofs;
 
   Core::LinAlg::split_matrix2x2(
       kaa, gactivedofs_, gidofs, gstdofs, gslipdofs_, kast, kasl, temp1mtx4, temp1mtx5);
@@ -1773,19 +1775,19 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   gidofs_ = gidofs;
 
   // we want to split fs into 2 groups a,i
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fa =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fi =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fa =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gactivedofs_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fi =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gidofs);
 
   // do the vector splitting s -> a+i
   Core::LinAlg::split_vector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
 
   // we want to split fa into 2 groups sl,st
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fsl =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipdofs_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fst =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstdofs);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fsl =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gslipdofs_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fst =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gstdofs);
 
   // do the vector splitting a -> sl+st
   if (aset) Core::LinAlg::split_vector(*gactivedofs_, *fa, gslipdofs_, fsl, gstdofs, fst);
@@ -1795,7 +1797,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   /********************************************************************/
 
   // active, stick and slip part of invd
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> invda, invdsl, invdst;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> invda, invdsl, invdst;
   Core::LinAlg::split_matrix2x2(
       invd_, gactivedofs_, gidofs, gactivedofs_, gidofs, invda, tempmtx1, tempmtx2, tempmtx3);
   Core::LinAlg::split_matrix2x2(
@@ -1804,37 +1806,38 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
       invda, gactivedofs_, gidofs, gstdofs, gslipdofs_, invdst, tempmtx1, tempmtx2, tempmtx3);
 
   // for Implicit Wear
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> wa, wi, wsl, wst;          // split lin.matrix for Cgap
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> wsla, wsli, wslsl, wslst;  // split lin.matrix for Cslip
+  std::shared_ptr<Core::LinAlg::SparseMatrix> wa, wi, wsl, wst;  // split lin.matrix for Cgap
+  std::shared_ptr<Core::LinAlg::SparseMatrix> wsla, wsli, wslsl,
+      wslst;  // split lin.matrix for Cslip
 
   // coupling part of dmatrix (only nonzero for 3D quadratic case!)
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> dai;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> dai;
   Core::LinAlg::split_matrix2x2(
       dmatrix_, gactivedofs_, gidofs, gactivedofs_, gidofs, tempmtx1, dai, tempmtx2, tempmtx3);
 
   // do the multiplication dhat = invda * dai
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> dhat =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
   if (aset && iset)
     dhat = Core::LinAlg::matrix_multiply(*invda, false, *dai, false, false, false, true);
   dhat->complete(*gidofs, *gactivedofs_);
 
   // active part of mmatrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrixa;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mmatrixa;
   Core::LinAlg::split_matrix2x2(mmatrix_, gactivedofs_, gidofs, gmdofrowmap_, tempmap, mmatrixa,
       tempmtx1, tempmtx2, tempmtx3);
 
   // do the multiplication mhataam = invda * mmatrixa
   // (this is only different from mhata for 3D quadratic case!)
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mhataam =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
   if (aset)
     mhataam = Core::LinAlg::matrix_multiply(*invda, false, *mmatrixa, false, false, false, true);
   mhataam->complete(*gmdofrowmap_, *gactivedofs_);
 
   // for the case without full linearization, we still need the
   // "classical" active part of mhat, which is isolated here
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mhata;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mhata;
   Core::LinAlg::split_matrix2x2(mhatmatrix_, gactivedofs_, gidofs, gmdofrowmap_, tempmap, mhata,
       tempmtx1, tempmtx2, tempmtx3);
 
@@ -1855,7 +1858,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   /* (a) create inv E                                                */
   /********************************************************************/
   Core::LinAlg::SparseMatrix inve(*ematrix_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> diage = Core::LinAlg::create_vector(*gslipn_, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> diage = Core::LinAlg::create_vector(*gslipn_, true);
   int erre = 0;
 
   // extract diagonal of inve into diage
@@ -1875,8 +1878,8 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   /********************************************************************/
   /* (b) build linedis + lintdis                                     */
   /********************************************************************/
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> linetdis =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*lintdis_);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> linetdis =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*lintdis_);
 
   // scale T-part with wear coeff.
   linetdis->scale(-wcoeff);
@@ -1891,8 +1894,8 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   /********************************************************************/
   /* (c) Split linetdis into 4 matrix blocks                         */
   /********************************************************************/
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> linte_m, linte_s, dummy1, dummy2;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> linte_st, linte_sl, linte_i, linte_a;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> linte_m, linte_s, dummy1, dummy2;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> linte_st, linte_sl, linte_i, linte_a;
 
   // split slave master...
   Core::LinAlg::split_matrix2x2(
@@ -1909,7 +1912,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   /********************************************************************/
   /* (d) Split lintlm_ into 4 matrix blocks                           */
   /********************************************************************/
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> lintlm_st, lintlm_sl, lintlm_i, lintlm_a;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> lintlm_st, lintlm_sl, lintlm_i, lintlm_a;
 
   // split active inactive
   lintlm_->scale(wcoeff);
@@ -1923,11 +1926,11 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   /********************************************************************/
   /* (e) create Tn*D^-T                                               */
   /********************************************************************/
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tndt_a;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> tndt_a;
   if (aset)
     tndt_a = Core::LinAlg::matrix_multiply(*lintlm_a, false, *invda, true, false, false, true);
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> wear_dn, wear_dm, wear_di, wear_da;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> wear_dn, wear_dm, wear_di, wear_da;
 
   /********************************************************************/
   /* (f) delta_w = wear_dn*delta_dn + wear_dm*delta_dm + wear_da*delta_da + wear_di*delta_di + fw_z
@@ -1958,7 +1961,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
       wear_da = Core::LinAlg::matrix_multiply(inve, false, *tndt_a, false, false, false, true);
       wear_da = Core::LinAlg::matrix_multiply(*wear_da, false, *kaa, false, false, false, false);
 
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> inve_te;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inve_te;
       inve_te = Core::LinAlg::matrix_multiply(inve, false, *linte_a, false, false, false, true);
 
       wear_da->add(*inve_te, false, 1.0, 1.0);
@@ -1971,7 +1974,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
       wear_di = Core::LinAlg::matrix_multiply(inve, false, *tndt_a, false, false, false, true);
       wear_di = Core::LinAlg::matrix_multiply(*wear_di, false, *kai, false, false, false, false);
 
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> inve_te;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inve_te;
       inve_te = Core::LinAlg::matrix_multiply(inve, false, *linte_i, false, false, false, true);
 
       wear_di->add(*inve_te, false, 1.0, 1.0);
@@ -1990,8 +1993,8 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   // (g) prepare f_w
   //*************************************************************
   Core::LinAlg::Vector<double> dvec(*gslipn_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fw_z =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipn_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fw_z =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gslipn_);
   Core::LinAlg::Vector<double> fw_wrhs(*gslipn_);
 
   if (slipset)
@@ -2009,18 +2012,18 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
 
     fw_z->Scale(-1.0);
 
-    fw_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipn_);
+    fw_ = std::make_shared<Core::LinAlg::Vector<double>>(*gslipn_);
     fw_ = fw_z;
   }
 
   // ************************************************************
   // (h) prepare smatrixW and linslipW_
   // ************************************************************
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> smatrixW_sl, smatrixW_i, d2, d3;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> smatrixW_sl, smatrixW_i, d2, d3;
   Core::LinAlg::split_matrix2x2(
       smatrixW_, gactiven_, gactiven_, gslipn_, gwinact_, smatrixW_sl, smatrixW_i, d2, d3);
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> linslipW_sl, linslipW_i, d5, d6;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> linslipW_sl, linslipW_i, d5, d6;
   Core::LinAlg::split_matrix2x2(
       linslip_w_, gslipt_, gslipt_, gslipn_, gwinact_, linslipW_sl, linslipW_i, d5, d6);
 
@@ -2037,42 +2040,42 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
 
   //-------------------------------------------------------- SECOND LINE
   // kmn: add T(mhataam)*kan
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnmod =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmnmod =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
   kmnmod->add(*kmn, false, 1.0, 1.0);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmnadd =
       Core::LinAlg::matrix_multiply(*mhataam, true, *kan, false, false, false, true);
   kmnmod->add(*kmnadd, false, 1.0, 1.0);
   kmnmod->complete(kmn->domain_map(), kmn->row_map());
 
   // kmm: add T(mhataam)*kam
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmmod =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmmmod =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
   kmmmod->add(*kmm, false, 1.0, 1.0);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmmadd =
       Core::LinAlg::matrix_multiply(*mhataam, true, *kam, false, false, false, true);
   kmmmod->add(*kmmadd, false, 1.0, 1.0);
   kmmmod->complete(kmm->domain_map(), kmm->row_map());
 
   // kmi: add T(mhataam)*kai
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmimod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmimod;
   if (iset)
   {
-    kmimod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
+    kmimod = std::make_shared<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
     kmimod->add(*kmi, false, 1.0, 1.0);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kmiadd =
         Core::LinAlg::matrix_multiply(*mhataam, true, *kai, false, false, false, true);
     kmimod->add(*kmiadd, false, 1.0, 1.0);
     kmimod->complete(kmi->domain_map(), kmi->row_map());
   }
 
   // kma: add T(mhataam)*kaa
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmamod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmamod;
   if (aset)
   {
-    kmamod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
+    kmamod = std::make_shared<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
     kmamod->add(*kma, false, 1.0, 1.0);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kmaadd =
         Core::LinAlg::matrix_multiply(*mhataam, true, *kaa, false, false, false, true);
     kmamod->add(*kmaadd, false, 1.0, 1.0);
     kmamod->complete(kma->domain_map(), kma->row_map());
@@ -2081,38 +2084,38 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   //--------------------------------------------------------- THIRD LINE
   //------------------- FOR 3D QUADRATIC CASE ----------------------------
   // kin: subtract T(dhat)*kan
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kinmod =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kinmod =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*gidofs, 100);
   kinmod->add(*kin, false, 1.0, 1.0);
   if (aset && iset)
   {
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kinadd =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kinadd =
         Core::LinAlg::matrix_multiply(*dhat, true, *kan, false, false, false, true);
     kinmod->add(*kinadd, false, -1.0, 1.0);
   }
   kinmod->complete(kin->domain_map(), kin->row_map());
 
   // kim: subtract T(dhat)*kam
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kimmod =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kimmod =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*gidofs, 100);
   kimmod->add(*kim, false, 1.0, 1.0);
   if (aset && iset)
   {
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kimadd =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kimadd =
         Core::LinAlg::matrix_multiply(*dhat, true, *kam, false, false, false, true);
     kimmod->add(*kimadd, false, -1.0, 1.0);
   }
   kimmod->complete(kim->domain_map(), kim->row_map());
 
   // kii: subtract T(dhat)*kai
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kiimod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kiimod;
   if (iset)
   {
-    kiimod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
+    kiimod = std::make_shared<Core::LinAlg::SparseMatrix>(*gidofs, 100);
     kiimod->add(*kii, false, 1.0, 1.0);
     if (aset)
     {
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> kiiadd =
+      std::shared_ptr<Core::LinAlg::SparseMatrix> kiiadd =
           Core::LinAlg::matrix_multiply(*dhat, true, *kai, false, false, false, true);
       kiimod->add(*kiiadd, false, -1.0, 1.0);
     }
@@ -2120,12 +2123,12 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   }
 
   // kia: subtract T(dhat)*kaa
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kiamod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kiamod;
   if (iset && aset)
   {
-    kiamod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
+    kiamod = std::make_shared<Core::LinAlg::SparseMatrix>(*gidofs, 100);
     kiamod->add(*kia, false, 1.0, 1.0);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kiaadd =
         Core::LinAlg::matrix_multiply(*dhat, true, *kaa, false, false, false, true);
     kiamod->add(*kiaadd, false, -1.0, 1.0);
     kiamod->complete(kia->domain_map(), kia->row_map());
@@ -2133,10 +2136,10 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
 
   //--------------------------------------------------------- FOURTH LINE
   // WEAR STUFF
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kgnw;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kgmw;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kgiw;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kgaw;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kgnw;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kgmw;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kgiw;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kgaw;
 
   if (aset && slipset)
     kgnw = Core::LinAlg::matrix_multiply(*smatrixW_sl, false, *wear_dn, false, false, false, true);
@@ -2151,7 +2154,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   // blocks for complementary conditions (stick nodes)
 
   // kstn: multiply with linstickLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kstnmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kstnmod;
   if (stickset)
   {
     kstnmod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
@@ -2159,7 +2162,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   }
 
   // kstm: multiply with linstickLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kstmmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kstmmod;
   if (stickset)
   {
     kstmmod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
@@ -2167,7 +2170,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   }
 
   // ksti: multiply with linstickLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kstimod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kstimod;
   if (stickset && iset)
   {
     kstimod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
@@ -2175,7 +2178,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   }
 
   // kstsl: multiply with linstickLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kstslmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kstslmod;
   if (stickset && slipset)
   {
     kstslmod =
@@ -2184,7 +2187,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   }
 
   // kststmod: multiply with linstickLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kststmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kststmod;
   if (stickset)
   {
     kststmod =
@@ -2196,7 +2199,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   // blocks for complementary conditions (slip nodes)
 
   // ksln: multiply with linslipLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslnmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslnmod;
   if (slipset)
   {
     kslnmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
@@ -2204,7 +2207,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   }
 
   // kslm: multiply with linslipLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslmmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslmmod;
   if (slipset)
   {
     kslmmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
@@ -2212,7 +2215,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   }
 
   // ksli: multiply with linslipLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslimod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslimod;
   if (slipset && iset)
   {
     kslimod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
@@ -2220,7 +2223,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   }
 
   // kslsl: multiply with linslipLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslslmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslslmod;
   if (slipset)
   {
     kslslmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
@@ -2228,7 +2231,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   }
 
   // slstmod: multiply with linslipLM
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslstmod;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslstmod;
   if (slipset && stickset)
   {
     kslstmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
@@ -2236,10 +2239,10 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   }
 
   // WEARSTUFF FOR THIS LINE
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslnw;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslmw;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> ksliw;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kslaw;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslnw;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslmw;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> ksliw;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kslaw;
 
   if (slipset)
     kslnw = Core::LinAlg::matrix_multiply(*linslipW_sl, false, *wear_dn, false, false, false, true);
@@ -2335,33 +2338,33 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   if (aset && (iset || stickset)) smatrixW_i->multiply(false, *inactive_wear_rhs_, fwi_g);
 
   //--------------------------------------------------------- FIFTH LINE
-  Teuchos::RCP<Epetra_Map> gstickdofs =
+  std::shared_ptr<Epetra_Map> gstickdofs =
       Core::LinAlg::split_map(*gactivedofs_, *gslipdofs_);  // get global stick dofs
 
   // split the lagrange multiplier vector in stick and slip part
-  Teuchos::RCP<Core::LinAlg::Vector<double>> za =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> zi =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> zst =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickdofs);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> zsl =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipdofs_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> za =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gactivedofs_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> zi =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gidofs);
+  std::shared_ptr<Core::LinAlg::Vector<double>> zst =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gstickdofs);
+  std::shared_ptr<Core::LinAlg::Vector<double>> zsl =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gslipdofs_);
 
   Core::LinAlg::split_vector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
   Core::LinAlg::split_vector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec1;
+  std::shared_ptr<Core::LinAlg::Vector<double>> tempvec1;
 
   // fst: mutliply with linstickLM
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fstmod;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fstmod;
   if (stickset)
   {
-    fstmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickt);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
+    fstmod = std::make_shared<Core::LinAlg::Vector<double>>(*gstickt);
+    std::shared_ptr<Core::LinAlg::SparseMatrix> temp1 =
         Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
     temp1->multiply(false, *fa, *fstmod);
 
-    tempvec1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickt);
+    tempvec1 = std::make_shared<Core::LinAlg::Vector<double>>(*gstickt);
 
     linstickLM_->multiply(false, *zst, *tempvec1);
     fstmod->Update(-1.0, *tempvec1, 1.0);
@@ -2369,16 +2372,16 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
 
   //--------------------------------------------------------- SIXTH LINE
   // fsl: mutliply with linslipLM
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fslmod;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fslmod;
 
   if (slipset)
   {
-    fslmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipt_);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
+    fslmod = std::make_shared<Core::LinAlg::Vector<double>>(*gslipt_);
+    std::shared_ptr<Core::LinAlg::SparseMatrix> temp =
         Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
     temp->multiply(false, *fa, *fslmod);
 
-    tempvec1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipt_);
+    tempvec1 = std::make_shared<Core::LinAlg::Vector<double>>(*gslipt_);
 
     linslipLM_->multiply(false, *zsl, *tempvec1);
 
@@ -2466,9 +2469,11 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   /* (10) Global setup of kteffnew (including contact)                */
   /********************************************************************/
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-      *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> feffnew = Core::LinAlg::create_vector(*problem_dofs());
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kteffnew =
+      std::make_shared<Core::LinAlg::SparseMatrix>(
+          *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype());
+  std::shared_ptr<Core::LinAlg::Vector<double>> feffnew =
+      Core::LinAlg::create_vector(*problem_dofs());
 
   //--------------------------------------------------------- FIRST LINE
   // add n submatrices to kteffnew
@@ -2548,36 +2553,36 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
 
   //--------------------------------------------------------- THIRD LINE
   // add i subvector to feffnew
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fimodexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fimodexp;
   if (iset)
   {
-    fimodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+    fimodexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(fimod, *fimodexp);
     feffnew->Update(1.0, *fimodexp, 1.0);
   }
 
   //-------------------------------------------------------- FOURTH LINE
   // add weighted gap vector to feffnew, if existing
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gexp;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fwexp;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fwiexp;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fgmodexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> gexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fwexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fwiexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fgmodexp;
 
   if (aset)
   {
-    gexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+    gexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(gact, *gexp);
     feffnew->Update(-1.0, *gexp, 1.0);
 
     // DUE TO WEAR
-    fwexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+    fwexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(fw_g, *fwexp);
     feffnew->Update(-1.0, *fwexp, 1.0);
 
     // DUE TO WEAR
     if (iset || stickset)
     {
-      fwiexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+      fwiexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(fwi_g, *fwiexp);
       feffnew->Update(+1.0, *fwiexp, 1.0);
     }
@@ -2585,10 +2590,10 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
 
   //--------------------------------------------------------- FIFTH LINE
   // add st subvector to feffnew
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fstmodexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fstmodexp;
   if (stickset)
   {
-    fstmodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+    fstmodexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fstmod, *fstmodexp);
     feffnew->Update(1.0, *fstmodexp, +1.0);
   }
@@ -2604,14 +2609,14 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   //--------------------------------------------------------- SIXTH LINE
 
   // add a subvector to feffnew
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fslmodexp;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fwslexp;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fwsliexp;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fslwmodexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fslmodexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fwslexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fwsliexp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> fslwmodexp;
 
   if (slipset)
   {
-    fslmodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+    fslmodexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fslmod, *fslmodexp);
     feffnew->Update(1.0, *fslmodexp, 1.0);
   }
@@ -2626,13 +2631,13 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   // DUE TO WEAR
   if (slipset)
   {
-    fwslexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+    fwslexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(fw_sl, *fwslexp);
     feffnew->Update(+1.0, *fwslexp, 1.0);
   }
   if (slipset && (iset || stickset))
   {
-    fwsliexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+    fwsliexp = std::make_shared<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(fwi_sl, *fwsliexp);
     feffnew->Update(-1.0, *fwsliexp, 1.0);
   }
@@ -2649,8 +2654,8 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
  | evaluate frictional wear contact (public)                 farah 10/13|
  *----------------------------------------------------------------------*/
 void Wear::LagrangeStrategyWear::evaluate_friction(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& feff)
+    std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& feff)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
@@ -2670,7 +2675,7 @@ void Wear::LagrangeStrategyWear::evaluate_friction(
   /* export weighted gap vector to gactiveN-map                         */
   /* Here, the additional wear is already included !!!                  */
   /**********************************************************************/
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gact =
+  std::shared_ptr<Core::LinAlg::Vector<double>> gact =
       Core::LinAlg::create_vector(*gactivenodes_, true);
   if (gact->GlobalLength())
   {
@@ -2687,7 +2692,7 @@ void Wear::LagrangeStrategyWear::evaluate_friction(
   /**********************************************************************/
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->assemble_tn(tmatrix_, Teuchos::null);
+    interface_[i]->assemble_tn(tmatrix_, nullptr);
     interface_[i]->assemble_s(*smatrix_);
     interface_[i]->assemble_lin_dm(*lindmatrix_, *linmmatrix_);
     interface_[i]->assemble_lin_stick(*linstickLM_, *linstickDIS_, *linstickRHS_);
@@ -2757,8 +2762,8 @@ void Wear::LagrangeStrategyWear::evaluate_friction(
   linmmatrix_->complete(*gsmdofrowmap_, *gmdofrowmap_);
 
   // fill_complete global Matrix linstickLM_, linstickDIS_
-  Teuchos::RCP<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
-  Teuchos::RCP<Epetra_Map> gstickdofs = Core::LinAlg::split_map(*gactivedofs_, *gslipdofs_);
+  std::shared_ptr<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
+  std::shared_ptr<Epetra_Map> gstickdofs = Core::LinAlg::split_map(*gactivedofs_, *gslipdofs_);
   linstickLM_->complete(*gstickdofs, *gstickt);
   linstickDIS_->complete(*gsmdofrowmap_, *gstickt);
 
@@ -2852,7 +2857,7 @@ void Wear::LagrangeStrategyWear::evaluate_friction(
   if (is_dual_quad_slave_trafo())
   {
     // modify lindmatrix_
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> temp1 =
         Core::LinAlg::matrix_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
     lindmatrix_ = temp1;
   }
@@ -3065,7 +3070,7 @@ void Wear::LagrangeStrategyWear::prepare_saddle_point_system(
   if (is_dual_quad_slave_trafo())
   {
     // modify dmatrix_
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> temp2 =
         Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     dmatrix_ = temp2;
   }
@@ -3157,11 +3162,12 @@ void Wear::LagrangeStrategyWear::prepare_saddle_point_system(
  | Setup 2x2 saddle point system for contact problems      wiesner 11/14|
  *----------------------------------------------------------------------*/
 void Wear::LagrangeStrategyWear::build_saddle_point_system(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> kdd, Teuchos::RCP<Core::LinAlg::Vector<double>> fd,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& blocksol,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& blockrhs)
+    std::shared_ptr<Core::LinAlg::SparseOperator> kdd,
+    std::shared_ptr<Core::LinAlg::Vector<double>> fd,
+    std::shared_ptr<Core::LinAlg::Vector<double>> sold,
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps, std::shared_ptr<Epetra_Operator>& blockMat,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& blocksol,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& blockrhs)
 {
   // create old style dirichtoggle vector (supposed to go away)
   // the use of a toggle vector is more flexible here. It allows to apply dirichlet
@@ -3178,50 +3184,51 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
   // prepare saddle point system
   //**********************************************************************
   // the standard stiffness matrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> stiffmt =
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kdd);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> stiffmt =
+      std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(kdd);
 
   // initialize merged system (matrix, rhs, sol);
-  Teuchos::RCP<Epetra_Map> mergedmap = Teuchos::null;
+  std::shared_ptr<Epetra_Map> mergedmap = nullptr;
   if (!wearprimvar_)
     mergedmap = Core::LinAlg::merge_map(problem_dofs(), glmdofrowmap_, false);
   else if (wearprimvar_ and !wearbothpv_)
   {
-    Teuchos::RCP<Epetra_Map> map_dummy =
+    std::shared_ptr<Epetra_Map> map_dummy =
         Core::LinAlg::merge_map(problem_dofs(), glmdofrowmap_, false);
     mergedmap = Core::LinAlg::merge_map(map_dummy, gwdofrowmap_, false);
   }
   else
   {
-    Teuchos::RCP<Epetra_Map> map_dummy =
+    std::shared_ptr<Epetra_Map> map_dummy =
         Core::LinAlg::merge_map(problem_dofs(), glmdofrowmap_, false);
     mergedmap = Core::LinAlg::merge_map(map_dummy, gwdofrowmap_, false);
     mergedmap = Core::LinAlg::merge_map(mergedmap, gwmdofrowmap_, false);  // slave + master wear
   }
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mergedmt = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> mergedrhs = Core::LinAlg::create_vector(*mergedmap);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> mergedsol = Core::LinAlg::create_vector(*mergedmap);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> mergedzeros = Core::LinAlg::create_vector(*mergedmap);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mergedmt = nullptr;
+  std::shared_ptr<Core::LinAlg::Vector<double>> mergedrhs = Core::LinAlg::create_vector(*mergedmap);
+  std::shared_ptr<Core::LinAlg::Vector<double>> mergedsol = Core::LinAlg::create_vector(*mergedmap);
+  std::shared_ptr<Core::LinAlg::Vector<double>> mergedzeros =
+      Core::LinAlg::create_vector(*mergedmap);
 
   // initialize constraint r.h.s. (still with wrong map)
-  Teuchos::RCP<Core::LinAlg::Vector<double>> constrrhs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> constrrhs =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
 
   // initialize transformed constraint matrices
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> trkdz, trkzd, trkzz;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> trkdz, trkzd, trkzz;
 
   // Wear stuff for own discretization:
   // initialize wear r.h.s. (still with wrong map)
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wearrhs = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wearrhsM = Teuchos::null;  // for master
+  std::shared_ptr<Core::LinAlg::Vector<double>> wearrhs = nullptr;
+  std::shared_ptr<Core::LinAlg::Vector<double>> wearrhsM = nullptr;  // for master
 
-  if (wearprimvar_) wearrhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
+  if (wearprimvar_) wearrhs = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofnrowmap_);
   if (wearprimvar_ and wearbothpv_)
-    wearrhsM = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
+    wearrhsM = std::make_shared<Core::LinAlg::Vector<double>>(*gmdofnrowmap_);
   // initialize transformed constraint matrices
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> trkwd, trkwz, trkww, trkzw, trkdw;        // slave
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> trkwmd, trkwmz, trkwmwm, trkzwm, trkdwm;  // master
+  std::shared_ptr<Core::LinAlg::SparseMatrix> trkwd, trkwz, trkww, trkzw, trkdw;        // slave
+  std::shared_ptr<Core::LinAlg::SparseMatrix> trkwmd, trkwmz, trkwmwm, trkzwm, trkdwm;  // master
   // currently slave + master coeff
   double wcoeff = params().get<double>("WEARCOEFF");
   double wcoeffM = params().get<double>("WEARCOEFF_MASTER");
@@ -3242,7 +3249,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
   else if (!wearprimvar_)
   {
     // global stick dof map
-    Teuchos::RCP<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
+    std::shared_ptr<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
 
     // build constraint matrix kdz
     Core::LinAlg::SparseMatrix kdz(*gdisprowmap_, 100, false, true);
@@ -3274,7 +3281,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
       trkzd = Mortar::matrix_col_transform(*trkzd, *problem_dofs());
 
     // build unity matrix for inactive dofs
-    Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
+    std::shared_ptr<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
     Core::LinAlg::Vector<double> ones(*gidofs);
     ones.PutScalar(1.0);
     Core::LinAlg::SparseMatrix onesdiag(ones);
@@ -3313,7 +3320,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // z^(i)_(n+1)
 
     // export weighted gap vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> gact =
+    std::shared_ptr<Core::LinAlg::Vector<double>> gact =
         Core::LinAlg::create_vector(*gactivenodes_, true);
     if (gactiven_->NumGlobalElements())
     {
@@ -3351,7 +3358,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
   else if (wearprimvar_ and !wearbothpv_)
   {
     // global stick dof map
-    Teuchos::RCP<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
+    std::shared_ptr<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
 
     // build constraint matrix kdz
     Core::LinAlg::SparseMatrix kdz(*gdisprowmap_, 100, false, true);
@@ -3383,7 +3390,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
       trkzd = Mortar::matrix_col_transform(*trkzd, *problem_dofs());
 
     // build unity matrix for inactive dofs
-    Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
+    std::shared_ptr<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
     Core::LinAlg::Vector<double> ones(*gidofs);
     ones.PutScalar(1.0);
     Core::LinAlg::SparseMatrix onesdiag(ones);
@@ -3491,7 +3498,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // z^(i)_(n+1)
 
     // export weighted gap vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> gact =
+    std::shared_ptr<Core::LinAlg::Vector<double>> gact =
         Core::LinAlg::create_vector(*gactivenodes_, true);
     if (gactiven_->NumGlobalElements())
     {
@@ -3547,7 +3554,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
   else if (wearprimvar_ and wearbothpv_)
   {
     // global stick dof map
-    Teuchos::RCP<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
+    std::shared_ptr<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
 
     // build constraint matrix kdz
     Core::LinAlg::SparseMatrix kdz(*gdisprowmap_, 100, false, true);
@@ -3579,7 +3586,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
       trkzd = Mortar::matrix_col_transform(*trkzd, *problem_dofs());
 
     // build unity matrix for inactive dofs
-    Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
+    std::shared_ptr<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
     Core::LinAlg::Vector<double> ones(*gidofs);
     ones.PutScalar(1.0);
     Core::LinAlg::SparseMatrix onesdiag(ones);
@@ -3708,7 +3715,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // z^(i)_(n+1)
 
     // export weighted gap vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> gact =
+    std::shared_ptr<Core::LinAlg::Vector<double>> gact =
         Core::LinAlg::create_vector(*gactivenodes_, true);
     if (gactiven_->NumGlobalElements())
     {
@@ -3790,7 +3797,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     trkdz->apply_dirichlet(dirichtoggle, false);
 
     // row map (equals domain map) extractor
-    std::vector<Teuchos::RCP<const Epetra_Map>> mapvec;
+    std::vector<std::shared_ptr<const Epetra_Map>> mapvec;
     mapvec.push_back(problem_dofs());
     mapvec.push_back(glmdofrowmap_);
     if (wearprimvar_)
@@ -3806,30 +3813,30 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     if (wearprimvar_)
     {
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> trkgd = Teuchos::null;
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> trkgg = Teuchos::null;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> trkgd = nullptr;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> trkgg = nullptr;
 
       if (!wearbothpv_)
       {
         // merged map ws + wm + z
-        Teuchos::RCP<Epetra_Map> gmap = Teuchos::null;
+        std::shared_ptr<Epetra_Map> gmap = nullptr;
         gmap = Core::LinAlg::merge_map(gwdofrowmap_, glmdofrowmap_, false);
 
         // row map (equals domain map) extractor
         Core::LinAlg::MapExtractor rowmapext(*mergedmap, gmap, problem_dofs());
         Core::LinAlg::MapExtractor dommapext(*mergedmap, gmap, problem_dofs());
 
-        blockMat = Teuchos::make_rcp<
+        blockMat = std::make_shared<
             Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
 
             dommapext, rowmapext, 81, false, false);
-        Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
-            mat = Teuchos::rcp_dynamic_cast<
+        std::shared_ptr<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
+            mat = std::dynamic_pointer_cast<
                 Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
                 blockMat);
 
-        trkgd = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmap, 100, false, true);
-        trkgg = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmap, 100, false, true);
+        trkgd = std::make_shared<Core::LinAlg::SparseMatrix>(*gmap, 100, false, true);
+        trkgg = std::make_shared<Core::LinAlg::SparseMatrix>(*gmap, 100, false, true);
 
         trkgd->add(*trkzd, false, 1.0, 1.0);
         trkgd->add(*trkwd, false, 1.0, 1.0);
@@ -3855,8 +3862,8 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
       else
       {
         // merged map ws + wm + z
-        Teuchos::RCP<Epetra_Map> gmap = Teuchos::null;
-        Teuchos::RCP<Epetra_Map> map_dummyg =
+        std::shared_ptr<Epetra_Map> gmap = nullptr;
+        std::shared_ptr<Epetra_Map> map_dummyg =
             Core::LinAlg::merge_map(gwdofrowmap_, gwmdofrowmap_, false);
         gmap = Core::LinAlg::merge_map(map_dummyg, glmdofrowmap_, false);
 
@@ -3864,17 +3871,17 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
         Core::LinAlg::MapExtractor rowmapext(*mergedmap, gmap, problem_dofs());
         Core::LinAlg::MapExtractor dommapext(*mergedmap, gmap, problem_dofs());
 
-        blockMat = Teuchos::make_rcp<
+        blockMat = std::make_shared<
             Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
 
             dommapext, rowmapext, 81, false, false);
-        Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
-            mat = Teuchos::rcp_dynamic_cast<
+        std::shared_ptr<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
+            mat = std::dynamic_pointer_cast<
                 Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
                 blockMat);
 
-        trkgd = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmap, 100, false, true);
-        trkgg = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmap, 100, false, true);
+        trkgd = std::make_shared<Core::LinAlg::SparseMatrix>(*gmap, 100, false, true);
+        trkgg = std::make_shared<Core::LinAlg::SparseMatrix>(*gmap, 100, false, true);
 
         trkgd->add(*trkzd, false, 1.0, 1.0);
         trkgd->add(*trkwd, false, 1.0, 1.0);
@@ -3907,12 +3914,12 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
       Core::LinAlg::MultiMapExtractor dommapext(*mergedmap, mapvec);
 
       // build block matrix for SIMPLER
-      blockMat = Teuchos::make_rcp<
+      blockMat = std::make_shared<
           Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
 
           dommapext, rowmapext, 81, false, false);
-      Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> mat =
-          Teuchos::rcp_dynamic_cast<
+      std::shared_ptr<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
+          mat = std::dynamic_pointer_cast<
               Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(blockMat);
       mat->assign(0, 0, Core::LinAlg::View, *stiffmt);
       mat->assign(0, 1, Core::LinAlg::View, *trkdz);
@@ -3968,34 +3975,34 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
  | Update internal member variables after saddle point solve wiesner 11/14|
  *------------------------------------------------------------------------*/
 void Wear::LagrangeStrategyWear::update_displacements_and_l_mincrements(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> blocksol)
+    std::shared_ptr<Core::LinAlg::Vector<double>> sold,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> blocksol)
 {
   //**********************************************************************
   // extract results for displacement and LM increments
   //**********************************************************************
   Core::LinAlg::Vector<double> sollm(*glmdofrowmap_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> solw = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> solwm = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Vector<double>> solw = nullptr;
+  std::shared_ptr<Core::LinAlg::Vector<double>> solwm = nullptr;
 
-  if (wearprimvar_) solw = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gwdofrowmap_);
-  if (wearbothpv_) solwm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gwmdofrowmap_);
+  if (wearprimvar_) solw = std::make_shared<Core::LinAlg::Vector<double>>(*gwdofrowmap_);
+  if (wearbothpv_) solwm = std::make_shared<Core::LinAlg::Vector<double>>(*gwmdofrowmap_);
 
   // initialize merged system (matrix, rhs, sol);
-  Teuchos::RCP<Epetra_Map> mergedmap = Teuchos::null;
+  std::shared_ptr<Epetra_Map> mergedmap = nullptr;
   if (!wearprimvar_)
   {
     mergedmap = Core::LinAlg::merge_map(problem_dofs(), glmdofrowmap_, false);
   }
   else if (wearprimvar_ and !wearbothpv_)
   {
-    Teuchos::RCP<Epetra_Map> map_dummy =
+    std::shared_ptr<Epetra_Map> map_dummy =
         Core::LinAlg::merge_map(problem_dofs(), glmdofrowmap_, false);
     mergedmap = Core::LinAlg::merge_map(map_dummy, gwdofrowmap_, false);
   }
   else
   {
-    Teuchos::RCP<Epetra_Map> map_dummy =
+    std::shared_ptr<Epetra_Map> map_dummy =
         Core::LinAlg::merge_map(problem_dofs(), glmdofrowmap_, false);
     mergedmap = Core::LinAlg::merge_map(map_dummy, gwdofrowmap_, false);
     mergedmap = Core::LinAlg::merge_map(mergedmap, gwmdofrowmap_, false);  // slave + master wear
@@ -4024,9 +4031,9 @@ void Wear::LagrangeStrategyWear::update_displacements_and_l_mincrements(
   // for self contact, slave and master sets may have changed,
   // thus we have to reinitialize the LM vector map
   {
-    zincr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(sollm);
+    zincr_ = std::make_shared<Core::LinAlg::Vector<double>>(sollm);
     Core::LinAlg::export_to(*z_, *zincr_);  // change the map of z_
-    z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*zincr_);
+    z_ = std::make_shared<Core::LinAlg::Vector<double>>(*zincr_);
     zincr_->Update(1.0, sollm, 0.0);  // save sollm in zincr_
     z_->Update(1.0, *zincr_, 1.0);    // update z_
   }
@@ -4123,8 +4130,8 @@ void Wear::LagrangeStrategyWear::output_wear()
 
     // extract active parts of D matrix
     // matrices, maps
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> daa, dai, dia, dii;
-    Teuchos::RCP<Epetra_Map> gidofs;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> daa, dai, dia, dii;
+    std::shared_ptr<Epetra_Map> gidofs;
 
     // ****************************************************************
     // split the matrix
@@ -4134,10 +4141,10 @@ void Wear::LagrangeStrategyWear::output_wear()
         dmatrix_, gactivedofs_, gidofs, gactivedofs_, gidofs, daa, dai, dia, dii);
 
     // extract active parts of wear vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> wear_vectora =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_, true);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> wear_vectori =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
+    std::shared_ptr<Core::LinAlg::Vector<double>> wear_vectora =
+        std::make_shared<Core::LinAlg::Vector<double>>(*gactivedofs_, true);
+    std::shared_ptr<Core::LinAlg::Vector<double>> wear_vectori =
+        std::make_shared<Core::LinAlg::Vector<double>>(*gidofs);
 
     // split the vector
     Core::LinAlg::split_vector(
@@ -4201,8 +4208,8 @@ void Wear::LagrangeStrategyWear::output_wear()
 
       // extract involved parts of d2 matrix
       // matrices, maps - i: involved ; n: non-involved
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> d2ii, d2in, d2ni, d2nn;
-      Teuchos::RCP<Epetra_Map> gndofs;  // non-involved dofs
+      std::shared_ptr<Core::LinAlg::SparseMatrix> d2ii, d2in, d2ni, d2nn;
+      std::shared_ptr<Epetra_Map> gndofs;  // non-involved dofs
 
       Core::LinAlg::split_matrix2x2(
           d2matrix_, gminvolveddofs_, gndofs, gminvolveddofs_, gndofs, d2ii, d2in, d2ni, d2nn);
@@ -4215,10 +4222,10 @@ void Wear::LagrangeStrategyWear::output_wear()
 
       // extract involved parts of wear vector
       Core::LinAlg::Vector<double> wear2_real(*gminvolveddofs_, true);
-      Teuchos::RCP<Core::LinAlg::Vector<double>> wear2_vectori =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gminvolveddofs_, true);
-      Teuchos::RCP<Core::LinAlg::Vector<double>> wear2_vectorn =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gndofs);
+      std::shared_ptr<Core::LinAlg::Vector<double>> wear2_vectori =
+          std::make_shared<Core::LinAlg::Vector<double>>(*gminvolveddofs_, true);
+      std::shared_ptr<Core::LinAlg::Vector<double>> wear2_vectorn =
+          std::make_shared<Core::LinAlg::Vector<double>>(*gndofs);
 
       // split the vector
       Core::LinAlg::split_vector(
@@ -4264,30 +4271,30 @@ void Wear::LagrangeStrategyWear::output_wear()
  |  write restart information for contact                     popp 03/08|
  *----------------------------------------------------------------------*/
 void Wear::LagrangeStrategyWear::do_write_restart(
-    std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>& restart_vectors,
+    std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>& restart_vectors,
     bool forcedrestart) const
 {
   // TODO: extend this function to forcedrestart -- write output for
   // last converged wear... see contact_lagrange_strategy.cpp!
 
   // initalize
-  Teuchos::RCP<Core::LinAlg::Vector<double>> activetoggle =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsnoderowmap_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> sliptoggle, weightedwear, realwear;
+  std::shared_ptr<Core::LinAlg::Vector<double>> activetoggle =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gsnoderowmap_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> sliptoggle, weightedwear, realwear;
 
   // write toggle
   restart_vectors["activetoggle"] = activetoggle;
   if (friction_)
   {
-    sliptoggle = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsnoderowmap_);
+    sliptoggle = std::make_shared<Core::LinAlg::Vector<double>>(*gsnoderowmap_);
     restart_vectors["sliptoggle"] = sliptoggle;
   }
 
   if (weightedwear_)
   {
-    weightedwear = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsnoderowmap_);  // weighted
+    weightedwear = std::make_shared<Core::LinAlg::Vector<double>>(*gsnoderowmap_);  // weighted
     restart_vectors["weightedwear"] = weightedwear;
-    realwear = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);  // unweighted
+    realwear = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);  // unweighted
     restart_vectors["realwear"] = realwear;
   }
 
@@ -4327,7 +4334,7 @@ void Wear::LagrangeStrategyWear::do_write_restart(
 /*----------------------------------------------------------------------*
  | Recovery method                                           farah 10/13|
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::recover(Teuchos::RCP<Core::LinAlg::Vector<double>> disi)
+void Wear::LagrangeStrategyWear::recover(std::shared_ptr<Core::LinAlg::Vector<double>> disi)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
@@ -4366,9 +4373,9 @@ void Wear::LagrangeStrategyWear::recover(Teuchos::RCP<Core::LinAlg::Vector<doubl
     // thus we construct a modified invd matrix here which
     // only contains the active diagonal block
     // (this automatically renders the incative LM to be zero)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> invda;
-    Teuchos::RCP<Epetra_Map> tempmap;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> invda;
+    std::shared_ptr<Epetra_Map> tempmap;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
     Core::LinAlg::split_matrix2x2(
         invd_, gactivedofs_, tempmap, gactivedofs_, tempmap, invda, tempmtx1, tempmtx2, tempmtx3);
     Core::LinAlg::SparseMatrix invdmod(*gsdofrowmap_, 10);
@@ -4478,9 +4485,9 @@ void Wear::LagrangeStrategyWear::recover(Teuchos::RCP<Core::LinAlg::Vector<doubl
     // thus we construct a modified invd matrix here which
     // only contains the active diagonal block
     // (this automatically renders the incative LM to be zero)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> invda;
-    Teuchos::RCP<Epetra_Map> tempmap;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> invda;
+    std::shared_ptr<Epetra_Map> tempmap;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
     Core::LinAlg::split_matrix2x2(
         invd_, gactivedofs_, tempmap, gactivedofs_, tempmap, invda, tempmtx1, tempmtx2, tempmtx3);
     Core::LinAlg::SparseMatrix invdmod(*gsdofrowmap_, 10);
@@ -4500,7 +4507,7 @@ void Wear::LagrangeStrategyWear::recover(Teuchos::RCP<Core::LinAlg::Vector<doubl
       // invdmod->Multiply(false,*fs_,*z_);
 
       // full update
-      z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+      z_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
       z_->Update(1.0, *fs_, 0.0);
       Core::LinAlg::Vector<double> mod(*gsdofrowmap_);
       kss_->multiply(false, disis, mod);
@@ -4571,8 +4578,8 @@ void Wear::LagrangeStrategyWear::recover(Teuchos::RCP<Core::LinAlg::Vector<doubl
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
 bool Wear::LagrangeStrategyWear::redistribute_contact(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dis,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel)
 {
   // get out of here if parallel redistribution is switched off
   // or if this is a single processor (serial) job
@@ -4733,7 +4740,7 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
  |  read restart information for contact                      popp 03/08|
  *----------------------------------------------------------------------*/
 void Wear::LagrangeStrategyWear::do_read_restart(
-    Core::IO::DiscretizationReader& reader, Teuchos::RCP<const Core::LinAlg::Vector<double>> dis)
+    Core::IO::DiscretizationReader& reader, std::shared_ptr<const Core::LinAlg::Vector<double>> dis)
 {
   // check whether this is a restart with contact of a previously
   // non-contact simulation run (if yes, we have to be careful not
@@ -4761,35 +4768,35 @@ void Wear::LagrangeStrategyWear::do_read_restart(
   if (is_dual_quad_slave_trafo())
   {
     // modify dmatrix_
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> temp =
         Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     dmatrix_ = temp;
   }
 
   // read restart information on actice set and slip set (leave sets empty
   // if this is a restart with contact of a non-contact simulation run)
-  Teuchos::RCP<Core::LinAlg::Vector<double>> activetoggle =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsnoderowmap_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> activetoggle =
+      std::make_shared<Core::LinAlg::Vector<double>>(*gsnoderowmap_);
   if (!restartwithcontact) reader.read_vector(activetoggle, "activetoggle");
 
   // friction
-  Teuchos::RCP<Core::LinAlg::Vector<double>> sliptoggle;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> weightedwear;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> realwear;
+  std::shared_ptr<Core::LinAlg::Vector<double>> sliptoggle;
+  std::shared_ptr<Core::LinAlg::Vector<double>> weightedwear;
+  std::shared_ptr<Core::LinAlg::Vector<double>> realwear;
 
   if (friction_)
   {
-    sliptoggle = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsnoderowmap_);
+    sliptoggle = std::make_shared<Core::LinAlg::Vector<double>>(*gsnoderowmap_);
     if (!restartwithcontact) reader.read_vector(sliptoggle, "sliptoggle");
   }
 
   // wear
   if (weightedwear_)
   {
-    weightedwear = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsnoderowmap_);
+    weightedwear = std::make_shared<Core::LinAlg::Vector<double>>(*gsnoderowmap_);
     reader.read_vector(weightedwear, "weightedwear");
 
-    realwear = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+    realwear = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
     reader.read_vector(realwear, "realwear");
   }
 
@@ -4830,13 +4837,13 @@ void Wear::LagrangeStrategyWear::do_read_restart(
 
 
   // read restart information on Lagrange multipliers
-  z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  zold_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  z_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  zold_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   if (!restartwithcontact) reader.read_vector(z_, "lagrmultold");
   if (!restartwithcontact) reader.read_vector(data().old_lm_ptr(), "lagrmultold");
 
   // Lagrange multiplier increment is always zero (no restart value to be read)
-  zincr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  zincr_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
 
   // store restart information on Lagrange multipliers into nodes
   store_nodal_quantities(Mortar::StrategyBase::lmcurrent);
@@ -4849,7 +4856,7 @@ void Wear::LagrangeStrategyWear::do_read_restart(
   auto st = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
   if (st == Inpar::CONTACT::solution_uzawa)
   {
-    zuzawa_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+    zuzawa_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
     if (!restartwithcontact) reader.read_vector(data().lm_uzawa_ptr(), "lagrmultold");
     store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
   }
@@ -4864,13 +4871,13 @@ void Wear::LagrangeStrategyWear::do_read_restart(
   }
 
   // (re)setup active global Epetra_Maps
-  gactivenodes_ = Teuchos::null;
-  gactivedofs_ = Teuchos::null;
-  gactiven_ = Teuchos::null;
-  gactivet_ = Teuchos::null;
-  gslipnodes_ = Teuchos::null;
-  gslipdofs_ = Teuchos::null;
-  gslipt_ = Teuchos::null;
+  gactivenodes_ = nullptr;
+  gactivedofs_ = nullptr;
+  gactiven_ = nullptr;
+  gactivet_ = nullptr;
+  gslipnodes_ = nullptr;
+  gslipdofs_ = nullptr;
+  gslipt_ = nullptr;
 
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
@@ -4919,16 +4926,16 @@ void Wear::LagrangeStrategyWear::update_active_set_semi_smooth(const bool firstS
   CONTACT::LagrangeStrategy::update_active_set_semi_smooth(firstStepPredictor);
 
   // for both-sided wear
-  gminvolvednodes_ = Teuchos::null;
-  gminvolveddofs_ = Teuchos::null;
+  gminvolvednodes_ = nullptr;
+  gminvolveddofs_ = nullptr;
 
   // for wear with own discretization
-  gslipn_ = Teuchos::null;
-  gwinact_ = Teuchos::null;
-  gmslipn_ = Teuchos::null;
-  gwminact_ = Teuchos::null;
-  gmslipnodes_ = Teuchos::null;
-  gmactivenodes_ = Teuchos::null;
+  gslipn_ = nullptr;
+  gwinact_ = nullptr;
+  gmslipn_ = nullptr;
+  gwminact_ = nullptr;
+  gmslipnodes_ = nullptr;
+  gmactivenodes_ = nullptr;
 
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
@@ -4999,7 +5006,7 @@ void Wear::LagrangeStrategyWear::update_wear_discret_iterate(bool store)
       }
       if (wearbothpv_)
       {
-        const Teuchos::RCP<Epetra_Map> masternodes =
+        const std::shared_ptr<Epetra_Map> masternodes =
             Core::LinAlg::allreduce_e_map(*(interface_[i]->master_row_nodes()));
 
         for (int j = 0; j < (int)masternodes->NumMyElements(); ++j)
@@ -5034,7 +5041,7 @@ void Wear::LagrangeStrategyWear::update_wear_discret_accumulation()
 /*----------------------------------------------------------------------*
  |  Update and output contact at end of time step            farah 02/16|
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::update(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis)
+void Wear::LagrangeStrategyWear::update(std::shared_ptr<const Core::LinAlg::Vector<double>> dis)
 {
   // call base routine
   CONTACT::AbstractStrategy::update(dis);
@@ -5055,7 +5062,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // get global quantity to be stored in nodes
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vectorglobal = Teuchos::null;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vectorglobal = nullptr;
 
     // start type switch
     switch (type)
@@ -5085,7 +5092,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
     // slave dof and node map of the interface
     // columnmap for current or updated LM
     // rowmap for remaining cases
-    Teuchos::RCP<const Epetra_Map> sdofmap, snodemap;
+    std::shared_ptr<const Epetra_Map> sdofmap, snodemap;
     if (type == Mortar::StrategyBase::wupdate or type == Mortar::StrategyBase::wold or
         type == Mortar::StrategyBase::wupdateT)
     {
@@ -5099,28 +5106,28 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
     }
 
     // master side wear
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vectorinterface = Teuchos::null;
+    std::shared_ptr<Core::LinAlg::Vector<double>> vectorinterface = nullptr;
     if (type == Mortar::StrategyBase::wmupdate or type == Mortar::StrategyBase::wmold)
     {
       // export global quantity to current interface slave dof map (column or row)
-      const Teuchos::RCP<Epetra_Map> masterdofs =
+      const std::shared_ptr<Epetra_Map> masterdofs =
           Core::LinAlg::allreduce_e_map(*(interface_[i]->master_row_dofs()));
-      vectorinterface = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*masterdofs);
+      vectorinterface = std::make_shared<Core::LinAlg::Vector<double>>(*masterdofs);
 
-      if (vectorglobal != Teuchos::null)  // necessary for case "activeold" and wear
+      if (vectorglobal != nullptr)  // necessary for case "activeold" and wear
         Core::LinAlg::export_to(*vectorglobal, *vectorinterface);
     }
     else
     {
       // export global quantity to current interface slave dof map (column or row)
-      vectorinterface = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*sdofmap);
+      vectorinterface = std::make_shared<Core::LinAlg::Vector<double>>(*sdofmap);
 
-      if (vectorglobal != Teuchos::null)  // necessary for case "activeold" and wear
+      if (vectorglobal != nullptr)  // necessary for case "activeold" and wear
         Core::LinAlg::export_to(*vectorglobal, *vectorinterface);
     }
 
     // master specific
-    const Teuchos::RCP<Epetra_Map> masternodes =
+    const std::shared_ptr<Epetra_Map> masternodes =
         Core::LinAlg::allreduce_e_map(*(interface_[i]->master_row_nodes()));
     if (type == Mortar::StrategyBase::wmupdate)
     {

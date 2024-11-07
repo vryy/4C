@@ -219,7 +219,7 @@ namespace BEAMINTERACTION
         Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
         Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
         Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) override;
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector) override;
 
     /**
      * \brief Evaluate the terms that directly assemble it into the global force vector and
@@ -227,8 +227,8 @@ namespace BEAMINTERACTION
      */
     void evaluate_and_assemble(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
-        const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+        const std::shared_ptr<Epetra_FEVector>& force_vector,
+        const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Core::LinAlg::Vector<double>& global_lambda,
         const Core::LinAlg::Vector<double>& displacement_vector) override;
 
@@ -236,14 +236,14 @@ namespace BEAMINTERACTION
      * \brief Update state of rotational DoFs of both elements
      */
     void reset_rotation_state(const Core::FE::Discretization& discret,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& ia_discolnp) override;
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& ia_discolnp) override;
 
     /**
      * \brief Add the visualization of this pair to the beam to solid visualization output writer
      * (derived)
      */
     void get_pair_visualization(
-        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
+        std::shared_ptr<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
    protected:
@@ -270,7 +270,7 @@ namespace BEAMINTERACTION
   /**
    * \brief Factory for the mortar cross section pair
    */
-  Teuchos::RCP<BeamContactPair> create_beam_to_solid_volume_pair_mortar_cross_section(
+  std::shared_ptr<BeamContactPair> create_beam_to_solid_volume_pair_mortar_cross_section(
       const Core::FE::CellType shape,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
       const int n_fourier_modes);

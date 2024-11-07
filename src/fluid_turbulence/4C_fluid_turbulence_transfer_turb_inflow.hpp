@@ -13,7 +13,7 @@
 #include "4C_comm_exporter.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -31,8 +31,8 @@ namespace FLD
     \brief Standard Constructor
 
     */
-    TransferTurbulentInflowCondition(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps);
+    TransferTurbulentInflowCondition(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps);
 
     /*!
     \brief Destructor
@@ -49,8 +49,8 @@ namespace FLD
            dummy Dirichlet values on the slave boundary by the values
            of the last time step on the master boundary
     */
-    virtual void transfer(const Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> velnp, const double time);
+    virtual void transfer(const std::shared_ptr<Core::LinAlg::Vector<double>> veln,
+        std::shared_ptr<Core::LinAlg::Vector<double>> velnp, const double time);
 
    protected:
     //! there are two types of tranfer conditions. values are transferred
@@ -84,16 +84,16 @@ namespace FLD
     //! for all values avaible on the processor, do the final setting of the value
     virtual void set_values_available_on_this_proc(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vel,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> velnp);
+        std::shared_ptr<Core::LinAlg::Vector<double>> velnp);
 
     //! flag active boundary condition (may be used to switch off everything)
     bool active_;
 
     //! the discretisation
-    Teuchos::RCP<Core::FE::Discretization> dis_;
+    std::shared_ptr<Core::FE::Discretization> dis_;
 
     //! info on DIirchlet boundary
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;
 
     //! the connectivity of the boundary condition
     std::map<int, std::vector<int>> midtosid_;
@@ -111,8 +111,8 @@ namespace FLD
     \brief Standard Constructor
 
     */
-    TransferTurbulentInflowConditionXW(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps);
+    TransferTurbulentInflowConditionXW(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps);
 
 
     /*!
@@ -124,14 +124,14 @@ namespace FLD
            dummy Dirichlet values on the slave boundary by the values
            of the last time step on the master boundary
     */
-    void transfer(const Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> velnp, const double time) override;
+    void transfer(const std::shared_ptr<Core::LinAlg::Vector<double>> veln,
+        std::shared_ptr<Core::LinAlg::Vector<double>> velnp, const double time) override;
 
    private:
     //! for all values avaible on the processor, do the final setting of the value
     void set_values_available_on_this_proc(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vel,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> velnp) override;
+        std::shared_ptr<Core::LinAlg::Vector<double>> velnp) override;
   };
 
 
@@ -142,8 +142,8 @@ namespace FLD
     \brief Standard Constructor
 
     */
-    TransferTurbulentInflowConditionNodal(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps);
+    TransferTurbulentInflowConditionNodal(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps);
 
 
     /*!
@@ -155,8 +155,8 @@ namespace FLD
            dummy Dirichlet values on the slave boundary by the values
            of the last time step on the master boundary
     */
-    void transfer(const Teuchos::RCP<Core::LinAlg::Vector<double>> invec,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> outvec, const double time) override;
+    void transfer(const std::shared_ptr<Core::LinAlg::Vector<double>> invec,
+        std::shared_ptr<Core::LinAlg::Vector<double>> outvec, const double time) override;
 
     bool is_active() { return active_; }
 
@@ -164,7 +164,7 @@ namespace FLD
     //! for all values avaible on the processor, do the final setting of the value
     void set_values_available_on_this_proc(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vec,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> outvec) override;
+        std::shared_ptr<Core::LinAlg::Vector<double>> outvec) override;
   };
 
 }  // end namespace FLD

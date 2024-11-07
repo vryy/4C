@@ -95,14 +95,15 @@ namespace FS3I
 
 
     /// extract fluid convective and structure convective velocities
-    void extract_vel(std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& vel,
-        std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& convel);
+    void extract_vel(std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>& vel,
+        std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>& convel);
 
     /// extract Wall Shear Stresses at the interface
-    void extract_wss(std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& wss);
+    void extract_wss(std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>& wss);
 
     /// extracts pressures at the interface
-    void extract_pressure(std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& pressure);
+    void extract_pressure(
+        std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>& pressure);
 
     /// provide velocities from FPSI subproblem for scatra subproblem
     void set_velocity_fields();
@@ -118,7 +119,7 @@ namespace FS3I
 
    protected:
     /// fpsi algorithm
-    Teuchos::RCP<FPSI::MonolithicPlain> fpsi_;
+    std::shared_ptr<FPSI::MonolithicPlain> fpsi_;
 
 
    private:
@@ -126,10 +127,10 @@ namespace FS3I
     const Epetra_Comm& comm_;
 
     /// scatra field on fluid
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> fluidscatra_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> fluidscatra_;
 
     /// scatra field on structure
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> structscatra_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> structscatra_;
   };
 }  // namespace FS3I
 

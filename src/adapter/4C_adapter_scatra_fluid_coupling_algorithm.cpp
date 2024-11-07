@@ -33,7 +33,7 @@ Adapter::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(const Epetra
           solverparams, scatra_disname, isale),
       fieldcoupling_(Teuchos::getIntegralValue<Inpar::ScaTra::FieldCoupling>(
           Global::Problem::instance()->scalar_transport_dynamic_params(), "FIELDCOUPLING")),
-      volcoupl_fluidscatra_(Teuchos::null),
+      volcoupl_fluidscatra_(nullptr),
       params_(prbdyn),
       scatra_disname_(scatra_disname),
       issetup_(false),
@@ -73,7 +73,7 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
   fluid_field()->init();
 
   // setup coupling adapter
-  if (not volcoupl_fluidscatra_.is_null())
+  if (volcoupl_fluidscatra_)
     volcoupl_fluidscatra_->setup(Global::Problem::instance()->volmortar_params(),
         Global::Problem::instance()->cut_general_params());
 
@@ -84,13 +84,13 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
   {
     // transfer the initial convective velocity from initial fluid field to scalar transport field
     // subgrid scales not transferred since they are zero at time t=0.0
-    if (volcoupl_fluidscatra_.is_null())
+    if (!volcoupl_fluidscatra_)
       scatra_field()->set_velocity_field(
-          fluid_field()->convective_vel(), Teuchos::null, Teuchos::null, Teuchos::null);
+          fluid_field()->convective_vel(), nullptr, nullptr, nullptr);
     else
       scatra_field()->set_velocity_field(
-          volcoupl_fluidscatra_->apply_vector_mapping21(*fluid_field()->convective_vel()),
-          Teuchos::null, Teuchos::null, Teuchos::null);
+          volcoupl_fluidscatra_->apply_vector_mapping21(*fluid_field()->convective_vel()), nullptr,
+          nullptr, nullptr);
   }
 
   // ensure that both single field solvers use the same
@@ -137,7 +137,7 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
   }
 
   // if applicable, provide scatra data to the turbulence statistics
-  if (fluid_field()->turbulence_statistic_manager() != Teuchos::null and
+  if (fluid_field()->turbulence_statistic_manager() != nullptr and
       scatra_field()->method_name() != Inpar::ScaTra::timeint_stationary)
   {
     // Now, the statistics manager has access to the scatra time integration
@@ -145,16 +145,14 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
   }
 
   // if available, allow scatra field to access dynamic Smagorinsky filter
-  if (fluid_field()->dyn_smag_filter() != Teuchos::null)
+  if (fluid_field()->dyn_smag_filter() != nullptr)
     scatra_field()->access_dyn_smag_filter(fluid_field()->dyn_smag_filter());
 
   // if available, allow scatra field to access dynamic Vreman
-  if (fluid_field()->vreman() != Teuchos::null)
-    scatra_field()->access_vreman(fluid_field()->vreman());
+  if (fluid_field()->vreman() != nullptr) scatra_field()->access_vreman(fluid_field()->vreman());
 
   // safety check:
-  if (volcoupl_fluidscatra_ == Teuchos::null and
-      fieldcoupling_ == Inpar::ScaTra::coupling_volmortar)
+  if (volcoupl_fluidscatra_ == nullptr and fieldcoupling_ == Inpar::ScaTra::coupling_volmortar)
     FOUR_C_THROW("Something went terrible wrong. Sorry about this!");
 
   set_is_setup(true);
@@ -167,25 +165,25 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup_field_coupling(
     const std::string fluid_disname, const std::string scatra_disname)
 {
   Global::Problem* problem = Global::Problem::instance();
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
+  std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
+  std::shared_ptr<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
 
   if (fieldcoupling_ == Inpar::ScaTra::coupling_volmortar)
   {
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_fluidscatra_ = Teuchos::make_rcp<Coupling::Adapter::MortarVolCoupl>();
+    volcoupl_fluidscatra_ = std::make_shared<Coupling::Adapter::MortarVolCoupl>();
 
     // setup projection matrices (use default material strategy)
-    volcoupl_fluidscatra_->init(problem->n_dim(), fluiddis, scatradis, nullptr, nullptr, nullptr,
-        nullptr, Teuchos::null, true);
+    volcoupl_fluidscatra_->init(
+        problem->n_dim(), fluiddis, scatradis, nullptr, nullptr, nullptr, nullptr, nullptr, true);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Adapter::ScaTraFluidCouplingAlgorithm::fluid_to_scatra(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidvector) const
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> fluidvector) const
 {
   switch (fieldcoupling_)
   {
@@ -197,16 +195,16 @@ Adapter::ScaTraFluidCouplingAlgorithm::fluid_to_scatra(
       break;
     default:
       FOUR_C_THROW("unknown field coupling type");
-      return Teuchos::null;
+      return nullptr;
       break;
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Adapter::ScaTraFluidCouplingAlgorithm::scatra_to_fluid(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scatravector) const
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> scatravector) const
 {
   switch (fieldcoupling_)
   {
@@ -218,7 +216,7 @@ Adapter::ScaTraFluidCouplingAlgorithm::scatra_to_fluid(
       break;
     default:
       FOUR_C_THROW("unknown field coupling type");
-      return Teuchos::null;
+      return nullptr;
       break;
   }
 }
@@ -232,7 +230,7 @@ void Adapter::ScaTraFluidCouplingAlgorithm::read_restart(int step)
   set_time_step(fluid_field()->time(), step);
 
   // read scatra-specific restart data for turbulence statistics
-  if (fluid_field()->turbulence_statistic_manager() != Teuchos::null)
+  if (fluid_field()->turbulence_statistic_manager() != nullptr)
   {
     Core::IO::DiscretizationReader reader(
         scatra_field()->discretization(), Global::Problem::instance()->input_control_file(), step);

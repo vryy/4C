@@ -46,22 +46,22 @@ void PoroElast::Utils::PoroelastCloneStrategy::check_material_type(const int mat
 }
 
 void PoroElast::Utils::PoroelastCloneStrategy::set_element_data(
-    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
-    const bool isnurbs)
+    std::shared_ptr<Core::Elements::Element> newele, Core::Elements::Element* oldele,
+    const int matid, const bool isnurbs)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
   // element type in order to access the material property
 
-  Teuchos::RCP<Discret::Elements::FluidPoro> fluid =
-      Teuchos::rcp_dynamic_cast<Discret::Elements::FluidPoro>(newele);
-  if (fluid != Teuchos::null)
+  std::shared_ptr<Discret::Elements::FluidPoro> fluid =
+      std::dynamic_pointer_cast<Discret::Elements::FluidPoro>(newele);
+  if (fluid != nullptr)
   {
     fluid->set_material(0, Mat::factory(matid));
     // Copy Initial Porosity from StructPoro Material to FluidPoro Material
     static_cast<Mat::PAR::FluidPoro*>(fluid->material()->parameter())
         ->set_initial_porosity(
-            Teuchos::rcp_static_cast<Mat::StructPoro>(oldele->material())->init_porosity());
+            std::static_pointer_cast<Mat::StructPoro>(oldele->material())->init_porosity());
     fluid->set_dis_type(oldele->shape());  // set distype as well!
     fluid->set_is_ale(true);
     auto* solid_poro_pressure_velocity_based =
@@ -89,10 +89,10 @@ void PoroElast::Utils::PoroelastCloneStrategy::set_element_data(
 }
 
 void PoroElast::Utils::PoroelastCloneStrategy::set_anisotropic_permeability_directions_onto_fluid(
-    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele)
+    std::shared_ptr<Core::Elements::Element> newele, Core::Elements::Element* oldele)
 {
-  Teuchos::RCP<Discret::Elements::FluidPoro> fluid =
-      Teuchos::rcp_dynamic_cast<Discret::Elements::FluidPoro>(newele);
+  std::shared_ptr<Discret::Elements::FluidPoro> fluid =
+      std::dynamic_pointer_cast<Discret::Elements::FluidPoro>(newele);
 
   if (const auto* const so_tet4_poro_ele = dynamic_cast<
           Discret::Elements::So3Poro<Discret::Elements::SoTet4, Core::FE::CellType::tet4>*>(oldele))
@@ -150,10 +150,10 @@ void PoroElast::Utils::PoroelastCloneStrategy::set_anisotropic_permeability_dire
 }
 
 void PoroElast::Utils::PoroelastCloneStrategy::set_anisotropic_permeability_nodal_coeffs_onto_fluid(
-    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele)
+    std::shared_ptr<Core::Elements::Element> newele, Core::Elements::Element* oldele)
 {
-  Teuchos::RCP<Discret::Elements::FluidPoro> fluid =
-      Teuchos::rcp_dynamic_cast<Discret::Elements::FluidPoro>(newele);
+  std::shared_ptr<Discret::Elements::FluidPoro> fluid =
+      std::dynamic_pointer_cast<Discret::Elements::FluidPoro>(newele);
 
   if (const auto* const so_tet4_poro_ele = dynamic_cast<
           Discret::Elements::So3Poro<Discret::Elements::SoTet4, Core::FE::CellType::tet4>*>(oldele))

@@ -27,7 +27,7 @@ namespace CONTACT
     NoxInterface();
 
     /// initialize important member variables
-    void init(const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr);
+    void init(const std::shared_ptr<CONTACT::AbstractStrategy>& strategy_ptr);
 
     /** \brief Setup important new member variables
      *
@@ -116,9 +116,9 @@ namespace CONTACT
     bool issetup_;
 
    private:
-    Teuchos::RCP<CONTACT::AbstractStrategy> strategy_ptr_;
+    std::shared_ptr<CONTACT::AbstractStrategy> strategy_ptr_;
 
-    std::vector<Teuchos::RCP<Epetra_Map>> cycling_maps_;
+    std::vector<std::shared_ptr<Epetra_Map>> cycling_maps_;
   };
 }  // namespace CONTACT
 

@@ -40,8 +40,8 @@ namespace
     {
       create_material_in_global_problem();
 
-      comm_ = Teuchos::make_rcp<Epetra_SerialComm>();
-      test_discretization_ = Teuchos::make_rcp<Core::FE::Discretization>("dummy", comm_, 3);
+      comm_ = std::make_shared<Epetra_SerialComm>();
+      test_discretization_ = std::make_shared<Core::FE::Discretization>("dummy", comm_, 3);
 
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
 
@@ -65,14 +65,14 @@ namespace
 
    protected:
     Core::IO::GridGenerator::RectangularCuboidInputs inputData_{};
-    Teuchos::RCP<Core::FE::Discretization> test_discretization_;
-    Teuchos::RCP<Epetra_SerialComm> comm_;
+    std::shared_ptr<Core::FE::Discretization> test_discretization_;
+    std::shared_ptr<Epetra_SerialComm> comm_;
   };
 
   TEST_F(BuildNodeCoordinatesTest, NodalCoordinatesDefault)
   {
     // build node coordinates based on the node row map of the whole discretization
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
         test_discretization_->build_node_coordinates();
 
     EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->num_my_row_nodes());
@@ -97,9 +97,9 @@ namespace
     // build node coordinates based on the node row map of first partial discretization
     {
       std::array<int, 4> nodeList{0, 2, 4, 10};  // GID list of first 4 elements
-      Teuchos::RCP<Epetra_Map> node_row_map =
-          Teuchos::make_rcp<Epetra_Map>(-1, nodeList.size(), nodeList.data(), 0, *comm_);
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
+      std::shared_ptr<Epetra_Map> node_row_map =
+          std::make_shared<Epetra_Map>(-1, nodeList.size(), nodeList.data(), 0, *comm_);
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
           test_discretization_->build_node_coordinates(node_row_map);
 
       EXPECT_EQ(nodal_test_coordinates->MyLength(), 4);
@@ -122,9 +122,9 @@ namespace
     // build node coordinates based on the node row map of second partial discretization
     {
       std::array<int, 3> nodeList{50, 62, 114};  // random GIDs
-      Teuchos::RCP<Epetra_Map> node_row_map =
-          Teuchos::make_rcp<Epetra_Map>(-1, nodeList.size(), nodeList.data(), 0, *comm_);
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
+      std::shared_ptr<Epetra_Map> node_row_map =
+          std::make_shared<Epetra_Map>(-1, nodeList.size(), nodeList.data(), 0, *comm_);
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
           test_discretization_->build_node_coordinates(node_row_map);
 
       EXPECT_EQ(nodal_test_coordinates->MyLength(), 3);

@@ -21,10 +21,11 @@ namespace Lubrication
   {
    public:
     /// Standard Constructor
-    TimIntStationary(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    TimIntStationary(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
 
     /// initialize time integration scheme

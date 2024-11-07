@@ -137,7 +137,7 @@ namespace Core::IO
 
     //! write scalar field to Gmsh postprocessing file
     void scalar_field_to_gmsh(Core::FE::Discretization& discret,  ///< discretization
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>
             scalarfield,  ///< scalar field to output
         std::ostream& s   ///< output stream
     );
@@ -145,7 +145,7 @@ namespace Core::IO
     //! write scalar field to Gmsh postprocessing file
     //  Can we replace the scalar_field_to_gmsh function with this (nds=0)?
     void scalar_field_dof_based_to_gmsh(Core::FE::Discretization& discret,  ///< discretization
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>
             scalarfield,  ///< scalar field to output
         const int nds,    ///< dofset
         std::ostream& s   ///< output stream
@@ -161,7 +161,7 @@ namespace Core::IO
     //! when writing the given vectorfield is displacement, displacenodes can be set true
     //! then it writes the nodal coordinates at the present time step.
     void vector_field_dof_based_to_gmsh(Core::FE::Discretization& discret,  ///< discretization
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>
             vectorfield,    ///< vector field to output
         std::ostream& s,    ///< output stream
         const int nds = 0,  ///< number of dofset associated with vector field
@@ -185,7 +185,7 @@ namespace Core::IO
     //! write dof-based vector field to Gmsh postprocessing file
     void surface_vector_field_dof_based_to_gmsh(
         Core::FE::Discretization& discret,  ///< discretization
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>
             vectorfield,  ///< vector field to output
         std::map<int, Core::LinAlg::Matrix<3, 1>>& currpos,
         std::ostream& s,  ///< output stream
@@ -195,7 +195,7 @@ namespace Core::IO
     //!
     void velocity_pressure_field_dof_based_to_gmsh(
         Core::FE::Discretization& discret,  ///< discretization
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>
             vectorfield,          ///< vector field to output
         const std::string field,  ///< "velocity" or "pressure"
         std::ostream& s,          ///< output stream

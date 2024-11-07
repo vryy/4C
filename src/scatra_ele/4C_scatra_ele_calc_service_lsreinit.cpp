@@ -38,10 +38,10 @@ int Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_action
     case ScaTra::Action::calc_mat_and_rhs_lsreinit_correction_step:
     {
       // extract local values from the global vectors
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phizero =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phizero =
           discretization.get_state("phizero");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phizero == Teuchos::null or phinp == Teuchos::null)
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+      if (phizero == nullptr or phinp == nullptr)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
@@ -76,10 +76,10 @@ int Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_action
     case ScaTra::Action::calc_node_based_reinit_velocity:
     {
       // extract local values from the global vectors
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phizero =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phizero =
           discretization.get_state("phizero");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phizero == Teuchos::null or phinp == Teuchos::null)
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+      if (phizero == nullptr or phinp == nullptr)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
@@ -182,11 +182,11 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_correct
 
     // scalar at integration point at time step n+1
     const double phinp = my::funct_.dot(my::ephinp_[0]);
-    Teuchos::rcp_dynamic_cast<
+    std::dynamic_pointer_cast<
         Discret::Elements::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
         my::scatravarmanager_)
         ->set_phinp(0, phinp);
-    Teuchos::rcp_dynamic_cast<
+    std::dynamic_pointer_cast<
         Discret::Elements::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
         my::scatravarmanager_)
         ->set_hist(0, 0.0);

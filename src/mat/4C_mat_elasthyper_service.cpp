@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 void Mat::elast_hyper_evaluate(const Core::LinAlg::Matrix<3, 3>& defgrd,
     const Core::LinAlg::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp, int eleGID,
-    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
+    const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
     const SummandProperties& properties, bool checkpolyconvexity)
 {
   static Core::LinAlg::Matrix<6, 1> id2(false);
@@ -89,7 +89,7 @@ void Mat::evaluate_right_cauchy_green_strain_like_voigt(
 
 void Mat::elast_hyper_evaluate_invariant_derivatives(const Core::LinAlg::Matrix<3, 1>& prinv,
     Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII,
-    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
+    const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
     const SummandProperties& properties, const int gp, int eleGID)
 {
   // derivatives of principla materials
@@ -216,7 +216,7 @@ void Mat::elast_hyper_add_isotropic_stress_cmat(Core::LinAlg::Matrix<6, 1>& S_st
 
 void Mat::elast_hyper_add_response_stretches(Core::LinAlg::Matrix<6, 6>& cmat,
     Core::LinAlg::Matrix<6, 1>& S_stress, const Core::LinAlg::Matrix<6, 1>& C_strain,
-    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
+    const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
     const SummandProperties& properties, const int gp, int eleGID)
 {
   // get principal stretches and directions
@@ -386,7 +386,7 @@ void Mat::elast_hyper_add_response_stretches(Core::LinAlg::Matrix<6, 6>& cmat,
 void Mat::elast_hyper_add_anisotropic_princ(Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, const Core::LinAlg::Matrix<6, 1>& C_strain,
     Teuchos::ParameterList& params, const int gp, int eleGID,
-    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum)
+    const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum)
 {
   // Loop over all summands and add aniso stress
   // ToDo: This should be solved in analogy to the solution in elast_remodelfiber.cpp
@@ -399,7 +399,7 @@ void Mat::elast_hyper_add_anisotropic_mod(Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, const Core::LinAlg::Matrix<6, 1>& C_strain,
     const Core::LinAlg::Matrix<6, 1>& iC_strain, const Core::LinAlg::Matrix<3, 1>& prinv,
     const int gp, int eleGID, Teuchos::ParameterList& params,
-    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum)
+    const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum)
 {
   static Core::LinAlg::Matrix<6, 1> iC_stress(false);
   Core::LinAlg::Voigt::Strains::to_stress_like(iC_strain, iC_stress);
@@ -430,8 +430,8 @@ void Mat::calculate_gamma_delta(Core::LinAlg::Matrix<3, 1>& gamma,
   delta(7) = -4. * dPI(1);
 }
 
-void Mat::elast_hyper_properties(
-    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum, SummandProperties& properties)
+void Mat::elast_hyper_properties(const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
+    SummandProperties& properties)
 {
   for (auto& p : potsum)
   {

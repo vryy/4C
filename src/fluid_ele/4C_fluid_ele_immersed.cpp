@@ -28,10 +28,10 @@ Core::Communication::ParObject* Discret::Elements::FluidTypeImmersed::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidTypeImmersed::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidTypeImmersed::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::FluidImmersed>(id, owner);
+  return std::make_shared<Discret::Elements::FluidImmersed>(id, owner);
 }
 
 void Discret::Elements::FluidTypeImmersed::setup_element_definition(
@@ -56,8 +56,8 @@ Discret::Elements::FluidImmersed::FluidImmersed(int id, int owner)
       is_immersed_(0),
       is_immersed_bdry_(0),
       has_projected_dirichletvalues_(0),
-      intpoint_has_projected_divergence_(Teuchos::null),
-      stored_projected_intpoint_divergence_(Teuchos::null)
+      intpoint_has_projected_divergence_(nullptr),
+      stored_projected_intpoint_divergence_(nullptr)
 {
 }
 
@@ -70,8 +70,8 @@ Discret::Elements::FluidImmersed::FluidImmersed(const Discret::Elements::FluidIm
       is_immersed_(old.is_immersed_),
       is_immersed_bdry_(old.is_immersed_bdry_),
       has_projected_dirichletvalues_(old.has_projected_dirichletvalues_),
-      intpoint_has_projected_divergence_(Teuchos::null),
-      stored_projected_intpoint_divergence_(Teuchos::null)
+      intpoint_has_projected_divergence_(nullptr),
+      stored_projected_intpoint_divergence_(nullptr)
 {
   return;
 }

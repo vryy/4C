@@ -19,10 +19,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Solid::EXPLICIT::AdamsBashforth2::AdamsBashforth2()
-    : fvisconp_ptr_(Teuchos::null),
-      fviscon_ptr_(Teuchos::null),
-      finertianp_ptr_(Teuchos::null),
-      finertian_ptr_(Teuchos::null)
+    : fvisconp_ptr_(nullptr),
+      fviscon_ptr_(nullptr),
+      finertianp_ptr_(nullptr),
+      finertian_ptr_(nullptr)
 {
 }
 
@@ -91,7 +91,7 @@ void Solid::EXPLICIT::AdamsBashforth2::set_state(const Core::LinAlg::Vector<doub
   // ---------------------------------------------------------------------------
   // new end-point acceleration
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_ptr = global_state().extract_displ_entries(x);
+  std::shared_ptr<Core::LinAlg::Vector<double>> accnp_ptr = global_state().extract_displ_entries(x);
   global_state().get_acc_np()->Scale(1.0, *accnp_ptr);
 
   // ---------------------------------------------------------------------------
@@ -132,7 +132,7 @@ void Solid::EXPLICIT::AdamsBashforth2::add_visco_mass_contributions(
 void Solid::EXPLICIT::AdamsBashforth2::add_visco_mass_contributions(
     Core::LinAlg::SparseOperator& jac) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
   // set mass matrix
   stiff_ptr->add(*global_state().get_mass_matrix(), false, 1.0, 0.0);
 }

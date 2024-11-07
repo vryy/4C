@@ -13,8 +13,7 @@
 
 #include "4C_geometry_pair_line_to_3D_evaluation_data.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <unordered_map>
 
 // Forward declarations.
@@ -50,18 +49,18 @@ namespace GEOMETRYPAIR
      * \param discret (in) Pointer to the discretization.
      * \param face_elements (in) Map to all face elements in this condition on this rank.
      */
-    void setup(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements);
+    void setup(const std::shared_ptr<const Core::FE::Discretization>& discret,
+        const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements);
 
     /**
      * \brief Calculate the averaged nodal normals.
      */
-    void set_state(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_col_np);
+    void set_state(const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_col_np);
 
     /**
      * \brief Get a reference to the face element map.
      */
-    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& get_face_elements()
+    const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& get_face_elements()
         const
     {
       return face_elements_;
@@ -77,7 +76,7 @@ namespace GEOMETRYPAIR
 
    private:
     //! A map of all face elements needed for this surface.
-    std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>> face_elements_;
+    std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>> face_elements_;
 
     //! Strategy to be used for surface normals.
     Inpar::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy_;

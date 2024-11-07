@@ -46,14 +46,14 @@ FBI::FBIGeometryCoupler::FBIGeometryCoupler()
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIGeometryCoupler::setup(
-    std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_displacement)
+    std::vector<std::shared_ptr<Core::FE::Discretization>>& discretizations,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> structure_displacement)
 {
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Setup");
+  auto t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Setup");
   Teuchos::TimeMonitor monitor(*t);
 
-  fluidpositions_ = Teuchos::make_rcp<std::map<int, Core::LinAlg::Matrix<3, 1>>>();
-  beampositions_ = Teuchos::make_rcp<std::map<int, Core::LinAlg::Matrix<3, 1>>>();
+  fluidpositions_ = std::make_shared<std::map<int, Core::LinAlg::Matrix<3, 1>>>();
+  beampositions_ = std::make_shared<std::map<int, Core::LinAlg::Matrix<3, 1>>>();
 
   // todo Specific for fixed grids.. we will have to do something here for ALE (overload?)
   compute_fixed_positions(*discretizations[1], fluidpositions_);
@@ -67,16 +67,16 @@ void FBI::FBIGeometryCoupler::setup(
 }
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::search(
-    std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& column_structure_displacement)
+std::shared_ptr<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::search(
+    std::vector<std::shared_ptr<Core::FE::Discretization>>& discretizations,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& column_structure_displacement)
 {
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Search");
+  auto t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Search");
   Teuchos::TimeMonitor monitor(*t);
 
   // Vector to hand elements pointers to the bridge object
-  Teuchos::RCP<std::map<int, std::vector<int>>> pairids =
-      Teuchos::make_rcp<std::map<int, std::vector<int>>>();
+  std::shared_ptr<std::map<int, std::vector<int>>> pairids =
+      std::make_shared<std::map<int, std::vector<int>>>();
 
   // todo Specific to 'linearized penalty'. Maybe have to do something for structure+beam in
   // discretization.
@@ -176,11 +176,10 @@ void FBI::FBIGeometryCoupler::extend_beam_ghosting(Core::FE::Discretization& dis
 /*----------------------------------------------------------------------*/
 
 void FBI::FBIGeometryCoupler::prepare_pair_creation(
-    std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
-    Teuchos::RCP<std::map<int, std::vector<int>>> pairids)
+    std::vector<std::shared_ptr<Core::FE::Discretization>>& discretizations,
+    std::shared_ptr<std::map<int, std::vector<int>>> pairids)
 {
-  Teuchos::RCP<Teuchos::Time> t =
-      Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::PreparePairCreation");
+  auto t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::PreparePairCreation");
   Teuchos::TimeMonitor monitor(*t);
 
   std::vector<std::vector<int>> element_senddata(discretizations[0]->get_comm().NumProc());
@@ -291,7 +290,7 @@ void FBI::FBIGeometryCoupler::prepare_pair_creation(
     discretizations[1]->export_column_nodes(newnodecolmap);
     discretizations[1]->export_column_elements(newelecolmap);
 
-    Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discretizations[1], true)
+    std::dynamic_pointer_cast<Core::FE::DiscretizationFaces>(discretizations[1])
         ->fill_complete_faces(true, true, true, edgebased_fluidstabilization_);
   }
 
@@ -303,7 +302,7 @@ void FBI::FBIGeometryCoupler::prepare_pair_creation(
 
 /*----------------------------------------------------------------------*/
 void FBI::FBIGeometryCoupler::compute_fixed_positions(Core::FE::Discretization& dis,
-    Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions) const
+    std::shared_ptr<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions) const
 {
   positions->clear();
   for (int lid = 0; lid < dis.num_my_col_nodes(); ++lid)
@@ -316,8 +315,8 @@ void FBI::FBIGeometryCoupler::compute_fixed_positions(Core::FE::Discretization& 
 /*----------------------------------------------------------------------*/
 
 void FBI::FBIGeometryCoupler::compute_current_positions(Core::FE::Discretization& dis,
-    Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp) const
+    std::shared_ptr<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disp) const
 {
   positions->clear();
   std::vector<int> src_dofs(
@@ -327,7 +326,7 @@ void FBI::FBIGeometryCoupler::compute_current_positions(Core::FE::Discretization
   for (int lid = 0; lid < dis.num_my_col_nodes(); ++lid)
   {
     const Core::Nodes::Node* node = dis.l_col_node(lid);
-    if (disp != Teuchos::null)
+    if (disp != nullptr)
     {
       // get the DOF numbers of the current node
       dis.dof(node, 0, src_dofs);
@@ -342,6 +341,6 @@ void FBI::FBIGeometryCoupler::compute_current_positions(Core::FE::Discretization
 /*----------------------------------------------------------------------*/
 
 void FBI::FBIGeometryCoupler::set_binning(
-    Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning){};
+    std::shared_ptr<Core::Binstrategy::BinningStrategy> binning){};
 
 FOUR_C_NAMESPACE_CLOSE

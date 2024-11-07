@@ -29,7 +29,7 @@ Mat::PAR::LubricationMat::LubricationMat(const Core::Mat::PAR::Parameter::Data& 
   const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == nullptr)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (Global::Problem::instance(probinst)->materials()->num() == 0)
@@ -62,9 +62,9 @@ Mat::PAR::LubricationMat::LubricationMat(const Core::Mat::PAR::Parameter::Data& 
 }
 
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::LubricationMat::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::LubricationMat::create_material()
 {
-  return Teuchos::make_rcp<Mat::LubricationMat>(this);
+  return std::make_shared<Mat::LubricationMat>(this);
 }
 
 Mat::LubricationMatType Mat::LubricationMatType::instance_;
@@ -115,7 +115,7 @@ void Mat::LubricationMat::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

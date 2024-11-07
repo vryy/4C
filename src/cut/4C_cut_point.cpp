@@ -580,7 +580,7 @@ Cut::Side* Cut::Point::cut_side(Side* side, Point* other)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Point> Cut::create_point(
+std::shared_ptr<Cut::Point> Cut::create_point(
     unsigned pid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
 {
   const PointFactory factory;

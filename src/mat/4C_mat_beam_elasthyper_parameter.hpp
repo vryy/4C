@@ -102,7 +102,7 @@ namespace Mat
       bool uses_fad() { return use_fad_; };
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
      private:
       /// Flag to store if the material is used with a beam material and automatic differentiation

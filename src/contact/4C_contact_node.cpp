@@ -217,9 +217,9 @@ CONTACT::Node::Node(int id, const std::vector<double>& coords, const int owner,
       initactive_(initactive),
       involvedm_(false),
       linsize_(0),  // length of linearization
-      codata_(Teuchos::null),
-      coporodata_(Teuchos::null),
-      cTSIdata_(Teuchos::null)
+      codata_(nullptr),
+      coporodata_(nullptr),
+      cTSIdata_(nullptr)
 {
 }
 
@@ -232,9 +232,9 @@ CONTACT::Node::Node(const CONTACT::Node& old)
       initactive_(old.initactive_),
       involvedm_(false),
       linsize_(0),
-      codata_(Teuchos::null),
-      coporodata_(Teuchos::null),
-      cTSIdata_(Teuchos::null)
+      codata_(nullptr),
+      coporodata_(nullptr),
+      cTSIdata_(nullptr)
 {
   // not yet used and thus not necessarily consistent
   FOUR_C_THROW("Node copy-ctor not yet implemented");
@@ -298,17 +298,17 @@ void CONTACT::Node::pack(Core::Communication::PackBuffer& data) const
   // add linsize_
   add_to_pack(data, linsize_);
   // add data_
-  bool hasdata = (codata_ != Teuchos::null);
+  bool hasdata = (codata_ != nullptr);
   add_to_pack(data, hasdata);
   if (hasdata) codata_->pack(data);
 
   // add porodata_
-  bool hasdataporo = (coporodata_ != Teuchos::null);
+  bool hasdataporo = (coporodata_ != nullptr);
   add_to_pack(data, hasdataporo);
   if (hasdataporo) coporodata_->pack(data);
 
   // add tsidata
-  bool hasTSIdata = (cTSIdata_ != Teuchos::null);
+  bool hasTSIdata = (cTSIdata_ != nullptr);
   add_to_pack(data, (int)hasTSIdata);
   if (hasTSIdata) cTSIdata_->pack(data);
 
@@ -343,35 +343,35 @@ void CONTACT::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   bool hasdata = extract_int(buffer);
   if (hasdata)
   {
-    codata_ = Teuchos::make_rcp<CONTACT::NodeDataContainer>();
+    codata_ = std::make_shared<CONTACT::NodeDataContainer>();
     codata_->unpack(buffer);
   }
   else
   {
-    codata_ = Teuchos::null;
+    codata_ = nullptr;
   }
 
   // porodata_
   bool hasdataporo = extract_int(buffer);
   if (hasdataporo)
   {
-    coporodata_ = Teuchos::make_rcp<CONTACT::NodePoroDataContainer>();
+    coporodata_ = std::make_shared<CONTACT::NodePoroDataContainer>();
     coporodata_->unpack(buffer);
   }
   else
   {
-    coporodata_ = Teuchos::null;
+    coporodata_ = nullptr;
   }
 
   // TSI data
   bool hasTSIdata = (bool)extract_int(buffer);
   if (hasTSIdata)
   {
-    cTSIdata_ = Teuchos::make_rcp<CONTACT::NodeTSIDataContainer>();
+    cTSIdata_ = std::make_shared<CONTACT::NodeTSIDataContainer>();
     cTSIdata_->unpack(buffer);
   }
   else
-    cTSIdata_ = Teuchos::null;
+    cTSIdata_ = nullptr;
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
@@ -524,10 +524,10 @@ void CONTACT::Node::initialize_data_container()
   }
 
   // only initialize if not yet done
-  if (modata_ == Teuchos::null && codata_ == Teuchos::null)
+  if (modata_ == nullptr && codata_ == nullptr)
   {
-    codata_ = Teuchos::make_rcp<CONTACT::NodeDataContainer>();
-    modata_ = Teuchos::make_rcp<Mortar::NodeDataContainer>();
+    codata_ = std::make_shared<CONTACT::NodeDataContainer>();
+    modata_ = std::make_shared<Mortar::NodeDataContainer>();
   }
 
   return;
@@ -540,9 +540,9 @@ void CONTACT::Node::initialize_poro_data_container()
 {
   // only initialize if not yet done
 
-  if (coporodata_ == Teuchos::null)
+  if (coporodata_ == nullptr)
   {
-    coporodata_ = Teuchos::make_rcp<CONTACT::NodePoroDataContainer>();
+    coporodata_ = std::make_shared<CONTACT::NodePoroDataContainer>();
   }
 
   return;
@@ -555,9 +555,9 @@ void CONTACT::Node::initialize_ehl_data_container()
 {
   // only initialize if not yet done
 
-  if (cEHLdata_ == Teuchos::null)
+  if (cEHLdata_ == nullptr)
   {
-    cEHLdata_ = Teuchos::make_rcp<CONTACT::NodeEhlDataContainer>();
+    cEHLdata_ = std::make_shared<CONTACT::NodeEhlDataContainer>();
   }
 
   return;
@@ -570,8 +570,8 @@ void CONTACT::Node::initialize_tsi_data_container(double t_ref, double t_dam)
 {
   // only initialize if not yet done
 
-  if (cTSIdata_ == Teuchos::null)
-    cTSIdata_ = Teuchos::make_rcp<CONTACT::NodeTSIDataContainer>(t_ref, t_dam);
+  if (cTSIdata_ == nullptr)
+    cTSIdata_ = std::make_shared<CONTACT::NodeTSIDataContainer>(t_ref, t_dam);
 
   return;
 }
@@ -581,10 +581,10 @@ void CONTACT::Node::initialize_tsi_data_container(double t_ref, double t_dam)
  *----------------------------------------------------------------------*/
 void CONTACT::Node::reset_data_container()
 {
-  // reset to Teuchos::null
-  codata_ = Teuchos::null;
-  modata_ = Teuchos::null;
-  coporodata_ = Teuchos::null;
+  // reset to nullptr
+  codata_ = nullptr;
+  modata_ = nullptr;
+  coporodata_ = nullptr;
 
   return;
 }
@@ -605,7 +605,7 @@ void CONTACT::Node::build_averaged_edge_tangent()
   //              CALCULATE EDGES
   //**************************************************
   // empty vector of slave element pointers
-  std::vector<Teuchos::RCP<Mortar::Element>> lineElementsS;
+  std::vector<std::shared_ptr<Mortar::Element>> lineElementsS;
   std::set<std::pair<int, int>> donebefore;
 
   // loop over all surface elements
@@ -675,7 +675,7 @@ void CONTACT::Node::build_averaged_edge_tangent()
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+          std::shared_ptr<Mortar::Element> lineEle = std::make_shared<Mortar::Element>(
               j, cele->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
           // get nodes

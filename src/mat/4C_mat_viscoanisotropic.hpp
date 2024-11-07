@@ -47,7 +47,7 @@ namespace Mat
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class ViscoAnisotropic
 
@@ -134,9 +134,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ViscoAnisotropic>(*this);
+      return std::make_shared<ViscoAnisotropic>(*this);
     }
 
     /// Setup and Initialize internal stress variables
@@ -171,13 +171,13 @@ namespace Mat
 
 
     /// Check if history variables are already initialized
-    bool initialized() const { return isinit_ && (histstresscurr_ != Teuchos::null); }
+    bool initialized() const { return isinit_ && (histstresscurr_ != nullptr); }
 
     /// return a1s
-    Teuchos::RCP<std::vector<std::vector<double>>> geta1() const { return ca1_; }
+    std::shared_ptr<std::vector<std::vector<double>>> geta1() const { return ca1_; }
 
     /// return a2s
-    Teuchos::RCP<std::vector<std::vector<double>>> geta2() const { return ca2_; }
+    std::shared_ptr<std::vector<std::vector<double>>> geta2() const { return ca2_; }
 
 
     /// Return quick accessible material parameter data
@@ -195,21 +195,23 @@ namespace Mat
     Mat::PAR::ViscoAnisotropic* params_;
 
     // internal variables for fibers
-    Teuchos::RCP<std::vector<std::vector<double>>> a1_;  ///< first fiber vector per gp (reference)
-    Teuchos::RCP<std::vector<std::vector<double>>> a2_;  ///< second fiber vector per gp (reference)
-    Teuchos::RCP<std::vector<std::vector<double>>>
+    std::shared_ptr<std::vector<std::vector<double>>>
+        a1_;  ///< first fiber vector per gp (reference)
+    std::shared_ptr<std::vector<std::vector<double>>>
+        a2_;  ///< second fiber vector per gp (reference)
+    std::shared_ptr<std::vector<std::vector<double>>>
         ca1_;  ///< first fiber vector per gp (spatial config)
-    Teuchos::RCP<std::vector<std::vector<double>>>
+    std::shared_ptr<std::vector<std::vector<double>>>
         ca2_;  ///< second fiber vector per gp (spatial config)
 
     // visco history stresses for every gausspoint and every stress type
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         histstresscurr_;  ///< current stress
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         histstresslast_;  ///< stress of last converged state
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         artstresscurr_;  ///< current artificial stress
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         artstresslast_;  ///< artificial stress in last converged state
 
     bool isinit_;  ///< indicates if material is initialized

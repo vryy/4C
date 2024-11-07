@@ -12,7 +12,7 @@
 
 #include "4C_adapter_porofluidmultiphase.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -34,7 +34,7 @@ namespace Adapter
   {
    public:
     /// constructor
-    explicit PoroFluidMultiphaseWrapper(Teuchos::RCP<PoroFluidMultiphase> porofluid);
+    explicit PoroFluidMultiphaseWrapper(std::shared_ptr<PoroFluidMultiphase> porofluid);
 
     /// initialization
     void init(const bool isale,         ///< ALE flag
@@ -49,62 +49,62 @@ namespace Adapter
         ) override;
 
     /// create result test for multiphase porous fluid field
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test() override;
 
     /// read restart
     void read_restart(int restart) override;
 
     /// access dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds = 0) const override;
+    std::shared_ptr<const Epetra_Map> dof_row_map(unsigned nds = 0) const override;
 
     /// access dof row map
-    Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const override;
+    std::shared_ptr<const Epetra_Map> artery_dof_row_map() const override;
 
     /// access coupled system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
 
     /// direct access to discretization
-    Teuchos::RCP<Core::FE::Discretization> discretization() const override;
+    std::shared_ptr<Core::FE::Discretization> discretization() const override;
 
     //! apply moving mesh data
     void apply_mesh_movement(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp  //!< displacement vector
+        std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp  //!< displacement vector
         ) override;
 
     //! set state on discretization
     void set_state(unsigned nds, const std::string& name,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> state) override;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> state) override;
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
     void set_velocity_field(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel  //!< velocity vector
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel  //!< velocity vector
         ) override;
 
     //! set solution of scatra problem
     void set_scatra_solution(
-        unsigned nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> scalars);
+        unsigned nds, std::shared_ptr<const Core::LinAlg::Vector<double>> scalars);
 
     //! return primary field at time n+1
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phinp() const override;
 
     //! return primary field at time n
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phin() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phin() const override;
 
     //! return solid pressure field at time n+1
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> solid_pressure() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> solid_pressure() const override;
 
     //! return pressure field at time n+1
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> pressure() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> pressure() const override;
 
     //! return saturation field at time n+1
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> saturation() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> saturation() const override;
 
     //! return valid volume fraction species dof vector
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> valid_vol_frac_spec_dofs() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> valid_vol_frac_spec_dofs() const override;
 
     //! return phase flux field at time n+1
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> flux() const override;
+    std::shared_ptr<const Core::LinAlg::MultiVector<double>> flux() const override;
 
     //! return number of dof set associated with solid pressure
     int get_dof_set_number_of_solid_pressure() const override;
@@ -131,16 +131,16 @@ namespace Adapter
     void prepare_time_loop() override;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const override;
+    std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const override;
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() const override;
 
     //! right-hand side alias the dynamic force residual for coupled system
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> artery_porofluid_rhs() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> artery_porofluid_rhs() const override;
 
     //! iterative update of phinp
-    void update_iter(const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) override;
+    void update_iter(const std::shared_ptr<const Core::LinAlg::Vector<double>> inc) override;
 
     //! reconstruct pressures and saturation from current solution
     void reconstruct_pressures_and_saturations() override;
@@ -156,21 +156,21 @@ namespace Adapter
 
     // Assemble Off-Diagonal Fluid-Structure Coupling matrix
     void assemble_fluid_struct_coupling_mat(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs) override;
+        std::shared_ptr<Core::LinAlg::SparseOperator> k_fs) override;
 
     // Assemble Off-Diagonal Fluid-Scatra Coupling matrix
     void assemble_fluid_scatra_coupling_mat(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> k_pfs) override;
+        std::shared_ptr<Core::LinAlg::SparseOperator> k_pfs) override;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override;
 
     // return arterial network time integrator
-    Teuchos::RCP<Adapter::ArtNet> art_net_tim_int() override;
+    std::shared_ptr<Adapter::ArtNet> art_net_tim_int() override;
 
    private:
     /// multiphase porous flow time integrator
-    Teuchos::RCP<PoroFluidMultiphase> porofluid_;
+    std::shared_ptr<PoroFluidMultiphase> porofluid_;
 
   };  // class PoroFluidMultiphaseWrapper
 

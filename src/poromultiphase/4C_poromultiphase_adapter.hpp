@@ -14,7 +14,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -63,10 +63,10 @@ namespace POROMULTIPHASE
 
     /// perform relaxation (only for partitioned system)
     virtual void perform_relaxation(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, const int itnum) = 0;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> phi, const int itnum) = 0;
 
     /// get relaxed fluid solution (only for partitioned system)
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> relaxed_fluid_phinp() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> relaxed_fluid_phinp() const = 0;
 
     /// set relaxed fluid solution on structure (only for partitioned system)
     virtual void set_relaxed_fluid_solution() = 0;
@@ -87,77 +87,77 @@ namespace POROMULTIPHASE
     virtual void update_and_output() = 0;
 
     /// set structure solution on scatra field
-    virtual void set_struct_solution(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) = 0;
+    virtual void set_struct_solution(std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel) = 0;
 
     /// set scatra solution on fluid field
     virtual void set_scatra_solution(
-        unsigned nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> scalars) = 0;
+        unsigned nds, std::shared_ptr<const Core::LinAlg::Vector<double>> scalars) = 0;
 
     /// dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> struct_dof_row_map() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> struct_dof_row_map() const = 0;
 
     /// unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> struct_dispnp() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> struct_dispnp() const = 0;
 
     /// unknown velocity at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> struct_velnp() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> struct_velnp() const = 0;
 
     /// dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> fluid_dof_row_map() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> fluid_dof_row_map() const = 0;
 
     /// dof map of vector of unknowns of artery field
-    virtual Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> artery_dof_row_map() const = 0;
 
     /// return fluid flux
-    virtual Teuchos::RCP<const Core::LinAlg::MultiVector<double>> fluid_flux() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::MultiVector<double>> fluid_flux() const = 0;
 
     /// return fluid solution variable
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_phinp() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_phinp() const = 0;
 
     /// return fluid solution variable
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_saturation() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_saturation() const = 0;
 
     /// return fluid solution variable
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_pressure() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_pressure() const = 0;
 
     /// return fluid solution variable
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> solid_pressure() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> solid_pressure() const = 0;
 
     //! unique map of all dofs that should be constrained with DBC
-    virtual Teuchos::RCP<const Epetra_Map> combined_dbc_map() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> combined_dbc_map() const = 0;
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fx, const bool firstcall) = 0;
+    virtual void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fx, const bool firstcall) = 0;
 
     //! access to monolithic right-hand side vector
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() const = 0;
 
     //! update all fields after convergence (add increment on displacements and fluid primary
     //! variables)
     virtual void update_fields_after_convergence(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx) = 0;
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& fx) = 0;
 
     //! get the extractor
-    virtual Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> extractor() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::MultiMapExtractor> extractor() const = 0;
 
     //! get the monolithic system matrix
-    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() const = 0;
+    virtual std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() const = 0;
 
     //! get structure field
-    virtual const Teuchos::RCP<Adapter::Structure>& structure_field() = 0;
+    virtual const std::shared_ptr<Adapter::Structure>& structure_field() = 0;
 
     //! get fluid field
-    virtual const Teuchos::RCP<Adapter::PoroFluidMultiphaseWrapper>& fluid_field() = 0;
+    virtual const std::shared_ptr<Adapter::PoroFluidMultiphaseWrapper>& fluid_field() = 0;
 
     //! build the block null spaces
-    virtual void build_block_null_spaces(Teuchos::RCP<Core::LinAlg::Solver>& solver) = 0;
+    virtual void build_block_null_spaces(std::shared_ptr<Core::LinAlg::Solver>& solver) = 0;
 
     //! build the block null spaces
     virtual void build_artery_block_null_space(
-        Teuchos::RCP<Core::LinAlg::Solver>& solver, const int& arteryblocknum) = 0;
+        std::shared_ptr<Core::LinAlg::Solver>& solver, const int& arteryblocknum) = 0;
   };
 }  // namespace POROMULTIPHASE
 

@@ -12,6 +12,7 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 
 
@@ -52,7 +53,7 @@ namespace Core::Communication
   \param owner   (in): owner of the new element
 
   */
-  Teuchos::RCP<Core::Elements::Element> factory(
+  std::shared_ptr<Core::Elements::Element> factory(
       const std::string eletype, const std::string distype, const int id, const int owner);
 
   //! flag, whether surfaces or lines have to be created in the element_boundary_factory
@@ -72,18 +73,18 @@ namespace Core::Communication
    * \tparam ParentEle   class name of parent element, e.g. Fluid
    *
    * this templated function creates all volume / surface / line elements for a given element
-   * and fills handed over vectors with Teuchos::RCPs and raw pointers of these boundary elements
+   * and fills handed over vectors with std::shared_ptrs and raw pointers of these boundary elements
    * This method is a very powerful helper function for implementing the necessary
    * Surfaces() and Lines() methods for every element class (especially in 3D)
    * using the 4C conventions for element connectivity
    *
-   * \return boundaryeles   vector filled with Teuchos::RCPs of allocated boundary elements
+   * \return boundaryeles   vector filled with std::shared_ptrs of allocated boundary elements
    *
    * \author gjb
    * \date 05/08
    */
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<Core::Elements::Element>> element_boundary_factory(
+  std::vector<std::shared_ptr<Core::Elements::Element>> element_boundary_factory(
       const BoundaryBuildType
           buildtype,  ///< flag, whether volumes, surfaces or lines have to be created
       ParentEle& ele  ///< pointer on the parent element
@@ -112,7 +113,7 @@ namespace Core::Communication
         FOUR_C_THROW("buildNothing case not handled in element_boundary_factory");
     }
     // create vectors that will contain the volume, surface or line elements
-    std::vector<Teuchos::RCP<Core::Elements::Element>> boundaryeles(nele);
+    std::vector<std::shared_ptr<Core::Elements::Element>> boundaryeles(nele);
 
     // does Discret::UTILS convention match your implementation of NumSurface() or NumLine()?
     if (nele != connectivity.size()) FOUR_C_THROW("number of surfaces or lines does not match!");
@@ -133,7 +134,7 @@ namespace Core::Communication
       }
 
       // allocate a new boundary element
-      boundaryeles[iele] = Teuchos::make_rcp<BoundaryEle>(
+      boundaryeles[iele] = std::make_shared<BoundaryEle>(
           iele, ele.owner(), nodeids.size(), nodeids.data(), nodes.data(), &ele, iele);
     }
 
@@ -149,18 +150,18 @@ namespace Core::Communication
    * \tparam ParentEle   class name of parent element, e.g. Fluid
    *
    * this templated function creates an internal face element for two given parent elements
-   * and fills an Teuchos::RCP and raw pointers of this internal faces elements
+   * and fills an std::shared_ptr and raw pointers of this internal faces elements
    * This method is a very powerful helper function for implementing the necessary
    * Surfaces() and Lines() methods for every element class (especially in 3D)
    * using the 4C conventions for element connectivity
    *
-   * \return intface   Teuchos::RCP of allocated internal face element
+   * \return intface   std::shared_ptr of allocated internal face element
    *
    * \author schott
    * \date 03/12
    */
   template <class IntFaceEle, class ParentEle>
-  Teuchos::RCP<Core::Elements::Element> element_int_face_factory(int id,  ///< element id
+  std::shared_ptr<Core::Elements::Element> element_int_face_factory(int id,  ///< element id
       int owner,                  ///< owner (= owner of parent element with smallest gid)
       int nnode,                  ///< number of nodes
       const int* nodeids,         ///< node ids
@@ -173,12 +174,12 @@ namespace Core::Communication
   )
   {
     // create a new internal face element
-    return Teuchos::make_rcp<IntFaceEle>(id, owner, nnode, nodeids, nodes, master_ele, slave_ele,
+    return std::make_shared<IntFaceEle>(id, owner, nnode, nodeids, nodes, master_ele, slave_ele,
         lsurface_master, lsurface_slave, localtrafomap);
   }
 
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<Core::Elements::Element>> get_element_lines(ParentEle& ele)
+  std::vector<std::shared_ptr<Core::Elements::Element>> get_element_lines(ParentEle& ele)
   {
     // 1D boundary element and 2D/3D parent element
     if (Core::FE::get_dimension(ele.shape()) > 1)
@@ -189,13 +190,13 @@ namespace Core::Communication
     {
       // 1D boundary element and 1D parent element
       //  -> we return the element itself
-      return {Teuchos::rcpFromRef(ele)};
+      return {Core::Utils::shared_ptr_from_ref(ele)};
     }
     FOUR_C_THROW("Lines  does not exist for points.");
   }
 
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<Core::Elements::Element>> get_element_surfaces(ParentEle& ele)
+  std::vector<std::shared_ptr<Core::Elements::Element>> get_element_surfaces(ParentEle& ele)
   {
     if (Core::FE::get_dimension(ele.shape()) > 2)
     {
@@ -206,7 +207,7 @@ namespace Core::Communication
     {
       // 2D boundary element and 2D parent element
       // -> we return the element itself
-      return {Teuchos::rcpFromRef(ele)};
+      return {Core::Utils::shared_ptr_from_ref(ele)};
     }
 
     FOUR_C_THROW("Surfaces do not exist for 1D-elements.");

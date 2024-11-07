@@ -111,15 +111,15 @@ namespace FSI
 
     //! create time integrator for structure field
     virtual void create_structure_time_integrator(
-        const Teuchos::ParameterList& timeparams,         ///< time integration parameters
-        Teuchos::RCP<Core::FE::Discretization> structdis  ///< discretization of structure field
+        const Teuchos::ParameterList& timeparams,            ///< time integration parameters
+        std::shared_ptr<Core::FE::Discretization> structdis  ///< discretization of structure field
     );
 
     //! create time integrators for fluid and ale field
     virtual void create_fluid_and_ale_time_integrator(
-        const Teuchos::ParameterList& timeparams,         ///< time integration parameters
-        Teuchos::RCP<Core::FE::Discretization> fluiddis,  ///< discretization of fluid field
-        Teuchos::RCP<Core::FE::Discretization> aledis     ///< discretization of ALE field
+        const Teuchos::ParameterList& timeparams,            ///< time integration parameters
+        std::shared_ptr<Core::FE::Discretization> fluiddis,  ///< discretization of fluid field
+        std::shared_ptr<Core::FE::Discretization> aledis     ///< discretization of ALE field
     );
 
     //! @name Time loop building blocks
@@ -143,22 +143,22 @@ namespace FSI
     };
 
     /// access to structural field
-    const Teuchos::RCP<Adapter::FSIStructureWrapper>& structure_field() { return structure_; }
+    const std::shared_ptr<Adapter::FSIStructureWrapper>& structure_field() { return structure_; }
 
     /// access to fluid field
-    const Teuchos::RCP<Adapter::FluidFSI>& fluid_field() { return fluid_; }
+    const std::shared_ptr<Adapter::FluidFSI>& fluid_field() { return fluid_; }
 
     /// access to ale field
-    const Teuchos::RCP<Adapter::AleFsiWrapper>& ale_field() { return ale_; }
+    const std::shared_ptr<Adapter::AleFsiWrapper>& ale_field() { return ale_; }
 
     //@}
 
     //! @name Transfer helpers that need access from outside
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_fluid(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_struct(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> struct_to_fluid(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_struct(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) const;
     //@}
 
    protected:
@@ -172,48 +172,48 @@ namespace FSI
     virtual void prepare_time_step_fields();
 
     /// underlying structure of the FSI problem
-    Teuchos::RCP<Adapter::FSIStructureWrapper> structure_;
+    std::shared_ptr<Adapter::FSIStructureWrapper> structure_;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP<Adapter::FluidFSI> fluid_;
+    std::shared_ptr<Adapter::FluidFSI> fluid_;
 
     /// underlying ale of the FSI problem
-    Teuchos::RCP<Adapter::AleFsiWrapper> ale_;
+    std::shared_ptr<Adapter::AleFsiWrapper> ale_;
 
     //! @name Transfer helpers
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_ale(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_struct(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale_interface(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_interface(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> struct_to_ale(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_struct(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_fluid(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_ale_interface(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_fluid_interface(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) const;
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_ale(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_struct(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_fluid(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_struct(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale_interface(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_interface(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> struct_to_ale(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_struct(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> struct_to_fluid(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_struct(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_fluid(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_ale_interface(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_fluid_interface(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
 
     //@}
 
     //! @name Predictor/inhomogeneous Dirichlet related stuff
 
     //! structural displacement increment of interface DOFs due to predictor or inhomogeneous DBCs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ddgpred_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ddgpred_;
 
     //@}
 
@@ -266,16 +266,16 @@ namespace FSI
     //@{
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<Coupling::Adapter::Coupling> coupsf_;
+    std::shared_ptr<Coupling::Adapter::Coupling> coupsf_;
 
     /// coupling of structure and ale at the interface
-    Teuchos::RCP<Coupling::Adapter::Coupling> coupsa_;
+    std::shared_ptr<Coupling::Adapter::Coupling> coupsa_;
 
     /// coupling of fluid and ale in the entire fluid volume
-    Teuchos::RCP<Coupling::Adapter::Coupling> coupfa_;
+    std::shared_ptr<Coupling::Adapter::Coupling> coupfa_;
 
     /// coupling of fluid and ale at the interface
-    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfa_;
+    std::shared_ptr<Coupling::Adapter::Coupling> icoupfa_;
 
     //@}
   };
@@ -321,12 +321,12 @@ namespace FSI
     void prepare_timeloop();
 
     //! outer level FSI time loop
-    void timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
+    void timeloop(const std::shared_ptr<::NOX::Epetra::Interface::Required>& interface);
 
     //! do new time step
     //!
     //! return error code that indicates whether the nonlinear solver converged or not
-    virtual void time_step(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
+    virtual void time_step(const std::shared_ptr<::NOX::Epetra::Interface::Required>& interface);
 
     //! take current results for converged and save for next time step
     void update() override;
@@ -369,7 +369,7 @@ namespace FSI
         const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override;
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    virtual void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
             step_increment  ///< increment between time step n and n+1
     );
 
@@ -382,10 +382,10 @@ namespace FSI
     }
 
     /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> get_lambda()
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> get_lambda()
     {
       FOUR_C_THROW("GetLambda not implemented in the base class");
-      return Teuchos::null;
+      return nullptr;
     };
 
     //! Get number of time step repetitions in case of time step adaptivity
@@ -418,9 +418,9 @@ namespace FSI
     //@}
 
     /// setup solver for global block system
-    virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(
+    virtual std::shared_ptr<::NOX::Epetra::LinearSystem> create_linear_system(
         Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
-        Teuchos::RCP<::NOX::Utils> utils) = 0;
+        std::shared_ptr<::NOX::Utils> utils) = 0;
 
     //! setup of NOX convergence tests
     virtual Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(
@@ -440,10 +440,10 @@ namespace FSI
      *  \param fx (o) fluid velocities and pressure
      *  \param ax (o) ale displacements
      */
-    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& ax){};
+    virtual void extract_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& fx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& ax){};
 
     /*! \brief Put all field vectors together to a monolithic vector
      *
@@ -484,18 +484,18 @@ namespace FSI
      * contain all DOFs (true) or slave vectors contain only inner DOFs (false)
      */
     virtual void combine_field_vectors(Core::LinAlg::Vector<double>& v,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> av,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> sv,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fv,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> av,
         const bool slave_vectors_contain_interface_dofs) = 0;
 
     //! @name Access methods for subclasses
 
     /// output utility
-    Teuchos::RCP<::NOX::Utils> utils() const { return utils_; }
+    std::shared_ptr<::NOX::Utils> utils() const { return utils_; }
 
     /// full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.full_map(); }
+    std::shared_ptr<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.full_map(); }
 
     /*! \brief set full monolithic dof row map
      *
@@ -503,7 +503,7 @@ namespace FSI
      *  defines the number of blocks, their maps and the block order. The block
      *  maps must be row maps by themselves and must not contain identical GIDs.
      */
-    void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    void set_dof_row_maps(const std::vector<std::shared_ptr<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps of single fields
     const Core::LinAlg::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
@@ -534,10 +534,10 @@ namespace FSI
     //!
     //! cond_map()   = Dirichlet DOFs
     //! other_map()  = DOFs without Dirichlet boundary condition
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;
 
     //! Create initial guess for monolithic solution vector from data of the single fields
-    virtual void initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess);
+    virtual void initial_guess(std::shared_ptr<Core::LinAlg::Vector<double>> initial_guess);
 
     //! @name FSI time adaptivity
     //@{
@@ -654,7 +654,7 @@ namespace FSI
     );
 
     /// output stream for energy-file
-    Teuchos::RCP<std::ofstream> logenergy_;
+    std::shared_ptr<std::ofstream> logenergy_;
 
     //@}
 
@@ -719,7 +719,7 @@ namespace FSI
     //@{
 
     //! FSI time loop with constant time step size
-    void timeloop_const_dt(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
+    void timeloop_const_dt(const std::shared_ptr<::NOX::Epetra::Interface::Required>& interface);
 
     /*! \brief FSI time loop with adaptive time step size
      *
@@ -739,7 +739,7 @@ namespace FSI
      * Finite Elements in Analysis and Design, 141:55-69, 2018,
      * https://doi.org/10.1016/j.finel.2017.12.002
      */
-    void timeloop_ada_dt(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
+    void timeloop_ada_dt(const std::shared_ptr<::NOX::Epetra::Interface::Required>& interface);
 
     //@}
 
@@ -879,7 +879,7 @@ namespace FSI
      *  The algorithm's marching time step size is still the one from
      *  Adapter::AlgorithmBase.
      */
-    Teuchos::RCP<TimeStepping::TimIntMStep<double>> dt_;
+    std::shared_ptr<TimeStepping::TimIntMStep<double>> dt_;
 
     int adaptstep_;  ///< current number of adaption steps, i.e. repetitions of this time step
 
@@ -948,7 +948,7 @@ namespace FSI
     //@{
 
     /// output utilities
-    Teuchos::RCP<::NOX::Utils> utils_;
+    std::shared_ptr<::NOX::Utils> utils_;
 
     /// flags passed to NOX
     Teuchos::ParameterList noxparameterlist_;
@@ -969,15 +969,15 @@ namespace FSI
     FSI::Monolithic::ErrorAction erroraction_;
 
     /// output stream for log-file
-    Teuchos::RCP<std::ofstream> log_;
+    std::shared_ptr<std::ofstream> log_;
 
     /// output stream for adaptivity-file
-    Teuchos::RCP<std::ofstream> logada_;
+    std::shared_ptr<std::ofstream> logada_;
 
     /// @name special debugging output
 
-    Teuchos::RCP<Utils::DebugWriter> sdbg_;
-    Teuchos::RCP<Utils::DebugWriter> fdbg_;
+    std::shared_ptr<Utils::DebugWriter> sdbg_;
+    std::shared_ptr<Utils::DebugWriter> fdbg_;
 
     //@}
   };
@@ -1049,7 +1049,7 @@ namespace FSI
     //@}
 
     /// the composed system matrix
-    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const = 0;
+    virtual std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const = 0;
 
 
     //! Create #lambda_ and #lambdaold_
@@ -1072,23 +1072,23 @@ namespace FSI
 
     /// create the composed system matrix
     void create_system_matrix(
-        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat, bool structuresplit);
+        std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>& mat, bool structuresplit);
 
     /// setup solver for global block system
-    Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(
-        Teuchos::ParameterList& nlParams,  ///< parameter list
-        ::NOX::Epetra::Vector& noxSoln,    ///< solution vector in NOX format
-        Teuchos::RCP<::NOX::Utils> utils   ///< NOX utils
+    std::shared_ptr<::NOX::Epetra::LinearSystem> create_linear_system(
+        Teuchos::ParameterList& nlParams,    ///< parameter list
+        ::NOX::Epetra::Vector& noxSoln,      ///< solution vector in NOX format
+        std::shared_ptr<::NOX::Utils> utils  ///< NOX utils
         ) override;
 
     void combine_field_vectors(Core::LinAlg::Vector<double>& v,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> av,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> sv,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fv,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> av,
         const bool slave_vectors_contain_interface_dofs) override{};
 
     /// debug writer to be used inside preconditioner
-    Teuchos::RCP<Utils::MonolithicDebugWriter> pcdbg_;
+    std::shared_ptr<Utils::MonolithicDebugWriter> pcdbg_;
 
     /*! \brief Counter of iterations to reuse the block matrix preconditioner
      *

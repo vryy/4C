@@ -53,21 +53,24 @@ void Discret::Elements::SoHex8::soh8_set_eas_multi(Teuchos::ParameterList& param
 {
   if (eastype_ != soh8_easnone)
   {
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldalpha =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
-            "oldalpha", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldfeas =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
-            "oldfeas", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKaainv =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
-            "oldKaainv", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKda =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
-            "oldKda", Teuchos::null);
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldalpha =
+        params
+            .get<std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>>(
+                "oldalpha", nullptr);
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldfeas =
+        params
+            .get<std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>>(
+                "oldfeas", nullptr);
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldKaainv =
+        params
+            .get<std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>>(
+                "oldKaainv", nullptr);
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldKda =
+        params
+            .get<std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>>(
+                "oldKda", nullptr);
 
-    if (oldalpha == Teuchos::null || oldfeas == Teuchos::null || oldKaainv == Teuchos::null ||
-        oldKda == Teuchos::null)
+    if (oldalpha == nullptr || oldfeas == nullptr || oldKaainv == nullptr || oldKda == nullptr)
       FOUR_C_THROW("Cannot get EAS internal data from parameter list for multi-scale problems");
 
     easdata_.alpha = *(*oldalpha)[id()];
@@ -85,27 +88,32 @@ void Discret::Elements::SoHex8::soh8_eas_init_multi(Teuchos::ParameterList& para
 {
   if (eastype_ != soh8_easnone)
   {
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
-            "lastalpha", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldalpha =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
-            "oldalpha", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldfeas =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
-            "oldfeas", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKaainv =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
-            "oldKaainv", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKda =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
-            "oldKda", Teuchos::null);
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> lastalpha =
+        params
+            .get<std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>>(
+                "lastalpha", nullptr);
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldalpha =
+        params
+            .get<std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>>(
+                "oldalpha", nullptr);
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldfeas =
+        params
+            .get<std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>>(
+                "oldfeas", nullptr);
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldKaainv =
+        params
+            .get<std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>>(
+                "oldKaainv", nullptr);
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldKda =
+        params
+            .get<std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>>(
+                "oldKda", nullptr);
 
-    (*lastalpha)[id()] = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, 1);
-    (*oldalpha)[id()] = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, 1);
-    (*oldfeas)[id()] = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, 1);
-    (*oldKaainv)[id()] = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, neas_);
-    (*oldKda)[id()] = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, NUMDOF_SOH8);
+    (*lastalpha)[id()] = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, 1);
+    (*oldalpha)[id()] = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, 1);
+    (*oldfeas)[id()] = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, 1);
+    (*oldKaainv)[id()] = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, neas_);
+    (*oldKda)[id()] = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, NUMDOF_SOH8);
   }
   return;
 }
@@ -116,7 +124,7 @@ void Discret::Elements::SoHex8::soh8_eas_init_multi(Teuchos::ParameterList& para
  *----------------------------------------------------------------------*/
 void Discret::Elements::SoHex8::soh8_read_restart_multi()
 {
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   if (mat->material_type() == Core::Materials::m_struct_multiscale)
   {

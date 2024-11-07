@@ -208,7 +208,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
 template <const int numnodes, const int numnodalvalues>
 bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate(
     Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fint, const double& pp,
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
+    std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>>& contactpairmap,
     Teuchos::ParameterList& timeintparams, bool fdcheck)
 {
   //**********************************************************************
@@ -3100,7 +3100,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_lin_orthogonal
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_normal(
     Core::LinAlg::Matrix<3, 1, TYPE>& delta_r, TYPE& norm_delta_r,
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap)
+    std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>>& contactpairmap)
 {
   // compute non-unit normal
   for (int i = 0; i < 3; i++) delta_r(i) = r1_(i) - r2_(i);
@@ -3622,7 +3622,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::shift_nodal_positions()
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old(
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap)
+    std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>>& contactpairmap)
 {
   // In this method we calculate an approximation for the vector normal_old_ based on the neighbor
   // element pair.

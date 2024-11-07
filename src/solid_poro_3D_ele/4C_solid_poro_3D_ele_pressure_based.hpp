@@ -46,10 +46,10 @@ namespace Discret::Elements
     void setup_element_definition(
         std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions) override;
 
-    Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+    std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
         const std::string elecelltype, const int id, const int owner) override;
 
-    Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+    std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
     Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
@@ -100,9 +100,9 @@ namespace Discret::Elements
 
     [[nodiscard]] int num_volume() const override;
 
-    std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+    std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
-    std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+    std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
     [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
 
@@ -135,19 +135,19 @@ namespace Discret::Elements
 
     void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 
-    Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override
+    std::shared_ptr<Core::Elements::ParamsInterface> params_interface_ptr() override
     {
       return interface_ptr_;
     }
 
     [[nodiscard]] inline bool is_solid_params_interface() const
     {
-      return (not solid_interface_ptr_.is_null());
+      return (solid_interface_ptr_ != nullptr);
     }
 
     [[nodiscard]] inline bool is_params_interface() const override
     {
-      return (not interface_ptr_.is_null());
+      return (interface_ptr_ != nullptr);
     }
 
     [[nodiscard]] inline Core::Elements::ParamsInterface& params_interface() const
@@ -158,7 +158,7 @@ namespace Discret::Elements
 
     [[nodiscard]] inline FourC::Solid::Elements::ParamsInterface& get_solid_params_interface() const
     {
-      FOUR_C_THROW_UNLESS(solid_interface_ptr_.getRawPtr(),
+      FOUR_C_THROW_UNLESS(solid_interface_ptr_.get(),
           "The parameter interface pointer is not set or not a solid parameter interface.");
       return *solid_interface_ptr_;
     }
@@ -194,10 +194,10 @@ namespace Discret::Elements
     SolidPoroElementProperties poro_ele_property_{};
 
     //! interface pointer for data exchange between the element and the time integrator.
-    Teuchos::RCP<Core::Elements::ParamsInterface> interface_ptr_;
+    std::shared_ptr<Core::Elements::ParamsInterface> interface_ptr_;
 
     //! interface pointer for data exchange between the element and the solid time integrator.
-    Teuchos::RCP<FourC::Solid::Elements::ParamsInterface> solid_interface_ptr_;
+    std::shared_ptr<FourC::Solid::Elements::ParamsInterface> solid_interface_ptr_;
 
     //! element calculation holding one of the implemented variants
     SolidCalcVariant solid_calc_variant_;

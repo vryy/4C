@@ -13,8 +13,7 @@
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <string>
 
 FOUR_C_NAMESPACE_OPEN
@@ -65,7 +64,7 @@ namespace Mat
   void compute_structural_tensors(
       std::vector<std::array<Core::LinAlg::Matrix<3, 1>, numfib>>& fibers,
       std::vector<std::array<T, numfib>>& structural_tensor,
-      const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& strategy);
+      const std::shared_ptr<Elastic::StructuralTensorStrategyBase>& strategy);
 
   /*!
    * \brief Pack 2D vector of fibers and structural tensors

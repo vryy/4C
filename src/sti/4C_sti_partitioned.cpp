@@ -257,8 +257,8 @@ void STI::Partitioned::solve_two_way()
     case Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
     {
       // initialize relaxed scatra state vector
-      const Teuchos::RCP<Core::LinAlg::Vector<double>> scatra_relaxed =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scatra_field()->phiafnp());
+      const std::shared_ptr<Core::LinAlg::Vector<double>> scatra_relaxed =
+          std::make_shared<Core::LinAlg::Vector<double>>(*scatra_field()->phiafnp());
 
       // begin outer iteration loop
       while (true)
@@ -343,16 +343,16 @@ void STI::Partitioned::solve_two_way()
           else
           {
             // safety check
-            if (scatra_field()->splitter() == Teuchos::null)
+            if (scatra_field()->splitter() == nullptr)
               FOUR_C_THROW("Map extractor was not initialized!");
 
             // loop over all degrees of freedom
             for (int idof = 0; idof < scatra_field()->splitter()->num_maps(); ++idof)
             {
               // extract subvectors associated with current degree of freedom
-              const Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra_inc_dof =
+              const std::shared_ptr<const Core::LinAlg::Vector<double>> scatra_inc_dof =
                   scatra_field()->splitter()->extract_vector(*scatra_field()->phinp_inc(), idof);
-              const Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra_inc_diff_dof =
+              const std::shared_ptr<const Core::LinAlg::Vector<double>> scatra_inc_diff_dof =
                   scatra_field()->splitter()->extract_vector(scatra_inc_diff, idof);
 
               // compute L2 norm of difference between current and previous increments of current
@@ -394,8 +394,8 @@ void STI::Partitioned::solve_two_way()
     case Inpar::STI::CouplingType::twoway_thermotoscatra_aitken:
     {
       // initialize relaxed thermo state vector
-      const Teuchos::RCP<Core::LinAlg::Vector<double>> thermo_relaxed =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*thermo_field()->phiafnp());
+      const std::shared_ptr<Core::LinAlg::Vector<double>> thermo_relaxed =
+          std::make_shared<Core::LinAlg::Vector<double>>(*thermo_field()->phiafnp());
 
       // begin outer iteration loop
       while (true)

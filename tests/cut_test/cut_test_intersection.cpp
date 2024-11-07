@@ -89,7 +89,7 @@ void test_quad4_line2(double x1, double y1, double x2, double y2)
   Cut::Side* side =
       mesh.get_side(1, nodes, shards::getCellTopologyData<shards::Quadrilateral<4>>());
 
-  Teuchos::RCP<Cut::IntersectionBase> intersection =
+  std::shared_ptr<Cut::IntersectionBase> intersection =
       Cut::IntersectionBase::create(Core::FE::CellType::line2, Core::FE::CellType::quad4);
   intersection->init(&mesh, edge, side, false, false, false);
 
@@ -5235,8 +5235,8 @@ void test_tet4_tri3_double()
   std::vector<double> tessVol, momFitVol, dirDivVol;
 
   Cut::Mesh mesh = intersection.normal_mesh();
-  const std::list<Teuchos::RCP<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
-  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  const std::list<std::shared_ptr<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
+  for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;

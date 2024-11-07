@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Solid::ModelEvaluator::PartitionedSSI::PartitionedSSI(
-    const Teuchos::RCP<const SSI::SSIPart> ssi_part)
+    const std::shared_ptr<const SSI::SSIPart> ssi_part)
     : ssi_part_(ssi_part)
 {
 }

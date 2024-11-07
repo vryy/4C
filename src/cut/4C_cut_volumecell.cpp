@@ -922,8 +922,8 @@ void Cut::VolumeCell::dump_gmsh_gauss_points_tessellation()
 
   dump_gmsh(file);
 
-  Teuchos::RCP<Core::FE::GaussPointsComposite> gpc =
-      Teuchos::make_rcp<Core::FE::GaussPointsComposite>(0);
+  std::shared_ptr<Core::FE::GaussPointsComposite> gpc =
+      std::make_shared<Core::FE::GaussPointsComposite>(0);
 
   const plain_integrationcell_set& cells = integration_cells();
   for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
@@ -933,13 +933,13 @@ void Cut::VolumeCell::dump_gmsh_gauss_points_tessellation()
     {
       case Core::FE::CellType::hex8:
       {
-        Teuchos::RCP<Core::FE::GaussPoints> gp = create_projected<Core::FE::CellType::hex8>(ic);
+        std::shared_ptr<Core::FE::GaussPoints> gp = create_projected<Core::FE::CellType::hex8>(ic);
         gpc->append(gp);
         break;
       }
       case Core::FE::CellType::tet4:
       {
-        Teuchos::RCP<Core::FE::GaussPoints> gp = create_projected<Core::FE::CellType::tet4>(ic);
+        std::shared_ptr<Core::FE::GaussPoints> gp = create_projected<Core::FE::CellType::tet4>(ic);
         gpc->append(gp);
         break;
       }
@@ -974,8 +974,8 @@ void Cut::VolumeCell::dump_gmsh_gauss_points_tessellation()
  *----------------------------------------------------------------------------------------------------------*/
 void Cut::VolumeCell::integrate_specific_functions_tessellation()
 {
-  Teuchos::RCP<Core::FE::GaussPointsComposite> gpc =
-      Teuchos::make_rcp<Core::FE::GaussPointsComposite>(0);
+  std::shared_ptr<Core::FE::GaussPointsComposite> gpc =
+      std::make_shared<Core::FE::GaussPointsComposite>(0);
 
   const plain_integrationcell_set& cells = integration_cells();
   for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
@@ -985,13 +985,13 @@ void Cut::VolumeCell::integrate_specific_functions_tessellation()
     {
       case Core::FE::CellType::hex8:
       {
-        Teuchos::RCP<Core::FE::GaussPoints> gp = create_projected<Core::FE::CellType::hex8>(ic);
+        std::shared_ptr<Core::FE::GaussPoints> gp = create_projected<Core::FE::CellType::hex8>(ic);
         gpc->append(gp);
         break;
       }
       case Core::FE::CellType::tet4:
       {
-        Teuchos::RCP<Core::FE::GaussPoints> gp = create_projected<Core::FE::CellType::tet4>(ic);
+        std::shared_ptr<Core::FE::GaussPoints> gp = create_projected<Core::FE::CellType::tet4>(ic);
         gpc->append(gp);
         break;
       }
@@ -1022,7 +1022,7 @@ void Cut::VolumeCell::integrate_specific_functions_tessellation()
 }
 
 template <Core::FE::CellType distype>
-Teuchos::RCP<Core::FE::GaussPoints> Cut::VolumeCell::create_projected(Cut::IntegrationCell* ic)
+std::shared_ptr<Core::FE::GaussPoints> Cut::VolumeCell::create_projected(Cut::IntegrationCell* ic)
 {
   const unsigned nen = Core::FE::num_nodes<distype>;
 
@@ -1040,7 +1040,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::VolumeCell::create_projected(Cut::Integ
     std::copy(xi.data(), xi.data() + 3, &xie(0, i));
   }
 
-  Teuchos::RCP<Core::FE::GaussPoints> gp = Core::FE::GaussIntegration::create_projected<distype>(
+  std::shared_ptr<Core::FE::GaussPoints> gp = Core::FE::GaussIntegration::create_projected<distype>(
       xie, ic->cubature_degree(element_->shape()));
   return gp;
 }
@@ -1048,10 +1048,10 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::VolumeCell::create_projected(Cut::Integ
 /*------------------------------------------------------------------------------------------------------*
     convert the Gaussian points and weights into appropriate Gauss rule as per 4C implementation
 *-------------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::GaussPoints> Cut::VolumeCell::gauss_points_fitting()
+std::shared_ptr<Core::FE::GaussPoints> Cut::VolumeCell::gauss_points_fitting()
 {
-  Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-      Teuchos::make_rcp<Core::FE::CollectedGaussPoints>(0);
+  std::shared_ptr<Core::FE::CollectedGaussPoints> cgp =
+      std::make_shared<Core::FE::CollectedGaussPoints>(0);
 
   for (unsigned i = 0; i < gaus_pts_.size(); i++)
   {
@@ -1381,16 +1381,16 @@ bool Cut::VolumeCell::to_reverse(const Cut::Point::PointPosition posi,
    When DirectDivergence method is used for gauss point generation, for every gauss point
    on the facet, an internal gauss rule is to be generated to find the modified integrand
 *-------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::GaussPoints> Cut::VolumeCell::generate_internal_gauss_rule(
-    Teuchos::RCP<Core::FE::GaussPoints>& gp)
+std::shared_ptr<Core::FE::GaussPoints> Cut::VolumeCell::generate_internal_gauss_rule(
+    std::shared_ptr<Core::FE::GaussPoints>& gp)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "Cut::VolumeCell::generate_internal_gauss_rule" );
 
 
   Core::FE::GaussIntegration grule(gp);
 
-  Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-      Teuchos::make_rcp<Core::FE::CollectedGaussPoints>(0);
+  std::shared_ptr<Core::FE::CollectedGaussPoints> cgp =
+      std::make_shared<Core::FE::CollectedGaussPoints>(0);
 
   for (Core::FE::GaussIntegration::iterator quadint = grule.begin(); quadint != grule.end();
        ++quadint)
@@ -1519,7 +1519,7 @@ void Cut::VolumeCell::direct_divergence_gauss_rule(
 
   ref_eqn_plane_.reserve(4);  // it has to store a,b,c,d in ax+by+cz=d
 
-  Teuchos::RCP<Core::FE::GaussPoints> gp =
+  std::shared_ptr<Core::FE::GaussPoints> gp =
       dd.vc_integration_rule(ref_eqn_plane_);  // compute main gauss points
   gp_ =
       generate_internal_gauss_rule(gp);  // compute internal gauss points for every main gauss point

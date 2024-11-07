@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
+#include <memory>
 
 // NOLINTBEGIN(readability-identifier-naming)
 

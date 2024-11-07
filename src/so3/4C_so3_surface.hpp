@@ -33,7 +33,7 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
@@ -164,7 +164,7 @@ namespace Discret
         return StructuralSurfaceType::instance();
       }
 
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       int num_line() const override;
 
@@ -382,7 +382,7 @@ namespace Discret
           const int ndof,                          ///< number of degrees of freedom
           double& A,                               ///< area
           Core::LinAlg::SerialDenseVector& Adiff,  ///< first derivative
-          const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& Adiff2  ///< second derivative
+          const std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& Adiff2  ///< second derivative
       );
 
       //! Submethod to compute constraint volume and its first and second derivatives w.r.t. the
@@ -392,7 +392,7 @@ namespace Discret
           const int ndof,                          ///< number of degrees of freedom
           double& V,                               ///< volume
           Core::LinAlg::SerialDenseVector& Vdiff,  ///< first derivative
-          const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& Vdiff2,  ///< second derivative
+          const std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& Vdiff2,  ///< second derivative
           const int minind = 0,  ///< minimal index to compute enclosed volume with
           const int maxind = 2   ///< maximal index to compute enclosed volume with
       );

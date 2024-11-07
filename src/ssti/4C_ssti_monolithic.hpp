@@ -90,15 +90,15 @@ namespace SSTI
     void timeloop() override;
 
     //! return all maps
-    Teuchos::RCP<SSTI::SSTIMapsMono> all_maps() const { return ssti_maps_mono_; };
+    std::shared_ptr<SSTI::SSTIMapsMono> all_maps() const { return ssti_maps_mono_; };
 
     //! number of current Newton Iteration
     unsigned int newton_iteration() const { return iter(); };
 
     //! state vectors
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> increment() const { return increment_; };
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual() const { return residual_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>> increment() const { return increment_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual() const { return residual_; };
     //}
 
     //! statistics for evaluation and solving
@@ -118,7 +118,7 @@ namespace SSTI
     void evaluate_subproblems();
 
     //! get solution increment for given subproblem
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_sub_increment(Subproblem sub);
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_sub_increment(Subproblem sub);
 
     // build and return vector of equilibration methods for each block of system matrix
     std::vector<Core::LinAlg::EquilibrationMethod> get_block_equilibration();
@@ -145,16 +145,16 @@ namespace SSTI
 
     //! Newton Raphson loop
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> increment_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> increment_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual_;
+    std::shared_ptr<Core::LinAlg::Solver> solver_;
     //@}
 
     //! evaluation of off-diagonal blocks
     //@{
-    Teuchos::RCP<SSI::ScatraStructureOffDiagCoupling> scatrastructureoffdiagcoupling_;
-    Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> scatrathermooffdiagcoupling_;
-    Teuchos::RCP<SSTI::ThermoStructureOffDiagCoupling> thermostructureoffdiagcoupling_;
+    std::shared_ptr<SSI::ScatraStructureOffDiagCoupling> scatrastructureoffdiagcoupling_;
+    std::shared_ptr<STI::ScatraThermoOffDiagCoupling> scatrathermooffdiagcoupling_;
+    std::shared_ptr<SSTI::ThermoStructureOffDiagCoupling> thermostructureoffdiagcoupling_;
     //@}
 
     //! time monitor
@@ -163,7 +163,7 @@ namespace SSTI
     double dtevaluate_;
     double dtnewton_;
     double dtsolve_;
-    Teuchos::RCP<Teuchos::Time> timer_;
+    std::shared_ptr<Teuchos::Time> timer_;
     //@}
 
     //! control parameters
@@ -174,19 +174,19 @@ namespace SSTI
     //@}
 
     //! convergence check of Newton iteration
-    Teuchos::RCP<SSTI::ConvCheckMono> convcheck_;
+    std::shared_ptr<SSTI::ConvCheckMono> convcheck_;
 
     //! all maps
-    Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono_;
+    std::shared_ptr<SSTI::SSTIMapsMono> ssti_maps_mono_;
 
     //! system matrix and submatrices
-    Teuchos::RCP<SSTI::SSTIMatrices> ssti_matrices_;
+    std::shared_ptr<SSTI::SSTIMatrices> ssti_matrices_;
 
     //! strategy how to assembly system matrix and rhs
-    Teuchos::RCP<SSTI::AssembleStrategyBase> strategy_assemble_;
+    std::shared_ptr<SSTI::AssembleStrategyBase> strategy_assemble_;
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<Core::LinAlg::Equilibration> strategy_equilibration_;
+    std::shared_ptr<Core::LinAlg::Equilibration> strategy_equilibration_;
   };
 }  // namespace SSTI
 FOUR_C_NAMESPACE_CLOSE

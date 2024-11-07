@@ -13,7 +13,8 @@
 // Epetra related headers
 #include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCPDecl.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -22,18 +23,18 @@ namespace
   class VectorTest : public testing::Test
   {
    public:
-    Teuchos::RCP<Epetra_Comm> comm_;
-    Teuchos::RCP<Epetra_Map> map_;
+    std::shared_ptr<Epetra_Comm> comm_;
+    std::shared_ptr<Epetra_Map> map_;
     int NumGlobalElements = 10;
 
    protected:
     VectorTest()
     {
       // set up communicator
-      comm_ = Teuchos::make_rcp<Epetra_MpiComm>(MPI_COMM_WORLD);
+      comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
 
       // set up a map
-      map_ = Teuchos::make_rcp<Epetra_Map>(NumGlobalElements, 0, *comm_);
+      map_ = std::make_shared<Epetra_Map>(NumGlobalElements, 0, *comm_);
     }
   };
 
@@ -197,14 +198,14 @@ namespace
 
   TEST_F(VectorTest, MultiVectorImplicitConversionCopy)
   {
-    auto a = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*map_, true);
+    auto a = std::make_shared<Core::LinAlg::Vector<double>>(*map_, true);
     a->PutScalar(1.0);
 
     // This copies the data.
     Core::LinAlg::MultiVector<double> mv = *a;
     a->PutScalar(2.0);
     // Explicitly deallocate a to make sure that mv is not a view.
-    a = Teuchos::null;
+    a = nullptr;
 
     // mv should still be 1.0 because we only modified a.
     EXPECT_EQ(means_multi_vector(mv)[0], 1.0);

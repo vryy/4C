@@ -12,7 +12,7 @@
 
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -45,7 +45,7 @@ namespace Adapter
      *
      * \return FBI constraint enforcement strategy
      */
-    static Teuchos::RCP<FBIConstraintenforcer> create_enforcer(
+    static std::shared_ptr<FBIConstraintenforcer> create_enforcer(
         const Teuchos::ParameterList& fsidyn, const Teuchos::ParameterList& fbidyn);
   };
 }  // namespace Adapter

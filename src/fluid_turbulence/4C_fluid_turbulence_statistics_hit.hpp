@@ -13,7 +13,7 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -28,7 +28,7 @@ namespace FLD
   {
    public:
     //! constructor: set-up sampling
-    TurbulenceStatisticsHit(Teuchos::RCP<Core::FE::Discretization> actdis,
+    TurbulenceStatisticsHit(std::shared_ptr<Core::FE::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename,
         const bool forced);
 
@@ -36,7 +36,7 @@ namespace FLD
     virtual ~TurbulenceStatisticsHit() = default;
 
     //! store scatra discretization if passive scalar is included
-    virtual void store_scatra_discret(Teuchos::RCP<Core::FE::Discretization> scatradis)
+    virtual void store_scatra_discret(std::shared_ptr<Core::FE::Discretization> scatradis)
     {
       scatradiscret_ = scatradis;
       return;
@@ -44,14 +44,14 @@ namespace FLD
 
     //! space and time (only forced but not decaying case) averaging
     //! get energy spectrum
-    virtual void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp);
+    virtual void do_time_sample(std::shared_ptr<Core::LinAlg::Vector<double>> velnp);
     //! version with scalar field
-    virtual void do_scatra_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> phinp);
+    virtual void do_scatra_time_sample(std::shared_ptr<Core::LinAlg::Vector<double>> velnp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> phinp);
 
     // evaluation of dissipation rate and rbvmm-related quantities
     virtual void evaluate_residuals(
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs);
+        std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>> statevecs);
 
     //! dump the result to file
     virtual void dump_statistics(int step, bool multiple_records = false);
@@ -96,10 +96,10 @@ namespace FLD
     }
 
     //! the discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! the scatra discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<Core::FE::Discretization> scatradiscret_;
+    std::shared_ptr<Core::FE::Discretization> scatradiscret_;
 
     //! parameter list
     Teuchos::ParameterList& params_;
@@ -118,25 +118,25 @@ namespace FLD
     int nummodes_;
 
     //! vector of coordinates in one spatial direction (same for the other two directions)
-    Teuchos::RCP<std::vector<double>> coordinates_;
+    std::shared_ptr<std::vector<double>> coordinates_;
 
     //! vector of wave numbers
-    Teuchos::RCP<std::vector<double>> wavenumbers_;
+    std::shared_ptr<std::vector<double>> wavenumbers_;
 
     //! vector energy (sum over k=const)
-    Teuchos::RCP<std::vector<double>> energyspectrum_;
+    std::shared_ptr<std::vector<double>> energyspectrum_;
 
     //! vector dissipation (sum over k=const)
-    Teuchos::RCP<std::vector<double>> dissipationspectrum_;
+    std::shared_ptr<std::vector<double>> dissipationspectrum_;
 
     //! vector scalar variance (sum over k=const)
-    Teuchos::RCP<std::vector<double>> scalarvariancespectrum_;
+    std::shared_ptr<std::vector<double>> scalarvariancespectrum_;
 
     //! sum over velocity vector
-    Teuchos::RCP<std::vector<double>> sumvel_;
+    std::shared_ptr<std::vector<double>> sumvel_;
 
     //! sum over squares of velocity vector componetnts
-    Teuchos::RCP<std::vector<double>> sumvelvel_;
+    std::shared_ptr<std::vector<double>> sumvelvel_;
 
     //! number of samples taken
     int numsamp_;
@@ -148,25 +148,25 @@ namespace FLD
     double visc_;
 
     //! output steps for energy spectrum of decaying case
-    Teuchos::RCP<std::vector<int>> outsteps_;
+    std::shared_ptr<std::vector<int>> outsteps_;
 
     //! toogle vectors: sums are computed by scalarproducts
-    Teuchos::RCP<Core::LinAlg::Vector<double>> toggleu_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglev_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglew_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> toggleu_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglev_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglew_;
   };
 
   class TurbulenceStatisticsHitHDG : public TurbulenceStatisticsHit
   {
    public:
     //! constructor: set-up sampling
-    TurbulenceStatisticsHitHDG(Teuchos::RCP<Core::FE::Discretization> actdis,
+    TurbulenceStatisticsHitHDG(std::shared_ptr<Core::FE::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename,
         const bool forced);
 
 
     //! store scatra discretization if passive scalar is included
-    void store_scatra_discret(Teuchos::RCP<Core::FE::Discretization> scatradis) override
+    void store_scatra_discret(std::shared_ptr<Core::FE::Discretization> scatradis) override
     {
       FOUR_C_THROW("not implemented for hdg");
       return;
@@ -174,10 +174,10 @@ namespace FLD
 
     //! space and time (only forced but not decaying case) averaging
     //! get energy spectrum
-    void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp) override;
+    void do_time_sample(std::shared_ptr<Core::LinAlg::Vector<double>> velnp) override;
     //! version with scalar field
-    void do_scatra_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> phinp) override
+    void do_scatra_time_sample(std::shared_ptr<Core::LinAlg::Vector<double>> velnp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> phinp) override
     {
       FOUR_C_THROW("not implemented for hdg");
       return;
@@ -185,7 +185,7 @@ namespace FLD
 
     // evaluation of dissipation rate and rbvmm-related quantities
     void evaluate_residuals(
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs) override
+        std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>> statevecs) override
     {
       FOUR_C_THROW("not implemented for hdg");
       return;

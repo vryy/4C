@@ -17,10 +17,10 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                   vuong  08/16 |
  *----------------------------------------------------------------------*/
 POROFLUIDMULTIPHASE::TimIntOneStepTheta::TimIntOneStepTheta(
-    Teuchos::RCP<Core::FE::Discretization> dis,  //!< discretization
-    const int linsolvernumber,                   //!< number of linear solver
+    std::shared_ptr<Core::FE::Discretization> dis,  //!< discretization
+    const int linsolvernumber,                      //!< number of linear solver
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< output writer
+    std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< output writer
     )
     : TimIntImpl(dis, linsolvernumber, probparams, poroparams, output),
       theta_(poroparams.get<double>("THETA"))
@@ -45,8 +45,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::set_element_time_step_parameter() 
   eleparams.set<double>("time factor", theta_ * dt_);
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 
@@ -174,8 +173,8 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::read_restart(const int step)
   // call base class
   POROFLUIDMULTIPHASE::TimIntImpl::read_restart(step);
 
-  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
-  reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+  std::shared_ptr<Core::IO::DiscretizationReader> reader(nullptr);
+  reader = std::make_shared<Core::IO::DiscretizationReader>(
       discret_, Global::Problem::instance()->input_control_file(), step);
 
   time_ = reader->read_double("time");

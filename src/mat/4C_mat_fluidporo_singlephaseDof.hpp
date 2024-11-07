@@ -35,7 +35,7 @@ namespace Mat
       static FluidPoroPhaseDof* create_phase_dof(int phasedofId);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
+      std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };
 
       /// initialize
       virtual void initialize() = 0;

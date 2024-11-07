@@ -60,7 +60,7 @@ namespace Mat
       //@}
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class ThermoStVenantKirchhoff
 
@@ -143,9 +143,9 @@ namespace Mat
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ThermoStVenantKirchhoff>(*this);
+      return std::make_shared<ThermoStVenantKirchhoff>(*this);
     }
 
     //! evaluates stresses for 3d
@@ -262,7 +262,7 @@ namespace Mat
     Mat::PAR::ThermoStVenantKirchhoff* params_;
 
     //! pointer to the internal thermal material
-    Teuchos::RCP<Mat::Trait::Thermo> thermo_;
+    std::shared_ptr<Mat::Trait::Thermo> thermo_;
 
     //! current temperature (set by Reinit())
     double current_temperature_{};

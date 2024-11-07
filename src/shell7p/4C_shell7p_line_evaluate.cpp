@@ -26,8 +26,9 @@ int Discret::Elements::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
   parent_element()->set_params_interface_ptr(params);
 
   // we need the displacement at the previous step
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = discretization.get_state("displacement");
-  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
+      discretization.get_state("displacement");
+  if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
   std::vector<double> displacements(dof_index_array.size());
   Core::FE::extract_my_values(*disp, displacements, dof_index_array);
 

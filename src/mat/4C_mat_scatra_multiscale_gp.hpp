@@ -13,8 +13,6 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <memory>
 #include <vector>
 
@@ -95,7 +93,7 @@ namespace Mat
 
    private:
     //! map between number of micro-scale discretization and micro-scale time integrator
-    static std::map<int, Teuchos::RCP<ScaTra::TimIntOneStepTheta>> microdisnum_microtimint_map_;
+    static std::map<int, std::shared_ptr<ScaTra::TimIntOneStepTheta>> microdisnum_microtimint_map_;
 
     //! map between number of micro-scale discretization and number of associated macro-scale Gauss
     //! points
@@ -123,22 +121,22 @@ namespace Mat
     int step_;
 
     //! micro-scale state vector at old time step
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phin_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phin_;
 
     //! micro-scale state vector at new time step
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinp_;
 
     //! time derivative of micro-scale state vector at old time step
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phidtn_;
 
     //! time derivative of micro-scale state vector at new time step
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phidtnp_;
 
     //! micro-scale history vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> hist_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> hist_;
 
     //! micro-scale discretization writer
-    Teuchos::RCP<Core::IO::DiscretizationWriter> micro_output_;
+    std::shared_ptr<Core::IO::DiscretizationWriter> micro_output_;
 
     //! micro-scale visualization writer
     std::shared_ptr<Core::IO::DiscretizationVisualizationWriterMesh> micro_visualization_writer_;

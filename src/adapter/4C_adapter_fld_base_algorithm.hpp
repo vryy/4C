@@ -16,7 +16,8 @@
 
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -37,14 +38,14 @@ namespace Adapter
 
     /// second constructor (special version for turbulent flows with separate inflow
     /// section for generation of turbulent inflow profiles)
-    explicit FluidBaseAlgorithm(
-        const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<Core::FE::Discretization> discret);
+    explicit FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
+        const std::shared_ptr<Core::FE::Discretization> discret);
 
     /// virtual destructor to support polymorph destruction
     virtual ~FluidBaseAlgorithm() = default;
 
     /// access to fluid field solver
-    const Teuchos::RCP<Fluid>& fluid_field() { return fluid_; }
+    const std::shared_ptr<Fluid>& fluid_field() { return fluid_; }
 
     /// set the initial flow field in the fluid
     void set_initial_flow_field(const Teuchos::ParameterList& fdyn);
@@ -69,15 +70,15 @@ namespace Adapter
     /// setup second fluid algorithm (overriding some fluid parameters with
     /// values specified in given problem-dependent Turbulent Inflow ParameterList)
     /// separate discretization for inflow generation
-    void setup_inflow_fluid(
-        const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<Core::FE::Discretization> discret);
+    void setup_inflow_fluid(const Teuchos::ParameterList& prbdyn,
+        const std::shared_ptr<Core::FE::Discretization> discret);
 
     //! set parameters in list required for all schemes
-    void set_general_parameters(const Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams,
+    void set_general_parameters(const std::shared_ptr<Teuchos::ParameterList> fluidtimeparams,
         const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn);
 
     /// fluid field solver
-    Teuchos::RCP<Fluid> fluid_;
+    std::shared_ptr<Fluid> fluid_;
   };
 
 }  // namespace Adapter

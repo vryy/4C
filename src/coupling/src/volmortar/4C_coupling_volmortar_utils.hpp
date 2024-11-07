@@ -10,8 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
-
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -64,12 +63,14 @@ namespace Coupling::VolMortar
       //! assign material of discretization B
       virtual void assign_material2_to1(const Coupling::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele1, const std::vector<int>& ids_2,
-          Teuchos::RCP<Core::FE::Discretization> dis1, Teuchos::RCP<Core::FE::Discretization> dis2);
+          std::shared_ptr<Core::FE::Discretization> dis1,
+          std::shared_ptr<Core::FE::Discretization> dis2);
 
       //! assign material of discretization B
       virtual void assign_material1_to2(const Coupling::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele2, const std::vector<int>& ids_1,
-          Teuchos::RCP<Core::FE::Discretization> dis1, Teuchos::RCP<Core::FE::Discretization> dis2);
+          std::shared_ptr<Core::FE::Discretization> dis1,
+          std::shared_ptr<Core::FE::Discretization> dis2);
     };
   }  // namespace Utils
 }  // namespace Coupling::VolMortar

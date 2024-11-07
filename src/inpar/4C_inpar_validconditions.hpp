@@ -11,9 +11,9 @@
 #include "4C_config.hpp"
 
 #include <Teuchos_Array.hpp>
-#include <Teuchos_RCP.hpp>
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -28,11 +28,12 @@ namespace Core::Conditions
 namespace Input
 {
   /// construct list with all conditions and documentation
-  Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> valid_conditions();
+  std::shared_ptr<std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>>
+  valid_conditions();
 
   /// print all known condition sections without contents
   void print_empty_condition_definitions(std::ostream& stream,
-      std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
+      std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist);
 
 }  // namespace Input
 

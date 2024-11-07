@@ -42,7 +42,7 @@ void MultiScale::np_support_drt()
   // in this file.
 
   // one dummy micro material is specified in the supporting input file
-  std::map<int, Teuchos::RCP<Mat::MicroMaterial>> dummymaterials;
+  std::map<int, std::shared_ptr<Mat::MicroMaterial>> dummymaterials;
 
   // this call is needed in order to increment the unique ids that are distributed
   // by HDF5; the macro procs call output->write_mesh(0, 0.0) in Adapter::Structure
@@ -52,7 +52,8 @@ void MultiScale::np_support_drt()
   H5Fcreate(uniqueDummyName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
   // get sub communicator including the master proc
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  std::shared_ptr<Epetra_Comm> subcomm =
+      Global::Problem::instance(0)->get_communicators()->sub_comm();
 
   // start std::endless loop
   while (true)
@@ -65,8 +66,8 @@ void MultiScale::np_support_drt()
     int eleID = task[1];
 
     // every element needs one micromaterial
-    if (dummymaterials[eleID] == Teuchos::null)
-      dummymaterials[eleID] = Teuchos::rcp_static_cast<Mat::MicroMaterial>(Mat::factory(1));
+    if (dummymaterials[eleID] == nullptr)
+      dummymaterials[eleID] = std::static_pointer_cast<Mat::MicroMaterial>(Mat::factory(1));
 
     // check what is the next task of the supporting procs
     switch (whattodo)
@@ -79,7 +80,7 @@ void MultiScale::np_support_drt()
         Epetra_Map newmap(1, 1, &tag, 0, *subcomm);
         // create an exporter object that will figure out the communication pattern
         Core::Communication::Exporter exporter(oldmap, newmap, *subcomm);
-        std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;
+        std::map<int, std::shared_ptr<MultiScale::MicroStaticParObject>> condnamemap;
         exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
 
         const auto* micro_data = condnamemap[0]->get_micro_static_data_ptr();
@@ -135,7 +136,7 @@ void MultiScale::np_support_drt()
         Epetra_Map newmap(1, 1, &tag, 0, *subcomm);
         // create an exporter object that will figure out the communication pattern
         Core::Communication::Exporter exporter(oldmap, newmap, *subcomm);
-        std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;
+        std::map<int, std::shared_ptr<MultiScale::MicroStaticParObject>> condnamemap;
         exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
         const auto* micro_data = condnamemap[0]->get_micro_static_data_ptr();
 
@@ -146,8 +147,8 @@ void MultiScale::np_support_drt()
         bool eleowner = micro_data->eleowner_;
 
         // new dummy material is created if necessary
-        if (dummymaterials[eleID] == Teuchos::null)
-          dummymaterials[eleID] = Teuchos::rcp_static_cast<Mat::MicroMaterial>(Mat::factory(1));
+        if (dummymaterials[eleID] == nullptr)
+          dummymaterials[eleID] = std::static_pointer_cast<Mat::MicroMaterial>(Mat::factory(1));
 
         // dummy material is used to restart the micro material
         dummymaterials[eleID]->read_restart(gp, eleID, eleowner, microdisnum, V0);

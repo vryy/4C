@@ -189,7 +189,7 @@ int Discret::Elements::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
           {
             // get primary variables of multiphase porous medium flow
             std::vector<double> myephi(la[1].size());
-            Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+            std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
                 discretization.get_state(1, "porofluid");
             Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -268,7 +268,7 @@ int Discret::Elements::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
           {
             // get primary variables of multiphase porous medium flow
             std::vector<double> myephi(la[1].size());
-            Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+            std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
                 discretization.get_state(1, "porofluid");
             Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -337,7 +337,7 @@ int Discret::Elements::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
         {
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].size());
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
               discretization.get_state(1, "porofluid");
           Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -393,7 +393,7 @@ int Discret::Elements::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
         {
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].size());
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
               discretization.get_state(1, "porofluid");
           Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -415,7 +415,7 @@ int Discret::Elements::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
       Core::LinAlg::Matrix<numdim_, numnod_> mydisp(true);
       extract_values_from_global_vector(discretization, 0, lm, &mydisp, nullptr, "displacement");
 
-      Teuchos::RCP<std::vector<char>> couplingstressdata = Teuchos::null;
+      std::shared_ptr<std::vector<char>> couplingstressdata = nullptr;
       Inpar::Solid::StressType iocouplingstress = Inpar::Solid::stress_none;
       if (this->is_params_interface())
       {
@@ -434,10 +434,9 @@ int Discret::Elements::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
           break;
         }
 
-        couplingstressdata =
-            params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
+        couplingstressdata = params.get<std::shared_ptr<std::vector<char>>>("couplstress", nullptr);
 
-        if (couplingstressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'couplstress' data");
+        if (couplingstressdata == nullptr) FOUR_C_THROW("Cannot get 'couplstress' data");
       }
 
       // initialize the coupling stress
@@ -1093,7 +1092,8 @@ void Discret::Elements::So3Poro<So3Ele, distype>::coupling_stress_poroelast(
   }
 
   // get structure material
-  Teuchos::RCP<Mat::StructPoro> structmat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
+  std::shared_ptr<Mat::StructPoro> structmat =
+      std::dynamic_pointer_cast<Mat::StructPoro>(material());
   if (structmat->material_type() != Core::Materials::m_structporo)
     FOUR_C_THROW("invalid structure material for poroelasticity");
 
@@ -1259,9 +1259,9 @@ void Discret::Elements::So3Poro<So3Ele, distype>::extract_values_from_global_vec
     Core::LinAlg::Matrix<numnod_, 1>* vectortofill, const std::string& state)
 {
   // get state of the global vector
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
       discretization.get_state(dofset, state);
-  if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
+  if (matrix_state == nullptr) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   // ask for the number of dofs of dofset
   const int numdofpernode = discretization.num_dof(dofset, nodes()[0]);
@@ -1514,9 +1514,9 @@ template <class So3Ele, Core::FE::CellType distype>
 void Discret::Elements::So3Poro<So3Ele, distype>::get_materials()
 {
   // get structure material
-  if (struct_mat_ == Teuchos::null)
+  if (struct_mat_ == nullptr)
   {
-    struct_mat_ = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
+    struct_mat_ = std::dynamic_pointer_cast<Mat::StructPoro>(material());
     if (struct_mat_->material_type() != Core::Materials::m_structporo and
         struct_mat_->material_type() != Core::Materials::m_structpororeaction and
         struct_mat_->material_type() != Core::Materials::m_structpororeactionECM)
@@ -1524,12 +1524,12 @@ void Discret::Elements::So3Poro<So3Ele, distype>::get_materials()
   }
 
   // get fluid material
-  if (fluid_mat_ == Teuchos::null)
+  if (fluid_mat_ == nullptr)
   {
     // access second material in structure element
     if (So3Ele::num_material() > 1)
     {
-      fluid_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoro>(So3Ele::material(1));
+      fluid_mat_ = std::dynamic_pointer_cast<Mat::FluidPoro>(So3Ele::material(1));
       if (fluid_mat_->material_type() != Core::Materials::m_fluidporo)
         FOUR_C_THROW("invalid fluid material for poroelasticity");
     }
@@ -1542,10 +1542,10 @@ template <class So3Ele, Core::FE::CellType distype>
 void Discret::Elements::So3Poro<So3Ele, distype>::get_materials_pressure_based()
 {
   // get structure material
-  if (struct_mat_ == Teuchos::null)
+  if (struct_mat_ == nullptr)
   {
-    struct_mat_ = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
-    if (struct_mat_ == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
+    struct_mat_ = std::dynamic_pointer_cast<Mat::StructPoro>(material());
+    if (struct_mat_ == nullptr) FOUR_C_THROW("cast to poro material failed");
 
     if (struct_mat_->material_type() != Core::Materials::m_structporo and
         struct_mat_->material_type() != Core::Materials::m_structpororeaction and
@@ -1554,14 +1554,13 @@ void Discret::Elements::So3Poro<So3Ele, distype>::get_materials_pressure_based()
   }
 
   // Get Fluid-multiphase-Material
-  if (fluidmulti_mat_ == Teuchos::null)
+  if (fluidmulti_mat_ == nullptr)
   {
     // access second material in structure element
     if (So3Ele::num_material() > 1)
     {
-      fluidmulti_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(So3Ele::material(1));
-      if (fluidmulti_mat_ == Teuchos::null)
-        FOUR_C_THROW("cast to multiphase fluid poro material failed");
+      fluidmulti_mat_ = std::dynamic_pointer_cast<Mat::FluidPoroMultiPhase>(So3Ele::material(1));
+      if (fluidmulti_mat_ == nullptr) FOUR_C_THROW("cast to multiphase fluid poro material failed");
       if (fluidmulti_mat_->material_type() != Core::Materials::m_fluidporo_multiphase and
           fluidmulti_mat_->material_type() != Core::Materials::m_fluidporo_multiphase_reactions)
         FOUR_C_THROW("invalid fluid material for poro-multiphase-elasticity");

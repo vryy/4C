@@ -16,7 +16,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -61,16 +61,16 @@ namespace PoroElast
     //! check if element is a poro-p1-element
     bool is_poro_p1_element(const Core::Elements::Element* actele);
 
-    Teuchos::RCP<Core::LinAlg::MapExtractor> build_poro_splitter(Core::FE::Discretization& dis);
+    std::shared_ptr<Core::LinAlg::MapExtractor> build_poro_splitter(Core::FE::Discretization& dis);
 
     //! create solution algorithm depending on input file
-    Teuchos::RCP<PoroElast::PoroBase> create_poro_algorithm(
+    std::shared_ptr<PoroElast::PoroBase> create_poro_algorithm(
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
         const Epetra_Comm& comm,                   //!< communicator(i)
         bool setup_solve = true,  //!< setup linear solver for Poroelastic problem (only required if
                                   //!< Solve() is called) (i)
-        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter =
-            Teuchos::null  //! select porosity splitter
+        std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter =
+            nullptr  //! select porosity splitter
     );
 
     //! reset Material pointers after redistribution
@@ -131,14 +131,14 @@ namespace PoroElast
       //! assignment of fluid material to structure material
       void assign_material2_to1(const Coupling::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele1, const std::vector<int>& ids_2,
-          Teuchos::RCP<Core::FE::Discretization> dis1,
-          Teuchos::RCP<Core::FE::Discretization> dis2) override;
+          std::shared_ptr<Core::FE::Discretization> dis1,
+          std::shared_ptr<Core::FE::Discretization> dis2) override;
 
       //! assignment of structure material to fluid material
       void assign_material1_to2(const Coupling::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele2, const std::vector<int>& ids_1,
-          Teuchos::RCP<Core::FE::Discretization> dis1,
-          Teuchos::RCP<Core::FE::Discretization> dis2) override;
+          std::shared_ptr<Core::FE::Discretization> dis1,
+          std::shared_ptr<Core::FE::Discretization> dis2) override;
     };
   }  // namespace Utils
 

@@ -25,19 +25,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Core::IO::DiscretizationReader::DiscretizationReader() /* [PROTECTED] */
-    : dis_(Teuchos::null),
-      input_(Teuchos::null),
-      restart_step_(nullptr),
-      reader_(Teuchos::null),
-      meshreader_(Teuchos::null)
+    : dis_(nullptr), input_(nullptr), restart_step_(nullptr), reader_(nullptr), meshreader_(nullptr)
 {
   // intentionally left blank
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<Core::FE::Discretization> dis,
-    Teuchos::RCP<Core::IO::InputControl> input, int step)
+Core::IO::DiscretizationReader::DiscretizationReader(std::shared_ptr<Core::FE::Discretization> dis,
+    std::shared_ptr<Core::IO::InputControl> input, int step)
     : dis_(dis), input_(input)
 {
   find_result_group(step, input_->control_file());
@@ -55,7 +51,7 @@ int Core::IO::DiscretizationReader::has_int(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::IO::DiscretizationReader::read_vector(
+std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::IO::DiscretizationReader::read_vector(
     std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
@@ -71,14 +67,14 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::IO::DiscretizationReader::
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationReader::read_vector(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vec, std::string name)
+    std::shared_ptr<Core::LinAlg::Vector<double>> vec, std::string name)
 {
   read_vector(vec->get_ptr_of_MultiVector(), name);
 }
 
 
 void Core::IO::DiscretizationReader::read_vector(
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> vec, std::string name)
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> vec, std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
   int columns;
@@ -92,8 +88,8 @@ void Core::IO::DiscretizationReader::read_vector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::IO::DiscretizationReader::read_multi_vector(
-    const std::string name)
+std::shared_ptr<Core::LinAlg::MultiVector<double>>
+Core::IO::DiscretizationReader::read_multi_vector(const std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
   const std::string id_path = map_read_string(result, "ids");
@@ -110,15 +106,15 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::IO::DiscretizationReader::
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationReader::read_multi_vector(
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> vec, std::string name)
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> vec, std::string name)
 {
   // check if vec is a null pointer
-  if (vec == Teuchos::null)
+  if (vec == nullptr)
   {
     FOUR_C_THROW("vec is a null pointer. You need to allocate memory before calling this function");
   }
 
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> nv = read_multi_vector(name);
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> nv = read_multi_vector(name);
 
   if (nv->GlobalLength() > vec->GlobalLength())
     FOUR_C_THROW(
@@ -134,7 +130,7 @@ void Core::IO::DiscretizationReader::read_multi_vector(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationReader::read_serial_dense_matrix(
-    std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& mapdata, std::string name)
+    std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>& mapdata, std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
   std::string id_path = map_read_string(result, "ids");
@@ -147,16 +143,16 @@ void Core::IO::DiscretizationReader::read_serial_dense_matrix(
   if (columns != 1)
     FOUR_C_THROW("got multivector with name '%s', std::vector<char> expected", name.c_str());
 
-  Teuchos::RCP<Epetra_Map> elemap;
-  Teuchos::RCP<std::vector<char>> data =
+  std::shared_ptr<Epetra_Map> elemap;
+  std::shared_ptr<std::vector<char>> data =
       reader_->read_result_data_vec_char(id_path, value_path, columns, get_comm(), elemap);
 
 
   Communication::UnpackBuffer buffer(*data);
   for (int i = 0; i < elemap->NumMyElements(); ++i)
   {
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> matrix =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> matrix =
+        std::make_shared<Core::LinAlg::SerialDenseMatrix>();
     extract_from_pack(buffer, *matrix);
     (mapdata)[elemap->GID(i)] = matrix;
   }
@@ -173,10 +169,10 @@ void Core::IO::DiscretizationReader::read_mesh(int step)
 
   find_mesh_group(step, input_->control_file());
 
-  Teuchos::RCP<std::vector<char>> nodedata =
+  std::shared_ptr<std::vector<char>> nodedata =
       meshreader_->read_node_data(step, get_comm().NumProc(), get_comm().MyPID());
 
-  Teuchos::RCP<std::vector<char>> elementdata =
+  std::shared_ptr<std::vector<char>> elementdata =
       meshreader_->read_element_data(step, get_comm().NumProc(), get_comm().MyPID());
 
   // unpack nodes and elements and redistributed to current layout
@@ -203,7 +199,7 @@ void Core::IO::DiscretizationReader::read_nodes_only(int step)
 {
   find_mesh_group(step, input_->control_file());
 
-  Teuchos::RCP<std::vector<char>> nodedata =
+  std::shared_ptr<std::vector<char>> nodedata =
       meshreader_->read_node_data(step, get_comm().NumProc(), get_comm().MyPID());
 
   // unpack nodes; fill_complete() has to be called manually
@@ -219,10 +215,10 @@ void Core::IO::DiscretizationReader::read_history_data(int step)
 {
   find_mesh_group(step, input_->control_file());
 
-  Teuchos::RCP<std::vector<char>> nodedata =
+  std::shared_ptr<std::vector<char>> nodedata =
       meshreader_->read_node_data(step, get_comm().NumProc(), get_comm().MyPID());
 
-  Teuchos::RCP<std::vector<char>> elementdata =
+  std::shared_ptr<std::vector<char>> elementdata =
       meshreader_->read_element_data(step, get_comm().NumProc(), get_comm().MyPID());
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
@@ -250,7 +246,7 @@ void Core::IO::DiscretizationReader::read_history_data(int step)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationReader::read_char_vector(
-    Teuchos::RCP<std::vector<char>>& charvec, const std::string name)
+    std::shared_ptr<std::vector<char>>& charvec, const std::string name)
 {
   // read vector properties
   MAP* result = map_read_map(restart_step_, name.c_str());
@@ -265,7 +261,7 @@ void Core::IO::DiscretizationReader::read_char_vector(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationReader::read_redundant_double_vector(
-    Teuchos::RCP<std::vector<double>>& doublevec, const std::string name)
+    std::shared_ptr<std::vector<double>>& doublevec, const std::string name)
 {
   int length;
 
@@ -294,7 +290,7 @@ void Core::IO::DiscretizationReader::read_redundant_double_vector(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationReader::read_redundant_int_vector(
-    Teuchos::RCP<std::vector<int>>& intvec, const std::string name)
+    std::shared_ptr<std::vector<int>>& intvec, const std::string name)
 {
   int length;
 
@@ -442,7 +438,7 @@ void Core::IO::DiscretizationReader::find_mesh_group(int step, MAP* file)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::IO::HDFReader> Core::IO::DiscretizationReader::open_files(
+std::shared_ptr<Core::IO::HDFReader> Core::IO::DiscretizationReader::open_files(
     const char* filestring, MAP* result_step)
 {
   int numoutputproc;
@@ -466,7 +462,7 @@ Teuchos::RCP<Core::IO::HDFReader> Core::IO::DiscretizationReader::open_files(
 
   const std::string filename = map_read_string(result_step, filestring);
 
-  Teuchos::RCP<HDFReader> reader = Teuchos::make_rcp<HDFReader>(dirname);
+  std::shared_ptr<HDFReader> reader = std::make_shared<HDFReader>(dirname);
   reader->open(filename, numoutputproc, get_comm().NumProc(), get_comm().MyPID());
   return reader;
 }
@@ -476,7 +472,7 @@ Teuchos::RCP<Core::IO::HDFReader> Core::IO::DiscretizationReader::open_files(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Core::IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
-    : dis_(Teuchos::null),
+    : dis_(nullptr),
       step_(-1),
       time_(-1.0),
       meshfile_(-1),
@@ -487,7 +483,7 @@ Core::IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
       resultgroup_(-1),
       resultfile_changed_(-1),
       meshfile_changed_(-1),
-      output_(Teuchos::null),
+      output_(nullptr),
       binio_(false),
       spatial_approx_(Core::FE::ShapeFunctionType::undefined)
 {
@@ -496,10 +492,11 @@ Core::IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<Core::FE::Discretization> dis,
-    Teuchos::RCP<OutputControl> output_control,
+Core::IO::DiscretizationWriter::DiscretizationWriter(std::shared_ptr<Core::FE::Discretization> dis,
+    std::shared_ptr<OutputControl> output_control,
     const Core::FE::ShapeFunctionType shape_function_type)
-    : dis_(Teuchos::rcpFromRef(*dis.get())),  // no ownership to break circle discretization<>writer
+    : dis_(Core::Utils::shared_ptr_from_ref(
+          *dis.get())),  // no ownership to break circle discretization<>writer
       step_(-1),
       time_(-1.0),
       meshfile_(-1),
@@ -513,7 +510,7 @@ Core::IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<Core::FE::Disc
       output_(output_control),
       spatial_approx_(shape_function_type)
 {
-  if (output_ != Teuchos::null) binio_ = output_->write_binary_output();
+  if (output_ != nullptr) binio_ = output_->write_binary_output();
   // not nice, but needed in order to let pre_exodus read fields without output control file
   else
     binio_ = false;
@@ -522,8 +519,8 @@ Core::IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<Core::FE::Disc
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Core::IO::DiscretizationWriter::DiscretizationWriter(const Core::IO::DiscretizationWriter& writer,
-    const Teuchos::RCP<OutputControl>& control, enum CopyType type)
-    : dis_(Teuchos::rcpFromRef(*writer.dis_.get())),
+    const std::shared_ptr<OutputControl>& control, enum CopyType type)
+    : dis_(Core::Utils::shared_ptr_from_ref(*writer.dis_.get())),
       step_(-1),
       time_(-1.0),
       meshfile_(-1),
@@ -534,12 +531,12 @@ Core::IO::DiscretizationWriter::DiscretizationWriter(const Core::IO::Discretizat
       resultgroup_(-1),
       resultfile_changed_(-1),
       meshfile_changed_(-1),
-      output_(Teuchos::null),
+      output_(nullptr),
       binio_(false),
       spatial_approx_(writer.spatial_approx_)
 {
-  output_ = (control.is_null() ? writer.output_ : control);
-  if (not output_.is_null()) binio_ = output_->write_binary_output();
+  output_ = (!control ? writer.output_ : control);
+  if (output_) binio_ = output_->write_binary_output();
 
   if (type == CopyType::deep)
   {
@@ -818,8 +815,8 @@ void Core::IO::DiscretizationWriter::write_int(const std::string name, const int
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::write_vector(
-    const std::string name, Teuchos::RCP<const Core::LinAlg::Vector<double>> vec, IO::VectorType vt)
+void Core::IO::DiscretizationWriter::write_vector(const std::string name,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vec, IO::VectorType vt)
 {
   write_multi_vector(name, *vec, vt);
 }
@@ -891,7 +888,7 @@ void Core::IO::DiscretizationWriter::write_multi_vector(
       // remember where we put the map
       mapcache_[mapdata] = idname;
 
-      /* Make a copy of the map. This is a Teuchos::RCP copy internally. We
+      /* Make a copy of the map. This is a std::shared_ptr copy internally. We
        * just make sure here the map stays alive as long as we keep our cache.
        * Otherwise subtle errors could occur. */
       mapstack_.push_back(vec.Map());
@@ -1005,7 +1002,7 @@ void Core::IO::DiscretizationWriter::write_vector(const std::string name,
       // remember where we put the map
       mapcache_[mapdata] = idname;
 
-      /* Make a copy of the map. This is a Teuchos::RCP copy internally. We
+      /* Make a copy of the map. This is a std::shared_ptr copy internally. We
        * just make sure here the map stays alive as long as we keep our cache.
        * Otherwise subtle errors could occur. */
       mapstack_.push_back(elemap);
@@ -1074,7 +1071,7 @@ void Core::IO::DiscretizationWriter::write_mesh(const int step, const double tim
     if (meshgroup_ < 0) FOUR_C_THROW("Failed to write group in HDF-meshfile");
 
     // only procs with row elements need to write data
-    Teuchos::RCP<std::vector<char>> elementdata = dis_->pack_my_elements();
+    std::shared_ptr<std::vector<char>> elementdata = dis_->pack_my_elements();
     hsize_t dim = static_cast<hsize_t>(elementdata->size());
     if (dim != 0)
     {
@@ -1094,7 +1091,7 @@ void Core::IO::DiscretizationWriter::write_mesh(const int step, const double tim
     }
 
     // only procs with row nodes need to write data
-    Teuchos::RCP<std::vector<char>> nodedata = dis_->pack_my_nodes();
+    std::shared_ptr<std::vector<char>> nodedata = dis_->pack_my_nodes();
     dim = static_cast<hsize_t>(nodedata->size());
     if (dim != 0)
     {
@@ -1223,7 +1220,7 @@ void Core::IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_cont
     if (writerestart)
     {
       // only for restart: procs with row nodes need to write data
-      Teuchos::RCP<std::vector<char>> nodedata = dis_->pack_my_nodes();
+      std::shared_ptr<std::vector<char>> nodedata = dis_->pack_my_nodes();
       hsize_t dim = static_cast<hsize_t>(nodedata->size());
       if (dim != 0)
       {
@@ -1349,7 +1346,7 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
         ele_counter++;
       }
 
-      write_multi_vector(name, *Teuchos::rcpFromRef(sysdata), elementvector);
+      write_multi_vector(name, sysdata, elementvector);
     }
   }
 }
@@ -1411,7 +1408,7 @@ void Core::IO::DiscretizationWriter::write_node_data(bool writeowner)
         for (int j = 0; j < dimension; ++j) sysdata(j)[i] = nodedata[j];
       }
 
-      write_multi_vector(fool->first, *Teuchos::rcpFromRef(sysdata), Core::IO::nodevector);
+      write_multi_vector(fool->first, sysdata, Core::IO::nodevector);
 
     }  // for (fool = names.begin(); fool!= names.end(); ++fool)
   }
@@ -1431,7 +1428,7 @@ void Core::IO::DiscretizationWriter::write_knotvector() const
     if (nurbsdis != nullptr)
     {
       // get knotvector from nurbsdis
-      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
+      std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
 
       // put knotvector into block
       Core::Communication::PackBuffer block;
@@ -1601,7 +1598,7 @@ void Core::IO::DiscretizationWriter::write_redundant_int_vector(
 /*----------------------------------------------------------------------*
  |  set output control                               (public) nis Jan14 |
  *----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::set_output(Teuchos::RCP<OutputControl> output)
+void Core::IO::DiscretizationWriter::set_output(std::shared_ptr<OutputControl> output)
 {
   output_ = output;
   binio_ = output_->write_binary_output();
@@ -1620,7 +1617,7 @@ void Core::IO::DiscretizationWriter::clear_map_cache()
  *----------------------------------------------------------------------------*/
 const Core::FE::Discretization& Core::IO::DiscretizationWriter::get_discretization() const
 {
-  if (dis_.is_null()) FOUR_C_THROW("The discretization pointer has not been initialized!");
+  if (!dis_) FOUR_C_THROW("The discretization pointer has not been initialized!");
   return *dis_;
 }
 

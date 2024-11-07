@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -23,7 +23,7 @@ namespace Adapter
 
 void dyn_art_net_drt();
 
-Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D);
+std::shared_ptr<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D);
 
 
 FOUR_C_NAMESPACE_CLOSE

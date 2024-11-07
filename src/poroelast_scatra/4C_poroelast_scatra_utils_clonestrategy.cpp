@@ -168,8 +168,8 @@ bool PoroElastScaTra::Utils::PoroScatraCloneStrategy::determine_ele_type(
 
 
 void PoroElastScaTra::Utils::PoroScatraCloneStrategy::set_element_data(
-    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
-    const bool isnurbsdis)
+    std::shared_ptr<Core::Elements::Element> newele, Core::Elements::Element* oldele,
+    const int matid, const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual

@@ -38,8 +38,8 @@ namespace Core::IO
 class Cardiovascular0DResultTest : public Core::Utils::ResultTest
 {
  public:
-  Cardiovascular0DResultTest(
-      Utils::Cardiovascular0DManager& cardvasc0dman, Teuchos::RCP<Core::FE::Discretization> discr);
+  Cardiovascular0DResultTest(Utils::Cardiovascular0DManager& cardvasc0dman,
+      std::shared_ptr<Core::FE::Discretization> discr);
 
   void test_special(
       const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
@@ -47,9 +47,9 @@ class Cardiovascular0DResultTest : public Core::Utils::ResultTest
 
 
  private:
-  Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization
+  std::shared_ptr<Core::FE::Discretization> actdisc_;  ///< standard discretization
 
-  const Teuchos::RCP<Core::LinAlg::Vector<double>> cardvasc0d_dof_;
+  const std::shared_ptr<Core::LinAlg::Vector<double>> cardvasc0d_dof_;
 
   const bool havecardio_4elementwindkessel_;
   const bool havecardio_arterialproxdist_;

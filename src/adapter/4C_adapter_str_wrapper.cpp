@@ -14,14 +14,14 @@ FOUR_C_NAMESPACE_OPEN
 void Adapter::StructureNOXCorrectionWrapper::prepare_time_step()
 {
   StructureWrapper::prepare_time_step();
-  if (disstepinc_ != Teuchos::null) disstepinc_->PutScalar(0.);
+  if (disstepinc_ != nullptr) disstepinc_->PutScalar(0.);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::StructureNOXCorrectionWrapper::evaluate(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disstepinc)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disstepinc)
 {
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
@@ -33,12 +33,12 @@ void Adapter::StructureNOXCorrectionWrapper::evaluate(
   //
   // x^n+1_i+1 = x^n     + disstepinc
 
-  if (disstepinc != Teuchos::null)
+  if (disstepinc != nullptr)
   {
     // iteration increments
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disiterinc =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*disstepinc);
-    if (disstepinc_ != Teuchos::null)
+    std::shared_ptr<Core::LinAlg::Vector<double>> disiterinc =
+        std::make_shared<Core::LinAlg::Vector<double>>(*disstepinc);
+    if (disstepinc_ != nullptr)
     {
       disiterinc->Update(-1.0, *disstepinc_, 1.0);
 
@@ -48,7 +48,7 @@ void Adapter::StructureNOXCorrectionWrapper::evaluate(
     }
     else
     {
-      disstepinc_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*disstepinc);
+      disstepinc_ = std::make_shared<Core::LinAlg::Vector<double>>(*disstepinc);
     }
 
     // do structural update with provided residual displacements - iteration increment
@@ -56,7 +56,7 @@ void Adapter::StructureNOXCorrectionWrapper::evaluate(
   }
   else
   {
-    StructureWrapper::evaluate(Teuchos::null);
+    StructureWrapper::evaluate(nullptr);
   }
 }
 

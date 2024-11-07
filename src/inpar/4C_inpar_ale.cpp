@@ -76,19 +76,19 @@ void Inpar::ALE::set_valid_parameters(Teuchos::ParameterList& list)
 
 
 void Inpar::ALE::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 
   /*--------------------------------------------------------------------*/
   // Ale update boundary condition
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linealeupdate =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN ALE UPDATE LINE CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linealeupdate =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN ALE UPDATE LINE CONDITIONS",
           "ALEUPDATECoupling", "ALEUPDATE Coupling", Core::Conditions::ALEUPDATECoupling, true,
           Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfaleupdate =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN ALE UPDATE SURF CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfaleupdate =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN ALE UPDATE SURF CONDITIONS",
           "ALEUPDATECoupling", "ALEUPDATE Coupling", Core::Conditions::ALEUPDATECoupling, true,
           Core::Conditions::geometry_type_surface);
 

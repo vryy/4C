@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Cut::LevelSetIntersection::LevelSetIntersection(const Epetra_Comm& comm, bool create_side)
-    : ParentIntersection(comm.MyPID()), side_(Teuchos::null), comm_(&comm)
+    : ParentIntersection(comm.MyPID()), side_(nullptr), comm_(&comm)
 {
   if (create_side) add_cut_side(1);
 }
@@ -25,7 +25,7 @@ Cut::LevelSetIntersection::LevelSetIntersection(const Epetra_Comm& comm, bool cr
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Cut::LevelSetIntersection::LevelSetIntersection(int myrank, bool create_side)
-    : ParentIntersection(myrank), side_(Teuchos::null), comm_(nullptr)
+    : ParentIntersection(myrank), side_(nullptr), comm_(nullptr)
 {
   if (create_side) add_cut_side(1);
 }
@@ -34,10 +34,10 @@ Cut::LevelSetIntersection::LevelSetIntersection(int myrank, bool create_side)
  *----------------------------------------------------------------------------*/
 void Cut::LevelSetIntersection::add_cut_side(int levelset_sid)
 {
-  if (!side_.is_null()) FOUR_C_THROW("currently only one levelset-side is supported");
+  if (side_) FOUR_C_THROW("currently only one levelset-side is supported");
 
   // create the levelset-side
-  side_ = Teuchos::RCP(Side::create_level_set_side(levelset_sid));
+  side_ = std::shared_ptr<Side>(Side::create_level_set_side(levelset_sid));
 }
 
 /*----------------------------------------------------------------------------*

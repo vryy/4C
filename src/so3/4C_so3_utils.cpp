@@ -72,11 +72,11 @@ void Discret::Elements::Utils::get_temperature_for_structural_material(
 )
 {
   // initialise the temperature
-  Teuchos::RCP<std::vector<double>> temperature_vector =
-      params.get<Teuchos::RCP<std::vector<double>>>("nodal_tempnp", Teuchos::null);
+  std::shared_ptr<std::vector<double>> temperature_vector =
+      params.get<std::shared_ptr<std::vector<double>>>("nodal_tempnp", nullptr);
 
   // current temperature vector is available
-  if (temperature_vector != Teuchos::null)
+  if (temperature_vector != nullptr)
   {
     double scalartemp = 0.0;
     for (int i = 0; i < Core::FE::num_nodes<distype>; ++i)

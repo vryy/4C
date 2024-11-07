@@ -58,7 +58,7 @@ namespace Mat
      * \param fiber_ids List of ids of the fibers
      */
     DefaultAnisotropyExtension(int init_mode, double gamma, bool adapt_angle,
-        const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& stucturalTensorStrategy,
+        const std::shared_ptr<Elastic::StructuralTensorStrategyBase>& stucturalTensorStrategy,
         std::array<int, numfib> fiber_ids);
 
     ///@name Packing and Unpacking

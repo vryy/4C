@@ -19,10 +19,10 @@
 #include <NOX_Abstract_Group.H>
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Epetra_Interface_Required.H>
-#include <Teuchos_RCP.hpp>
 
 #include <functional>
 #include <iostream>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -63,9 +63,10 @@ namespace FSI
     {
      public:
       /// constructor initializing internal variables
-      SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> structdis,  ///< structure discretization
-          Teuchos::RCP<Core::FE::Discretization> fluiddis,             ///< fluid discretization
-          Coupling::Adapter::CouplingMortar& coupsf,                   ///< mortar adapter
+      SlideAleUtils(
+          std::shared_ptr<Core::FE::Discretization> structdis,  ///< structure discretization
+          std::shared_ptr<Core::FE::Discretization> fluiddis,   ///< fluid discretization
+          Coupling::Adapter::CouplingMortar& coupsf,            ///< mortar adapter
           bool structcoupmaster,            ///< is structure master of adapter coupling?
           Inpar::FSI::SlideALEProj aleproj  ///< projection enum
       );
@@ -90,13 +91,13 @@ namespace FSI
 
       /// Compute new coupling matrices D and M for solid/ale coupling
       void evaluate_fluid_mortar(
-          Teuchos::RCP<Core::LinAlg::Vector<double>> ima,  ///< displacement of structure
-          Teuchos::RCP<Core::LinAlg::Vector<double>> isl   ///< (proj.) displacement of ale
+          std::shared_ptr<Core::LinAlg::Vector<double>> ima,  ///< displacement of structure
+          std::shared_ptr<Core::LinAlg::Vector<double>> isl   ///< (proj.) displacement of ale
       );
 
       /// use fluid-fluid mortar interface to interpolate between fluid quantities before and after
       /// sliding
-      Teuchos::RCP<Core::LinAlg::Vector<double>> interpolate_fluid(
+      std::shared_ptr<Core::LinAlg::Vector<double>> interpolate_fluid(
           const Core::LinAlg::Vector<double>&
               uold  ///< fluid velocity in configuration before sliding
       );
@@ -148,46 +149,46 @@ namespace FSI
 
      private:
       const Inpar::FSI::SlideALEProj aletype_;
-      Teuchos::RCP<Core::LinAlg::Vector<double>>
+      std::shared_ptr<Core::LinAlg::Vector<double>>
           idispms_;  ///< merged vector of displacements (struct and fluid interface)
       std::vector<double> centerdisptotal_;  ///< sum over all center displacement increments
       double maxmindist_;                    ///< maximal distance between fluidpairs
 
-      //      std::map<int, Teuchos::RCP<Core::Elements::Element> > istructslideles_;  ///< sliding
-      //      struct elements in the interface
-      std::map<int, std::map<int, Teuchos::RCP<Core::Elements::Element>>>
+      //      std::map<int, std::shared_ptr<Core::Elements::Element> > istructslideles_;  ///<
+      //      sliding struct elements in the interface
+      std::map<int, std::map<int, std::shared_ptr<Core::Elements::Element>>>
           istructslideles_;  ///< sliding struct elements in the interface
       std::map<int, Core::Nodes::Node*>
           istructdispnodes_;  ///< struct nodes in the interface used for centerdisp calculation
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>
+      std::map<int, std::shared_ptr<Core::Elements::Element>>
           istructdispeles_;  ///< struct elements in the interface used for centerdisp calc
-      //      std::map<int, Teuchos::RCP<Epetra_Map> >  slideeleredmap_;      ///< redundant version
-      //      of sliding struct elements
+      //      std::map<int, std::shared_ptr<Epetra_Map> >  slideeleredmap_;      ///< redundant
+      //      version of sliding struct elements
       std::map<int, std::map<int, Core::Nodes::Node*>>
           ifluidslidnodes_;  ///< sliding fluid nodes in the interface
       std::map<int, Core::Nodes::Node*>
           ifluidconfnodes_;  ///< sticking fluid nodes in the interface
 
-      std::map<int, std::map<int, Teuchos::RCP<Core::Elements::Element>>> ifluidslideles_;
-      std::map<int, std::map<int, Teuchos::RCP<Core::Elements::Element>>> ifluidslidstructeles_;
+      std::map<int, std::map<int, std::shared_ptr<Core::Elements::Element>>> ifluidslideles_;
+      std::map<int, std::map<int, std::shared_ptr<Core::Elements::Element>>> ifluidslidstructeles_;
 
-      std::map<int, std::map<int, Teuchos::RCP<Core::Elements::Element>>> structreduelements_;
+      std::map<int, std::map<int, std::shared_ptr<Core::Elements::Element>>> structreduelements_;
 
-      Teuchos::RCP<const Epetra_Map> structdofrowmap_;
-      Teuchos::RCP<const Epetra_Map> fluiddofrowmap_;
-      Teuchos::RCP<Epetra_Map> structfullnodemap_;
-      Teuchos::RCP<Epetra_Map> structfullelemap_;
-      Teuchos::RCP<Epetra_Map> fluidfullnodemap_;
-      Teuchos::RCP<Epetra_Map> fluidfullelemap_;
+      std::shared_ptr<const Epetra_Map> structdofrowmap_;
+      std::shared_ptr<const Epetra_Map> fluiddofrowmap_;
+      std::shared_ptr<Epetra_Map> structfullnodemap_;
+      std::shared_ptr<Epetra_Map> structfullelemap_;
+      std::shared_ptr<Epetra_Map> fluidfullnodemap_;
+      std::shared_ptr<Epetra_Map> fluidfullelemap_;
 
       int maxid_;
 
-      Teuchos::RCP<Core::LinAlg::Vector<double>> iprojhist_;  ///< history of final displacements
+      std::shared_ptr<Core::LinAlg::Vector<double>> iprojhist_;  ///< history of final displacements
 
       bool structcoupmaster_;  ///< is structure master of coupling?
 
       /// coupling of fluid before and fluid after the sliding
-      Teuchos::RCP<Coupling::Adapter::CouplingMortar> coupff_;
+      std::shared_ptr<Coupling::Adapter::CouplingMortar> coupff_;
 
     };  // class SlideAleUtils
 

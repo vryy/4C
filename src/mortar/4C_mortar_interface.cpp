@@ -49,35 +49,35 @@ Mortar::InterfaceDataContainer::InterfaceDataContainer()
     : id_(-1),
       comm_(nullptr),
       redistributed_(false),
-      idiscret_(Teuchos::null),
+      idiscret_(nullptr),
       dim_(-1),
       imortar_(Teuchos::ParameterList()),
       shapefcn_(Inpar::Mortar::shape_undefined),
       quadslave_(false),
       extendghosting_(Inpar::Mortar::ExtendGhosting::redundant_master),
-      oldnodecolmap_(Teuchos::null),
-      oldelecolmap_(Teuchos::null),
-      snoderowmap_(Teuchos::null),
-      snodecolmap_(Teuchos::null),
-      mnoderowmap_(Teuchos::null),
-      snoderowmapbound_(Teuchos::null),
-      snodecolmapbound_(Teuchos::null),
-      mnoderowmapnobound_(Teuchos::null),
-      mnodecolmapnobound_(Teuchos::null),
-      selerowmap_(Teuchos::null),
-      selecolmap_(Teuchos::null),
-      melerowmap_(Teuchos::null),
-      melecolmap_(Teuchos::null),
-      sdofrowmap_(Teuchos::null),
-      sdofcolmap_(Teuchos::null),
-      mdofrowmap_(Teuchos::null),
-      mdofcolmap_(Teuchos::null),
-      psdofrowmap_(Teuchos::null),
-      plmdofmap_(Teuchos::null),
-      lmdofmap_(Teuchos::null),
+      oldnodecolmap_(nullptr),
+      oldelecolmap_(nullptr),
+      snoderowmap_(nullptr),
+      snodecolmap_(nullptr),
+      mnoderowmap_(nullptr),
+      snoderowmapbound_(nullptr),
+      snodecolmapbound_(nullptr),
+      mnoderowmapnobound_(nullptr),
+      mnodecolmapnobound_(nullptr),
+      selerowmap_(nullptr),
+      selecolmap_(nullptr),
+      melerowmap_(nullptr),
+      melecolmap_(nullptr),
+      sdofrowmap_(nullptr),
+      sdofcolmap_(nullptr),
+      mdofrowmap_(nullptr),
+      mdofcolmap_(nullptr),
+      psdofrowmap_(nullptr),
+      plmdofmap_(nullptr),
+      lmdofmap_(nullptr),
       maxdofglobal_(-1),
       searchalgo_(Inpar::Mortar::search_binarytree),
-      binarytree_(Teuchos::null),
+      binarytree_(nullptr),
       searchparam_(-1.0),
       searchuseauxpos_(false),
       inttime_interface_(0.0),
@@ -92,7 +92,7 @@ Mortar::InterfaceDataContainer::InterfaceDataContainer()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Mortar::Interface::Interface(Teuchos::RCP<Mortar::InterfaceDataContainer> interfaceData)
+Mortar::Interface::Interface(std::shared_ptr<Mortar::InterfaceDataContainer> interfaceData)
     : interface_data_(std::move(interfaceData)),
       id_(interface_data_->id()),
       comm_(interface_data_->comm_ptr()),
@@ -144,24 +144,24 @@ Mortar::Interface::Interface(Teuchos::RCP<Mortar::InterfaceDataContainer> interf
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Mortar::Interface> Mortar::Interface::create(const int id, const Epetra_Comm& comm,
+std::shared_ptr<Mortar::Interface> Mortar::Interface::create(const int id, const Epetra_Comm& comm,
     const int spatialDim, const Teuchos::ParameterList& imortar,
-    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type)
 {
-  Teuchos::RCP<Mortar::InterfaceDataContainer> interfaceData =
-      Teuchos::make_rcp<Mortar::InterfaceDataContainer>();
+  std::shared_ptr<Mortar::InterfaceDataContainer> interfaceData =
+      std::make_shared<Mortar::InterfaceDataContainer>();
 
-  return Teuchos::make_rcp<Mortar::Interface>(
+  return std::make_shared<Mortar::Interface>(
       interfaceData, id, comm, spatialDim, imortar, output_control, spatial_approximation_type);
 }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-Mortar::Interface::Interface(Teuchos::RCP<InterfaceDataContainer> interfaceData, const int id,
+Mortar::Interface::Interface(std::shared_ptr<InterfaceDataContainer> interfaceData, const int id,
     const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar,
-    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type)
     : interface_data_(std::move(interfaceData)),
       id_(interface_data_->id()),
@@ -205,7 +205,7 @@ Mortar::Interface::Interface(Teuchos::RCP<InterfaceDataContainer> interfaceData,
 {
   interface_data_->set_is_init(true);
   id_ = id;
-  comm_ = Teuchos::rcpFromRef(comm);
+  comm_ = Core::Utils::shared_ptr_from_ref(comm);
   dim_ = spatialDim;
   imortar_.setParameters(imortar);
   quadslave_ = false;
@@ -228,10 +228,10 @@ Mortar::Interface::Interface(Teuchos::RCP<InterfaceDataContainer> interfaceData,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mortar::Interface::create_interface_discretization(
-    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type)
 {
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(get_comm().Clone());
+  std::shared_ptr<Epetra_Comm> comm(get_comm().Clone());
 
   // Create name for mortar interface discretization
   std::stringstream dis_name;
@@ -240,7 +240,7 @@ void Mortar::Interface::create_interface_discretization(
   // Create the required type of discretization
   if (nurbs_)
   {
-    idiscret_ = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(dis_name.str(), comm, dim_);
+    idiscret_ = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(dis_name.str(), comm, dim_);
 
     /*
     Note: The NurbsDiscretization needs a Knotvector to be able to write output. This is probably
@@ -255,13 +255,13 @@ void Mortar::Interface::create_interface_discretization(
   }
   else
   {
-    idiscret_ = Teuchos::make_rcp<Core::FE::Discretization>(dis_name.str(), comm, dim_);
+    idiscret_ = std::make_shared<Core::FE::Discretization>(dis_name.str(), comm, dim_);
   }
 
   // Prepare discretization writer
-  idiscret_->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+  idiscret_->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
       idiscret_, output_control, spatial_approximation_type));
-  FOUR_C_ASSERT(not idiscret_->writer().is_null(), "Setup of discretization writer failed.");
+  FOUR_C_ASSERT(idiscret_->writer(), "Setup of discretization writer failed.");
 }
 
 /*----------------------------------------------------------------------*
@@ -493,7 +493,7 @@ void Mortar::Interface::print_parallel_distribution() const
 /*----------------------------------------------------------------------*
  |  add mortar node (public)                                 mwgee 10/07|
  *----------------------------------------------------------------------*/
-void Mortar::Interface::add_mortar_node(Teuchos::RCP<Mortar::Node> mrtrnode)
+void Mortar::Interface::add_mortar_node(std::shared_ptr<Mortar::Node> mrtrnode)
 {
   idiscret_->add_node(mrtrnode);
 }
@@ -501,7 +501,7 @@ void Mortar::Interface::add_mortar_node(Teuchos::RCP<Mortar::Node> mrtrnode)
 /*----------------------------------------------------------------------*
  |  add mortar element (public)                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-void Mortar::Interface::add_mortar_element(Teuchos::RCP<Mortar::Element> mrtrele)
+void Mortar::Interface::add_mortar_element(std::shared_ptr<Mortar::Element> mrtrele)
 {
   // check for quadratic 2d slave elements to be modified
   if (mrtrele->is_slave() && (mrtrele->shape() == Core::FE::CellType::line3 ||
@@ -530,9 +530,9 @@ void Mortar::Interface::fill_complete_new(const bool isFinalParallelDistribution
  |  finalize construction of interface (public)              mwgee 10/07|
  *----------------------------------------------------------------------*/
 void Mortar::Interface::fill_complete(
-    const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
+    const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
     const Teuchos::ParameterList& binning_params,
-    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type,
     const bool isFinalParallelDistribution, const int maxdof, const double meanVelocity)
 {
@@ -552,7 +552,7 @@ void Mortar::Interface::fill_complete(
   // Our special dofset class will not assign new dofs but will assign the
   // dofs stored in the nodes.
   {
-    Teuchos::RCP<Mortar::DofSet> mrtrdofset = Teuchos::make_rcp<Mortar::DofSet>();
+    std::shared_ptr<Mortar::DofSet> mrtrdofset = std::make_shared<Mortar::DofSet>();
     discret().replace_dof_set(mrtrdofset);
     // do not assign dofs yet, we'll do this below after
     // shuffling around of nodes and elements (saves time)
@@ -572,9 +572,9 @@ void Mortar::Interface::fill_complete(
   // later we might export node and element column map to extended or even FULL overlap,
   // thus store the standard column maps first
   // get standard nodal column map (overlap=1)
-  oldnodecolmap_ = Teuchos::make_rcp<Epetra_Map>(*(discret().node_col_map()));
+  oldnodecolmap_ = std::make_shared<Epetra_Map>(*(discret().node_col_map()));
   // get standard element column map (overlap=1)
-  oldelecolmap_ = Teuchos::make_rcp<Epetra_Map>(*(discret().element_col_map()));
+  oldelecolmap_ = std::make_shared<Epetra_Map>(*(discret().element_col_map()));
 
   extend_interface_ghosting(isFinalParallelDistribution, meanVelocity, binning_params,
       output_control, spatial_approximation_type);
@@ -912,12 +912,12 @@ void Mortar::Interface::initialize_data_container()
   if (interface_data_
           ->is_poro())  // as velocities of structure and fluid exist also on master nodes!!!
   {
-    const Teuchos::RCP<Epetra_Map> masternodes =
+    const std::shared_ptr<Epetra_Map> masternodes =
         Core::LinAlg::allreduce_e_map(*(master_row_nodes()));
     // initialize poro node data container for master nodes!!!
-    for (int i = 0; i < masternodes()->NumMyElements(); ++i)
+    for (int i = 0; i < masternodes->NumMyElements(); ++i)
     {
-      int gid = masternodes()->GID(i);
+      int gid = masternodes->GID(i);
       Core::Nodes::Node* node = discret().g_node(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %i", gid);
       auto* mnode = dynamic_cast<Node*>(node);
@@ -973,9 +973,9 @@ void Mortar::Interface::initialize_data_container()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_binning_strategy(
+std::shared_ptr<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_binning_strategy(
     Teuchos::ParameterList binning_params, const double meanVelocity,
-    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type)
 {
   // Initialize eXtendedAxisAlignedBoundingBox (XAABB)
@@ -1061,7 +1061,7 @@ Teuchos::RCP<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_binnin
   // Special case for mortar nodes that store their displacements themselves
   const auto determine_relevant_points =
       [](const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
-          Teuchos::RCP<const Core::LinAlg::Vector<double>>) -> std::vector<std::array<double, 3>>
+          std::shared_ptr<const Core::LinAlg::Vector<double>>) -> std::vector<std::array<double, 3>>
   {
     std::vector<std::array<double, 3>> relevant_points;
     const auto* mortar_ele = dynamic_cast<const Mortar::Element*>(&ele);
@@ -1076,8 +1076,8 @@ Teuchos::RCP<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_binnin
     return relevant_points;
   };
 
-  Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy =
-      Teuchos::make_rcp<Core::Binstrategy::BinningStrategy>(binning_params, output_control,
+  std::shared_ptr<Core::Binstrategy::BinningStrategy> binningstrategy =
+      std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params, output_control,
           get_comm(), get_comm().MyPID(), nullptr, determine_relevant_points);
   return binningstrategy;
 }
@@ -1101,7 +1101,7 @@ void Mortar::Interface::redistribute()
     FOUR_C_THROW("You are not supposed to be here...");
 
   // some local variables
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(get_comm().Clone());
+  std::shared_ptr<Epetra_Comm> comm(get_comm().Clone());
   const int myrank = comm->MyPID();
   const int numproc = comm->NumProc();
   Teuchos::Time time("", true);
@@ -1148,15 +1148,15 @@ void Mortar::Interface::redistribute()
   //**********************************************************************
   // (2) SLAVE redistribution
   //**********************************************************************
-  Teuchos::RCP<Epetra_Map> srownodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> scolnodes = Teuchos::null;
+  std::shared_ptr<Epetra_Map> srownodes = nullptr;
+  std::shared_ptr<Epetra_Map> scolnodes = nullptr;
 
   {
     std::stringstream ss_slave;
     ss_slave << "Mortar::Interface::redistribute of '" << discret().name() << "' (slave)";
     TEUCHOS_FUNC_TIME_MONITOR(ss_slave.str());
 
-    Teuchos::RCP<const Epetra_CrsGraph> snodegraph =
+    std::shared_ptr<const Epetra_CrsGraph> snodegraph =
         Core::Rebalance::build_graph(*idiscret_, sroweles);
 
     Teuchos::ParameterList rebalanceParams;
@@ -1170,8 +1170,8 @@ void Mortar::Interface::redistribute()
   //**********************************************************************
   // (3) MASTER redistribution
   //**********************************************************************
-  Teuchos::RCP<Epetra_Map> mrownodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> mcolnodes = Teuchos::null;
+  std::shared_ptr<Epetra_Map> mrownodes = nullptr;
+  std::shared_ptr<Epetra_Map> mcolnodes = nullptr;
 
   {
     std::stringstream ss_master;
@@ -1185,8 +1185,8 @@ void Mortar::Interface::redistribute()
   // (4) Merge global interface node row and column map
   //**********************************************************************
   // merge node maps from slave and master parts
-  Teuchos::RCP<Epetra_Map> rownodes = Core::LinAlg::merge_map(srownodes, mrownodes, false);
-  Teuchos::RCP<Epetra_Map> colnodes = Core::LinAlg::merge_map(scolnodes, mcolnodes, false);
+  std::shared_ptr<Epetra_Map> rownodes = Core::LinAlg::merge_map(srownodes, mrownodes, false);
+  std::shared_ptr<Epetra_Map> colnodes = Core::LinAlg::merge_map(scolnodes, mcolnodes, false);
 
   //**********************************************************************
   // (5) Get partitioning information into discretization
@@ -1212,12 +1212,13 @@ void Mortar::Interface::redistribute()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Mortar::Interface::redistribute_master_side(Teuchos::RCP<Epetra_Map>& rownodes,
-    Teuchos::RCP<Epetra_Map>& colnodes, Epetra_Map& roweles, Epetra_Comm& comm, const int parts,
+void Mortar::Interface::redistribute_master_side(std::shared_ptr<Epetra_Map>& rownodes,
+    std::shared_ptr<Epetra_Map>& colnodes, Epetra_Map& roweles, Epetra_Comm& comm, const int parts,
     const double imbalance) const
 {
   // call parallel redistribution
-  Teuchos::RCP<const Epetra_CrsGraph> nodegraph = Core::Rebalance::build_graph(*idiscret_, roweles);
+  std::shared_ptr<const Epetra_CrsGraph> nodegraph =
+      Core::Rebalance::build_graph(*idiscret_, roweles);
 
   Teuchos::ParameterList rebalanceParams;
   rebalanceParams.set<std::string>("num parts", std::to_string(parts));
@@ -1245,7 +1246,7 @@ void Mortar::Interface::extend_interface_ghosting_safely(const double meanVeloci
  *----------------------------------------------------------------------*/
 void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDistribution,
     const double meanVelocity, const Teuchos::ParameterList& binning_params,
-    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type)
 {
   //*****REDUNDANT SLAVE AND MASTER STORAGE*****
@@ -1469,8 +1470,8 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     }
 
     // re-build element column map (now formally on ALL processors)
-    Teuchos::RCP<Epetra_Map> newelecolmap =
-        Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+    std::shared_ptr<Epetra_Map> newelecolmap =
+        std::make_shared<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
     rdata.clear();
 
     // redistribute the discretization of the interface according to the
@@ -1496,7 +1497,7 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
       discret().fill_complete(false, isFinalParallelDistribution, false);
 
       // Create the binning strategy
-      Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy = setup_binning_strategy(
+      std::shared_ptr<Core::Binstrategy::BinningStrategy> binningstrategy = setup_binning_strategy(
           binning_params, meanVelocity, output_control, spatial_approximation_type);
 
       // fill master and slave elements into bins
@@ -1514,9 +1515,9 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
 
       // Extend ghosting of the master elements
       std::map<int, std::set<int>> ext_bin_to_ele_map;
-      Teuchos::RCP<const Epetra_Map> extendedmastercolmap =
+      std::shared_ptr<const Epetra_Map> extendedmastercolmap =
           binningstrategy->extend_element_col_map(slavebinelemap, masterbinelemap,
-              ext_bin_to_ele_map, Teuchos::null, Teuchos::null, newelecolmap.get());
+              ext_bin_to_ele_map, nullptr, nullptr, newelecolmap.get());
 
       // adapt layout to extended ghosting in the discretization
       // first export the elements according to the processor local element column maps
@@ -1574,7 +1575,7 @@ void Mortar::Interface::create_search_tree()
     auto updatetype = Teuchos::getIntegralValue<Inpar::Mortar::BinaryTreeUpdateType>(
         interface_params(), "BINARYTREE_UPDATETYPE");
 
-    Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
+    std::shared_ptr<Epetra_Map> melefullmap = nullptr;
     switch (strat)
     {
       case Inpar::Mortar::ExtendGhosting::roundrobin:
@@ -1597,8 +1598,8 @@ void Mortar::Interface::create_search_tree()
     }
 
     // create binary tree object for search and setup tree
-    binarytree_ = Teuchos::make_rcp<Mortar::BinaryTree>(discret(), selecolmap_, melefullmap,
-        n_dim(), search_param(), updatetype, search_use_aux_pos());
+    binarytree_ = std::make_shared<Mortar::BinaryTree>(discret(), selecolmap_, melefullmap, n_dim(),
+        search_param(), updatetype, search_use_aux_pos());
     // initialize the binary tree
     binarytree_->init();
   }
@@ -1648,10 +1649,10 @@ void Mortar::Interface::update_master_slave_dof_maps()
     }
   }
 
-  sdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
-  sdofcolmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
-  mdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)mr.size(), mr.data(), 0, get_comm());
-  mdofcolmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)mc.size(), mc.data(), 0, get_comm());
+  sdofrowmap_ = std::make_shared<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
+  sdofcolmap_ = std::make_shared<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
+  mdofrowmap_ = std::make_shared<Epetra_Map>(-1, (int)mr.size(), mr.data(), 0, get_comm());
+  mdofcolmap_ = std::make_shared<Epetra_Map>(-1, (int)mc.size(), mc.data(), 0, get_comm());
 }
 
 /*----------------------------------------------------------------------*
@@ -1692,10 +1693,10 @@ void Mortar::Interface::update_master_slave_element_maps(
     }
   }
 
-  selerowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
-  selecolmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
-  melerowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)mr.size(), mr.data(), 0, get_comm());
-  melecolmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)mc.size(), mc.data(), 0, get_comm());
+  selerowmap_ = std::make_shared<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
+  selecolmap_ = std::make_shared<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
+  melerowmap_ = std::make_shared<Epetra_Map>(-1, (int)mr.size(), mr.data(), 0, get_comm());
+  melecolmap_ = std::make_shared<Epetra_Map>(-1, (int)mc.size(), mc.data(), 0, get_comm());
 }
 
 /*----------------------------------------------------------------------*
@@ -1749,20 +1750,20 @@ void Mortar::Interface::update_master_slave_node_maps(
     }
   }
 
-  snoderowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
-  snodecolmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
-  mnoderowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)mr.size(), mr.data(), 0, get_comm());
-  mnodecolmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)mc.size(), mc.data(), 0, get_comm());
+  snoderowmap_ = std::make_shared<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
+  snodecolmap_ = std::make_shared<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
+  mnoderowmap_ = std::make_shared<Epetra_Map>(-1, (int)mr.size(), mr.data(), 0, get_comm());
+  mnodecolmap_ = std::make_shared<Epetra_Map>(-1, (int)mc.size(), mc.data(), 0, get_comm());
 
-  snoderowmapbound_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)srb.size(), srb.data(), 0, get_comm());
-  snodecolmapbound_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)scb.size(), scb.data(), 0, get_comm());
+  snoderowmapbound_ = std::make_shared<Epetra_Map>(-1, (int)srb.size(), srb.data(), 0, get_comm());
+  snodecolmapbound_ = std::make_shared<Epetra_Map>(-1, (int)scb.size(), scb.data(), 0, get_comm());
   mnoderowmapnobound_ =
-      Teuchos::make_rcp<Epetra_Map>(-1, (int)mrb.size(), mrb.data(), 0, get_comm());
+      std::make_shared<Epetra_Map>(-1, (int)mrb.size(), mrb.data(), 0, get_comm());
   mnodecolmapnobound_ =
-      Teuchos::make_rcp<Epetra_Map>(-1, (int)mcb.size(), mcb.data(), 0, get_comm());
+      std::make_shared<Epetra_Map>(-1, (int)mcb.size(), mcb.data(), 0, get_comm());
 
   // build exporter
-  interface_data_->sl_exporter_ptr() = Teuchos::make_rcp<Core::Communication::Exporter>(
+  interface_data_->sl_exporter_ptr() = std::make_shared<Core::Communication::Exporter>(
       *snoderowmapbound_, *snodecolmapbound_, get_comm());
 }
 
@@ -1791,8 +1792,8 @@ void Mortar::Interface::restrict_slave_sets()
       if (istied && snoderowmap_->MyGID(gid)) sr.push_back(gid);
     }
 
-    snoderowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
-    snodecolmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
+    snoderowmap_ = std::make_shared<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
+    snodecolmap_ = std::make_shared<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
   }
 
   //********************************************************************
@@ -1827,15 +1828,15 @@ void Mortar::Interface::restrict_slave_sets()
         for (int j = 0; j < numdof; ++j) sr.push_back(mrtrnode->dofs()[j]);
     }
 
-    sdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
-    sdofcolmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
+    sdofrowmap_ = std::make_shared<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
+    sdofcolmap_ = std::make_shared<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
   }
 }
 
 /*----------------------------------------------------------------------*
  |  update Lagrange multiplier set (dofs)                     popp 08/10|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Mortar::Interface::update_lag_mult_sets(
+std::shared_ptr<Epetra_Map> Mortar::Interface::update_lag_mult_sets(
     int offset_if, const bool& redistributed, const Epetra_Map& ref_map) const
 {
   if (redistributed)
@@ -1877,29 +1878,29 @@ Teuchos::RCP<Epetra_Map> Mortar::Interface::update_lag_mult_sets(
   // create interface LM map
   // (if maxdofglobal_ == 0, we do not want / need this)
   if (max_dof_global() > 0)
-    return Teuchos::make_rcp<Epetra_Map>(-1, (int)lmdof.size(), lmdof.data(), 0, get_comm());
+    return std::make_shared<Epetra_Map>(-1, (int)lmdof.size(), lmdof.data(), 0, get_comm());
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mortar::Interface::store_unredistributed_maps()
 {
-  psdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*sdofrowmap_);
-  interface_data_->non_redist_master_dof_row_map() = Teuchos::make_rcp<Epetra_Map>(*mdofrowmap_);
-  plmdofmap_ = Teuchos::make_rcp<Epetra_Map>(*lmdofmap_);
+  psdofrowmap_ = std::make_shared<Epetra_Map>(*sdofrowmap_);
+  interface_data_->non_redist_master_dof_row_map() = std::make_shared<Epetra_Map>(*mdofrowmap_);
+  plmdofmap_ = std::make_shared<Epetra_Map>(*lmdofmap_);
 
-  interface_data_->non_redist_slave_node_row_map() = Teuchos::make_rcp<Epetra_Map>(*snoderowmap_);
-  interface_data_->non_redist_master_node_row_map() = Teuchos::make_rcp<Epetra_Map>(*mnoderowmap_);
+  interface_data_->non_redist_slave_node_row_map() = std::make_shared<Epetra_Map>(*snoderowmap_);
+  interface_data_->non_redist_master_node_row_map() = std::make_shared<Epetra_Map>(*mnoderowmap_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Mortar::Interface::redistribute_lag_mult_sets() const
+std::shared_ptr<Epetra_Map> Mortar::Interface::redistribute_lag_mult_sets() const
 {
-  if (plmdofmap_.is_null()) FOUR_C_THROW("The plmdofmap_ is not yet initialized!");
-  if (psdofrowmap_.is_null()) FOUR_C_THROW("The psdofrowmap_ is not yet initialized!");
+  if (!plmdofmap_) FOUR_C_THROW("The plmdofmap_ is not yet initialized!");
+  if (!psdofrowmap_) FOUR_C_THROW("The psdofrowmap_ is not yet initialized!");
 
   // new lm dofs
   std::vector<int> lmdof(sdofrowmap_->NumMyElements());
@@ -1949,7 +1950,7 @@ Teuchos::RCP<Epetra_Map> Mortar::Interface::redistribute_lag_mult_sets() const
   }
 
   // create deterministic interface LM map
-  return Teuchos::make_rcp<Epetra_Map>(-1, (int)lmdof.size(), lmdof.data(), 0, get_comm());
+  return std::make_shared<Epetra_Map>(-1, (int)lmdof.size(), lmdof.data(), 0, get_comm());
 }
 
 /*----------------------------------------------------------------------*
@@ -2010,8 +2011,8 @@ void Mortar::Interface::set_state(
     case state_new_displacement:
     {
       // alternative method to get vec to full overlap
-      Teuchos::RCP<Core::LinAlg::Vector<double>> global =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*idiscret_->dof_col_map(), false);
+      std::shared_ptr<Core::LinAlg::Vector<double>> global =
+          std::make_shared<Core::LinAlg::Vector<double>>(*idiscret_->dof_col_map(), false);
       Core::LinAlg::export_to(vec, *global);
 
       // set displacements in interface discretization
@@ -2071,8 +2072,8 @@ void Mortar::Interface::set_state(
     case state_old_displacement:
     {
       // alternative method to get vec to full overlap
-      Teuchos::RCP<Core::LinAlg::Vector<double>> global =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*idiscret_->dof_col_map(), false);
+      std::shared_ptr<Core::LinAlg::Vector<double>> global =
+          std::make_shared<Core::LinAlg::Vector<double>>(*idiscret_->dof_col_map(), false);
       Core::LinAlg::export_to(vec, *global);
 
       // set displacements in interface discretization
@@ -2132,7 +2133,7 @@ void Mortar::Interface::set_element_areas()
 /*----------------------------------------------------------------------*
  |  evaluate geometric setting (create integration cells)    farah 01/16|
  *----------------------------------------------------------------------*/
-void Mortar::Interface::evaluate_geometry(std::vector<Teuchos::RCP<Mortar::IntCell>>& intcells)
+void Mortar::Interface::evaluate_geometry(std::vector<std::shared_ptr<Mortar::IntCell>>& intcells)
 {
   // time measurement
   get_comm().Barrier();
@@ -2233,8 +2234,8 @@ void Mortar::Interface::evaluate_geometry(std::vector<Teuchos::RCP<Mortar::IntCe
 /*----------------------------------------------------------------------*
  |  evaluate mortar coupling (public)                         popp 11/07|
  *----------------------------------------------------------------------*/
-void Mortar::Interface::evaluate(
-    int rriter, const int& step, const int& iter, Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr)
+void Mortar::Interface::evaluate(int rriter, const int& step, const int& iter,
+    std::shared_ptr<Mortar::ParamsInterface> mparams_ptr)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Mortar::Interface::Evaluate");
 
@@ -2272,7 +2273,7 @@ void Mortar::Interface::evaluate(
  |  protected evaluate routine                               farah 02/16|
  *----------------------------------------------------------------------*/
 void Mortar::Interface::evaluate_coupling(const Epetra_Map& selecolmap,
-    const Epetra_Map* snoderowmap, const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const Epetra_Map* snoderowmap, const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
   auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
@@ -2376,7 +2377,7 @@ void Mortar::Interface::evaluate_coupling(const Epetra_Map& selecolmap,
  |  evaluate coupling type segment-to-segment coupl          farah 02/16|
  *----------------------------------------------------------------------*/
 void Mortar::Interface::evaluate_sts(
-    const Epetra_Map& selecolmap, const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const Epetra_Map& selecolmap, const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Mortar::Interface::EvaluateSTS");
 
@@ -2698,7 +2699,7 @@ void Mortar::Interface::evaluate_nodal_normals(std::map<int, std::vector<double>
 void Mortar::Interface::export_nodal_normals() const
 {
   // create empty data objects
-  std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> triad;
+  std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>> triad;
 
   // build info on row map
   for (int i = 0; i < snoderowmapbound_->NumMyElements(); ++i)
@@ -2709,8 +2710,8 @@ void Mortar::Interface::export_nodal_normals() const
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // fill nodal matrix
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, 1);
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> loc =
+        std::make_shared<Core::LinAlg::SerialDenseMatrix>(3, 1);
     (*loc)(0, 0) = mrtrnode->mo_data().n()[0];
     (*loc)(1, 0) = mrtrnode->mo_data().n()[1];
     (*loc)(2, 0) = mrtrnode->mo_data().n()[2];
@@ -2734,7 +2735,7 @@ void Mortar::Interface::export_nodal_normals() const
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // extract info
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
     mrtrnode->mo_data().n()[0] = (*loc)(0, 0);
     mrtrnode->mo_data().n()[1] = (*loc)(1, 0);
     mrtrnode->mo_data().n()[2] = (*loc)(2, 0);
@@ -2765,7 +2766,7 @@ void Mortar::Interface::evaluate_search_brute_force(const double& eps)
   // like the slave elements --> melecolmap_
   auto strat = Teuchos::getIntegralValue<Inpar::Mortar::ExtendGhosting>(
       interface_params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
-  Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
+  std::shared_ptr<Epetra_Map> melefullmap = nullptr;
 
   switch (strat)
   {
@@ -3059,7 +3060,7 @@ bool Mortar::Interface::evaluate_search_binarytree()
  |  Integrate matrix M and gap g on slave/master overlap      popp 11/08|
  *----------------------------------------------------------------------*/
 bool Mortar::Interface::mortar_coupling(Mortar::Element* sele, std::vector<Mortar::Element*> mele,
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   pre_mortar_coupling(sele, mele, mparams_ptr);
 
@@ -3117,7 +3118,7 @@ bool Mortar::Interface::mortar_coupling(Mortar::Element* sele, std::vector<Morta
  | Split Mortar::Elements->IntElements for 3D quad. coupling    popp 03/09|
  *----------------------------------------------------------------------*/
 bool Mortar::Interface::split_int_elements(
-    Mortar::Element& ele, std::vector<Teuchos::RCP<Mortar::IntElement>>& auxele)
+    Mortar::Element& ele, std::vector<std::shared_ptr<Mortar::IntElement>>& auxele)
 {
   // *********************************************************************
   // do splitting for given element
@@ -3142,7 +3143,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[2] = ele.nodes()[8];
     nodes[3] = ele.nodes()[7];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         0, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
 
     // second integration element
@@ -3157,7 +3158,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[2] = ele.nodes()[5];
     nodes[3] = ele.nodes()[8];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         1, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
 
     // third integration element
@@ -3172,7 +3173,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[2] = ele.nodes()[2];
     nodes[3] = ele.nodes()[6];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         2, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
 
     // fourth integration element
@@ -3187,7 +3188,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[2] = ele.nodes()[6];
     nodes[3] = ele.nodes()[3];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         3, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
   }
 
@@ -3212,7 +3213,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[1] = ele.nodes()[4];
     nodes[2] = ele.nodes()[7];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         0, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false));
 
     // second integration element
@@ -3225,7 +3226,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[1] = ele.nodes()[5];
     nodes[2] = ele.nodes()[4];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         1, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false));
 
     // third integration element
@@ -3238,7 +3239,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[1] = ele.nodes()[6];
     nodes[2] = ele.nodes()[5];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         2, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false));
 
     // fourth integration element
@@ -3251,7 +3252,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[1] = ele.nodes()[7];
     nodes[2] = ele.nodes()[6];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         3, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false));
 
     // fifth integration element
@@ -3268,7 +3269,7 @@ bool Mortar::Interface::split_int_elements(
     nodesquad[2] = ele.nodes()[6];
     nodesquad[3] = ele.nodes()[7];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(4, ele.id(), ele.owner(), &ele, dtquad,
+    auxele.push_back(std::make_shared<IntElement>(4, ele.id(), ele.owner(), &ele, dtquad,
         numnodequad, nodeidsquad, nodesquad, ele.is_slave(), false));
   }
 
@@ -3291,7 +3292,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[1] = ele.nodes()[3];
     nodes[2] = ele.nodes()[5];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         0, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
 
     // second integration element
@@ -3304,7 +3305,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[1] = ele.nodes()[1];
     nodes[2] = ele.nodes()[4];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         1, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
 
     // third integration element
@@ -3317,7 +3318,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[1] = ele.nodes()[4];
     nodes[2] = ele.nodes()[2];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         2, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
 
     // fourth integration element
@@ -3330,7 +3331,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[1] = ele.nodes()[5];
     nodes[2] = ele.nodes()[3];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         3, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
   }
 
@@ -3344,7 +3345,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[2] = ele.nodes()[2];
     nodes[3] = ele.nodes()[3];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(0, ele.id(), ele.owner(), &ele, ele.shape(),
+    auxele.push_back(std::make_shared<IntElement>(0, ele.id(), ele.owner(), &ele, ele.shape(),
         ele.num_node(), ele.node_ids(), nodes, ele.is_slave(), false));
   }
 
@@ -3357,7 +3358,7 @@ bool Mortar::Interface::split_int_elements(
     nodes[1] = ele.nodes()[1];
     nodes[2] = ele.nodes()[2];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(0, ele.id(), ele.owner(), &ele, ele.shape(),
+    auxele.push_back(std::make_shared<IntElement>(0, ele.id(), ele.owner(), &ele, ele.shape(),
         ele.num_node(), ele.node_ids(), nodes, ele.is_slave(), false));
   }
 
@@ -4182,7 +4183,7 @@ void Mortar::Interface::detect_tied_slave_nodes(int& founduntied)
  | create volume ghosting (public)                            ager 06/15|
  *----------------------------------------------------------------------*/
 void Mortar::Interface::create_volume_ghosting(
-    const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map)
+    const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map)
 {
   Inpar::CONTACT::Problemtype prb = (Inpar::CONTACT::Problemtype)interface_params().get<int>(
       "PROBTYPE", (int)Inpar::CONTACT::other);
@@ -4192,7 +4193,7 @@ void Mortar::Interface::create_volume_ghosting(
     case Inpar::CONTACT::ssi:
     case Inpar::CONTACT::ssi_elch:
     {
-      std::vector<Teuchos::RCP<Core::FE::Discretization>> tar_dis;
+      std::vector<std::shared_ptr<Core::FE::Discretization>> tar_dis;
       FOUR_C_ASSERT(discretization_map.find("structure") != discretization_map.end(),
           "Could not find discretization 'structure'");
       FOUR_C_ASSERT(discretization_map.find("scatra") != discretization_map.end(),
@@ -4212,7 +4213,7 @@ void Mortar::Interface::create_volume_ghosting(
     }
     case Inpar::CONTACT::tsi:
     {
-      std::vector<Teuchos::RCP<Core::FE::Discretization>> tar_dis;
+      std::vector<std::shared_ptr<Core::FE::Discretization>> tar_dis;
       FOUR_C_ASSERT(discretization_map.find("structure") != discretization_map.end(),
           "Could not find discretization 'structure'");
       FOUR_C_ASSERT(discretization_map.find("thermo") != discretization_map.end(),
@@ -4228,7 +4229,7 @@ void Mortar::Interface::create_volume_ghosting(
     }
     default:
     {
-      std::vector<Teuchos::RCP<Core::FE::Discretization>> tar_dis;
+      std::vector<std::shared_ptr<Core::FE::Discretization>> tar_dis;
       FOUR_C_ASSERT(discretization_map.find("structure") != discretization_map.end(),
           "Could not find discretization 'structure'");
       tar_dis.emplace_back(discretization_map.at("structure"));
@@ -4290,7 +4291,7 @@ void Mortar::Interface::add_ma_sharing_ref_interface(const Interface* ref_interf
  *----------------------------------------------------------------------------*/
 void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& outputParams) const
 {
-  using Teuchos::RCP;
+  using std::shared_ptr;
 
   // Check if the given parameter list contains all required data to be written to output
   {
@@ -4307,7 +4308,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
   }
 
   // Get the discretization writer and get ready for writing
-  RCP<Core::IO::DiscretizationWriter> writer = idiscret_->writer();
+  std::shared_ptr<Core::IO::DiscretizationWriter> writer = idiscret_->writer();
 
   // Get output for this time step started
   {
@@ -4328,9 +4329,9 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
    */
   {
     // Get full displacement vector and extract interface displacement
-    RCP<const Core::LinAlg::Vector<double>> disp =
-        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("displacement");
-    RCP<Core::LinAlg::Vector<double>> iDisp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
+        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>("displacement");
+    std::shared_ptr<Core::LinAlg::Vector<double>> iDisp =
         Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*disp, *iDisp);
 
@@ -4341,9 +4342,9 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
   // Write Lagrange multiplier field
   {
     // Get full Lagrange multiplier vector and extract values of this interface
-    RCP<const Core::LinAlg::Vector<double>> lagMult =
-        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("interface traction");
-    RCP<Core::LinAlg::Vector<double>> iLagMult =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> lagMult =
+        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>("interface traction");
+    std::shared_ptr<Core::LinAlg::Vector<double>> iLagMult =
         Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*lagMult, *iLagMult);
 
@@ -4354,9 +4355,9 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
   // Write nodal forces of slave side
   {
     // Get nodal forces
-    RCP<const Core::LinAlg::Vector<double>> slaveforces =
-        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("slave forces");
-    RCP<Core::LinAlg::Vector<double>> forces =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> slaveforces =
+        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>("slave forces");
+    std::shared_ptr<Core::LinAlg::Vector<double>> forces =
         Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*slaveforces, *forces);
 
@@ -4367,9 +4368,9 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
   // Write nodal forces of master side
   {
     // Get nodal forces
-    RCP<const Core::LinAlg::Vector<double>> masterforces =
-        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("master forces");
-    RCP<Core::LinAlg::Vector<double>> forces =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> masterforces =
+        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>("master forces");
+    std::shared_ptr<Core::LinAlg::Vector<double>> forces =
         Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*masterforces, *forces);
 
@@ -4383,8 +4384,9 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     Core::LinAlg::Vector<double> masterVec(*mnoderowmap_);
     masterVec.PutScalar(1.0);
 
-    RCP<const Epetra_Map> nodeRowMap = Core::LinAlg::merge_map(snoderowmap_, mnoderowmap_, false);
-    RCP<Core::LinAlg::Vector<double>> masterSlaveVec =
+    std::shared_ptr<const Epetra_Map> nodeRowMap =
+        Core::LinAlg::merge_map(snoderowmap_, mnoderowmap_, false);
+    std::shared_ptr<Core::LinAlg::Vector<double>> masterSlaveVec =
         Core::LinAlg::create_vector(*nodeRowMap, true);
     Core::LinAlg::export_to(masterVec, *masterSlaveVec);
 
@@ -4396,8 +4398,9 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     Core::LinAlg::Vector<double> masterVec(*melerowmap_);
     masterVec.PutScalar(1.0);
 
-    RCP<const Epetra_Map> eleRowMap = Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
-    RCP<Core::LinAlg::Vector<double>> masterSlaveVec =
+    std::shared_ptr<const Epetra_Map> eleRowMap =
+        Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
+    std::shared_ptr<Core::LinAlg::Vector<double>> masterSlaveVec =
         Core::LinAlg::create_vector(*eleRowMap, true);
     Core::LinAlg::export_to(masterVec, *masterSlaveVec);
 
@@ -4407,8 +4410,9 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
 
   // Write element owners
   {
-    RCP<const Epetra_Map> eleRowMap = Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
-    RCP<Core::LinAlg::Vector<double>> owner = Core::LinAlg::create_vector(*eleRowMap);
+    std::shared_ptr<const Epetra_Map> eleRowMap =
+        Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
+    std::shared_ptr<Core::LinAlg::Vector<double>> owner = Core::LinAlg::create_vector(*eleRowMap);
 
     for (int i = 0; i < idiscret_->element_row_map()->NumMyElements(); ++i)
       (*owner)[i] = idiscret_->l_row_element(i)->owner();

@@ -79,7 +79,7 @@ namespace Cut
      *                        point lies inside / on it.
      *  \param point   (in) : Given global point object.
      *  \param floattype (in) : Floattype to compute geometric operations. */
-    static Teuchos::RCP<Position> create(
+    static std::shared_ptr<Position> create(
         const Element& element, const Point& point, CutFloatType floattype = floattype_double);
 
     /** \brief build variant #2
@@ -91,7 +91,7 @@ namespace Cut
      *
      *  \author hiermeier \date 08/16 */
     template <unsigned rdim>
-    static Teuchos::RCP<Position> create(const Element& element,
+    static std::shared_ptr<Position> create(const Element& element,
         const Core::LinAlg::Matrix<rdim, 1>& xyz, CutFloatType floattype = floattype_double);
     /** \brief build variant #3
      *
@@ -102,13 +102,13 @@ namespace Cut
      *
      *  \author hiermeier \date 08/16 */
     template <unsigned rdim, unsigned cdim, unsigned rdim_2>
-    static Teuchos::RCP<Position> create(const Core::LinAlg::Matrix<rdim, cdim>& xyze,
+    static std::shared_ptr<Position> create(const Core::LinAlg::Matrix<rdim, cdim>& xyze,
         const Core::LinAlg::Matrix<rdim_2, 1>& xyz, const Core::FE::CellType& distype,
         CutFloatType floattype = floattype_double);
 
     /// \brief build variant #3-1 (Core::LinAlg::SerialDenseMatrix)
     template <unsigned rdim>
-    static Teuchos::RCP<Position> create(const Core::LinAlg::SerialDenseMatrix& xyze,
+    static std::shared_ptr<Position> create(const Core::LinAlg::SerialDenseMatrix& xyze,
         const Core::LinAlg::Matrix<rdim, 1>& xyz, const Core::FE::CellType& distype,
         CutFloatType floattype = floattype_double);
 
@@ -121,7 +121,7 @@ namespace Cut
      *
      *  \author hiermeier \date 08/16 */
     template <unsigned rdim>
-    static Teuchos::RCP<Position> create(const std::vector<Node*> nodes,
+    static std::shared_ptr<Position> create(const std::vector<Node*> nodes,
         const Core::LinAlg::Matrix<rdim, 1>& xyz,
         Core::FE::CellType distype = Core::FE::CellType::dis_none,
         CutFloatType floattype = floattype_double);
@@ -265,7 +265,7 @@ namespace Cut
           scale_(1.0),
           pos_status_(position_unevaluated),
           compute_tolerance_(-1.0),
-          bbside_(Teuchos::null)
+          bbside_(nullptr)
     {
       scale_and_shift();
       construct_bounding_box();
@@ -382,7 +382,7 @@ namespace Cut
     double compute_tolerance_;
 
     //! Bounding box over the given embedded element (after scaling is performed)
-    Teuchos::RCP<BoundingBox> bbside_;
+    std::shared_ptr<BoundingBox> bbside_;
 
     /// @}
 
@@ -543,7 +543,7 @@ namespace Cut
      *                        point lies inside / on it.
      *  \param point   (in) : Given global point
      *  \param floattype (in) : Floattype to compute geometric operations. */
-    Teuchos::RCP<Position> create_position(const Element& element, const Point& point,
+    std::shared_ptr<Position> create_position(const Element& element, const Point& point,
         CutFloatType floattype = floattype_double) const;
 
     /** \brief build variant #2
@@ -552,7 +552,7 @@ namespace Cut
      *                        point lies inside / on it.
      *  \param xyz     (in) : Global coordinates of the given point
      *  *  \param floattype (in) : Floattype to compute geometric operations. */
-    Teuchos::RCP<Position> create_position(
+    std::shared_ptr<Position> create_position(
         const Element& element, const double* xyz, CutFloatType floattype = floattype_double) const;
 
     /** \brief build variant #3
@@ -561,7 +561,7 @@ namespace Cut
      *  \param xyz     (in) : Global coordinates of the given point.
      *  \param distype (in) : element discretization type.
      *  \param floattype (in) : Floattype to compute geometric operations. */
-    Teuchos::RCP<Position> create_position(const double* xyze, const double* xyz,
+    std::shared_ptr<Position> create_position(const double* xyze, const double* xyz,
         const Core::FE::CellType& distype, CutFloatType floattype = floattype_double) const;
 
     /** \brief build variant #4
@@ -570,7 +570,7 @@ namespace Cut
      *  \param xyz     (in) : Global coordinates of the given point.
      *  \param distype (in) : element discretization type. (optional)
      *  \param floattype (in) : Floattype to compute geometric operations. */
-    Teuchos::RCP<Position> create_position(const std::vector<Node*> nodes, const double* xyz,
+    std::shared_ptr<Position> create_position(const std::vector<Node*> nodes, const double* xyz,
         Core::FE::CellType distype = Core::FE::CellType::dis_none,
         CutFloatType floattype = floattype_double) const;
 
@@ -749,7 +749,7 @@ namespace Cut
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, Core::FE::CellType eletype, unsigned dim = Core::FE::dim<eletype>,
         unsigned num_nodes_element = Core::FE::num_nodes<eletype>>
-    Teuchos::RCP<Position> build_position(
+    std::shared_ptr<Position> build_position(
         const Element& element, const Point& point, CutFloatType floattype = floattype_double) const
     {
       Core::LinAlg::Matrix<probdim, num_nodes_element> xyze;
@@ -759,12 +759,12 @@ namespace Cut
 
       if (probdim > dim)
       {
-        return Teuchos::RCP(
+        return std::shared_ptr<Position>(
             PositionCreator<true, probdim, dim, eletype>::create(xyze, px, floattype));
       }
       else if (probdim == dim)
       {
-        return Teuchos::RCP(
+        return std::shared_ptr<Position>(
             PositionCreator<false, probdim, dim, eletype>::create(xyze, px, floattype));
       }
       else
@@ -778,7 +778,7 @@ namespace Cut
 
     /// concrete create variant #1
     template <Core::FE::CellType eletype>
-    Teuchos::RCP<Position> create_concrete_position(
+    std::shared_ptr<Position> create_concrete_position(
         const Element& element, const Point& point, CutFloatType floattype = floattype_double) const
     {
       const int dim = Core::FE::dim<eletype>;
@@ -817,7 +817,7 @@ namespace Cut
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, Core::FE::CellType eletype, unsigned dim = Core::FE::dim<eletype>,
         unsigned num_nodes_element = Core::FE::num_nodes<eletype>>
-    static Teuchos::RCP<Position> build_position(const Element& element,
+    static std::shared_ptr<Position> build_position(const Element& element,
         const Core::LinAlg::Matrix<probdim, 1>& xyz, CutFloatType floattype = floattype_double)
     {
       Core::LinAlg::Matrix<probdim, num_nodes_element> xyze;
@@ -825,12 +825,12 @@ namespace Cut
 
       if (probdim > dim)
       {
-        return Teuchos::RCP(
+        return std::shared_ptr<Position>(
             PositionCreator<true, probdim, dim, eletype>::create(xyze, xyz, floattype));
       }
       else if (probdim == dim)
       {
-        return Teuchos::RCP(
+        return std::shared_ptr<Position>(
             PositionCreator<false, probdim, dim, eletype>::create(xyze, xyz, floattype));
       }
       else
@@ -845,7 +845,7 @@ namespace Cut
    private:
     /// concrete create variant #2
     template <Core::FE::CellType eletype>
-    Teuchos::RCP<Position> create_concrete_position(
+    std::shared_ptr<Position> create_concrete_position(
         const Element& element, const double* xyz, CutFloatType floattype = floattype_double) const
     {
       const int dim = Core::FE::dim<eletype>;
@@ -889,18 +889,18 @@ namespace Cut
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, Core::FE::CellType eletype, unsigned dim = Core::FE::dim<eletype>,
         unsigned num_nodes_element = Core::FE::num_nodes<eletype>>
-    static Teuchos::RCP<Position> build_position(
+    static std::shared_ptr<Position> build_position(
         const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
         const Core::LinAlg::Matrix<probdim, 1>& xyz, CutFloatType floattype = floattype_double)
     {
       if (probdim > dim)
       {
-        return Teuchos::RCP(
+        return std::shared_ptr<Position>(
             PositionCreator<true, probdim, dim, eletype>::create(xyze, xyz, floattype));
       }
       else if (probdim == dim)
       {
-        return Teuchos::RCP(
+        return std::shared_ptr<Position>(
             PositionCreator<false, probdim, dim, eletype>::create(xyze, xyz, floattype));
       }
       else
@@ -915,7 +915,7 @@ namespace Cut
    private:
     /// concrete create variant #3
     template <Core::FE::CellType eletype>
-    Teuchos::RCP<Position> create_concrete_position(
+    std::shared_ptr<Position> create_concrete_position(
         const double* xyze, const double* xyz, CutFloatType floattype = floattype_double) const
     {
       const unsigned num_nodes_ele = Core::FE::num_nodes<eletype>;
@@ -955,7 +955,7 @@ namespace Cut
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, Core::FE::CellType eletype, unsigned dim = Core::FE::dim<eletype>,
         unsigned num_nodes_element = Core::FE::num_nodes<eletype>>
-    static Teuchos::RCP<Position> build_position(const std::vector<Node*> nodes,
+    static std::shared_ptr<Position> build_position(const std::vector<Node*> nodes,
         const Core::LinAlg::Matrix<probdim, 1>& xyz, CutFloatType floattype = floattype_double)
     {
       if (not(nodes.size() == num_nodes_element))
@@ -973,12 +973,12 @@ namespace Cut
 
       if (probdim > dim)
       {
-        return Teuchos::RCP(
+        return std::shared_ptr<Position>(
             PositionCreator<true, probdim, dim, eletype>::create(xyze, xyz, floattype));
       }
       else if (probdim == dim)
       {
-        return Teuchos::RCP(
+        return std::shared_ptr<Position>(
             PositionCreator<false, probdim, dim, eletype>::create(xyze, xyz, floattype));
       }
       else
@@ -993,7 +993,7 @@ namespace Cut
    private:
     /// concrete create variant #4
     template <Core::FE::CellType eletype>
-    Teuchos::RCP<Position> create_concrete_position(const std::vector<Node*> nodes,
+    std::shared_ptr<Position> create_concrete_position(const std::vector<Node*> nodes,
         const double* xyz, CutFloatType floattype = floattype_double) const
     {
       switch (probdim_)

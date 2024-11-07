@@ -20,13 +20,13 @@ FOUR_C_NAMESPACE_OPEN
  | factory method                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-Teuchos::RCP<Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>>
+std::shared_ptr<Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>>
 Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_variable_manager(
     const Discret::Elements::PoroFluidMultiPhaseEleParameter& para,
-    const POROFLUIDMULTIPHASE::Action& action, Teuchos::RCP<Core::Mat::Material> mat,
+    const POROFLUIDMULTIPHASE::Action& action, std::shared_ptr<Core::Mat::Material> mat,
     int numdofpernode, int numfluidphases)
 {
-  Teuchos::RCP<VariableManagerInterface<nsd, nen>> varmanager = Teuchos::null;
+  std::shared_ptr<VariableManagerInterface<nsd, nen>> varmanager = nullptr;
 
   // get the number of volume fractions
   // the check for correct input definition is performed in
@@ -40,7 +40,7 @@ Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
     case POROFLUIDMULTIPHASE::calc_pres_and_sat:
     {
       // only phi values are needed
-      varmanager = Teuchos::make_rcp<VariableManagerPhi<nsd, nen>>(numdofpernode);
+      varmanager = std::make_shared<VariableManagerPhi<nsd, nen>>(numdofpernode);
 
       break;
     }
@@ -49,12 +49,12 @@ Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
     case POROFLUIDMULTIPHASE::calc_porosity:
     {
       // only phi values are needed
-      varmanager = Teuchos::make_rcp<VariableManagerPhi<nsd, nen>>(numdofpernode);
+      varmanager = std::make_shared<VariableManagerPhi<nsd, nen>>(numdofpernode);
 
       // add manager for displacements and solid velocities in case of ALE
       if (para.is_ale())
-        varmanager = Teuchos::RCP(
-            new VariableManagerStruct<nsd, nen>(para.nds_vel(), para.nds_disp(), varmanager));
+        varmanager = std::make_shared<VariableManagerStruct<nsd, nen>>(
+            para.nds_vel(), para.nds_disp(), varmanager);
 
       break;
     }
@@ -62,11 +62,11 @@ Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
     case POROFLUIDMULTIPHASE::calc_valid_dofs:
     {
       // only phi values are needed
-      varmanager = Teuchos::make_rcp<VariableManagerPhi<nsd, nen>>(numdofpernode);
+      varmanager = std::make_shared<VariableManagerPhi<nsd, nen>>(numdofpernode);
 
       if (numvolfrac > 0)
-        varmanager = Teuchos::RCP(
-            new VariableManagerMaximumNodalVolFracValue<nsd, nen>(numvolfrac, varmanager, mat));
+        varmanager = std::make_shared<VariableManagerMaximumNodalVolFracValue<nsd, nen>>(
+            numvolfrac, varmanager, mat);
 
       break;
     }
@@ -74,12 +74,12 @@ Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
     case POROFLUIDMULTIPHASE::calc_phase_velocities:
     {
       // state vector and gradients are needed
-      varmanager = Teuchos::make_rcp<VariableManagerPhiGradPhi<nsd, nen>>(numdofpernode);
+      varmanager = std::make_shared<VariableManagerPhiGradPhi<nsd, nen>>(numdofpernode);
 
       // add manager for displacements and solid velocities in case of ALE
       if (para.is_ale())
-        varmanager = Teuchos::RCP(
-            new VariableManagerStruct<nsd, nen>(para.nds_vel(), para.nds_disp(), varmanager));
+        varmanager = std::make_shared<VariableManagerStruct<nsd, nen>>(
+            para.nds_vel(), para.nds_disp(), varmanager);
       break;
     }
     // read data from scatra
@@ -91,29 +91,29 @@ Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
       //       otherwise also update the current configuration vector xyze_ with which it is called
       //       and scatra only needs phi and gradphi Also, the scatra discretization already has all
       //       necessary data for moving meshes such as displacements
-      varmanager = Teuchos::make_rcp<VariableManagerPhiGradPhi<nsd, nen>>(numdofpernode);
+      varmanager = std::make_shared<VariableManagerPhiGradPhi<nsd, nen>>(numdofpernode);
 
       if (numvolfrac > 0)
-        varmanager = Teuchos::RCP(
-            new VariableManagerMaximumNodalVolFracValue<nsd, nen>(numvolfrac, varmanager, mat));
+        varmanager = std::make_shared<VariableManagerMaximumNodalVolFracValue<nsd, nen>>(
+            numvolfrac, varmanager, mat);
 
       break;
     }
     default:
     {
       // default: potentially read everything
-      varmanager = Teuchos::make_rcp<VariableManagerPhiGradPhi<nsd, nen>>(numdofpernode);
+      varmanager = std::make_shared<VariableManagerPhiGradPhi<nsd, nen>>(numdofpernode);
 
       if (not para.is_stationary())
-        varmanager = Teuchos::make_rcp<VariableManagerInstat<nsd, nen>>(varmanager);
+        varmanager = std::make_shared<VariableManagerInstat<nsd, nen>>(varmanager);
 
       if (para.is_ale())
-        varmanager = Teuchos::RCP(
-            new VariableManagerStruct<nsd, nen>(para.nds_vel(), para.nds_disp(), varmanager));
+        varmanager = std::make_shared<VariableManagerStruct<nsd, nen>>(
+            para.nds_vel(), para.nds_disp(), varmanager);
 
       if (numvolfrac > 0)
-        varmanager = Teuchos::RCP(
-            new VariableManagerMaximumNodalVolFracValue<nsd, nen>(numvolfrac, varmanager, mat));
+        varmanager = std::make_shared<VariableManagerMaximumNodalVolFracValue<nsd, nen>>(
+            numvolfrac, varmanager, mat);
 
       break;
     }
@@ -121,7 +121,7 @@ Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
 
   // if there are other scalar values (from ScaTra coupling) add another manager
   if (para.has_scalar())
-    varmanager = Teuchos::make_rcp<VariableManagerScalar<nsd, nen>>(para.nds_scalar(), varmanager);
+    varmanager = std::make_shared<VariableManagerScalar<nsd, nen>>(para.nds_scalar(), varmanager);
 
   // done
   return varmanager;
@@ -140,9 +140,9 @@ void Discret::Elements::PoroFluidManager::VariableManagerPhi<nsd,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // extract local values from the global vectors
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp =
       discretization.get_state(dofsetnum, "phinp_fluid");
-  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // values of fluid are in 'dofsetnum' --> 0 if called with porofluid-element
   //                                    --> correct number has be passed if called with another
@@ -224,9 +224,9 @@ void Discret::Elements::PoroFluidManager::VariableManagerInstat<nsd,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // extract local values from the global vectors
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phidtnp = discretization.get_state("phidtnp");
-  if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phidtnp'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phidtnp = discretization.get_state("phidtnp");
+  if (phidtnp == nullptr) FOUR_C_THROW("Cannot get state vector 'phidtnp'");
 
 
   // values of fluid are in 'dofsetnum' --> 0 if called with porofluid-element
@@ -299,17 +299,17 @@ void Discret::Elements::PoroFluidManager::VariableManagerStruct<nsd,
       lmvel[inode * nsd + idim] = la[ndsvel_].lm_[inode * numveldofpernode + idim];
 
   // get velocity at nodes
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> vel =
       discretization.get_state(ndsvel_, "velocity field");
-  if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector velocity");
+  if (vel == nullptr) FOUR_C_THROW("Cannot get state vector velocity");
 
   // extract local values of velocity field from global state vector
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd, nen>>(*vel, econvelnp_, lmvel);
 
   // safety check
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
       discretization.get_state(ndsdisp_, "dispnp");
-  if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
+  if (dispnp == nullptr) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
   // determine number of displacement related dofs per node
   const int numdispdofpernode = la[ndsdisp_].lm_.size() / nen;
@@ -374,9 +374,9 @@ void Discret::Elements::PoroFluidManager::VariableManagerScalar<nsd,
   this->varmanager_->extract_element_and_node_values(ele, discretization, la, xyze, dofsetnum);
 
   // get state vector from discretization
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarnp =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> scalarnp =
       discretization.get_state(ndsscalar_, "scalars");
-  if (scalarnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'scalars'");
+  if (scalarnp == nullptr) FOUR_C_THROW("Cannot get state vector 'scalars'");
 
   // determine number of scalars related dofs per node
   const int numscalardofpernode = la[ndsscalar_].lm_.size() / nen;
@@ -434,9 +434,9 @@ void Discret::Elements::PoroFluidManager::VariableManagerMaximumNodalVolFracValu
   // call internal class
   this->varmanager_->extract_element_and_node_values(ele, discretization, la, xyze, dofsetnum);
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phin =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phin =
       discretization.get_state(dofsetnum, "phin_fluid");
-  if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin_fluid'");
+  if (phin == nullptr) FOUR_C_THROW("Cannot get state vector 'phin_fluid'");
 
   // values of fluid are in 'dofsetnum' --> 0 if called with porofluid-element
   //                                    --> correct number has be passed if called with another

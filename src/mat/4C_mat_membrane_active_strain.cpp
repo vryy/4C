@@ -36,9 +36,9 @@ Mat::PAR::MembraneActiveStrain::MembraneActiveStrain(const Core::Mat::PAR::Param
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::MembraneActiveStrain::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::MembraneActiveStrain::create_material()
 {
-  return Teuchos::make_rcp<Mat::MembraneActiveStrain>(this);
+  return std::make_shared<Mat::MembraneActiveStrain>(this);
 }  // Mat::PAR::MembraneActiveStrain::create_material
 
 Mat::MembraneActiveStrainType Mat::MembraneActiveStrainType::instance_;
@@ -58,8 +58,8 @@ Core::Communication::ParObject* Mat::MembraneActiveStrainType::create(
 Mat::MembraneActiveStrain::MembraneActiveStrain()
     : params_(nullptr),
       matpassive_(nullptr),
-      voltage_(Teuchos::null),
-      activation_(Teuchos::null),
+      voltage_(nullptr),
+      activation_(nullptr),
       isinit_(false),
       fibervecs_(false)
 {
@@ -72,8 +72,8 @@ Mat::MembraneActiveStrain::MembraneActiveStrain()
 Mat::MembraneActiveStrain::MembraneActiveStrain(Mat::PAR::MembraneActiveStrain* params)
     : params_(params),
       matpassive_(nullptr),
-      voltage_(Teuchos::null),
-      activation_(Teuchos::null),
+      voltage_(nullptr),
+      activation_(nullptr),
       isinit_(false),
       fibervecs_(false)
 {
@@ -100,7 +100,7 @@ void Mat::MembraneActiveStrain::pack(Core::Communication::PackBuffer& data) cons
   add_to_pack(data, fibervecs_);
 
   // data of passive elastic material
-  if (matpassive_ != Teuchos::null)
+  if (matpassive_ != nullptr)
   {
     matpassive_->pack(data);
   }
@@ -139,7 +139,7 @@ void Mat::MembraneActiveStrain::unpack(Core::Communication::UnpackBuffer& buffer
   // matid and recover params_
   int matid = -1;
   extract_from_pack(buffer, matid);
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -166,11 +166,11 @@ void Mat::MembraneActiveStrain::unpack(Core::Communication::UnpackBuffer& buffer
     Mat::So3Material* matpassive = dynamic_cast<Mat::So3Material*>(o);
     if (matpassive == nullptr) FOUR_C_THROW("failed to unpack passive material");
 
-    matpassive_ = Teuchos::RCP(matpassive);
+    matpassive_ = std::shared_ptr<So3Material>(matpassive);
   }
   else
   {
-    matpassive_ = Teuchos::null;
+    matpassive_ = nullptr;
   }
 
   int numgp;
@@ -184,8 +184,8 @@ void Mat::MembraneActiveStrain::unpack(Core::Communication::UnpackBuffer& buffer
   }
 
   // unpack internal variables
-  voltage_ = Teuchos::make_rcp<std::vector<double>>(numgp);
-  activation_ = Teuchos::make_rcp<std::vector<double>>(numgp);
+  voltage_ = std::make_shared<std::vector<double>>(numgp);
+  activation_ = std::make_shared<std::vector<double>>(numgp);
   double voltage_gp;
   double activation_gp;
   for (int gp = 0; gp < numgp; ++gp)
@@ -206,15 +206,14 @@ void Mat::MembraneActiveStrain::setup(int numgp, const Core::IO::InputParameterC
   setup_fiber_vectors(numgp, container);
 
   // setup of passive material
-  matpassive_ =
-      Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::factory(params_->matid_passive_), true);
+  matpassive_ = std::dynamic_pointer_cast<Mat::So3Material>(Mat::factory(params_->matid_passive_));
   matpassive_->setup(numgp, container);
 
   // setup internal variables
-  voltage_ = Teuchos::make_rcp<std::vector<double>>();
+  voltage_ = std::make_shared<std::vector<double>>();
   voltage_->resize(numgp);
 
-  activation_ = Teuchos::make_rcp<std::vector<double>>();
+  activation_ = std::make_shared<std::vector<double>>();
   activation_->resize(numgp);
 
   for (int gp = 0; gp < numgp; ++gp)
@@ -240,9 +239,9 @@ void Mat::MembraneActiveStrain::evaluate_membrane(const Core::LinAlg::Matrix<3, 
   cmat.clear();
 
   // get pointer to vector containing the scalar states at the gauss points
-  Teuchos::RCP<std::vector<std::vector<double>>> gpscalar =
-      params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_scalar",
-          Teuchos::make_rcp<std::vector<std::vector<double>>>(4, std::vector<double>(4, 0.0)));
+  std::shared_ptr<std::vector<std::vector<double>>> gpscalar =
+      params.get<std::shared_ptr<std::vector<std::vector<double>>>>("gp_scalar",
+          std::make_shared<std::vector<std::vector<double>>>(4, std::vector<double>(4, 0.0)));
 
   const unsigned int scalarid_voltage = params_->scalid_voltage_;
 
@@ -312,7 +311,7 @@ void Mat::MembraneActiveStrain::evaluate_membrane(const Core::LinAlg::Matrix<3, 
   // compute passive green lagrange strain
   Core::LinAlg::Matrix<3, 3> cmatpassive_loc(true);
   Core::LinAlg::Matrix<3, 1> S_passive_loc_voigt(true);
-  Teuchos::rcp_dynamic_cast<Mat::MembraneElastHyper>(matpassive_, true)
+  std::dynamic_pointer_cast<Mat::MembraneElastHyper>(matpassive_)
       ->evaluate_membrane(defgrd_passive_local, cauchygreen_passive_local, params, Q_trafo,
           S_passive_loc_voigt, cmatpassive_loc, gp, eleGID);
 

@@ -118,7 +118,7 @@ void Inpar::FBI::set_valid_parameters(Teuchos::ParameterList& list)
 }
 
 void Inpar::FBI::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   /*-------------------------------------------------------------------*/
 }

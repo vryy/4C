@@ -13,8 +13,9 @@
 #include "4C_shell7p_ele_neumann_evaluator.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -29,7 +30,7 @@ namespace
     }
     else
     {
-      return *params.get<Teuchos::RCP<std::vector<char>>>("stress");
+      return *params.get<std::shared_ptr<std::vector<char>>>("stress");
     }
   }
 
@@ -42,7 +43,7 @@ namespace
     }
     else
     {
-      return *params.get<Teuchos::RCP<std::vector<char>>>("strain");
+      return *params.get<std::shared_ptr<std::vector<char>>>("strain");
     }
   }
 

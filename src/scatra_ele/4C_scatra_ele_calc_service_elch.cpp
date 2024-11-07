@@ -56,13 +56,13 @@ int Discret::Elements::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
       const int ndsvel = my::scatrapara_->nds_vel();
 
       // get velocity values at nodes
-      const Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
+      const std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
           discretization.get_state(ndsvel, "convective velocity field");
-      const Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
+      const std::shared_ptr<const Core::LinAlg::Vector<double>> vel =
           discretization.get_state(ndsvel, "velocity field");
 
       // safety check
-      if (convel == Teuchos::null or vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector");
+      if (convel == nullptr or vel == nullptr) FOUR_C_THROW("Cannot get state vector");
 
       // determine number of velocity related dofs per node
       const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -83,8 +83,8 @@ int Discret::Elements::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
 
       // need current values of transported scalar
       // -> extract local values from global vectors
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+      if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
       //----------------------------------------------------------------------
@@ -134,7 +134,7 @@ int Discret::Elements::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
 
         // access control parameter for flux calculation
         Inpar::ScaTra::FluxType fluxtype = my::scatrapara_->calc_flux_domain();
-        Teuchos::RCP<std::vector<int>> writefluxids = my::scatrapara_->write_flux_ids();
+        std::shared_ptr<std::vector<int>> writefluxids = my::scatrapara_->write_flux_ids();
 
         // do a loop for systems of transported scalars
         for (int& writefluxid : *writefluxids)
@@ -183,8 +183,8 @@ int Discret::Elements::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
       if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
 
       // need current solution
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+      if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
       cal_error_compared_to_analyt_solution(ele, params, elevec1_epetra);
@@ -329,8 +329,8 @@ void Discret::Elements::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
 )
 {
   // get actual values of transported scalars
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // extract local values from the global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
@@ -338,8 +338,8 @@ void Discret::Elements::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   // get history variable (needed for double layer modeling)
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
-  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'hist'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'hist'");
 
   // extract local values from the global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ehist(
@@ -347,9 +347,9 @@ void Discret::Elements::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*hist, ehist, lm);
 
   // get current condition
-  Teuchos::RCP<Core::Conditions::Condition> cond =
-      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-  if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKineticsPoint'!");
+  std::shared_ptr<Core::Conditions::Condition> cond =
+      params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
+  if (cond == nullptr) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKineticsPoint'!");
 
   // access parameters of the condition
   const int kinetics = cond->parameters().get<int>("KINETIC_MODEL");
@@ -444,8 +444,9 @@ void Discret::Elements::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
   else
   {
     // get actual values of transported scalars
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phidtnp = discretization.get_state("phidtnp");
-    if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'ephidtnp'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phidtnp =
+        discretization.get_state("phidtnp");
+    if (phidtnp == nullptr) FOUR_C_THROW("Cannot get state vector 'ephidtnp'");
     // extract local values from the global vector
     std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(
         my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
@@ -476,14 +477,14 @@ void Discret::Elements::ScaTraEleCalcElch<distype, probdim>::evaluate_elch_bound
     Core::LinAlg::SerialDenseVector& erhs,                     ///< element right-hand side vector
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
-        ehist,                                       ///< history variables at element nodes
-    double timefac,                                  ///< time factor
-    Teuchos::RCP<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
-    const int nume,                                  ///< number of transferred electrons
-    const std::vector<int> stoich,                   ///< stoichiometry of the reaction
-    const int kinetics,                              ///< desired electrode kinetics model
-    const double pot0,                               ///< electrode potential on metal side
-    const double frt,                                ///< factor F/RT
+        ehist,                                          ///< history variables at element nodes
+    double timefac,                                     ///< time factor
+    std::shared_ptr<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
+    const int nume,                                     ///< number of transferred electrons
+    const std::vector<int> stoich,                      ///< stoichiometry of the reaction
+    const int kinetics,                                 ///< desired electrode kinetics model
+    const double pot0,                                  ///< electrode potential on metal side
+    const double frt,                                   ///< factor F/RT
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {

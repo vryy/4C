@@ -59,7 +59,7 @@ namespace
 
   /// sets the values of the variables in second derivative of expression
   void set_values_in_expression_second_deriv(
-      const std::vector<Teuchos::RCP<Core::Utils::FunctionVariable>>& variables, const double* x,
+      const std::vector<std::shared_ptr<Core::Utils::FunctionVariable>>& variables, const double* x,
       const double t,
       std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>& variable_values)
   {
@@ -108,7 +108,7 @@ namespace
   std::vector<double> evaluate_and_assemble_expression_to_result_vector(
       const std::map<std::string, Sacado::Fad::DFad<double>>& variables,
       const std::size_t component,
-      std::vector<Teuchos::RCP<Core::Utils::SymbolicExpression<double>>> expr,
+      std::vector<std::shared_ptr<Core::Utils::SymbolicExpression<double>>> expr,
       const std::map<std::string, double>& constant_values)
   {
     // number of variables
@@ -128,7 +128,7 @@ namespace
 
   /// modifies the component to zero in case the expression is of size one
   std::size_t find_modified_component(const std::size_t component,
-      const std::vector<Teuchos::RCP<Core::Utils::SymbolicExpression<double>>>& expr)
+      const std::vector<std::shared_ptr<Core::Utils::SymbolicExpression<double>>>& expr)
   {
     return (expr.size() == 1) ? 0 : component;
   }
@@ -163,10 +163,11 @@ namespace
 
 
 
-Teuchos::RCP<Core::Utils::FunctionOfAnything> Core::Utils::try_create_symbolic_function_of_anything(
+std::shared_ptr<Core::Utils::FunctionOfAnything>
+Core::Utils::try_create_symbolic_function_of_anything(
     const std::vector<Input::LineDefinition>& function_line_defs)
 {
-  if (function_line_defs.size() != 1) return Teuchos::null;
+  if (function_line_defs.size() != 1) return nullptr;
 
   const auto& function_lin_def = function_line_defs.front();
 
@@ -183,17 +184,17 @@ Teuchos::RCP<Core::Utils::FunctionOfAnything> Core::Utils::try_create_symbolic_f
           "CONSTANTS");
     }
 
-    return Teuchos::make_rcp<Core::Utils::SymbolicFunctionOfAnything>(component, constants);
+    return std::make_shared<Core::Utils::SymbolicFunctionOfAnything>(component, constants);
   }
   else
   {
-    return Teuchos::null;
+    return nullptr;
   }
 }
 
 
 
-Teuchos::RCP<Core::Utils::FunctionOfSpaceTime>
+std::shared_ptr<Core::Utils::FunctionOfSpaceTime>
 Core::Utils::try_create_symbolic_function_of_space_time(
     const std::vector<Input::LineDefinition>& function_line_defs)
 {
@@ -225,7 +226,7 @@ Core::Utils::try_create_symbolic_function_of_space_time(
       found_function_of_space_time = true;
   }
 
-  if (!found_function_of_space_time) return Teuchos::null;
+  if (!found_function_of_space_time) return nullptr;
 
   // evaluate the number of rows used for the definition of the variables
   std::size_t numrowsvar = function_line_defs.size() - maxcomp - 1;
@@ -249,7 +250,7 @@ Core::Utils::try_create_symbolic_function_of_space_time(
     functstring[n] = functcomp.container().get<std::string>("SYMBOLIC_FUNCTION_OF_SPACE_TIME");
   }
 
-  std::map<int, std::vector<Teuchos::RCP<FunctionVariable>>> variable_pieces;
+  std::map<int, std::vector<std::shared_ptr<FunctionVariable>>> variable_pieces;
 
   // read each row where the variables of the i-th function are defined
   for (std::size_t j = 1; j <= numrowsvar; ++j)
@@ -262,7 +263,7 @@ Core::Utils::try_create_symbolic_function_of_space_time(
     ignore_errors_in([&]() { varid = line.container().get<int>("VARIABLE"); });
 
     const auto variable = std::invoke(
-        [&]() -> Teuchos::RCP<Core::Utils::FunctionVariable>
+        [&]() -> std::shared_ptr<Core::Utils::FunctionVariable>
         {
           // read the name of the variable
           std::string varname = line.container().get<std::string>("NAME");
@@ -297,7 +298,7 @@ Core::Utils::try_create_symbolic_function_of_space_time(
                   description_vec.size());
             }
 
-            return Teuchos::make_rcp<ParsedFunctionVariable>(varname, description_vec.front());
+            return std::make_shared<ParsedFunctionVariable>(varname, description_vec.front());
           }
           else if (vartype == "linearinterpolation")
           {
@@ -307,7 +308,7 @@ Core::Utils::try_create_symbolic_function_of_space_time(
             // read values
             auto values = line.container().get<std::vector<double>>("VALUES");
 
-            return Teuchos::make_rcp<LinearInterpolationVariable>(
+            return std::make_shared<LinearInterpolationVariable>(
                 varname, times, values, periodicdata);
           }
           else if (vartype == "multifunction")
@@ -323,7 +324,7 @@ Core::Utils::try_create_symbolic_function_of_space_time(
             if (numtimes != numdescriptions + 1)
               FOUR_C_THROW("the number of TIMES and the number of DESCRIPTIONs must be consistent");
 
-            return Teuchos::make_rcp<MultiFunctionVariable>(
+            return std::make_shared<MultiFunctionVariable>(
                 varname, times, description_vec, periodicdata);
           }
           else if (vartype == "fourierinterpolation")
@@ -334,20 +335,20 @@ Core::Utils::try_create_symbolic_function_of_space_time(
             // read values
             auto values = line.container().get<std::vector<double>>("VALUES");
 
-            return Teuchos::make_rcp<FourierInterpolationVariable>(
+            return std::make_shared<FourierInterpolationVariable>(
                 varname, times, values, periodicdata);
           }
           else
           {
             FOUR_C_THROW("unknown variable type");
-            return Teuchos::null;
+            return nullptr;
           }
         });
 
     variable_pieces[varid].emplace_back(variable);
   }
 
-  std::vector<Teuchos::RCP<FunctionVariable>> functvarvector;
+  std::vector<std::shared_ptr<FunctionVariable>> functvarvector;
 
   for (const auto& [id, pieces] : variable_pieces)
   {
@@ -363,23 +364,23 @@ Core::Utils::try_create_symbolic_function_of_space_time(
       if (not names_of_all_pieces_equal)
         FOUR_C_THROW("Variable %d has a piece-wise definition with inconsistent names.", id);
 
-      functvarvector.emplace_back(Teuchos::make_rcp<PiecewiseVariable>(name, pieces));
+      functvarvector.emplace_back(std::make_shared<PiecewiseVariable>(name, pieces));
     }
   }
 
-  return Teuchos::make_rcp<SymbolicFunctionOfSpaceTime>(functstring, functvarvector);
+  return std::make_shared<SymbolicFunctionOfSpaceTime>(functstring, functvarvector);
 }
 
 Core::Utils::SymbolicFunctionOfSpaceTime::SymbolicFunctionOfSpaceTime(
     const std::vector<std::string>& expressions,
-    std::vector<Teuchos::RCP<FunctionVariable>> variables)
+    std::vector<std::shared_ptr<FunctionVariable>> variables)
     : variables_(std::move(variables))
 {
   for (const auto& expression : expressions)
   {
     {
       auto symbolicexpression =
-          Teuchos::make_rcp<Core::Utils::SymbolicExpression<double>>(expression);
+          std::make_shared<Core::Utils::SymbolicExpression<double>>(expression);
       expr_.push_back(symbolicexpression);
     }
   }
@@ -529,7 +530,7 @@ Core::Utils::SymbolicFunctionOfAnything::SymbolicFunctionOfAnything(
     : constants_from_input_(std::move(constants))
 {
   // build the parser for the function evaluation
-  auto symbolicexpression = Teuchos::make_rcp<Core::Utils::SymbolicExpression<double>>(component);
+  auto symbolicexpression = std::make_shared<Core::Utils::SymbolicExpression<double>>(component);
 
   // save the parsers
   expr_.push_back(symbolicexpression);

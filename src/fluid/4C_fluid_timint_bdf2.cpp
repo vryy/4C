@@ -20,10 +20,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntBDF2::TimIntBDF2(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+FLD::TimIntBDF2::TimIntBDF2(const std::shared_ptr<Core::FE::Discretization>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid), theta_(1.0)
 {
   return;
@@ -116,11 +116,11 @@ void FLD::TimIntBDF2::set_state_tim_int()
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntBDF2::calculate_acceleration(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> veln,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> accn,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> accnp)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> velnp,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> veln,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> velnm,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> accn,
+    const std::shared_ptr<Core::LinAlg::Vector<double>> accnp)
 {
   /*
 
@@ -166,12 +166,12 @@ void FLD::TimIntBDF2::sep_multiply()
 /*----------------------------------------------------------------------*
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
-void FLD::TimIntBDF2::outputof_filtered_vel(Teuchos::RCP<Core::LinAlg::Vector<double>> outvec,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fsoutvec)
+void FLD::TimIntBDF2::outputof_filtered_vel(std::shared_ptr<Core::LinAlg::Vector<double>> outvec,
+    std::shared_ptr<Core::LinAlg::Vector<double>> fsoutvec)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> row_finescaleveltmp;
-  row_finescaleveltmp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> row_finescaleveltmp;
+  row_finescaleveltmp = std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, true);
 
   // get fine scale velocity
   if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
@@ -209,8 +209,7 @@ void FLD::TimIntBDF2::set_element_time_parameter()
 
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
   return;
 }
 

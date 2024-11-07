@@ -45,7 +45,7 @@ namespace Mat
       /// standard constructor
       explicit MultiplicativeSplitDefgradElastHyper(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// length of elastic material list
       const int nummat_elast_;
@@ -101,7 +101,8 @@ namespace Mat
         const Core::LinAlg::Matrix<3, 3>* defgrad, Core::LinAlg::Matrix<3, 3>& iFinM);
 
     /// Returns all inelastic factors as a vector
-    const std::vector<std::pair<PAR::InelasticSource, Teuchos::RCP<Mat::InelasticDefgradFactors>>>&
+    const std::vector<
+        std::pair<PAR::InelasticSource, std::shared_ptr<Mat::InelasticDefgradFactors>>>&
     fac_def_grad_in() const
     {
       return facdefgradin_;
@@ -122,7 +123,7 @@ namespace Mat
 
    private:
     /// vector that holds pairs of inelastic contribution and respective source
-    std::vector<std::pair<PAR::InelasticSource, Teuchos::RCP<Mat::InelasticDefgradFactors>>>
+    std::vector<std::pair<PAR::InelasticSource, std::shared_ptr<Mat::InelasticDefgradFactors>>>
         facdefgradin_;
 
     /// vector that holds pairs of inelastic deformation gradients and respective source
@@ -173,9 +174,9 @@ namespace Mat
       return Core::Materials::m_multiplicative_split_defgrad_elasthyper;
     }
 
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<MultiplicativeSplitDefgradElastHyper>(*this);
+      return std::make_shared<MultiplicativeSplitDefgradElastHyper>(*this);
     }
 
     double density() const override { return params_->density_; }
@@ -400,16 +401,16 @@ namespace Mat
 
    private:
     /// Holder for anisotropy
-    Teuchos::RCP<Anisotropy> anisotropy_;
+    std::shared_ptr<Anisotropy> anisotropy_;
 
     /// Holds and classifies all inelastic factors
-    Teuchos::RCP<InelasticFactorsHandler> inelastic_;
+    std::shared_ptr<InelasticFactorsHandler> inelastic_;
 
     /// My material parameters
     Mat::PAR::MultiplicativeSplitDefgradElastHyper* params_;
 
     /// map to elastic materials/potential summands
-    std::vector<Teuchos::RCP<Mat::Elastic::Summand>> potsumel_;
+    std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsumel_;
   };
 
 }  // namespace Mat

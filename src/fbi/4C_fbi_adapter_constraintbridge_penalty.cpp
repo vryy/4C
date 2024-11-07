@@ -21,25 +21,25 @@
 FOUR_C_NAMESPACE_OPEN
 
 void Adapter::FBIConstraintBridgePenalty::setup(const Epetra_Map* beam_map,
-    const Epetra_Map* fluid_map, Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix,
+    const Epetra_Map* fluid_map, std::shared_ptr<Core::LinAlg::SparseOperator> fluidmatrix,
     bool fluidmeshtying)
 {
   // Initialize all necessary vectors and matrices
   FBIConstraintBridge::setup(beam_map, fluid_map, fluidmatrix, fluidmeshtying);
-  fs_ = Teuchos::make_rcp<Epetra_FEVector>(*beam_map);
-  ff_ = Teuchos::make_rcp<Epetra_FEVector>(*fluid_map);
+  fs_ = std::make_shared<Epetra_FEVector>(*beam_map);
+  ff_ = std::make_shared<Epetra_FEVector>(*fluid_map);
   cff_ = fluidmatrix;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FBIConstraintBridgePenalty::evaluate(
-    Teuchos::RCP<const Core::FE::Discretization> discretization1,
-    Teuchos::RCP<const Core::FE::Discretization> discretization2,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vel,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> beam_vel)
+    std::shared_ptr<const Core::FE::Discretization> discretization1,
+    std::shared_ptr<const Core::FE::Discretization> discretization2,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_vel,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> beam_vel)
 {
   // Create assembly manager..
-  Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
+  std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
       assembly_manager =
           BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
               discretization1, discretization2, *(get_pairs()), get_params(), assemblystrategy_);

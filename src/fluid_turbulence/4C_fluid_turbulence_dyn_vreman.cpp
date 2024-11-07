@@ -22,13 +22,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     krank 09/13|
  *----------------------------------------------------------------------*/
-FLD::Vreman::Vreman(Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params)
+FLD::Vreman::Vreman(
+    std::shared_ptr<Core::FE::Discretization> actdis, Teuchos::ParameterList& params)
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
       physicaltype_(Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(params_, "Physical Type"))
 {
-  boxf_ = Teuchos::make_rcp<FLD::Boxfilter>(discret_, params_);
+  boxf_ = std::make_shared<FLD::Boxfilter>(discret_, params_);
   // Initialize Boxfilter
   boxf_->initialize_vreman();
 
@@ -39,11 +40,11 @@ FLD::Vreman::Vreman(Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::Para
 /*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
-void FLD::Vreman::add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
+void FLD::Vreman::add_scatra(std::shared_ptr<Core::FE::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
-  boxfsc_ = Teuchos::make_rcp<FLD::Boxfilter>(scatradiscret_, params_);
+  boxfsc_ = std::make_shared<FLD::Boxfilter>(scatradiscret_, params_);
 
   // Initialize Boxfilter
   boxfsc_->initialize_vreman_scatra(scatradiscret_);
@@ -58,19 +59,18 @@ void FLD::Vreman::add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
  |                                                           krank 09/13|
  *----------------------------------------------------------------------*/
 void FLD::Vreman::apply_filter_for_dynamic_computation_of_cv(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velocity,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> velocity,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle)
 {
   const Epetra_Map* nodecolmap = discret_->node_col_map();
 
 
   col_filtered_strainrate_ =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
-  col_filtered_alphaij_ =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
-  col_filtered_expression_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
-  col_filtered_alpha2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
+  col_filtered_alphaij_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
+  col_filtered_expression_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+  col_filtered_alpha2_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
 
 
   // perform filtering
@@ -89,17 +89,17 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_cv(
 }
 
 void FLD::Vreman::apply_filter_for_dynamic_computation_of_dt(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle,
     Teuchos::ParameterList& extraparams, const int ndsvel)
 {
   const Epetra_Map* nodecolmap = scatradiscret_->node_col_map();
 
-  col_filtered_phi_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
-  col_filtered_phi2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
-  col_filtered_phiexpression_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+  col_filtered_phi_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+  col_filtered_phi2_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+  col_filtered_phiexpression_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   col_filtered_alphaijsc_ =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
 
 
   // perform filtering
@@ -142,8 +142,8 @@ double FLD::Vreman::dyn_vreman_compute_cv()
 
 
   // loop all elements on this proc (excluding ghosted ones)
-  Teuchos::RCP<Core::LinAlg::SerialDenseVector> Cv_num_denom =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(2);
+  std::shared_ptr<Core::LinAlg::SerialDenseVector> Cv_num_denom =
+      std::make_shared<Core::LinAlg::SerialDenseVector>(2);
 
 
   // call loop over elements (assemble nothing)
@@ -197,8 +197,8 @@ void FLD::Vreman::dyn_vreman_compute_dt(Teuchos::ParameterList& extraparams)
   calc_vreman_params_scatra.set("col_filtered_phiexpression", col_filtered_phiexpression_);
   calc_vreman_params_scatra.set("col_filtered_alphaijsc", col_filtered_alphaijsc_);
   // loop all elements on this proc (excluding ghosted ones)
-  Teuchos::RCP<Core::LinAlg::SerialDenseVector> Dt_num_denom =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(2);
+  std::shared_ptr<Core::LinAlg::SerialDenseVector> Dt_num_denom =
+      std::make_shared<Core::LinAlg::SerialDenseVector>(2);
   // call loop over elements (assemble nothing)
   scatradiscret_->evaluate_scalars(calc_vreman_params_scatra, Dt_num_denom);
   scatradiscret_->clear_state();

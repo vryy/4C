@@ -15,8 +15,7 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_xfem_enum_lists.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <set>
 
 // forward declarations
@@ -131,7 +130,7 @@ namespace XFEM
    *  \date 09/16 */
   class MultiFieldMapExtractor
   {
-    typedef std::vector<Teuchos::RCP<const Core::FE::Discretization>> XDisVec;
+    typedef std::vector<std::shared_ptr<const Core::FE::Discretization>> XDisVec;
 
     // number of map extractor types
     static constexpr unsigned NUM_MAP_TYPES = 2;
@@ -156,7 +155,7 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 09/16 */
-    void init(const std::vector<Teuchos::RCP<const Core::FE::Discretization>>& dis_vec,
+    void init(const std::vector<std::shared_ptr<const Core::FE::Discretization>>& dis_vec,
         int max_num_reserved_dofs_per_node);
 
     /** \brief Setup member variables
@@ -212,7 +211,7 @@ namespace XFEM
       return sl_map_extractor(slave_id(field), map_dofs);
     }
 
-    Teuchos::RCP<const Epetra_Map> node_row_map(
+    std::shared_ptr<const Epetra_Map> node_row_map(
         enum FieldName field, enum MultiField::BlockType block) const;
 
     /** \brief return TRUE if the given global node id corresponds to an
@@ -223,15 +222,15 @@ namespace XFEM
     bool is_interface_node(const int& ngid) const;
 
     /// Access the full maps
-    const Teuchos::RCP<const Epetra_Map>& full_map(enum MapType map_type = map_dofs) const;
+    const std::shared_ptr<const Epetra_Map>& full_map(enum MapType map_type = map_dofs) const;
 
     /// @name Extract vector routines
     /// @{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_vector(
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_vector(
         const Core::LinAlg::Vector<double>& full, enum FieldName field,
         enum MapType map_type = map_dofs) const;
 
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> extract_vector(
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> extract_vector(
         const Core::LinAlg::MultiVector<double>& full, enum FieldName field,
         enum MapType map_type = map_dofs) const;
 
@@ -263,7 +262,7 @@ namespace XFEM
      *  \param field   (in): field name enumerator of the partial vector
      *
      *  \author hiermeier \date 10/16 */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> insert_vector(
+    std::shared_ptr<Core::LinAlg::Vector<double>> insert_vector(
         const Core::LinAlg::Vector<double>& partial, enum FieldName field,
         enum MapType map_type = map_dofs) const;
 
@@ -273,7 +272,7 @@ namespace XFEM
      *  \param field   (in): field name enumerator of the partial vector
      *
      *  \author hiermeier \date 10/16 */
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> insert_vector(
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> insert_vector(
         const Core::LinAlg::MultiVector<double>& partial, enum FieldName field,
         enum MapType map_type = map_dofs) const;
 
@@ -422,7 +421,7 @@ namespace XFEM
             "(size = %d)",
             dis_id, master_interface_node_maps_.size());
 
-      if (master_interface_node_maps_[dis_id].is_null())
+      if (master_interface_node_maps_[dis_id] == nullptr)
         FOUR_C_THROW(
             "The master interface node row map %d was not initialized "
             "correctly.",
@@ -437,7 +436,7 @@ namespace XFEM
      *  \date 09/16 */
     const Core::LinAlg::MultiMapExtractor& ma_map_extractor(enum MapType map_type) const
     {
-      if (master_map_extractor_.at(map_type).is_null())
+      if (master_map_extractor_.at(map_type) == nullptr)
         FOUR_C_THROW("The master dof/node map extractor was not initialized!");
 
       return *(master_map_extractor_[map_type]);
@@ -468,7 +467,7 @@ namespace XFEM
             "(size = %d)",
             dis_id, slave_map_extractors_.size());
 
-      if (slave_map_extractors_[dis_id].at(map_type).is_null())
+      if (slave_map_extractors_[dis_id].at(map_type) == nullptr)
         FOUR_C_THROW(
             "The slave dof/node map extractor %d was not initialized "
             "correctly.",
@@ -494,7 +493,7 @@ namespace XFEM
             "(size = %d)",
             dis_id, interface_matrix_row_transformers_.size());
 
-      if (interface_matrix_row_transformers_[dis_id].is_null())
+      if (interface_matrix_row_transformers_[dis_id] == nullptr)
         FOUR_C_THROW(
             "The interface matrix row transformer %d was not initialized "
             "correctly.",
@@ -520,7 +519,7 @@ namespace XFEM
             "(size = %d)",
             dis_id, interface_matrix_col_transformers_.size());
 
-      if (interface_matrix_col_transformers_[dis_id].is_null())
+      if (interface_matrix_col_transformers_[dis_id] == nullptr)
         FOUR_C_THROW(
             "The interface matrix column transformer %d was not initialized "
             "correctly.",
@@ -546,7 +545,7 @@ namespace XFEM
             "(size = %d)",
             dis_id, interface_matrix_row_col_transformers_.size());
 
-      if (interface_matrix_row_col_transformers_[dis_id].is_null())
+      if (interface_matrix_row_col_transformers_[dis_id] == nullptr)
         FOUR_C_THROW(
             "The interface matrix row col transformer %d was not initialized "
             "correctly.",
@@ -578,7 +577,7 @@ namespace XFEM
             "(size = %d)",
             dis_id, sl_dis_vec().size());
 
-      if (sl_dis_vec()[dis_id].is_null())
+      if (sl_dis_vec()[dis_id] == nullptr)
         FOUR_C_THROW(
             "The slave discretization %d was not initialized "
             "correctly.",
@@ -595,7 +594,7 @@ namespace XFEM
             "The index %d exceeds the interface coupling size! "
             "(size = %d)",
             dis_id, interface_couplings_.size());
-      if (interface_couplings_[dis_id].is_null())
+      if (interface_couplings_[dis_id] == nullptr)
         FOUR_C_THROW(
             "The interface coupling %d was not initialized "
             "correctly.",
@@ -606,7 +605,7 @@ namespace XFEM
 
     inline const Epetra_Comm& get_comm() const
     {
-      if (comm_.is_null()) FOUR_C_THROW("The Epetra_Comm object has not been initialized!");
+      if (!comm_) FOUR_C_THROW("The Epetra_Comm object has not been initialized!");
 
       return *comm_;
     }
@@ -634,7 +633,7 @@ namespace XFEM
 
     int slave_id(enum FieldName field) const;
 
-    const std::vector<Teuchos::RCP<const Core::FE::Discretization>>& sl_dis_vec() const
+    const std::vector<std::shared_ptr<const Core::FE::Discretization>>& sl_dis_vec() const
     {
       return slave_discret_vec_;
     }
@@ -670,10 +669,10 @@ namespace XFEM
     int max_num_reserved_dofs_per_node_;
 
     /// Epetra communicator
-    Teuchos::RCP<const Epetra_Comm> comm_;
+    std::shared_ptr<const Epetra_Comm> comm_;
 
     /// vector containing pointers to all the input discretizations
-    std::vector<Teuchos::RCP<const Core::FE::Discretization>> slave_discret_vec_;
+    std::vector<std::shared_ptr<const Core::FE::Discretization>> slave_discret_vec_;
 
     /// mapping between the FieldName enumerator and the slave vector entry number
     std::map<enum FieldName, int> slave_discret_id_map_;
@@ -683,29 +682,30 @@ namespace XFEM
      * (containing the same information on all proc's) */
     std::set<int> g_interface_node_gid_set_;
 
-    std::vector<Teuchos::RCP<const Epetra_Map>> master_interface_node_maps_;
+    std::vector<std::shared_ptr<const Epetra_Map>> master_interface_node_maps_;
 
-    std::vector<std::vector<Teuchos::RCP<Core::LinAlg::MultiMapExtractor>>> slave_map_extractors_;
-    std::vector<Teuchos::RCP<Core::LinAlg::MultiMapExtractor>> master_map_extractor_;
+    std::vector<std::vector<std::shared_ptr<Core::LinAlg::MultiMapExtractor>>>
+        slave_map_extractors_;
+    std::vector<std::shared_ptr<Core::LinAlg::MultiMapExtractor>> master_map_extractor_;
 
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> element_map_extractor_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> element_map_extractor_;
 
-    std::vector<Teuchos::RCP<XFEM::XFieldField::Coupling>> interface_couplings_;
+    std::vector<std::shared_ptr<XFEM::XFieldField::Coupling>> interface_couplings_;
 
-    std::vector<Teuchos::RCP<Coupling::Adapter::MatrixRowTransform>>
+    std::vector<std::shared_ptr<Coupling::Adapter::MatrixRowTransform>>
         interface_matrix_row_transformers_;
-    std::vector<Teuchos::RCP<Coupling::Adapter::MatrixColTransform>>
+    std::vector<std::shared_ptr<Coupling::Adapter::MatrixColTransform>>
         interface_matrix_col_transformers_;
-    std::vector<Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform>>
+    std::vector<std::shared_ptr<Coupling::Adapter::MatrixRowColTransform>>
         interface_matrix_row_col_transformers_;
 
     std::set<int> xfem_dis_ids_;
 
     /// interface discretization
-    Teuchos::RCP<Core::FE::Discretization> idiscret_;
+    std::shared_ptr<Core::FE::Discretization> idiscret_;
 
     /// interface coupling DoF-set
-    Teuchos::RCP<XFEM::XFieldField::CouplingDofSet> icoupl_dofset_;
+    std::shared_ptr<XFEM::XFieldField::CouplingDofSet> icoupl_dofset_;
 
   };  // class MapExtractor
 }  // namespace XFEM

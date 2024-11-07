@@ -298,13 +298,13 @@ Cut::Point* Cut::OctTreeNode::get_point(const double* x, Edge* cut_edge, Side* c
 /*-----------------------------------------------------------------------------------------*
  * Get the point with the specified coordinates "x" from the pointpool
  *-----------------------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Point> Cut::OctTreeNode::create_point(
+std::shared_ptr<Cut::Point> Cut::OctTreeNode::create_point(
     unsigned newid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
 {
   if (not is_leaf())
   {
     // call recursively create_point for the child where the Point shall lie in
-    Teuchos::RCP<Point> p = leaf(x)->create_point(newid, x, cut_edge, cut_side, tolerance);
+    std::shared_ptr<Point> p = leaf(x)->create_point(newid, x, cut_edge, cut_side, tolerance);
     // add the pointer not only in the leaf but also on the current level
     add_point(x, p);
     return p;
@@ -312,7 +312,7 @@ Teuchos::RCP<Cut::Point> Cut::OctTreeNode::create_point(
   else
   {
     // create a new point and add the point at the lowest level
-    Teuchos::RCP<Point> p = Cut::create_point(newid, x, cut_edge, cut_side, tolerance);
+    std::shared_ptr<Point> p = Cut::create_point(newid, x, cut_edge, cut_side, tolerance);
     add_point(x, p);
     return p;
   }
@@ -322,7 +322,7 @@ Teuchos::RCP<Cut::Point> Cut::OctTreeNode::create_point(
 /*-----------------------------------------------------------------------------------------*
  * Simply insert p into the pointpool and correspondingly modify the boundingbox size
  *-----------------------------------------------------------------------------------------*/
-void Cut::OctTreeNode::add_point(const double* x, Teuchos::RCP<Point> p)
+void Cut::OctTreeNode::add_point(const double* x, std::shared_ptr<Point> p)
 {
   points_.insert(p);  // insert the point in the pointpool
   bb_->add_point(x);  // modify the boundingbox size
@@ -392,7 +392,7 @@ void Cut::OctTreeNode::split(int level)
 
     for (int i = 0; i < 8; ++i)
     {
-      nodes_[i] = Teuchos::make_rcp<OctTreeNode>(norm_);
+      nodes_[i] = std::make_shared<OctTreeNode>(norm_);
     }
 
     // avoid empty room (room not covered by boundary boxes)
@@ -409,7 +409,7 @@ void Cut::OctTreeNode::split(int level)
 
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
     {
-      Teuchos::RCP<Point> p = *i;
+      std::shared_ptr<Point> p = *i;
       double x[3];
       p->coordinates(x);
       leaf(x)->add_point(x, p);
@@ -440,7 +440,7 @@ void Cut::OctTreeNode::collect_edges(const BoundingBox& edgebox, plain_edge_set&
   }
   else
   {
-    Teuchos::RCP<BoundingBox> sbox = Teuchos::RCP(BoundingBox::create());
+    std::shared_ptr<BoundingBox> sbox(BoundingBox::create());
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
     {
       Point* p = &**i;
@@ -479,7 +479,7 @@ void Cut::OctTreeNode::collect_sides(const BoundingBox& sidebox, plain_side_set&
   }
   else
   {
-    Teuchos::RCP<BoundingBox> sbox = Teuchos::RCP(BoundingBox::create());
+    std::shared_ptr<BoundingBox> sbox(BoundingBox::create());
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
     {
       Point* p = &**i;
@@ -526,7 +526,7 @@ void Cut::OctTreeNode::collect_elements(const BoundingBox& sidebox, plain_elemen
   }
   else
   {
-    Teuchos::RCP<BoundingBox> elementbox = Teuchos::RCP(BoundingBox::create());
+    std::shared_ptr<BoundingBox> elementbox(BoundingBox::create());
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
     {
       Point* p = &**i;

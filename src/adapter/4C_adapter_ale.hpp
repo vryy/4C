@@ -18,7 +18,8 @@
 
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -76,41 +77,41 @@ namespace Adapter
     //! @name Vector access
 
     //! initial guess of Newton's method
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() const = 0;
 
     //! rhs of Newton's method
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() const = 0;
 
     //! unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp() const = 0;
 
     //! known displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> dispn() const = 0;
 
     //@}
 
     //! @name Misc
 
     //! dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> dof_row_map() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> dof_row_map() const = 0;
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() = 0;
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() = 0;
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() = 0;
+    virtual std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() = 0;
 
     // access to locsys manager
-    virtual Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() = 0;
+    virtual std::shared_ptr<Core::Conditions::LocsysManager> locsys_manager() = 0;
 
     //! direct access to discretization
-    virtual Teuchos::RCP<const Core::FE::Discretization> discretization() const = 0;
+    virtual std::shared_ptr<const Core::FE::Discretization> discretization() const = 0;
 
     /// writing access to discretization
-    virtual Teuchos::RCP<Core::FE::Discretization> write_access_discretization() = 0;
+    virtual std::shared_ptr<Core::FE::Discretization> write_access_discretization() = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor(
+    virtual std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor(
         ALE::Utils::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
         ) = 0;
 
@@ -119,10 +120,10 @@ namespace Adapter
     /// setup Dirichlet boundary condition map extractor
     virtual void setup_dbc_map_ex(ALE::Utils::MapExtractor::AleDBCSetType
                                       dbc_type,  //!< application-specific type of Dirichlet set
-        Teuchos::RCP<const ALE::Utils::MapExtractor>
+        std::shared_ptr<const ALE::Utils::MapExtractor>
             interface,  //!< interface for creation of additional, application-specific Dirichlet
                         //!< map extractors
-        Teuchos::RCP<const ALE::Utils::XFluidFluidMapExtractor>
+        std::shared_ptr<const ALE::Utils::XFluidFluidMapExtractor>
             xff_interface  //!< interface for creation of a Dirichlet map extractor, taylored to
                            //!< XFFSI
         ) = 0;
@@ -168,7 +169,7 @@ namespace Adapter
      *  In case the StructureNOXCorrectionWrapper is applied, the step increment
      *  is expected which is then transformed into an iteration increment
      */
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    virtual void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
                               disiterinc,  ///< step increment such that \f$ x_{n+1}^{k+1} =
                                            ///< x_{n}^{converged}+ stepinc \f$
         ALE::Utils::MapExtractor::AleDBCSetType
@@ -211,7 +212,7 @@ namespace Adapter
     virtual int solve() = 0;
 
     //! Access to linear solver
-    virtual Teuchos::RCP<Core::LinAlg::Solver> linear_solver() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Solver> linear_solver() = 0;
 
     //@}
 
@@ -219,12 +220,12 @@ namespace Adapter
     //@{
 
     //! write access to extract displacements at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispnp() const = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> write_access_dispnp() const = 0;
 
     //@}
 
     //! create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test() = 0;
+    virtual std::shared_ptr<Core::Utils::ResultTest> create_field_test() = 0;
 
     //! reset state vectors to zero
     virtual void reset() = 0;
@@ -235,10 +236,10 @@ namespace Adapter
      * object. Evaluate has to be called separately.
      */
     virtual void create_system_matrix(
-        Teuchos::RCP<const ALE::Utils::MapExtractor> interface = Teuchos::null) = 0;
+        std::shared_ptr<const ALE::Utils::MapExtractor> interface = nullptr) = 0;
 
     //! update slave dofs for multifield simulations with ale mesh tying
-    virtual void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& a) = 0;
+    virtual void update_slave_dof(std::shared_ptr<Core::LinAlg::Vector<double>>& a) = 0;
 
   };  // class Ale
 
@@ -248,15 +249,15 @@ namespace Adapter
    public:
     //! constructor
     explicit AleBaseAlgorithm(
-        const Teuchos::ParameterList& prbdyn,          ///< the problem's parameter list
-        Teuchos::RCP<Core::FE::Discretization> actdis  ///< pointer to discretization
+        const Teuchos::ParameterList& prbdyn,             ///< the problem's parameter list
+        std::shared_ptr<Core::FE::Discretization> actdis  ///< pointer to discretization
     );
 
     //! virtual destructor to support polymorph destruction
     virtual ~AleBaseAlgorithm() = default;
 
-    //! Teuchos::RCP version of ale field solver
-    Teuchos::RCP<Ale> ale_field() { return ale_; }
+    //! std::shared_ptr version of ale field solver
+    std::shared_ptr<Ale> ale_field() { return ale_; }
 
    private:
     /*! \brief Setup ALE algorithm
@@ -265,11 +266,11 @@ namespace Adapter
      *  values specified in given problem-dependent ParameterList.
      */
     void setup_ale(const Teuchos::ParameterList& prbdyn,  ///< the problem's parameter list
-        Teuchos::RCP<Core::FE::Discretization> actdis     ///< pointer to discretization
+        std::shared_ptr<Core::FE::Discretization> actdis  ///< pointer to discretization
     );
 
     //! ALE field solver
-    Teuchos::RCP<Ale> ale_;
+    std::shared_ptr<Ale> ale_;
 
   };  // class AleBaseAlgorithm
 

@@ -20,14 +20,14 @@ FOUR_C_NAMESPACE_OPEN
  | factory method                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-Teuchos::RCP<Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>>
+std::shared_ptr<Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>>
 Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_evaluator(
     const Discret::Elements::PoroFluidMultiPhaseEleParameter& para,
     const POROFLUIDMULTIPHASE::Action& action, int numdofpernode, int numfluidphases,
     const PoroFluidManager::PhaseManagerInterface& phasemanager)
 {
   // the evaluator
-  Teuchos::RCP<EvaluatorInterface<nsd, nen>> evaluator = Teuchos::null;
+  std::shared_ptr<EvaluatorInterface<nsd, nen>> evaluator = nullptr;
 
   bool inittimederiv = false;
   if (action == POROFLUIDMULTIPHASE::calc_initial_time_deriv) inittimederiv = true;
@@ -48,8 +48,8 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
     case POROFLUIDMULTIPHASE::calc_fluid_scatra_coupl_mat:
     {
       // initialize the evaluator for the multi phase element
-      Teuchos::RCP<MultiEvaluator<nsd, nen>> evaluator_multiphase =
-          Teuchos::make_rcp<MultiEvaluator<nsd, nen>>();
+      std::shared_ptr<MultiEvaluator<nsd, nen>> evaluator_multiphase =
+          std::make_shared<MultiEvaluator<nsd, nen>>();
 
       if (hasfluidphases)
       {
@@ -57,12 +57,12 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
         for (int curphase = 0; curphase < numfluidphases - 1; curphase++)
         {
           // initialize the evaluator for the current phase
-          Teuchos::RCP<MultiEvaluator<nsd, nen>> evaluator_phase =
-              Teuchos::make_rcp<MultiEvaluator<nsd, nen>>();
+          std::shared_ptr<MultiEvaluator<nsd, nen>> evaluator_phase =
+              std::make_shared<MultiEvaluator<nsd, nen>>();
 
           // temporary interfaces
-          Teuchos::RCP<EvaluatorInterface<nsd, nen>> tmpevaluator = Teuchos::null;
-          Teuchos::RCP<AssembleInterface> assembler = Teuchos::null;
+          std::shared_ptr<EvaluatorInterface<nsd, nen>> tmpevaluator = nullptr;
+          std::shared_ptr<AssembleInterface> assembler = nullptr;
 
           // Note: this term cancels because of the formulation w.r.t. the material formulation of
           // the solid add evaluator for the conservative term (w, v \nabla \cdot S ) assembler =
@@ -73,32 +73,32 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
           // add evaluator for the convective conservative term (w, S \nabla \cdot v )
           if (para.is_ale())
           {
-            assembler = Teuchos::make_rcp<AssembleStandard>(curphase, inittimederiv);
-            tmpevaluator = Teuchos::make_rcp<EvaluatorSatDivVel<nsd, nen>>(assembler, curphase);
+            assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
+            tmpevaluator = std::make_shared<EvaluatorSatDivVel<nsd, nen>>(assembler, curphase);
             evaluator_phase->add_evaluator(tmpevaluator);
           }
           // add evaluator for Biot stabilization
           if (para.biot_stab())
           {
-            assembler = Teuchos::make_rcp<AssembleStandard>(curphase, inittimederiv);
-            tmpevaluator = Teuchos::make_rcp<EvaluatorBiotStab<nsd, nen>>(assembler, curphase);
+            assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
+            tmpevaluator = std::make_shared<EvaluatorBiotStab<nsd, nen>>(assembler, curphase);
             evaluator_phase->add_evaluator(tmpevaluator);
           }
 
           // add evaluator for the diffusive term (\nabla w, K \nabla p)
           // the diffusive term is also assembled into the last phase
-          assembler = Teuchos::make_rcp<AssembleAlsoIntoOtherPhase>(
+          assembler = std::make_shared<AssembleAlsoIntoOtherPhase>(
               curphase, numfluidphases - 1, inittimederiv);
-          tmpevaluator = Teuchos::make_rcp<EvaluatorDiff<nsd, nen>>(assembler, curphase);
+          tmpevaluator = std::make_shared<EvaluatorDiff<nsd, nen>>(assembler, curphase);
           evaluator_phase->add_evaluator(tmpevaluator);
 
           // add evaluator for the reactive term
           if (phasemanager.is_reactive(curphase))
           {
             // the reactive term is also assembled into the last phase
-            assembler = Teuchos::make_rcp<AssembleAlsoIntoOtherPhase>(
+            assembler = std::make_shared<AssembleAlsoIntoOtherPhase>(
                 curphase, numfluidphases - 1, inittimederiv);
-            tmpevaluator = Teuchos::make_rcp<EvaluatorReac<nsd, nen>>(assembler, curphase);
+            tmpevaluator = std::make_shared<EvaluatorReac<nsd, nen>>(assembler, curphase);
             evaluator_phase->add_evaluator(tmpevaluator);
           }
 
@@ -107,21 +107,20 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
           {
             // add evaluator for the instationary pressure term
             // the term is also assembled into the last phase
-            assembler = Teuchos::make_rcp<AssembleAlsoIntoOtherPhase>(
+            assembler = std::make_shared<AssembleAlsoIntoOtherPhase>(
                 curphase, numfluidphases - 1, inittimederiv);
-            tmpevaluator = Teuchos::make_rcp<EvaluatorMassPressure<nsd, nen>>(assembler, curphase);
+            tmpevaluator = std::make_shared<EvaluatorMassPressure<nsd, nen>>(assembler, curphase);
             evaluator_phase->add_evaluator(tmpevaluator);
 
             // add evaluator for the instationary solid pressure term
-            assembler = Teuchos::make_rcp<AssembleStandard>(curphase, inittimederiv);
+            assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
             tmpevaluator =
-                Teuchos::make_rcp<EvaluatorMassSolidPressureSat<nsd, nen>>(assembler, curphase);
+                std::make_shared<EvaluatorMassSolidPressureSat<nsd, nen>>(assembler, curphase);
             evaluator_phase->add_evaluator(tmpevaluator);
 
             // add evaluator for the instationary saturation term
-            assembler = Teuchos::make_rcp<AssembleStandard>(curphase, inittimederiv);
-            tmpevaluator =
-                Teuchos::make_rcp<EvaluatorMassSaturation<nsd, nen>>(assembler, curphase);
+            assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
+            tmpevaluator = std::make_shared<EvaluatorMassSaturation<nsd, nen>>(assembler, curphase);
             evaluator_phase->add_evaluator(tmpevaluator);
           }
 
@@ -133,17 +132,17 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
             if (not para.is_stationary())
             {
               // add evaluator for the instationary solid pressure term
-              assembler = Teuchos::make_rcp<AssembleStandard>(curphase, inittimederiv);
-              tmpevaluator = Teuchos::RCP(
-                  new EvaluatorVolFracAddInstatTermsSat<nsd, nen>(assembler, curphase));
+              assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
+              tmpevaluator = std::make_shared<EvaluatorVolFracAddInstatTermsSat<nsd, nen>>(
+                  assembler, curphase);
               evaluator_phase->add_evaluator(tmpevaluator);
             }
 
             if (para.is_ale())
             {
-              assembler = Teuchos::make_rcp<AssembleStandard>(curphase, inittimederiv);
-              tmpevaluator = Teuchos::make_rcp<EvaluatorVolFracAddDivVelTermSat<nsd, nen>>(
-                  assembler, curphase);
+              assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
+              tmpevaluator =
+                  std::make_shared<EvaluatorVolFracAddDivVelTermSat<nsd, nen>>(assembler, curphase);
               evaluator_phase->add_evaluator(tmpevaluator);
             }
           }
@@ -157,38 +156,38 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
           const int curphase = numfluidphases - 1;
 
           // initialize the evaluator for the last phase
-          Teuchos::RCP<MultiEvaluator<nsd, nen>> evaluator_lastphase =
-              Teuchos::make_rcp<MultiEvaluator<nsd, nen>>();
+          std::shared_ptr<MultiEvaluator<nsd, nen>> evaluator_lastphase =
+              std::make_shared<MultiEvaluator<nsd, nen>>();
 
           // temporary interfaces
-          Teuchos::RCP<EvaluatorInterface<nsd, nen>> tmpevaluator = Teuchos::null;
-          Teuchos::RCP<AssembleInterface> assembler = Teuchos::null;
+          std::shared_ptr<EvaluatorInterface<nsd, nen>> tmpevaluator = nullptr;
+          std::shared_ptr<AssembleInterface> assembler = nullptr;
 
           // add evaluator for the convective conservative term (w, \nabla \cdot v )
           if (para.is_ale())
           {
-            assembler = Teuchos::make_rcp<AssembleStandard>(curphase, false);
-            tmpevaluator = Teuchos::make_rcp<EvaluatorDivVel<nsd, nen>>(assembler, curphase);
+            assembler = std::make_shared<AssembleStandard>(curphase, false);
+            tmpevaluator = std::make_shared<EvaluatorDivVel<nsd, nen>>(assembler, curphase);
             evaluator_lastphase->add_evaluator(tmpevaluator);
           }
           // add evaluator for Biot stabilization
           if (para.biot_stab())
           {
-            assembler = Teuchos::make_rcp<AssembleStandard>(curphase, inittimederiv);
-            tmpevaluator = Teuchos::make_rcp<EvaluatorBiotStab<nsd, nen>>(assembler, curphase);
+            assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
+            tmpevaluator = std::make_shared<EvaluatorBiotStab<nsd, nen>>(assembler, curphase);
             evaluator_lastphase->add_evaluator(tmpevaluator);
           }
 
           // add evaluator for the diffusive term (\nabla w, K \nabla p)
-          assembler = Teuchos::make_rcp<AssembleStandard>(curphase, inittimederiv);
-          tmpevaluator = Teuchos::make_rcp<EvaluatorDiff<nsd, nen>>(assembler, curphase);
+          assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
+          tmpevaluator = std::make_shared<EvaluatorDiff<nsd, nen>>(assembler, curphase);
           evaluator_lastphase->add_evaluator(tmpevaluator);
 
           // add evaluator for the reactive term
           if (phasemanager.is_reactive(curphase))
           {
-            assembler = Teuchos::make_rcp<AssembleStandard>(curphase, inittimederiv);
-            tmpevaluator = Teuchos::make_rcp<EvaluatorReac<nsd, nen>>(assembler, curphase);
+            assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
+            tmpevaluator = std::make_shared<EvaluatorReac<nsd, nen>>(assembler, curphase);
             evaluator_lastphase->add_evaluator(tmpevaluator);
           }
 
@@ -196,14 +195,14 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
           if (not para.is_stationary())
           {
             // add evaluator for the instationary pressure term
-            assembler = Teuchos::make_rcp<AssembleStandard>(curphase, inittimederiv);
-            tmpevaluator = Teuchos::make_rcp<EvaluatorMassPressure<nsd, nen>>(assembler, curphase);
+            assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
+            tmpevaluator = std::make_shared<EvaluatorMassPressure<nsd, nen>>(assembler, curphase);
             evaluator_lastphase->add_evaluator(tmpevaluator);
 
             // add evaluator for the instationary solid pressure term
-            assembler = Teuchos::make_rcp<AssembleStandard>(curphase, inittimederiv);
+            assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
             tmpevaluator =
-                Teuchos::make_rcp<EvaluatorMassSolidPressure<nsd, nen>>(assembler, curphase);
+                std::make_shared<EvaluatorMassSolidPressure<nsd, nen>>(assembler, curphase);
             evaluator_lastphase->add_evaluator(tmpevaluator);
           }
 
@@ -215,17 +214,17 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
             if (not para.is_stationary())
             {
               // add evaluator for the instationary solid pressure term
-              assembler = Teuchos::make_rcp<AssembleStandard>(curphase, inittimederiv);
+              assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
               tmpevaluator =
-                  Teuchos::make_rcp<EvaluatorVolFracAddInstatTerms<nsd, nen>>(assembler, curphase);
+                  std::make_shared<EvaluatorVolFracAddInstatTerms<nsd, nen>>(assembler, curphase);
               evaluator_lastphase->add_evaluator(tmpevaluator);
             }
 
             if (para.is_ale())
             {
-              assembler = Teuchos::make_rcp<AssembleStandard>(curphase, inittimederiv);
+              assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
               tmpevaluator =
-                  Teuchos::make_rcp<EvaluatorVolFracAddDivVelTerm<nsd, nen>>(assembler, curphase);
+                  std::make_shared<EvaluatorVolFracAddDivVelTerm<nsd, nen>>(assembler, curphase);
               evaluator_lastphase->add_evaluator(tmpevaluator);
             }
           }
@@ -239,55 +238,55 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
       if (hasvolfracs)
       {
         // initialize the evaluator for the volume fractions
-        Teuchos::RCP<MultiEvaluator<nsd, nen>> evaluator_volfrac =
-            Teuchos::make_rcp<MultiEvaluator<nsd, nen>>();
+        std::shared_ptr<MultiEvaluator<nsd, nen>> evaluator_volfrac =
+            std::make_shared<MultiEvaluator<nsd, nen>>();
 
         // temporary interfaces
-        Teuchos::RCP<EvaluatorInterface<nsd, nen>> tmpevaluator = Teuchos::null;
-        Teuchos::RCP<AssembleInterface> assembler = Teuchos::null;
+        std::shared_ptr<EvaluatorInterface<nsd, nen>> tmpevaluator = nullptr;
+        std::shared_ptr<AssembleInterface> assembler = nullptr;
 
         // 1) volume fraction terms
         // ----------------------------------------------------------------- add evaluators for the
         // instationary terms
         if (not para.is_stationary())
         {
-          assembler = Teuchos::make_rcp<AssembleStandard>(-1, inittimederiv);
-          tmpevaluator = Teuchos::make_rcp<EvaluatorVolFracInstat<nsd, nen>>(assembler, -1);
+          assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
+          tmpevaluator = std::make_shared<EvaluatorVolFracInstat<nsd, nen>>(assembler, -1);
           evaluator_volfrac->add_evaluator(tmpevaluator);
         }
 
         // add evaluators for the mesh-divergence term
         if (para.is_ale())
         {
-          assembler = Teuchos::make_rcp<AssembleStandard>(-1, inittimederiv);
-          tmpevaluator = Teuchos::make_rcp<EvaluatorVolFracDivVel<nsd, nen>>(assembler, -1);
+          assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
+          tmpevaluator = std::make_shared<EvaluatorVolFracDivVel<nsd, nen>>(assembler, -1);
           evaluator_volfrac->add_evaluator(tmpevaluator);
         }
 
         // diffusive term
-        assembler = Teuchos::make_rcp<AssembleStandard>(-1, inittimederiv);
-        tmpevaluator = Teuchos::make_rcp<EvaluatorVolFracDiff<nsd, nen>>(assembler, -1);
+        assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
+        tmpevaluator = std::make_shared<EvaluatorVolFracDiff<nsd, nen>>(assembler, -1);
         evaluator_volfrac->add_evaluator(tmpevaluator);
 
         // reactive term
-        assembler = Teuchos::make_rcp<AssembleStandard>(-1, inittimederiv);
-        tmpevaluator = Teuchos::make_rcp<EvaluatorVolFracReac<nsd, nen>>(assembler, -1);
+        assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
+        tmpevaluator = std::make_shared<EvaluatorVolFracReac<nsd, nen>>(assembler, -1);
         evaluator_volfrac->add_evaluator(tmpevaluator);
 
         // additional flux term
-        assembler = Teuchos::make_rcp<AssembleStandard>(-1, inittimederiv);
-        tmpevaluator = Teuchos::make_rcp<EvaluatorVolFracAddFlux<nsd, nen>>(assembler, -1);
+        assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
+        tmpevaluator = std::make_shared<EvaluatorVolFracAddFlux<nsd, nen>>(assembler, -1);
         evaluator_volfrac->add_evaluator(tmpevaluator);
 
         // 2) volume fraction pressure terms
         // -------------------------------------------------------- diffusive term
-        assembler = Teuchos::make_rcp<AssembleStandard>(-1, inittimederiv);
-        tmpevaluator = Teuchos::make_rcp<EvaluatorVolFracPressureDiff<nsd, nen>>(assembler, -1);
+        assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
+        tmpevaluator = std::make_shared<EvaluatorVolFracPressureDiff<nsd, nen>>(assembler, -1);
         evaluator_volfrac->add_evaluator(tmpevaluator);
 
         // reactive term
-        assembler = Teuchos::make_rcp<AssembleStandard>(-1, inittimederiv);
-        tmpevaluator = Teuchos::make_rcp<EvaluatorVolFracPressureReac<nsd, nen>>(assembler, -1);
+        assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
+        tmpevaluator = std::make_shared<EvaluatorVolFracPressureReac<nsd, nen>>(assembler, -1);
         evaluator_volfrac->add_evaluator(tmpevaluator);
 
         // add the evaluator of the volfractions to the multiphase evaluator
@@ -300,22 +299,22 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
     case POROFLUIDMULTIPHASE::calc_pres_and_sat:
     {
       // initialize the evaluator for the multi phase element
-      Teuchos::RCP<MultiEvaluator<nsd, nen>> evaluator_multiphase =
-          Teuchos::make_rcp<MultiEvaluator<nsd, nen>>();
+      std::shared_ptr<MultiEvaluator<nsd, nen>> evaluator_multiphase =
+          std::make_shared<MultiEvaluator<nsd, nen>>();
 
       // temporary interfaces
-      Teuchos::RCP<EvaluatorInterface<nsd, nen>> tmpevaluator = Teuchos::null;
+      std::shared_ptr<EvaluatorInterface<nsd, nen>> tmpevaluator = nullptr;
 
       // initialize temporary assembler
-      Teuchos::RCP<AssembleInterface> assembler = Teuchos::null;
+      std::shared_ptr<AssembleInterface> assembler = nullptr;
 
       // build evaluators for all phases (fluid and volfrac)
       // volfrac does not actually need pressures and saturations --> set to -1 in evaluator
       for (int iphase = 0; iphase < numdofpernode; iphase++)
       {
-        assembler = Teuchos::make_rcp<AssembleStandard>(iphase, false);
+        assembler = std::make_shared<AssembleStandard>(iphase, false);
         tmpevaluator =
-            Teuchos::make_rcp<EvaluatorPressureAndSaturation<nsd, nen>>(assembler, iphase);
+            std::make_shared<EvaluatorPressureAndSaturation<nsd, nen>>(assembler, iphase);
         evaluator_multiphase->add_evaluator(tmpevaluator);
       }
       evaluator = evaluator_multiphase;
@@ -324,39 +323,39 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
     }
     case POROFLUIDMULTIPHASE::calc_solidpressure:
     {
-      Teuchos::RCP<AssembleInterface> assembler = Teuchos::make_rcp<AssembleStandard>(-1, false);
-      evaluator = Teuchos::make_rcp<EvaluatorSolidPressure<nsd, nen>>(assembler, -1);
+      std::shared_ptr<AssembleInterface> assembler = std::make_shared<AssembleStandard>(-1, false);
+      evaluator = std::make_shared<EvaluatorSolidPressure<nsd, nen>>(assembler, -1);
 
       break;
     }
     case POROFLUIDMULTIPHASE::calc_porosity:
     {
-      Teuchos::RCP<AssembleInterface> assembler = Teuchos::make_rcp<AssembleStandard>(-1, false);
-      evaluator = Teuchos::make_rcp<EvaluatorPorosity<nsd, nen>>(assembler, -1);
+      std::shared_ptr<AssembleInterface> assembler = std::make_shared<AssembleStandard>(-1, false);
+      evaluator = std::make_shared<EvaluatorPorosity<nsd, nen>>(assembler, -1);
 
       break;
     }
     case POROFLUIDMULTIPHASE::recon_flux_at_nodes:
     {
       // initialize the evaluator for the multi phase element
-      Teuchos::RCP<MultiEvaluator<nsd, nen>> evaluator_multiphase =
-          Teuchos::make_rcp<MultiEvaluator<nsd, nen>>();
+      std::shared_ptr<MultiEvaluator<nsd, nen>> evaluator_multiphase =
+          std::make_shared<MultiEvaluator<nsd, nen>>();
 
       // temporary interfaces
-      Teuchos::RCP<EvaluatorInterface<nsd, nen>> tmpevaluator = Teuchos::null;
+      std::shared_ptr<EvaluatorInterface<nsd, nen>> tmpevaluator = nullptr;
 
       // initialize temporary assembler
-      Teuchos::RCP<AssembleInterface> assembler = Teuchos::null;
+      std::shared_ptr<AssembleInterface> assembler = nullptr;
 
-      assembler = Teuchos::make_rcp<AssembleStandard>(-1, false);
-      tmpevaluator = Teuchos::make_rcp<ReconstructFluxLinearization<nsd, nen>>(assembler, -1);
+      assembler = std::make_shared<AssembleStandard>(-1, false);
+      tmpevaluator = std::make_shared<ReconstructFluxLinearization<nsd, nen>>(assembler, -1);
       evaluator_multiphase->add_evaluator(tmpevaluator);
 
       // build evaluators for all fluid phases
       for (int iphase = 0; iphase < numfluidphases; iphase++)
       {
-        assembler = Teuchos::make_rcp<AssembleStandard>(iphase, false);
-        tmpevaluator = Teuchos::make_rcp<ReconstructFluxRHS<nsd, nen>>(assembler, iphase);
+        assembler = std::make_shared<AssembleStandard>(iphase, false);
+        tmpevaluator = std::make_shared<ReconstructFluxRHS<nsd, nen>>(assembler, iphase);
         evaluator_multiphase->add_evaluator(tmpevaluator);
       }
       evaluator = evaluator_multiphase;
@@ -365,18 +364,18 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
     }
     case POROFLUIDMULTIPHASE::calc_phase_velocities:
     {
-      Teuchos::RCP<MultiEvaluator<nsd, nen>> evaluator_multiphase =
-          Teuchos::make_rcp<MultiEvaluator<nsd, nen>>();
+      std::shared_ptr<MultiEvaluator<nsd, nen>> evaluator_multiphase =
+          std::make_shared<MultiEvaluator<nsd, nen>>();
 
-      Teuchos::RCP<EvaluatorInterface<nsd, nen>> tmpevaluator = Teuchos::null;
-      Teuchos::RCP<AssembleInterface> assembler = Teuchos::null;
+      std::shared_ptr<EvaluatorInterface<nsd, nen>> tmpevaluator = nullptr;
+      std::shared_ptr<AssembleInterface> assembler = nullptr;
 
       // build evaluators for all phases
       for (int iphase = 0; iphase < numdofpernode; iphase++)
       {
-        assembler = Teuchos::make_rcp<AssembleStandard>(iphase, false);
+        assembler = std::make_shared<AssembleStandard>(iphase, false);
         tmpevaluator =
-            Teuchos::make_rcp<EvaluatorPhaseVelocities<nsd, nen>>(assembler, iphase, para.is_ale());
+            std::make_shared<EvaluatorPhaseVelocities<nsd, nen>>(assembler, iphase, para.is_ale());
         evaluator_multiphase->add_evaluator(tmpevaluator);
       }
       evaluator = evaluator_multiphase;
@@ -385,8 +384,8 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
     }
     case POROFLUIDMULTIPHASE::calc_valid_dofs:
     {
-      Teuchos::RCP<AssembleInterface> assembler = Teuchos::make_rcp<AssembleStandard>(-1, false);
-      evaluator = Teuchos::make_rcp<EvaluatorValidVolFracPressures<nsd, nen>>(assembler, -1);
+      std::shared_ptr<AssembleInterface> assembler = std::make_shared<AssembleStandard>(-1, false);
+      evaluator = std::make_shared<EvaluatorValidVolFracPressures<nsd, nen>>(assembler, -1);
 
       break;
     }
@@ -394,8 +393,8 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
     {
       int numscal = 0;
       if (para.has_scalar()) numscal = phasemanager.num_scal();
-      Teuchos::RCP<AssembleInterface> assembler = Teuchos::make_rcp<AssembleStandard>(-1, false);
-      evaluator = Teuchos::make_rcp<EvaluatorDomainIntegrals<nsd, nen>>(
+      std::shared_ptr<AssembleInterface> assembler = std::make_shared<AssembleStandard>(-1, false);
+      evaluator = std::make_shared<EvaluatorDomainIntegrals<nsd, nen>>(
           assembler, -1, para.domain_int_functions(), numscal);
       break;
     }

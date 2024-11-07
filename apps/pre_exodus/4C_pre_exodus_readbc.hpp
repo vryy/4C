@@ -14,9 +14,8 @@
 #include "4C_pre_exodus_reader.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 

@@ -80,7 +80,7 @@ void PARTICLEWALL::WallResultTest::test_node(
     if (quantity == "posx" or quantity == "posy" or quantity == "posz")
     {
       // get wall displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = walldatastate->get_disp_col();
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp = walldatastate->get_disp_col();
 
       int idx = -1;
       if (quantity == "posx")
@@ -94,7 +94,7 @@ void PARTICLEWALL::WallResultTest::test_node(
       {
         actresult = actnode->x()[idx];
 
-        if (disp != Teuchos::null)
+        if (disp != nullptr)
         {
           const Epetra_BlockMap& disnpmap = disp->Map();
           int lid = disnpmap.LID(walldiscretization_->dof(0, actnode, idx));
@@ -109,9 +109,9 @@ void PARTICLEWALL::WallResultTest::test_node(
     else if (quantity == "dispx" or quantity == "dispy" or quantity == "dispz")
     {
       // get wall displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = walldatastate->get_disp_col();
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp = walldatastate->get_disp_col();
 
-      if (disp == Teuchos::null) return;
+      if (disp == nullptr) return;
 
       int idx = -1;
       if (quantity == "dispx")

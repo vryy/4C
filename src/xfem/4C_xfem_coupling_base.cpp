@@ -61,10 +61,10 @@ Inpar::XFEM::EleCouplingCondType XFEM::cond_type_string_to_enum(const std::strin
  * constructor
  *--------------------------------------------------------------------------*/
 XFEM::CouplingBase::CouplingBase(
-    Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+    std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<Core::FE::Discretization>&
+    std::shared_ptr<Core::FE::Discretization>&
         cond_dis,           ///< full discretization from which the cutter discretization is derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -75,8 +75,8 @@ XFEM::CouplingBase::CouplingBase(
       cond_name_(cond_name),
       cond_dis_(cond_dis),
       coupling_id_(coupling_id),
-      cutter_dis_(Teuchos::null),
-      coupl_dis_(Teuchos::null),
+      cutter_dis_(nullptr),
+      coupl_dis_(nullptr),
       coupl_name_(""),
       averaging_strategy_(Inpar::XFEM::invalid),
       myrank_(bg_dis_->get_comm().MyPID()),
@@ -465,7 +465,7 @@ void XFEM::CouplingBase::set_coupling_discretization()
       break;
     }
     case Inpar::XFEM::CouplingCond_SURF_FSI_PART:
-    case Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:  // set this to Teuchos::null when the
+    case Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:  // set this to nullptr when the
                                                          // values are read from the function
                                                          // instead of the ivelnp vector
     case Inpar::XFEM::CouplingCond_SURF_NEUMANN:
@@ -479,7 +479,7 @@ void XFEM::CouplingBase::set_coupling_discretization()
     case Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN:
     case Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
     {
-      coupl_dis_ = Teuchos::null;
+      coupl_dis_ = nullptr;
       break;
     }
     case Inpar::XFEM::CouplingCond_EMBEDDEDMESH_BACKGROUND_SOLID_VOL:
@@ -673,14 +673,14 @@ void XFEM::CouplingBase::get_viscosity_master(Core::Elements::Element* xfele,  /
     double& visc_m)  ///< viscosity mastersided
 {
   // Get Materials of master
-  Teuchos::RCP<Core::Mat::Material> mat_m;
+  std::shared_ptr<Core::Mat::Material> mat_m;
 
   // Todo: As soon as the master side may not be position = outside anymore we need to take that
   // into account
   // by an additional input parameter here (e.g. XFSI with TwoPhase)
   XFEM::Utils::get_volume_cell_material(xfele, mat_m, Cut::Point::outside);
   if (mat_m->material_type() == Core::Materials::m_fluid)
-    visc_m = Teuchos::rcp_dynamic_cast<Mat::NewtonianFluid>(mat_m)->viscosity();
+    visc_m = std::dynamic_pointer_cast<Mat::NewtonianFluid>(mat_m)->viscosity();
   else
     FOUR_C_THROW("get_coupling_specific_average_weights: Master Material not a fluid material?");
   return;

@@ -65,7 +65,7 @@ namespace Discret
         );
 
         //! create a pure coupling slave element representation
-        static Teuchos::RCP<SlaveElementInterface<distype>> create_slave_element_representation(
+        static std::shared_ptr<SlaveElementInterface<distype>> create_slave_element_representation(
             Core::Elements::Element* slave_ele,  ///< coupling slave element
             Core::LinAlg::SerialDenseMatrix&
                 slave_xyz  ///< global node coordinates of coupling slave element
@@ -265,7 +265,7 @@ namespace Discret
         /// number of nodal DOF for master element (always a xfem-fluid element)
         static constexpr unsigned master_numdof_ = nsd_ + 1;
 
-        static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
+        static std::shared_ptr<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
             Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
             Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
             const Discret::Elements::FluidEleParameterXFEM&
@@ -273,7 +273,7 @@ namespace Discret
         );
 
         //! create a coupling interface for Nitsche's method for xfluid weak dirichlet problems
-        static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
+        static std::shared_ptr<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
             Core::Elements::Element* bele,  ///< boundary element
             Core::LinAlg::SerialDenseMatrix::Base&
                 bele_xyz,  ///< global node coordinates of boundary element
@@ -284,7 +284,7 @@ namespace Discret
         );
 
         //! create a coupling interface for Nitsche's method for xfluid-sided coupling strategy
-        static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_sided(
+        static std::shared_ptr<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_sided(
             Core::Elements::Element* bele,  ///< boundary element
             Core::LinAlg::SerialDenseMatrix::Base&
                 bele_xyz,  ///< global node coordinates of boundary element
@@ -300,7 +300,7 @@ namespace Discret
 
         //! create a coupling interface for Nitsche's method for two-sided coupling strategy
         //! (weighted or fully embedded-sided)
-        static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_two_sided(
+        static std::shared_ptr<NitscheInterface<distype>> create_nitsche_coupling_two_sided(
             Core::Elements::Element* vele,  ///< volumetric element to couple with
             Core::LinAlg::SerialDenseMatrix::Base&
                 vele_xyz,  ///< global node coordinates of volumetric element
@@ -319,7 +319,7 @@ namespace Discret
         //! employing shape functions and velocities from another coupling object (HybridLMCoupling)
         //! slave_ele
         virtual void apply_conv_stab_terms(
-            const Teuchos::RCP<SlaveElementInterface<distype>>&
+            const std::shared_ptr<SlaveElementInterface<distype>>&
                 slave_ele,  ///< associated slave element coupling object
             const Core::LinAlg::Matrix<nen_, 1>& funct_m,   ///< master shape functions
             const Core::LinAlg::Matrix<nsd_, 1>& velint_m,  ///< vector of slave shape functions
@@ -413,14 +413,14 @@ namespace Discret
 
         //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet
         //! problems
-        static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_x_fluid_wdbc(
+        static std::shared_ptr<HybridLMInterface<distype>> create_hybrid_lm_coupling_x_fluid_wdbc(
             bool is_viscAdjointSymmetric  ///< flag that indicates equal signs of Nitsche's standard
                                           ///< & adjoint viscous term
         );
 
         //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet
         //! problems
-        static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_x_fluid_wdbc(
+        static std::shared_ptr<HybridLMInterface<distype>> create_hybrid_lm_coupling_x_fluid_wdbc(
             Core::Elements::Element* bele,  ///< boundary element
             Core::LinAlg::SerialDenseMatrix&
                 bele_xyz,                 ///< global node coordinates of boundary element
@@ -430,7 +430,7 @@ namespace Discret
 
         //! create a coupling interface for mixed/hybrid LM approach for xfluid-sided coupling
         //! strategy
-        static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_x_fluid_sided(
+        static std::shared_ptr<HybridLMInterface<distype>> create_hybrid_lm_coupling_x_fluid_sided(
             Core::Elements::Element* bele,  ///< boundary element
             Core::LinAlg::SerialDenseMatrix&
                 bele_xyz,  ///< global node coordinates of boundary element
@@ -445,7 +445,7 @@ namespace Discret
 
         //! create a coupling interface for mixed/hybrid LM approach for two-sided coupling strategy
         //! (weighted or fully embedded-sided)
-        static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_two_sided(
+        static std::shared_ptr<HybridLMInterface<distype>> create_hybrid_lm_coupling_two_sided(
             Core::Elements::Element* vele,  ///< volumetric element to couple with
             Core::LinAlg::SerialDenseMatrix&
                 vele_xyz,  ///< global node coordinates of volumetric element
@@ -462,7 +462,7 @@ namespace Discret
         )
         {
           FOUR_C_THROW("Embedded-sided mixed/hybrid stress-based LM is not implemented yet!");
-          return Teuchos::null;
+          return nullptr;
         }
 
         //! evaluate interface matrices for mixed/hybrid Cauchy stress-based (MHCS) coupling

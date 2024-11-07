@@ -16,7 +16,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -47,9 +48,9 @@ namespace Adapter
   {
    public:
     /// constructor
-    FluidFluidFSI(Teuchos::RCP<Fluid> xfluidfluid, Teuchos::RCP<Fluid> embfluid,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        bool isale, bool dirichletcond);
+    FluidFluidFSI(std::shared_ptr<Fluid> xfluidfluid, std::shared_ptr<Fluid> embfluid,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params, bool isale, bool dirichletcond);
 
     /// initialize and prepare maps
     void init() override;
@@ -64,69 +65,72 @@ namespace Adapter
     /// solve for pure fluid-fluid-ale problem
     void solve() override;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override
+    std::shared_ptr<Core::LinAlg::Vector<double>> relaxation_solve(
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel) override
     {
       FOUR_C_THROW("Do not call RexationSolve for XFFSI.");
-      return Teuchos::null;
+      return nullptr;
     }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_forces() override
     {
       FOUR_C_THROW("Do not call extract_interface_forces for XFFSI.");
-      return Teuchos::null;
+      return nullptr;
     }
 
     /// @name Accessors
     //@{
 
     // get merged xfluid-fluid dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() override;
+    std::shared_ptr<const Epetra_Map> dof_row_map() override;
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override
+    std::shared_ptr<FLD::Utils::MapExtractor> const& interface() const override
     {
       return mergedfluidinterface_;
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> grid_vel() override;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_grid_vel();
+    std::shared_ptr<const Core::LinAlg::Vector<double>> grid_vel() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> write_access_grid_vel();
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp() override;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispnp();
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn() override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> write_access_dispnp();
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispn() override;
 
     /// get the velocity row map of the embedded fluid
-    Teuchos::RCP<const Epetra_Map> velocity_row_map() override;
+    std::shared_ptr<const Epetra_Map> velocity_row_map() override;
 
     /// get block system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
 
     // access to embedded discretization
-    const Teuchos::RCP<Core::FE::Discretization>& discretization() override;
+    const std::shared_ptr<Core::FE::Discretization>& discretization() override;
 
     // return discretization writer of embedded fluid discretization (for special purpose output)
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& disc_writer() override { return output_; }
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& disc_writer() override
+    {
+      return output_;
+    }
 
     /// get map extractor for background/embedded fluid
-    Teuchos::RCP<FLD::Utils::XFluidFluidMapExtractor> const& x_fluid_fluid_map_extractor();
+    std::shared_ptr<FLD::Utils::XFluidFluidMapExtractor> const& x_fluid_fluid_map_extractor();
 
     //@}
 
     /// Apply initial mesh displacement
     void apply_initial_mesh_displacement(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> initfluiddisp) override
+        std::shared_ptr<const Core::LinAlg::Vector<double>> initfluiddisp) override
     {
       FOUR_C_THROW("Not implemented, yet!");
     }
 
     // apply ALE-mesh displacements to embedded fluid
     void apply_mesh_displacement(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluiddisp) override;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fluiddisp) override;
 
     /// evaluate the fluid and update the merged fluid/FSI DOF-map extractor in case of a change in
     /// the DOF-maps
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
             stepinc  ///< solution increment between time step n and n+1
         ) override;
 
@@ -143,7 +147,7 @@ namespace Adapter
       return monolithic_approach_;
     }
 
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> shape_derivatives() override;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> shape_derivatives() override;
 
    private:
     /// setup of map extractor to distinguish between FSI DOF-map and
@@ -156,11 +160,11 @@ namespace Adapter
     void prepare_shape_derivatives();
 
     /// type cast pointer to XFluidFluid
-    Teuchos::RCP<FLD::XFluidFluid> xfluidfluid_;
+    std::shared_ptr<FLD::XFluidFluid> xfluidfluid_;
 
     /// fsi map extractor for merged fluid maps (to keep fsi interface-DOF apart from
     /// merged inner DOF (inner embedded fluid together with background fluid)
-    Teuchos::RCP<FLD::Utils::MapExtractor> mergedfluidinterface_;
+    std::shared_ptr<FLD::Utils::MapExtractor> mergedfluidinterface_;
 
     /// type of monolithic XFluid-Fluid approach (decides whether ALE-mesh is fixed during
     /// Newton iteration)

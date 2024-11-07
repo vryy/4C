@@ -107,9 +107,10 @@ namespace Discret
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! get internal variable manager for thermodynamic diffusion-conduction formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>> var_manager()
+      std::shared_ptr<ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>>
+      var_manager()
       {
-        return Teuchos::rcp_static_cast<
+        return std::static_pointer_cast<
             ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>>(
             my::scatravarmanager_);
       };

@@ -31,15 +31,15 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Adapter::FPSIStructureWrapper::FPSIStructureWrapper(Teuchos::RCP<Structure> structure)
+Adapter::FPSIStructureWrapper::FPSIStructureWrapper(std::shared_ptr<Structure> structure)
     : FSIStructureWrapper(structure)
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FPSIStructureWrapper::extract_interface_dispn(
-    bool FPSI)
+std::shared_ptr<Core::LinAlg::Vector<double>>
+Adapter::FPSIStructureWrapper::extract_interface_dispn(bool FPSI)
 {
   if (!FPSI)
   {
@@ -50,7 +50,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FPSIStructureWrapper::extrac
     // prestressing business
     if (prestress_is_active(time_old()))
     {
-      return Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->fpsi_cond_map(), true);
+      return std::make_shared<Core::LinAlg::Vector<double>>(*interface_->fpsi_cond_map(), true);
     }
     else
     {
@@ -62,8 +62,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FPSIStructureWrapper::extrac
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FPSIStructureWrapper::extract_interface_dispnp(
-    bool FPSI)
+std::shared_ptr<Core::LinAlg::Vector<double>>
+Adapter::FPSIStructureWrapper::extract_interface_dispnp(bool FPSI)
 {
   if (!FPSI)
   {
@@ -74,7 +74,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FPSIStructureWrapper::extrac
     // prestressing business
     if (prestress_is_active(time()))
     {
-      return Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->fpsi_cond_map(), true);
+      return std::make_shared<Core::LinAlg::Vector<double>>(*interface_->fpsi_cond_map(), true);
     }
     else
     {

@@ -14,8 +14,7 @@
 #include "4C_inpar_xfem.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -77,12 +76,12 @@ namespace XFEM
     //! prepares edge based stabilization and ghost penaly in case of XFEM and calls evaluate
     //! routine
     void evaluate_edge_stab_ghost_penalty(
-        Teuchos::ParameterList& eleparams,                        ///< element parameter list
-        Teuchos::RCP<Core::FE::Discretization> discret,           ///< discretization
-        Discret::Elements::FluidIntFace* faceele,                 ///< face element
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,    ///< systemmatrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,  ///< systemvector
-        Cut::CutWizard& wizard,                                   ///< cut wizard
+        Teuchos::ParameterList& eleparams,                           ///< element parameter list
+        std::shared_ptr<Core::FE::Discretization> discret,           ///< discretization
+        Discret::Elements::FluidIntFace* faceele,                    ///< face element
+        std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix,    ///< systemmatrix
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector,  ///< systemvector
+        Cut::CutWizard& wizard,                                      ///< cut wizard
         bool include_inner,        ///< stabilize also facets with inside position
         bool include_inner_faces,  ///< stabilize also faces with inside position if possible
         bool gmsh_eos_out = true   ///< stabilization gmsh output
@@ -94,33 +93,33 @@ namespace XFEM
         Teuchos::ParameterList& eleparams,         ///< element parameter list
         const Inpar::XFEM::FaceType& face_type,    ///< which type of face std, ghost, ghost-penalty
         Discret::Elements::FluidIntFace* intface,  ///< internal face element
-        Teuchos::RCP<Core::Mat::Material>& material_m,  ///< material of the master side
-        Teuchos::RCP<Core::Mat::Material>& material_s,  ///< material of the slave side
+        std::shared_ptr<Core::Mat::Material>& material_m,  ///< material of the master side
+        std::shared_ptr<Core::Mat::Material>& material_s,  ///< material of the slave side
         std::vector<int>& nds_master,             ///< nodal dofset vector w.r.t. master element
         std::vector<int>& nds_slave,              ///< nodal dofset vector w.r.t. slave element
         Core::FE::DiscretizationFaces& xdiscret,  ///< discretization with faces
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
+        std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
     );
 
     //! prepares edge based stabilization for standard fluid
     void evaluate_edge_stab_std(Teuchos::ParameterList& eleparams,  ///< element parameter list
-        Teuchos::RCP<Core::FE::Discretization> discret,             ///< discretization
+        std::shared_ptr<Core::FE::Discretization> discret,          ///< discretization
         Discret::Elements::FluidIntFace* faceele,                   ///< face element
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,      ///< systemmatrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector     ///< systemvector
+        std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
     );
 
     //! prepares edge based stabilization for fluid-fluid applications, where we want to apply
     //! EOS pressure stabilizing terms to the interface-contributing embedded fluid elements
     void evaluate_edge_stab_boundary_gp(
-        Teuchos::ParameterList& eleparams,               ///< element parameter list
-        Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
+        Teuchos::ParameterList& eleparams,                  ///< element parameter list
+        std::shared_ptr<Core::FE::Discretization> discret,  ///< discretization
         Core::FE::Discretization&
             boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
-        Discret::Elements::FluidIntFace* faceele,                ///< face element
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
+        Discret::Elements::FluidIntFace* faceele,                   ///< face element
+        std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
     );
 
     //! returns a map containing the ghost penalty stabilized internal face elements

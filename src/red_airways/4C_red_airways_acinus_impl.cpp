@@ -97,8 +97,8 @@ void sysmat(Discret::Elements::RedAcinus* ele, Core::LinAlg::SerialDenseVector& 
     const double volAlvDuct = acinus_params.alveolar_duct_volume;
     const auto NumOfAcini = double(floor(VolAcinus / volAlvDuct));
 
-    const Teuchos::RCP<Mat::Maxwell0dAcinus> acinus_mat =
-        Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(ele->material());
+    const std::shared_ptr<Mat::Maxwell0dAcinus> acinus_mat =
+        std::dynamic_pointer_cast<Mat::Maxwell0dAcinus>(ele->material());
 
     // Evaluate material law for acinus
     acinus_mat->evaluate(epnp, epn, epnm, sysmat, rhs, params, NumOfAcini, volAlvDuct, time, dt);
@@ -121,7 +121,7 @@ int Discret::Elements::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
-    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, std::shared_ptr<Core::Mat::Material> mat)
 {
   const int elemVecdim = elevec1_epetra.length();
 
@@ -135,13 +135,14 @@ int Discret::Elements::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
   const double time = evaluation_data.time;
 
   // Get all general state vectors: flow, pressure,
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pnm = discretization.get_state("pnm");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pnm = discretization.get_state("pnm");
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> ial = discretization.get_state("intr_ac_link");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> ial =
+      discretization.get_state("intr_ac_link");
 
-  if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
+  if (pnp == nullptr || pn == nullptr || pnm == nullptr)
     FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // Extract local values from the global vectors
@@ -217,7 +218,7 @@ int Discret::Elements::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
 template <Core::FE::CellType distype>
 void Discret::Elements::AcinusImpl<distype>::initial(RedAcinus* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<const Core::Mat::Material> material)
+    std::shared_ptr<const Core::Mat::Material> material)
 {
   const int myrank = discretization.get_comm().MyPID();
 
@@ -274,7 +275,7 @@ void Discret::Elements::AcinusImpl<distype>::initial(RedAcinus* ele, Teuchos::Pa
 template <Core::FE::CellType distype>
 void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
+    Core::LinAlg::SerialDenseVector& rhs, std::shared_ptr<Core::Mat::Material> material)
 {
   const int myrank = discretization.get_comm().MyPID();
 
@@ -287,9 +288,9 @@ void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
   // The number of nodes
   const int numnode = lm.size();
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
 
-  if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
+  if (pnp == nullptr) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -389,8 +390,8 @@ void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
           const Core::Conditions::Condition* condition =
               ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
 
-          Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
-              params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
+          std::shared_ptr<Teuchos::ParameterList> CoupledTo3DParams =
+              params.get<std::shared_ptr<Teuchos::ParameterList>>("coupling with 3D fluid params");
           // -----------------------------------------------------------------
           // If the parameter list is empty, then something is wrong!
           // -----------------------------------------------------------------
@@ -427,8 +428,8 @@ void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
           // -----------------------------------------------------------------
 
           int ID = condition->parameters().get<int>("ConditionID");
-          Teuchos::RCP<std::map<std::string, double>> map3D;
-          map3D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
+          std::shared_ptr<std::map<std::string, double>> map3D;
+          map3D = CoupledTo3DParams->get<std::shared_ptr<std::map<std::string, double>>>(
               "3D map of values");
 
           // find the applied boundary variable
@@ -683,7 +684,7 @@ void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
 template <Core::FE::CellType distype>
 void Discret::Elements::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material> material)
+    std::shared_ptr<Core::Mat::Material> material)
 
 {
   const int elemVecdim = lm.size();
@@ -699,11 +700,11 @@ void Discret::Elements::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
   const double time = evaluation_data.time;
 
   // Get all general state vectors: flow, pressure,
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pnm = discretization.get_state("pnm");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pnm = discretization.get_state("pnm");
 
-  if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
+  if (pnp == nullptr || pn == nullptr || pnm == nullptr)
     FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // Extract local values from the global vectors
@@ -787,7 +788,7 @@ void Discret::Elements::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
 template <Core::FE::CellType distype>
 void Discret::Elements::AcinusImpl<distype>::calc_elem_volume(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material> material)
+    std::shared_ptr<Core::Mat::Material> material)
 
 {
   Discret::ReducedLung::EvaluationData& evaluation_data =
@@ -814,16 +815,16 @@ void Discret::Elements::AcinusImpl<distype>::calc_elem_volume(RedAcinus* ele,
 template <Core::FE::CellType distype>
 void Discret::Elements::AcinusImpl<distype>::get_coupled_values(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material> material)
+    std::shared_ptr<Core::Mat::Material> material)
 {
   const int myrank = discretization.get_comm().MyPID();
 
   // The number of nodes
   const int numnode = lm.size();
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
 
-  if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
+  if (pnp == nullptr) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -850,8 +851,8 @@ void Discret::Elements::AcinusImpl<distype>::get_coupled_values(RedAcinus* ele,
       {
         const Core::Conditions::Condition* condition =
             ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
-        Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
-            params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
+        std::shared_ptr<Teuchos::ParameterList> CoupledTo3DParams =
+            params.get<std::shared_ptr<Teuchos::ParameterList>>("coupling with 3D fluid params");
         // -----------------------------------------------------------------
         // If the parameter list is empty, then something is wrong!
         // -----------------------------------------------------------------
@@ -886,8 +887,8 @@ void Discret::Elements::AcinusImpl<distype>::get_coupled_values(RedAcinus* ele,
         // -----------------------------------------------------------------
 
         int ID = condition->parameters().get<int>("ConditionID");
-        Teuchos::RCP<std::map<std::string, double>> map1D;
-        map1D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
+        std::shared_ptr<std::map<std::string, double>> map1D;
+        map1D = CoupledTo3DParams->get<std::shared_ptr<std::map<std::string, double>>>(
             "reducedD map of values");
 
         std::string returnedBC = (condition->parameters().get<std::string>("ReturnedVariable"));

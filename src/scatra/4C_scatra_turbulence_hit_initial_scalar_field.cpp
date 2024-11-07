@@ -162,7 +162,7 @@ namespace ScaTra
     }
     // push coordinates in vectors
     {
-      coordinates_ = Teuchos::make_rcp<std::vector<double>>();
+      coordinates_ = std::make_shared<std::vector<double>>();
 
       for (std::set<double, LineSortCriterion>::iterator coord1 = coords.begin();
            coord1 != coords.end(); ++coord1)

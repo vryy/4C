@@ -13,7 +13,8 @@
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_geometry_element_coordtrafo.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <map>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -108,16 +109,16 @@ namespace Core::FE
    public:
     explicit GaussPointsComposite(int size) { gp_.reserve(size); }
 
-    void append(Teuchos::RCP<GaussPoints> gp) { gp_.push_back(gp); }
+    void append(std::shared_ptr<GaussPoints> gp) { gp_.push_back(gp); }
 
     /// number of gauss points
     int num_points() const override
     {
       int numpoints = 0;
-      for (std::vector<Teuchos::RCP<GaussPoints>>::const_iterator i = gp_.begin(); i != gp_.end();
-           ++i)
+      for (std::vector<std::shared_ptr<GaussPoints>>::const_iterator i = gp_.begin();
+           i != gp_.end(); ++i)
       {
-        Teuchos::RCP<GaussPoints> gp = *i;
+        std::shared_ptr<GaussPoints> gp = *i;
         numpoints += gp->num_points();
       }
       return numpoints;
@@ -129,14 +130,14 @@ namespace Core::FE
     /// gauss point coordinates
     const double* point(int point) const override
     {
-      Teuchos::RCP<GaussPoints> gp = find(point);
+      std::shared_ptr<GaussPoints> gp = find(point);
       return gp->point(point);
     }
 
     /// gauss weight
     double weight(int point) const override
     {
-      Teuchos::RCP<GaussPoints> gp = find(point);
+      std::shared_ptr<GaussPoints> gp = find(point);
       return gp->weight(point);
       //     if ( gp_[0]==gp )
       //     {
@@ -151,21 +152,21 @@ namespace Core::FE
     /// debug print
     void print() const override
     {
-      for (std::vector<Teuchos::RCP<GaussPoints>>::const_iterator i = gp_.begin(); i != gp_.end();
-           ++i)
+      for (std::vector<std::shared_ptr<GaussPoints>>::const_iterator i = gp_.begin();
+           i != gp_.end(); ++i)
       {
-        Teuchos::RCP<GaussPoints> gp = *i;
+        std::shared_ptr<GaussPoints> gp = *i;
         gp->print();
       }
     }
 
    private:
-    Teuchos::RCP<GaussPoints> find(int& point) const
+    std::shared_ptr<GaussPoints> find(int& point) const
     {
-      for (std::vector<Teuchos::RCP<GaussPoints>>::const_iterator i = gp_.begin(); i != gp_.end();
-           ++i)
+      for (std::vector<std::shared_ptr<GaussPoints>>::const_iterator i = gp_.begin();
+           i != gp_.end(); ++i)
       {
-        Teuchos::RCP<GaussPoints> gp = *i;
+        std::shared_ptr<GaussPoints> gp = *i;
         int numpoints = gp->num_points();
         if (numpoints > point)
         {
@@ -176,7 +177,7 @@ namespace Core::FE
       FOUR_C_THROW("gauss point not available");
     }
 
-    std::vector<Teuchos::RCP<GaussPoints>> gp_;
+    std::vector<std::shared_ptr<GaussPoints>> gp_;
   };
 
   /// remember calculated gauss points so we do not need to calculate again
@@ -185,11 +186,11 @@ namespace Core::FE
    public:
     static GaussPointCache& instance();
 
-    Teuchos::RCP<GaussPoints> create(Core::FE::CellType distype, int degree);
+    std::shared_ptr<GaussPoints> create(Core::FE::CellType distype, int degree);
 
    private:
     /// cache of already created gauss rules
-    std::map<std::pair<Core::FE::CellType, int>, Teuchos::RCP<GaussPoints>> gp_cache_;
+    std::map<std::pair<Core::FE::CellType, int>, std::shared_ptr<GaussPoints>> gp_cache_;
   };
 
   /// gauss integration interface
@@ -248,9 +249,9 @@ namespace Core::FE
     GaussIntegration(Core::FE::CellType distype, int degree);
 
     /// construct with a known set of gauss points
-    explicit GaussIntegration(Teuchos::RCP<GaussPoints> gp) : gp_(gp) {}
+    explicit GaussIntegration(std::shared_ptr<GaussPoints> gp) : gp_(gp) {}
 
-    void clear() { gp_ = Teuchos::null; }
+    void clear() { gp_ = nullptr; }
 
     iterator begin() { return GaussPointIterator(&*gp_, 0); }
 
@@ -275,19 +276,19 @@ namespace Core::FE
     /// debug print
     void print() const { gp_->print(); }
 
-    Teuchos::RCP<GaussPoints> points() const { return gp_; }
+    std::shared_ptr<GaussPoints> points() const { return gp_; }
 
-    void set_points(Teuchos::RCP<GaussPoints> gp) { gp_ = gp; }
+    void set_points(std::shared_ptr<GaussPoints> gp) { gp_ = gp; }
 
     /// Create Gauss integration rule of given degree
     template <Core::FE::CellType distype>
-    static Teuchos::RCP<GaussPoints> create_projected(
+    static std::shared_ptr<GaussPoints> create_projected(
         const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& xie,
         int degree)
     {
-      Teuchos::RCP<GaussPoints> gp = GaussPointCache::instance().create(distype, degree);
-      Teuchos::RCP<CollectedGaussPoints> cgp =
-          Teuchos::make_rcp<CollectedGaussPoints>(gp->num_points());
+      std::shared_ptr<GaussPoints> gp = GaussPointCache::instance().create(distype, degree);
+      std::shared_ptr<CollectedGaussPoints> cgp =
+          std::make_shared<CollectedGaussPoints>(gp->num_points());
 
       GaussIntegration intpoints(gp);
 
@@ -337,7 +338,7 @@ namespace Core::FE
     /// Project the given Gauss points in global coordinate system of the element to its local
     /// coordinate system
     template <Core::FE::CellType distype>
-    static Teuchos::RCP<GaussPoints> project_gauss_points_global_to_local(
+    static std::shared_ptr<GaussPoints> project_gauss_points_global_to_local(
         const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& xie,
         GaussIntegration& intpoints, const bool& throw_error = true)
     {
@@ -350,8 +351,8 @@ namespace Core::FE
       Core::LinAlg::Matrix<nsd, nsd> xjm;
       Core::LinAlg::Matrix<nsd, 1> xi;
 
-      Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-          Teuchos::make_rcp<Core::FE::CollectedGaussPoints>(intpoints.num_points());
+      std::shared_ptr<Core::FE::CollectedGaussPoints> cgp =
+          std::make_shared<Core::FE::CollectedGaussPoints>(intpoints.num_points());
 
       for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
            ++iquad)
@@ -381,7 +382,7 @@ namespace Core::FE
 
    private:
     /// internal collection
-    Teuchos::RCP<GaussPoints> gp_;
+    std::shared_ptr<GaussPoints> gp_;
   };
 
 }  // namespace Core::FE

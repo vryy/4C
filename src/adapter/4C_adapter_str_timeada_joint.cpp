@@ -28,8 +28,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Adapter::StructureTimeAdaJoint::StructureTimeAdaJoint(Teuchos::RCP<Structure> structure)
-    : StructureTimeAda(structure), sta_(Teuchos::null), sta_wrapper_(Teuchos::null)
+Adapter::StructureTimeAdaJoint::StructureTimeAdaJoint(std::shared_ptr<Structure> structure)
+    : StructureTimeAda(structure), sta_(nullptr), sta_wrapper_(nullptr)
 {
   if (stm_->is_setup()) setup_auxiliar();
 }
@@ -52,37 +52,38 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   ///// setup dataio
   Global::Problem* problem = Global::Problem::instance();
   //
-  Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::make_rcp<Teuchos::ParameterList>(problem->io_params());
+  std::shared_ptr<Teuchos::ParameterList> ioflags =
+      std::make_shared<Teuchos::ParameterList>(problem->io_params());
   ioflags->set("STDOUTEVRY", 0);
   //
-  Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::make_rcp<Teuchos::ParameterList>();
+  std::shared_ptr<Teuchos::ParameterList> xparams = std::make_shared<Teuchos::ParameterList>();
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
   nox = problem->structural_nox_params();
   //
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = stm_->discretization()->writer();
+  std::shared_ptr<Core::IO::DiscretizationWriter> output = stm_->discretization()->writer();
   //
-  Teuchos::RCP<Solid::TimeInt::BaseDataIO> dataio = Teuchos::make_rcp<Solid::TimeInt::BaseDataIO>();
+  std::shared_ptr<Solid::TimeInt::BaseDataIO> dataio =
+      std::make_shared<Solid::TimeInt::BaseDataIO>();
   dataio->init(*ioflags, adyn, *xparams, output);
   dataio->setup();
 
   ///// setup datasdyn
-  Teuchos::RCP<std::set<enum Inpar::Solid::ModelType>> modeltypes =
-      Teuchos::make_rcp<std::set<enum Inpar::Solid::ModelType>>();
+  std::shared_ptr<std::set<enum Inpar::Solid::ModelType>> modeltypes =
+      std::make_shared<std::set<enum Inpar::Solid::ModelType>>();
   modeltypes->insert(Inpar::Solid::model_structure);
   //
-  Teuchos::RCP<std::set<enum Inpar::Solid::EleTech>> eletechs =
-      Teuchos::make_rcp<std::set<enum Inpar::Solid::EleTech>>();
+  std::shared_ptr<std::set<enum Inpar::Solid::EleTech>> eletechs =
+      std::make_shared<std::set<enum Inpar::Solid::EleTech>>();
   //
-  Teuchos::RCP<std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
+  std::shared_ptr<std::map<enum Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>>
       linsolvers = Solid::SOLVER::build_lin_solvers(*modeltypes, adyn, *stm_->discretization());
   //
-  Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> datasdyn = Solid::TimeInt::build_data_sdyn(adyn);
+  std::shared_ptr<Solid::TimeInt::BaseDataSDyn> datasdyn = Solid::TimeInt::build_data_sdyn(adyn);
   datasdyn->init(stm_->discretization(), adyn, *xparams, modeltypes, eletechs, linsolvers);
   datasdyn->setup();
 
   // setup global state
-  Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> dataglobalstate =
+  std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> dataglobalstate =
       Solid::TimeInt::build_data_global_state();
   dataglobalstate->init(stm_->discretization(), adyn, datasdyn);
   dataglobalstate->setup();
@@ -92,7 +93,7 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   sta_->setup();
 
   // setup wrapper
-  sta_wrapper_ = Teuchos::make_rcp<Adapter::StructureTimeLoop>(sta_);
+  sta_wrapper_ = std::make_shared<Adapter::StructureTimeLoop>(sta_);
 
   const int restart = Global::Problem::instance()->restart();
   if (restart)

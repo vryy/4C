@@ -43,7 +43,7 @@ MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
     if (field->name() == infieldtype)
     {
       // pointer (rcp) to actual discretisation
-      Teuchos::RCP<Core::FE::Discretization> mydiscrete = field->discretization();
+      std::shared_ptr<Core::FE::Discretization> mydiscrete = field->discretization();
       // store, if this node belongs to me
       if (mydiscrete->have_global_node(node))
       {
@@ -87,7 +87,7 @@ void MonWriter::write_mon_file(PostProblem& problem, std::string& infieldtype, i
   check_infield_type(infieldtype);
 
   // pointer (rcp) to actual discretisation
-  Teuchos::RCP<Core::FE::Discretization> mydiscrete = field->discretization();
+  std::shared_ptr<Core::FE::Discretization> mydiscrete = field->discretization();
   // space dimension of the problem
   int dim = problem.num_dim();
 
@@ -252,7 +252,7 @@ void MonWriter::write_mon_str_file(const std::string& filename, PostProblem& pro
   check_infield_type(infieldtype);
 
   // pointer (rcp) to actual discretisation
-  Teuchos::RCP<Core::FE::Discretization> mydiscrete = field->discretization();
+  std::shared_ptr<Core::FE::Discretization> mydiscrete = field->discretization();
   // space dimension of the problem
   const int dim = problem.num_dim();
 
@@ -397,7 +397,7 @@ void MonWriter::write_mon_thr_file(const std::string& filename, PostProblem& pro
   check_infield_type(infieldtype);
 
   // pointer (rcp) to actual discretisation
-  Teuchos::RCP<Core::FE::Discretization> mydiscrete = field->discretization();
+  std::shared_ptr<Core::FE::Discretization> mydiscrete = field->discretization();
   // space dimension of the problem
   const int dim = problem.num_dim();
 
@@ -864,10 +864,10 @@ void StructMonWriter::write_str_result(std::ofstream& outfile, PostField*& field
   using namespace FourC;
 
   // get stresses/strains at Gauss points
-  const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
+  const std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> data =
       result.read_result_serialdensematrix(groupname);
   // discretisation (once more)
-  const Teuchos::RCP<Core::FE::Discretization> dis = field->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field->discretization();
 
   Core::LinAlg::MultiVector<double> nodal_stress(*dis->node_row_map(), 6, true);
 
@@ -1009,7 +1009,7 @@ void FsiFluidMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
-  Teuchos::RCP<Core::LinAlg::Vector<double>> resvec = result.read_result("dispnp");
+  std::shared_ptr<Core::LinAlg::Vector<double>> resvec = result.read_result("dispnp");
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
   outfile << std::right << std::setw(10) << result.step();
@@ -1143,7 +1143,7 @@ void FsiStructMonWriter::write_result(
   // displacement
 
   // get actual result vector displacement
-  Teuchos::RCP<Core::LinAlg::Vector<double>> resvec = result.read_result("displacement");
+  std::shared_ptr<Core::LinAlg::Vector<double>> resvec = result.read_result("displacement");
   const Epetra_BlockMap& dispmap = resvec->Map();
 
   // compute second part of offset
@@ -1337,7 +1337,7 @@ void ScatraMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
-  Teuchos::RCP<Core::LinAlg::Vector<double>> resvec = result.read_result("phinp");
+  std::shared_ptr<Core::LinAlg::Vector<double>> resvec = result.read_result("phinp");
 
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
@@ -1400,7 +1400,7 @@ void ThermoMonWriter::write_result(
   // temperature
 
   // get actual result vector temperature
-  Teuchos::RCP<Core::LinAlg::Vector<double>> resvec = result.read_result("temperature");
+  std::shared_ptr<Core::LinAlg::Vector<double>> resvec = result.read_result("temperature");
   const Epetra_BlockMap& dispmap = resvec->Map();
 
   // compute second part of offset
@@ -1525,10 +1525,10 @@ void ThermoMonWriter::write_thr_result(std::ofstream& outfile, PostField*& field
   using namespace FourC;
 
   // get heatfluxes/temperature gradients at Gauss points
-  const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
+  const std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> data =
       result.read_result_serialdensematrix(groupname);
   // discretisation (once more)
-  const Teuchos::RCP<Core::FE::Discretization> dis = field->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field->discretization();
 
   // extrapolate heatfluxes/temperature gradients to nodes
   // and assemble them in two global vectors
@@ -1538,13 +1538,13 @@ void ThermoMonWriter::write_thr_result(std::ofstream& outfile, PostField*& field
   p.set("gpheatfluxmap", data);
   p.set("total time", -1.0);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> heatfluxx =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dis->dof_row_map()));
-  Teuchos::RCP<Core::LinAlg::Vector<double>> heatfluxy =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dis->dof_row_map()));
-  Teuchos::RCP<Core::LinAlg::Vector<double>> heatfluxz =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dis->dof_row_map()));
-  dis->evaluate(p, Teuchos::null, Teuchos::null, heatfluxx, heatfluxy, heatfluxz);
+  std::shared_ptr<Core::LinAlg::Vector<double>> heatfluxx =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(dis->dof_row_map()));
+  std::shared_ptr<Core::LinAlg::Vector<double>> heatfluxy =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(dis->dof_row_map()));
+  std::shared_ptr<Core::LinAlg::Vector<double>> heatfluxz =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(dis->dof_row_map()));
+  dis->evaluate(p, nullptr, nullptr, heatfluxx, heatfluxy, heatfluxz);
 
   const unsigned numdofpernode = 1;
 
@@ -1674,9 +1674,9 @@ void PoroFluidMultiMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
-  Teuchos::RCP<Core::LinAlg::Vector<double>> resvec = result.read_result("phinp_fluid");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> resvec_sat = result.read_result("saturation");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> resvec_press = result.read_result("pressure");
+  std::shared_ptr<Core::LinAlg::Vector<double>> resvec = result.read_result("phinp_fluid");
+  std::shared_ptr<Core::LinAlg::Vector<double>> resvec_sat = result.read_result("saturation");
+  std::shared_ptr<Core::LinAlg::Vector<double>> resvec_press = result.read_result("pressure");
 
   const Epetra_BlockMap& phimap = resvec->Map();
   const Epetra_BlockMap& satmap = resvec_sat->Map();
@@ -1713,7 +1713,7 @@ void PoroFluidMultiMonWriter::write_result(
   // do output for porosity
   if (output_porosity_)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> resvec_poro = result.read_result("porosity");
+    std::shared_ptr<Core::LinAlg::Vector<double>> resvec_poro = result.read_result("porosity");
     const Epetra_BlockMap& poromap = resvec_poro->Map();
     const int lid = poromap.LID(poro_dof_);
     outfile << std::right << std::setw(20) << std::setprecision(10) << std::scientific

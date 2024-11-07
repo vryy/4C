@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -34,18 +34,18 @@ namespace GEOMETRYPAIR
    * @return RCP to created geometry pair.
    */
   template <typename ScalarType, typename Line, typename Volume>
-  Teuchos::RCP<GeometryPair> geometry_pair_line_to_volume_factory(
+  std::shared_ptr<GeometryPair> geometry_pair_line_to_volume_factory(
       const Core::Elements::Element* element1, const Core::Elements::Element* element2,
-      const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
+      const std::shared_ptr<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 
   /**
    * \brief Create the correct geometry pair for line to surface coupling.
    * @return RCP to created geometry pair.
    */
   template <typename ScalarType, typename Line, typename Surface>
-  Teuchos::RCP<GeometryPair> geometry_pair_line_to_surface_factory(
+  std::shared_ptr<GeometryPair> geometry_pair_line_to_surface_factory(
       const Core::Elements::Element* element1, const Core::Elements::Element* element2,
-      const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
+      const std::shared_ptr<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 
   /**
    * \brief Create the correct geometry pair for line to surface coupling with FAD scalar types.
@@ -56,9 +56,9 @@ namespace GEOMETRYPAIR
    * @return RCP to created geometry pair.
    */
   template <typename ScalarType, typename Line, typename Surface>
-  Teuchos::RCP<GeometryPair> geometry_pair_line_to_surface_factory_fad(
+  std::shared_ptr<GeometryPair> geometry_pair_line_to_surface_factory_fad(
       const Core::Elements::Element* element1, const Core::Elements::Element* element2,
-      const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
+      const std::shared_ptr<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 }  // namespace GEOMETRYPAIR
 
 FOUR_C_NAMESPACE_CLOSE

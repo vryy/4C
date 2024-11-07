@@ -50,12 +50,12 @@ Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::ScaTraEleCalcElc
 {
   // replace diffusion manager for electrodes by diffusion manager for diffusion-conduction
   // formulation
-  my::diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManagerElchDiffCond>(my::numscal_);
+  my::diffmanager_ = std::make_shared<ScaTraEleDiffManagerElchDiffCond>(my::numscal_);
 
   // replace internal variable manager for electrodes by internal variable manager for
   // diffusion-conduction formulation
   my::scatravarmanager_ =
-      Teuchos::make_rcp<ScaTraEleInternalVariableManagerElchDiffCond<nsd_, nen_>>(
+      std::make_shared<ScaTraEleInternalVariableManagerElchDiffCond<nsd_, nen_>>(
           my::numscal_, myelch::elchparams_, diffcondparams_);
 
   // replace utility class for electrodes by utility class for diffusion-conduction formulation
@@ -1126,7 +1126,8 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::correction_
   // get dirichlet toggle from the discretization
   // we always get the dirichet toggle:
   // in this function we check if the actual nodes have a dirichlet value
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dctoggle = discretization.get_state("dctoggle");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dctoggle =
+      discretization.get_state("dctoggle");
   std::vector<double> mydctoggle(lm.size());
   Core::FE::extract_my_values(*dctoggle, mydctoggle, lm);
 
@@ -1204,7 +1205,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::get_materia
     std::vector<double>& densam, double& visc, const int iquad)
 {
   // extract material from element
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   // evaluate electrolyte material
   if (material->material_type() == Core::Materials::m_elchmat)

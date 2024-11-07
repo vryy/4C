@@ -21,7 +21,7 @@
 #include "4C_solid_3D_ele.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -31,8 +31,8 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::BeamContactPair::BeamContactPair()
     : isinit_(false),
       issetup_(false),
-      geometry_pair_(Teuchos::null),
-      params_(Teuchos::null),
+      geometry_pair_(nullptr),
+      params_(nullptr),
       element1_(nullptr),
       element2_(nullptr)
 {
@@ -42,7 +42,7 @@ BEAMINTERACTION::BeamContactPair::BeamContactPair()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactPair::init(
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
+    const std::shared_ptr<BEAMINTERACTION::BeamContactParams> params_ptr,
     std::vector<Core::Elements::Element const*> elements)
 {
   issetup_ = false;
@@ -66,7 +66,7 @@ void BEAMINTERACTION::BeamContactPair::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair::create(
+std::shared_ptr<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair::create(
     std::vector<Core::Elements::Element const*> const& ele_ptrs,
     BEAMINTERACTION::BeamInteractionConditions& beam_interaction_conditions_ptr)
 {
@@ -105,19 +105,19 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
         {
           case 2:
           {
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToSphereContactPair<2, 1>>();
+            return std::make_shared<BEAMINTERACTION::BeamToSphereContactPair<2, 1>>();
           }
           case 3:
           {
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToSphereContactPair<3, 1>>();
+            return std::make_shared<BEAMINTERACTION::BeamToSphereContactPair<3, 1>>();
           }
           case 4:
           {
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToSphereContactPair<4, 1>>();
+            return std::make_shared<BEAMINTERACTION::BeamToSphereContactPair<4, 1>>();
           }
           case 5:
           {
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToSphereContactPair<5, 1>>();
+            return std::make_shared<BEAMINTERACTION::BeamToSphereContactPair<5, 1>>();
           }
           default:
           {
@@ -137,7 +137,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
         {
           case 2:
           {
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToSphereContactPair<2, 2>>();
+            return std::make_shared<BEAMINTERACTION::BeamToSphereContactPair<2, 2>>();
           }
           default:
           {
@@ -166,7 +166,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
   {
     FOUR_C_THROW("Unknown type of second element in creation of beam contact pair.");
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*

@@ -19,20 +19,20 @@
 FOUR_C_NAMESPACE_OPEN
 template <typename T>
 Core::LinAlg::MultiVector<T>::MultiVector(const Epetra_BlockMap& Map, int num_columns, bool zeroOut)
-    : vector_(Teuchos::make_rcp<Epetra_MultiVector>(Map, num_columns, zeroOut))
+    : vector_(std::make_shared<Epetra_MultiVector>(Map, num_columns, zeroOut))
 {
 }
 
 
 template <typename T>
 Core::LinAlg::MultiVector<T>::MultiVector(const Epetra_MultiVector& source)
-    : vector_(Teuchos::make_rcp<Epetra_MultiVector>(source))
+    : vector_(std::make_shared<Epetra_MultiVector>(source))
 {
 }
 
 template <typename T>
 Core::LinAlg::MultiVector<T>::MultiVector(const MultiVector& other)
-    : vector_(Teuchos::make_rcp<Epetra_MultiVector>(*other.vector_))
+    : vector_(std::make_shared<Epetra_MultiVector>(*other.vector_))
 {
 }
 

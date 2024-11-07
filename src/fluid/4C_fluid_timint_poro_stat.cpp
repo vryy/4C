@@ -12,10 +12,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-FLD::TimIntPoroStat::TimIntPoroStat(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid)
+FLD::TimIntPoroStat::TimIntPoroStat(const std::shared_ptr<Core::FE::Discretization>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntStationary(actdis, solver, params, output, alefluid),
       TimIntPoro(actdis, solver, params, output, alefluid)

@@ -17,11 +17,11 @@ FOUR_C_NAMESPACE_OPEN
 /* --------------------------------------------------------------------
                           Constructor
    -------------------------------------------------------------------- */
-Core::LinAlg::LinalgPrecondOperator::LinalgPrecondOperator(Teuchos::RCP<Epetra_Operator> precond,
-    bool project, Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
+Core::LinAlg::LinalgPrecondOperator::LinalgPrecondOperator(std::shared_ptr<Epetra_Operator> precond,
+    bool project, std::shared_ptr<Core::LinAlg::KrylovProjector> projector)
     : project_(project), precond_(precond), projector_(projector)
 {
-  if (project_ && (projector == Teuchos::null))
+  if (project_ && (projector == nullptr))
     FOUR_C_THROW("Kernel projection enabled but got no projector object");
 
   return;

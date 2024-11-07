@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
   Create integration points on the facets of the volumecell by triangulating the facets
   A reference facet is identified on which integration weights are set to zero Sudhakar 04/12
 *--------------------------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::GaussPoints> Cut::DirectDivergence::vc_integration_rule(
+std::shared_ptr<Core::FE::GaussPoints> Cut::DirectDivergence::vc_integration_rule(
     std::vector<double>& RefPlaneEqn)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "Cut::DirectDivergence::VCIntegrationRule" );
@@ -32,7 +32,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::DirectDivergence::vc_integration_rule(
   is_ref_ = false;                                   // whether ref plane is falling on facet?
 
   // get integration facets and reference plane
-  Teuchos::RCP<BoundingBox> fbox = Teuchos::RCP(BoundingBox::create());
+  std::shared_ptr<BoundingBox> fbox(BoundingBox::create());
   const plain_facet_set& facete = volcell_->facets();
   // create bounding box around all facets
   for (plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
@@ -86,8 +86,8 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::DirectDivergence::vc_integration_rule(
     }
   }
 
-  Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-      Teuchos::make_rcp<Core::FE::CollectedGaussPoints>(0);
+  std::shared_ptr<Core::FE::CollectedGaussPoints> cgp =
+      std::make_shared<Core::FE::CollectedGaussPoints>(0);
 
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
   std::cout << "Number of facets: " << volcell_->Facets().size() << std::endl;

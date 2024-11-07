@@ -49,18 +49,18 @@ Core::Communication::ParObject* Discret::Elements::SoHex8ThermoType::create(
  | create the new element type (public)                      dano 08/12 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8ThermoType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex8ThermoType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SOLIDH8THERMO")
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+    std::shared_ptr<Core::Elements::Element> ele = std::make_shared<
         Discret::Elements::So3Thermo<Discret::Elements::SoHex8, Core::FE::CellType::hex8>>(
 
         id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }  // Create()
 
 
@@ -68,10 +68,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8ThermoType::creat
  | create the new element type (public)                      dano 08/12 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8ThermoType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex8ThermoType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+  std::shared_ptr<Core::Elements::Element> ele = std::make_shared<
       Discret::Elements::So3Thermo<Discret::Elements::SoHex8, Core::FE::CellType::hex8>>(
 
       id, owner);

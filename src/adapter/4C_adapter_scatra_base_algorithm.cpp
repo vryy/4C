@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
     const Teuchos::ParameterList& scatradyn, const Teuchos::ParameterList& solverparams,
     const std::string& disname, const bool isale)
-    : scatra_(Teuchos::null), issetup_(false), isinit_(false)
+    : scatra_(nullptr), issetup_(false), isinit_(false)
 {
   // setup scalar transport algorithm (overriding some dynamic parameters
   // with values specified in given problem-dependent ParameterList prbdyn)
@@ -72,7 +72,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // TODO: TAW use of solverparams???
   // change input parameter to solver number instead of parameter list?
   // -> no default paramter possible any more
-  auto solver = Teuchos::make_rcp<Core::LinAlg::Solver>(solverparams, discret->get_comm(),
+  auto solver = std::make_shared<Core::LinAlg::Solver>(solverparams, discret->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
@@ -81,9 +81,8 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
   // make a copy (inside an Teuchos::rcp) containing also all sublists
-  auto scatratimeparams = Teuchos::make_rcp<Teuchos::ParameterList>(scatradyn);
-  if (scatratimeparams == Teuchos::null)
-    FOUR_C_THROW("Instantiation of Teuchos::ParameterList failed!");
+  auto scatratimeparams = std::make_shared<Teuchos::ParameterList>(scatradyn);
+  if (scatratimeparams == nullptr) FOUR_C_THROW("Instantiation of Teuchos::ParameterList failed!");
 
   // -------------------------------------------------------------------
   // overrule certain parameters for coupled problems
@@ -152,7 +151,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // list for extra parameters
   // (put here everything that is not available in scatradyn or its sublists)
   // -------------------------------------------------------------------
-  auto extraparams = Teuchos::make_rcp<Teuchos::ParameterList>();
+  auto extraparams = std::make_shared<Teuchos::ParameterList>();
 
   // ----------------Eulerian or ALE formulation of transport equation(s)
   extraparams->set<bool>("isale", isale);
@@ -179,14 +178,14 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // low Mach number flow
   if (probtype == Core::ProblemType::loma or probtype == Core::ProblemType::thermo_fsi)
   {
-    auto lomaparams = Teuchos::make_rcp<Teuchos::ParameterList>(
+    auto lomaparams = std::make_shared<Teuchos::ParameterList>(
         Global::Problem::instance()->loma_control_params());
     switch (timintscheme)
     {
       case Inpar::ScaTra::timeint_gen_alpha:
       {
         // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::make_rcp<ScaTra::TimIntLomaGenAlpha>(
+        scatra_ = std::make_shared<ScaTra::TimIntLomaGenAlpha>(
             discret, solver, lomaparams, scatratimeparams, extraparams, output);
         break;
       }
@@ -212,7 +211,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
                                Global::Problem::instance()->sti_dynamic_params(),
                                "SCATRATIMINTTYPE") == Inpar::STI::ScaTraTimIntType::elch)))))
   {
-    auto elchparams = Teuchos::make_rcp<Teuchos::ParameterList>(
+    auto elchparams = std::make_shared<Teuchos::ParameterList>(
         Global::Problem::instance()->elch_control_params());
 
     switch (timintscheme)
@@ -223,12 +222,12 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         {
           if (disname == "scatra")
           {
-            scatra_ = Teuchos::make_rcp<ScaTra::ScaTraTimIntElchSCLOST>(
+            scatra_ = std::make_shared<ScaTra::ScaTraTimIntElchSCLOST>(
                 discret, solver, elchparams, scatratimeparams, extraparams, output);
           }
           else if (disname == "scatra_micro")
           {
-            scatra_ = Teuchos::make_rcp<ScaTra::ScaTraTimIntElchOST>(
+            scatra_ = std::make_shared<ScaTra::ScaTraTimIntElchOST>(
                 discret, solver, elchparams, scatratimeparams, extraparams, output);
           }
           else
@@ -236,7 +235,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         }
         else
         {
-          scatra_ = Teuchos::make_rcp<ScaTra::ScaTraTimIntElchOST>(
+          scatra_ = std::make_shared<ScaTra::ScaTraTimIntElchOST>(
               discret, solver, elchparams, scatratimeparams, extraparams, output);
         }
 
@@ -245,21 +244,21 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
       case Inpar::ScaTra::timeint_bdf2:
       {
         // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::make_rcp<ScaTra::ScaTraTimIntElchBDF2>(
+        scatra_ = std::make_shared<ScaTra::ScaTraTimIntElchBDF2>(
             discret, solver, elchparams, scatratimeparams, extraparams, output);
         break;
       }
       case Inpar::ScaTra::timeint_gen_alpha:
       {
         // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::make_rcp<ScaTra::ScaTraTimIntElchGenAlpha>(
+        scatra_ = std::make_shared<ScaTra::ScaTraTimIntElchGenAlpha>(
             discret, solver, elchparams, scatratimeparams, extraparams, output);
         break;
       }
       case Inpar::ScaTra::timeint_stationary:
       {
         // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::make_rcp<ScaTra::ScaTraTimIntElchStationary>(
+        scatra_ = std::make_shared<ScaTra::ScaTraTimIntElchStationary>(
             discret, solver, elchparams, scatratimeparams, extraparams, output);
         break;
       }
@@ -272,16 +271,16 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // levelset
   else if (probtype == Core::ProblemType::level_set or probtype == Core::ProblemType::fluid_xfem_ls)
   {
-    Teuchos::RCP<Teuchos::ParameterList> lsparams = Teuchos::null;
+    std::shared_ptr<Teuchos::ParameterList> lsparams = nullptr;
     switch (probtype)
     {
       case Core::ProblemType::level_set:
-        lsparams = Teuchos::make_rcp<Teuchos::ParameterList>(prbdyn);
+        lsparams = std::make_shared<Teuchos::ParameterList>(prbdyn);
         break;
       default:
       {
-        if (lsparams.is_null())
-          lsparams = Teuchos::make_rcp<Teuchos::ParameterList>(
+        if (!lsparams)
+          lsparams = std::make_shared<Teuchos::ParameterList>(
               Global::Problem::instance()->level_set_control());
         // overrule certain parameters for coupled problems
         // this has already been ensured for scatratimeparams, but has also been ensured for the
@@ -305,7 +304,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
       case Inpar::ScaTra::timeint_one_step_theta:
       {
         // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::make_rcp<ScaTra::LevelSetTimIntOneStepTheta>(
+        scatra_ = std::make_shared<ScaTra::LevelSetTimIntOneStepTheta>(
             discret, solver, lsparams, scatratimeparams, extraparams, output);
         break;
       }
@@ -323,7 +322,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
           }
           default:
           {
-            scatra_ = Teuchos::make_rcp<ScaTra::LevelSetTimIntStationary>(
+            scatra_ = std::make_shared<ScaTra::LevelSetTimIntStationary>(
                 discret, solver, lsparams, scatratimeparams, extraparams, output);
             break;
           }
@@ -355,13 +354,13 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
                    Inpar::SSI::ScaTraTimIntType::cardiac_monodomain))
   {
     auto cmonoparams =
-        rcp(new Teuchos::ParameterList(Global::Problem::instance()->ep_control_params()));
+        std::make_shared<Teuchos::ParameterList>(Global::Problem::instance()->ep_control_params());
 
     // HDG implements all time stepping schemes within gen-alpha
     if (Global::Problem::instance()->spatial_approximation_type() ==
         Core::FE::ShapeFunctionType::hdg)
     {
-      scatra_ = Teuchos::make_rcp<ScaTra::TimIntCardiacMonodomainHDG>(
+      scatra_ = std::make_shared<ScaTra::TimIntCardiacMonodomainHDG>(
           discret, solver, cmonoparams, scatratimeparams, extraparams, output);
     }
     else
@@ -371,21 +370,21 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         case Inpar::ScaTra::timeint_gen_alpha:
         {
           // create instance of time integration class (call the constructor)
-          scatra_ = Teuchos::make_rcp<ScaTra::TimIntCardiacMonodomainGenAlpha>(
+          scatra_ = std::make_shared<ScaTra::TimIntCardiacMonodomainGenAlpha>(
               discret, solver, cmonoparams, scatratimeparams, extraparams, output);
           break;
         }
         case Inpar::ScaTra::timeint_one_step_theta:
         {
           // create instance of time integration class (call the constructor)
-          scatra_ = Teuchos::make_rcp<ScaTra::TimIntCardiacMonodomainOST>(
+          scatra_ = std::make_shared<ScaTra::TimIntCardiacMonodomainOST>(
               discret, solver, cmonoparams, scatratimeparams, extraparams, output);
           break;
         }
         case Inpar::ScaTra::timeint_bdf2:
         {
           // create instance of time integration class (call the constructor)
-          scatra_ = Teuchos::make_rcp<ScaTra::TimIntCardiacMonodomainBDF2>(
+          scatra_ = std::make_shared<ScaTra::TimIntCardiacMonodomainBDF2>(
               discret, solver, cmonoparams, scatratimeparams, extraparams, output);
           break;
         }
@@ -402,29 +401,29 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
       case Inpar::ScaTra::timeint_gen_alpha:
       {
         // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::make_rcp<ScaTra::ScaTraTimIntPoroMultiGenAlpha>(
-            discret, solver, Teuchos::null, scatratimeparams, extraparams, output);
+        scatra_ = std::make_shared<ScaTra::ScaTraTimIntPoroMultiGenAlpha>(
+            discret, solver, nullptr, scatratimeparams, extraparams, output);
         break;
       }
       case Inpar::ScaTra::timeint_one_step_theta:
       {
         // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::make_rcp<ScaTra::ScaTraTimIntPoroMultiOST>(
-            discret, solver, Teuchos::null, scatratimeparams, extraparams, output);
+        scatra_ = std::make_shared<ScaTra::ScaTraTimIntPoroMultiOST>(
+            discret, solver, nullptr, scatratimeparams, extraparams, output);
         break;
       }
       case Inpar::ScaTra::timeint_bdf2:
       {
         // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::make_rcp<ScaTra::ScaTraTimIntPoroMultiBDF2>(
-            discret, solver, Teuchos::null, scatratimeparams, extraparams, output);
+        scatra_ = std::make_shared<ScaTra::ScaTraTimIntPoroMultiBDF2>(
+            discret, solver, nullptr, scatratimeparams, extraparams, output);
         break;
       }
       case Inpar::ScaTra::timeint_stationary:
       {
         // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::make_rcp<ScaTra::ScaTraTimIntPoroMultiStationary>(
-            discret, solver, Teuchos::null, scatratimeparams, extraparams, output);
+        scatra_ = std::make_shared<ScaTra::ScaTraTimIntPoroMultiStationary>(
+            discret, solver, nullptr, scatratimeparams, extraparams, output);
         break;
       }
       default:
@@ -445,13 +444,13 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         case Inpar::ScaTra::timeint_bdf2:
         case Inpar::ScaTra::timeint_gen_alpha:
         {
-          scatra_ = Teuchos::make_rcp<ScaTra::TimIntHDG>(
+          scatra_ = std::make_shared<ScaTra::TimIntHDG>(
               discret, solver, scatratimeparams, extraparams, output);
           break;
         }
         case Inpar::ScaTra::timeint_stationary:
         {
-          scatra_ = Teuchos::make_rcp<ScaTra::TimIntStationaryHDG>(
+          scatra_ = std::make_shared<ScaTra::TimIntStationaryHDG>(
               discret, solver, scatratimeparams, extraparams, output);
           break;
         }
@@ -469,28 +468,28 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         case Inpar::ScaTra::timeint_stationary:
         {
           // create instance of time integration class (call the constructor)
-          scatra_ = Teuchos::make_rcp<ScaTra::TimIntStationary>(
+          scatra_ = std::make_shared<ScaTra::TimIntStationary>(
               discret, solver, scatratimeparams, extraparams, output);
           break;
         }
         case Inpar::ScaTra::timeint_one_step_theta:
         {
           // create instance of time integration class (call the constructor)
-          scatra_ = Teuchos::make_rcp<ScaTra::TimIntOneStepTheta>(
+          scatra_ = std::make_shared<ScaTra::TimIntOneStepTheta>(
               discret, solver, scatratimeparams, extraparams, output);
           break;
         }
         case Inpar::ScaTra::timeint_bdf2:
         {
           // create instance of time integration class (call the constructor)
-          scatra_ = Teuchos::make_rcp<ScaTra::TimIntBDF2>(
+          scatra_ = std::make_shared<ScaTra::TimIntBDF2>(
               discret, solver, scatratimeparams, extraparams, output);
           break;
         }
         case Inpar::ScaTra::timeint_gen_alpha:
         {
           // create instance of time integration class (call the constructor)
-          scatra_ = Teuchos::make_rcp<ScaTra::TimIntGenAlpha>(
+          scatra_ = std::make_shared<ScaTra::TimIntGenAlpha>(
               discret, solver, scatratimeparams, extraparams, output);
           break;
         }
@@ -528,7 +527,7 @@ void Adapter::ScaTraBaseAlgorithm::setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest> Adapter::ScaTraBaseAlgorithm::create_scatra_field_test()
+std::shared_ptr<Core::Utils::ResultTest> Adapter::ScaTraBaseAlgorithm::create_scatra_field_test()
 {
   return scatra_->create_scatra_field_test();
 }

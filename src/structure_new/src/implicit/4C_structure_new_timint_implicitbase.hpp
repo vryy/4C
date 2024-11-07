@@ -43,7 +43,7 @@ namespace Solid
       Inpar::Solid::StcScale get_stc_algo() override;
 
       /// Get stc matrix (derived)
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> get_stc_mat() override;
 
       /// Update routine for coupled problems with monolithic approach with time adaptivity
       void update(double endtime) override;
@@ -51,26 +51,26 @@ namespace Solid
       /// @name Access linear system of equation via adapter (implicit only!)
       /// @{
       /// initial guess of Newton's method
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() override;
 
       /// right-hand-side of Newton's method
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_f() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_f() const override;
 
       /// Return reaction forces at \f$t_{n+1}\f$ (read and write)
-      Teuchos::RCP<Core::LinAlg::Vector<double>> freact() override;
+      std::shared_ptr<Core::LinAlg::Vector<double>> freact() override;
 
       //! Return stiffness,
       //! i.e. force residual differentiated by displacements
       //!      (structural block only)
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override;
 
       /// Return stiffness,
       /// i.e. force residual differentiated by displacements
-      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
+      std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
 
       ///! FixMe switch structure field to block matrix in fsi simulations
-      void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
-          Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override;
+      void use_block_matrix(std::shared_ptr<const Core::LinAlg::MultiMapExtractor> domainmaps,
+          std::shared_ptr<const Core::LinAlg::MultiMapExtractor> rangemaps) override;
       /// @}
 
       //! print summary after step
@@ -90,7 +90,7 @@ namespace Solid
       virtual const ::NOX::Abstract::Group& get_solution_group() const = 0;
 
       //! Returns the current solution group ptr
-      virtual Teuchos::RCP<::NOX::Abstract::Group> solution_group_ptr() = 0;
+      virtual std::shared_ptr<::NOX::Abstract::Group> solution_group_ptr() = 0;
     };
   }  // namespace TimeInt
 }  // namespace Solid

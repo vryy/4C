@@ -107,7 +107,7 @@ namespace BEAMINTERACTION
      * @param visualization_params (in) Parameter list (not used in this class).
      */
     void get_pair_visualization(
-        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
+        std::shared_ptr<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
     /**
@@ -118,19 +118,19 @@ namespace BEAMINTERACTION
      */
     void create_geometry_pair(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
-        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
-        override;
+        const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>&
+            geometry_evaluation_data_ptr) override;
 
    protected:
     /**
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
-    inline Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolume<double, Beam, Solid>>
+    inline std::shared_ptr<GEOMETRYPAIR::GeometryPairLineToVolume<double, Beam, Solid>>
     cast_geometry_pair() const
     {
-      return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToVolume<double, Beam, Solid>>(
-          this->geometry_pair_, true);
+      return std::dynamic_pointer_cast<GEOMETRYPAIR::GeometryPairLineToVolume<double, Beam, Solid>>(
+          this->geometry_pair_);
     };
 
     /**

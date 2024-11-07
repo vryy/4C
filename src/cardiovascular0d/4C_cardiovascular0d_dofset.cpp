@@ -28,8 +28,8 @@ Utils::Cardiovascular0DDofSet::Cardiovascular0DDofSet() : Core::DOFSets::DofSet(
  *----------------------------------------------------------------------*/
 void Utils::Cardiovascular0DDofSet::reset()
 {
-  dofrowmap_ = Teuchos::null;
-  dofcolmap_ = Teuchos::null;
+  dofrowmap_ = nullptr;
+  dofcolmap_ = nullptr;
 }
 
 
@@ -37,8 +37,8 @@ void Utils::Cardiovascular0DDofSet::reset()
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
 int Utils::Cardiovascular0DDofSet::assign_degrees_of_freedom(
-    const Teuchos::RCP<Core::FE::Discretization> dis, const int ndofs, const int start,
-    const Teuchos::RCP<FourC::Cardiovascular0D::ProperOrthogonalDecomposition> mor)
+    const std::shared_ptr<Core::FE::Discretization> dis, const int ndofs, const int start,
+    const std::shared_ptr<FourC::Cardiovascular0D::ProperOrthogonalDecomposition> mor)
 {
   // A definite offset is currently not supported.
   if (start != 0) FOUR_C_THROW("right now user specified dof offsets are not supported");
@@ -66,7 +66,7 @@ int Utils::Cardiovascular0DDofSet::assign_degrees_of_freedom(
   // (In case of POD-MOR, the highest GID will be projmatrix->NumVectors()-1 because indexing starts
   // from 0. Therefore, there is no need to add anything.)
   int count;
-  if (mor == Teuchos::null or not mor->have_mor())
+  if (mor == nullptr or not mor->have_mor())
     count = max_gi_din_list(dis->get_comm()) + 1;
   else
     count = mor->get_red_dim();
@@ -78,7 +78,7 @@ int Utils::Cardiovascular0DDofSet::assign_degrees_of_freedom(
   for (int i = 0; i < dofrowmap.NumMyElements(); i++) gids.push_back(dofrowmap.GID(i));
 
   // dofrowmap with index base = 0
-  dofrowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, gids.size(), gids.data(), 0, dis->get_comm());
+  dofrowmap_ = std::make_shared<Epetra_Map>(-1, gids.size(), gids.data(), 0, dis->get_comm());
 
   return count;
 }

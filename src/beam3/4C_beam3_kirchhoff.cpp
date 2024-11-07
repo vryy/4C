@@ -24,6 +24,7 @@
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_fad.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -49,25 +50,25 @@ Core::Communication::ParObject* Discret::Elements::Beam3kType::create(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Beam3kType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Beam3kType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "BEAM3K")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Beam3k>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Beam3k>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Beam3kType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Beam3kType::create(
     const int id, const int owner)
 
 {
-  return Teuchos::make_rcp<Beam3k>(id, owner);
+  return std::make_shared<Beam3k>(id, owner);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -443,9 +444,9 @@ void Discret::Elements::Beam3k::unpack(Core::Communication::UnpackBuffer& buffer
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          meier 05/12|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Beam3k::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Beam3k::lines()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 /*----------------------------------------------------------------------*
@@ -1977,7 +1978,7 @@ void Discret::Elements::Beam3k::calc_velocity(
   Core::LinAlg::Matrix<3, 1> diff(true);
 
   Core::LinAlg::Matrix<ndim, 1, FAD> delta_r_ost(true);
-  Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> pbb =
+  std::shared_ptr<Core::Geo::MeshFree::BoundingBox> pbb =
       brownian_dyn_params_interface().get_periodic_bounding_box();
 
   Core::LinAlg::Matrix<3, 1> unshiftedrconvmass_i(true), position_i_double(true);

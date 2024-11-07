@@ -93,14 +93,14 @@ namespace Discret
 
 
       //! evaluate material
-      void materials(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< index of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,       //!< density at t_(n+alpha_M)
-          double& visc,         //!< fluid viscosity
-          const int iquad = -1  //!< id of current gauss point (default = -1)
+      void materials(const std::shared_ptr<const Core::Mat::Material>
+                         material,  //!< pointer to current material
+          const int k,              //!< index of current scalar
+          double& densn,            //!< density at t_(n)
+          double& densnp,           //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,           //!< density at t_(n+alpha_M)
+          double& visc,             //!< fluid viscosity
+          const int iquad = -1      //!< id of current gauss point (default = -1)
           ) override;
 
       /*========================================================================*/
@@ -299,7 +299,7 @@ namespace Discret
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ehist,       ///< history variables at element nodes
           double timefac,  ///< time factor
-          Teuchos::RCP<Core::Conditions::Condition>
+          std::shared_ptr<Core::Conditions::Condition>
               cond,                       ///< electrode kinetics boundary condition
           const int nume,                 ///< number of transferred electrons
           const std::vector<int> stoich,  ///< stoichiometry of the reaction
@@ -336,9 +336,9 @@ namespace Discret
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! get internal variable manager for Nernst-Planck formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchNP<nsd_, nen_>> var_manager()
+      std::shared_ptr<ScaTraEleInternalVariableManagerElchNP<nsd_, nen_>> var_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchNP<nsd_, nen_>>(
+        return std::static_pointer_cast<ScaTraEleInternalVariableManagerElchNP<nsd_, nen_>>(
             my::scatravarmanager_);
       };
 

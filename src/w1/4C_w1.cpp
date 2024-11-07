@@ -29,24 +29,24 @@ Core::Communication::ParObject* Discret::Elements::Wall1Type::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Wall1Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Wall1Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALL")
   {
     if (eledistype != "NURBS4" and eledistype != "NURBS9")
     {
-      return Teuchos::make_rcp<Discret::Elements::Wall1>(id, owner);
+      return std::make_shared<Discret::Elements::Wall1>(id, owner);
     }
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Wall1Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Wall1Type::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::Wall1>(id, owner);
+  return std::make_shared<Discret::Elements::Wall1>(id, owner);
 }
 
 
@@ -141,11 +141,11 @@ void Discret::Elements::Wall1Type::setup_element_definition(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Wall1LineType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Wall1LineType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Wall1Line( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -282,7 +282,7 @@ void Discret::Elements::Wall1::unpack(Core::Communication::UnpackBuffer& buffer)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             mgit 07/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Wall1::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Wall1::lines()
 {
   return Core::Communication::element_boundary_factory<Wall1Line, Wall1>(
       Core::Communication::buildLines, *this);
@@ -292,9 +292,9 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Wall1::lin
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          mgit 03/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Wall1::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Wall1::surfaces()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 /*-----------------------------------------------------------------------------*

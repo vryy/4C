@@ -105,7 +105,7 @@ namespace Cut
     //! @name private class variables
     /*========================================================================*/
     //! @{
-    Teuchos::RCP<Side> side_;
+    std::shared_ptr<Side> side_;
 
     const Epetra_Comm* comm_;
 

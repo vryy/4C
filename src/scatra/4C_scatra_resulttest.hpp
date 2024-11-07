@@ -12,7 +12,7 @@
 
 #include "4C_utils_result_test.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -43,7 +43,7 @@ namespace ScaTra
     /*!
     \brief constructor
     */
-    ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatratimint);
+    ScaTraResultTest(std::shared_ptr<ScaTraTimIntImpl> scatratimint);
 
 
     /// our version of nodal value tests
@@ -68,7 +68,7 @@ namespace ScaTra
     ) const;
 
     //! time integrator
-    const Teuchos::RCP<const ScaTraTimIntImpl> scatratimint_;
+    const std::shared_ptr<const ScaTraTimIntImpl> scatratimint_;
 
    private:
   };

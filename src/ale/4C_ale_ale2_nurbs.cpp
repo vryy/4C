@@ -28,25 +28,25 @@ Core::Communication::ParObject* Discret::Elements::Nurbs::Ale2NurbsType::create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Nurbs::Ale2NurbsType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Nurbs::Ale2NurbsType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ALE2")
   {
     if (eledistype == "NURBS4" || eledistype == "NURBS9")
     {
-      return Teuchos::make_rcp<Discret::Elements::Nurbs::Ale2Nurbs>(id, owner);
+      return std::make_shared<Discret::Elements::Nurbs::Ale2Nurbs>(id, owner);
     }
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Nurbs::Ale2NurbsType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Nurbs::Ale2NurbsType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::Nurbs::Ale2Nurbs>(id, owner);
+  return std::make_shared<Discret::Elements::Nurbs::Ale2Nurbs>(id, owner);
 }
 
 /*----------------------------------------------------------------------------*/

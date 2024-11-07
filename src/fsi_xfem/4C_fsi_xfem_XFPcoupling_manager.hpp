@@ -34,8 +34,8 @@ namespace XFEM
   {
    public:
     /// constructor
-    explicit XfpCouplingManager(Teuchos::RCP<ConditionManager> condmanager,
-        Teuchos::RCP<PoroElast::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid,
+    explicit XfpCouplingManager(std::shared_ptr<ConditionManager> condmanager,
+        std::shared_ptr<PoroElast::PoroBase> poro, std::shared_ptr<FLD::XFluid> xfluid,
         std::vector<int> idx);
 
     //! @name Destruction
@@ -53,7 +53,7 @@ namespace XFEM
     void add_coupling_matrix(
         Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling) override;
 
-    void add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
+    void add_coupling_rhs(std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
         const Core::LinAlg::MultiMapExtractor& me, double scaling) override;
 
     //! Update (Perform after Each Timestep)
@@ -71,13 +71,13 @@ namespace XFEM
 
 
 
-    Teuchos::RCP<MeshCouplingFPI> mcfpi_ps_ps_;
-    Teuchos::RCP<MeshCouplingFPI> mcfpi_ps_pf_;
-    Teuchos::RCP<MeshCouplingFPI> mcfpi_pf_ps_;
-    Teuchos::RCP<MeshCouplingFPI> mcfpi_pf_pf_;
+    std::shared_ptr<MeshCouplingFPI> mcfpi_ps_ps_;
+    std::shared_ptr<MeshCouplingFPI> mcfpi_ps_pf_;
+    std::shared_ptr<MeshCouplingFPI> mcfpi_pf_ps_;
+    std::shared_ptr<MeshCouplingFPI> mcfpi_pf_pf_;
 
-    Teuchos::RCP<PoroElast::PoroBase> poro_;
-    Teuchos::RCP<FLD::XFluid> xfluid_;
+    std::shared_ptr<PoroElast::PoroBase> poro_;
+    std::shared_ptr<FLD::XFluid> xfluid_;
 
     std::string cond_name_ps_ps_;
     std::string cond_name_ps_pf_;
@@ -96,8 +96,8 @@ namespace XFEM
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie forces onto the structure,
     //! Robin-type forces consisting of fluid forces and the Nitsche penalty term contribution)
     //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_ps_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_pf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambda_ps_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambda_pf_;
   };
 }  // namespace XFEM
 FOUR_C_NAMESPACE_CLOSE

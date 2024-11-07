@@ -100,7 +100,7 @@ namespace BEAMINTERACTION
      * @param visualization_params (in) Parameter list (not used in this class).
      */
     void get_pair_visualization(
-        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
+        std::shared_ptr<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
     /**
@@ -111,8 +111,8 @@ namespace BEAMINTERACTION
      */
     void create_geometry_pair(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
-        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
-        override;
+        const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>&
+            geometry_evaluation_data_ptr) override;
 
    protected:
     /** \brief You will have to use the FBI::PairFactory

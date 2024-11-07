@@ -20,8 +20,9 @@
 #include "4C_poroelast_scatra_utils.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -33,8 +34,8 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
     : AlgorithmBase(comm, timeparams),
       matchinggrid_(
           Global::Problem::instance()->poro_scatra_control_params().get<bool>("MATCHINGGRID")),
-      volcoupl_structurescatra_(Teuchos::null),
-      volcoupl_fluidscatra_(Teuchos::null)
+      volcoupl_structurescatra_(nullptr),
+      volcoupl_fluidscatra_(nullptr)
 {
   Global::Problem* problem = Global::Problem::instance();
   const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
@@ -57,9 +58,9 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
   }
 
   // the problem is two-way coupled, thus each discretization must know the other discretization
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("porofluid");
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
+  std::shared_ptr<Core::FE::Discretization> structdis = problem->get_dis("structure");
+  std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis("porofluid");
+  std::shared_ptr<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
   setup_coupling(structdis, fluiddis, scatradis);
   // Create the two uncoupled subproblems.
   // 1. poro problem
@@ -69,7 +70,7 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
   // 2. scatra problem
-  scatra_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(
+  scatra_ = std::make_shared<Adapter::ScaTraBaseAlgorithm>(
       timeparams, scatradyn, problem->solver_params(linsolvernumber), "scatra", true);
 
   // now we can call init() on the base algo.
@@ -117,11 +118,11 @@ void PoroElastScaTra::PoroScatraBase::set_poro_solution()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraBase::set_scatra_solution()
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp_s = Teuchos::null;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phin_s = Teuchos::null;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp_f = Teuchos::null;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phin_f = Teuchos::null;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phidtnp = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp_s = nullptr;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phin_s = nullptr;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp_f = nullptr;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phin_f = nullptr;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phidtnp = nullptr;
 
   if (matchinggrid_)
   {
@@ -155,8 +156,8 @@ void PoroElastScaTra::PoroScatraBase::set_scatra_solution()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraBase::set_velocity_fields()
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> convel = Teuchos::null;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> convel = nullptr;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> velnp = nullptr;
 
   if (matchinggrid_)
   {
@@ -170,9 +171,9 @@ void PoroElastScaTra::PoroScatraBase::set_velocity_fields()
   }
 
   scatra_->scatra_field()->set_velocity_field(convel,  // convective vel.
-      Teuchos::null,                                   // acceleration
+      nullptr,                                         // acceleration
       velnp,                                           // velocity
-      Teuchos::null,                                   // fsvel
+      nullptr,                                         // fsvel
       true                                             // set pressure
   );
 }
@@ -182,7 +183,7 @@ void PoroElastScaTra::PoroScatraBase::set_velocity_fields()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraBase::set_mesh_disp()
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp = nullptr;
 
   if (matchinggrid_)
   {
@@ -195,7 +196,7 @@ void PoroElastScaTra::PoroScatraBase::set_mesh_disp()
 
   scatra_->scatra_field()->apply_mesh_movement(dispnp);
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> sdispnp = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> sdispnp = nullptr;
 
   if (matchinggrid_)
   {
@@ -213,9 +214,9 @@ void PoroElastScaTra::PoroScatraBase::set_mesh_disp()
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraBase::replace_dof_sets(
-    Teuchos::RCP<Core::FE::Discretization> structdis,
-    Teuchos::RCP<Core::FE::Discretization> fluiddis,
-    Teuchos::RCP<Core::FE::Discretization> scatradis)
+    std::shared_ptr<Core::FE::Discretization> structdis,
+    std::shared_ptr<Core::FE::Discretization> fluiddis,
+    std::shared_ptr<Core::FE::Discretization> scatradis)
 {
   if (matchinggrid_)
   {
@@ -223,14 +224,14 @@ void PoroElastScaTra::PoroScatraBase::replace_dof_sets(
 
     if (poro_field()->has_submeshes())
     {
-      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structsubdofset =
-          Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(
+      std::shared_ptr<Core::DOFSets::DofSetGIDBasedWrapper> structsubdofset =
+          std::make_shared<Core::DOFSets::DofSetGIDBasedWrapper>(
               structdis, structdis->get_dof_set_proxy());
-      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> fluidsubdofset =
-          Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(
+      std::shared_ptr<Core::DOFSets::DofSetGIDBasedWrapper> fluidsubdofset =
+          std::make_shared<Core::DOFSets::DofSetGIDBasedWrapper>(
               fluiddis, fluiddis->get_dof_set_proxy());
-      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> scatrasubdofset =
-          Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(
+      std::shared_ptr<Core::DOFSets::DofSetGIDBasedWrapper> scatrasubdofset =
+          std::make_shared<Core::DOFSets::DofSetGIDBasedWrapper>(
               scatradis, scatradis->get_dof_set_proxy());
 
       scatradis->replace_dof_set(1, structsubdofset);
@@ -241,11 +242,11 @@ void PoroElastScaTra::PoroScatraBase::replace_dof_sets(
     else
     {
       // build a proxy of the structure discretization for the scatra field
-      Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
+      std::shared_ptr<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
       // build a proxy of the fluid discretization for the scatra field
-      Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->get_dof_set_proxy();
+      std::shared_ptr<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->get_dof_set_proxy();
       // build a proxy of the fluid discretization for the structure/fluid field
-      Teuchos::RCP<Core::DOFSets::DofSetInterface> scatradofset = scatradis->get_dof_set_proxy();
+      std::shared_ptr<Core::DOFSets::DofSetInterface> scatradofset = scatradis->get_dof_set_proxy();
 
       scatradis->replace_dof_set(1, structdofset);
       scatradis->replace_dof_set(2, fluiddofset);
@@ -267,15 +268,15 @@ void PoroElastScaTra::PoroScatraBase::replace_dof_sets(
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraBase::setup_coupling(
-    Teuchos::RCP<Core::FE::Discretization> structdis,
-    Teuchos::RCP<Core::FE::Discretization> fluiddis,
-    Teuchos::RCP<Core::FE::Discretization> scatradis)
+    std::shared_ptr<Core::FE::Discretization> structdis,
+    std::shared_ptr<Core::FE::Discretization> fluiddis,
+    std::shared_ptr<Core::FE::Discretization> scatradis)
 {
   if (not matchinggrid_)
   {
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_structurescatra_ = Teuchos::make_rcp<Coupling::Adapter::MortarVolCoupl>();
-    volcoupl_fluidscatra_ = Teuchos::make_rcp<Coupling::Adapter::MortarVolCoupl>();
+    volcoupl_structurescatra_ = std::make_shared<Coupling::Adapter::MortarVolCoupl>();
+    volcoupl_fluidscatra_ = std::make_shared<Coupling::Adapter::MortarVolCoupl>();
 
     std::pair<int, int> dofsets12_structurescatra = std::pair<int, int>(2, 0);
     std::pair<int, int> dofsets21_structurescatra = std::pair<int, int>(1, 0);
@@ -284,9 +285,9 @@ void PoroElastScaTra::PoroScatraBase::setup_coupling(
 
     // setup projection matrices (use default material strategy)
     volcoupl_structurescatra_->init(Global::Problem::instance()->n_dim(), structdis, scatradis,
-        nullptr, nullptr, &dofsets12_structurescatra, &dofsets21_structurescatra, Teuchos::null);
+        nullptr, nullptr, &dofsets12_structurescatra, &dofsets21_structurescatra, nullptr);
     volcoupl_fluidscatra_->init(Global::Problem::instance()->n_dim(), fluiddis, scatradis, nullptr,
-        nullptr, &dofsets12_fluidscatra, &dofsets21_fluidscatra, Teuchos::null);
+        nullptr, &dofsets12_fluidscatra, &dofsets21_fluidscatra, nullptr);
 
     volcoupl_structurescatra_->setup(Global::Problem::instance()->volmortar_params(),
         Global::Problem::instance()->cut_general_params());

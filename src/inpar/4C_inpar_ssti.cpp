@@ -137,19 +137,19 @@ void Inpar::SSTI::set_valid_parameters(Teuchos::ParameterList& list)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Inpar::SSTI::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 
   /*--------------------------------------------------------------------*/
   // set Scalar-Structure-Thermo interaction interface meshtying condition
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linesstiinterfacemeshtying =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linesstiinterfacemeshtying =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SSTI INTERFACE MESHTYING LINE CONDITIONS", "SSTIInterfaceMeshtying",
           "SSTI Interface Meshtying", Core::Conditions::SSTIInterfaceMeshtying, true,
           Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfsstiinterfacemeshtying =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfsstiinterfacemeshtying =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SSTI INTERFACE MESHTYING SURF CONDITIONS", "SSTIInterfaceMeshtying",
           "SSTI Interface Meshtying", Core::Conditions::SSTIInterfaceMeshtying, true,
           Core::Conditions::geometry_type_surface);
@@ -157,8 +157,8 @@ void Inpar::SSTI::set_valid_conditions(
   // insert input file line components into condition definitions
   for (const auto& cond : {linesstiinterfacemeshtying, surfsstiinterfacemeshtying})
   {
-    cond->add_component(Teuchos::make_rcp<Input::IntComponent>("ConditionID"));
-    cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("interface side", "Undefined",
+    cond->add_component(std::make_shared<Input::IntComponent>("ConditionID"));
+    cond->add_component(std::make_shared<Input::SelectionComponent>("interface side", "Undefined",
         Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
         Teuchos::tuple<int>(
             Inpar::S2I::side_undefined, Inpar::S2I::side_slave, Inpar::S2I::side_master)));

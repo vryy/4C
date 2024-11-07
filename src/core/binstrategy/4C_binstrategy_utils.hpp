@@ -12,8 +12,8 @@
 
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -92,7 +92,7 @@ namespace Core::Binstrategy::Utils
    * @param[out] currpos current position of node
    */
   void get_current_node_pos(const Core::FE::Discretization& discret, Core::Nodes::Node const* node,
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> const disnp, double* currpos);
+      std::shared_ptr<const Core::LinAlg::Vector<double>> const disnp, double* currpos);
 
 }  // namespace Core::Binstrategy::Utils
 

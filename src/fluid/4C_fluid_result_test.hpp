@@ -52,17 +52,17 @@ namespace FLD
 
    private:
     /// pointer to fluid discretization
-    Teuchos::RCP<Core::FE::Discretization> fluiddis_;
+    std::shared_ptr<Core::FE::Discretization> fluiddis_;
     /// pointer to unknown vector with nodal values
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mysol_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> mysol_;
     /// pointer to traction vector with values
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mytraction_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> mytraction_;
     /// pointer to traction vector with values
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mywss_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> mywss_;
     /// pointer to error evaluation
-    Teuchos::RCP<std::vector<double>> myerror_;
+    std::shared_ptr<std::vector<double>> myerror_;
     /// pointer to div u evaluation
-    Teuchos::RCP<double> mydivu_;
+    std::shared_ptr<double> mydivu_;
   };
 
 }  // namespace FLD

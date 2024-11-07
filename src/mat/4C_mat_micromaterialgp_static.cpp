@@ -25,7 +25,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-std::map<int, Teuchos::RCP<MultiScale::MicroStatic>> Mat::MicroMaterialGP::microstaticmap_;
+std::map<int, std::shared_ptr<MultiScale::MicroStatic>> Mat::MicroMaterialGP::microstaticmap_;
 std::map<int, int> Mat::MicroMaterialGP::microstaticcounter_;
 
 
@@ -37,14 +37,14 @@ Mat::MicroMaterialGP::MicroMaterialGP(
     : gp_(gp), ele_id_(ele_ID), microdisnum_(microdisnum)
 {
   Global::Problem* microproblem = Global::Problem::instance(microdisnum_);
-  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
+  std::shared_ptr<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
   dis_ = Core::LinAlg::create_vector(*microdis->dof_row_map(), true);
   disn_ = Core::LinAlg::create_vector(*microdis->dof_row_map(), true);
-  lastalpha_ = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>();
-  oldalpha_ = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>();
-  oldfeas_ = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>();
-  old_kaainv_ = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>();
-  old_kda_ = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>();
+  lastalpha_ = std::make_shared<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>();
+  oldalpha_ = std::make_shared<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>();
+  oldfeas_ = std::make_shared<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>();
+  old_kaainv_ = std::make_shared<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>();
+  old_kda_ = std::make_shared<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>();
 
   // data must be consistent between micro and macro input file
   const Teuchos::ParameterList& sdyn_macro =
@@ -62,10 +62,10 @@ Mat::MicroMaterialGP::MicroMaterialGP(
   // -> set up
 
   if (microstaticmap_.find(microdisnum_) == microstaticmap_.end() or
-      microstaticmap_[microdisnum_] == Teuchos::null)
+      microstaticmap_[microdisnum_] == nullptr)
   {
     // create "time integration" class for this microstructure
-    microstaticmap_[microdisnum_] = Teuchos::make_rcp<MultiScale::MicroStatic>(microdisnum_, V0);
+    microstaticmap_[microdisnum_] = std::make_shared<MultiScale::MicroStatic>(microdisnum_, V0);
     // create a counter of macroscale GP associated with this "time integration" class
     // note that the counter is immediately updated afterwards!
     microstaticcounter_[microdisnum_] = 0;
@@ -96,7 +96,7 @@ Mat::MicroMaterialGP::MicroMaterialGP(
 Mat::MicroMaterialGP::~MicroMaterialGP()
 {
   microstaticcounter_[microdisnum_] -= 1;
-  if (microstaticcounter_[microdisnum_] == 0) microstaticmap_[microdisnum_] = Teuchos::null;
+  if (microstaticcounter_[microdisnum_] == 0) microstaticmap_[microdisnum_] = nullptr;
 }
 
 
@@ -124,13 +124,13 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
   // OutputControl object below to act just like the macro (default)
   // OutputControl. In particular we assume that there are always micro and
   // macro control files on restart.
-  Teuchos::RCP<Core::IO::OutputControl> macrocontrol =
+  std::shared_ptr<Core::IO::OutputControl> macrocontrol =
       Global::Problem::instance(0)->output_control_file();
   std::string microprefix = macrocontrol->restart_name();
   std::string micronewprefix = macrocontrol->new_output_file_name();
 
   Global::Problem* microproblem = Global::Problem::instance(microdisnum_);
-  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
+  std::shared_ptr<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
 
   if (microdis->get_comm().MyPID() == 0)
   {
@@ -177,13 +177,13 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
     // in case of restart, the new output file name is already adapted
     if (restart) adaptname = false;
 
-    Teuchos::RCP<Core::IO::OutputControl> microcontrol =
-        Teuchos::make_rcp<Core::IO::OutputControl>(microdis->get_comm(), "Structure",
+    std::shared_ptr<Core::IO::OutputControl> microcontrol =
+        std::make_shared<Core::IO::OutputControl>(microdis->get_comm(), "Structure",
             microproblem->spatial_approximation_type(), "micro-input-file-not-known", restartname_,
             newfilename, ndim, restart, macrocontrol->file_steps(),
             Global::Problem::instance()->io_params().get<bool>("OUTPUT_BIN"), adaptname);
 
-    micro_output_ = Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+    micro_output_ = std::make_shared<Core::IO::DiscretizationWriter>(
         microdis, microcontrol, microproblem->spatial_approximation_type());
     micro_output_->set_output(microcontrol);
 
@@ -225,7 +225,7 @@ std::string Mat::MicroMaterialGP::new_result_file_path(const std::string& newpre
 
 void Mat::MicroMaterialGP::eas_init()
 {
-  Teuchos::RCP<Core::FE::Discretization> discret =
+  std::shared_ptr<Core::FE::Discretization> discret =
       (Global::Problem::instance(microdisnum_))->get_dis("structure");
 
   for (int lid = 0; lid < discret->element_row_map()->NumMyElements(); ++lid)
@@ -263,14 +263,14 @@ void Mat::MicroMaterialGP::eas_init()
 void Mat::MicroMaterialGP::post_setup()
 {
   Global::Problem* microproblem = Global::Problem::instance(microdisnum_);
-  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
+  std::shared_ptr<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
 
   if (microdis->get_comm().MyPID() == 0)
   {
     step_ = Global::Problem::instance()->restart();
     if (step_ > 0)
     {
-      Teuchos::RCP<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+      std::shared_ptr<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
       time_ = microstatic->get_time_to_step(step_, restartname_);
     }
     else
@@ -291,7 +291,7 @@ void Mat::MicroMaterialGP::perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* 
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat)
 {
   // select corresponding "time integration class" for this microstructure
-  Teuchos::RCP<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+  std::shared_ptr<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
   microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
@@ -305,7 +305,7 @@ void Mat::MicroMaterialGP::perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* 
   microstatic->static_homogenization(stress, cmat, defgrd, mod_newton_, build_stiff_);
 
   // note that it is not necessary to save displacements and EAS data
-  // explicitly since we dealt with Teuchos::RCP's -> any update in class
+  // explicitly since we dealt with std::shared_ptr's -> any update in class
   // microstatic and the elements, respectively, inherently updates the
   // micromaterialgp_static data!
 
@@ -316,7 +316,7 @@ void Mat::MicroMaterialGP::perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* 
 void Mat::MicroMaterialGP::update()
 {
   // select corresponding "time integration class" for this microstructure
-  Teuchos::RCP<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+  std::shared_ptr<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   time_ = timen_;
   timen_ += dt_;
@@ -326,7 +326,7 @@ void Mat::MicroMaterialGP::update()
   dis_->Update(1.0, *disn_, 0.0);
 
   Global::Problem* microproblem = Global::Problem::instance(microdisnum_);
-  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
+  std::shared_ptr<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
   const Epetra_Map* elemap = microdis->element_row_map();
 
   for (int i = 0; i < elemap->NumMyElements(); ++i) (*lastalpha_)[i] = (*oldalpha_)[i];
@@ -340,11 +340,11 @@ void Mat::MicroMaterialGP::update()
 void Mat::MicroMaterialGP::prepare_output()
 {
   // select corresponding "time integration class" for this microstructure
-  Teuchos::RCP<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+  std::shared_ptr<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
-  stress_ = Teuchos::make_rcp<std::vector<char>>();
-  strain_ = Teuchos::make_rcp<std::vector<char>>();
-  plstrain_ = Teuchos::make_rcp<std::vector<char>>();
+  stress_ = std::make_shared<std::vector<char>>();
+  strain_ = std::make_shared<std::vector<char>>();
+  plstrain_ = std::make_shared<std::vector<char>>();
 
   microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
       old_kaainv_, old_kda_);
@@ -356,7 +356,7 @@ void Mat::MicroMaterialGP::prepare_output()
 void Mat::MicroMaterialGP::output_step_state_microscale()
 {
   // select corresponding "time integration class" for this microstructure
-  Teuchos::RCP<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+  std::shared_ptr<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
   microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
@@ -364,15 +364,15 @@ void Mat::MicroMaterialGP::output_step_state_microscale()
   microstatic->output(*micro_output_, time_, step_, dt_);
 
   // we don't need these containers anymore
-  stress_ = Teuchos::null;
-  strain_ = Teuchos::null;
-  plstrain_ = Teuchos::null;
+  stress_ = nullptr;
+  strain_ = nullptr;
+  plstrain_ = nullptr;
 }
 
 void Mat::MicroMaterialGP::write_restart()
 {
   // select corresponding "time integration class" for this microstructure
-  Teuchos::RCP<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+  std::shared_ptr<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
   microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
@@ -380,9 +380,9 @@ void Mat::MicroMaterialGP::write_restart()
   microstatic->write_restart(micro_output_, time_, step_, dt_);
 
   // we don't need these containers anymore
-  stress_ = Teuchos::null;
-  strain_ = Teuchos::null;
-  plstrain_ = Teuchos::null;
+  stress_ = nullptr;
+  strain_ = nullptr;
+  plstrain_ = nullptr;
 }
 
 FOUR_C_NAMESPACE_CLOSE

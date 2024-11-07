@@ -36,9 +36,9 @@ Mat::PAR::ViscoElastHyper::ViscoElastHyper(const Core::Mat::PAR::Parameter::Data
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ViscoElastHyper::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ViscoElastHyper::create_material()
 {
-  return Teuchos::make_rcp<Mat::ViscoElastHyper>(this);
+  return std::make_shared<Mat::ViscoElastHyper>(this);
 }
 
 
@@ -66,26 +66,26 @@ Mat::ViscoElastHyper::ViscoElastHyper() : Mat::ElastHyper()
 
   // history data 09/13
   isinitvis_ = false;
-  histscgcurr_ = Teuchos::null;
-  histscglast_ = Teuchos::null;
-  histmodrcgcurr_ = Teuchos::null;
-  histmodrcglast_ = Teuchos::null;
-  histstresscurr_ = Teuchos::null;
-  histstresslast_ = Teuchos::null;
+  histscgcurr_ = nullptr;
+  histscglast_ = nullptr;
+  histmodrcgcurr_ = nullptr;
+  histmodrcglast_ = nullptr;
+  histstresscurr_ = nullptr;
+  histstresslast_ = nullptr;
 
   // genmax
-  histartstresscurr_ = Teuchos::null;
-  histartstresslast_ = Teuchos::null;
+  histartstresscurr_ = nullptr;
+  histartstresslast_ = nullptr;
 
   // generalized genmax
-  histbranchstresscurr_ = Teuchos::null;
-  histbranchstresslast_ = Teuchos::null;
-  histbranchelaststresscurr_ = Teuchos::null;
-  histbranchelaststresslast_ = Teuchos::null;
+  histbranchstresscurr_ = nullptr;
+  histbranchstresslast_ = nullptr;
+  histbranchelaststresscurr_ = nullptr;
+  histbranchelaststresslast_ = nullptr;
 
   // fract
-  histfractartstresscurr_ = Teuchos::null;
-  histfractartstresslastall_ = Teuchos::null;
+  histfractartstresscurr_ = nullptr;
+  histfractartstresslastall_ = nullptr;
 }
 
 
@@ -163,8 +163,8 @@ void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
   if (viscofract_)
   {
     // check if history exists
-    add_to_pack(data, (int)(histfractartstresslastall_ != Teuchos::null));
-    if (!(int)(histfractartstresslastall_ != Teuchos::null))
+    add_to_pack(data, (int)(histfractartstresslastall_ != nullptr));
+    if (!(int)(histfractartstresslastall_ != nullptr))
       FOUR_C_THROW("Something got wrong with your history data.");
 
     // pack stepsize
@@ -198,7 +198,7 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   // matid and recover params_
   int matid;
   extract_from_pack(buffer, matid);
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -229,8 +229,8 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
     for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+      std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
+      if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
 
@@ -249,22 +249,22 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
     if (histsize == 0) isinitvis_ = false;
 
     // initialize current variables
-    histscgcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
+    histscgcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
     histmodrcgcurr_ =
-        Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
+        std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
     histstresscurr_ =
-        Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
+        std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
     histartstresscurr_ =
-        Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
+        std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
 
     // initialize last variables
-    histscglast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
+    histscglast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
     histmodrcglast_ =
-        Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
+        std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
     histstresslast_ =
-        Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
+        std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
     histartstresslast_ =
-        Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
+        std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
 
 
     for (int gp = 0; gp < histsize; ++gp)
@@ -278,16 +278,16 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
     if (viscogeneralizedgenmax_)
     {
       histbranchstresscurr_ =
-          Teuchos::make_rcp<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
+          std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
               histsize);
       histbranchelaststresscurr_ =
-          Teuchos::make_rcp<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
+          std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
               histsize);
       histbranchstresslast_ =
-          Teuchos::make_rcp<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
+          std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
               histsize);
       histbranchelaststresslast_ =
-          Teuchos::make_rcp<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
+          std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
               histsize);
 
       for (int gp = 0; gp < histsize; ++gp)
@@ -305,11 +305,11 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
       if (!have_historyalldata) FOUR_C_THROW("Something got wrong with your history data.");
 
       histfractartstresscurr_ =
-          Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
+          std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
 
       int histfractartstressall_stepsize = extract_int(buffer);
       histfractartstresslastall_ =
-          Teuchos::make_rcp<std::vector<std::vector<Core::LinAlg::Matrix<6, 1>>>>(
+          std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<6, 1>>>>(
               histsize, std::vector<Core::LinAlg::Matrix<6, 1>>(histfractartstressall_stepsize));
       for (int gp = 0; gp < histsize; ++gp)
         for (int step = 0; step < histfractartstressall_stepsize; ++step)
@@ -356,33 +356,33 @@ void Mat::ViscoElastHyper::setup(int numgp, const Core::IO::InputParameterContai
   Core::LinAlg::Matrix<6, 1> idvec(true);
   for (int i = 0; i < 3; ++i) idvec(i) = 1.;
 
-  histscgcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
-  histscglast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
-  histmodrcgcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
-  histmodrcglast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
+  histscgcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
+  histscglast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
+  histmodrcgcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
+  histmodrcglast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
   histstresscurr_ =
-      Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
+      std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
   histstresslast_ =
-      Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
+      std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
   histartstresscurr_ =
-      Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
+      std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
   histartstresslast_ =
-      Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
+      std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
 
   if (viscogeneralizedgenmax_)
   {
     const std::vector<Core::LinAlg::Matrix<6, 1>> emptybigvec(true);
     histbranchstresscurr_ =
-        Teuchos::make_rcp<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
+        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
             numgp, emptybigvec);
     histbranchstresslast_ =
-        Teuchos::make_rcp<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
+        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
             numgp, emptybigvec);
     histbranchelaststresscurr_ =
-        Teuchos::make_rcp<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
+        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
             numgp, emptybigvec);
     histbranchelaststresslast_ =
-        Teuchos::make_rcp<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
+        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
             numgp, emptybigvec);
   }
 
@@ -390,10 +390,10 @@ void Mat::ViscoElastHyper::setup(int numgp, const Core::IO::InputParameterContai
   if (viscofract_)
   {
     histfractartstresscurr_ =
-        Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
+        std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
     // set true that history size is known
     histfractartstresslastall_ =
-        Teuchos::make_rcp<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
+        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
             numgp, std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(true));
   }
 
@@ -457,14 +457,14 @@ void Mat::ViscoElastHyper::update()
   for (int i = 0; i < 3; ++i) idvec(i) = 1.;
   const int numgp = histscglast_->size();
 
-  histscgcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
-  histmodrcgcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
+  histscgcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
+  histmodrcgcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
   histstresscurr_ =
-      Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
+      std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
   histartstresscurr_ =
-      Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
+      std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
   histfractartstresscurr_ =
-      Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
+      std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
 
   if (viscogeneralizedgenmax_)
   {
@@ -473,10 +473,10 @@ void Mat::ViscoElastHyper::update()
 
     const std::vector<Core::LinAlg::Matrix<6, 1>> emptybigvec(true);
     histbranchstresscurr_ =
-        Teuchos::make_rcp<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
+        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
             numgp, emptybigvec);
     histbranchelaststresscurr_ =
-        Teuchos::make_rcp<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
+        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
             numgp, emptybigvec);
   }
 
@@ -948,18 +948,18 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
   double tau = -1.0;
   std::string solve = "";
   const std::vector<int>* matids = nullptr;
-  std::vector<Teuchos::RCP<Mat::Elastic::Summand>> branchpotsum(
+  std::vector<std::shared_ptr<Mat::Elastic::Summand>> branchpotsum(
       0);  // vector of summands in one branch
-  std::vector<std::vector<Teuchos::RCP<Mat::Elastic::Summand>>> branchespotsum(
+  std::vector<std::vector<std::shared_ptr<Mat::Elastic::Summand>>> branchespotsum(
       0);  // vector for each branch of vectors of summands in each branch
 
   // get parameters of ViscoGeneralizedGenMax
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
-    Teuchos::RCP<Mat::Elastic::GeneralizedGenMax> GeneralizedGenMax =
-        Teuchos::rcp_dynamic_cast<Mat::Elastic::GeneralizedGenMax>(potsum_[p]);
+    std::shared_ptr<Mat::Elastic::GeneralizedGenMax> GeneralizedGenMax =
+        std::dynamic_pointer_cast<Mat::Elastic::GeneralizedGenMax>(potsum_[p]);
 
-    if (GeneralizedGenMax != Teuchos::null)
+    if (GeneralizedGenMax != nullptr)
     {
       GeneralizedGenMax->read_material_parameters(numbranch, matids, solve);
       branchespotsum = GeneralizedGenMax->get_branchespotsum();
@@ -1046,9 +1046,9 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
     // get Parameter of ViscoGeneralizedGenMax
     for (unsigned int q = 0; q < branchpotsum.size(); ++q)
     {
-      Teuchos::RCP<Mat::Elastic::ViscoPart> ViscoPart =
-          Teuchos::rcp_dynamic_cast<Mat::Elastic::ViscoPart>(branchpotsum[q]);
-      if (ViscoPart != Teuchos::null) ViscoPart->read_material_parameters(tau);
+      std::shared_ptr<Mat::Elastic::ViscoPart> ViscoPart =
+          std::dynamic_pointer_cast<Mat::Elastic::ViscoPart>(branchpotsum[q]);
+      if (ViscoPart != nullptr) ViscoPart->read_material_parameters(tau);
     }
 
     // make sure Qbranch in this branch is empty

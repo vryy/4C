@@ -58,13 +58,13 @@ namespace Core::FE
      * @param doboundaryconditions: flag for call to fill complete on cloned dis
      * @return the cloned discretization
      */
-    Teuchos::RCP<Core::FE::Discretization> create_matching_discretization(
+    std::shared_ptr<Core::FE::Discretization> create_matching_discretization(
         Core::FE::Discretization& sourcedis, const std::string& targetdisname,
         bool clonedofs = true, bool assigndegreesoffreedom = true, bool initelements = true,
         bool doboundaryconditions = true) const;
 
     //! Base class version for creation of matching discretization without material
-    Teuchos::RCP<Core::FE::Discretization> create_matching_discretization_from_condition(
+    std::shared_ptr<Core::FE::Discretization> create_matching_discretization_from_condition(
         const Core::FE::Discretization& sourcedis,  ///< discretization with condition
         const Core::Conditions::Condition&
             cond,  ///< condition, from which the derived discretization is derived
@@ -82,8 +82,8 @@ namespace Core::FE
       if (!sourcedis.filled()) FOUR_C_THROW("sourcedis is not filled");
 
       // get this condition's elements
-      std::map<int, Teuchos::RCP<Core::Elements::Element>> sourceelements;
-      const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geo = cond.geometry();
+      std::map<int, std::shared_ptr<Core::Elements::Element>> sourceelements;
+      const std::map<int, std::shared_ptr<Core::Elements::Element>>& geo = cond.geometry();
       sourceelements.insert(geo.begin(), geo.end());
 
       return create_matching_discretization_from_condition(
@@ -91,7 +91,7 @@ namespace Core::FE
     };  // create_matching_discretization_from_condition
 
     //! Base class version for creation of matching discretization without material
-    Teuchos::RCP<Core::FE::Discretization> create_matching_discretization_from_condition(
+    std::shared_ptr<Core::FE::Discretization> create_matching_discretization_from_condition(
         const Core::FE::Discretization& sourcedis,  ///< discretization with condition
         const std::string& condname,                ///< name of the condition, by which the derived
                                                     ///< discretization is identified
@@ -110,7 +110,7 @@ namespace Core::FE
 
       // We need to test for all elements (including ghosted ones) to
       // catch all nodes
-      std::map<int, Teuchos::RCP<Core::Elements::Element>> sourceelements;
+      std::map<int, std::shared_ptr<Core::Elements::Element>> sourceelements;
       Core::Conditions::find_condition_objects(sourcedis, sourceelements, condname, label);
 
       return create_matching_discretization_from_condition(
@@ -118,9 +118,9 @@ namespace Core::FE
     };  // create_discretization_from_condition
 
     //! method for cloning a new discretization from an existing condition without material
-    Teuchos::RCP<Core::FE::Discretization> create_matching_discretization_from_condition(
+    std::shared_ptr<Core::FE::Discretization> create_matching_discretization_from_condition(
         const Core::FE::Discretization& sourcedis,  ///< discretization with condition
-        const std::map<int, Teuchos::RCP<Core::Elements::Element>>&
+        const std::map<int, std::shared_ptr<Core::Elements::Element>>&
             sourceelements,               ///< element map/geometry of the condition
         const std::string& discret_name,  ///< name of the new discretization
         const std::string&
@@ -130,29 +130,29 @@ namespace Core::FE
                                                             ///< copied to the new discretization
     )
     {
-      Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(sourcedis.get_comm().Clone());
+      std::shared_ptr<Epetra_Comm> com(sourcedis.get_comm().Clone());
       const int myrank = com->MyPID();
       const Epetra_Map* sourcenoderowmap = sourcedis.node_row_map();
 
-      Teuchos::RCP<Core::FE::Discretization> targetdis;
+      std::shared_ptr<Core::FE::Discretization> targetdis;
 
       // try to cast sourcedis to NurbsDiscretization
       const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
           dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&sourcedis);
 
       if (nurbsdis != nullptr)
-        targetdis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+        targetdis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
             discret_name, com, sourcedis.n_dim());
       else
         targetdis =
-            Teuchos::make_rcp<Core::FE::Discretization>(discret_name, com, sourcedis.n_dim());
+            std::make_shared<Core::FE::Discretization>(discret_name, com, sourcedis.n_dim());
 
       // construct new elements
-      for (std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator sourceele_iter =
+      for (std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator sourceele_iter =
                sourceelements.begin();
            sourceele_iter != sourceelements.end(); ++sourceele_iter)
       {
-        const Teuchos::RCP<Core::Elements::Element> sourceele = sourceele_iter->second;
+        const std::shared_ptr<Core::Elements::Element> sourceele = sourceele_iter->second;
 
         // get global node ids
         std::vector<int> nids;
@@ -181,11 +181,11 @@ namespace Core::FE
         // discretization itself.
         if (sourceele->owner() == myrank)
         {
-          Teuchos::RCP<Core::Elements::Element> condele;
+          std::shared_ptr<Core::Elements::Element> condele;
           if (element_name == "")
           {
             // copy the source ele (created in fill complete of the discretization)
-            condele = Teuchos::RCP(sourceele->clone(), true);
+            condele = std::shared_ptr<Core::Elements::Element>(sourceele->clone());
           }
           else
           {
@@ -216,9 +216,9 @@ namespace Core::FE
 
           // if the node cannot be dynamic casted to a control point, add the point as a node
           if (!control_point)
-            targetdis->add_node(Teuchos::make_rcp<Core::Nodes::Node>(gid, sourcenode->x(), myrank));
+            targetdis->add_node(std::make_shared<Core::Nodes::Node>(gid, sourcenode->x(), myrank));
           else
-            targetdis->add_node(Teuchos::make_rcp<Core::FE::Nurbs::ControlPoint>(
+            targetdis->add_node(std::make_shared<Core::FE::Nurbs::ControlPoint>(
                 gid, control_point->x(), control_point->w(), myrank));
         }
       }
@@ -260,7 +260,7 @@ namespace Core::FE
         const std::set<int>& colnodeset, const bool isnurbsdis, const bool buildimmersednode) const;
 
     //! construct and return Epetra_Map
-    Teuchos::RCP<Epetra_Map> create_map(
+    std::shared_ptr<Epetra_Map> create_map(
         std::set<int>& gidset, const Core::FE::Discretization& targetdis) const;
 
     //! do some checks
@@ -283,13 +283,13 @@ namespace Core::FE
     //! vector for holding each (desired) element type std::string
     std::vector<std::string> eletype_;
     //! map containing gids of owned nodes
-    Teuchos::RCP<Epetra_Map> targetnoderowmap_;
+    std::shared_ptr<Epetra_Map> targetnoderowmap_;
     //! map containing gids of owned + ghosted nodes
-    Teuchos::RCP<Epetra_Map> targetnodecolmap_;
+    std::shared_ptr<Epetra_Map> targetnodecolmap_;
     //! map containing gids of owned elements
-    Teuchos::RCP<Epetra_Map> targetelerowmap_;
+    std::shared_ptr<Epetra_Map> targetelerowmap_;
     //! map containing gids of owned + ghosted elements
-    Teuchos::RCP<Epetra_Map> targetelecolmap_;
+    std::shared_ptr<Epetra_Map> targetelecolmap_;
     //! local number of skipped elements during cloning
     int numeleskips_;
 
@@ -326,8 +326,8 @@ namespace Core::FE
 
     /// method for cloning a new discretization from an existing one
     void create_matching_discretization(
-        Core::FE::Discretization& sourcedis,  ///< Teuchos::RCP to source discretization
-        Core::FE::Discretization& targetdis,  ///< Teuchos::RCP to empty target discretization
+        Core::FE::Discretization& sourcedis,  ///< std::shared_ptr to source discretization
+        Core::FE::Discretization& targetdis,  ///< std::shared_ptr to empty target discretization
         const int matid  ///< ID of the material which generated elements will get
     )
     {
@@ -363,8 +363,8 @@ namespace Core::FE
 
     /// method for cloning a new discretization from an existing one
     void create_matching_discretization(
-        Core::FE::Discretization& sourcedis,  ///< Teuchos::RCP to source discretization
-        Core::FE::Discretization& targetdis,  ///< Teuchos::RCP to empty target discretization
+        Core::FE::Discretization& sourcedis,  ///< std::shared_ptr to source discretization
+        Core::FE::Discretization& targetdis,  ///< std::shared_ptr to empty target discretization
         const std::map<int, int>&
             matmap  ///< map of material IDs (source element -> target element)
     )
@@ -412,7 +412,7 @@ namespace Core::FE
         const Core::FE::Discretization& sourcedis,  ///< ref. to source discretization
         const std::vector<Core::Conditions::Condition*>&
             conds,  ///< vector of conditions containing the elements to clone
-        Core::FE::Discretization& targetdis,  ///< Teuchos::RCP to empty target discretization
+        Core::FE::Discretization& targetdis,  ///< std::shared_ptr to empty target discretization
         const std::map<int, int>&
             matmap  ///< map of material IDs (source element -> target element)
     )
@@ -429,7 +429,7 @@ namespace Core::FE
       }
 
       // get this condition vector's elements
-      std::map<int, Teuchos::RCP<Core::Elements::Element>> sourceelements;
+      std::map<int, std::shared_ptr<Core::Elements::Element>> sourceelements;
       Core::Conditions::find_condition_objects(sourceelements, conds);
 
       create_matching_discretization_from_condition(sourcedis, sourceelements, targetdis, matmap);
@@ -441,14 +441,14 @@ namespace Core::FE
     void create_matching_discretization_from_condition(
         const Core::FE::Discretization& sourcedis,  ///< ref. to source discretization
         const std::string& condname,          ///< string to identify conditioned elements to clone
-        Core::FE::Discretization& targetdis,  ///< Teuchos::RCP to empty target discretization
+        Core::FE::Discretization& targetdis,  ///< std::shared_ptr to empty target discretization
         const std::map<int, int>&
             matmap  ///< map of material IDs (source element -> target element)
     )
     {
       // check and analyze source discretization
       initial_checks(sourcedis, targetdis);
-      std::map<int, Teuchos::RCP<Core::Elements::Element>> sourceelements;
+      std::map<int, std::shared_ptr<Core::Elements::Element>> sourceelements;
       Core::Conditions::find_condition_objects(sourcedis, sourceelements, condname);
 
       create_matching_discretization_from_condition(sourcedis, sourceelements, targetdis, matmap);
@@ -459,9 +459,9 @@ namespace Core::FE
     /// method for cloning a new discretization from an existing condition with material
     void create_matching_discretization_from_condition(
         const Core::FE::Discretization& sourcedis,  ///< ref. to source discretization
-        const std::map<int, Teuchos::RCP<Core::Elements::Element>>&
+        const std::map<int, std::shared_ptr<Core::Elements::Element>>&
             sourceelements,                   ///< conditioned element map to clone
-        Core::FE::Discretization& targetdis,  ///< Teuchos::RCP to empty target discretization
+        Core::FE::Discretization& targetdis,  ///< std::shared_ptr to empty target discretization
         const std::map<int, int>&
             matmap  ///< map of material IDs (source element -> target element)
     )
@@ -543,7 +543,7 @@ namespace Core::FE
     /// get element type std::strings and global id's and nodes from conditioned source
     /// discretization
     void analyze_conditioned_source_dis(const Core::FE::Discretization& sourcedis,
-        const std::map<int, Teuchos::RCP<Core::Elements::Element>>& sourceelements,
+        const std::map<int, std::shared_ptr<Core::Elements::Element>>& sourceelements,
         std::vector<std::string>& eletype, std::set<int>& rownodeset, std::set<int>& colnodeset,
         std::set<int>& roweleset, std::set<int>& coleleset)
     {
@@ -552,11 +552,11 @@ namespace Core::FE
       const Epetra_Map* sourcenodecolmap = sourcedis.node_col_map();
 
       // construct new elements
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator sourceele_iter;
+      std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator sourceele_iter;
       for (sourceele_iter = sourceelements.begin(); sourceele_iter != sourceelements.end();
            ++sourceele_iter)
       {
-        const Teuchos::RCP<Core::Elements::Element> actele = sourceele_iter->second;
+        const std::shared_ptr<Core::Elements::Element> actele = sourceele_iter->second;
         const bool ismyele = (actele->owner() == myrank);
 
         // we get the element type std::string and a boolean if this element
@@ -664,7 +664,7 @@ namespace Core::FE
         }
 
         // create a new element of desired type with the same global element id
-        Teuchos::RCP<Core::Elements::Element> newele =
+        std::shared_ptr<Core::Elements::Element> newele =
             Core::Communication::factory(eletype_[i], approxtype, *it, myrank);
 
         // get global node ids of source element
@@ -707,7 +707,7 @@ namespace Core::FE
 
     /// create new elements from the condition and add them to the target discretization
     void create_elements_from_condition(
-        const std::map<int, Teuchos::RCP<Core::Elements::Element>>& sourceelements,
+        const std::map<int, std::shared_ptr<Core::Elements::Element>>& sourceelements,
         Core::FE::Discretization& targetdis, const std::map<int, int>& matmap,
         const bool& isnurbsdis)
     {
@@ -728,7 +728,7 @@ namespace Core::FE
       std::set<int>::iterator it = roweleset_.begin();
       for (std::size_t i = 0; i < roweleset_.size(); ++i)
       {
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator src_ele_citer =
+        std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator src_ele_citer =
             sourceelements.find(*it);
         if (src_ele_citer == sourceelements.end())
           FOUR_C_THROW(
@@ -779,7 +779,7 @@ namespace Core::FE
 
         // create a new element of desired type with the same global element id and same owner as
         // source element
-        Teuchos::RCP<Core::Elements::Element> newele =
+        std::shared_ptr<Core::Elements::Element> newele =
             Core::Communication::factory(eletype_[i], approxtype, *it, sourceeleowner);
 
         // get global node ids of fluid element
@@ -795,18 +795,18 @@ namespace Core::FE
         // This is again really ugly as we have to extract the actual
         // element type in order to access the material property
         // note: set_material() was reimplemented by the transport element!
-        Teuchos::RCP<Core::Mat::Material> mat_ptr = sourceele->material();
+        std::shared_ptr<Core::Mat::Material> mat_ptr = sourceele->material();
         /* Check if the material pointer is null. If necessary, try to cast
          * the condition element to a FaceElement and ask the parent element for
          * the material.                                                      */
-        if (mat_ptr.is_null())
+        if (!mat_ptr)
         {
           Core::Elements::FaceElement* src_face_element =
               dynamic_cast<Core::Elements::FaceElement*>(sourceele);
           if (src_face_element != nullptr) mat_ptr = src_face_element->parent_element()->material();
         }
         // It is no FaceElement or the material pointer of the parent element is nullptr.
-        if (mat_ptr.is_null()) FOUR_C_THROW("The condition element has no material!");
+        if (!mat_ptr) FOUR_C_THROW("The condition element has no material!");
 
         int src_matid = mat_ptr->parameter()->id();
         std::map<int, int>::const_iterator mat_iter = matmap.find(src_matid);
@@ -848,8 +848,8 @@ namespace Core::FE
 
     // create target discretization using a given clone strategy
     {
-      Teuchos::RCP<Core::FE::DiscretizationCreator<CloneStrategy>> clonewizard =
-          Teuchos::make_rcp<Core::FE::DiscretizationCreator<CloneStrategy>>();
+      std::shared_ptr<Core::FE::DiscretizationCreator<CloneStrategy>> clonewizard =
+          std::make_shared<Core::FE::DiscretizationCreator<CloneStrategy>>();
 
       std::map<int, int> matmap;
       clonewizard->create_clone_field_mat_map(matmap, sourcedis, targetdis, clonefieldmatmap);
@@ -885,8 +885,8 @@ namespace Core::FE
 
     // create target discretization using a given clone strategy
     {
-      Teuchos::RCP<Core::FE::DiscretizationCreator<CloneStrategy>> clonewizard =
-          Teuchos::make_rcp<Core::FE::DiscretizationCreator<CloneStrategy>>();
+      std::shared_ptr<Core::FE::DiscretizationCreator<CloneStrategy>> clonewizard =
+          std::make_shared<Core::FE::DiscretizationCreator<CloneStrategy>>();
 
       std::map<int, int> matmap;
       clonewizard->create_clone_field_mat_map(
@@ -920,8 +920,8 @@ namespace Core::FE
 
     // create target discretization using a given clone strategy
     {
-      Teuchos::RCP<Core::FE::DiscretizationCreator<CloneStrategy>> clonewizard =
-          Teuchos::make_rcp<Core::FE::DiscretizationCreator<CloneStrategy>>();
+      std::shared_ptr<Core::FE::DiscretizationCreator<CloneStrategy>> clonewizard =
+          std::make_shared<Core::FE::DiscretizationCreator<CloneStrategy>>();
 
       std::map<int, int> matmap;
       clonewizard->create_clone_field_mat_map(matmap, sourcedis, targetdis, clonefieldmatmap);

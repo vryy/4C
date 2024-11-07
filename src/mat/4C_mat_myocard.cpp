@@ -39,9 +39,9 @@ Mat::PAR::Myocard::Myocard(const Core::Mat::PAR::Parameter::Data& matdata)
 {
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::Myocard::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::Myocard::create_material()
 {
-  return Teuchos::make_rcp<Mat::Myocard>(this);
+  return std::make_shared<Mat::Myocard>(this);
 }
 
 
@@ -63,7 +63,7 @@ Mat::Myocard::Myocard()
     : params_(nullptr),
       difftensor_(0),
       nb_state_variables_(0),
-      myocard_mat_(Teuchos::null),
+      myocard_mat_(nullptr),
       diff_at_ele_center_(false)
 {
 }
@@ -76,7 +76,7 @@ Mat::Myocard::Myocard(Mat::PAR::Myocard* params)
     : params_(params),
       difftensor_(0),
       nb_state_variables_(0),
-      myocard_mat_(Teuchos::null),
+      myocard_mat_(nullptr),
       diff_at_ele_center_(false)
 {
 }
@@ -105,13 +105,13 @@ void Mat::Myocard::pack(Core::Communication::PackBuffer& data) const
   else
     num = 0;
   add_to_pack(data, num);
-  if (myocard_mat_ != Teuchos::null)
+  if (myocard_mat_ != nullptr)
     add_to_pack(data, myocard_mat_->get_number_of_gp());
   else
     add_to_pack(data, 0);
 
   // pack history data
-  if (myocard_mat_ != Teuchos::null)
+  if (myocard_mat_ != nullptr)
     for (int k = -1; k < nb_state_variables_; ++k)  // Starting from -1 for mechanical activation
       for (int i = 0; i < myocard_mat_->get_number_of_gp(); ++i)  // loop over Gauss points
         add_to_pack(data, myocard_mat_->get_internal_state(k, i));
@@ -143,7 +143,7 @@ void Mat::Myocard::unpack(Core::Communication::UnpackBuffer& buffer)
 
   params_ = nullptr;
   if (Global::Problem::instance()->materials() !=
-      Teuchos::null)  // it does not enter here in postprocessing
+      nullptr)  // it does not enter here in postprocessing
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -205,7 +205,7 @@ void Mat::Myocard::unpack_material(Core::Communication::UnpackBuffer& buffer)
 
   params_ = nullptr;
   if (Global::Problem::instance()->materials() !=
-      Teuchos::null)  // it does not enter here in postprocessing
+      nullptr)  // it does not enter here in postprocessing
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -543,16 +543,16 @@ void Mat::Myocard::initialize()
 {
   if ((params_->model) == "MV")
     myocard_mat_ =
-        Teuchos::make_rcp<MyocardMinimal>(params_->dt_deriv, (params_->tissue), params_->num_gp);
+        std::make_shared<MyocardMinimal>(params_->dt_deriv, (params_->tissue), params_->num_gp);
   else if ((params_->model) == "FHN")
-    myocard_mat_ = Teuchos::make_rcp<MyocardFitzhughNagumo>(
+    myocard_mat_ = std::make_shared<MyocardFitzhughNagumo>(
         params_->dt_deriv, (params_->tissue), params_->num_gp);
   else if ((params_->model) == "INADA")
-    myocard_mat_ = Teuchos::make_rcp<MyocardInada>(params_->dt_deriv, (params_->tissue));
+    myocard_mat_ = std::make_shared<MyocardInada>(params_->dt_deriv, (params_->tissue));
   else if ((params_->model) == "TNNP")
-    myocard_mat_ = Teuchos::make_rcp<MyocardTenTusscher>(params_->dt_deriv, (params_->tissue));
+    myocard_mat_ = std::make_shared<MyocardTenTusscher>(params_->dt_deriv, (params_->tissue));
   else if ((params_->model) == "SAN")
-    myocard_mat_ = Teuchos::make_rcp<MyocardSanGarny>(params_->dt_deriv, (params_->tissue));
+    myocard_mat_ = std::make_shared<MyocardSanGarny>(params_->dt_deriv, (params_->tissue));
   else
     FOUR_C_THROW(
         "Myocard Material type is not supported! (for the moment only MV,FHN,INADA,TNNP and SAN)");

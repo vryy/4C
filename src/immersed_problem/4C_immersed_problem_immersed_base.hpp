@@ -111,9 +111,9 @@ namespace Immersed
     \author rauch
     \date 02/17
     */
-    void build_condition_dof_map(const Teuchos::RCP<const Core::FE::Discretization>& dis,
+    void build_condition_dof_map(const std::shared_ptr<const Core::FE::Discretization>& dis,
         const std::string condname, const Epetra_Map& cond_dofmap_orig, const int numdof,
-        Teuchos::RCP<Epetra_Map>& cond_dofmap);
+        std::shared_ptr<Epetra_Map>& cond_dofmap);
 
 
     /*!
@@ -147,10 +147,10 @@ namespace Immersed
     \author rauch
     \date 02/17
     */
-    virtual void apply_dirichlet(const Teuchos::RCP<Adapter::StructureWrapper>& field_wrapper,
-        const Teuchos::RCP<Core::FE::Discretization>& dis, const std::string condname,
-        Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dirichvals);
+    virtual void apply_dirichlet(const std::shared_ptr<Adapter::StructureWrapper>& field_wrapper,
+        const std::shared_ptr<Core::FE::Discretization>& dis, const std::string condname,
+        std::shared_ptr<Epetra_Map>& cond_dofrowmap, const int numdof,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& dirichvals);
 
 
     /*!
@@ -159,10 +159,10 @@ namespace Immersed
     \author rauch
     \date 02/17
     */
-    void apply_dirichlet_to_fluid(const Teuchos::RCP<Adapter::FluidWrapper>& field_wrapper,
-        const Teuchos::RCP<Core::FE::Discretization>& dis, const std::string condname,
-        Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dirichvals);
+    void apply_dirichlet_to_fluid(const std::shared_ptr<Adapter::FluidWrapper>& field_wrapper,
+        const std::shared_ptr<Core::FE::Discretization>& dis, const std::string condname,
+        std::shared_ptr<Epetra_Map>& cond_dofrowmap, const int numdof,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& dirichvals);
 
 
     /*!
@@ -171,8 +171,8 @@ namespace Immersed
     \author rauch
     \date 02/17
     */
-    void remove_dirichlet(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
-        const Teuchos::RCP<Adapter::StructureWrapper>& field_wrapper);
+    void remove_dirichlet(const std::shared_ptr<const Epetra_Map>& cond_dofmap,
+        const std::shared_ptr<Adapter::StructureWrapper>& field_wrapper);
 
 
     /*!
@@ -181,8 +181,8 @@ namespace Immersed
     \author rauch
     \date 02/17
     */
-    void remove_dirichlet_from_fluid(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
-        const Teuchos::RCP<Adapter::FluidWrapper>& field_wrapper);
+    void remove_dirichlet_from_fluid(const std::shared_ptr<const Epetra_Map>& cond_dofmap,
+        const std::shared_ptr<Adapter::FluidWrapper>& field_wrapper);
 
 
     /*!
@@ -193,7 +193,7 @@ namespace Immersed
     */
     void evaluate_immersed(Teuchos::ParameterList& params, Core::FE::Discretization& dis,
         Core::FE::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
-        Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
+        std::shared_ptr<Core::Geo::SearchTree> structsearchtree,
         std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, const FLD::Action action,
         bool evaluateonlyboundary = false);
 
@@ -207,7 +207,7 @@ namespace Immersed
     */
     void evaluate_immersed_no_assembly(Teuchos::ParameterList& params,
         Core::FE::Discretization& dis, std::map<int, std::set<int>>* elementstoeval,
-        Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
+        std::shared_ptr<Core::Geo::SearchTree> structsearchtree,
         std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, const FLD::Action action);
 
 
@@ -221,7 +221,7 @@ namespace Immersed
     void evaluate_scatra_with_internal_communication(Core::FE::Discretization& dis,
         const Core::FE::Discretization& idis, Core::FE::AssembleStrategy* strategy,
         std::map<int, std::set<int>>* elementstoeval,
-        Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
+        std::shared_ptr<Core::Geo::SearchTree> structsearchtree,
         std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct,
         Teuchos::ParameterList& params, bool evaluateonlyboundary = false);
 
@@ -248,7 +248,8 @@ namespace Immersed
     */
     void search_potentially_covered_backgrd_elements(
         std::map<int, std::set<int>>* current_subset_tofill,
-        Teuchos::RCP<Core::Geo::SearchTree> backgrd_SearchTree, const Core::FE::Discretization& dis,
+        std::shared_ptr<Core::Geo::SearchTree> backgrd_SearchTree,
+        const Core::FE::Discretization& dis,
         const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
         const Core::LinAlg::Matrix<3, 1>& point, const double radius, const int label);
 
@@ -468,7 +469,7 @@ namespace Immersed
 
     // get possible elements being intersected by immersed structure
     Core::Conditions::Condition* searchbox = sourcedis.get_condition("ImmersedSearchbox");
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& searchboxgeom = searchbox->geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& searchboxgeom = searchbox->geometry();
     int mysearchboxgeomsize = searchboxgeom.size();
 
     // round robin loop
@@ -485,7 +486,7 @@ namespace Immersed
       // if the current proc can already match the given point xi (xvec)
       //
       /////////////////////////////////////////////////////////////////////
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+      std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
       Core::LinAlg::Matrix<source_dim, 1> xi(true);
       if (!matched and mysearchboxgeomsize > 0)
       {
@@ -501,7 +502,7 @@ namespace Immersed
 
             if (isALE)
             {
-              Teuchos::RCP<const Core::LinAlg::Vector<double>> state =
+              std::shared_ptr<const Core::LinAlg::Vector<double>> state =
                   sourcedis.get_state("dispnp");
 
               Core::Elements::LocationArray la(1);
@@ -600,7 +601,7 @@ namespace Immersed
             ////
             /////////////////////////////////////////////////
             double tol = 1e-13;
-            sourceele = curr->second.getRawPtr();
+            sourceele = curr->second.get();
             bool validsource = false;
             // given point lies in element curr
             if (abs(xi(0)) < (1.0 - tol) and abs(xi(1)) < (1.0 - tol) and abs(xi(2)) < (1.0 - tol))
@@ -620,10 +621,10 @@ namespace Immersed
             )
             {
               double scalarproduct = 0.0;
-              Teuchos::RCP<Core::LinAlg::SerialDenseVector> vector;
+              std::shared_ptr<Core::LinAlg::SerialDenseVector> vector;
 
               // get nodal coords of source ele
-              vector = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(3);
+              vector = std::make_shared<Core::LinAlg::SerialDenseVector>(3);
               std::vector<double> distances(sourceele->num_node());
 
               // loop over source element nodes and calc distance from targetpoint to those nodes
@@ -725,10 +726,10 @@ namespace Immersed
               matched = 1;
 
               // if element interpolates to structural intpoint set as "boundary is immersed"
-              Teuchos::RCP<Discret::Elements::FluidImmersedBase> immersedele =
-                  Teuchos::rcp_dynamic_cast<Discret::Elements::FluidImmersedBase>(curr->second);
+              std::shared_ptr<Discret::Elements::FluidImmersedBase> immersedele =
+                  std::dynamic_pointer_cast<Discret::Elements::FluidImmersedBase>(curr->second);
               // only possible and reasonable if current element is fluid element
-              if (immersedele != Teuchos::null)
+              if (immersedele != nullptr)
               {
                 immersedele->set_boundary_is_immersed(2);
                 immersedele->construct_element_rcp(
@@ -887,7 +888,8 @@ namespace Immersed
     if (numproc == 1) doCommunication = false;
     if (doCommunication == false) numproc = 1;
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = sourcedis.get_state("displacement");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+        sourcedis.get_state("displacement");
     Core::Elements::LocationArray la(1);
 
     // get current global coordinates of the given point xi of the target dis
@@ -974,7 +976,7 @@ namespace Immersed
             Core::FE::extract_my_values(*dispnp, mysourcedispnp, la[0].lm_);
 
             // construct bounding box around current source element
-            Teuchos::RCP<Cut::BoundingBox> bbside = Teuchos::RCP(Cut::BoundingBox::create());
+            std::shared_ptr<Cut::BoundingBox> bbside(Cut::BoundingBox::create());
             Core::LinAlg::Matrix<3, 1> nodalpos;
             for (int i = 0; i < (int)(sourceele->num_node()); ++i)
             {
@@ -1221,8 +1223,9 @@ namespace Immersed
                                       pow(fluidnode[1]->x()[2] - fluidnode[7]->x()[2], 2));
 
     // get current displacements and velocities of structure discretization
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = structdis.get_state("displacement");
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp = structdis.get_state("velocity");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+        structdis.get_state("displacement");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> velnp = structdis.get_state("velocity");
     Core::Elements::LocationArray la(structdis.num_dof_sets());
 
     // get current global coordinates of the given fluid node fluid_xi
@@ -1302,19 +1305,19 @@ namespace Immersed
           {
             // only surface elements (with immersed coupling condition) are relevant to find closest
             // structure point
-            std::vector<Teuchos::RCP<Core::Elements::Element>> surface_eles =
+            std::vector<std::shared_ptr<Core::Elements::Element>> surface_eles =
                 structdis.g_element(*eleIter)->surfaces();
 
             // loop over surface element, find the elements with IMMERSEDCoupling condition
-            for (std::vector<Teuchos::RCP<Core::Elements::Element>>::iterator surfIter =
+            for (std::vector<std::shared_ptr<Core::Elements::Element>>::iterator surfIter =
                      surface_eles.begin();
                  surfIter != surface_eles.end(); ++surfIter)
             {
               // pointer to current surface element
-              Core::Elements::Element* structele = surfIter->getRawPtr();
+              Core::Elements::Element* structele = surfIter->get();
 
               // pointer to nodes of current surface element
-              Core::Nodes::Node** NodesPtr = surfIter->getRawPtr()->nodes();
+              Core::Nodes::Node** NodesPtr = surfIter->get()->nodes();
 
               int numfsinodes = 0;
 

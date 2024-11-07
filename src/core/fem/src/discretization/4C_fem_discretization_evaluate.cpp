@@ -28,11 +28,11 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate (public)                                        mwgee 12/06|
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
 {
   Core::FE::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
@@ -113,10 +113,10 @@ void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params,
  |  evaluate (public)                                        u.kue 01/08|
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector)
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector)
 {
-  evaluate(params, systemmatrix, Teuchos::null, systemvector, Teuchos::null, Teuchos::null);
+  evaluate(params, systemmatrix, nullptr, systemvector, nullptr, nullptr);
 }
 
 void Core::FE::Discretization::evaluate(
@@ -174,7 +174,8 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
 
   if (params.isParameter("interface"))
   {
-    time = params.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface")->get_total_time();
+    time =
+        params.get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface")->get_total_time();
   }
 
   //--------------------------------------------------------
@@ -217,7 +218,7 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
               {
                 const auto* function_manager =
                     params.isParameter("interface")
-                        ? params.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface")
+                        ? params.get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface")
                               ->get_function_manager()
                         : params.get<const Core::Utils::FunctionManager*>("function_manager");
                 return function_manager
@@ -244,7 +245,7 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
     if (name == (std::string) "LineNeumann" || name == (std::string) "SurfaceNeumann" ||
         name == (std::string) "VolumeNeumann")
     {
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->geometry();
+      std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = cond->geometry();
       Core::LinAlg::SerialDenseVector elevector;
       Core::LinAlg::SerialDenseMatrix elematrix;
       for (const auto& [_, ele] : geom)
@@ -341,11 +342,11 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
  |  evaluate Dirichlet conditions (public)                  rauch 06/16 |
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_dirichlet(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectord,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectordd,
-    Teuchos::RCP<Core::LinAlg::Vector<int>> toggle,
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmapextractor) const
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvectord,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvectordd,
+    std::shared_ptr<Core::LinAlg::Vector<int>> toggle,
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmapextractor) const
 {
   Core::FE::Utils::evaluate_dirichlet(
       *this, params, systemvector, systemvectord, systemvectordd, toggle, dbcmapextractor);
@@ -356,11 +357,11 @@ void Core::FE::Discretization::evaluate_dirichlet(Teuchos::ParameterList& params
  |  evaluate a condition (public)                               tk 02/08|
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_condition(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3, const std::string& condstring,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3, const std::string& condstring,
     const int condid)
 {
   Core::FE::AssembleStrategy strategy(
@@ -394,7 +395,7 @@ void Core::FE::Discretization::evaluate_condition(Teuchos::ParameterList& params
     {
       if (condid == -1 || condid == cond->parameters().get<int>("ConditionID"))
       {
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->geometry();
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = cond->geometry();
         // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
         // no check for empty geometry here since in parallel computations
         // can exist processors which do not own a portion of the elements belonging
@@ -425,7 +426,7 @@ void Core::FE::Discretization::evaluate_condition(Teuchos::ParameterList& params
         {
           params.set("LoadCurveFactor", curvefac);
         }
-        params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", cond);
+        params.set<std::shared_ptr<Core::Conditions::Condition>>("condition", cond);
 
         for (const auto& [_, ele] : geom)
         {
@@ -476,7 +477,7 @@ void Core::FE::Discretization::evaluate_condition(Teuchos::ParameterList& params
  |  evaluate/assemble scalars across elements (public)       bborn 08/08|
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_scalars(
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars)
+    Teuchos::ParameterList& params, std::shared_ptr<Core::LinAlg::SerialDenseVector> scalars)
 {
   if (!filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -564,10 +565,10 @@ void Core::FE::Discretization::evaluate_scalars(
       if (condid == -1 or condid == condition->parameters().get<int>("ConditionID"))
       {
         // extract geometry map of current condition
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& geometry = condition->geometry();
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& geometry = condition->geometry();
 
         // add condition to parameter list for elements
-        params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", condition);
+        params.set<std::shared_ptr<Core::Conditions::Condition>>("condition", condition);
 
         // loop over all elements associated with current condition
         for (auto& [_, element] : geometry)

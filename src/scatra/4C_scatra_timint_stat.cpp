@@ -21,11 +21,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |
  *----------------------------------------------------------------------*/
-ScaTra::TimIntStationary::TimIntStationary(Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
-    : ScaTraTimIntImpl(actdis, solver, params, extraparams, output), fsphinp_(Teuchos::null)
+ScaTra::TimIntStationary::TimIntStationary(std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver, std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
+    : ScaTraTimIntImpl(actdis, solver, params, extraparams, output), fsphinp_(nullptr)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
@@ -95,8 +95,7 @@ void ScaTra::TimIntStationary::set_element_time_parameter(bool forcedincremental
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 /*----------------------------------------------------------------------*
@@ -173,19 +172,19 @@ void ScaTra::TimIntStationary::add_time_integration_specific_vectors(bool forced
  |                                                            gjb 09/08 |
  -----------------------------------------------------------------------*/
 void ScaTra::TimIntStationary::read_restart(
-    const int step, Teuchos::RCP<Core::IO::InputControl> input)
+    const int step, std::shared_ptr<Core::IO::InputControl> input)
 {
   // call base class routine
   ScaTraTimIntImpl::read_restart(step, input);
 
-  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
-  if (input == Teuchos::null)
+  std::shared_ptr<Core::IO::DiscretizationReader> reader(nullptr);
+  if (input == nullptr)
   {
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+    reader = std::make_shared<Core::IO::DiscretizationReader>(
         discret_, Global::Problem::instance()->input_control_file(), step);
   }
   else
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(discret_, input, step);
+    reader = std::make_shared<Core::IO::DiscretizationReader>(discret_, input, step);
 
   time_ = reader->read_double("time");
   step_ = reader->read_int("step");

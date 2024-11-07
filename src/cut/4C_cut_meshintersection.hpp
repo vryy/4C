@@ -43,7 +43,7 @@ namespace Cut
       cut_mesh_.reserve(numcutmesh);
       for (int i = 0; i < numcutmesh; ++i)
       {
-        cut_mesh_.push_back(Teuchos::make_rcp<MeshHandle>(options_, 1, pp_, true, myrank));
+        cut_mesh_.push_back(std::make_shared<MeshHandle>(options_, 1, pp_, true, myrank));
       }
     }
 
@@ -111,7 +111,7 @@ namespace Cut
     //! @name private class variables
     /*========================================================================*/
 
-    std::vector<Teuchos::RCP<MeshHandle>> cut_mesh_;  ///< a vector of cut_meshes
+    std::vector<std::shared_ptr<MeshHandle>> cut_mesh_;  ///< a vector of cut_meshes
   };
 
 }  // namespace Cut

@@ -48,25 +48,25 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Solid::ModelEvaluator::BeamInteraction::BeamInteraction()
-    : discret_ptr_(Teuchos::null),
-      beaminteraction_params_ptr_(Teuchos::null),
-      submodeltypes_(Teuchos::null),
-      me_map_ptr_(Teuchos::null),
-      me_vec_ptr_(Teuchos::null),
+    : discret_ptr_(nullptr),
+      beaminteraction_params_ptr_(nullptr),
+      submodeltypes_(nullptr),
+      me_map_ptr_(nullptr),
+      me_vec_ptr_(nullptr),
       myrank_(-1),
-      coupsia_(Teuchos::null),
-      siatransform_(Teuchos::null),
-      ia_discret_(Teuchos::null),
-      eletypeextractor_(Teuchos::null),
-      ia_state_ptr_(Teuchos::null),
-      ia_force_beaminteraction_(Teuchos::null),
-      force_beaminteraction_(Teuchos::null),
-      stiff_beaminteraction_(Teuchos::null),
-      beam_crosslinker_handler_(Teuchos::null),
-      binstrategy_(Teuchos::null),
-      bindis_(Teuchos::null),
-      rowbins_(Teuchos::null),
-      dis_at_last_redistr_(Teuchos::null),
+      coupsia_(nullptr),
+      siatransform_(nullptr),
+      ia_discret_(nullptr),
+      eletypeextractor_(nullptr),
+      ia_state_ptr_(nullptr),
+      ia_force_beaminteraction_(nullptr),
+      force_beaminteraction_(nullptr),
+      stiff_beaminteraction_(nullptr),
+      beam_crosslinker_handler_(nullptr),
+      binstrategy_(nullptr),
+      bindis_(nullptr),
+      rowbins_(nullptr),
+      dis_at_last_redistr_(nullptr),
       half_interaction_distance_(-1.0)
 {
   // empty
@@ -82,19 +82,19 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   // setup variables
   // -------------------------------------------------------------------------
   // discretization pointer
-  discret_ptr_ = Teuchos::rcp_dynamic_cast<Core::FE::Discretization>(discret_ptr(), true);
+  discret_ptr_ = std::dynamic_pointer_cast<Core::FE::Discretization>(discret_ptr());
   // stiff
-  stiff_beaminteraction_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  stiff_beaminteraction_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *global_state().dof_row_map_view(), 81, true, true);
   // force and displacement at last redistribution
   force_beaminteraction_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
   dis_at_last_redistr_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
   // get myrank
   myrank_ = discret_ptr()->get_comm().MyPID();
 
-  beaminteraction_params_ptr_ = Teuchos::make_rcp<BEAMINTERACTION::BeamInteractionParams>();
+  beaminteraction_params_ptr_ = std::make_shared<BEAMINTERACTION::BeamInteractionParams>();
   beaminteraction_params_ptr_->init();
   beaminteraction_params_ptr_->setup();
 
@@ -112,22 +112,22 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   // solving is done. Therefore the maps of our initial discretization don't
   // change, i.e. there is no need to rebuild the global state.
   // -------------------------------------------------------------------------
-  Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discloner =
-      Teuchos::make_rcp<Core::FE::DiscretizationCreatorBase>();
+  std::shared_ptr<Core::FE::DiscretizationCreatorBase> discloner =
+      std::make_shared<Core::FE::DiscretizationCreatorBase>();
   ia_discret_ = discloner->create_matching_discretization(
       *discret_ptr_, "ia_structure", true, true, false, true);
   // create discretization writer
-  ia_discret_->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(ia_discret_,
+  ia_discret_->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(ia_discret_,
       Global::Problem::instance()->output_control_file(),
       Global::Problem::instance()->spatial_approximation_type()));
 
   // init data container
-  ia_state_ptr_ = Teuchos::make_rcp<Solid::ModelEvaluator::BeamInteractionDataState>();
+  ia_state_ptr_ = std::make_shared<Solid::ModelEvaluator::BeamInteractionDataState>();
   ia_state_ptr_->init();
   ia_state_ptr_->setup(ia_discret_);
 
   ia_state_ptr_->get_dis_np() =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state_ptr()->get_dis_np());
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state_ptr()->get_dis_np());
   BEAMINTERACTION::Utils::periodic_boundary_consistent_dis_vector(*ia_state_ptr_->get_dis_np(),
       *tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), *ia_discret_);
 
@@ -135,21 +135,21 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   // initialize coupling adapter to transform matrices between the two discrets
   // (with distinct parallel distribution)
   // -------------------------------------------------------------------------
-  coupsia_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
-  siatransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
+  coupsia_ = std::make_shared<Coupling::Adapter::Coupling>();
+  siatransform_ = std::make_shared<Coupling::Adapter::MatrixRowTransform>();
 
   // -------------------------------------------------------------------------
   // initialize and setup binning strategy and beam crosslinker handler
   // -------------------------------------------------------------------------
   // construct, init and setup binning strategy
-  std::vector<Teuchos::RCP<Core::FE::Discretization>> discret_vec(1, ia_discret_);
+  std::vector<std::shared_ptr<Core::FE::Discretization>> discret_vec(1, ia_discret_);
 
   // We have to pass the displacement column vector to the initialization of the binning strategy.
   ia_state_ptr_->get_dis_col_np() =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map());
+      std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map());
   Core::LinAlg::export_to(*ia_state_ptr_->get_dis_np(), *ia_state_ptr_->get_dis_col_np());
 
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> disp_vec(
+  std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> disp_vec(
       1, ia_state_ptr_->get_dis_col_np());
   Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
   Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
@@ -168,7 +168,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
 
   auto determine_relevant_points = [correct_node](const Core::FE::Discretization& discret,
                                        const Core::Elements::Element& ele,
-                                       Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)
+                                       std::shared_ptr<const Core::LinAlg::Vector<double>> disnp)
       -> std::vector<std::array<double, 3>>
   {
     if (dynamic_cast<const Discret::Elements::Beam3Base*>(&ele))
@@ -189,7 +189,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
       return Core::Binstrategy::DefaultRelevantPoints{}(discret, ele, disnp);
   };
 
-  binstrategy_ = Teuchos::make_rcp<Core::Binstrategy::BinningStrategy>(binning_params,
+  binstrategy_ = std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params,
       Global::Problem::instance()->output_control_file(), ia_discret_->get_comm(),
       ia_discret_->get_comm().MyPID(), correct_node, determine_relevant_points, discret_vec,
       disp_vec);
@@ -203,7 +203,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   // todo: move this and its single call during partition to crosslinker submodel
   if (have_sub_model_type(Inpar::BEAMINTERACTION::submodel_crosslinking))
   {
-    beam_crosslinker_handler_ = Teuchos::make_rcp<BEAMINTERACTION::BeamCrosslinkerHandler>();
+    beam_crosslinker_handler_ = std::make_shared<BEAMINTERACTION::BeamCrosslinkerHandler>();
     beam_crosslinker_handler_->init(global_state().get_my_rank(), binstrategy_);
     beam_crosslinker_handler_->setup();
   }
@@ -212,7 +212,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   print_binning_info_to_screen();
 
   // extract map for each eletype that is in discretization
-  eletypeextractor_ = Teuchos::make_rcp<BEAMINTERACTION::Utils::MapExtractor>();
+  eletypeextractor_ = std::make_shared<BEAMINTERACTION::Utils::MapExtractor>();
   BEAMINTERACTION::Utils::setup_ele_type_map_extractor(ia_discret_, eletypeextractor_);
 
   // initialize and setup submodel evaluators
@@ -274,7 +274,7 @@ void Solid::ModelEvaluator::BeamInteraction::set_sub_model_types()
 {
   check_init();
 
-  submodeltypes_ = Teuchos::make_rcp<std::set<enum Inpar::BEAMINTERACTION::SubModelType>>();
+  submodeltypes_ = std::make_shared<std::set<enum Inpar::BEAMINTERACTION::SubModelType>>();
 
   // ---------------------------------------------------------------------------
   // check for crosslinking in biopolymer networks
@@ -365,7 +365,7 @@ void Solid::ModelEvaluator::BeamInteraction::init_and_setup_sub_model_evaluators
     (*sme_iter)->init(ia_discret_, bindis_, global_state_ptr(), global_in_output_ptr(),
         ia_state_ptr_, beam_crosslinker_handler_, binstrategy_,
         tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(),
-        Teuchos::rcp_dynamic_cast<BEAMINTERACTION::Utils::MapExtractor>(eletypeextractor_, true));
+        std::dynamic_pointer_cast<BEAMINTERACTION::Utils::MapExtractor>(eletypeextractor_));
     (*sme_iter)->setup();
   }
 
@@ -377,13 +377,13 @@ void Solid::ModelEvaluator::BeamInteraction::init_and_setup_sub_model_evaluators
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Vector>
+std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Vector>
 Solid::ModelEvaluator::BeamInteraction::transform_to_vector(
     Solid::ModelEvaluator::BeamInteraction::Map submodel_map,
     std::vector<Inpar::BEAMINTERACTION::SubModelType>& sorted_submodel_types) const
 {
-  Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Vector> me_vec_ptr =
-      Teuchos::make_rcp<Solid::ModelEvaluator::BeamInteraction::Vector>(0);
+  std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Vector> me_vec_ptr =
+      std::make_shared<Solid::ModelEvaluator::BeamInteraction::Vector>(0);
 
   Solid::ModelEvaluator::BeamInteraction::Map::iterator miter;
 
@@ -423,15 +423,15 @@ void Solid::ModelEvaluator::BeamInteraction::partition_problem()
   check_init();
 
   // store structure discretization in vector
-  std::vector<Teuchos::RCP<Core::FE::Discretization>> discret_vec(1, ia_discret_);
+  std::vector<std::shared_ptr<Core::FE::Discretization>> discret_vec(1, ia_discret_);
 
   // displacement vector according to periodic boundary conditions
-  std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> mutabledisnp(
-      1, Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map()));
+  std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> mutabledisnp(
+      1, std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map()));
   Core::LinAlg::export_to(*ia_state_ptr_->get_dis_np(), *mutabledisnp[0]);
 
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> disnp(
-      1, Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mutabledisnp[0]));
+  std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> disnp(
+      1, std::make_shared<Core::LinAlg::Vector<double>>(*mutabledisnp[0]));
 
   // nodes, that are owned by a proc, are distributed to the bins of this proc
   std::vector<std::map<int, std::vector<int>>> nodesinbin(1);
@@ -444,7 +444,7 @@ void Solid::ModelEvaluator::BeamInteraction::partition_problem()
       binstrategy_->weighted_distribution_of_bins_to_procs(discret_vec, disnp, nodesinbin, weight);
 
   // extract noderowmap because it will be called reset() after adding elements
-  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::make_rcp<Epetra_Map>(*bindis_->node_row_map());
+  std::shared_ptr<Epetra_Map> noderowmap = std::make_shared<Epetra_Map>(*bindis_->node_row_map());
   // delete old bins ( in case you partition during your simulation or after a restart)
   bindis_->delete_elements();
   binstrategy_->fill_bins_into_bin_discretization(*rowbins_);
@@ -463,14 +463,14 @@ void Solid::ModelEvaluator::BeamInteraction::partition_problem()
 
   // standard ghosting (if a proc owns a part of nodes (and therefore dofs) of
   // an element, the element and the rest of its nodes and dofs are ghosted
-  Teuchos::RCP<Epetra_Map> stdelecolmap;
-  Teuchos::RCP<Epetra_Map> stdnodecolmapdummy;
+  std::shared_ptr<Epetra_Map> stdelecolmap;
+  std::shared_ptr<Epetra_Map> stdnodecolmapdummy;
   binstrategy_->standard_discretization_ghosting(
       ia_discret_, *rowbins_, ia_state_ptr_->get_dis_np(), stdelecolmap, stdnodecolmapdummy);
 
   // distribute elements that can be cut by the periodic boundary to bins
-  Teuchos::RCP<Core::LinAlg::Vector<double>> iadiscolnp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map());
+  std::shared_ptr<Core::LinAlg::Vector<double>> iadiscolnp =
+      std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map());
   Core::LinAlg::export_to(*ia_state_ptr_->get_dis_np(), *iadiscolnp);
 
   binstrategy_->distribute_elements_to_bins_using_ele_aabb(*ia_discret_,
@@ -559,10 +559,10 @@ void Solid::ModelEvaluator::BeamInteraction::extend_ghosting()
 
   // build auxiliary bin col map
   std::vector<int> auxgids(colbins.begin(), colbins.end());
-  Teuchos::RCP<Epetra_Map> auxmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> auxmap = std::make_shared<Epetra_Map>(
       -1, static_cast<int>(auxgids.size()), auxgids.data(), 0, bindis_->get_comm());
 
-  Teuchos::RCP<Epetra_Map> ia_elecolmap = binstrategy_->extend_element_col_map(
+  std::shared_ptr<Epetra_Map> ia_elecolmap = binstrategy_->extend_element_col_map(
       ia_state_ptr_->get_bin_to_row_ele_map(), ia_state_ptr_->get_bin_to_row_ele_map(),
       ia_state_ptr_->get_extended_bin_to_row_ele_map(), auxmap);
 
@@ -589,14 +589,14 @@ void Solid::ModelEvaluator::BeamInteraction::reset(const Core::LinAlg::Vector<do
 
   // update column vector
   ia_state_ptr_->get_dis_col_np() =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map());
+      std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map());
   Core::LinAlg::export_to(*ia_state_ptr_->get_dis_np(), *ia_state_ptr_->get_dis_col_np());
 
   // update restart displacement vector
   if (ia_state_ptr_->get_restart_coupling_flag())
   {
     ia_state_ptr_->get_dis_restart_col() =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map());
+        std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map());
     Core::LinAlg::export_to(
         *ia_state_ptr_->get_dis_restart(), *ia_state_ptr_->get_dis_restart_col());
   }
@@ -718,7 +718,7 @@ bool Solid::ModelEvaluator::BeamInteraction::assemble_jacobian(
 {
   check_init_setup();
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
   jac_dd_ptr->add(*stiff_beaminteraction_, false, timefac_np, 1.0);
 
   // no need to keep it
@@ -737,8 +737,8 @@ void Solid::ModelEvaluator::BeamInteraction::write_restart(
 
   int const stepn = global_state().get_step_n();
   double const timen = global_state().get_time_n();
-  Teuchos::RCP<Core::IO::DiscretizationWriter> ia_writer = ia_discret_->writer();
-  Teuchos::RCP<Core::IO::DiscretizationWriter> bin_writer = bindis_->writer();
+  std::shared_ptr<Core::IO::DiscretizationWriter> ia_writer = ia_discret_->writer();
+  std::shared_ptr<Core::IO::DiscretizationWriter> bin_writer = bindis_->writer();
 
   // write restart of ia_discret
   ia_writer->write_mesh(stepn, timen);
@@ -810,9 +810,9 @@ void Solid::ModelEvaluator::BeamInteraction::read_restart(Core::IO::Discretizati
   {
     ia_state_ptr_->set_restart_coupling_flag(true);
     ia_state_ptr_->get_dis_restart() =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_state_ptr_->get_dis_np());
+        std::make_shared<Core::LinAlg::Vector<double>>(*ia_state_ptr_->get_dis_np());
     ia_state_ptr_->get_dis_restart_col() =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_state_ptr_->get_dis_np());
+        std::make_shared<Core::LinAlg::Vector<double>>(*ia_state_ptr_->get_dis_np());
   }
 }
 
@@ -844,7 +844,8 @@ void Solid::ModelEvaluator::BeamInteraction::update_step_state(const double& tim
   check_init_setup();
 
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Core::LinAlg::Vector<double>>& fstructold_ptr = global_state().get_fstructure_old();
+  std::shared_ptr<Core::LinAlg::Vector<double>>& fstructold_ptr =
+      global_state().get_fstructure_old();
 
   fstructold_ptr->Update(timefac_n, *force_beaminteraction_, 1.0);
 
@@ -896,7 +897,7 @@ void Solid::ModelEvaluator::BeamInteraction::update_step_element()
 
     // current displacement state gets new reference state
     dis_at_last_redistr_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().get_dis_n());
+        std::make_shared<Core::LinAlg::Vector<double>>(*global_state().get_dis_n());
 
     if (global_state().get_my_rank() == 0)
     {
@@ -1059,8 +1060,8 @@ void Solid::ModelEvaluator::BeamInteraction::runtime_output_step_state() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::BeamInteraction::get_block_dof_row_map_ptr()
-    const
+std::shared_ptr<const Epetra_Map>
+Solid::ModelEvaluator::BeamInteraction::get_block_dof_row_map_ptr() const
 {
   check_init_setup();
   return global_state().dof_row_map();
@@ -1068,20 +1069,20 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::BeamInteraction::get_block
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::BeamInteraction::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::BeamInteraction::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1113,7 +1114,7 @@ void Solid::ModelEvaluator::BeamInteraction::update_coupling_adapter_and_matrix_
 
   // reset transformation member variables (eg. exporter) by rebuilding
   // and provide new maps for coupling adapter
-  siatransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
+  siatransform_ = std::make_shared<Coupling::Adapter::MatrixRowTransform>();
   coupsia_->setup_coupling(*ia_discret_, *discret_ptr_);
 }
 
@@ -1163,26 +1164,26 @@ void Solid::ModelEvaluator::BeamInteraction::update_maps()
 
   // update column vector
   ia_state_ptr_->get_dis_col_np() =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map());
+      std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map());
   Core::LinAlg::export_to(*ia_state_ptr_->get_dis_np(), *ia_state_ptr_->get_dis_col_np());
 
   // update restart displacement vector
   if (ia_state_ptr_->get_restart_coupling_flag())
   {
     ia_state_ptr_->get_dis_restart_col() =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map());
+        std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map());
     Core::LinAlg::export_to(
         *ia_state_ptr_->get_dis_restart(), *ia_state_ptr_->get_dis_restart_col());
   }
 
   // force
   ia_force_beaminteraction_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_discret_->dof_row_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret_->dof_row_map(), true);
   ia_state_ptr_->get_force_np() =
-      Teuchos::make_rcp<Epetra_FEVector>(*ia_discret_->dof_row_map(), true);
+      std::make_shared<Epetra_FEVector>(*ia_discret_->dof_row_map(), true);
 
   // stiff
-  ia_state_ptr_->get_stiff() = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  ia_state_ptr_->get_stiff() = std::make_shared<Core::LinAlg::SparseMatrix>(
       *ia_discret_->dof_row_map(), 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   BEAMINTERACTION::Utils::setup_ele_type_map_extractor(ia_discret_, eletypeextractor_);
@@ -1228,8 +1229,8 @@ void Solid::ModelEvaluator::BeamInteraction::transform_force_stiff()
  *-----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BeamInteraction::print_binning_info_to_screen() const
 {
-  std::vector<Teuchos::RCP<Core::FE::Discretization>> discret_vec(1, ia_discret_);
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> disnp_vec(1, Teuchos::null);
+  std::vector<std::shared_ptr<Core::FE::Discretization>> discret_vec(1, ia_discret_);
+  std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> disnp_vec(1, nullptr);
 
   double bin_size_lower_bound =
       binstrategy_->compute_lower_bound_for_bin_size_as_max_edge_length_of_aabb_of_largest_ele(

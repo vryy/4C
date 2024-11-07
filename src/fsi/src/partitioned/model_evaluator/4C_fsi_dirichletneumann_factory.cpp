@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorithm(
+std::shared_ptr<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorithm(
     const Epetra_Comm& comm, const Teuchos::ParameterList& fsidyn)
 {
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
@@ -42,7 +42,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorit
                 "interface velocities. Check your problem type!");
           }
           else
-            return Teuchos::RCP(new FSI::DirichletNeumannSlideale(comm));
+            return std::shared_ptr<FSI::DirichletNeumann>(new FSI::DirichletNeumannSlideale(comm));
           break;
         default:
           FOUR_C_THROW("Your problem does not work with DirichletNeumann Slide ALE yet!!");
@@ -62,7 +62,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorit
                 "interface velocities. Check your problem type!");
           }
           else
-            return Teuchos::RCP(new FSI::DirichletNeumannVolCoupl(comm));
+            return std::shared_ptr<FSI::DirichletNeumann>(new FSI::DirichletNeumannVolCoupl(comm));
           break;
         default:
           FOUR_C_THROW("Your problem does not work with DirichletNeumann Volume Coupling yet!!");
@@ -83,7 +83,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorit
                 "interface velocities. Check your problem type!");
           }
           else
-            return Teuchos::RCP(new FSI::DirichletNeumannDisp(comm));
+            return std::shared_ptr<FSI::DirichletNeumann>(new FSI::DirichletNeumannDisp(comm));
           break;
         case (Core::ProblemType::fbi):
           if (Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
@@ -94,7 +94,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorit
                 "interface displacements. Check your problem type!");
           }
           else
-            return Teuchos::RCP(new FSI::DirichletNeumannVel(comm));
+            return std::shared_ptr<FSI::DirichletNeumann>(new FSI::DirichletNeumannVel(comm));
           break;
         default:
           FOUR_C_THROW("Your problem does not work with DirichletNeumann yet!!");
@@ -102,7 +102,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorit
       }
       break;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 FOUR_C_NAMESPACE_CLOSE

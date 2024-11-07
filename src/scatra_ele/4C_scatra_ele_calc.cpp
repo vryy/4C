@@ -38,14 +38,14 @@ Discret::Elements::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
       scatrapara_(Discret::Elements::ScaTraEleParameterStd::instance(disname)),
       turbparams_(Discret::Elements::ScaTraEleParameterTurbulence::instance(disname)),
       scatraparatimint_(Discret::Elements::ScaTraEleParameterTimInt::instance(disname)),
-      diffmanager_(Teuchos::make_rcp<ScaTraEleDiffManager>(numscal_)),
-      reamanager_(Teuchos::make_rcp<ScaTraEleReaManager>(numscal_)),
+      diffmanager_(std::make_shared<ScaTraEleDiffManager>(numscal_)),
+      reamanager_(std::make_shared<ScaTraEleReaManager>(numscal_)),
       ephin_(numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true)),
       ephinp_(numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true)),
       ehist_(numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true)),
       fsphinp_(numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true)),
-      rotsymmpbc_(Teuchos::RCP(new FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1,
-          Discret::Elements::Fluid::none>())),
+      rotsymmpbc_(std::make_shared<FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1,
+              Discret::Elements::Fluid::none>>()),
       evelnp_(true),
       econvelnp_(true),
       efsvel_(true),
@@ -68,7 +68,7 @@ Discret::Elements::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
       myknots_(nsd_),
       eid_(0),
       ele_(nullptr),
-      scatravarmanager_(Teuchos::make_rcp<ScaTraEleInternalVariableManager<nsd_, nen_>>(numscal_))
+      scatravarmanager_(std::make_shared<ScaTraEleInternalVariableManager<nsd_, nen_>>(numscal_))
 {
   FOUR_C_ASSERT(
       nsd_ >= nsd_ele_, "problem dimension has to be equal or larger than the element dimension!");
@@ -116,12 +116,12 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::setup_calc(
   // rotationally symmetric periodic bc's: do setup for current element
   rotsymmpbc_->setup(ele);
 
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
   if (material->material_type() == Core::Materials::m_matlist or
       material->material_type() == Core::Materials::m_matlist_reactions)
   {
-    const Teuchos::RCP<const Mat::MatList>& material_list =
-        Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
+    const std::shared_ptr<const Mat::MatList>& material_list =
+        std::dynamic_pointer_cast<const Mat::MatList>(material);
     if (material_list->num_mat() < numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < numscal_; ++k)
@@ -130,8 +130,8 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::setup_calc(
 
       if (material_list->material_by_id(material_id)->material_type() == Core::Materials::m_scatra)
       {
-        Teuchos::RCP<const Mat::ScatraMat> single_material =
-            Teuchos::rcp_static_cast<const Mat::ScatraMat>(
+        std::shared_ptr<const Mat::ScatraMat> single_material =
+            std::static_pointer_cast<const Mat::ScatraMat>(
                 material_list->material_by_id(material_id));
         scatravarmanager_->set_reacts_to_force(single_material->reacts_to_external_force(), k);
       }
@@ -208,7 +208,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
 
   // get convective (velocity - mesh displacement) velocity at nodes
   auto convel = discretization.get_state(ndsvel, "convective velocity field");
-  if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
+  if (convel == nullptr) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -236,9 +236,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
   if (scatrapara_->is_ale())
   {
     // get velocity at nodes
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel =
         discretization.get_state(ndsvel, "velocity field");
-    if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector velocity");
+    if (vel == nullptr) FOUR_C_THROW("Cannot get state vector velocity");
 
     // extract local values of velocity field from global state vector
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*vel, evelnp_, lmvel);
@@ -249,9 +249,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = scatrapara_->nds_disp();
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
         discretization.get_state(ndsdisp, "dispnp");
-    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
+    if (dispnp == nullptr) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
     const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
@@ -280,9 +280,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
   if (scatrapara_->rb_sub_gr_vel())
   {
     // get acceleration values at nodes
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> acc =
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> acc =
         discretization.get_state(ndsvel, "acceleration field");
-    if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vector acceleration field");
+    if (acc == nullptr) FOUR_C_THROW("Cannot get state vector acceleration field");
 
     // extract local values of acceleration field from global state vector
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*acc, eaccnp_, lmvel);
@@ -300,9 +300,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
   }
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (hist == Teuchos::null || phinp == Teuchos::null)
+  std::shared_ptr<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+  if (hist == nullptr || phinp == nullptr)
     FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phinp'");
 
   // values of scatra field are always in first dofset
@@ -313,8 +313,8 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
   if (scatraparatimint_->is_gen_alpha() and not scatraparatimint_->is_incremental())
   {
     // extract additional local values from global vector
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
-    if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
+    if (phin == nullptr) FOUR_C_THROW("Cannot get state vector 'phin'");
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phin, ephin_, lm);
   }
 
@@ -357,8 +357,8 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::extract_turbulence_appr
   {
     Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
     // remark: for dynamic estimation, this returns (Cs*h)^2 / Pr_t
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ele_prt =
-        turbulencelist.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_ele_Prt");
+    std::shared_ptr<Core::LinAlg::Vector<double>> ele_prt =
+        turbulencelist.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("col_ele_Prt");
     const int id = ele->lid();
     tpn_ = (*ele_prt)[id];
 
@@ -374,8 +374,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::extract_turbulence_appr
       turbparams_->turb_model() == Inpar::FLUID::multifractal_subgrid_scales)
   {
     // get fine scale scalar field
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> gfsphinp = discretization.get_state("fsphinp");
-    if (gfsphinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fsphinp'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> gfsphinp =
+        discretization.get_state("fsphinp");
+    if (gfsphinp == nullptr) FOUR_C_THROW("Cannot get state vector 'fsphinp'");
 
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*gfsphinp, fsphinp_, la[0].lm_);
 
@@ -386,9 +387,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::extract_turbulence_appr
       const int ndsvel = scatrapara_->nds_vel();
 
       // get fine-scale velocity at nodes
-      const Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvelocity =
+      const std::shared_ptr<const Core::LinAlg::Vector<double>> fsvelocity =
           discretization.get_state(ndsvel, "fine-scale velocity field");
-      if (fsvelocity == Teuchos::null)
+      if (fsvelocity == nullptr)
         FOUR_C_THROW("Cannot get fine-scale velocity field from scatra discretization!");
 
       // determine number of velocity related dofs per node
@@ -901,7 +902,8 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::other_node_based_source
   if (turbparams_->scalar_forcing() == Inpar::FLUID::scalarforcing_isotropic)
   {
     // extract additional local values from global vector
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> source = discretization.get_state("forcing");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> source =
+        discretization.get_state("forcing");
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*source, bodyforce_, lm);
   }
   // special forcing mean scalar gradient
@@ -1144,18 +1146,18 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::get_material_params(
     std::vector<double>& densam, double& visc, const int iquad)
 {
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   if (material->material_type() == Core::Materials::m_matlist)
   {
-    const Teuchos::RCP<const Mat::MatList>& actmat =
-        Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
+    const std::shared_ptr<const Mat::MatList>& actmat =
+        std::dynamic_pointer_cast<const Mat::MatList>(material);
     if (actmat->num_mat() < numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < numscal_; ++k)
     {
       int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
@@ -1168,7 +1170,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::get_material_params(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalc<distype, probdim>::materials(
-    const Teuchos::RCP<const Core::Mat::Material> material, const int k, double& densn,
+    const std::shared_ptr<const Core::Mat::Material> material, const int k, double& densn,
     double& densnp, double& densam, double& visc, const int iquad)
 {
   switch (material->material_type())
@@ -1206,11 +1208,11 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::materials(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalc<distype, probdim>::mat_scatra(
-    const Teuchos::RCP<const Core::Mat::Material> material, const int k, double& densn,
+    const std::shared_ptr<const Core::Mat::Material> material, const int k, double& densn,
     double& densnp, double& densam, double& visc, const int iquad)
 {
-  const Teuchos::RCP<const Mat::ScatraMat>& actmat =
-      Teuchos::rcp_dynamic_cast<const Mat::ScatraMat>(material);
+  const std::shared_ptr<const Mat::ScatraMat>& actmat =
+      std::dynamic_pointer_cast<const Mat::ScatraMat>(material);
 
   // get constant diffusivity
   diffmanager_->set_isotropic_diff(actmat->diffusivity(), k);
@@ -1224,7 +1226,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::mat_scatra(
       turbparams_->turb_model() == Inpar::FLUID::dynamic_smagorinsky)
   {
     // access fluid discretization
-    Teuchos::RCP<Core::FE::Discretization> fluiddis = Teuchos::null;
+    std::shared_ptr<Core::FE::Discretization> fluiddis = nullptr;
     fluiddis = Global::Problem::instance()->get_dis("fluid");
     // get corresponding fluid element (it has the same global ID as the scatra element)
     Core::Elements::Element* fluidele = fluiddis->g_element(eid_);
@@ -1233,12 +1235,12 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::mat_scatra(
     else
     {
       // get fluid material
-      Teuchos::RCP<Core::Mat::Material> fluidmat = fluidele->material();
+      std::shared_ptr<Core::Mat::Material> fluidmat = fluidele->material();
       if (fluidmat->material_type() != Core::Materials::m_fluid)
         FOUR_C_THROW("Invalid fluid material for passive scalar transport in turbulent flow!");
 
-      const Teuchos::RCP<const Mat::NewtonianFluid>& actfluidmat =
-          Teuchos::rcp_dynamic_cast<const Mat::NewtonianFluid>(fluidmat);
+      const std::shared_ptr<const Mat::NewtonianFluid>& actfluidmat =
+          std::dynamic_pointer_cast<const Mat::NewtonianFluid>(fluidmat);
 
       // get constant dynamic viscosity
       visc = actfluidmat->viscosity();
@@ -1259,7 +1261,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::mat_scatra(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalc<distype, probdim>::mat_scatra_multi_scale(
-    const Teuchos::RCP<const Core::Mat::Material> material, double& densn, double& densnp,
+    const std::shared_ptr<const Core::Mat::Material> material, double& densn, double& densnp,
     double& densam) const
 {
   // safety check
@@ -1282,11 +1284,11 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::mat_scatra_multi_scale(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalc<distype, probdim>::mat_electrode(
-    const Teuchos::RCP<const Core::Mat::Material> material)
+    const std::shared_ptr<const Core::Mat::Material> material)
 {
   // set constant diffusivity
   diffmanager_->set_isotropic_diff(
-      Teuchos::rcp_static_cast<const Mat::Electrode>(material)
+      std::static_pointer_cast<const Mat::Electrode>(material)
           ->compute_diffusion_coefficient_concentration_dependent(scatravarmanager_->phinp(0)),
       0);
 }

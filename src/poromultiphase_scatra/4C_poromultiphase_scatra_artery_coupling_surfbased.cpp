@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::PoroMultiPhaseScaTraArtCouplSurfBased(
-    Teuchos::RCP<Core::FE::Discretization> arterydis,
-    Teuchos::RCP<Core::FE::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
+    std::shared_ptr<Core::FE::Discretization> arterydis,
+    std::shared_ptr<Core::FE::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
     const std::string& condname, const std::string& artcoupleddofname,
     const std::string& contcoupleddofname)
     : PoroMultiPhaseScaTraArtCouplNonConforming(
@@ -52,8 +52,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
   const int numgp_desired = numgp_per_artele * numartele;
 
   // this vector keeps track of evaluation of GPs
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> gp_vector =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> gp_vector =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(
           *arterydis_->element_col_map(), numgp_per_artele);
 
   // pre-evaluate
@@ -180,8 +180,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::evaluate(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs)
 {
   if (!issetup_) FOUR_C_THROW("setup() has not been called");
 
@@ -198,14 +198,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::evaluate(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::setup_system(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_cont,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_art,
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art)
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_cont,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_art,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_cont,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_art,
+    std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmap_cont,
+    std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmap_art)
 {
   // call base class
   PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup_system(*sysmat, rhs,
@@ -223,12 +223,12 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::apply_mesh_mov
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::blood_vessel_volume_fraction()
 {
   FOUR_C_THROW("Output of vessel volume fraction not possible for surface-based coupling");
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 

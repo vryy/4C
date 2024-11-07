@@ -48,7 +48,7 @@ namespace Mat
       //@}
 
       // create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class ScalarDepInterp
 
@@ -155,9 +155,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ScalarDepInterp>(*this);
+      return std::make_shared<ScalarDepInterp>(*this);
     }
 
     /// number of materials
@@ -176,7 +176,7 @@ namespace Mat
     };
 
     /// provide access to material by its ID
-    //     virtual Teuchos::RCP<const Mat::Elastic::Summand> MaterialById(const int id) const {
+    //     virtual std::shared_ptr<const Mat::Elastic::Summand> MaterialById(const int id) const {
     //     return params_->MaterialById(id); }
 
 
@@ -215,10 +215,10 @@ namespace Mat
     bool isinit_;
 
     /// elastic material for zero lambda
-    Teuchos::RCP<Mat::So3Material> lambda_zero_mat_;
+    std::shared_ptr<Mat::So3Material> lambda_zero_mat_;
 
     /// elastic material for unit lambda
-    Teuchos::RCP<Mat::So3Material> lambda_unit_mat_;
+    std::shared_ptr<Mat::So3Material> lambda_unit_mat_;
 
     /// interpolation parameter (0-->IDMATZEROSC,1-->IDMATUNITSC)
     std::vector<double> lambda_;

@@ -29,24 +29,24 @@ Core::Communication::ParObject* Discret::Elements::Nurbs::Wall1NurbsType::create
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Nurbs::Wall1NurbsType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Nurbs::Wall1NurbsType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLNURBS")
   {
     if (eledistype == "NURBS4" || eledistype == "NURBS9")
     {
-      return Teuchos::make_rcp<Discret::Elements::Nurbs::Wall1Nurbs>(id, owner);
+      return std::make_shared<Discret::Elements::Nurbs::Wall1Nurbs>(id, owner);
     }
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Nurbs::Wall1NurbsType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Nurbs::Wall1NurbsType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::Nurbs::Wall1Nurbs>(id, owner);
+  return std::make_shared<Discret::Elements::Nurbs::Wall1Nurbs>(id, owner);
 }
 
 void Discret::Elements::Nurbs::Wall1NurbsType::nodal_block_information(
@@ -153,7 +153,7 @@ Core::FE::CellType Discret::Elements::Nurbs::Wall1Nurbs::shape() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 05/09|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Nurbs::Wall1Nurbs::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Nurbs::Wall1Nurbs::lines()
 {
   return Core::Communication::element_boundary_factory<Wall1Line, Wall1>(
       Core::Communication::buildLines, *this);
@@ -162,9 +162,10 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Nurbs::Wal
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          gammi 05/09|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Nurbs::Wall1Nurbs::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>>
+Discret::Elements::Nurbs::Wall1Nurbs::surfaces()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 FOUR_C_NAMESPACE_CLOSE

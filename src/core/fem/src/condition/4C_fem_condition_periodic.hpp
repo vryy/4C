@@ -13,9 +13,10 @@
 #include "4C_fem_condition.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -64,7 +65,7 @@ namespace Core::Conditions
     \return void
 
     */
-    PeriodicBoundaryConditions(Teuchos::RCP<Core::FE::Discretization> dis, bool verbose = true);
+    PeriodicBoundaryConditions(std::shared_ptr<Core::FE::Discretization> dis, bool verbose = true);
 
     /*!
     \brief Destructor
@@ -92,14 +93,14 @@ namespace Core::Conditions
     //@}
 
     //! @name methods to provide constructed node to node coupling
-    Teuchos::RCP<std::map<int, std::vector<int>>> return_all_coupled_col_nodes()
+    std::shared_ptr<std::map<int, std::vector<int>>> return_all_coupled_col_nodes()
     {
       return (allcoupledcolnodes_);
     }
     //@}
 
     //! @name methods to provide constructed node to node coupling
-    Teuchos::RCP<std::map<int, std::vector<int>>> return_all_coupled_row_nodes()
+    std::shared_ptr<std::map<int, std::vector<int>>> return_all_coupled_row_nodes()
     {
       return (allcoupledrownodes_);
     }
@@ -306,14 +307,14 @@ namespace Core::Conditions
     //@}
 
     //!\brief the discretisation
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //!\brief a flag controlling the verbosity, i.e. the amount of output
     // displayed on the screen
     bool verbose_;
 
     //!\brief the pbc-dofset created by this object
-    Teuchos::RCP<Core::DOFSets::PBCDofSet> pbcdofset_;
+    std::shared_ptr<Core::DOFSets::PBCDofSet> pbcdofset_;
 
     //!\brief number of pairs of periodic boundary conditions
     int numpbcpairs_;
@@ -323,11 +324,11 @@ namespace Core::Conditions
 
     //!\brief map connecting master to slave nodes owned by this proc
     //       master node -> list of his slave node(s)
-    Teuchos::RCP<std::map<int, std::vector<int>>> allcoupledrownodes_;
+    std::shared_ptr<std::map<int, std::vector<int>>> allcoupledrownodes_;
 
     //!\brief map connecting master to slave nodes owned or ghosted by this proc
     //       master node -> list of his slave node(s)
-    Teuchos::RCP<std::map<int, std::vector<int>>> allcoupledcolnodes_;
+    std::shared_ptr<std::map<int, std::vector<int>>> allcoupledcolnodes_;
 
     //!\brief time measurement (total)
     Teuchos::RCP<Teuchos::Time> timepbctot_;
@@ -350,23 +351,23 @@ namespace Core::Conditions
 
 
     //!\brief time measurement (total)
-    Teuchos::RCP<Teuchos::TimeMonitor> tm0_ref_;
+    std::shared_ptr<Teuchos::TimeMonitor> tm0_ref_;
     //!\brief time measurement (create master slave matching for pairs)
-    Teuchos::RCP<Teuchos::TimeMonitor> tm1_ref_;
+    std::shared_ptr<Teuchos::TimeMonitor> tm1_ref_;
     //!\brief time measurement (create octree)
-    Teuchos::RCP<Teuchos::TimeMonitor> tm2_ref_;
+    std::shared_ptr<Teuchos::TimeMonitor> tm2_ref_;
     //!\brief time measurement (search in octree)
-    Teuchos::RCP<Teuchos::TimeMonitor> tm3_ref_;
+    std::shared_ptr<Teuchos::TimeMonitor> tm3_ref_;
     //!\brief time measurement (add connectivity to previous pbcs)
-    Teuchos::RCP<Teuchos::TimeMonitor> tm4_ref_;
+    std::shared_ptr<Teuchos::TimeMonitor> tm4_ref_;
     //!\brief time measurement (redistribute nodes)
-    Teuchos::RCP<Teuchos::TimeMonitor> tm5_ref_;
+    std::shared_ptr<Teuchos::TimeMonitor> tm5_ref_;
     //!\brief time measurement (make row and colmap for ghosting)
-    Teuchos::RCP<Teuchos::TimeMonitor> tm6_ref_;
+    std::shared_ptr<Teuchos::TimeMonitor> tm6_ref_;
     //!\brief time measurement (repair ghosting)
-    Teuchos::RCP<Teuchos::TimeMonitor> tm7_ref_;
+    std::shared_ptr<Teuchos::TimeMonitor> tm7_ref_;
     //!\brief time measurement (discret->redistribute)
-    Teuchos::RCP<Teuchos::TimeMonitor> tm8_ref_;
+    std::shared_ptr<Teuchos::TimeMonitor> tm8_ref_;
   };
 }  // namespace Core::Conditions
 

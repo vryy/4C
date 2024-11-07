@@ -19,7 +19,8 @@
 #include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Utils.H>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 // Forward Declarations
 class Epetra_Comm;
@@ -131,14 +132,14 @@ namespace NOX
        * equivalent Epetra_Map from the Epetra_BlockMap that can be used as the return object of the
        * OperatorDomainMap() and OperatorRangeMap() methods.
        */
-      Teuchos::RCP<const Epetra_Map> epetraMap;
+      std::shared_ptr<const Epetra_Map> epetraMap;
 
       //! Flag to enables the use of a group instead of the interface for the computeF() calls in
       //! the directional difference calculation.
       bool useGroupForComputeF;
 
       //! Pointer to the group for possible use in computeF() calls.
-      Teuchos::RCP<::NOX::Abstract::Group> groupPtr;
+      std::shared_ptr<::NOX::Abstract::Group> groupPtr;
 
       //! Printing utilities.
       ::NOX::Utils utils;

@@ -34,15 +34,16 @@ namespace Adapter
   {
    public:
     /// Constructor
-    FluidFSIMsht(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
+    FluidFSIMsht(std::shared_ptr<Fluid> fluid, std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
     void init() override;
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::Utils::FsiMapExtractor> const& fsi_interface() const
+    virtual std::shared_ptr<FLD::Utils::FsiMapExtractor> const& fsi_interface() const
     {
       return fsiinterface_;
     }
@@ -55,7 +56,7 @@ namespace Adapter
     //! \brief interface map setup for fsi interface and other
     //!
     //! Note: full map contains velocity AND pressure DOFs
-    Teuchos::RCP<FLD::Utils::FsiMapExtractor> fsiinterface_;
+    std::shared_ptr<FLD::Utils::FsiMapExtractor> fsiinterface_;
   };
 }  // namespace Adapter
 

@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Solid::ModelEvaluator::BeamInteractionOld::BeamInteractionOld()
-    : disnp_ptr_(Teuchos::null),
-      stiff_beaminteract_ptr_(Teuchos::null),
-      f_beaminteract_np_ptr_(Teuchos::null),
-      beamcman_(Teuchos::null)
+    : disnp_ptr_(nullptr),
+      stiff_beaminteract_ptr_(nullptr),
+      f_beaminteract_np_ptr_(nullptr),
+      beamcman_(nullptr)
 {
   // empty
 }
@@ -41,13 +41,13 @@ void Solid::ModelEvaluator::BeamInteractionOld::setup()
 
   // setup the pointers for displacement and stiffness
   disnp_ptr_ = global_state().get_dis_np();
-  stiff_beaminteract_ptr_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  stiff_beaminteract_ptr_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *global_state().dof_row_map_view(), 81, true, true);
   f_beaminteract_np_ptr_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
 
   // create beam contact manager
-  beamcman_ = Teuchos::make_rcp<CONTACT::Beam3cmanager>(*discret_ptr(), 0.0);
+  beamcman_ = std::make_shared<CONTACT::Beam3cmanager>(*discret_ptr(), 0.0);
 
   // gmsh output at beginning of simulation
 #ifdef GMSHTIMESTEPS
@@ -151,7 +151,7 @@ bool Solid::ModelEvaluator::BeamInteractionOld::assemble_force(
 bool Solid::ModelEvaluator::BeamInteractionOld::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
   jac_dd_ptr->add(*stiff_beaminteract_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_beaminteract_ptr_->zero();
@@ -197,7 +197,8 @@ void Solid::ModelEvaluator::BeamInteractionOld::update_step_state(const double& 
   beamcman_->update(*disnp_ptr_, eval_data().get_step_np(), eval_data().get_nln_iter());
 
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Core::LinAlg::Vector<double>>& fstructold_ptr = global_state().get_fstructure_old();
+  std::shared_ptr<Core::LinAlg::Vector<double>>& fstructold_ptr =
+      global_state().get_fstructure_old();
 
   // Todo take care of the minus sign in front of timefac_np
   fstructold_ptr->Update(-timefac_n, *f_beaminteract_np_ptr_, 1.0);
@@ -249,7 +250,7 @@ void Solid::ModelEvaluator::BeamInteractionOld::reset_step_state() { return; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map>
+std::shared_ptr<const Epetra_Map>
 Solid::ModelEvaluator::BeamInteractionOld::get_block_dof_row_map_ptr() const
 {
   check_init_setup();
@@ -258,20 +259,20 @@ Solid::ModelEvaluator::BeamInteractionOld::get_block_dof_row_map_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::BeamInteractionOld::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::BeamInteractionOld::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*

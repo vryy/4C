@@ -35,7 +35,8 @@ namespace Discret
 
       int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          std::shared_ptr<Core::Mat::Material>& mat,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -44,7 +45,7 @@ namespace Discret
       /// Evaluate the element at specified gauss points for porous flow
       virtual int evaluate_od(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+          Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -77,7 +78,7 @@ namespace Discret
           const Core::LinAlg::Matrix<nsd_, nen_>& eveln,
           const Core::LinAlg::Matrix<nen_, 1>& escaam,
           const Core::LinAlg::Matrix<nsd_, nen_>& edispnp,
-          const Core::LinAlg::Matrix<nsd_, nen_>& egridv, Teuchos::RCP<Core::Mat::Material> mat,
+          const Core::LinAlg::Matrix<nsd_, nen_>& egridv, std::shared_ptr<Core::Mat::Material> mat,
           bool isale, double CsDeltaSq, double CiDeltaSq,
           const Core::FE::GaussIntegration& intpoints);
 
@@ -120,7 +121,7 @@ namespace Discret
           const Core::LinAlg::Matrix<nsd_, nen_>& egridv,
           Core::LinAlg::Matrix<(nsd_ + 1) * nen_, nen_>& estif, const double thermpressaf,
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-          Teuchos::RCP<const Core::Mat::Material> material, double& Cs_delta_sq,
+          std::shared_ptr<const Core::Mat::Material> material, double& Cs_delta_sq,
           double& Ci_delta_sq, bool isale, const Core::FE::GaussIntegration& intpoints);
     };
   }  // namespace Elements

@@ -31,10 +31,10 @@ FOUR_C_NAMESPACE_OPEN
 
 
 XFEM::LevelSetCoupling::LevelSetCoupling(
-    Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+    std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<Core::FE::Discretization>&
+    std::shared_ptr<Core::FE::Discretization>&
         cond_dis,           ///< full discretization from which the cutter discretization is derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -196,9 +196,9 @@ void XFEM::LevelSetCoupling::prepare_cutter_output()
   // -------------------------------------------------------------------
   cutter_output_ = cutter_dis_->writer();
 
-  if (cutter_output_ == Teuchos::null)
+  if (cutter_output_ == nullptr)
   {
-    cutter_dis_->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(cutter_dis_,
+    cutter_dis_->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(cutter_dis_,
         Global::Problem::instance()->output_control_file(),
         Global::Problem::instance()->spatial_approximation_type()));
   }
@@ -375,7 +375,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
 
   // make a copy of last time step
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> delta_phi =
+  std::shared_ptr<Core::LinAlg::Vector<double>> delta_phi =
       Core::LinAlg::create_vector(cutter_phinp_->Map(), true);
   delta_phi->Update(1.0, *cutter_phinp_, 0.0);
 
@@ -448,9 +448,9 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
       // To get phi nodal values into pressure dofs in the fluid discretization!!! - any idea for
       // nice implementation?
       const Epetra_Map* modphinp_dofrowmap =
-          Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)->initial_dof_row_map();
-      Teuchos::RCP<Core::LinAlg::Vector<double>> modphinp =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*modphinp_dofrowmap, true);
+          std::dynamic_pointer_cast<XFEM::DiscretizationXFEM>(cutter_dis_)->initial_dof_row_map();
+      std::shared_ptr<Core::LinAlg::Vector<double>> modphinp =
+          std::make_shared<Core::LinAlg::Vector<double>>(*modphinp_dofrowmap, true);
 
       double* val = cutter_phinp_->Values();
 
@@ -463,7 +463,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
         if (lsnode == nullptr) FOUR_C_THROW("Returned node is null-pointer.");
 
         std::vector<int> initialdof =
-            Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)->initial_dof(lsnode);
+            std::dynamic_pointer_cast<XFEM::DiscretizationXFEM>(cutter_dis_)->initial_dof(lsnode);
 
         if (initialdof.size() != 4)
           FOUR_C_THROW("Initial Dof Size is not 4! Size: %d", initialdof.size());
@@ -478,21 +478,21 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
       // SAFETY check
       // dependent on the desired projection, just remove this line
       if (not modphinp->Map().SameAs(
-              *Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)
+              *std::dynamic_pointer_cast<XFEM::DiscretizationXFEM>(cutter_dis_)
                    ->initial_dof_row_map()))
         FOUR_C_THROW("input map is not a dof row map of the fluid");
 
       // set given state for element evaluation
       cutter_dis_->clear_state();
-      Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)
+      std::dynamic_pointer_cast<XFEM::DiscretizationXFEM>(cutter_dis_)
           ->set_initial_state(0, "pres", modphinp);
 
       // Lives on NodeRow-map!!!
       const auto& solverparams = Global::Problem::instance()->solver_params(l2_proj_num);
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> gradphinp_smoothed_rownode =
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> gradphinp_smoothed_rownode =
           Core::FE::compute_nodal_l2_projection(*cutter_dis_, "pres", 3, eleparams, solverparams,
               Global::Problem::instance()->solver_params_callback());
-      if (gradphinp_smoothed_rownode == Teuchos::null)
+      if (gradphinp_smoothed_rownode == nullptr)
         FOUR_C_THROW("A smoothed grad phi is required, but an empty one is provided!");
 
       // The following bugfix needs to be check carefully
@@ -576,10 +576,10 @@ void XFEM::LevelSetCoupling::map_cutter_to_bg_vector(Core::FE::Discretization& s
   }
 }
 
-Teuchos::RCP<Core::LinAlg::Vector<double>>
+std::shared_ptr<Core::LinAlg::Vector<double>>
 XFEM::LevelSetCoupling::get_level_set_field_as_node_row_vector()
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> bg_phinp_nodemap_ =
+  std::shared_ptr<Core::LinAlg::Vector<double>> bg_phinp_nodemap_ =
       Core::LinAlg::create_vector(*bg_dis_->node_row_map(), true);
 
   // loop the nodes
@@ -985,10 +985,10 @@ double XFEM::LevelSetCoupling::funct_implementation(
 // TODO: has_interface_moved_ checks its functionality and there is another flag in meshcoupling i
 // think
 XFEM::LevelSetCouplingBC::LevelSetCouplingBC(
-    Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+    std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<Core::FE::Discretization>&
+    std::shared_ptr<Core::FE::Discretization>&
         cond_dis,           ///< full discretization from which the cutter discretization is derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -1216,10 +1216,10 @@ void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions_old_state(
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 XFEM::LevelSetCouplingNavierSlip::LevelSetCouplingNavierSlip(
-    Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+    std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<Core::FE::Discretization>&
+    std::shared_ptr<Core::FE::Discretization>&
         cond_dis,           ///< full discretization from which the cutter discretization is derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time

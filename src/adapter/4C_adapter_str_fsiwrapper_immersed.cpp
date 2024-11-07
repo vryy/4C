@@ -21,11 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Adapter::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<Structure> structure)
+Adapter::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(
+    std::shared_ptr<Structure> structure)
     : FPSIStructureWrapper(structure)
 {
   // immersed_ale fsi part
-  std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
+  std::vector<std::shared_ptr<const Epetra_Map>> vecSpaces;
 
   vecSpaces.push_back(interface_->fsi_cond_map());       // fsi
   vecSpaces.push_back(interface_->immersed_cond_map());  // immersed
@@ -36,22 +37,22 @@ Adapter::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<S
   Core::LinAlg::MultiMapExtractor blockrowdofmap;
   blockrowdofmap.setup(*combinedmap_, vecSpaces);
 
-  combinedinterface_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+  combinedinterface_ = std::make_shared<Core::LinAlg::MapExtractor>(
       *combinedmap_, interface_->fsi_cond_map(), interface_->immersed_cond_map());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FSIStructureWrapperImmersed::apply_immersed_interface_forces(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iforce_fsi,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iforce_immersed)
+    std::shared_ptr<Core::LinAlg::Vector<double>> iforce_fsi,
+    std::shared_ptr<Core::LinAlg::Vector<double>> iforce_immersed)
 {
   fsi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
 
-  if (iforce_fsi != Teuchos::null)
+  if (iforce_fsi != nullptr)
     interface_->add_fsi_cond_vector(
         *iforce_fsi, *fsi_model_evaluator()->get_interface_force_np_ptr());
-  if (iforce_immersed != Teuchos::null)
+  if (iforce_immersed != nullptr)
     interface_->add_immersed_cond_vector(
         *iforce_immersed, *fsi_model_evaluator()->get_interface_force_np_ptr());
 
@@ -60,7 +61,7 @@ void Adapter::FSIStructureWrapperImmersed::apply_immersed_interface_forces(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>>
+std::shared_ptr<Core::LinAlg::Vector<double>>
 Adapter::FSIStructureWrapperImmersed::extract_immersed_interface_dispnp()
 {
   FOUR_C_ASSERT(interface_->full_map()->PointSameAs(dispnp()->Map()),
@@ -105,13 +106,13 @@ void Adapter::FSIStructureWrapperImmersed::output(
 /*----------------------------------------------------------------------*/
 Solid::Dbc& Adapter::FSIStructureWrapperImmersed::get_dbc()
 {
-  return Teuchos::rcp_dynamic_cast<Solid::TimeInt::Base>(structure_, true)->get_dbc();
+  return std::dynamic_pointer_cast<Solid::TimeInt::Base>(structure_)->get_dbc();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FSIStructureWrapperImmersed::add_dirich_dofs(
-    const Teuchos::RCP<const Epetra_Map> maptoadd)
+    const std::shared_ptr<const Epetra_Map> maptoadd)
 {
   get_dbc().add_dirich_dofs(maptoadd);
 }
@@ -119,7 +120,7 @@ void Adapter::FSIStructureWrapperImmersed::add_dirich_dofs(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FSIStructureWrapperImmersed::remove_dirich_dofs(
-    const Teuchos::RCP<const Epetra_Map> maptoremove)
+    const std::shared_ptr<const Epetra_Map> maptoremove)
 {
   get_dbc().remove_dirich_dofs(maptoremove);
 }
@@ -127,9 +128,9 @@ void Adapter::FSIStructureWrapperImmersed::remove_dirich_dofs(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FSIStructureWrapperImmersed::set_state(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& x)
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& x)
 {
-  return Teuchos::rcp_dynamic_cast<Solid::TimeInt::Implicit>(structure_, true)->set_state(x);
+  return std::dynamic_pointer_cast<Solid::TimeInt::Implicit>(structure_)->set_state(x);
 }
 
 FOUR_C_NAMESPACE_CLOSE

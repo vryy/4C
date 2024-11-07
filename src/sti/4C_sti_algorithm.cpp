@@ -27,16 +27,16 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
     const Teuchos::ParameterList& solverparams_thermo)
     :  // instantiate base class
       AlgorithmBase(comm, scatradyn),
-      scatra_(Teuchos::null),
-      thermo_(Teuchos::null),
-      strategyscatra_(Teuchos::null),
-      strategythermo_(Teuchos::null),
-      fieldparameters_(Teuchos::make_rcp<Teuchos::ParameterList>(scatradyn)),
+      scatra_(nullptr),
+      thermo_(nullptr),
+      strategyscatra_(nullptr),
+      strategythermo_(nullptr),
+      fieldparameters_(std::make_shared<Teuchos::ParameterList>(scatradyn)),
       iter_(0),
       itermax_(0),
       itertol_(0.),
-      stiparameters_(Teuchos::make_rcp<Teuchos::ParameterList>(stidyn)),
-      timer_(Teuchos::make_rcp<Teuchos::Time>("STI::ALG", true))
+      stiparameters_(std::make_shared<Teuchos::ParameterList>(stidyn)),
+      timer_(std::make_shared<Teuchos::Time>("STI::ALG", true))
 {
   // check input parameters for scatra and thermo fields
   if (Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(*fieldparameters_, "VELOCITYFIELD") !=
@@ -44,7 +44,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
     FOUR_C_THROW("Scatra-thermo interaction with convection not yet implemented!");
 
   // initialize scatra time integrator
-  scatra_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(
+  scatra_ = std::make_shared<Adapter::ScaTraBaseAlgorithm>(
       *fieldparameters_, *fieldparameters_, solverparams_scatra);
   scatra_->init();
   scatra_->scatra_field()->set_number_of_dof_set_velocity(1);
@@ -55,7 +55,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   modify_field_parameters_for_thermo_field();
 
   // initialize thermo time integrator
-  thermo_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(
+  thermo_ = std::make_shared<Adapter::ScaTraBaseAlgorithm>(
       *fieldparameters_, *fieldparameters_, solverparams_thermo, "thermo");
   thermo_->init();
   thermo_->scatra_field()->set_number_of_dof_set_velocity(1);
@@ -85,9 +85,9 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
 
     // extract meshtying strategies for scatra-scatra interface coupling from scatra and thermo time
     // integrators
-    strategyscatra_ = Teuchos::rcp_dynamic_cast<ScaTra::MeshtyingStrategyS2I>(
+    strategyscatra_ = std::dynamic_pointer_cast<ScaTra::MeshtyingStrategyS2I>(
         scatra_->scatra_field()->strategy());
-    strategythermo_ = Teuchos::rcp_dynamic_cast<ScaTra::MeshtyingStrategyS2I>(
+    strategythermo_ = std::dynamic_pointer_cast<ScaTra::MeshtyingStrategyS2I>(
         thermo_->scatra_field()->strategy());
 
     // perform initializations depending on type of meshtying method
@@ -296,7 +296,7 @@ void STI::Algorithm::time_loop()
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
 void STI::Algorithm::transfer_scatra_to_thermo(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra) const
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> scatra) const
 {
   // pass scatra degrees of freedom to thermo discretization
   thermo_->scatra_field()->discretization()->set_state(2, "scatra", scatra);
@@ -309,8 +309,9 @@ void STI::Algorithm::transfer_scatra_to_thermo(
       case Inpar::S2I::coupling_matching_nodes:
       {
         // pass master-side scatra degrees of freedom to thermo discretization
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> imasterphinp = Core::LinAlg::create_vector(
-            *scatra_->scatra_field()->discretization()->dof_row_map(), true);
+        const std::shared_ptr<Core::LinAlg::Vector<double>> imasterphinp =
+            Core::LinAlg::create_vector(
+                *scatra_->scatra_field()->discretization()->dof_row_map(), true);
         strategyscatra_->interface_maps()->insert_vector(
             *strategyscatra_->coupling_adapter()->master_to_slave(
                 *strategyscatra_->interface_maps()->extract_vector(*scatra, 2)),
@@ -340,8 +341,8 @@ void STI::Algorithm::transfer_scatra_to_thermo(
             Core::FE::Discretization& thermodis = strategythermo_->mortar_discretization(condid);
 
             // pass interfacial scatra degrees of freedom to thermo discretization
-            const Teuchos::RCP<Core::LinAlg::Vector<double>> iscatra =
-                Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*thermodis.dof_row_map(1));
+            const std::shared_ptr<Core::LinAlg::Vector<double>> iscatra =
+                std::make_shared<Core::LinAlg::Vector<double>>(*thermodis.dof_row_map(1));
             Core::LinAlg::export_to(*scatra, *iscatra);
             thermodis.set_state(1, "scatra", iscatra);
           }
@@ -361,7 +362,7 @@ void STI::Algorithm::transfer_scatra_to_thermo(
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
 void STI::Algorithm::transfer_thermo_to_scatra(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> thermo) const
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> thermo) const
 {
   // pass thermo degrees of freedom to scatra discretization
   scatra_->scatra_field()->discretization()->set_state(2, "thermo", thermo);
@@ -388,8 +389,8 @@ void STI::Algorithm::transfer_thermo_to_scatra(
         Core::FE::Discretization& scatradis = strategyscatra_->mortar_discretization(condid);
 
         // pass interfacial thermo degrees of freedom to scatra discretization
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> ithermo =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scatradis.dof_row_map(1));
+        const std::shared_ptr<Core::LinAlg::Vector<double>> ithermo =
+            std::make_shared<Core::LinAlg::Vector<double>>(*scatradis.dof_row_map(1));
         Core::LinAlg::export_to(*thermo, *ithermo);
         scatradis.set_state(1, "thermo", ithermo);
       }

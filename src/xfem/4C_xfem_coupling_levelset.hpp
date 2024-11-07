@@ -33,10 +33,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCoupling(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -84,16 +84,16 @@ namespace XFEM
     void gmsh_output(const std::string& filename_base, const int step, const int gmsh_step_diff,
         const bool gmsh_debug_out_screen) override;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_level_set_field_as_node_row_vector();
+    std::shared_ptr<Core::LinAlg::Vector<double>> get_level_set_field_as_node_row_vector();
 
     virtual void read_restart(const int step, const int lsc_idx = 0);
 
     bool has_moving_interface() override { return true; }
 
     void get_interface_slave_material(
-        Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat) override
+        Core::Elements::Element* actele, std::shared_ptr<Core::Mat::Material>& mat) override
     {
-      mat = Teuchos::null;
+      mat = nullptr;
     }
 
     XFEM::CouplingBase::LevelSetBooleanType get_boolean_combination() { return ls_boolean_type_; }
@@ -110,12 +110,12 @@ namespace XFEM
 
    protected:
     //! Output specific
-    Teuchos::RCP<Core::IO::DiscretizationWriter> bg_output_;
+    std::shared_ptr<Core::IO::DiscretizationWriter> bg_output_;
 
     //! @name fluid discretization related state vectors
 
     //! fluid-dis (bgdis) state vectors for levelset applications
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinp_;
 
 
     //@}
@@ -124,18 +124,18 @@ namespace XFEM
 
     //! scatra-dis (cutterdis) state vectors for levelset applications, prepares nonmatching
     //! discretizations between scatra and fluid
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cutter_phinp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cutter_phinp_col_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> cutter_phinp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> cutter_phinp_col_;
 
     //! The nodal curvature and smoothed gradient of the levelset field. (Stored w.r.t to the
     //! scatra-dis = cutter-dis)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> curvaturenp_node_;
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> gradphinp_smoothed_node_;
-    // Teuchos::RCP<Core::LinAlg::MultiVector<double>>   gradphi2np_smoothed_node_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> curvaturenp_node_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> gradphinp_smoothed_node_;
+    // std::shared_ptr<Core::LinAlg::MultiVector<double>>   gradphi2np_smoothed_node_;
 
     //! and column versions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> curvaturenp_node_col_;
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> gradphinp_smoothed_node_col_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> curvaturenp_node_col_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> gradphinp_smoothed_node_col_;
 
     //! boolean operation type on level-set for current ls-field and previous combination of
     //! level-set fields
@@ -161,10 +161,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCouplingBC(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -189,10 +189,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCouplingWeakDirichlet(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -244,10 +244,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCouplingNeumann(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -312,10 +312,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCouplingNavierSlip(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -545,14 +545,14 @@ namespace XFEM
 
 
   /// set levelset field by given vector
-  void write_access_geometric_quantities(Teuchos::RCP<Core::LinAlg::Vector<double>>& scalaraf,
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>>& smoothed_gradphiaf,
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& curvatureaf);
+  void write_access_geometric_quantities(std::shared_ptr<Core::LinAlg::Vector<double>>& scalaraf,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>>& smoothed_gradphiaf,
+      std::shared_ptr<Core::LinAlg::Vector<double>>& curvatureaf);
 
 
   /// set material pointer for coupling slave side
   void get_interface_slave_material(
-      Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat);
+      Core::Elements::Element* actele, std::shared_ptr<Core::Mat::Material>& mat);
 
   template <Core::FE::CellType distype, class M1, class M2>
   void evaluate_curvature(double& icurvature,  ///< curvature to be computed

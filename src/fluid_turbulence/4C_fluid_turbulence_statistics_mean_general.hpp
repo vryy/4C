@@ -12,7 +12,7 @@
 
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -65,11 +65,11 @@ namespace FLD
     \param (in) the discretisation (containing nodes, dofs etc.)
 
     */
-    TurbulenceStatisticsGeneralMean(Teuchos::RCP<Core::FE::Discretization> discret,
+    TurbulenceStatisticsGeneralMean(std::shared_ptr<Core::FE::Discretization> discret,
         std::string homdir, Core::LinAlg::MapExtractor& velpressplitter, const bool withscatra);
 
-    TurbulenceStatisticsGeneralMean(Teuchos::RCP<Core::FE::Discretization> discret,
-        Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset, std::string homdir,
+    TurbulenceStatisticsGeneralMean(std::shared_ptr<Core::FE::Discretization> discret,
+        std::shared_ptr<const Core::DOFSets::DofSet> standarddofset, std::string homdir,
         Core::LinAlg::MapExtractor& velpressplitter, const bool withscatra);
 
     /*!
@@ -88,8 +88,8 @@ namespace FLD
 
     */
     void add_to_current_time_average(const double dt, Core::LinAlg::Vector<double>& vec,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> scavec = Teuchos::null,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> scatravec = Teuchos::null);
+        const std::shared_ptr<Core::LinAlg::Vector<double>> scavec = nullptr,
+        const std::shared_ptr<Core::LinAlg::Vector<double>> scatravec = nullptr);
 
     /*!
     \brief Perform a averaging of the current, already time averaged
@@ -164,7 +164,7 @@ namespace FLD
     \brief Redistribute all statistics vectors
 
     */
-    void redistribute(Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset,
+    void redistribute(std::shared_ptr<const Core::DOFSets::DofSet> standarddofset,
         Core::FE::Discretization& discret);
 
     /*!
@@ -172,7 +172,7 @@ namespace FLD
 
     */
     void add_scatra_results(
-        Teuchos::RCP<Core::FE::Discretization> scatradis, Core::LinAlg::Vector<double>& myphinp);
+        std::shared_ptr<Core::FE::Discretization> scatradis, Core::LinAlg::Vector<double>& myphinp);
 
     /*!
     \brief Do output of ScaTra mean field for visualization/restart
@@ -185,13 +185,13 @@ namespace FLD
 
    private:
     //! the fluid discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! dofset containing fluid standard dofs (no XFEM dofs)
-    Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset_;
+    std::shared_ptr<const Core::DOFSets::DofSet> standarddofset_;
 
     //! the scatra discretization
-    Teuchos::RCP<Core::FE::Discretization> scatradis_;
+    std::shared_ptr<Core::FE::Discretization> scatradis_;
 
     //! a splitter between velocities and pressure dofs
     Core::LinAlg::MapExtractor& velpressplitter_;
@@ -200,7 +200,7 @@ namespace FLD
     std::vector<int> homdir_;
 
     //! previous averages, done in time and space
-    Teuchos::RCP<Core::LinAlg::Vector<double>> prev_avg_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> prev_avg_;
     //! number of time steps included in the previous average
     int prev_n_;
     //! time covered by previous average
@@ -208,7 +208,7 @@ namespace FLD
 
 
     //! current averages, done in time and space
-    Teuchos::RCP<Core::LinAlg::Vector<double>> curr_avg_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> curr_avg_;
     //! number of time steps included in the current average
     int curr_n_;
     //! time covered by current average
@@ -217,13 +217,13 @@ namespace FLD
     //! flag for additional averaging of scalar field
     bool withscatra_;
     //! previous scalar field averages, done in time and space
-    Teuchos::RCP<Core::LinAlg::Vector<double>> prev_avg_sca_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> prev_avg_sca_;
     //! current scalar field averages, done in time and space
-    Teuchos::RCP<Core::LinAlg::Vector<double>> curr_avg_sca_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> curr_avg_sca_;
     //! previous scalar field averages, done in time and space
-    Teuchos::RCP<Core::LinAlg::Vector<double>> prev_avg_scatra_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> prev_avg_scatra_;
     //! current scalar field averages, done in time and space
-    Teuchos::RCP<Core::LinAlg::Vector<double>> curr_avg_scatra_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> curr_avg_scatra_;
 
     //! compare operator for doubles up to a precision of 1e-8
     struct Doublecomp

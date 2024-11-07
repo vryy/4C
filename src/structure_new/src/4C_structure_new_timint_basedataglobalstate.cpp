@@ -28,6 +28,7 @@
 #include "4C_structure_new_utils.hpp"
 
 #include <NOX_Epetra_Vector.H>
+#include <Teuchos_RCPStdSharedPtrConversions.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -36,43 +37,43 @@ FOUR_C_NAMESPACE_OPEN
 Solid::TimeInt::BaseDataGlobalState::BaseDataGlobalState()
     : isinit_(false),
       issetup_(false),
-      datasdyn_(Teuchos::null),
+      datasdyn_(nullptr),
       dim_(Global::Problem::instance()->n_dim()),
-      discret_(Teuchos::null),
-      comm_(Teuchos::null),
+      discret_(nullptr),
+      comm_(nullptr),
       my_rank_(-1),
       timenp_(0.0),
-      timen_(Teuchos::null),
-      dt_(Teuchos::null),
+      timen_(nullptr),
+      dt_(nullptr),
       stepn_(0),
       stepnp_(0),
       restartstep_(0),
       ispredict_(false),
-      dis_(Teuchos::null),
-      vel_(Teuchos::null),
-      acc_(Teuchos::null),
-      disnp_(Teuchos::null),
-      velnp_(Teuchos::null),
-      accnp_(Teuchos::null),
-      fintnp_(Teuchos::null),
-      fextnp_(Teuchos::null),
-      freactn_(Teuchos::null),
-      freactnp_(Teuchos::null),
-      finertialn_(Teuchos::null),
-      finertialnp_(Teuchos::null),
-      fviscon_(Teuchos::null),
-      fvisconp_(Teuchos::null),
-      fstructold_(Teuchos::null),
-      jac_(Teuchos::null),
-      stiff_(Teuchos::null),
-      mass_(Teuchos::null),
-      damp_(Teuchos::null),
-      timer_(Teuchos::null),
+      dis_(nullptr),
+      vel_(nullptr),
+      acc_(nullptr),
+      disnp_(nullptr),
+      velnp_(nullptr),
+      accnp_(nullptr),
+      fintnp_(nullptr),
+      fextnp_(nullptr),
+      freactn_(nullptr),
+      freactnp_(nullptr),
+      finertialn_(nullptr),
+      finertialnp_(nullptr),
+      fviscon_(nullptr),
+      fvisconp_(nullptr),
+      fstructold_(nullptr),
+      jac_(nullptr),
+      stiff_(nullptr),
+      mass_(nullptr),
+      damp_(nullptr),
+      timer_(nullptr),
       dtsolve_(0.0),
       dtele_(0.0),
       max_block_num_(0),
-      gproblem_map_ptr_(Teuchos::null),
-      pressextractor_(Teuchos::null)
+      gproblem_map_ptr_(nullptr),
+      pressextractor_(nullptr)
 {
   // empty constructor
 }
@@ -104,8 +105,9 @@ Solid::TimeInt::BaseDataGlobalState& Solid::TimeInt::BaseDataGlobalState::operat
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::BaseDataGlobalState::init(const Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::ParameterList& sdynparams, const Teuchos::RCP<const BaseDataSDyn> datasdyn)
+void Solid::TimeInt::BaseDataGlobalState::init(
+    const std::shared_ptr<Core::FE::Discretization> discret,
+    const Teuchos::ParameterList& sdynparams, const std::shared_ptr<const BaseDataSDyn> datasdyn)
 {
   // We have to call setup() after init()
   issetup_ = false;
@@ -120,7 +122,7 @@ void Solid::TimeInt::BaseDataGlobalState::init(const Teuchos::RCP<Core::FE::Disc
   // ----------------------------------------------------------
   {
     discret_ = discret;
-    comm_ = Teuchos::rcpFromRef(discret_->get_comm());
+    comm_ = Core::Utils::shared_ptr_from_ref(discret_->get_comm());
     my_rank_ = comm_->MyPID();
   }
 
@@ -128,9 +130,9 @@ void Solid::TimeInt::BaseDataGlobalState::init(const Teuchos::RCP<Core::FE::Disc
   // control parameters
   // --------------------------------------
   {
-    timen_ = Teuchos::make_rcp<TimeStepping::TimIntMStep<double>>(
+    timen_ = std::make_shared<TimeStepping::TimIntMStep<double>>(
         0, 0, sdynparams.get<double>("TIMEINIT"));
-    dt_ = Teuchos::make_rcp<TimeStepping::TimIntMStep<double>>(
+    dt_ = std::make_shared<TimeStepping::TimIntMStep<double>>(
         0, 0, sdynparams.get<double>("TIMESTEP"));
 
     // initialize target time to initial time plus step size
@@ -157,19 +159,19 @@ void Solid::TimeInt::BaseDataGlobalState::setup()
   // --------------------------------------
   // control parameters
   // --------------------------------------
-  timer_ = Teuchos::make_rcp<Teuchos::Time>("", true);
+  timer_ = std::make_shared<Teuchos::Time>("", true);
 
   // --------------------------------------
   // vectors
   // --------------------------------------
   // displacements D_{n}
-  dis_ = Teuchos::make_rcp<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
+  dis_ = std::make_shared<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
       0, 0, dof_row_map_view(), true);
   // velocities V_{n}
-  vel_ = Teuchos::make_rcp<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
+  vel_ = std::make_shared<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
       0, 0, dof_row_map_view(), true);
   // accelerations A_{n}
-  acc_ = Teuchos::make_rcp<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
+  acc_ = std::make_shared<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
       0, 0, dof_row_map_view(), true);
 
   // displacements D_{n+1} at t_{n+1}
@@ -199,12 +201,12 @@ void Solid::TimeInt::BaseDataGlobalState::setup()
   // --------------------------------------
   // sparse operators
   // --------------------------------------
-  mass_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
+  mass_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
   if (datasdyn_->get_damping_type() != Inpar::Solid::damp_none)
   {
     if (datasdyn_->get_mass_lin_type() == Inpar::Solid::ml_none)
     {
-      damp_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
+      damp_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
     }
     else
     {
@@ -251,10 +253,10 @@ void Solid::TimeInt::BaseDataGlobalState::set_initial_fields()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_global_vector()
+std::shared_ptr<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_global_vector()
     const
 {
-  return create_global_vector(VecInitType::zero, Teuchos::null);
+  return create_global_vector(VecInitType::zero, nullptr);
 }
 
 /*----------------------------------------------------------------------------*
@@ -264,7 +266,7 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
 {
   check_init();
   Global::Problem* problem = Global::Problem::instance();
-  Teuchos::RCP<const Epetra_Map> me_map_ptr = me.get_block_dof_row_map_ptr();
+  std::shared_ptr<const Epetra_Map> me_map_ptr = me.get_block_dof_row_map_ptr();
 
   model_maps_[mt] = me_map_ptr;
 
@@ -273,7 +275,7 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
     case Inpar::Solid::model_structure:
     {
       // always called first, so we can use it to reset things
-      gproblem_map_ptr_ = Teuchos::null;
+      gproblem_map_ptr_ = nullptr;
       model_block_id_[mt] = 0;
       max_block_num_ = 1;
       break;
@@ -426,7 +428,7 @@ void Solid::TimeInt::BaseDataGlobalState::setup_multi_map_extractor()
   check_init();
   /* copy the std::map into a std::vector and keep the numbering of the model-id
    * map */
-  std::vector<Teuchos::RCP<const Epetra_Map>> maps_vec(max_block_number(), Teuchos::null);
+  std::vector<std::shared_ptr<const Epetra_Map>> maps_vec(max_block_number(), nullptr);
   // Make sure, that the block ids and the vector entry ids coincide!
   std::map<Inpar::Solid::ModelType, int>::const_iterator ci;
   for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
@@ -521,7 +523,7 @@ void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
     }
     else
     {
-      Teuchos::RCP<Core::FE::Discretization> discret = discret_;
+      std::shared_ptr<Core::FE::Discretization> discret = discret_;
       nodaladditdofs = beameleptr->get_additive_dof_gids(*discret, *nodeptr);
       nodalrotvecdofs = beameleptr->get_rot_vec_dof_gids(*discret, *nodeptr);
 
@@ -544,7 +546,7 @@ void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
   additdofmapvec.reserve(additdofset.size());
   additdofmapvec.assign(additdofset.begin(), additdofset.end());
   additdofset.clear();
-  Teuchos::RCP<Epetra_Map> additdofmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> additdofmap = std::make_shared<Epetra_Map>(
       -1, additdofmapvec.size(), additdofmapvec.data(), 0, discret_->get_comm());
   additdofmapvec.clear();
 
@@ -552,11 +554,11 @@ void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
   rotvecdofmapvec.reserve(rotvecdofset.size());
   rotvecdofmapvec.assign(rotvecdofset.begin(), rotvecdofset.end());
   rotvecdofset.clear();
-  Teuchos::RCP<Epetra_Map> rotvecdofmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> rotvecdofmap = std::make_shared<Epetra_Map>(
       -1, rotvecdofmapvec.size(), rotvecdofmapvec.data(), 0, discret_->get_comm());
   rotvecdofmapvec.clear();
 
-  std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
+  std::vector<std::shared_ptr<const Epetra_Map>> maps(2);
   maps[0] = additdofmap;
   maps[1] = rotvecdofmap;
 
@@ -574,9 +576,9 @@ const Core::LinAlg::MultiMapExtractor& Solid::TimeInt::BaseDataGlobalState::bloc
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_global_vector(
+std::shared_ptr<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_global_vector(
     const enum VecInitType& vecinittype,
-    const Teuchos::RCP<const Solid::ModelEvaluatorManager>& modeleval) const
+    const std::shared_ptr<const Solid::ModelEvaluatorManager>& modeleval) const
 {
   check_init();
   Core::LinAlg::Vector<double> xvec_ptr(global_problem_map(), true);
@@ -587,37 +589,33 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
     /* use the last converged state to construct a new solution vector */
     case VecInitType::last_time_step:
     {
-      FOUR_C_ASSERT(
-          !modeleval.is_null(), "We need access to the Solid::ModelEvaluatorManager object!");
+      FOUR_C_ASSERT(modeleval, "We need access to the Solid::ModelEvaluatorManager object!");
 
       std::map<Inpar::Solid::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
       {
         // get the partial solution vector of the last time step
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> model_sol_ptr =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> model_sol_ptr =
             modeleval->evaluator(ci->first).get_last_time_step_solution_ptr();
         // if there is a partial solution, we insert it into the full vector
-        if (not model_sol_ptr.is_null())
-          block_extractor().insert_vector(*model_sol_ptr, ci->second, xvec_ptr);
-        model_sol_ptr = Teuchos::null;
+        if (model_sol_ptr) block_extractor().insert_vector(*model_sol_ptr, ci->second, xvec_ptr);
+        model_sol_ptr = nullptr;
       }
       break;
     }
     /* use the current global state to construct a new solution vector */
     case VecInitType::init_current_state:
     {
-      FOUR_C_ASSERT(
-          !modeleval.is_null(), "We need access to the Solid::ModelEvaluatorManager object!");
+      FOUR_C_ASSERT(modeleval, "We need access to the Solid::ModelEvaluatorManager object!");
 
       std::map<Inpar::Solid::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
       {
         // get the partial solution vector of the current state
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> model_sol_ptr =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> model_sol_ptr =
             modeleval->evaluator(ci->first).get_current_solution_ptr();
         // if there is a partial solution, we insert it into the full vector
-        if (not model_sol_ptr.is_null())
-          block_extractor().insert_vector(*model_sol_ptr, ci->second, xvec_ptr);
+        if (model_sol_ptr) block_extractor().insert_vector(*model_sol_ptr, ci->second, xvec_ptr);
       }
       break;
     }
@@ -631,8 +629,8 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
   }  // end of the switch-case statement
 
   // wrap and return
-  return Teuchos::make_rcp<::NOX::Epetra::Vector>(
-      xvec_ptr.get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+  return std::make_shared<::NOX::Epetra::Vector>(
+      Teuchos::rcp(xvec_ptr.get_ptr_of_Epetra_Vector()), ::NOX::Epetra::Vector::CreateView);
 }
 
 /*----------------------------------------------------------------------------*
@@ -640,28 +638,29 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
 Core::LinAlg::SparseOperator*
 Solid::TimeInt::BaseDataGlobalState::create_structural_stiffness_matrix_block()
 {
-  stiff_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
+  stiff_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
 
   return stiff_.get();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseOperator>& Solid::TimeInt::BaseDataGlobalState::create_jacobian()
+std::shared_ptr<Core::LinAlg::SparseOperator>&
+Solid::TimeInt::BaseDataGlobalState::create_jacobian()
 {
   check_init();
-  jac_ = Teuchos::null;
+  jac_ = nullptr;
 
   if (max_block_num_ > 1)
   {
-    jac_ = Teuchos::make_rcp<
-        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
-        block_extractor(), block_extractor(), 81, true, true);
+    jac_ =
+        std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+            block_extractor(), block_extractor(), 81, true, true);
   }
   else
   {
     // pure structural case
-    jac_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
+    jac_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
   }
 
   return jac_;
@@ -669,22 +668,22 @@ Teuchos::RCP<Core::LinAlg::SparseOperator>& Solid::TimeInt::BaseDataGlobalState:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseOperator>
+std::shared_ptr<Core::LinAlg::SparseOperator>
 Solid::TimeInt::BaseDataGlobalState::create_aux_jacobian() const
 {
   check_init();
-  Teuchos::RCP<Core::LinAlg::SparseOperator> jac = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::SparseOperator> jac = nullptr;
 
   if (max_block_num_ > 1)
   {
-    jac = Teuchos::make_rcp<
-        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
-        block_extractor(), block_extractor(), 81, true, true);
+    jac =
+        std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+            block_extractor(), block_extractor(), 81, true, true);
   }
   else
   {
     // pure structural case
-    jac = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
+    jac = std::make_shared<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
   }
 
   return jac;
@@ -692,23 +691,24 @@ Solid::TimeInt::BaseDataGlobalState::create_aux_jacobian() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Solid::TimeInt::BaseDataGlobalState::dof_row_map() const
+std::shared_ptr<const Epetra_Map> Solid::TimeInt::BaseDataGlobalState::dof_row_map() const
 {
   check_init();
   const Epetra_Map* dofrowmap_ptr = discret_->dof_row_map();
   // since it's const, we do not need to copy the map
-  return Teuchos::rcpFromRef(*dofrowmap_ptr);
+  return Core::Utils::shared_ptr_from_ref(*dofrowmap_ptr);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Solid::TimeInt::BaseDataGlobalState::dof_row_map(unsigned nds) const
+std::shared_ptr<const Epetra_Map> Solid::TimeInt::BaseDataGlobalState::dof_row_map(
+    unsigned nds) const
 {
   check_init();
   const Epetra_Map* dofrowmap_ptr = discret_->dof_row_map(nds);
   // since it's const, we do not need to copy the map
-  return Teuchos::rcpFromRef(*dofrowmap_ptr);
+  return Core::Utils::shared_ptr_from_ref(*dofrowmap_ptr);
 }
 
 
@@ -738,7 +738,7 @@ const Epetra_Map* Solid::TimeInt::BaseDataGlobalState::rot_vec_dof_row_map_view(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>>
+std::shared_ptr<Core::LinAlg::Vector<double>>
 Solid::TimeInt::BaseDataGlobalState::extract_displ_entries(
     const Core::LinAlg::Vector<double>& source) const
 {
@@ -747,11 +747,11 @@ Solid::TimeInt::BaseDataGlobalState::extract_displ_entries(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>>
+std::shared_ptr<Core::LinAlg::Vector<double>>
 Solid::TimeInt::BaseDataGlobalState::extract_model_entries(
     const Inpar::Solid::ModelType& mt, const Core::LinAlg::Vector<double>& source) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> model_ptr = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Vector<double>> model_ptr = nullptr;
   // extract from the full state vector
   if (source.Map().NumGlobalElements() == block_extractor().full_map()->NumGlobalElements())
   {
@@ -760,12 +760,12 @@ Solid::TimeInt::BaseDataGlobalState::extract_model_entries(
   // copy the vector
   else if (source.Map().NumGlobalElements() == model_maps_.at(mt)->NumGlobalElements())
   {
-    model_ptr = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(source);
+    model_ptr = std::make_shared<Core::LinAlg::Vector<double>>(source);
   }
   // otherwise do a standard export
   else
   {
-    model_ptr = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*model_maps_.at(mt));
+    model_ptr = std::make_shared<Core::LinAlg::Vector<double>>(*model_maps_.at(mt));
     Core::LinAlg::export_to(source, *model_ptr);
   }
 
@@ -775,11 +775,11 @@ Solid::TimeInt::BaseDataGlobalState::extract_model_entries(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>>
+std::shared_ptr<Core::LinAlg::Vector<double>>
 Solid::TimeInt::BaseDataGlobalState::extract_rot_vec_entries(
     const Core::LinAlg::Vector<double>& source) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> addit_ptr =
+  std::shared_ptr<Core::LinAlg::Vector<double>> addit_ptr =
       get_element_technology_map_extractor(Inpar::Solid::EleTech::rotvec).extract_vector(source, 1);
 
   return addit_ptr;
@@ -853,11 +853,11 @@ void Solid::TimeInt::BaseDataGlobalState::assign_model_block(Core::LinAlg::Spars
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::BaseDataGlobalState::extract_model_block(
-    Core::LinAlg::SparseOperator& jac, const Inpar::Solid::ModelType& mt,
-    const MatBlockType& bt) const
+std::shared_ptr<Core::LinAlg::SparseMatrix>
+Solid::TimeInt::BaseDataGlobalState::extract_model_block(Core::LinAlg::SparseOperator& jac,
+    const Inpar::Solid::ModelType& mt, const MatBlockType& bt) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> block = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> block = nullptr;
   Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>* blockmat_ptr =
       dynamic_cast<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>*>(
           &jac);
@@ -872,22 +872,22 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::BaseDataGlobalState::ex
     {
       case MatBlockType::displ_displ:
       {
-        block = Teuchos::rcpFromRef(blockmat_ptr->matrix(0, 0));
+        block = Core::Utils::shared_ptr_from_ref(blockmat_ptr->matrix(0, 0));
         break;
       }
       case MatBlockType::displ_lm:
       {
-        block = Teuchos::rcpFromRef(blockmat_ptr->matrix(0, b_id));
+        block = Core::Utils::shared_ptr_from_ref(blockmat_ptr->matrix(0, b_id));
         break;
       }
       case MatBlockType::lm_displ:
       {
-        block = Teuchos::rcpFromRef(blockmat_ptr->matrix(b_id, 0));
+        block = Core::Utils::shared_ptr_from_ref(blockmat_ptr->matrix(b_id, 0));
         break;
       }
       case MatBlockType::lm_lm:
       {
-        block = Teuchos::rcpFromRef(blockmat_ptr->matrix(b_id, b_id));
+        block = Core::Utils::shared_ptr_from_ref(blockmat_ptr->matrix(b_id, b_id));
         break;
       }
       default:
@@ -908,7 +908,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::BaseDataGlobalState::ex
   Core::LinAlg::SparseMatrix* stiff_ptr = dynamic_cast<Core::LinAlg::SparseMatrix*>(&jac);
   if (stiff_ptr != nullptr)
   {
-    block = Teuchos::rcpFromRef(*stiff_ptr);
+    block = Core::Utils::shared_ptr_from_ref(*stiff_ptr);
     return block;
   }
 
@@ -920,7 +920,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::BaseDataGlobalState::ex
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>>
+std::shared_ptr<std::vector<Core::LinAlg::SparseMatrix*>>
 Solid::TimeInt::BaseDataGlobalState::extract_displ_row_of_blocks(
     Core::LinAlg::SparseOperator& jac) const
 {
@@ -929,11 +929,11 @@ Solid::TimeInt::BaseDataGlobalState::extract_displ_row_of_blocks(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>>
+std::shared_ptr<std::vector<Core::LinAlg::SparseMatrix*>>
 Solid::TimeInt::BaseDataGlobalState::extract_row_of_blocks(
     Core::LinAlg::SparseOperator& jac, const Inpar::Solid::ModelType& mt) const
 {
-  Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> rowofblocks = Teuchos::null;
+  std::shared_ptr<std::vector<Core::LinAlg::SparseMatrix*>> rowofblocks = nullptr;
 
   Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>* blockmat_ptr =
       dynamic_cast<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>*>(
@@ -947,7 +947,7 @@ Solid::TimeInt::BaseDataGlobalState::extract_row_of_blocks(
     const int& b_id = model_block_id_.at(mt);
 
     const int num_cols = blockmat_ptr->cols();
-    rowofblocks = Teuchos::make_rcp<std::vector<Core::LinAlg::SparseMatrix*>>(num_cols, nullptr);
+    rowofblocks = std::make_shared<std::vector<Core::LinAlg::SparseMatrix*>>(num_cols, nullptr);
 
     for (int i = 0; i < num_cols; ++i) (*rowofblocks)[i] = &(blockmat_ptr->matrix(b_id, i));
 
@@ -963,7 +963,7 @@ Solid::TimeInt::BaseDataGlobalState::extract_row_of_blocks(
   Core::LinAlg::SparseMatrix* stiff_ptr = dynamic_cast<Core::LinAlg::SparseMatrix*>(&jac);
   if (stiff_ptr != nullptr)
   {
-    rowofblocks = Teuchos::make_rcp<std::vector<Core::LinAlg::SparseMatrix*>>(1, nullptr);
+    rowofblocks = std::make_shared<std::vector<Core::LinAlg::SparseMatrix*>>(1, nullptr);
     (*rowofblocks)[0] = stiff_ptr;
     return rowofblocks;
   }
@@ -976,36 +976,37 @@ Solid::TimeInt::BaseDataGlobalState::extract_row_of_blocks(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::BaseDataGlobalState::extract_displ_block(
-    Core::LinAlg::SparseOperator& jac) const
+std::shared_ptr<Core::LinAlg::SparseMatrix>
+Solid::TimeInt::BaseDataGlobalState::extract_displ_block(Core::LinAlg::SparseOperator& jac) const
 {
   return extract_model_block(jac, Inpar::Solid::model_structure, MatBlockType::displ_displ);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::SparseMatrix>
+std::shared_ptr<const Core::LinAlg::SparseMatrix>
 Solid::TimeInt::BaseDataGlobalState::get_jacobian_displ_block() const
 {
-  FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
+  FOUR_C_ASSERT(jac_, "The jacobian is not initialized!");
   return extract_displ_block(*jac_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::BaseDataGlobalState::jacobian_displ_block()
+std::shared_ptr<Core::LinAlg::SparseMatrix>
+Solid::TimeInt::BaseDataGlobalState::jacobian_displ_block()
 {
-  FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
+  FOUR_C_ASSERT(jac_, "The jacobian is not initialized!");
   return extract_displ_block(*jac_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::SparseMatrix>
+std::shared_ptr<const Core::LinAlg::SparseMatrix>
 Solid::TimeInt::BaseDataGlobalState::get_jacobian_block(
     const Inpar::Solid::ModelType mt, const MatBlockType bt) const
 {
-  FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
+  FOUR_C_ASSERT(jac_, "The jacobian is not initialized!");
 
   return extract_model_block(*jac_, mt, bt);
 }
@@ -1093,7 +1094,7 @@ void Solid::TimeInt::BaseDataGlobalState::set_nln_iteration_number(const int nln
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::RotVecUpdater(
-    const Teuchos::RCP<const Solid::TimeInt::BaseDataGlobalState>& gstate_ptr)
+    const std::shared_ptr<const Solid::TimeInt::BaseDataGlobalState>& gstate_ptr)
     : gstate_ptr_(gstate_ptr)
 {
   // empty
@@ -1110,8 +1111,8 @@ void NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::run_pre_compute_x(
   // cast the const away so that the new x vector can be set after the update
   NOX::Nln::Group& curr_grp_mutable = const_cast<NOX::Nln::Group&>(curr_grp);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> xnew =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(xold.Map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> xnew =
+      std::make_shared<Core::LinAlg::Vector<double>>(xold.Map(), true);
 
   /* we do the multiplicative update only for those entries which belong to
    * rotation (pseudo-)vectors */
@@ -1151,7 +1152,7 @@ void NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::run_pre_compute_x(
 
   // now replace the rotvec entries by the correct value computed before
   Core::LinAlg::assemble_my_vector(0.0, *xnew, 1.0, x_rotvec);
-  curr_grp_mutable.setX(xnew->get_ptr_of_Epetra_Vector());
+  curr_grp_mutable.setX(Teuchos::rcpFromRef(*xnew->get_ptr_of_Epetra_Vector()));
 
   /* tell the NOX::Nln::Group that the x vector has already been updated in
    * this preComputeX operator call */

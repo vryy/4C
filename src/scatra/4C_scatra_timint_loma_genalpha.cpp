@@ -22,11 +22,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       vg 11/08 |
  *----------------------------------------------------------------------*/
-ScaTra::TimIntLomaGenAlpha::TimIntLomaGenAlpha(Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+ScaTra::TimIntLomaGenAlpha::TimIntLomaGenAlpha(std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver, std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntLoma(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntGenAlpha(actdis, solver, sctratimintparams, extraparams, output),
@@ -140,8 +140,8 @@ void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure()
   set_element_time_parameter();
 
   // variables for integrals of domain and bodyforce
-  Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(2);
+  std::shared_ptr<Core::LinAlg::SerialDenseVector> scalars =
+      std::make_shared<Core::LinAlg::SerialDenseVector>(2);
 
   // evaluate domain and bodyforce integral
   discret_->evaluate_scalars(eleparams, scalars);
@@ -167,8 +167,8 @@ void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure()
   condnames.push_back("ScaTraFluxCalc");
   for (unsigned int i = 0; i < condnames.size(); i++)
   {
-    discret_->evaluate_condition(eleparams, Teuchos::null, Teuchos::null, Teuchos::null,
-        Teuchos::null, Teuchos::null, condnames[i]);
+    discret_->evaluate_condition(
+        eleparams, nullptr, nullptr, nullptr, nullptr, nullptr, condnames[i]);
   }
 
   // get integral values on this proc
@@ -284,7 +284,7 @@ void ScaTra::TimIntLomaGenAlpha::write_restart() const
  |                                                             vg 11/08 |
  -----------------------------------------------------------------------*/
 void ScaTra::TimIntLomaGenAlpha::read_restart(
-    const int step, Teuchos::RCP<Core::IO::InputControl> input)
+    const int step, std::shared_ptr<Core::IO::InputControl> input)
 {
   // do standard output
   TimIntGenAlpha::read_restart(step, input);
@@ -292,12 +292,12 @@ void ScaTra::TimIntLomaGenAlpha::read_restart(
   // restart data of loma problems
   // required for restart of closed systems
 
-  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
-  if (input == Teuchos::null)
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+  std::shared_ptr<Core::IO::DiscretizationReader> reader(nullptr);
+  if (input == nullptr)
+    reader = std::make_shared<Core::IO::DiscretizationReader>(
         discret_, Global::Problem::instance()->input_control_file(), step);
   else
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(discret_, input, step);
+    reader = std::make_shared<Core::IO::DiscretizationReader>(discret_, input, step);
 
   // thermodynamic pressure at time n+1
   thermpressnp_ = reader->read_double("thermpressnp");
@@ -331,7 +331,7 @@ void ScaTra::TimIntLomaGenAlpha::dynamic_computation_of_cs()
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
     DynSmag_->apply_filter_for_dynamic_computation_of_prt(
         phiaf_, thermpressaf_, dirichtoggle, *extraparams_, nds_vel());
   }
@@ -347,7 +347,7 @@ void ScaTra::TimIntLomaGenAlpha::dynamic_computation_of_cv()
 {
   if (turbmodel_ == Inpar::FLUID::dynamic_vreman)
   {
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
         phiaf_, thermpressaf_, dirichtoggle, *extraparams_, nds_vel());
   }

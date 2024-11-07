@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
-      poromulti_(Teuchos::null),
-      scatra_(Teuchos::null),
+      poromulti_(nullptr),
+      scatra_(nullptr),
       fluxreconmethod_(Inpar::POROFLUIDMULTIPHASE::gradreco_none),
       ndsporofluid_scatra_(-1),
       timertimestep_("PoroMultiPhaseScaTraBase", true),
@@ -122,7 +122,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::init(
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
 
   // scatra problem
-  scatra_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(globaltimeparams, scatraparams,
+  scatra_ = std::make_shared<Adapter::ScaTraBaseAlgorithm>(globaltimeparams, scatraparams,
       problem->solver_params(linsolvernumber), scatra_disname, true);
 
   // initialize the base algo.
@@ -136,9 +136,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::init(
   if (artery_coupl_)
   {
     // get mesh tying strategy
-    scatramsht_ = Teuchos::rcp_dynamic_cast<ScaTra::MeshtyingStrategyArtery>(
+    scatramsht_ = std::dynamic_pointer_cast<ScaTra::MeshtyingStrategyArtery>(
         scatra_->scatra_field()->strategy());
-    if (scatramsht_ == Teuchos::null) FOUR_C_THROW("cast to Meshtying strategy failed!");
+    if (scatramsht_ == nullptr) FOUR_C_THROW("cast to Meshtying strategy failed!");
 
     scatramsht_->set_artery_time_integrator(poro_field()->fluid_field()->art_net_tim_int());
     scatramsht_->set_nearby_ele_pairs(nearbyelepairs);
@@ -158,7 +158,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::init(
   }
 
   std::vector<int> mydirichdofs(0);
-  add_dirichmaps_volfrac_spec_ = Teuchos::make_rcp<Epetra_Map>(
+  add_dirichmaps_volfrac_spec_ = std::make_shared<Epetra_Map>(
       -1, 0, mydirichdofs.data(), 0, scatra_algo()->scatra_field()->discretization()->get_comm());
 
   // done.
@@ -284,9 +284,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::create_field_test()
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::set_poro_solution()
 {
   // safety check
-  Teuchos::RCP<ScaTra::ScaTraTimIntPoroMulti> poroscatra =
-      Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntPoroMulti>(scatra_->scatra_field());
-  if (poroscatra == Teuchos::null) FOUR_C_THROW("cast to ScaTraTimIntPoroMulti failed!");
+  std::shared_ptr<ScaTra::ScaTraTimIntPoroMulti> poroscatra =
+      std::dynamic_pointer_cast<ScaTra::ScaTraTimIntPoroMulti>(scatra_->scatra_field());
+  if (poroscatra == nullptr) FOUR_C_THROW("cast to ScaTraTimIntPoroMulti failed!");
 
   // set displacements
   poroscatra->apply_mesh_movement(poromulti_->struct_dispnp());
@@ -317,7 +317,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
 
   // get map and validdof-vector
   const Epetra_Map* elecolmap = scatra_algo()->scatra_field()->discretization()->element_col_map();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> valid_volfracspec_dofs =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> valid_volfracspec_dofs =
       poro_field()->fluid_field()->valid_vol_frac_spec_dofs();
 
   // we identify the volume fraction species dofs which do not have a physical meaning and set a
@@ -373,7 +373,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
         for (int idof = 0; idof < numscatramat; ++idof)
         {
           int matid = scatramat.mat_id(idof);
-          Teuchos::RCP<Core::Mat::Material> singlemat = scatramat.material_by_id(matid);
+          std::shared_ptr<Core::Mat::Material> singlemat = scatramat.material_by_id(matid);
           if (singlemat->material_type() == Core::Materials::m_scatra_multiporo_fluid ||
               singlemat->material_type() == Core::Materials::m_scatra_multiporo_solid ||
               singlemat->material_type() == Core::Materials::m_scatra_multiporo_temperature)
@@ -382,8 +382,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
           }
           else if (singlemat->material_type() == Core::Materials::m_scatra_multiporo_volfrac)
           {
-            const Teuchos::RCP<const Mat::ScatraMatMultiPoroVolFrac>& scatravolfracmat =
-                Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroVolFrac>(singlemat);
+            const std::shared_ptr<const Mat::ScatraMatMultiPoroVolFrac>& scatravolfracmat =
+                std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroVolFrac>(singlemat);
 
             const int scalartophaseid = scatravolfracmat->phase_id();
             // if not already in original dirich map     &&   if it is not a valid volume fraction
@@ -407,7 +407,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
 
   // build map
   int nummydirichvals = mydirichdofs.size();
-  add_dirichmaps_volfrac_spec_ = Teuchos::make_rcp<Epetra_Map>(-1, nummydirichvals,
+  add_dirichmaps_volfrac_spec_ = std::make_shared<Epetra_Map>(-1, nummydirichvals,
       mydirichdofs.data(), 0, scatra_algo()->scatra_field()->discretization()->get_comm());
 
   // add the condition
@@ -428,8 +428,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::set_scatra_solution()
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::scatra_dof_row_map()
-    const
+std::shared_ptr<const Epetra_Map>
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::scatra_dof_row_map() const
 {
   return scatra_->scatra_field()->dof_row_map();
 }

@@ -24,7 +24,7 @@ Mortar::ElementIntegrator::ElementIntegrator(Core::FE::CellType eletype)
   // 9  points: for integrals on 2D 1st order quadrilaterals
   // 25 points: for integrals on 2D 2nd order quadrilaterals
   //**********************************************************************
-  Teuchos::RCP<Core::FE::IntegrationPoints2D> rule2d;
+  std::shared_ptr<Core::FE::IntegrationPoints2D> rule2d;
 
   switch (eletype)
   {
@@ -46,27 +46,26 @@ Mortar::ElementIntegrator::ElementIntegrator(Core::FE::CellType eletype)
       break;
     }
     case Core::FE::CellType::tri3:
-      rule2d = Teuchos::make_rcp<Core::FE::IntegrationPoints2D>(Core::FE::GaussRule2D::tri_7point);
+      rule2d = std::make_shared<Core::FE::IntegrationPoints2D>(Core::FE::GaussRule2D::tri_7point);
       break;
     case Core::FE::CellType::tri6:
-      rule2d = Teuchos::make_rcp<Core::FE::IntegrationPoints2D>(Core::FE::GaussRule2D::tri_16point);
+      rule2d = std::make_shared<Core::FE::IntegrationPoints2D>(Core::FE::GaussRule2D::tri_16point);
       break;
     case Core::FE::CellType::quad4:
-      rule2d = Teuchos::make_rcp<Core::FE::IntegrationPoints2D>(Core::FE::GaussRule2D::quad_9point);
+      rule2d = std::make_shared<Core::FE::IntegrationPoints2D>(Core::FE::GaussRule2D::quad_9point);
       break;
     case Core::FE::CellType::quad8:
     case Core::FE::CellType::quad9:
     case Core::FE::CellType::nurbs4:
     case Core::FE::CellType::nurbs9:
-      rule2d =
-          Teuchos::make_rcp<Core::FE::IntegrationPoints2D>(Core::FE::GaussRule2D::quad_25point);
+      rule2d = std::make_shared<Core::FE::IntegrationPoints2D>(Core::FE::GaussRule2D::quad_25point);
       break;
     default:
       FOUR_C_THROW("ElementIntegrator: This contact element type is not implemented!");
   }  // switch(eletype)
 
   // save Gauss points for all 2D rules
-  if (rule2d != Teuchos::null)
+  if (rule2d != nullptr)
   {
     ngp_ = rule2d->nquad;
     coords_.reshape(n_gp(), 2);

@@ -17,7 +17,7 @@
 #include "4C_structure_timint.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -83,15 +83,15 @@ namespace Solid
         const Teuchos::ParameterList& sdyn,              //!< structural dynamic
         const Teuchos::ParameterList& xparams,           //!< extra flags
         const Teuchos::ParameterList& adaparams,         //!< adaptive input flags
-        Teuchos::RCP<TimInt>& sti                        //!< marching time integrator
+        std::shared_ptr<TimInt>& sti                     //!< marching time integrator
         )
-        : TimAda(timeparams, adaparams, sti), ada_(ada_vague), sta_(Teuchos::null)
+        : TimAda(timeparams, adaparams, sti), ada_(ada_vague), sta_(nullptr)
     {
       // allocate auxiliary integrator
-      sta_ = Teuchos::RCP(
-          new T(timeparams, ioparams, sdyn, xparams, sti->discretization(), sti->solver(),
-              Teuchos::null,  // no contact solver
-              sti->disc_writer()));
+      sta_ = std::make_shared<T>(timeparams, ioparams, sdyn, xparams, sti->discretization(),
+          sti->solver(),
+          nullptr,  // no contact solver
+          sti->disc_writer());
       sta_->init(timeparams, sdyn, xparams, sti->discretization(), sti->solver());
 
       // check explicitness
@@ -144,7 +144,7 @@ namespace Solid
      * and setup() have been called on both the marching time integrator
      * and the auxiliary time integrator (popp 01/2017).
      */
-    void init(Teuchos::RCP<TimInt>& sti) override
+    void init(std::shared_ptr<TimInt>& sti) override
     {
       // merge
       sta_->merge(*sti);
@@ -222,7 +222,7 @@ namespace Solid
     enum AdaEnum ada_;
 
     //! The auxiliary integrator
-    Teuchos::RCP<T> sta_;
+    std::shared_ptr<T> sta_;
   };
 
 }  // namespace Solid

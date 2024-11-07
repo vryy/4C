@@ -33,14 +33,14 @@ Solid::ModelEvaluator::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::ModelEvaluatorManager::Map>
+std::shared_ptr<Solid::ModelEvaluatorManager::Map>
 Solid::ModelEvaluator::Factory::build_model_evaluators(
     const std::set<enum Inpar::Solid::ModelType>& modeltypes,
-    const Teuchos::RCP<Solid::ModelEvaluator::Generic>& coupling_model_ptr) const
+    const std::shared_ptr<Solid::ModelEvaluator::Generic>& coupling_model_ptr) const
 {
   // create a new standard map
-  Teuchos::RCP<Solid::ModelEvaluatorManager::Map> model_map =
-      Teuchos::make_rcp<Solid::ModelEvaluatorManager::Map>();
+  std::shared_ptr<Solid::ModelEvaluatorManager::Map> model_map =
+      std::make_shared<Solid::ModelEvaluatorManager::Map>();
 
   std::set<enum Inpar::Solid::ModelType>::const_iterator mt_iter;
   for (mt_iter = modeltypes.begin(); mt_iter != modeltypes.end(); ++mt_iter)
@@ -51,13 +51,13 @@ Solid::ModelEvaluator::Factory::build_model_evaluators(
         (*model_map)[*mt_iter] = build_structure_model_evaluator();
         break;
       case Inpar::Solid::model_springdashpot:
-        (*model_map)[*mt_iter] = Teuchos::make_rcp<Solid::ModelEvaluator::SpringDashpot>();
+        (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::SpringDashpot>();
         break;
       case Inpar::Solid::model_browniandyn:
-        (*model_map)[*mt_iter] = Teuchos::make_rcp<Solid::ModelEvaluator::BrownianDyn>();
+        (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::BrownianDyn>();
         break;
       case Inpar::Solid::model_beaminteraction:
-        (*model_map)[*mt_iter] = Teuchos::make_rcp<Solid::ModelEvaluator::BeamInteraction>();
+        (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::BeamInteraction>();
         break;
       case Inpar::Solid::model_contact:
       {
@@ -65,43 +65,42 @@ Solid::ModelEvaluator::Factory::build_model_evaluators(
         break;
       }
       case Inpar::Solid::model_beam_interaction_old:
-        (*model_map)[*mt_iter] = Teuchos::make_rcp<Solid::ModelEvaluator::BeamInteractionOld>();
+        (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::BeamInteractionOld>();
         break;
       case Inpar::Solid::model_lag_pen_constraint:
-        (*model_map)[*mt_iter] = Teuchos::make_rcp<Solid::ModelEvaluator::LagPenConstraint>();
+        (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::LagPenConstraint>();
         break;
       case Inpar::Solid::model_cardiovascular0d:
-        (*model_map)[*mt_iter] = Teuchos::make_rcp<Solid::ModelEvaluator::Cardiovascular0D>();
+        (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::Cardiovascular0D>();
         break;
       case Inpar::Solid::model_monolithic_coupling:
       {
-        if (coupling_model_ptr.is_null())
+        if (!coupling_model_ptr)
           FOUR_C_THROW("The monolithic coupling model evaluator is not defined.");
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
       case Inpar::Solid::model_partitioned_coupling:
       {
-        if (coupling_model_ptr.is_null())
+        if (!coupling_model_ptr)
           FOUR_C_THROW("The partitioned coupling model evaluator is not defined.");
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
       case Inpar::Solid::model_basic_coupling:
       {
-        if (coupling_model_ptr.is_null())
-          FOUR_C_THROW("The basic coupling model evaluator is not defined.");
+        if (!coupling_model_ptr) FOUR_C_THROW("The basic coupling model evaluator is not defined.");
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
       case Inpar::Solid::model_meshtying:
-        (*model_map)[*mt_iter] = Teuchos::make_rcp<Solid::ModelEvaluator::Meshtying>();
+        (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::Meshtying>();
         break;
       case Inpar::Solid::model_constraints:
-        (*model_map)[*mt_iter] = Teuchos::make_rcp<Solid::ModelEvaluator::Constraints>();
+        (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::Constraints>();
         break;
       case Inpar::Solid::model_multiscale:
-        (*model_map)[*mt_iter] = Teuchos::make_rcp<Solid::ModelEvaluator::Multiscale>();
+        (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::Multiscale>();
         break;
       default:
         FOUR_C_THROW("Not yet implemented!");
@@ -114,26 +113,26 @@ Solid::ModelEvaluator::Factory::build_model_evaluators(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::ModelEvaluator::Generic>
+std::shared_ptr<Solid::ModelEvaluator::Generic>
 Solid::ModelEvaluator::Factory::build_contact_model_evaluator() const
 {
-  return Teuchos::make_rcp<Solid::ModelEvaluator::Contact>();
+  return std::make_shared<Solid::ModelEvaluator::Contact>();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::ModelEvaluator::Generic>
+std::shared_ptr<Solid::ModelEvaluator::Generic>
 Solid::ModelEvaluator::Factory::build_structure_model_evaluator() const
 {
-  return Teuchos::make_rcp<Solid::ModelEvaluator::Structure>();
+  return std::make_shared<Solid::ModelEvaluator::Structure>();
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::ModelEvaluatorManager::Map> Solid::ModelEvaluator::build_model_evaluators(
+std::shared_ptr<Solid::ModelEvaluatorManager::Map> Solid::ModelEvaluator::build_model_evaluators(
     const std::set<enum Inpar::Solid::ModelType>& modeltypes,
-    const Teuchos::RCP<Solid::ModelEvaluator::Generic>& coupling_model_ptr)
+    const std::shared_ptr<Solid::ModelEvaluator::Generic>& coupling_model_ptr)
 {
   Factory factory;
   return factory.build_model_evaluators(modeltypes, coupling_model_ptr);

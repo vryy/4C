@@ -2758,7 +2758,7 @@ bool Mortar::Coupling3d::delaunay_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, i) = clip()[i].coord()[k];
 
     // create IntCell object and push back
-    cells().push_back(Teuchos::make_rcp<IntCell>(0, 3, coords, auxn(), Core::FE::CellType::tri3,
+    cells().push_back(std::make_shared<IntCell>(0, 3, coords, auxn(), Core::FE::CellType::tri3,
         linvertex[0], linvertex[1], linvertex[2], get_deriv_auxn()));
 
     // get out of here
@@ -3199,7 +3199,7 @@ bool Mortar::Coupling3d::delaunay_triangulation(
     }
 
     // create IntCell object and push back
-    cells().push_back(Teuchos::make_rcp<IntCell>(t, 3, coords, auxn(), Core::FE::CellType::tri3,
+    cells().push_back(std::make_shared<IntCell>(t, 3, coords, auxn(), Core::FE::CellType::tri3,
         linvertex[idx0], linvertex[idx1], linvertex[idx2], get_deriv_auxn()));
   }
 
@@ -3245,7 +3245,7 @@ bool Mortar::Coupling3d::center_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, i) = clip()[i].coord()[k];
 
     // create IntCell object and push back
-    cells().push_back(Teuchos::make_rcp<IntCell>(0, 3, coords, auxn(), Core::FE::CellType::tri3,
+    cells().push_back(std::make_shared<IntCell>(0, 3, coords, auxn(), Core::FE::CellType::tri3,
         linvertex[0], linvertex[1], linvertex[2], get_deriv_auxn()));
 
     // get out of here
@@ -3336,7 +3336,7 @@ bool Mortar::Coupling3d::center_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, 2) = clip()[num + 1].coord()[k];
 
     // create IntCell object and push back
-    cells().push_back(Teuchos::make_rcp<IntCell>(num, 3, coords, auxn(), Core::FE::CellType::tri3,
+    cells().push_back(std::make_shared<IntCell>(num, 3, coords, auxn(), Core::FE::CellType::tri3,
         lincenter, linvertex[num], linvertex[numplus1], get_deriv_auxn()));
   }
 
@@ -3348,7 +3348,8 @@ bool Mortar::Coupling3d::center_triangulation(
 /*----------------------------------------------------------------------*
  |  Integration of cells (3D)                                 popp 11/08|
  *----------------------------------------------------------------------*/
-bool Mortar::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+bool Mortar::Coupling3d::integrate_cells(
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -3540,7 +3541,7 @@ void Mortar::Coupling3d::gmsh_output_cells(int lid) const
  | Split Mortar::Elements->IntElements for 3D quad. coupling    popp 03/09|
  *----------------------------------------------------------------------*/
 bool Mortar::Coupling3dQuadManager::split_int_elements(
-    Mortar::Element& ele, std::vector<Teuchos::RCP<Mortar::IntElement>>& auxele)
+    Mortar::Element& ele, std::vector<std::shared_ptr<Mortar::IntElement>>& auxele)
 {
   // *********************************************************************
   // do splitting for given element
@@ -3565,7 +3566,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[2] = ele.nodes()[8];
     nodes[3] = ele.nodes()[7];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         0, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
 
     // second integration element
@@ -3580,7 +3581,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[2] = ele.nodes()[5];
     nodes[3] = ele.nodes()[8];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         1, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
 
     // third integration element
@@ -3595,7 +3596,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[2] = ele.nodes()[2];
     nodes[3] = ele.nodes()[6];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         2, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
 
     // fourth integration element
@@ -3610,7 +3611,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[2] = ele.nodes()[6];
     nodes[3] = ele.nodes()[3];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         3, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
   }
 
@@ -3635,7 +3636,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[4];
     nodes[2] = ele.nodes()[7];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         0, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false));
 
     // second integration element
@@ -3648,7 +3649,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[5];
     nodes[2] = ele.nodes()[4];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         1, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false));
 
     // third integration element
@@ -3661,7 +3662,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[6];
     nodes[2] = ele.nodes()[5];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         2, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false));
 
     // fourth integration element
@@ -3674,7 +3675,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[7];
     nodes[2] = ele.nodes()[6];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         3, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false));
 
     // fifth integration element
@@ -3691,7 +3692,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodesquad[2] = ele.nodes()[6];
     nodesquad[3] = ele.nodes()[7];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(4, ele.id(), ele.owner(), &ele, dtquad,
+    auxele.push_back(std::make_shared<IntElement>(4, ele.id(), ele.owner(), &ele, dtquad,
         numnodequad, nodeidsquad, nodesquad, ele.is_slave(), false));
   }
 
@@ -3714,7 +3715,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[3];
     nodes[2] = ele.nodes()[5];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         0, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
 
     // second integration element
@@ -3727,7 +3728,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[1];
     nodes[2] = ele.nodes()[4];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         1, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
 
     // third integration element
@@ -3740,7 +3741,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[4];
     nodes[2] = ele.nodes()[2];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         2, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
 
     // fourth integration element
@@ -3753,7 +3754,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[5];
     nodes[2] = ele.nodes()[3];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(
+    auxele.push_back(std::make_shared<IntElement>(
         3, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false));
   }
 
@@ -3767,7 +3768,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[2] = ele.nodes()[2];
     nodes[3] = ele.nodes()[3];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(0, ele.id(), ele.owner(), &ele, ele.shape(),
+    auxele.push_back(std::make_shared<IntElement>(0, ele.id(), ele.owner(), &ele, ele.shape(),
         ele.num_node(), ele.node_ids(), nodes, ele.is_slave(), false));
   }
 
@@ -3780,7 +3781,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[1];
     nodes[2] = ele.nodes()[2];
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(0, ele.id(), ele.owner(), &ele, ele.shape(),
+    auxele.push_back(std::make_shared<IntElement>(0, ele.id(), ele.owner(), &ele, ele.shape(),
         ele.num_node(), ele.node_ids(), nodes, ele.is_slave(), false));
   }
 
@@ -3856,7 +3857,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
 
     for (int i = 0; i < 4; ++i) pseudo_nodes_ptr.push_back(&(pseudo_nodes[i]));
 
-    auxele.push_back(Teuchos::make_rcp<IntElement>(0, ele.id(), ele.owner(), &ele,
+    auxele.push_back(std::make_shared<IntElement>(0, ele.id(), ele.owner(), &ele,
         Core::FE::CellType::quad4, 4, &(id[0]), pseudo_nodes_ptr, ele.is_slave(), rewind));
   }
 
@@ -3928,7 +3929,8 @@ Mortar::Coupling3dQuadManager::Coupling3dQuadManager(Core::FE::Discretization& i
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                  farah 10/14|
  *----------------------------------------------------------------------*/
-bool Mortar::Coupling3dManager::evaluate_coupling(Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr)
+bool Mortar::Coupling3dManager::evaluate_coupling(
+    std::shared_ptr<Mortar::ParamsInterface> mparams_ptr)
 {
   // check of we need to start the real coupling
   if (master_elements().size() == 0) return false;
@@ -3956,7 +3958,7 @@ bool Mortar::Coupling3dManager::evaluate_coupling(Teuchos::RCP<Mortar::ParamsInt
  |  Evaluate mortar-coupling pairs                            popp 03/09|
  *----------------------------------------------------------------------*/
 void Mortar::Coupling3dManager::integrate_coupling(
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   // decide which type of numerical integration scheme
 
@@ -3969,7 +3971,7 @@ void Mortar::Coupling3dManager::integrate_coupling(
     for (int m = 0; m < (int)master_elements().size(); ++m)
     {
       // create Coupling3d object and push back
-      coupling().push_back(Teuchos::make_rcp<Coupling3d>(
+      coupling().push_back(std::make_shared<Coupling3d>(
           idiscret_, dim_, false, imortar_, slave_element(), master_element(m)));
       // do coupling
       coupling()[m]->evaluate_coupling();
@@ -4010,7 +4012,7 @@ void Mortar::Coupling3dManager::integrate_coupling(
             for (int m = 0; m < (int)master_elements().size(); ++m)
             {
               // create Coupling3d object and push back
-              coupling().push_back(Teuchos::make_rcp<Coupling3d>(
+              coupling().push_back(std::make_shared<Coupling3d>(
                   idiscret_, dim_, false, imortar_, slave_element(), master_element(m)));
               // do coupling
               coupling()[m]->evaluate_coupling();
@@ -4027,7 +4029,7 @@ void Mortar::Coupling3dManager::integrate_coupling(
             for (int m = 0; m < (int)master_elements().size(); ++m)
             {
               // create Coupling3d object and push back
-              coupling().push_back(Teuchos::make_rcp<Coupling3d>(
+              coupling().push_back(std::make_shared<Coupling3d>(
                   idiscret_, dim_, false, imortar_, slave_element(), master_element(m)));
               // do coupling
               coupling()[m]->evaluate_coupling();
@@ -4078,7 +4080,7 @@ void Mortar::Coupling3dManager::integrate_coupling(
  |  Evaluate coupling pairs for Quad-coupling                farah 01/13|
  *----------------------------------------------------------------------*/
 void Mortar::Coupling3dQuadManager::integrate_coupling(
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   // decide which type of numerical integration scheme
 
@@ -4088,8 +4090,8 @@ void Mortar::Coupling3dQuadManager::integrate_coupling(
   if (int_type() == Inpar::Mortar::inttype_segments)
   {
     // build linear integration elements from quadratic Mortar::Elements
-    std::vector<Teuchos::RCP<Mortar::IntElement>> sauxelements(0);
-    std::vector<std::vector<Teuchos::RCP<Mortar::IntElement>>> mauxelements(
+    std::vector<std::shared_ptr<Mortar::IntElement>> sauxelements(0);
+    std::vector<std::vector<std::shared_ptr<Mortar::IntElement>>> mauxelements(
         master_elements().size());
     split_int_elements(slave_element(), sauxelements);
 
@@ -4106,7 +4108,7 @@ void Mortar::Coupling3dQuadManager::integrate_coupling(
         for (int j = 0; j < (int)mauxelements[m].size(); ++j)
         {
           // create instance of coupling class
-          coupling().push_back(Teuchos::make_rcp<Coupling3dQuad>(idiscret_, dim_, true, imortar_,
+          coupling().push_back(std::make_shared<Coupling3dQuad>(idiscret_, dim_, true, imortar_,
               slave_element(), *master_elements()[m], *sauxelements[i], *mauxelements[m][j]));
 
           // do coupling
@@ -4143,8 +4145,8 @@ void Mortar::Coupling3dQuadManager::integrate_coupling(
         for (int m = 0; m < (int)master_elements().size(); ++m)
         {
           // build linear integration elements from quadratic Mortar::Elements
-          std::vector<Teuchos::RCP<Mortar::IntElement>> sauxelements(0);
-          std::vector<Teuchos::RCP<Mortar::IntElement>> mauxelements(0);
+          std::vector<std::shared_ptr<Mortar::IntElement>> sauxelements(0);
+          std::vector<std::shared_ptr<Mortar::IntElement>> mauxelements(0);
           split_int_elements(slave_element(), sauxelements);
           split_int_elements(*master_elements()[m], mauxelements);
 
@@ -4296,7 +4298,7 @@ void Mortar::Coupling3dManager::consist_dual_shape()
     // loop over all integration cells
     for (int c = 0; c < (int)coupling()[m]->cells().size(); ++c)
     {
-      Teuchos::RCP<Mortar::IntCell> currcell = coupling()[m]->cells()[c];
+      std::shared_ptr<Mortar::IntCell> currcell = coupling()[m]->cells()[c];
 
       // create an integrator for this cell
       for (int gp = 0;
@@ -4411,7 +4413,7 @@ void Mortar::Coupling3dManager::consist_dual_shape()
     Core::LinAlg::invert_and_multiply_by_cholesky(me, de, ae);
 
   // store ae matrix in slave element data container
-  slave_element().mo_data().dual_shape() = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(ae);
+  slave_element().mo_data().dual_shape() = std::make_shared<Core::LinAlg::SerialDenseMatrix>(ae);
 
   return;
 }

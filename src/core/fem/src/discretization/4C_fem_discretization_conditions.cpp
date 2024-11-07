@@ -126,8 +126,8 @@ void Core::FE::Discretization::boundary_conditions_geometry()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::assign_global_i_ds(const Epetra_Comm& comm,
-    const std::map<std::vector<int>, Teuchos::RCP<Core::Elements::Element>>& elementmap,
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& finalgeometry)
+    const std::map<std::vector<int>, std::shared_ptr<Core::Elements::Element>>& elementmap,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& finalgeometry)
 {
   // pack elements on all processors
 
@@ -229,7 +229,7 @@ void Core::FE::Discretization::assign_global_i_ds(const Epetra_Comm& comm,
  *----------------------------------------------------------------------*/
 /* Hopefully improved by Heiner (h.kue 09/07) */
 bool Core::FE::Discretization::build_linesin_condition(
-    const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
+    const std::string& name, std::shared_ptr<Core::Conditions::Condition> cond)
 {
   /* First: Create the line objects that belong to the condition. */
 
@@ -251,7 +251,7 @@ bool Core::FE::Discretization::build_linesin_condition(
   }
 
   // map of lines in our cloud: (node_ids) -> line
-  std::map<std::vector<int>, Teuchos::RCP<Core::Elements::Element>> linemap;
+  std::map<std::vector<int>, std::shared_ptr<Core::Elements::Element>> linemap;
   // loop these nodes and build all lines attached to them
   for (const auto& [node_id, actnode] : colnodes)
   {
@@ -262,11 +262,11 @@ bool Core::FE::Discretization::build_linesin_condition(
       // loop all lines of all elements attached to actnode
       const int numlines = elements[i]->num_line();
       if (!numlines) continue;
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines = elements[i]->lines();
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines = elements[i]->lines();
       if (lines.size() == 0) FOUR_C_THROW("Element returned no lines");
       for (int j = 0; j < numlines; ++j)
       {
-        Teuchos::RCP<Core::Elements::Element> actline = lines[j];
+        std::shared_ptr<Core::Elements::Element> actline = lines[j];
         // find lines that are attached to actnode
         const int nnodeperline = actline->num_node();
         Core::Nodes::Node** nodesperline = actline->nodes();
@@ -296,7 +296,7 @@ bool Core::FE::Discretization::build_linesin_condition(
 
               if (linemap.find(nodes) == linemap.end())
               {
-                Teuchos::RCP<Core::Elements::Element> line = Teuchos::RCP(actline->clone());
+                auto line = std::shared_ptr<Core::Elements::Element>(actline->clone());
                 // Set owning process of line to node with smallest gid.
                 line->set_owner(elements[i]->owner());
                 linemap[nodes] = line;
@@ -311,7 +311,7 @@ bool Core::FE::Discretization::build_linesin_condition(
 
 
   // Lines be added to the condition: (line_id) -> (line).
-  auto finallines = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::Elements::Element>>>();
+  auto finallines = std::make_shared<std::map<int, std::shared_ptr<Core::Elements::Element>>>();
 
   assign_global_i_ds(get_comm(), linemap, *finallines);
 
@@ -331,7 +331,7 @@ bool Core::FE::Discretization::build_linesin_condition(
  |  Build surface geometry in a condition (public)          rauch 10/16 |
  *----------------------------------------------------------------------*/
 bool Core::FE::Discretization::build_surfacesin_condition(
-    const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
+    const std::string& name, std::shared_ptr<Core::Conditions::Condition> cond)
 {
   // these conditions are special since associated volume conditions also need
   // to be considered.
@@ -376,7 +376,7 @@ bool Core::FE::Discretization::build_surfacesin_condition(
   }
 
   // map of surfaces in this cloud: (node_ids) -> (surface)
-  std::map<std::vector<int>, Teuchos::RCP<Core::Elements::Element>> surfmap;
+  std::map<std::vector<int>, std::shared_ptr<Core::Elements::Element>> surfmap;
 
   // loop these column nodes and build all surfs attached to them.
   // we have to loop over column nodes because it can happen that
@@ -402,13 +402,13 @@ bool Core::FE::Discretization::build_surfacesin_condition(
       // loop all surfaces of all elements attached to actnode
       const int numsurfs = elements[i]->num_surface();
       if (!numsurfs) continue;
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfs = elements[i]->surfaces();
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfs = elements[i]->surfaces();
       if (surfs.size() == 0) FOUR_C_THROW("Element does not return any surfaces");
 
       // loop all surfaces of all elements attached to actnode
       for (int j = 0; j < numsurfs; ++j)
       {
-        Teuchos::RCP<Core::Elements::Element> actsurf = surfs[j];
+        std::shared_ptr<Core::Elements::Element> actsurf = surfs[j];
         // find surfs attached to actnode
         const int nnodepersurf = actsurf->num_node();
         Core::Nodes::Node** nodespersurf = actsurf->nodes();
@@ -445,7 +445,8 @@ bool Core::FE::Discretization::build_surfacesin_condition(
               if ((cond->type() == Core::Conditions::StructFluidSurfCoupling) or
                   (cond->type() == Core::Conditions::RedAirwayTissue))
               {
-                // fill map with 'surfmap' std::vector<int> -> Teuchos::RCP<Core::Elements::Element>
+                // fill map with 'surfmap' std::vector<int> ->
+                // std::shared_ptr<Core::Elements::Element>
                 {
                   // indicator for volume element underlying the surface element
                   int identical = 0;
@@ -476,7 +477,7 @@ bool Core::FE::Discretization::build_surfacesin_condition(
                   // via comparison of node ids
                   for (const auto& adjacent_ele : adjacentvoleles)
                   {
-                    std::vector<Teuchos::RCP<Core::Elements::Element>> adjacentvolelesurfs =
+                    std::vector<std::shared_ptr<Core::Elements::Element>> adjacentvolelesurfs =
                         adjacent_ele->surfaces();
                     const int adjacentvolelenumsurfs = adjacent_ele->num_surface();
                     for (int n = 0; n < adjacentvolelenumsurfs; ++n)
@@ -510,7 +511,7 @@ bool Core::FE::Discretization::build_surfacesin_condition(
                     // now we can add the surface
                     if (surfmap.find(nodes) == surfmap.end())
                     {
-                      Teuchos::RCP<Core::Elements::Element> surf = Teuchos::RCP(actsurf->clone());
+                      auto surf = std::shared_ptr<Core::Elements::Element>(actsurf->clone());
                       // Set owning processor of surface owner of underlying volume element.
                       surf->set_owner(voleleowner);
                       surfmap[nodes] = surf;
@@ -526,7 +527,7 @@ bool Core::FE::Discretization::build_surfacesin_condition(
                 // now we can add the surface
                 if (surfmap.find(nodes) == surfmap.end())
                 {
-                  Teuchos::RCP<Core::Elements::Element> surf = Teuchos::RCP(actsurf->clone());
+                  auto surf = std::shared_ptr<Core::Elements::Element>(actsurf->clone());
                   // Set owning processor of surface owner of underlying volume element.
                   surf->set_owner(elements[i]->owner());
                   surfmap[nodes] = surf;
@@ -540,8 +541,8 @@ bool Core::FE::Discretization::build_surfacesin_condition(
   }                // loop over all conditioned row nodes
 
   // surfaces be added to the condition: (surf_id) -> (surface).
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Core::Elements::Element>>> final_geometry =
-      Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::Elements::Element>>>();
+  std::shared_ptr<std::map<int, std::shared_ptr<Core::Elements::Element>>> final_geometry =
+      std::make_shared<std::map<int, std::shared_ptr<Core::Elements::Element>>>();
 
   assign_global_i_ds(get_comm(), surfmap, *final_geometry);
   cond->add_geometry(final_geometry);
@@ -560,7 +561,7 @@ bool Core::FE::Discretization::build_surfacesin_condition(
  |  Build volume geometry in a condition (public)            mwgee 01/07|
  *----------------------------------------------------------------------*/
 bool Core::FE::Discretization::build_volumesin_condition(
-    const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
+    const std::string& name, std::shared_ptr<Core::Conditions::Condition> cond)
 {
   // get ptrs to all node ids that have this condition
   const std::vector<int>* nodeids = cond->get_nodes();
@@ -574,7 +575,7 @@ bool Core::FE::Discretization::build_volumesin_condition(
       std::not_fn(Core::Conditions::MyGID(colmap)));
 
   // this is the map we want to construct
-  auto geom = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::Elements::Element>>>();
+  auto geom = std::make_shared<std::map<int, std::shared_ptr<Core::Elements::Element>>>();
 
   for (const auto& [ele_id, actele] : element_)
   {

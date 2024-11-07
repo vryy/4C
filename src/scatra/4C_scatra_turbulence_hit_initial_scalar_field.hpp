@@ -13,7 +13,7 @@
 #include "4C_inpar_scatra.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -55,11 +55,11 @@ namespace ScaTra
     double calculate_energy_from_spectrum(double k);
 
     //! scatra discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! state vectors to be initialized
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phin_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phin_;
 
     //! type of energy spectrum for initialization
     Inpar::ScaTra::InitialField type_;
@@ -68,7 +68,7 @@ namespace ScaTra
     int nummodes_;
 
     //! vector of coordinates in one spatial direction (same for the other two directions)
-    Teuchos::RCP<std::vector<double>> coordinates_;
+    std::shared_ptr<std::vector<double>> coordinates_;
   };
 
 }  // namespace ScaTra

@@ -57,7 +57,10 @@ namespace Core::LinearSolver
         Core::LinAlg::MultiVector<double>* b) override;
 
     //! linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> prec_operator() const final { return P_; }
+    std::shared_ptr<Epetra_Operator> prec_operator() const final
+    {
+      return Core::Utils::shared_ptr_from_ref(*P_);
+    }
 
    private:
     //! system of equations used for preconditioning used by P_ only

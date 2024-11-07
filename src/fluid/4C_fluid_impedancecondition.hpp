@@ -13,8 +13,7 @@
 #include "4C_fem_condition.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -48,7 +47,7 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidImpedanceWrapper(const Teuchos::RCP<Core::FE::Discretization> actdis);
+      FluidImpedanceWrapper(const std::shared_ptr<Core::FE::Discretization> actdis);
 
       /*!
       \brief Destructor
@@ -58,7 +57,7 @@ namespace FLD
       /*!
         \brief Wrapper for FluidImpedacnceBc::use_block_matrix
       */
-      void use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
+      void use_block_matrix(std::shared_ptr<std::set<int>> condelements,
           const Core::LinAlg::MultiMapExtractor& domainmaps,
           const Core::LinAlg::MultiMapExtractor& rangemaps, bool splitmatrix);
 
@@ -92,7 +91,7 @@ namespace FLD
       /*!
       \brief all single impedance conditions
       */
-      std::map<const int, Teuchos::RCP<class FluidImpedanceBc>> impmap_;
+      std::map<const int, std::shared_ptr<class FluidImpedanceBc>> impmap_;
 
     };  // class FluidImpedanceWrapper
 
@@ -113,7 +112,7 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidImpedanceBc(const Teuchos::RCP<Core::FE::Discretization> actdis, const int condid,
+      FluidImpedanceBc(const std::shared_ptr<Core::FE::Discretization> actdis, const int condid,
           Core::Conditions::Condition* impedancecond);
 
       /*!
@@ -130,7 +129,7 @@ namespace FLD
       /*!
       \brief Split linearization matrix to a BlockSparseMatrixBase
       */
-      void use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
+      void use_block_matrix(std::shared_ptr<std::set<int>> condelements,
           const Core::LinAlg::MultiMapExtractor& domainmaps,
           const Core::LinAlg::MultiMapExtractor& rangemaps, bool splitmatrix);
 
@@ -176,7 +175,7 @@ namespace FLD
 
      private:
       //! fluid discretization
-      const Teuchos::RCP<Core::FE::Discretization> discret_;
+      const std::shared_ptr<Core::FE::Discretization> discret_;
 
       //! the processor ID from the communicator
       const int myrank_;
@@ -197,10 +196,10 @@ namespace FLD
       const int functnum_;
 
       //! traction vector for impedance bc
-      Teuchos::RCP<Core::LinAlg::Vector<double>> impedancetbc_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> impedancetbc_;
 
       //! linearisation of traction vector
-      Teuchos::RCP<Core::LinAlg::SparseOperator> impedancetbcsysmat_;
+      std::shared_ptr<Core::LinAlg::SparseOperator> impedancetbcsysmat_;
 
       //! Pressure at time step n+1
       double p_np_;

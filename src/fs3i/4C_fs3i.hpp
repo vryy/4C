@@ -16,7 +16,8 @@
 #include "4C_linalg_vector.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -116,10 +117,10 @@ namespace FS3I
     //! set-up of global matrix of the monolithic ScaTra problem
     void setup_coupled_scatra_matrix();
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatra2_to_scatra1(
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatra2_to_scatra1(
         const Core::LinAlg::Vector<double>& iv) const;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatra1_to_scatra2(
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatra1_to_scatra2(
         const Core::LinAlg::Vector<double>& iv) const;
 
     //! linear solution of monolithic ScaTra problem
@@ -131,53 +132,53 @@ namespace FS3I
     //! extraction of field-specific vectors from global ScaTra vector
     void extract_scatra_field_vectors(
         const Core::LinAlg::Vector<double>& globalvec,  //!< global vector
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>&
+        std::shared_ptr<const Core::LinAlg::Vector<double>>&
             vec1,  //!< resulting vector in fluid ScaTra map
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>&
+        std::shared_ptr<const Core::LinAlg::Vector<double>>&
             vec2  //!< resulting vector in solid ScaTra map
     );
 
    private:
     /// extracts membrane concentration in membrane (interface)
     void extract_membrane_concentration(
-        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& MembraneConcentration) const;
+        std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>& MembraneConcentration) const;
 
     /// Calculation of membane concentration in the membrane between fluid-scatra and
     /// structure-scatra
-    Teuchos::RCP<Core::LinAlg::Vector<double>> calc_membrane_concentration() const;
+    std::shared_ptr<Core::LinAlg::Vector<double>> calc_membrane_concentration() const;
 
    protected:
     /// vector of scatra algorithms
-    std::vector<Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>> scatravec_;
+    std::vector<std::shared_ptr<Adapter::ScaTraBaseAlgorithm>> scatravec_;
 
     /// scatra rhs vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatrarhs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatrarhs_;
 
     /// scatra increment vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraincrement_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraincrement_;
 
     /// dof row map of scatra problems splitted in (field) blocks
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> scatraglobalex_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> scatraglobalex_;
 
     /// vector of scatra field map extractors (coupled vs. uncoupled dofs)
-    std::vector<Teuchos::RCP<Core::LinAlg::MultiMapExtractor>> scatrafieldexvec_;
+    std::vector<std::shared_ptr<Core::LinAlg::MultiMapExtractor>> scatrafieldexvec_;
 
     /// coupling of dofs at the scatra interface
-    Teuchos::RCP<Coupling::Adapter::Coupling> scatracoup_;
+    std::shared_ptr<Coupling::Adapter::Coupling> scatracoup_;
 
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> scatrasystemmatrix_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> scatrasystemmatrix_;
 
     /// coupling forces (in case of surface permeability)
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> scatracoupforce_;
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> scatracoupforce_;
 
     /// coupling matrices (in case of surface permeability)
-    std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> scatracoupmat_;
+    std::vector<std::shared_ptr<Core::LinAlg::SparseMatrix>> scatracoupmat_;
 
     /// zero vector (needed for application of Dirichlet BC on coupling vector)
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> scatrazeros_;
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> scatrazeros_;
 
     /// scatra solver
-    Teuchos::RCP<Core::LinAlg::Solver> scatrasolver_;
+    std::shared_ptr<Core::LinAlg::Solver> scatrasolver_;
 
     /// flag for infinite surface permeability
     const bool infperm_;
@@ -204,10 +205,10 @@ namespace FS3I
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> sbbtransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> sbitransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> sibtransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> fbitransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowColTransform> sbbtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowTransform> sbitransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> sibtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowTransform> fbitransform_;
     ///@}
 
    private:

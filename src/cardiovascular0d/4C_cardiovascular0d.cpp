@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
-Utils::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization> discr,
+Utils::Cardiovascular0D::Cardiovascular0D(std::shared_ptr<Core::FE::Discretization> discr,
     const std::string& conditionname, std::vector<int>& curID)
     : actdisc_(discr),
       cardiovascular0dcond_(0),
@@ -60,9 +60,9 @@ Utils::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization>
       curID.push_back(i->parameters().get<int>("id"));
     }
 
-    Teuchos::RCP<Core::FE::Discretization> structdis =
+    std::shared_ptr<Core::FE::Discretization> structdis =
         Global::Problem::instance()->get_dis("structure");
-    if (structdis == Teuchos::null) FOUR_C_THROW("no structure discretization available");
+    if (structdis == nullptr) FOUR_C_THROW("no structure discretization available");
 
     // first get all Neumann conditions on structure
     structdis->get_condition("SurfaceNeumannCardiovascular0D", cardiovascular0dstructcoupcond_);
@@ -229,8 +229,8 @@ Utils::Cardiovascular0D::Cardiovascular0DType Utils::Cardiovascular0D::get_cardi
 |Initialization routine computes ref base values and activates conditions |
  *------------------------------------------------------------------------*/
 void Utils::Cardiovascular0D::initialize(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2)
+    std::shared_ptr<Core::LinAlg::Vector<double>> sysvec1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> sysvec2)
 {
   FOUR_C_THROW("Overridden by derived class!");
   return;
@@ -242,14 +242,14 @@ void Utils::Cardiovascular0D::initialize(Teuchos::ParameterList& params,
 |Evaluate Cardiovascular0D functions, choose the right action based on type    |
  *-----------------------------------------------------------------------*/
 void Utils::Cardiovascular0D::evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec3,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec4,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec5)
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> sysmat2,
+    std::shared_ptr<Core::LinAlg::SparseOperator> sysmat3,
+    std::shared_ptr<Core::LinAlg::Vector<double>> sysvec1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> sysvec2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> sysvec3,
+    const std::shared_ptr<Core::LinAlg::Vector<double>> sysvec4,
+    std::shared_ptr<Core::LinAlg::Vector<double>> sysvec5)
 {
   FOUR_C_THROW("Overridden by derived class!");
   return;
@@ -304,8 +304,8 @@ void Utils::Cardiovascular0D::evaluate_d_struct_dp(
     int coupcondID = coupcond->parameters().get<int>("coupling_id");
     params.set("coupling_id", coupcondID);
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
-        params.get<Teuchos::RCP<const Core::LinAlg::Vector<double>>>("new disp");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
+        params.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>("new disp");
     actdisc_->set_state("displacement", disp);
 
     // global and local ID of this bc in the redundant vectors
@@ -313,12 +313,12 @@ void Utils::Cardiovascular0D::evaluate_d_struct_dp(
     gindex[0] = numdof_per_cond * coupcondID + offsetID;
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = coupcond->geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = coupcond->geometry();
     // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -344,8 +344,8 @@ void Utils::Cardiovascular0D::evaluate_d_struct_dp(
 
       xc.shape(numnode, 3);
 
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> curdispl =
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement new'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> curdispl =
           actdisc_->get_state("displacement");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*curdispl, mydisp, lm);
@@ -496,7 +496,7 @@ void Utils::Cardiovascular0D::evaluate_d_struct_dp(
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void Utils::Cardiovascular0D::set_state(const std::string& state,  ///< name of state to set
-    Teuchos::RCP<Core::LinAlg::Vector<double>> V                   ///< values to set
+    std::shared_ptr<Core::LinAlg::Vector<double>> V                ///< values to set
 )
 {
   actdisc_->set_state(state, V);

@@ -13,12 +13,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-Adapter::FluidFSIMsht::FluidFSIMsht(Teuchos::RCP<Fluid> fluid,
-    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::Solver> solver,
-    Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
+Adapter::FluidFSIMsht::FluidFSIMsht(std::shared_ptr<Fluid> fluid,
+    std::shared_ptr<Core::FE::Discretization> dis, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond),
-      fsiinterface_(Teuchos::make_rcp<FLD::Utils::FsiMapExtractor>())
+      fsiinterface_(std::make_shared<FLD::Utils::FsiMapExtractor>())
 {
   return;
 }

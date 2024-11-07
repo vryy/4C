@@ -15,7 +15,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -31,13 +32,13 @@ namespace Solid
   //! Create auxiliary time integrator convenience routine
   //!
   //! \author bborn \date 07/08
-  Teuchos::RCP<Solid::TimAda> tim_ada_create(
+  std::shared_ptr<Solid::TimAda> tim_ada_create(
       const Teuchos::ParameterList& ioflags,     //!< input-output-flags
       const Teuchos::ParameterList& timeparams,  //!< structural dynamic flags
       const Teuchos::ParameterList& sdyn,        //!< structural dynamic flags
       const Teuchos::ParameterList& xparams,     //!< extra flags
       const Teuchos::ParameterList& tap,         //!< adaptive input flags
-      Teuchos::RCP<Solid::TimInt> tis            //!< marching time integrator
+      std::shared_ptr<Solid::TimInt> tis         //!< marching time integrator
   );
 
 }  // namespace Solid

@@ -42,101 +42,101 @@ FPSI::MonolithicPlain::MonolithicPlain(const Epetra_Comm& comm,
   // create transformation object for the condensation
 
 
-  fggtransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowColTransform>();
-  fggtransform2_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowColTransform>();
-  fmgitransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowColTransform>();
+  fggtransform_ = std::make_shared<Coupling::Adapter::MatrixRowColTransform>();
+  fggtransform2_ = std::make_shared<Coupling::Adapter::MatrixRowColTransform>();
+  fmgitransform_ = std::make_shared<Coupling::Adapter::MatrixRowColTransform>();
 
-  fgitransform1_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
-  fgitransform2_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
-  cfgtransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
-  cfptransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
-  cfptransform2_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
+  fgitransform1_ = std::make_shared<Coupling::Adapter::MatrixRowTransform>();
+  fgitransform2_ = std::make_shared<Coupling::Adapter::MatrixRowTransform>();
+  cfgtransform_ = std::make_shared<Coupling::Adapter::MatrixRowTransform>();
+  cfptransform_ = std::make_shared<Coupling::Adapter::MatrixRowTransform>();
+  cfptransform2_ = std::make_shared<Coupling::Adapter::MatrixRowTransform>();
 
-  figtransform1_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
-  figtransform2_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
-  figtransform3_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
-  figtransform4_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
-  aigtransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
-  aigtransform2_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
+  figtransform1_ = std::make_shared<Coupling::Adapter::MatrixColTransform>();
+  figtransform2_ = std::make_shared<Coupling::Adapter::MatrixColTransform>();
+  figtransform3_ = std::make_shared<Coupling::Adapter::MatrixColTransform>();
+  figtransform4_ = std::make_shared<Coupling::Adapter::MatrixColTransform>();
+  aigtransform_ = std::make_shared<Coupling::Adapter::MatrixColTransform>();
+  aigtransform2_ = std::make_shared<Coupling::Adapter::MatrixColTransform>();
 
-  couplingcoltransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
-  couplingcoltransformfs_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
+  couplingcoltransform_ = std::make_shared<Coupling::Adapter::MatrixColTransform>();
+  couplingcoltransformfs_ = std::make_shared<Coupling::Adapter::MatrixColTransform>();
 
   // Recovery of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+  lambda_ = std::make_shared<Core::LinAlg::Vector<double>>(
       *fluid_field()->interface()->fsi_cond_map(), true);
-  fmgiprev_ = Teuchos::null;
-  fmgicur_ = Teuchos::null;
-  fmggprev_ = Teuchos::null;
-  fmggcur_ = Teuchos::null;
-  fgiprev_ = Teuchos::null;
-  fgicur_ = Teuchos::null;
-  fggprev_ = Teuchos::null;
-  fggcur_ = Teuchos::null;
+  fmgiprev_ = nullptr;
+  fmgicur_ = nullptr;
+  fmggprev_ = nullptr;
+  fmggcur_ = nullptr;
+  fgiprev_ = nullptr;
+  fgicur_ = nullptr;
+  fggprev_ = nullptr;
+  fggcur_ = nullptr;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether allocation was successful
-  if (fggtransform_ == Teuchos::null)
+  if (fggtransform_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'fggtransform_' failed.");
   }
-  if (fggtransform2_ == Teuchos::null)
+  if (fggtransform2_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'fggtransform2_' failed.");
   }
-  if (fmgitransform_ == Teuchos::null)
+  if (fmgitransform_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'fmgitransform_' failed.");
   }
 
-  if (fgitransform1_ == Teuchos::null)
+  if (fgitransform1_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'fgitransform1_' failed.");
   }
-  if (fgitransform2_ == Teuchos::null)
+  if (fgitransform2_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'fgitransform2_' failed.");
   }
-  if (cfgtransform_ == Teuchos::null)
+  if (cfgtransform_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'Cfgtransform_' failed.");
   }
 
-  if (figtransform1_ == Teuchos::null)
+  if (figtransform1_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'figtransform1_' failed.");
   }
-  if (figtransform2_ == Teuchos::null)
+  if (figtransform2_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'figtransform2_' failed.");
   }
-  if (figtransform3_ == Teuchos::null)
+  if (figtransform3_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'figtransform3_' failed.");
   }
-  if (figtransform4_ == Teuchos::null)
+  if (figtransform4_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'figtransform4_' failed.");
   }
-  if (aigtransform_ == Teuchos::null)
+  if (aigtransform_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'aigtransform_' failed.");
   }
-  if (aigtransform2_ == Teuchos::null)
+  if (aigtransform2_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'aigtransform2_' failed.");
   }
 
-  if (couplingcoltransform_ == Teuchos::null)
+  if (couplingcoltransform_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'couplingcoltransform_' failed.");
   }
-  if (couplingcoltransformfs_ == Teuchos::null)
+  if (couplingcoltransformfs_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'couplingcoltransformfs_' failed.");
   }
 
-  if (lambda_ == Teuchos::null)
+  if (lambda_ == nullptr)
   {
     FOUR_C_THROW("Allocation of 'lambda_' failed.");
   }
@@ -156,7 +156,7 @@ void FPSI::MonolithicPlain::setup_system()
   FPSI::Monolithic::setup_system();
 
   // create combined map
-  std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
+  std::vector<std::shared_ptr<const Epetra_Map>> vecSpaces;
 
   vecSpaces.push_back(poro_field()->extractor()->Map(0));
 
@@ -191,14 +191,14 @@ void FPSI::MonolithicPlain::setup_system()
 
   // initialize FPSI-systemmatrix_
   systemmatrix_ =
-      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+      std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           extractor(), extractor(), 81, false, true);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FPSI::MonolithicPlain::set_dof_row_maps(
-    const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
+    const std::vector<std::shared_ptr<const Epetra_Map>>& maps)
 {
   fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
 
@@ -223,7 +223,7 @@ void FPSI::MonolithicPlain::setup_rhs(bool firstcall)
   TEUCHOS_FUNC_TIME_MONITOR("FPSI::MonolithicPlain::setup_rhs");
   // create full monolithic rhs vector
 
-  rhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
+  rhs_ = std::make_shared<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
 
   firstcall_ = firstcall;
 
@@ -251,15 +251,15 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
   mat.un_complete();  // basically makes no sense as all blocks will be assigned later!!!
 
   // get single field block matrices
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> p = poro_field()->block_system_matrix();
+  std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> p = poro_field()->block_system_matrix();
   p->un_complete();
 
-  const Teuchos::RCP<Core::LinAlg::SparseMatrix> f = fluid_field()->system_sparse_matrix();
+  const std::shared_ptr<Core::LinAlg::SparseMatrix> f = fluid_field()->system_sparse_matrix();
   f->un_complete();
 
-  const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> fbm =
+  const std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> fbm =
       fluid_field()->block_system_matrix();
-  const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->block_system_matrix();
+  const std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->block_system_matrix();
 
   // Get Idx of fluid and ale field map extractors
   const int& fidx_other = FLD::Utils::MapExtractor::cond_other;
@@ -388,11 +388,11 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
   //////                                  //////
   //////////////////////////////////////////////
   const Teuchos::ParameterList& fpsidynparams = Global::Problem::instance()->fpsi_dynamic_params();
-  const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> fluidalematrix =
+  const std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> fluidalematrix =
       fluid_field()->shape_derivatives();
   if (fpsidynparams.get<bool>("USESHAPEDERIVATIVES"))
   {
-    if (fluidalematrix != Teuchos::null)
+    if (fluidalematrix != nullptr)
     {
       // There is no fpsi-fsi overlap in the block matrixes, all dofs which are on both interfaces
       // belong to the fsi-block matrix!
@@ -533,9 +533,9 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
 
   // if (FSI_Interface_exists_)
   {
-    fgicur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+    fgicur_ = std::make_shared<Core::LinAlg::SparseMatrix>(
         fbm->matrix(FLD::Utils::MapExtractor::cond_fsi, FLD::Utils::MapExtractor::cond_other));
-    fggcur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+    fggcur_ = std::make_shared<Core::LinAlg::SparseMatrix>(
         fbm->matrix(FLD::Utils::MapExtractor::cond_fsi, FLD::Utils::MapExtractor::cond_fsi));
 
     // store parts of fluid matrix to know them in the next iteration as previous iteration matrices
@@ -546,11 +546,11 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
     // iteration matrices
     fmgiprev_ = fmgicur_;
     fmggprev_ = fmggcur_;
-    if (fluidalematrix != Teuchos::null)
+    if (fluidalematrix != nullptr)
     {
-      fmgicur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(fluidalematrix->matrix(
+      fmgicur_ = std::make_shared<Core::LinAlg::SparseMatrix>(fluidalematrix->matrix(
           FLD::Utils::MapExtractor::cond_fsi, FLD::Utils::MapExtractor::cond_other));
-      fmggcur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(fluidalematrix->matrix(
+      fmggcur_ = std::make_shared<Core::LinAlg::SparseMatrix>(fluidalematrix->matrix(
           FLD::Utils::MapExtractor::cond_fsi, FLD::Utils::MapExtractor::cond_fsi));
     }
   }
@@ -564,7 +564,7 @@ void FPSI::MonolithicPlain::setup_vector(Core::LinAlg::Vector<double>& f,
     double fluidscale)
 {
   // Get fluid_field Block Matrix
-  const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> fbm =
+  const std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> fbm =
       fluid_field()->block_system_matrix();
   const Core::LinAlg::SparseMatrix fgg =
       fbm->matrix(FLD::Utils::MapExtractor::cond_fsi, FLD::Utils::MapExtractor::cond_fsi);
@@ -579,13 +579,13 @@ void FPSI::MonolithicPlain::setup_vector(Core::LinAlg::Vector<double>& f,
   if (FSI_Interface_exists_)  // in case FSI interface exists, add term from condensation to RHS
   {
     // add fluid interface values to structure vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcvgfsi =
+    std::shared_ptr<Core::LinAlg::Vector<double>> fcvgfsi =
         fluid_field()->interface()->extract_fsi_cond_vector(fv);
     fcvgfsi->Update(1.0,
         *(fluid_field()->interface()->extract_fsi_cond_vector(*fpsi_coupl()->rhs_f())),
         1.0);  // add rhs contribution of fpsi coupling rhs
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> modsv =
+    std::shared_ptr<Core::LinAlg::Vector<double>> modsv =
         poro_field()->structure_field()->interface()->insert_fsi_cond_vector(
             *fluid_to_struct_fsi(fcvgfsi));  //(fvg)fg -> (fvg)sg -> (fvg)s
 
@@ -600,7 +600,7 @@ void FPSI::MonolithicPlain::setup_vector(Core::LinAlg::Vector<double>& f,
     extractor().insert_vector(pfv, porofluid_block_, f);
   }
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> aov =
+  std::shared_ptr<Core::LinAlg::Vector<double>> aov =
       ale_field()->interface()->extract_other_vector(av);
   extractor().insert_vector(*aov, ale_i_block_, f);  // add ALE contributions to 'f'
 
@@ -613,7 +613,7 @@ void FPSI::MonolithicPlain::setup_vector(Core::LinAlg::Vector<double>& f,
 /*----------------------------------------------------------------------*/
 void FPSI::MonolithicPlain::setup_rhs_lambda(Core::LinAlg::Vector<double>& f)
 {
-  if (lambda_ != Teuchos::null)  // FSI - Interface?
+  if (lambda_ != nullptr)  // FSI - Interface?
   {
     // get time integration parameters of structure and fluid time integrators
     // to enable consistent time integration among the fields
@@ -622,7 +622,7 @@ void FPSI::MonolithicPlain::setup_rhs_lambda(Core::LinAlg::Vector<double>& f)
 
     // project Lagrange multiplier field onto the master interface DOFs and consider temporal
     // scaling
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambdafull =
         poro_field()->structure_field()->interface()->insert_fsi_cond_vector(
             *fluid_to_struct_fsi(lambda_));  //(lambda)fg -> (lambda)sg -> (lambda)s
     lambdafull->Scale(stiparam - (ftiparam * (1.0 - stiparam)) / (1.0 - ftiparam));
@@ -651,25 +651,26 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Core::LinAlg::Vector<double>& f
   const double scale = fluid_field()->residual_scaling();
 
   // old interface velocity of fluid field (FSI Cond Vector)
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> fveln =
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> fveln =
       fluid_field()->extract_interface_veln();
 
   // get fluid matrix
-  const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockf =
+  const std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> blockf =
       fluid_field()->block_system_matrix();
 
   // get fluid shape derivatives matrix
-  const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluid_field()->shape_derivatives();
+  const std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> mmm =
+      fluid_field()->shape_derivatives();
 
   // get ale matrix
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blocka = ale_field()->block_system_matrix();
+  std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> blocka = ale_field()->block_system_matrix();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (blockf == Teuchos::null)
+  if (blockf == nullptr)
   {
     FOUR_C_THROW("Expected Teuchos::rcp to fluid block matrix.");
   }
-  if (blocka == Teuchos::null)
+  if (blocka == nullptr)
   {
     FOUR_C_THROW("Expected Teuchos::rcp to ale block matrix.");
   }
@@ -685,7 +686,7 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Core::LinAlg::Vector<double>& f
   // A_{I\Gamma}
 
   // some often re-used vectors
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Vector<double>> rhs = nullptr;
 
   // Different contributions/terms to the rhs are separated by the following comment line
   // ---------- structural interface DOFs
@@ -705,7 +706,7 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Core::LinAlg::Vector<double>& f
    *
    */
   // ----------addressing term 1
-  rhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fgg.range_map(), true);
+  rhs = std::make_shared<Core::LinAlg::Vector<double>>(fgg.range_map(), true);
 
   fgg.Apply(*fveln, *rhs);
 
@@ -716,7 +717,7 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Core::LinAlg::Vector<double>& f
 
   if (poro_field()->structure_field()->get_stc_algo() == Inpar::Solid::stc_currsym)  //??ChrAg
   {
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat =
         poro_field()->structure_field()->get_stc_mat();
     stcmat->multiply(true, *rhs, *rhs);
   }
@@ -736,7 +737,7 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Core::LinAlg::Vector<double>& f
   //   // ----------end of term 2
   //
   //   // ----------addressing term 3:
-  //   if (mmm != Teuchos::null)
+  //   if (mmm != nullptr)
   //   {
   //     // extract F^{G}_{\Gamma\Gamma}
   //     const Core::LinAlg::SparseMatrix& fmgg = mmm->Matrix(1,1);
@@ -770,7 +771,7 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Core::LinAlg::Vector<double>& f
    *
    */
   // ----------addressing term 1
-  rhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fig.range_map(), true);
+  rhs = std::make_shared<Core::LinAlg::Vector<double>>(fig.range_map(), true);
 
   fig.Apply(*fveln, *rhs);
 
@@ -799,7 +800,7 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Core::LinAlg::Vector<double>& f
   //   // ----------end of term 2
   //
   //   // ----------addressing term 3
-  //   if(mmm != Teuchos::null)
+  //   if(mmm != nullptr)
   //   {
   //     // extract F^{G}_{I \Gamma}
   //     const Core::LinAlg::SparseMatrix& fmig = mmm->Matrix(0,1);
@@ -843,22 +844,22 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Core::LinAlg::Vector<double>& f
       *poro_field()->structure_field()->interface()->fsi_cond_map(), true);
   duiinc_ = Core::LinAlg::create_vector(*fluid_field()->interface()->other_map(), true);
   ddialeinc_ = Core::LinAlg::create_vector(*ale_field()->interface()->other_map(), true);
-  soliprev_ = Teuchos::null;
-  solgprev_ = Teuchos::null;
-  fgicur_ = Teuchos::null;
-  fggcur_ = Teuchos::null;
+  soliprev_ = nullptr;
+  solgprev_ = nullptr;
+  fgicur_ = nullptr;
+  fggcur_ = nullptr;
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FPSI::MonolithicPlain::extract_field_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& pfx,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& ax,  ///< ale displacements
-    bool firstiter_)                                       ///< firstiteration?
+    std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& sx,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& pfx,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& fx,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& ax,  ///< ale displacements
+    bool firstiter_)                                          ///< firstiteration?
 {
   TEUCHOS_FUNC_TIME_MONITOR("FPSI::MonolithicPlain::extract_field_vectors");
 
@@ -867,11 +868,11 @@ void FPSI::MonolithicPlain::extract_field_vectors(
   pfx = extractor().extract_vector(*x, porofluid_block_);
 
   // extract inner ALE solution increment
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> aox =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> aox =
       extractor().extract_vector(*x, ale_i_block_);
 
   // put inner --- ALE solution together
-  Teuchos::RCP<Core::LinAlg::Vector<double>> a =
+  std::shared_ptr<Core::LinAlg::Vector<double>> a =
       ale_field()->interface()->insert_other_vector(*aox);
   // ale_field()->Interface()->insert_fpsi_cond_vector(acx_fpsi, a); //Already done by
   // Ale().apply_interface_displacements() ale_field()->Interface()->insert_fsi_cond_vector(acx_fsi,
@@ -883,7 +884,7 @@ void FPSI::MonolithicPlain::extract_field_vectors(
   // process fluid unknowns
   // ---------------------------------------------------------------------------
   // extract inner fluid solution increment from NOX increment
-  Teuchos::RCP<Core::LinAlg::Vector<double>> f = extractor().extract_vector(*x, fluid_block_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> f = extractor().extract_vector(*x, fluid_block_);
 #ifdef FLUIDSPLITAMG
   fox = fluid_field()->Interface()->extract_other_vector(*fox);
 #endif
@@ -892,23 +893,23 @@ void FPSI::MonolithicPlain::extract_field_vectors(
   {
     // convert structure solution increment to ALE solution increment at the interface
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scx_fsi =
+    std::shared_ptr<Core::LinAlg::Vector<double>> scx_fsi =
         poro_field()->structure_field()->interface()->extract_fsi_cond_vector(*sx);
     if (firstiter_)  // to consider also DBC on Structure!!!
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dispnfsi =
+      std::shared_ptr<Core::LinAlg::Vector<double>> dispnfsi =
           poro_field()->structure_field()->interface()->extract_fsi_cond_vector(
               *poro_field()->structure_field()->dispn());
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dispnpfsi =
+      std::shared_ptr<Core::LinAlg::Vector<double>> dispnpfsi =
           poro_field()->structure_field()->interface()->extract_fsi_cond_vector(
               *poro_field()->structure_field()->dispnp());
       scx_fsi->Update(1.0, *dispnpfsi, -1.0, *dispnfsi, 1.0);
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> acx_fsi = struct_to_ale_fsi(scx_fsi);
+    std::shared_ptr<const Core::LinAlg::Vector<double>> acx_fsi = struct_to_ale_fsi(scx_fsi);
 
     // convert ALE solution increment to fluid solution increment at the interface
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcx_fsi = ale_to_fluid_interface_fsi(acx_fsi);
+    std::shared_ptr<Core::LinAlg::Vector<double>> fcx_fsi = ale_to_fluid_interface_fsi(acx_fsi);
 
     if (firstiter_)
       fluid_field()->displacement_to_velocity(
@@ -922,36 +923,35 @@ void FPSI::MonolithicPlain::extract_field_vectors(
     // Store field vectors to know them later on as previous quantities
     // inner ale displacement increment
     // interface structure displacement increment
-    if (disgprev_ != Teuchos::null)
+    if (disgprev_ != nullptr)
       ddginc_->Update(1.0, *scx_fsi, -1.0, *disgprev_, 0.0);  // compute current iteration increment
     else
       ddginc_ =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scx_fsi);  // first iteration increment
+          std::make_shared<Core::LinAlg::Vector<double>>(*scx_fsi);  // first iteration increment
 
     disgprev_ = scx_fsi;  // store current step increment
     // ------------------------------------
   }
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fox =
+  std::shared_ptr<Core::LinAlg::Vector<double>> fox =
       fpsi_coupl()->fluid_fsi_fpsi_extractor()->extract_vector(*f, 0);
 
   fx = f;
   // inner ale displacement increment
-  if (solialeprev_ != Teuchos::null)
+  if (solialeprev_ != nullptr)
     ddialeinc_->Update(1.0, *aox, -1.0, *solialeprev_, 0.0);  // compute current iteration increment
   else
-    ddialeinc_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*aox);  // first iteration increment
+    ddialeinc_ = std::make_shared<Core::LinAlg::Vector<double>>(*aox);  // first iteration increment
 
   solialeprev_ = aox;  // store current step increment
   // ------------------------------------
 
   // fluid solution increment
-  if (soliprev_ != Teuchos::null)  // compute current iteration increment
+  if (soliprev_ != nullptr)  // compute current iteration increment
     duiinc_->Update(1.0, *fox, -1.0, *soliprev_, 0.0);
   else
     // first iteration increment
-    duiinc_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fox);
+    duiinc_ = std::make_shared<Core::LinAlg::Vector<double>>(*fox);
   // store current step increment
   soliprev_ = fox;
   // ------------------------------------
@@ -970,7 +970,7 @@ void FPSI::MonolithicPlain::recover_lagrange_multiplier()
   // considered (does not improve the convergence a lot), all terms coming from predictors are
   // commented out (for later implementation).
 
-  if (lambda_ != Teuchos::null)  // FSI - Interface?
+  if (lambda_ != nullptr)  // FSI - Interface?
   {
     // get time integration parameter of fluid time integrator
     // to enable consistent time integration among the fields
@@ -981,14 +981,14 @@ void FPSI::MonolithicPlain::recover_lagrange_multiplier()
     const double scale = fluid_field()->residual_scaling();
 
     // get fluid shape derivative matrix
-    const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm =
+    const std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> mmm =
         fluid_field()->shape_derivatives();
 
     // some often re-used vectors
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tmpvec =
-        Teuchos::null;  // stores intermediate result of terms (3)-(8)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> auxvec = Teuchos::null;     // just for convenience
-    Teuchos::RCP<Core::LinAlg::Vector<double>> auxauxvec = Teuchos::null;  // just for convenience
+    std::shared_ptr<Core::LinAlg::Vector<double>> tmpvec =
+        nullptr;  // stores intermediate result of terms (3)-(8)
+    std::shared_ptr<Core::LinAlg::Vector<double>> auxvec = nullptr;     // just for convenience
+    std::shared_ptr<Core::LinAlg::Vector<double>> auxauxvec = nullptr;  // just for convenience
 
     /* Recovery of Lagrange multiplier \lambda_^{n+1} is done by the following
      * condensation expression:
@@ -1034,30 +1034,30 @@ void FPSI::MonolithicPlain::recover_lagrange_multiplier()
     // ---------End of term (1)
 
     // ---------Addressing term (3)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluidresidual =
+    std::shared_ptr<Core::LinAlg::Vector<double>> fluidresidual =
         fluid_field()->interface()->extract_fsi_cond_vector(*fluid_field()->rhs());
     fluidresidual->Scale(-1.0);  // invert sign to obtain residual, not rhs
-    tmpvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluidresidual);
+    tmpvec = std::make_shared<Core::LinAlg::Vector<double>>(*fluidresidual);
     // ---------End of term (3)
 
     // ---------Addressing term (4)
-    auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fggprev_->range_map(), true);
+    auxvec = std::make_shared<Core::LinAlg::Vector<double>>(fggprev_->range_map(), true);
 
     fggprev_->Apply(*struct_to_fluid_fsi(ddginc_), *auxvec);
     tmpvec->Update(timescale, *auxvec, 1.0);
     // ---------End of term (4)
 
     // ---------Addressing term (5)
-    if (fmggprev_ != Teuchos::null)
+    if (fmggprev_ != nullptr)
     {
-      auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fmggprev_->range_map(), true);
+      auxvec = std::make_shared<Core::LinAlg::Vector<double>>(fmggprev_->range_map(), true);
       fmggprev_->Apply(*struct_to_fluid_fsi(ddginc_), *auxvec);
       tmpvec->Update(1.0, *auxvec, 1.0);
     }
     // ---------End of term (5)
 
     // ---------Addressing term (6)
-    auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fgiprev_->range_map(), true);
+    auxvec = std::make_shared<Core::LinAlg::Vector<double>>(fgiprev_->range_map(), true);
     Core::LinAlg::Vector<double> tmp(fgiprev_->domain_map(), true);
     Core::LinAlg::export_to(*duiinc_, tmp);
     fgiprev_->Apply(tmp, *auxvec);
@@ -1065,7 +1065,7 @@ void FPSI::MonolithicPlain::recover_lagrange_multiplier()
     // ---------End of term (6)
 
     // ---------Addressing term (7)
-    if (fmgiprev_ != Teuchos::null)
+    if (fmgiprev_ != nullptr)
     {
       /* For matrix-vector-product, the DomainMap() of the matrix and the Map() of the vector
        * have to match. DomainMap() contains inner velocity DOFs and all pressure DOFs.
@@ -1083,22 +1083,22 @@ void FPSI::MonolithicPlain::recover_lagrange_multiplier()
        */
 
       // extract inner velocity DOFs after calling AleToFluid()
-      Teuchos::RCP<Epetra_Map> velothermap = Core::LinAlg::split_map(
+      std::shared_ptr<Epetra_Map> velothermap = Core::LinAlg::split_map(
           *fluid_field()->velocity_row_map(), *interface_fluid_ale_coupling_fsi().master_dof_map());
       Core::LinAlg::MapExtractor velothermapext =
           Core::LinAlg::MapExtractor(*fluid_field()->velocity_row_map(), velothermap, false);
-      auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*velothermap, true);
+      auxvec = std::make_shared<Core::LinAlg::Vector<double>>(*velothermap, true);
       velothermapext.extract_other_vector(
           *ale_to_fluid(ale_field()->interface()->insert_other_vector(*ddialeinc_)), *auxvec);
 
       // add pressure DOFs
       Core::LinAlg::MapExtractor velotherpressuremapext =
           Core::LinAlg::MapExtractor(fmgiprev_->domain_map(), velothermap);
-      auxauxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fmgiprev_->domain_map(), true);
+      auxauxvec = std::make_shared<Core::LinAlg::Vector<double>>(fmgiprev_->domain_map(), true);
       velotherpressuremapext.insert_cond_vector(*auxvec, *auxauxvec);
 
       // prepare vector to store result of matrix-vector-product
-      auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fmgiprev_->range_map(), true);
+      auxvec = std::make_shared<Core::LinAlg::Vector<double>>(fmgiprev_->range_map(), true);
 
       // Now, do the actual matrix-vector-product
       fmgiprev_->Apply(*auxauxvec, *auxvec);
@@ -1109,7 +1109,7 @@ void FPSI::MonolithicPlain::recover_lagrange_multiplier()
     // ---------Addressing term (8)
     if (firstcall_)
     {
-      auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fggprev_->range_map(), true);
+      auxvec = std::make_shared<Core::LinAlg::Vector<double>>(fggprev_->range_map(), true);
       fggprev_->Apply(*fluid_field()->extract_interface_veln(), *auxvec);
       tmpvec->Update(dt() * timescale, *auxvec, 1.0);
     }

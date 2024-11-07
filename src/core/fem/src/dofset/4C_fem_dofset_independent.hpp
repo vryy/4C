@@ -12,7 +12,7 @@
 
 #include "4C_fem_dofset.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -54,7 +54,7 @@ namespace Core::DOFSets
 
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> clone() override { return Teuchos::make_rcp<IndependentDofSet>(*this); }
+    std::shared_ptr<DofSet> clone() override { return std::make_shared<IndependentDofSet>(*this); }
 
     /// Add Dof Set to list #static_dofsets_
     void add_dof_setto_list() override;

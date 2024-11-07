@@ -26,13 +26,13 @@ FOUR_C_NAMESPACE_OPEN
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(
-    std::ofstream& geofile, Core::FE::Discretization& dis, Teuchos::RCP<Epetra_Map>& proc0map)
+    std::ofstream& geofile, Core::FE::Discretization& dis, std::shared_ptr<Epetra_Map>& proc0map)
 {
   using namespace FourC;
 
   // refcountpointer to vector of all coordinates
   // distributed among all procs
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> nodecoords;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> nodecoords;
 
   // the ids of the visualisation points on this proc
   std::vector<int> local_vis_point_ids;
@@ -56,7 +56,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(
   int dim = (nurbsdis->return_nele_x_mele_x_lele(0)).size();
 
   // get the knotvector itself
-  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knotvec = nurbsdis->get_knot_vector();
+  std::shared_ptr<Core::FE::Nurbs::Knotvector> knotvec = nurbsdis->get_knot_vector();
 
   // determine number of patches from knotvector
   int npatches = knotvec->return_np();
@@ -1340,11 +1340,11 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(
     numvispoints += numvisp;
   }
 
-  vispointmap_ = Teuchos::make_rcp<Epetra_Map>(numvispoints, local_vis_point_ids.size(),
+  vispointmap_ = std::make_shared<Epetra_Map>(numvispoints, local_vis_point_ids.size(),
       local_vis_point_ids.data(), 0, nurbsdis->get_comm());
 
   // allocate the coordinates of the vizualisation points
-  nodecoords = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*vispointmap_, 3);
+  nodecoords = std::make_shared<Core::LinAlg::MultiVector<double>>(*vispointmap_, 3);
 
   // loop over the nodes on this proc and store the coordinate information
   for (int inode = 0; inode < (int)local_vis_point_x.size(); inode++)
@@ -1417,7 +1417,7 @@ void EnsightWriter::write_nurbs_cell(const Core::FE::CellType distype, const int
   }
 
   // get the knotvector itself
-  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
+  std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
 
   // determine number of patches from knotvector
   int npatches = knots->return_np();
@@ -1451,7 +1451,7 @@ void EnsightWriter::write_nurbs_cell(const Core::FE::CellType distype, const int
       const int dim = 2;
 
       // get the knotvector itself
-      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
+      std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
 
       // get location in the patch and the number of the patch
       int npatch = -1;
@@ -1715,8 +1715,8 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   using namespace FourC;
 
   // a multivector for the interpolated data
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> idata;
-  idata = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*vispointmap_, numdf);
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> idata;
+  idata = std::make_shared<Core::LinAlg::MultiVector<double>>(*vispointmap_, numdf);
 
   Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
       dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*field_->discretization()));
@@ -1754,7 +1754,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   }  // end loop over patches
 
   // get the knotvector itself
-  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knotvec = nurbsdis->get_knot_vector();
+  std::shared_ptr<Core::FE::Nurbs::Knotvector> knotvec = nurbsdis->get_knot_vector();
 
   // get vispoint offsets among patches
   std::vector<int> vpoff(npatches);
@@ -3335,8 +3335,8 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   using namespace FourC;
 
   // a multivector for the interpolated data
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> idata;
-  idata = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*vispointmap_, numdf);
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> idata;
+  idata = std::make_shared<Core::LinAlg::MultiVector<double>>(*vispointmap_, numdf);
 
   Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
       dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*field_->discretization()));
@@ -3364,7 +3364,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   }  // end loop over patches
 
   // get the knotvector itself
-  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knotvec = nurbsdis->get_knot_vector();
+  std::shared_ptr<Core::FE::Nurbs::Knotvector> knotvec = nurbsdis->get_knot_vector();
 
   // get vispoint offsets among patches
   std::vector<int> vpoff(npatches);

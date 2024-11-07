@@ -95,10 +95,10 @@ namespace FLD
     \brief Standard Constructor
 
     */
-    FluidImplicitTimeInt(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
+    FluidImplicitTimeInt(const std::shared_ptr<Core::FE::Discretization>& actdis,
+        const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Teuchos::ParameterList>& params,
+        const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /*!
     \brief initialization
@@ -220,8 +220,8 @@ namespace FLD
 
     */
     virtual void insert_volumetric_surface_flow_cond_vector(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vel,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> res)
+        std::shared_ptr<Core::LinAlg::Vector<double>> vel,
+        std::shared_ptr<Core::LinAlg::Vector<double>> res)
     {
       return;
     }
@@ -281,7 +281,7 @@ namespace FLD
     \brief Additional function for RedModels in linear_relaxation_solve
 
     */
-    virtual void custom_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> relax) {}
+    virtual void custom_solve(std::shared_ptr<Core::LinAlg::Vector<double>> relax) {}
 
     /*!
     \brief Call statistics manager (special case in TimIntLoma)
@@ -301,11 +301,11 @@ namespace FLD
            for incompressible and low-Mach-number flow
     */
     virtual void calculate_acceleration(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,  ///< velocity at     n+1
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> veln,   ///< velocity at     n
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm,  ///< velocity at     n-1
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> accn,   ///< acceleration at n-1
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> accnp         ///< acceleration at n+1
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> velnp,  ///< velocity at     n+1
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> veln,   ///< velocity at     n
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> velnm,  ///< velocity at     n-1
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> accn,   ///< acceleration at n-1
+        const std::shared_ptr<Core::LinAlg::Vector<double>> accnp         ///< acceleration at n+1
         ) = 0;
 
     //! @name Set general parameter in class f3Parameter
@@ -363,7 +363,7 @@ namespace FLD
   \brief solve linearised fluid
 
   */
-    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override { return solver_; };
+    std::shared_ptr<Core::LinAlg::Solver> linear_solver() override { return solver_; };
 
     /*!
     \brief preparatives for solver
@@ -384,7 +384,7 @@ namespace FLD
     \brief update within iteration
 
     */
-    void iter_update(const Teuchos::RCP<const Core::LinAlg::Vector<double>> increment) override;
+    void iter_update(const std::shared_ptr<const Core::LinAlg::Vector<double>> increment) override;
 
     /*!
    \brief convergence check
@@ -398,7 +398,7 @@ namespace FLD
 
       Monolithic FSI needs to access the linear fluid problem.
     */
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
             stepinc  ///< solution increment between time step n and n+1
         ) override;
 
@@ -538,7 +538,7 @@ namespace FLD
     \brief get access to map extractor for velocity and pressure
 
     */
-    Teuchos::RCP<Core::LinAlg::MapExtractor> get_vel_press_splitter() override
+    std::shared_ptr<Core::LinAlg::MapExtractor> get_vel_press_splitter() override
     {
       return velpressplitter_;
     };
@@ -551,12 +551,12 @@ namespace FLD
         const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
 
     /// Implement Adapter::Fluid
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> extract_velocity_part(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> velpres) override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> extract_velocity_part(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> velpres) override;
 
     /// Implement Adapter::Fluid
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> extract_pressure_part(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> velpres) override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> extract_pressure_part(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> velpres) override;
 
     /// Reset state vectors
     void reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
@@ -566,13 +566,13 @@ namespace FLD
            numerical solution of a test problems
 
     */
-    virtual Teuchos::RCP<std::vector<double>> evaluate_error_compared_to_analytical_sol();
+    virtual std::shared_ptr<std::vector<double>> evaluate_error_compared_to_analytical_sol();
 
     /*!
     \brief evaluate divergence of velocity field
 
     */
-    virtual Teuchos::RCP<double> evaluate_div_u();
+    virtual std::shared_ptr<double> evaluate_div_u();
 
     /*!
     \brief calculate adaptive time step with the CFL number
@@ -591,50 +591,50 @@ namespace FLD
 
     */
     void set_restart(const int step, const double time,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> readvelnp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> readveln,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> readvelnm,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> readaccnp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> readaccn) override;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> readvelnp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> readveln,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> readvelnm,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> readaccnp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> readaccn) override;
 
     //! @name access methods for composite algorithms
     /// monolithic FSI needs to access the linear fluid problem
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override { return incvel_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() override { return incvel_; }
 
     /// return implemented residual (is not an actual force in Newton [N])
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> residual() { return residual_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> residual() { return residual_; }
 
     /// implement adapter fluid
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override { return residual(); }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override { return residual(); }
 
     /// Return true residual, ie the actual force in Newton [N]
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> true_residual() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> true_residual() override
     {
       return trueresidual_;
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp() override { return velnp_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_velnp() override { return velnp_; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> velaf() override { return velaf_; }
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> velam() { return velam_; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> veln() override { return veln_; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm() override { return velnm_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_accnp() { return accnp_; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> accnp() override { return accnp_; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> accn() override { return accn_; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> accnm() override { return accnm_; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> accam() override { return accam_; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> scaaf() override { return scaaf_; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> scaam() override { return scaam_; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> hist() override { return hist_; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> grid_vel() override { return gridv_; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> grid_veln() override { return gridvn_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_grid_vel() { return gridv_; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fs_vel() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> velnp() override { return velnp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> write_access_velnp() override { return velnp_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> velaf() override { return velaf_; }
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> velam() { return velam_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> veln() override { return veln_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> velnm() override { return velnm_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> write_access_accnp() { return accnp_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> accnp() override { return accnp_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> accn() override { return accn_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> accnm() override { return accnm_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> accam() override { return accam_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> scaaf() override { return scaaf_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> scaam() override { return scaam_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> hist() override { return hist_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> grid_vel() override { return gridv_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> grid_veln() override { return gridvn_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> write_access_grid_vel() { return gridv_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fs_vel() override
     {
       // get fine-scale part of velocity at time n+alpha_F or n+1
-      if (Sep_ != Teuchos::null)
+      if (Sep_ != nullptr)
       {
         sep_multiply();
       }
@@ -649,7 +649,7 @@ namespace FLD
     }
 
     /// access to Dirichlet maps
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
+    std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
     {
       return dbcmaps_;
     }
@@ -660,7 +660,7 @@ namespace FLD
     /// subjected to Dirichlet boundary conditions. For instance, the method is
     /// called by the staggered FSI in which the velocities on the FSI
     /// interface are prescribed by the other fields.
-    void add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd) override;
+    void add_dirich_cond(const std::shared_ptr<const Epetra_Map> maptoadd) override;
 
     /// Contract the Dirichlet DOF set
     ///
@@ -671,39 +671,42 @@ namespace FLD
     /// subjected to Dirichlet boundary conditions. This method is
     /// called solely by immersed FSI to remove the Dirichlet values from
     /// the previous solution step before a new set is prescribed.
-    void remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove) override;
+    void remove_dirich_cond(const std::shared_ptr<const Epetra_Map> maptoremove) override;
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///
     /// This method provides backward compatibility only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichlet();
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> dirichlet();
 
     /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
     ///
     /// This method provides backward compatibility only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> inv_dirichlet();
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> inv_dirichlet();
 
     //! Return locsys manager
-    virtual Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() { return locsysman_; }
+    virtual std::shared_ptr<Core::Conditions::LocsysManager> locsys_manager() { return locsysman_; }
 
     //! Return wss manager
-    virtual Teuchos::RCP<FLD::Utils::StressManager> stress_manager() { return stressmanager_; }
+    virtual std::shared_ptr<FLD::Utils::StressManager> stress_manager() { return stressmanager_; }
 
     //! Return impedance BC
-    virtual Teuchos::RCP<FLD::Utils::FluidImpedanceWrapper> impedance_bc() { return impedancebc_; }
+    virtual std::shared_ptr<FLD::Utils::FluidImpedanceWrapper> impedance_bc()
+    {
+      return impedancebc_;
+    }
 
     //! Evaluate Dirichlet and Neumann boundary conditions
     virtual void set_dirichlet_neumann_bc();
 
     //! Apply Dirichlet boundary conditions on provided state vectors
     virtual void apply_dirichlet_bc(Teuchos::ParameterList& params,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,    //!< (may be Teuchos::null)
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectord,   //!< (may be Teuchos::null)
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectordd,  //!< (may be Teuchos::null)
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector,    //!< (may be nullptr)
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvectord,   //!< (may be nullptr)
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvectordd,  //!< (may be nullptr)
         bool recreatemap  //!< recreate mapextractor/toggle-vector
                           //!< which stores the DOF IDs subjected
                           //!< to Dirichlet BCs
@@ -711,51 +714,51 @@ namespace FLD
                           //!< have been changed.
     );
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp() override { return dispnp_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispnp() { return dispnp_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp() override { return dispnp_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> write_access_dispnp() { return dispnp_; }
 
     //! Create mesh displacement at time level t_{n+1}
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> create_dispnp()
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> create_dispnp()
     {
       const Epetra_Map* aledofrowmap = discret_->dof_row_map(ndsale_);
       dispnp_ = Core::LinAlg::create_vector(*aledofrowmap, true);
       return dispnp_;
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn() override { return dispn_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispn() { return dispn_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispn() override { return dispn_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> write_access_dispn() { return dispn_; }
 
     //! Create mesh displacement at time level t_{n}
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> create_dispn()
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> create_dispn()
     {
       const Epetra_Map* aledofrowmap = discret_->dof_row_map(ndsale_);
       dispn_ = Core::LinAlg::create_vector(*aledofrowmap, true);
       return dispn_;
     }
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override
     {
-      return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_);
+      return std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(sysmat_);
     }
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_sparse_matrix() override
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_sparse_matrix() override
     {
-      return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat_)->merge();
+      return std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat_)->merge();
     }
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
-      return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat_);
+      return std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat_);
     }
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> shape_derivatives() override
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> shape_derivatives() override
     {
       return shapederivatives_;
     }
 
-    virtual Teuchos::RCP<Core::LinAlg::MapExtractor> vel_pres_splitter()
+    virtual std::shared_ptr<Core::LinAlg::MapExtractor> vel_pres_splitter()
     {
       return velpressplitter_;
     };
-    Teuchos::RCP<const Epetra_Map> velocity_row_map() override;
-    Teuchos::RCP<const Epetra_Map> pressure_row_map() override;
-    //  virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
+    std::shared_ptr<const Epetra_Map> velocity_row_map() override;
+    std::shared_ptr<const Epetra_Map> pressure_row_map() override;
+    //  virtual void SetMeshMap(std::shared_ptr<const Epetra_Map> mm);
     //  double TimeScaling() const;
 
     /// Use residual_scaling() to convert the implemented fluid residual to an actual force with
@@ -783,14 +786,14 @@ namespace FLD
            Helper method which can be called from outside fluid (e.g. for coupled problems)
 
     */
-    virtual void gen_alpha_intermediate_values(Teuchos::RCP<Core::LinAlg::Vector<double>>& vecnp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& vecn)
+    virtual void gen_alpha_intermediate_values(std::shared_ptr<Core::LinAlg::Vector<double>>& vecnp,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& vecn)
     {
       return;
     }
 
     /// update velocity increment after Newton step
-    void update_newton(Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) override;
+    void update_newton(std::shared_ptr<const Core::LinAlg::Vector<double>> vel) override;
 
     //  int Itemax() const { return params_->get<int>("max nonlin iter steps"); }
     void set_itemax(int itemax) override { params_->set<int>("max nonlin iter steps", itemax); }
@@ -800,35 +803,36 @@ namespace FLD
     \brief set scalar fields within outer iteration loop
 
     */
-    void set_iter_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaraf,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaram,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> scalardtam,
-        Teuchos::RCP<Core::FE::Discretization> scatradis, int dofset) override;
+    void set_iter_scalar_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> scalaraf,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> scalaram,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> scalardtam,
+        std::shared_ptr<Core::FE::Discretization> scatradis, int dofset) override;
 
     /*!
     \brief set scalar fields
 
     */
-    void set_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarnp,
-        const double thermpressnp, Teuchos::RCP<const Core::LinAlg::Vector<double>> scatraresidual,
-        Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar = -1) override;
+    void set_scalar_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> scalarnp,
+        const double thermpressnp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> scatraresidual,
+        std::shared_ptr<Core::FE::Discretization> scatradis, const int whichscalar = -1) override;
 
     /*!
     \brief set velocity field obtained by separate computation
 
     */
-    void set_velocity_field(Teuchos::RCP<const Core::LinAlg::Vector<double>> setvelnp) override
+    void set_velocity_field(std::shared_ptr<const Core::LinAlg::Vector<double>> setvelnp) override
     {
       velnp_->Update(1.0, *setvelnp, 0.0);
       return;
     }
 
     /// provide access to turbulence statistics manager
-    Teuchos::RCP<FLD::TurbulenceStatisticManager> turbulence_statistic_manager() override;
+    std::shared_ptr<FLD::TurbulenceStatisticManager> turbulence_statistic_manager() override;
     /// provide access to the box filter for dynamic Smagorinsky model
-    Teuchos::RCP<FLD::DynSmagFilter> dyn_smag_filter() override;
+    std::shared_ptr<FLD::DynSmagFilter> dyn_smag_filter() override;
     /// provide access to the box filter for Vreman model
-    Teuchos::RCP<FLD::Vreman> vreman() override;
+    std::shared_ptr<FLD::Vreman> vreman() override;
 
     /// introduce surface split extractor object
     /*!
@@ -856,12 +860,12 @@ namespace FLD
     /*!
       Needed for Mortar coupling at the FSI interface
      */
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape(
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> integrate_interface_shape(
         std::string condname);
 
     /// switch fluid field to block matrix
     virtual void use_block_matrix(
-        Teuchos::RCP<std::set<int>> condelements,  ///< conditioned elements of fluid
+        std::shared_ptr<std::set<int>> condelements,  ///< conditioned elements of fluid
         const Core::LinAlg::MultiMapExtractor&
             domainmaps,  ///< domain maps for split of fluid matrix
         const Core::LinAlg::MultiMapExtractor& rangemaps,  ///< range maps for split of fluid matrix
@@ -870,11 +874,11 @@ namespace FLD
 
     /// switch fluid field to block matrix (choose maps for shape derivatives separately)
     virtual void use_block_matrix(
-        Teuchos::RCP<std::set<int>> condelements,  ///< conditioned elements of fluid
+        std::shared_ptr<std::set<int>> condelements,  ///< conditioned elements of fluid
         const Core::LinAlg::MultiMapExtractor&
             domainmaps,  ///< domain maps for split of fluid matrix
         const Core::LinAlg::MultiMapExtractor& rangemaps,  ///< range maps for split of fluid matrix
-        Teuchos::RCP<std::set<int>> condelements_shape,    ///< conditioned elements
+        std::shared_ptr<std::set<int>> condelements_shape,  ///< conditioned elements
         const Core::LinAlg::MultiMapExtractor&
             domainmaps_shape,  ///< domain maps for split of shape deriv. matrix
         const Core::LinAlg::MultiMapExtractor&
@@ -886,7 +890,7 @@ namespace FLD
     /*!
       This is the linear solve as needed for steepest descent FSI.
      */
-    virtual void linear_relaxation_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> relax);
+    virtual void linear_relaxation_solve(std::shared_ptr<Core::LinAlg::Vector<double>> relax);
 
     //@}
 
@@ -894,8 +898,8 @@ namespace FLD
 
     virtual void apply_scale_separation_for_les();
 
-    virtual void outputof_filtered_vel(Teuchos::RCP<Core::LinAlg::Vector<double>> outvec,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fsoutvec) = 0;
+    virtual void outputof_filtered_vel(std::shared_ptr<Core::LinAlg::Vector<double>> outvec,
+        std::shared_ptr<Core::LinAlg::Vector<double>> fsoutvec) = 0;
 
     virtual void print_turbulence_model();
     //@}
@@ -912,37 +916,37 @@ namespace FLD
     }
 
     virtual void update_iter_incrementally(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel  //!< input residual velocities
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel  //!< input residual velocities
     );
 
     //! @name methods for fsi
     /// Extrapolation of vectors from mid-point to end-point t_{n+1}
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extrapolate_end_point(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vecn,  ///< vector at time level t_n
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vecm   ///< vector at time level of equilibrium
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extrapolate_end_point(
+        std::shared_ptr<Core::LinAlg::Vector<double>> vecn,  ///< vector at time level t_n
+        std::shared_ptr<Core::LinAlg::Vector<double>> vecm  ///< vector at time level of equilibrium
     );
     //@}
 
     /// apply external forces to the fluid
-    void apply_external_forces(Teuchos::RCP<Core::LinAlg::MultiVector<double>> fext) override;
+    void apply_external_forces(std::shared_ptr<Core::LinAlg::MultiVector<double>> fext) override;
 
     /// create field test
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test() override;
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> convective_vel() override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> convective_vel() override;
 
     /*! \brief Calculate a integrated divergence operator in vector form
      *
      *   The vector valued operator \f$B\f$ is constructed such that
      *   \f$\int_\Omega div (u) \,\mathrm{d}\Omega = B^T u = 0\f$
      */
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> calc_div_op();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> calc_div_op();
 
     //! @name Biofilm methods
     //@{
 
     // set fluid displacement vector due to biofilm growth
-    void set_fld_gr_disp(Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_growth_disp) override;
+    void set_fld_gr_disp(std::shared_ptr<Core::LinAlg::Vector<double>> fluid_growth_disp) override;
     //@}
 
     /*!
@@ -956,7 +960,7 @@ namespace FLD
 
     ///< Add contribution to external load vector ( add possibly pre-existing external_loads_);
     void add_contribution_to_external_loads(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> contributing_vector) override;
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> contributing_vector) override;
 
     ///< Update slave dofs for multifield simulations with fluid mesh tying
     void update_slave_dof(Core::LinAlg::Vector<double>& f);
@@ -970,11 +974,11 @@ namespace FLD
      * to be assembled into the overall fluid system matrix
      */
     virtual void set_coupling_contributions(
-        Teuchos::RCP<const Core::LinAlg::SparseOperator> matrix);
+        std::shared_ptr<const Core::LinAlg::SparseOperator> matrix);
 
     void reset_external_forces();
 
-    Teuchos::RCP<const FLD::Meshtying> get_meshtying() { return meshtying_; }
+    std::shared_ptr<const FLD::Meshtying> get_meshtying() { return meshtying_; }
 
    protected:
     // don't want = operator and cctor
@@ -1074,7 +1078,7 @@ namespace FLD
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> evaluation_vel() = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> evaluation_vel() = 0;
 
     /*!
       \brief add problem dependent vectors
@@ -1190,72 +1194,74 @@ namespace FLD
     double dtsolve_;
 
     /// (standard) system matrix
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> sysmat_;
 
     /// linearization with respect to mesh motion
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> shapederivatives_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> shapederivatives_;
 
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;
 
     /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;
 
     /// the vector containing body and surface forces
-    Teuchos::RCP<Core::LinAlg::Vector<double>> neumann_loads_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> neumann_loads_;
 
     /// the vector containing external loads
-    Teuchos::RCP<Core::LinAlg::Vector<double>> external_loads_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> external_loads_;
 
     /// the vector containing volume force externally computed
-    Teuchos::RCP<Core::LinAlg::Vector<double>> forcing_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> forcing_;
 
     /// the vector containing potential Neumann-type outflow terms
-    //  Teuchos::RCP<Core::LinAlg::Vector<double>>    outflow_;
+    //  std::shared_ptr<Core::LinAlg::Vector<double>>    outflow_;
 
     /// a vector containing the integrated traction in boundary normal direction for slip boundary
     /// conditions (Unit: Newton [N])
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slip_bc_normal_tractions_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> slip_bc_normal_tractions_;
 
     /// (standard) residual vector (rhs for the incremental form),
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual_;
 
     /// true (rescaled) residual vector without zeros at dirichlet positions (Unit: Newton [N])
-    Teuchos::RCP<Core::LinAlg::Vector<double>> trueresidual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> trueresidual_;
 
     /// Nonlinear iteration increment vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> incvel_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> incvel_;
 
     //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n) and
     //! n-1
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_;  ///< acceleration at time \f$t^{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> accn_;   ///< acceleration at time \f$t^{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>> accnp_;  ///< acceleration at time \f$t^{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> accn_;   ///< acceleration at time \f$t^{n}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         accam_;  ///< acceleration at time \f$t^{n+\alpha_M}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> accnm_;  ///< acceleration at time \f$t^{n-1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> accnm_;  ///< acceleration at time \f$t^{n-1}\f$
     //@}
 
     //! @name velocity and pressure at time n+1, n, n-1 and n+alpha_F (and n+alpha_M for
     //! weakly_compressible)
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_;  ///< velocity at time \f$t^{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> veln_;   ///< velocity at time \f$t^{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velaf_;  ///< velocity at time \f$t^{n+\alpha_F}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velam_;  ///< velocity at time \f$t^{n+\alpha_M}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnm_;  ///< velocity at time \f$t^{n-1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp_;  ///< velocity at time \f$t^{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> veln_;   ///< velocity at time \f$t^{n}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>>
+        velaf_;  ///< velocity at time \f$t^{n+\alpha_F}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>>
+        velam_;  ///< velocity at time \f$t^{n+\alpha_M}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnm_;  ///< velocity at time \f$t^{n-1}\f$
     //@}
 
     //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scaaf_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scaam_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scaaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scaam_;
     //@}
 
     //! @name displacements at time n+1, n and n-1
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_;  ///< displacement at time \f$t^{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispn_;   ///< displacement at time \f$t^{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnm_;  ///< displacement at time \f$t^{n-1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispnp_;  ///< displacement at time \f$t^{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispn_;   ///< displacement at time \f$t^{n}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispnm_;  ///< displacement at time \f$t^{n-1}\f$
     //@}
 
     //! @name flow rate and volume at time n+1 (i+1), n+1 (i), n and n-1 for flow-dependent pressure
@@ -1273,42 +1279,42 @@ namespace FLD
     //@}
 
     /// only necessary for AVM3: scale-separation matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> Sep_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> Sep_;
 
     /// only necessary for AVM3: fine-scale solution vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fsvelaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fsvelaf_;
 
     /// only necessary for LES models including filtered quantities: filter type
     enum Inpar::FLUID::ScaleSeparation scale_sep_;
 
     /// fine-scale scalar: only necessary for multifractal subgrid-scale modeling in loma
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fsscaaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fsscaaf_;
 
     /// grid velocity (set from the adapter!)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> gridv_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> gridv_;
 
     /// grid velocity at time step n (set from the adapter!)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> gridvn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> gridvn_;
 
     /// histvector --- a linear combination of velnm, veln (BDF)
     ///                or veln, accn (One-Step-Theta)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> hist_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> hist_;
 
 
     //! manager for turbulence statistics
-    Teuchos::RCP<FLD::TurbulenceStatisticManager> statisticsmanager_;
+    std::shared_ptr<FLD::TurbulenceStatisticManager> statisticsmanager_;
 
     //! forcing for homogeneous isotropic turbulence
-    Teuchos::RCP<FLD::ForcingInterface> forcing_interface_;
+    std::shared_ptr<FLD::ForcingInterface> forcing_interface_;
 
     //! @name Dynamic Smagorinsky model: methods and variables
     //        -------------------------
 
     //! one instance of the filter object
-    Teuchos::RCP<FLD::DynSmagFilter> DynSmag_;
+    std::shared_ptr<FLD::DynSmagFilter> DynSmag_;
     //! one instance of the filter object
-    Teuchos::RCP<FLD::Vreman> Vrem_;
-    Teuchos::RCP<FLD::Boxfilter> Boxf_;
+    std::shared_ptr<FLD::Vreman> Vrem_;
+    std::shared_ptr<FLD::Boxfilter> Boxf_;
 
     //@}
 
@@ -1316,53 +1322,53 @@ namespace FLD
     //!
     //! velocities  = OtherVector
     //! pressure    = CondVector
-    Teuchos::RCP<Core::LinAlg::MapExtractor> velpressplitter_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> velpressplitter_;
 
     /// row dof map extractor
     const Utils::MapExtractor* surfacesplitter_;
 
     /// a manager doing the transfer of boundary data for
     /// turbulent inflow profiles from a separate (periodic) domain
-    Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
+    std::shared_ptr<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
 
     /// @name special relaxation state
 
     bool inrelaxation_;
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> dirichletlines_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> dirichletlines_;
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> meshmatrix_;
-
-    /// coupling of fluid-fluid at an internal interface
-    Teuchos::RCP<FLD::Meshtying> meshtying_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> meshmatrix_;
 
     /// coupling of fluid-fluid at an internal interface
-    Teuchos::RCP<FLD::XWall> xwall_;
+    std::shared_ptr<FLD::Meshtying> meshtying_;
+
+    /// coupling of fluid-fluid at an internal interface
+    std::shared_ptr<FLD::XWall> xwall_;
 
     /// flag for mesh-tying
     enum Inpar::FLUID::MeshTying msht_;
 
     /// face discretization (only initialized for edge-based stabilization)
-    Teuchos::RCP<Core::FE::DiscretizationFaces> facediscret_;
+    std::shared_ptr<Core::FE::DiscretizationFaces> facediscret_;
 
     //@}
 
     // possible inf-norm scaling of linear system / fluid matrix
-    Teuchos::RCP<FLD::Utils::FluidInfNormScaling> fluid_infnormscaling_;
+    std::shared_ptr<FLD::Utils::FluidInfNormScaling> fluid_infnormscaling_;
 
     //! @name Biofilm specific stuff
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fldgrdisp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fldgrdisp_;
     //@}
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<Core::Conditions::LocsysManager> locsysman_;
+    std::shared_ptr<Core::Conditions::LocsysManager> locsysman_;
 
     /// windkessel (outflow) boundaries
-    Teuchos::RCP<Utils::FluidImpedanceWrapper> impedancebc_;
+    std::shared_ptr<Utils::FluidImpedanceWrapper> impedancebc_;
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<FLD::Utils::StressManager> stressmanager_;
+    std::shared_ptr<FLD::Utils::StressManager> stressmanager_;
 
     /// flag for windkessel outflow condition
     bool isimpedancebc_;
@@ -1403,7 +1409,7 @@ namespace FLD
     void setup_locsys_dirichlet_bc(const double time);
 
     /// prepares and evalutes egde-based internal face integrals
-    void evaluate_fluid_edge_based(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+    void evaluate_fluid_edge_based(std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
         Core::LinAlg::Vector<double>& systemvector1, Teuchos::ParameterList edgebasedparams);
 
     /*! \brief Compute kinetic energy and write it to file
@@ -1420,16 +1426,16 @@ namespace FLD
     virtual void evaluate_mass_matrix();
 
     /// mass matrix (not involved in standard evaluate() since it is invluded in #sysmat_)
-    Teuchos::RCP<Core::LinAlg::SparseOperator> massmat_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> massmat_;
 
     /// output stream for energy-file
-    Teuchos::RCP<std::ofstream> logenergy_;
+    std::shared_ptr<std::ofstream> logenergy_;
 
     /** \brief This matrix can be used to hold contributions to the system matrix like such that
      * arise from meshtying methods or in general weak Dirichlet conditions
      *
      */
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> couplingcontributions_;
+    std::shared_ptr<const Core::LinAlg::SparseOperator> couplingcontributions_;
     double meshtyingnorm_;
 
   };  // class FluidImplicitTimeInt

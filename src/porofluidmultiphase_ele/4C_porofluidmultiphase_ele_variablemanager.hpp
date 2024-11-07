@@ -14,8 +14,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_porofluidmultiphase_ele_action.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -107,9 +106,9 @@ namespace Discret
         VariableManagerInterface(){};
 
         //! factory method
-        static Teuchos::RCP<VariableManagerInterface<nsd, nen>> create_variable_manager(
+        static std::shared_ptr<VariableManagerInterface<nsd, nen>> create_variable_manager(
             const Discret::Elements::PoroFluidMultiPhaseEleParameter& para,
-            const POROFLUIDMULTIPHASE::Action& action, Teuchos::RCP<Core::Mat::Material> mat,
+            const POROFLUIDMULTIPHASE::Action& action, std::shared_ptr<Core::Mat::Material> mat,
             const int numdofpernode, const int numfluidphases);
 
         //! extract element and node values from the discretization
@@ -394,7 +393,7 @@ namespace Discret
       {
        public:
         //! constructor
-        VariableManagerDecorator(Teuchos::RCP<VariableManagerInterface<nsd, nen>> varmanager)
+        VariableManagerDecorator(std::shared_ptr<VariableManagerInterface<nsd, nen>> varmanager)
             : VariableManagerInterface<nsd, nen>(), varmanager_(varmanager){};
 
         //! @name Access methods
@@ -450,7 +449,7 @@ namespace Discret
 
        protected:
         //! wrapped variable manager
-        Teuchos::RCP<VariableManagerInterface<nsd, nen>> varmanager_;
+        std::shared_ptr<VariableManagerInterface<nsd, nen>> varmanager_;
       };
 
 
@@ -471,7 +470,7 @@ namespace Discret
       {
        public:
         //! constructor
-        VariableManagerInstat(Teuchos::RCP<VariableManagerInterface<nsd, nen>> varmanager)
+        VariableManagerInstat(std::shared_ptr<VariableManagerInterface<nsd, nen>> varmanager)
             : VariableManagerDecorator<nsd, nen>(varmanager),
               ephidtnp_(varmanager->num_dof_per_node()),
               ehist_(varmanager->num_dof_per_node()),
@@ -540,7 +539,7 @@ namespace Discret
        public:
         //! constructor
         VariableManagerStruct(
-            int ndsvel, int ndsdisp, Teuchos::RCP<VariableManagerInterface<nsd, nen>> varmanager)
+            int ndsvel, int ndsdisp, std::shared_ptr<VariableManagerInterface<nsd, nen>> varmanager)
             : VariableManagerDecorator<nsd, nen>(varmanager),
               ndsvel_(ndsvel),
               ndsdisp_(ndsdisp),
@@ -629,7 +628,7 @@ namespace Discret
        public:
         //! constructor
         VariableManagerScalar(
-            int ndsscalar, Teuchos::RCP<VariableManagerInterface<nsd, nen>> varmanager)
+            int ndsscalar, std::shared_ptr<VariableManagerInterface<nsd, nen>> varmanager)
             : VariableManagerDecorator<nsd, nen>(varmanager),
               ndsscalar_(ndsscalar),
               escalarnp_(),
@@ -699,8 +698,8 @@ namespace Discret
        public:
         //! constructor
         VariableManagerMaximumNodalVolFracValue(const int numvolfrac,
-            Teuchos::RCP<VariableManagerInterface<nsd, nen>> varmanager,
-            Teuchos::RCP<Core::Mat::Material> multiphasemat)
+            std::shared_ptr<VariableManagerInterface<nsd, nen>> varmanager,
+            std::shared_ptr<Core::Mat::Material> multiphasemat)
             : VariableManagerDecorator<nsd, nen>(varmanager),
               numvolfrac_(numvolfrac),
               ele_has_valid_volfrac_press_(numvolfrac_, false),
@@ -756,7 +755,7 @@ namespace Discret
         //! check if volume fraction species equation can be evaluated within this element
         std::vector<bool> ele_has_valid_volfrac_spec_;
 
-        Teuchos::RCP<Core::Mat::Material> multiphasemat_;
+        std::shared_ptr<Core::Mat::Material> multiphasemat_;
       };
 
     }  // namespace PoroFluidManager

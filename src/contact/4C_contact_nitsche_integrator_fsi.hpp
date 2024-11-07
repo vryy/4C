@@ -47,20 +47,20 @@ namespace CONTACT
     //! @{
     void integrate_deriv_segment_2d(Mortar::Element& sele, double& sxia, double& sxib,
         Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
-        const Teuchos::RCP<Mortar::ParamsInterface>& cparams_ptr) override
+        const std::shared_ptr<Mortar::ParamsInterface>& cparams_ptr) override
     {
       FOUR_C_THROW("Segment based integration is currently unsupported!");
     }
 
     void integrate_deriv_ele_2d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
-        bool* boundary_ele, const Teuchos::RCP<Mortar::ParamsInterface>& cparams_ptr) override
+        bool* boundary_ele, const std::shared_ptr<Mortar::ParamsInterface>& cparams_ptr) override
     {
       FOUR_C_THROW("Element based integration in 2D is currently unsupported!");
     }
 
     void integrate_deriv_cell_3d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
-        Teuchos::RCP<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm,
-        const Teuchos::RCP<Mortar::ParamsInterface>& cparams_ptr) override
+        std::shared_ptr<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm,
+        const std::shared_ptr<Mortar::ParamsInterface>& cparams_ptr) override
     {
       FOUR_C_THROW("The auxiliary plane 3-D coupling integration case is currently unsupported!");
     }
@@ -73,7 +73,7 @@ namespace CONTACT
      */
     void integrate_deriv_ele_3d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
-        const Teuchos::RCP<Mortar::ParamsInterface>& cparams_ptr) override;
+        const std::shared_ptr<Mortar::ParamsInterface>& cparams_ptr) override;
 
     //! @}
 
@@ -134,7 +134,7 @@ namespace CONTACT
     int ele_contact_state_;
 
     /// Xfluid Contact Communicator
-    Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm_;
+    std::shared_ptr<XFEM::XFluidContactComm> xf_c_comm_;
   };
 
   namespace Utils

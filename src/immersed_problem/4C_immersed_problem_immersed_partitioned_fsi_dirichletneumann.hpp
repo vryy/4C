@@ -86,20 +86,20 @@ namespace Immersed
         const FillType fillFlag) override;
 
     /// interface fluid operator
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_op(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_artificial_velocity,
+    std::shared_ptr<Core::LinAlg::Vector<double>> fluid_op(
+        std::shared_ptr<Core::LinAlg::Vector<double>> fluid_artificial_velocity,
         const FillType fillFlag) override;
 
     /// interface structural operator
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struct_op(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> struct_bdry_traction,
+    std::shared_ptr<Core::LinAlg::Vector<double>> struct_op(
+        std::shared_ptr<Core::LinAlg::Vector<double>> struct_bdry_traction,
         const FillType fillFlag) override;
     /// initial guess
-    Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> initial_guess() override;
 
     /// get immersed nodes and determine their dofs
-    void build_immersed_dirich_map(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Epetra_Map>& dirichmap, const Epetra_Map& dirichmap_original);
+    void build_immersed_dirich_map(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Epetra_Map>& dirichmap, const Epetra_Map& dirichmap_original);
 
     /// add immersed dirichlet values from immersed dis to systemvector of background dis
     void do_immersed_dirichlet_cond(Core::LinAlg::Vector<double>& statevector,
@@ -124,11 +124,11 @@ namespace Immersed
     void prepare_fluid_op();
 
     /// call to special extraction method
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_dispnp();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_dispnp();
 
     /// call to special application of interface forces
     virtual void apply_interface_forces(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> full_traction_vec);
+        std::shared_ptr<Core::LinAlg::Vector<double>> full_traction_vec);
 
     /// call to special routine that adds dirichlet values to fluid field
     virtual void add_dirich_cond();
@@ -138,8 +138,8 @@ namespace Immersed
 
     /// calc the fsi residual
     virtual int calc_residual(Core::LinAlg::Vector<double>& F,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> newstate,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> oldstate);
+        const std::shared_ptr<Core::LinAlg::Vector<double>> newstate,
+        const std::shared_ptr<Core::LinAlg::Vector<double>> oldstate);
 
     /*!
     \brief calc the current fluid tractions integrated over structural surface
@@ -164,11 +164,11 @@ namespace Immersed
     initial_guess(). In case of no restart, we can just return the velocity since it had recently
     been projected after the last structural solve. This work would be done twice, else.
     */
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> calc_artificial_velocity();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> calc_artificial_velocity();
 
     /// apply given vector as Dirichlet to artificial fluid domain
     virtual void apply_immersed_dirichlet(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> artificial_velocity);
+        std::shared_ptr<Core::LinAlg::Vector<double>> artificial_velocity);
 
     /// improve quality of solution near the interface
     virtual void correct_interface_velocity();
@@ -180,14 +180,14 @@ namespace Immersed
 
     //! @name Various global forces
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         struct_bdry_traction_;  //!< bdry traction rhs on struct FSI surface
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
-        fluid_artificial_velocity_;                         //!< background velocity interpolated
-                                                            //!< from immersed dis (current state)
-    Teuchos::RCP<Epetra_Map> dbcmap_immersed_;              //!< dirichlet bc map of immersed values
-    Teuchos::RCP<Core::Geo::SearchTree> fluid_SearchTree_;  //!< search tree for fluid domain
-    Teuchos::RCP<Core::Geo::SearchTree>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
+        fluid_artificial_velocity_;                //!< background velocity interpolated
+                                                   //!< from immersed dis (current state)
+    std::shared_ptr<Epetra_Map> dbcmap_immersed_;  //!< dirichlet bc map of immersed values
+    std::shared_ptr<Core::Geo::SearchTree> fluid_SearchTree_;  //!< search tree for fluid domain
+    std::shared_ptr<Core::Geo::SearchTree>
         structure_SearchTree_;  //!< search tree for structure domain
     std::map<int, std::set<int>>
         curr_subset_of_fluiddis_;  //!< fluid elements to evaluate the dirichlet interpolation
@@ -235,12 +235,12 @@ namespace Immersed
 
     //! @name pointer to discretizations
     //@{
-    Teuchos::RCP<Core::FE::Discretization> fluiddis_;
-    Teuchos::RCP<Core::FE::Discretization> structdis_;
+    std::shared_ptr<Core::FE::Discretization> fluiddis_;
+    std::shared_ptr<Core::FE::Discretization> structdis_;
     //@}
 
     /// pointer to immersed structure adapter
-    Teuchos::RCP<Adapter::FSIStructureWrapperImmersed> immersedstructure_;
+    std::shared_ptr<Adapter::FSIStructureWrapperImmersed> immersedstructure_;
 
   };  // class ImmersedFSI
 }  // namespace Immersed

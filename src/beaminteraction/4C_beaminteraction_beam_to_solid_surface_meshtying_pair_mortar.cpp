@@ -42,7 +42,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface,
     Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
     Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -208,7 +208,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Morta
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::beam_to_solid_surface_meshtying_pair_mortar_factory(
     const Core::FE::CellType surface_shape,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction)
@@ -222,22 +222,22 @@ BEAMINTERACTION::beam_to_solid_surface_meshtying_pair_mortar_factory(
       switch (surface_shape)
       {
         case Core::FE::CellType::tri3:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line2>>();
         case Core::FE::CellType::tri6:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line2>>();
         case Core::FE::CellType::quad4:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line2>>();
         case Core::FE::CellType::quad8:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line2>>();
         case Core::FE::CellType::quad9:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line2>>();
         case Core::FE::CellType::nurbs9:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line2>>();
         default:
           FOUR_C_THROW("Wrong element type for surface element.");
@@ -249,22 +249,22 @@ BEAMINTERACTION::beam_to_solid_surface_meshtying_pair_mortar_factory(
       switch (surface_shape)
       {
         case Core::FE::CellType::tri3:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line3>>();
         case Core::FE::CellType::tri6:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line3>>();
         case Core::FE::CellType::quad4:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line3>>();
         case Core::FE::CellType::quad8:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line3>>();
         case Core::FE::CellType::quad9:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line3>>();
         case Core::FE::CellType::nurbs9:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line3>>();
         default:
           FOUR_C_THROW("Wrong element type for surface element.");
@@ -276,22 +276,22 @@ BEAMINTERACTION::beam_to_solid_surface_meshtying_pair_mortar_factory(
       switch (surface_shape)
       {
         case Core::FE::CellType::tri3:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line4>>();
         case Core::FE::CellType::tri6:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line4>>();
         case Core::FE::CellType::quad4:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line4>>();
         case Core::FE::CellType::quad8:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line4>>();
         case Core::FE::CellType::quad9:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line4>>();
         case Core::FE::CellType::nurbs9:
-          return Teuchos::make_rcp<
+          return std::make_shared<
               BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line4>>();
         default:
           FOUR_C_THROW("Wrong element type for surface element.");
@@ -302,7 +302,7 @@ BEAMINTERACTION::beam_to_solid_surface_meshtying_pair_mortar_factory(
       FOUR_C_THROW("Wrong mortar shape function.");
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -14,7 +14,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -51,7 +51,7 @@ namespace CONSTRAINTS
     takes care of the monitor IDs.
     */
 
-    Monitor(Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization monitor lives on
+    Monitor(std::shared_ptr<Core::FE::Discretization> discr,  ///< discretization monitor lives on
         const std::string& conditionname,  ///< Name of condition to creat monitor from
         int& minID,                        ///< minimum monitor ID so far
         int& maxID                         ///< maximum monitor ID so far
@@ -64,8 +64,8 @@ namespace CONSTRAINTS
     bool have_monitor() { return montype_ != none; };
 
     /// Set state of the underlying discretization
-    void set_state(const std::string& state,          ///< name of state to set
-        Teuchos::RCP<Core::LinAlg::Vector<double>> V  ///< values to set
+    void set_state(const std::string& state,             ///< name of state to set
+        std::shared_ptr<Core::LinAlg::Vector<double>> V  ///< values to set
     );
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
@@ -83,7 +83,7 @@ namespace CONSTRAINTS
 
 
    protected:
-    Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization
+    std::shared_ptr<Core::FE::Discretization> actdisc_;  ///< standard discretization
     std::vector<Core::Conditions::Condition*>
         moncond_;       ///< conditions, that define the monitor (all of the same kind)
     MoniType montype_;  ///< monitor type

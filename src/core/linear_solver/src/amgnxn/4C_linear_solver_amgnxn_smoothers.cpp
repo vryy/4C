@@ -184,14 +184,14 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::setup(BlockedMatrix matrix)
   // Set matrix
   block_sparse_matrix_ = matrix.get_block_sparse_matrix(Core::LinAlg::View);
   sparse_matrix_ = block_sparse_matrix_->merge();
-  a_ = Teuchos::rcp_dynamic_cast<Epetra_Operator>(sparse_matrix_->epetra_matrix());
-  Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(a_);
-  if (crsA == Teuchos::null) FOUR_C_THROW("Houston, something went wrong in merging the matrix");
+  a_ = std::dynamic_pointer_cast<Epetra_Operator>(sparse_matrix_->epetra_matrix());
+  auto crsA = std::dynamic_pointer_cast<Epetra_CrsMatrix>(a_);
+  FOUR_C_THROW_UNLESS(crsA, "Houston, something went wrong in merging the matrix");
 
   // Set sol vector and rhs
-  x_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+  x_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
       a_->OperatorDomainMap(), 1);  // TODO this one might cause problems
-  b_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(a_->OperatorRangeMap(), 1);
+  b_ = std::make_shared<Core::LinAlg::MultiVector<double>>(a_->OperatorRangeMap(), 1);
 
   // Create linear solver
   Teuchos::ParameterList solvparams;
@@ -244,7 +244,7 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::solve(
 
 Core::LinearSolver::AMGNxN::CoupledAmg::CoupledAmg(Teuchos::RCP<AMGNxN::BlockedMatrix> A,
     std::vector<int> num_pdes, std::vector<int> null_spaces_dim,
-    std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data,
+    std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data,
     const Teuchos::ParameterList& amgnxn_params, const Teuchos::ParameterList& smoothers_params,
     const Teuchos::ParameterList& muelu_params)
     : a_(std::move(A)),
@@ -372,7 +372,7 @@ void Core::LinearSolver::AMGNxN::MueluSmootherWrapper::apply(
 
   Teuchos::RCP<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>> Xex =
       Teuchos::make_rcp<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>>(
-          X_rcp.get_ptr_of_Epetra_MultiVector());
+          Teuchos::rcpFromRef(*X_rcp.get_ptr_of_Epetra_MultiVector()));
 
   Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> Xx =
       Teuchos::rcp_dynamic_cast<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>(
@@ -381,7 +381,7 @@ void Core::LinearSolver::AMGNxN::MueluSmootherWrapper::apply(
 
   Teuchos::RCP<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>> Yex =
       Teuchos::make_rcp<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>>(
-          Y_rcp.get_ptr_of_Epetra_MultiVector());
+          Teuchos::rcpFromRef(*Y_rcp.get_ptr_of_Epetra_MultiVector()));
 
   Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> Yx =
       Teuchos::rcp_dynamic_cast<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>(
@@ -422,7 +422,7 @@ void Core::LinearSolver::AMGNxN::MueluHierarchyWrapper::apply(
 /*------------------------------------------------------------------------------*/
 Core::LinearSolver::AMGNxN::MueluAMGWrapper::MueluAMGWrapper(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> A, int num_pde, int null_space_dim,
-    Teuchos::RCP<std::vector<double>> null_space_data, const Teuchos::ParameterList& muelu_list)
+    std::shared_ptr<std::vector<double>> null_space_data, const Teuchos::ParameterList& muelu_list)
     : A_(std::move(A)),
       num_pde_(num_pde),
       null_space_dim_(null_space_dim),
@@ -437,7 +437,7 @@ void Core::LinearSolver::AMGNxN::MueluAMGWrapper::build_hierarchy()
 {
   // Prepare operator for MueLu
   Teuchos::RCP<Epetra_CrsMatrix> A_crs =
-      Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_->epetra_operator());
+      Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcpFromRef(*A_->epetra_operator()));
   if (A_crs == Teuchos::null)
     FOUR_C_THROW("Make sure that the input matrix is a Epetra_CrsMatrix (or derived)");
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluA =
@@ -532,7 +532,7 @@ void Core::LinearSolver::AMGNxN::MueluAMGWrapper::apply(const Core::LinAlg::Mult
 /*------------------------------------------------------------------------------*/
 Core::LinearSolver::AMGNxN::SingleFieldAMG::SingleFieldAMG(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> A, int num_pde, int null_space_dim,
-    Teuchos::RCP<std::vector<double>> null_space_data, const Teuchos::ParameterList& muelu_list,
+    std::shared_ptr<std::vector<double>> null_space_data, const Teuchos::ParameterList& muelu_list,
     const Teuchos::ParameterList& fine_smoother_list)
     : MueluAMGWrapper(A, num_pde, null_space_dim, null_space_data, muelu_list),
       fine_smoother_list_(fine_smoother_list)
@@ -588,8 +588,9 @@ void Core::LinearSolver::AMGNxN::SingleFieldAMG::setup()
           this_level->Get<Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>>>(
               "A");
       myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
-      myAspa = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-          myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph);
+      myAspa =
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(Core::Utils::shared_ptr_from_ref(*myAcrs),
+              Core::LinAlg::Copy, explicitdirichlet, savegraph);
       Avec[level] = myAspa;
     }
     else
@@ -603,8 +604,9 @@ void Core::LinearSolver::AMGNxN::SingleFieldAMG::setup()
             this_level
                 ->Get<Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>>>("P");
         myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
-        myAspa = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-            myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph);
+        myAspa =
+            Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(Core::Utils::shared_ptr_from_ref(*myAcrs),
+                Core::LinAlg::Copy, explicitdirichlet, savegraph);
         Pvec[level - 1] = myAspa;
       }
       else
@@ -616,8 +618,9 @@ void Core::LinearSolver::AMGNxN::SingleFieldAMG::setup()
             this_level
                 ->Get<Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>>>("R");
         myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
-        myAspa = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-            myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph);
+        myAspa =
+            Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(Core::Utils::shared_ptr_from_ref(*myAcrs),
+                Core::LinAlg::Copy, explicitdirichlet, savegraph);
         Rvec[level - 1] = myAspa;
       }
       else
@@ -711,7 +714,7 @@ Core::LinearSolver::AMGNxN::IfpackWrapper::IfpackWrapper(
 
   // Create smoother
   Ifpack Factory;
-  arow_ = Teuchos::rcp_dynamic_cast<Epetra_RowMatrix>(a_->epetra_matrix());
+  arow_ = Teuchos::rcp_dynamic_cast<Epetra_RowMatrix>(Teuchos::rcpFromRef(*a_->epetra_matrix()));
   if (arow_ == Teuchos::null)
     FOUR_C_THROW("Something wrong. Be sure that the given matrix is not a block matrix");
   prec_ = Factory.Create(type_, arow_.get(), overlap);
@@ -748,17 +751,6 @@ void Core::LinearSolver::AMGNxN::IfpackWrapper::apply(const Core::LinAlg::MultiV
   }
 }
 
-/*------------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------------*/
-Core::LinearSolver::AMGNxN::DirectSolverWrapper::DirectSolverWrapper()
-    : solver_(Teuchos::null),
-      a_(Teuchos::null),
-      x_(Teuchos::null),
-      b_(Teuchos::null),
-      is_set_up_(false)
-{
-}
-
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
@@ -767,13 +759,11 @@ void Core::LinearSolver::AMGNxN::DirectSolverWrapper::setup(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix, Teuchos::RCP<Teuchos::ParameterList> params)
 {
   // Set matrix
-  a_ = Teuchos::rcp_dynamic_cast<Epetra_Operator>(matrix->epetra_matrix());
-  Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(a_);
-  if (crsA == Teuchos::null) FOUR_C_THROW("Something wrong");
+  a_ = std::dynamic_pointer_cast<Epetra_CrsMatrix>(matrix->epetra_matrix());
 
   // Set sol vector and rhs
-  x_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(a_->OperatorDomainMap(), 1);
-  b_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(a_->OperatorRangeMap(), 1);
+  x_ = std::make_shared<Core::LinAlg::MultiVector<double>>(a_->OperatorDomainMap(), 1);
+  b_ = std::make_shared<Core::LinAlg::MultiVector<double>>(a_->OperatorRangeMap(), 1);
 
   // Create linear solver. Default solver: UMFPACK
   const auto solvertype = params->get<std::string>("solver", "umfpack");
@@ -791,7 +781,7 @@ void Core::LinearSolver::AMGNxN::DirectSolverWrapper::setup(
   else
     FOUR_C_THROW("Solver type not supported as direct solver in AMGNXN framework");
 
-  solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(
+  solver_ = std::make_shared<Core::LinAlg::Solver>(
       *params, a_->Comm(), nullptr, Core::IO::Verbositylevel::standard);
 
   // Set up solver
@@ -1444,7 +1434,7 @@ Core::LinearSolver::AMGNxN::MueluAMGWrapperFactory::create()
   if (Op2 == Teuchos::null) FOUR_C_THROW("I dont want a null pointer here");
   int num_pde = get_null_space().get_num_pd_es();
   int null_space_dim = get_null_space().get_null_space_dim();
-  Teuchos::RCP<std::vector<double>> null_space_data = get_null_space().get_null_space_data();
+  auto null_space_data = get_null_space().get_null_space_data();
 
   Teuchos::RCP<MueluAMGWrapper> PtrOut =
       Teuchos::make_rcp<MueluAMGWrapper>(Op2, num_pde, null_space_dim, null_space_data, myList);
@@ -1555,7 +1545,7 @@ Core::LinearSolver::AMGNxN::SingleFieldAMGFactory::create()
   if (Op2 == Teuchos::null) FOUR_C_THROW("I dont want a null pointer here");
   int num_pde = get_null_space().get_num_pd_es();
   int null_space_dim = get_null_space().get_null_space_dim();
-  Teuchos::RCP<std::vector<double>> null_space_data = get_null_space().get_null_space_data();
+  auto null_space_data = get_null_space().get_null_space_data();
 
   return Teuchos::make_rcp<SingleFieldAMG>(
       Op2, num_pde, null_space_dim, null_space_data, myList, fine_smoother_list);
@@ -1682,7 +1672,7 @@ Core::LinearSolver::AMGNxN::CoupledAmgFactory::create()
   int b = 0;
   std::vector<int> num_pdes(nBlocks, 0);
   std::vector<int> null_spaces_dim(nBlocks, 0);
-  std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data(nBlocks, Teuchos::null);
+  std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data(nBlocks);
   for (unsigned i = 0; i < nBlocks; i++)
   {
     b = Blocks[i];
@@ -2153,14 +2143,13 @@ Core::LinearSolver::AMGNxN::SimpleSmootherFactory::compute_schur_complement(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Asp_sp = Asp.get_matrix(0, 0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Aps_sp = Aps.get_matrix(0, 0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Ass_sp = Ass.get_matrix(0, 0);
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
+      auto temp =
           Core::LinAlg::matrix_multiply(*Asp_sp, false, *invApp_sp, false, false, false, true);
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> S_sp =
-          Core::LinAlg::matrix_multiply(*temp, false, *Aps_sp, false, false, false, false);
+      auto S_sp = Core::LinAlg::matrix_multiply(*temp, false, *Aps_sp, false, false, false, false);
       S_sp->add(*Ass_sp, false, 1.0, -1.0);
       S_sp->complete();
       Sout = Teuchos::make_rcp<BlockedMatrix>(1, 1);
-      Sout->set_matrix(S_sp, 0, 0);
+      Sout->set_matrix(Teuchos::RCP(S_sp.release()), 0, 0);
       return Sout;
     }
     else if (not Ass.has_only_one_block())
@@ -2178,13 +2167,15 @@ Core::LinearSolver::AMGNxN::SimpleSmootherFactory::compute_schur_complement(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> S_sp = Teuchos::null;
       for (int b = 0; b < NumBlocks_pp; b++)
       {
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> temp = Core::LinAlg::matrix_multiply(
+        auto temp = Core::LinAlg::matrix_multiply(
             *(Asp.get_matrix(0, b)), false, *(invApp.get_matrix(b, b)), false, true);
         if (b == 0)
-          S_sp = Core::LinAlg::matrix_multiply(*temp, false, *(Aps.get_matrix(b, 0)), false, false);
+          S_sp = Teuchos::RCP(
+              Core::LinAlg::matrix_multiply(*temp, false, *(Aps.get_matrix(b, 0)), false, false)
+                  .release());
         else
         {
-          Teuchos::RCP<Core::LinAlg::SparseMatrix> S_sp_tmp =
+          auto S_sp_tmp =
               Core::LinAlg::matrix_multiply(*temp, false, *(Aps.get_matrix(b, 0)), false, true);
           S_sp->add(*S_sp_tmp, false, 1.0, 1.0);
         }

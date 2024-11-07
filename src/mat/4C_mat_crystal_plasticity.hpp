@@ -39,7 +39,7 @@ namespace Mat
 
 
       //! create material instance
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       //-----------------------------------------------------------------------------
       /*                                                                           */
@@ -198,9 +198,9 @@ namespace Mat
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<CrystalPlasticity>(*this);
+      return std::make_shared<CrystalPlasticity>(*this);
     }
 
     //! return quick accessible material parameter data
@@ -471,23 +471,23 @@ namespace Mat
 
     //! old, i.e. at t=t_n
     //! deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 3>>> deform_grad_last_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 3>>> deform_grad_last_;
     //! plastic part of deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 3>>> plastic_deform_grad_last_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 3>>> plastic_deform_grad_last_;
     //! vector of plastic shears (slip and twinning)
-    Teuchos::RCP<std::vector<std::vector<double>>> gamma_last_;
+    std::shared_ptr<std::vector<std::vector<double>>> gamma_last_;
     //! vector of dislocation densities (dislocations densities and twinned volume fractions)
-    Teuchos::RCP<std::vector<std::vector<double>>> defect_densities_last_;
+    std::shared_ptr<std::vector<std::vector<double>>> defect_densities_last_;
 
     //! current, i.e. at t=t_n+1
     //!  deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 3>>> deform_grad_current_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 3>>> deform_grad_current_;
     //! plastic part of deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 3>>> plastic_deform_grad_current_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 3>>> plastic_deform_grad_current_;
     //! vector of plastic shears (slip and twinning)
-    Teuchos::RCP<std::vector<std::vector<double>>> gamma_current_;
+    std::shared_ptr<std::vector<std::vector<double>>> gamma_current_;
     //! vector of defect densities (dislocations densities and twinned volume fractions)
-    Teuchos::RCP<std::vector<std::vector<double>>> defect_densities_current_;
+    std::shared_ptr<std::vector<std::vector<double>>> defect_densities_current_;
     //-----------------------------------------------------------------------------
     /** @}                                                                       */
     /*  end of Internal / history variables                                      */

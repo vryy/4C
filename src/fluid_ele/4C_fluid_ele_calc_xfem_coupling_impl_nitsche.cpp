@@ -93,7 +93,7 @@ namespace Discret
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::apply_conv_stab_terms(
-          const Teuchos::RCP<SlaveElementInterface<distype>>&
+          const std::shared_ptr<SlaveElementInterface<distype>>&
               slave_ele,  ///< associated slave element coupling object
           const Core::LinAlg::Matrix<nen_, 1>& funct_m,   ///< master shape functions
           const Core::LinAlg::Matrix<nsd_, 1>& velint_m,  ///< vector of slave shape functions
@@ -151,10 +151,10 @@ namespace Discret
           case Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID:
           {
             // funct_s
-            Teuchos::RCP<SlaveElementRepresentation<distype, slave_distype, slave_numdof>> ser =
-                Teuchos::rcp_dynamic_cast<
+            std::shared_ptr<SlaveElementRepresentation<distype, slave_distype, slave_numdof>> ser =
+                std::dynamic_pointer_cast<
                     SlaveElementRepresentation<distype, slave_distype, slave_numdof>>(slave_ele);
-            if (ser == Teuchos::null)
+            if (ser == nullptr)
               FOUR_C_THROW("Failed to cast slave_ele to SlaveElementRepresentation!");
             Core::LinAlg::Matrix<slave_nen_, 1> funct_s;
             ser->get_slave_funct(funct_s);

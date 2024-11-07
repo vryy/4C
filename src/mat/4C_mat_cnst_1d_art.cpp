@@ -56,9 +56,9 @@ Mat::PAR::Cnst1dArt::Cnst1dArt(const Core::Mat::PAR::Parameter::Data& matdata)
         "wrong type of diameter law for artery material, only CONSTANT and BY_FUNCTION are valid");
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::Cnst1dArt::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::Cnst1dArt::create_material()
 {
-  return Teuchos::make_rcp<Mat::Cnst1dArt>(this);
+  return std::make_shared<Mat::Cnst1dArt>(this);
 }
 
 
@@ -120,7 +120,7 @@ void Mat::Cnst1dArt::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

@@ -13,8 +13,8 @@
 #include "4C_linalg_multi_vector.hpp"
 
 #include <Epetra_BlockMap.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -49,11 +49,11 @@ namespace Core::LinAlg
         const Epetra_BlockMap* map      //! map for kernel and weight vectors
     );
 
-    //! give out Teuchos::RCP to c_ for change
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> get_non_const_kernel();
+    //! give out std::shared_ptr to c_ for change
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> get_non_const_kernel();
 
-    //! give out Teuchos::RCP to w_ for change
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> get_non_const_weights();
+    //! give out std::shared_ptr to w_ for change
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> get_non_const_weights();
     // set c_ and w_ from outside
     void set_cw(Core::LinAlg::MultiVector<double>& c0, Core::LinAlg::MultiVector<double>& w0,
         const Epetra_BlockMap* newmap);
@@ -74,7 +74,7 @@ namespace Core::LinAlg
     int apply_pt(Core::LinAlg::MultiVector<double>& Y) const;
 
     //! give out projection P^T A P
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> project(const Core::LinAlg::SparseMatrix& A) const;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> project(const Core::LinAlg::SparseMatrix& A) const;
 
     //! return dimension of nullspace
     int nsdim() const { return nsdim_; }
@@ -87,24 +87,24 @@ namespace Core::LinAlg
 
    private:
     //! creates actual projector matrix P (or its transpose) for use in direct solver
-    void create_projector(Teuchos::RCP<Core::LinAlg::SparseMatrix>& P,
-        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& v1,
-        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& v2,
-        const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& inv_v1Tv2);
+    void create_projector(std::shared_ptr<Core::LinAlg::SparseMatrix>& P,
+        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& v1,
+        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& v2,
+        const std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& inv_v1Tv2);
 
     //! applies projector (or its transpose) to vector for iterative solver
     int apply_projector(Core::LinAlg::MultiVector<double>& Y, Core::LinAlg::MultiVector<double>& v1,
         Core::LinAlg::MultiVector<double>& v2, Core::LinAlg::SerialDenseMatrix& inv_v1Tv2) const;
 
     //! multiplies MultiVector times Core::LinAlg::SerialDenseMatrix
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> multiply_multi_vector_dense_matrix(
-        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv,
-        const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& dm) const;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> multiply_multi_vector_dense_matrix(
+        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& mv,
+        const std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& dm) const;
 
     //! outer product of two MultiVectors
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> multiply_multi_vector_multi_vector(
-        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv1,  //! first MultiVector
-        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv2,  //! second MultiVector
+    std::shared_ptr<Core::LinAlg::SparseMatrix> multiply_multi_vector_multi_vector(
+        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& mv1,  //! first MultiVector
+        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& mv2,  //! second MultiVector
         const int id = 1,  //! id of MultiVector form which sparsity of output matrix is estimated
         const bool fill = true  //! bool for completing matrix after computation
     ) const;
@@ -212,20 +212,20 @@ namespace Core::LinAlg
     const std::string* weighttype_;
 
     //! projector matrix - only built if necessary (e.g. for direct solvers)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> p_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> p_;
 
     //! transposed projector matrix - only built if necessary (e.g. for direct solvers)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> pt_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> pt_;
 
     //! a set of vectors defining weighted (basis integral) vector for the projector
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> w_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> w_;
 
     //! a set of vectors defining the vectors of ones (in the respective components)
     //! for the matrix kernel
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> c_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> c_;
 
     //! inverse of product (c_^T * w_), computed once after setting c_ and w_
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> invw_tc_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> invw_tc_;
   };
 
 }  // namespace Core::LinAlg

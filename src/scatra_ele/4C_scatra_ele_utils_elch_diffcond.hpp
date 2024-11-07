@@ -41,30 +41,32 @@ namespace Discret
       );
 
       //! evaluate electrolyte material
-      void mat_elch_mat(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrolyte material
-          const std::vector<double>& concentrations,  //!< local concentration values
-          double temperature,                         //!< temperature
+      void mat_elch_mat(
+          std::shared_ptr<const Core::Mat::Material> material,  //!< electrolyte material
+          const std::vector<double>& concentrations,            //!< local concentration values
+          double temperature,                                   //!< temperature
           Inpar::ElCh::EquPot equpot,  //!< type of closing equation for electric potential
           double ffrt,                 //!< factor F^2/RT
-          Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager,  //!< diffusion manager
-          Inpar::ElCh::DiffCondMat& diffcondmat                        //!< ion type
+          std::shared_ptr<ScaTraEleDiffManagerElchDiffCond> diffmanager,  //!< diffusion manager
+          Inpar::ElCh::DiffCondMat& diffcondmat                           //!< ion type
       );
 
       //! evaluate electrolyte phase
-      void mat_elch_phase(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrolyte phase
-          const std::vector<double>& concentrations,  //!< local concentration values
-          double temperature,                         //!< temperature
+      void mat_elch_phase(
+          std::shared_ptr<const Core::Mat::Material> material,  //!< electrolyte phase
+          const std::vector<double>& concentrations,            //!< local concentration values
+          double temperature,                                   //!< temperature
           const Inpar::ElCh::EquPot& equpot,  //!< type of closing equation for electric potential
           const double& ffrt,                 //!< factor F^2/RT
-          Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager,  //!< diffusion manager
-          Inpar::ElCh::DiffCondMat& diffcondmat                        //!< ion type
+          std::shared_ptr<ScaTraEleDiffManagerElchDiffCond> diffmanager,  //!< diffusion manager
+          Inpar::ElCh::DiffCondMat& diffcondmat                           //!< ion type
       );
 
       //! evaluate standard Newman material
-      void mat_newman(Teuchos::RCP<const Core::Mat::Material> material,  //!< Newman material
-          double concentration,                                       //!< local concentration value
-          double temperature,                                         //!< temperature
-          Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager  //!< diffusion manager
+      void mat_newman(std::shared_ptr<const Core::Mat::Material> material,  //!< Newman material
+          double concentration,  //!< local concentration value
+          double temperature,    //!< temperature
+          std::shared_ptr<ScaTraEleDiffManagerElchDiffCond> diffmanager  //!< diffusion manager
       );
 
      protected:

@@ -12,8 +12,7 @@
 
 #include "4C_fem_condition.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <set>
 #include <vector>
 

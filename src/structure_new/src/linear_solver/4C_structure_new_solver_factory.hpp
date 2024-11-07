@@ -12,8 +12,8 @@
 
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <map>
+#include <memory>
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -50,7 +50,8 @@ namespace Solid
     class Factory
     {
      private:
-      typedef std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>> LinSolMap;
+      typedef std::map<enum Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>
+          LinSolMap;
 
      public:
       //! constructor
@@ -60,37 +61,37 @@ namespace Solid
       virtual ~Factory() = default;
 
       //! build the desired linear solvers
-      Teuchos::RCP<LinSolMap> build_lin_solvers(
+      std::shared_ptr<LinSolMap> build_lin_solvers(
           const std::set<enum Inpar::Solid::ModelType>& modeltypes,
           const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const;
 
       //! create the meshtying/contact linear solver
-      static Teuchos::RCP<Core::LinAlg::Solver> build_meshtying_contact_lin_solver(
+      static std::shared_ptr<Core::LinAlg::Solver> build_meshtying_contact_lin_solver(
           Core::FE::Discretization& actdis, enum Inpar::CONTACT::SolvingStrategy sol_type,
           enum Inpar::CONTACT::SystemType sys_type, const int lin_solver_id);
 
      private:
       //! create the structural linear solver (should be called by default)
-      Teuchos::RCP<Core::LinAlg::Solver> build_structure_lin_solver(
+      std::shared_ptr<Core::LinAlg::Solver> build_structure_lin_solver(
           const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const;
 
       //! create the meshtying/contact linear solver
-      Teuchos::RCP<Core::LinAlg::Solver> build_meshtying_contact_lin_solver(
+      std::shared_ptr<Core::LinAlg::Solver> build_meshtying_contact_lin_solver(
           Core::FE::Discretization& actdis) const;
 
       //! create the Lagrange/penalty enforced constraint linear solver
-      Teuchos::RCP<Core::LinAlg::Solver> build_lag_pen_constraint_lin_solver(
+      std::shared_ptr<Core::LinAlg::Solver> build_lag_pen_constraint_lin_solver(
           const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const;
 
       //! create the Windkessel linear solver
-      Teuchos::RCP<Core::LinAlg::Solver> build_cardiovascular0_d_lin_solver(
+      std::shared_ptr<Core::LinAlg::Solver> build_cardiovascular0_d_lin_solver(
           const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const;
 
     };  // class Factory
 
     /*! Non-member function, which relates to the Solid::SOLVER::Factory class
      *  Please call this method from outside! */
-    Teuchos::RCP<std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
+    std::shared_ptr<std::map<enum Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>>
     build_lin_solvers(const std::set<enum Inpar::Solid::ModelType>& modeltypes,
         const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis);
   }  // namespace SOLVER

@@ -65,37 +65,40 @@ namespace Discret
 
       //! evaluate material
       void prepare_materials(Core::Elements::Element* ele,  //!< the element we are dealing with
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor) override;
+          const std::shared_ptr<const Core::Mat::Material>
+              material,  //!< pointer to current material
+          const int k,   //!< id of current scalar
+          std::shared_ptr<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor) override;
 
       //! evaluate material
       virtual void prepare_materials_all(
           Core::Elements::Element* ele,  //!< the element we are dealing with
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor);
+          const std::shared_ptr<const Core::Mat::Material>
+              material,  //!< pointer to current material
+          const int k,   //!< id of current scalar
+          std::shared_ptr<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor);
 
       //! evaluate material
       virtual void prepare_materials_tet(
           Core::Elements::Element* ele,  //!< the element we are dealing with
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor);
+          const std::shared_ptr<const Core::Mat::Material>
+              material,  //!< pointer to current material
+          const int k,   //!< id of current scalar
+          std::shared_ptr<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor);
 
 
       //! evaluate material
-      void materials(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
+      void materials(const std::shared_ptr<const Core::Mat::Material>
+                         material,  //!< pointer to current material
+          const int k,              //!< id of current scalar
           Core::LinAlg::SerialDenseMatrix& difftensor, Core::LinAlg::SerialDenseVector& ivecn,
           Core::LinAlg::SerialDenseVector& ivecnp,
           Core::LinAlg::SerialDenseMatrix& ivecnpderiv) override;
 
       //! material ScaTra
-      void mat_myocard(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
+      void mat_myocard(const std::shared_ptr<const Core::Mat::Material>
+                           material,  //!< pointer to current material
+          const int k,                //!< id of current scalar
           Core::LinAlg::SerialDenseMatrix& difftensor, Core::LinAlg::SerialDenseVector& ivecn,
           Core::LinAlg::SerialDenseVector& ivecnp, Core::LinAlg::SerialDenseMatrix& ivecnpderiv);
 
@@ -137,7 +140,7 @@ namespace Discret
 
       /// polynomial space for element interior for various Gauss Points for the evaluation of the
       /// material
-      Teuchos::RCP<Core::FE::PolynomialSpace<probdim>> polySpace_;
+      std::shared_ptr<Core::FE::PolynomialSpace<probdim>> polySpace_;
     };
 
   }  // namespace Elements

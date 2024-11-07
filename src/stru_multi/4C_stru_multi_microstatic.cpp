@@ -72,7 +72,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
-  solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(
+  solver_ = std::make_shared<Core::LinAlg::Solver>(
       Global::Problem::instance(microdisnum_)->solver_params(linsolvernumber), discret_->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -139,7 +139,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // -------------------------------------------------------------------
   // create empty matrices
   // -------------------------------------------------------------------
-  stiff_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 81, true, true);
+  stiff_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 81, true, true);
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -179,11 +179,13 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   //
   // -------------------------------------------------------------------
   {
-    lastalpha_ = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>();
-    oldalpha_ = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>();
-    oldfeas_ = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>();
-    oldKaainv_ = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>();
-    oldKda_ = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>();
+    lastalpha_ =
+        std::make_shared<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>();
+    oldalpha_ = std::make_shared<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>();
+    oldfeas_ = std::make_shared<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>();
+    oldKaainv_ =
+        std::make_shared<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>();
+    oldKda_ = std::make_shared<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>();
   }
 
   // -------------------------------------------------------------------
@@ -202,7 +204,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
     discret_->set_state("residual displacement", zeros_);
     discret_->set_state("displacement", dis_);
 
-    discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, stiff_, nullptr, fintn_, nullptr, nullptr);
     discret_->clear_state();
   }
 
@@ -317,7 +319,7 @@ void MultiScale::MicroStatic::predict_const_dis(Core::LinAlg::Matrix<3, 3>* defg
     discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, stiff_, nullptr, fintn_, nullptr, nullptr);
     discret_->clear_state();
 
     // complete stiffness matrix
@@ -354,7 +356,7 @@ void MultiScale::MicroStatic::predict_const_dis(Core::LinAlg::Matrix<3, 3>* defg
 void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgrd)
 {
   // for displacement increments on Dirichlet boundary
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dbcinc =
+  std::shared_ptr<Core::LinAlg::Vector<double>> dbcinc =
       Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
 
   // copy last converged displacements
@@ -399,7 +401,7 @@ void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgr
     discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, stiff_, nullptr, fintn_, nullptr, nullptr);
     discret_->clear_state();
   }
 
@@ -412,7 +414,7 @@ void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgr
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> freact =
+    std::shared_ptr<Core::LinAlg::Vector<double>> freact =
         Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
     stiff_->multiply(false, *dbcinc, *freact);
 
@@ -462,8 +464,7 @@ void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgr
     Teuchos::ParameterList p;
     p.set("action", "calc_struct_reset_istep");
     // go to elements
-    discret_->evaluate(
-        p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
     discret_->clear_state();
   }
 
@@ -485,7 +486,7 @@ void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgr
     discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, stiff_, nullptr, fintn_, nullptr, nullptr);
     discret_->clear_state();
   }
 
@@ -576,7 +577,7 @@ void MultiScale::MicroStatic::full_newton()
       discret_->set_state("displacement", disn_);
       fintn_->PutScalar(0.0);  // initialise internal force vector
 
-      discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+      discret_->evaluate(p, stiff_, nullptr, fintn_, nullptr, nullptr);
       discret_->clear_state();
     }
 
@@ -641,8 +642,7 @@ void MultiScale::MicroStatic::prepare_output()
     discret_->clear_state();
     discret_->set_state("residual displacement", zeros_);
     discret_->set_state("displacement", disn_);
-    discret_->evaluate(
-        p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
     discret_->clear_state();
   }
 }
@@ -670,7 +670,7 @@ void MultiScale::MicroStatic::output(
     if (!isdatawritten) output.new_step(step, time);
     isdatawritten = true;
 
-    if (stress_ == Teuchos::null or strain_ == Teuchos::null or plstrain_ == Teuchos::null)
+    if (stress_ == nullptr or strain_ == nullptr or plstrain_ == nullptr)
       FOUR_C_THROW("Missing stresses and strains in micro-structural time integrator");
 
     switch (iostress_)
@@ -719,21 +719,21 @@ void MultiScale::MicroStatic::output(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MultiScale::MicroStatic::write_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
+void MultiScale::MicroStatic::write_restart(std::shared_ptr<Core::IO::DiscretizationWriter> output,
     const double time, const int step, const double dt)
 {
   output->write_mesh(step, time);
   output->new_step(step, time);
   output->write_vector("displacement", dis_);
 
-  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> emptyalpha =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(1, 1));
+  std::shared_ptr<Core::LinAlg::SerialDenseMatrix> emptyalpha(
+      new Core::LinAlg::SerialDenseMatrix(1, 1));
 
   Core::Communication::PackBuffer data;
 
   for (int i = 0; i < discret_->element_col_map()->NumMyElements(); ++i)
   {
-    if ((*lastalpha_)[i] != Teuchos::null)
+    if ((*lastalpha_)[i] != nullptr)
     {
       add_to_pack(data, *(*lastalpha_)[i]);
     }
@@ -748,12 +748,13 @@ void MultiScale::MicroStatic::write_restart(Teuchos::RCP<Core::IO::Discretizatio
 /*----------------------------------------------------------------------*
  |  read restart (public)                                       lw 03/08|
  *----------------------------------------------------------------------*/
-void MultiScale::MicroStatic::read_restart(int step, Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
+void MultiScale::MicroStatic::read_restart(int step,
+    std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
     std::string name)
 {
-  Teuchos::RCP<Core::IO::InputControl> inputcontrol =
-      Teuchos::make_rcp<Core::IO::InputControl>(name, true);
+  std::shared_ptr<Core::IO::InputControl> inputcontrol =
+      std::make_shared<Core::IO::InputControl>(name, true);
   Core::IO::DiscretizationReader reader(discret_, inputcontrol, step);
   double time = reader.read_double("time");
   int rstep = reader.read_int("step");
@@ -778,8 +779,7 @@ void MultiScale::MicroStatic::read_restart(int step, Teuchos::RCP<Core::LinAlg::
  *----------------------------------------------------------------------*/
 double MultiScale::MicroStatic::get_time_to_step(int step, std::string name)
 {
-  Teuchos::RCP<Core::IO::InputControl> inputcontrol =
-      Teuchos::rcp(new Core::IO::InputControl(name, true));
+  std::shared_ptr<Core::IO::InputControl> inputcontrol(new Core::IO::InputControl(name, true));
   Core::IO::DiscretizationReader reader(discret_, inputcontrol, step);
   return reader.read_double("time");
 }
@@ -839,14 +839,14 @@ void MultiScale::MicroStatic::evaluate_micro_bc(
   }
 }
 
-void MultiScale::MicroStatic::set_state(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disn, Teuchos::RCP<std::vector<char>> stress,
-    Teuchos::RCP<std::vector<char>> strain, Teuchos::RCP<std::vector<char>> plstrain,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldalpha,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldfeas,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKaainv,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKda)
+void MultiScale::MicroStatic::set_state(std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+    std::shared_ptr<Core::LinAlg::Vector<double>> disn, std::shared_ptr<std::vector<char>> stress,
+    std::shared_ptr<std::vector<char>> strain, std::shared_ptr<std::vector<char>> plstrain,
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldalpha,
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldfeas,
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldKaainv,
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldKda)
 {
   dis_ = dis;
   disn_ = disn;
@@ -855,7 +855,7 @@ void MultiScale::MicroStatic::set_state(Teuchos::RCP<Core::LinAlg::Vector<double
   strain_ = strain;
   plstrain_ = plstrain;
 
-  // using Teuchos::RCP's here means we do not need to return EAS data explicitly
+  // using std::shared_ptr's here means we do not need to return EAS data explicitly
   lastalpha_ = lastalpha;
   oldalpha_ = oldalpha;
   oldfeas_ = oldfeas;
@@ -873,13 +873,13 @@ void MultiScale::MicroStatic::set_time(
   stepn_ = stepn;
 }
 
-// Teuchos::RCP<Core::LinAlg::Vector<double>> MultiScale::MicroStatic::ReturnNewDism() { return
+// std::shared_ptr<Core::LinAlg::Vector<double>> MultiScale::MicroStatic::ReturnNewDism() { return
 // Teuchos::rcp(new Core::LinAlg::Vector<double>(*dism_)); }
 
 void MultiScale::MicroStatic::clear_state()
 {
-  dis_ = Teuchos::null;
-  disn_ = Teuchos::null;
+  dis_ = nullptr;
+  disn_ = nullptr;
 }
 
 void MultiScale::MicroStatic::set_eas_data()
@@ -1003,7 +1003,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     Core::LinAlg::MultiVector<double> cmatpf(D_->Map(), 9);
 
     // make a copy
-    stiff_dirich_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*stiff_);
+    stiff_dirich_ = std::make_shared<Core::LinAlg::SparseMatrix>(*stiff_);
 
     stiff_->apply_dirichlet(*dirichtoggle_);
 
@@ -1029,8 +1029,8 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     // prescribe rigid body modes
     discret_->compute_null_space_if_necessary(solver.params());
 
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> iterinc =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dofrowmap, 9);
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> iterinc =
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*dofrowmap, 9);
     iterinc->PutScalar(0.0);
 
     switch (solvertype)
@@ -1123,7 +1123,8 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
 
 void MultiScale::stop_np_multiscale()
 {
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  std::shared_ptr<Epetra_Comm> subcomm =
+      Global::Problem::instance(0)->get_communicators()->sub_comm();
   int task[2] = {
       static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::stop_multiscale), -1};
   subcomm->Broadcast(task, 2, 0);

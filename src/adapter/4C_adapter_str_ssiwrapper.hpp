@@ -39,10 +39,10 @@ namespace Adapter
   {
    public:
     /// constructor
-    explicit SSIStructureWrapper(Teuchos::RCP<Structure> structure);
+    explicit SSIStructureWrapper(std::shared_ptr<Structure> structure);
 
     /// set pointer to model evaluator
-    void set_model_evaluator_ptr(Teuchos::RCP<Solid::ModelEvaluator::PartitionedSSI> me)
+    void set_model_evaluator_ptr(std::shared_ptr<Solid::ModelEvaluator::PartitionedSSI> me)
     {
       ssi_model_evaluator_ = me;
       return;
@@ -54,10 +54,10 @@ namespace Adapter
     /// If this method is related to the structural field,
     /// a corresponding method in the model evaluator may be
     /// called, if necessary.
-    Teuchos::RCP<Solid::ModelEvaluator::PartitionedSSI> ssi_model_evaluator_;
+    std::shared_ptr<Solid::ModelEvaluator::PartitionedSSI> ssi_model_evaluator_;
 
     /// access the fsi model evaluator
-    Teuchos::RCP<Solid::ModelEvaluator::PartitionedSSI> ssi_model_evaluator()
+    std::shared_ptr<Solid::ModelEvaluator::PartitionedSSI> ssi_model_evaluator()
     {
       return ssi_model_evaluator_;
     };

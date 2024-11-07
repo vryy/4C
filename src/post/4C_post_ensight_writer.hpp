@@ -177,7 +177,7 @@ class EnsightWriter : public PostWriterBase
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string name);
 
-  Teuchos::RCP<Epetra_Map> write_coordinates(
+  std::shared_ptr<Epetra_Map> write_coordinates(
       std::ofstream& geofile,        ///< filestream for the geometry
       Core::FE::Discretization& dis  ///< discretization where the nodal positions are take from
   );
@@ -188,7 +188,7 @@ class EnsightWriter : public PostWriterBase
       coordinates of the nodes in the discretization.
     */
   void write_coordinates_for_polynomial_shapefunctions(
-      std::ofstream& geofile, Core::FE::Discretization& dis, Teuchos::RCP<Epetra_Map>& proc0map);
+      std::ofstream& geofile, Core::FE::Discretization& dis, std::shared_ptr<Epetra_Map>& proc0map);
 
   /*! \brief Write the coordinates for a Nurbs discretization
     The coordinates of the vizualisation points (i.e. the corner
@@ -197,12 +197,12 @@ class EnsightWriter : public PostWriterBase
     knot values are mapped to.
   */
   void write_coordinates_for_nurbs_shapefunctions(
-      std::ofstream& geofile, Core::FE::Discretization& dis, Teuchos::RCP<Epetra_Map>& proc0map);
+      std::ofstream& geofile, Core::FE::Discretization& dis, std::shared_ptr<Epetra_Map>& proc0map);
 
   virtual void write_cells(std::ofstream& geofile,  ///< filestream for the geometry
-      const Teuchos::RCP<Core::FE::Discretization>
+      const std::shared_ptr<Core::FE::Discretization>
           dis,  ///< discretization where the nodal positions are take from
-      const Teuchos::RCP<Epetra_Map>&
+      const std::shared_ptr<Epetra_Map>&
           proc0map  ///< current proc0 node map, created by WriteCoordinatesPar
   ) const;
 
@@ -217,8 +217,8 @@ class EnsightWriter : public PostWriterBase
     \param int                              (i)          global element id
     \param std::ofstream                    (used for o) direct print to file
     \param std::vector<int>                 (o)          remember node values for parallel IO
-    \param Teuchos::RCP<Core::FE::Discretization> (i)          the discretisation holding
-    knots etc \param Teuchos::RCP<Epetra_Map>          (i)          an allreduced nodemap
+    \param std::shared_ptr<Core::FE::Discretization> (i)          the discretisation holding
+    knots etc \param std::shared_ptr<Epetra_Map>          (i)          an allreduced nodemap
 
   */
   void write_nurbs_cell(const Core::FE::CellType distype, const int gid, std::ofstream& geofile,
@@ -299,7 +299,7 @@ class EnsightWriter : public PostWriterBase
 
     \param std::ofstream                    (used for o) direct print to file
     \param int                              (i)          number of degrees of freedom
-    \param Teuchos::RCP<Core::LinAlg::Vector<double>>      (i)          the result data read from
+    \param std::shared_ptr<Core::LinAlg::Vector<double>>      (i)          the result data read from
     the 4C output \param string                           (i)          name of the thing we are
     writing (velocity, pressure etc.) \param int                              (i)          potential
     offset in dof numbering
@@ -324,7 +324,7 @@ class EnsightWriter : public PostWriterBase
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf);
   void write_nodal_result_step(std::ofstream& file,
-      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+      const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) override;
   void write_element_dof_result_step(std::ofstream& file, PostResult& result,
@@ -335,7 +335,7 @@ class EnsightWriter : public PostWriterBase
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from);
   void write_element_result_step(std::ofstream& file,
-      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+      const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf,
       const int from) override;
@@ -414,9 +414,10 @@ class EnsightWriter : public PostWriterBase
   EleGidPerDisType
       eleGidPerDisType_;  ///< global ids of corresponding elements per element discretization type
 
-  Teuchos::RCP<Epetra_Map> proc0map_;  ///< allreduced node row map for proc 0, empty on other procs
+  std::shared_ptr<Epetra_Map>
+      proc0map_;  ///< allreduced node row map for proc 0, empty on other procs
 
-  Teuchos::RCP<Epetra_Map> vispointmap_;  ///< map for all visualisation points
+  std::shared_ptr<Epetra_Map> vispointmap_;  ///< map for all visualisation points
 
   std::map<std::string, std::vector<int>> filesetmap_;
   std::map<std::string, std::vector<double>> timesetmap_;

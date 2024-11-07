@@ -13,8 +13,7 @@
 #include "4C_utils_fad.hpp"
 #include "4C_utils_function_manager.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <string>
 
 FOUR_C_NAMESPACE_OPEN
@@ -23,51 +22,51 @@ namespace
 {
 
   template <int dim>
-  Teuchos::RCP<Core::Utils::FunctionOfAnything> create_poro_function(
+  std::shared_ptr<Core::Utils::FunctionOfAnything> create_poro_function(
       const std::string& type, const std::vector<std::pair<std::string, double>>& params)
   {
     if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
-      return Teuchos::make_rcp<PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>>(params);
+      return std::make_shared<PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>>(params);
     else if (type == "NECROSIS_LAW_HEAVISIDE")
-      return Teuchos::make_rcp<PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>>(params);
+      return std::make_shared<PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>>(params);
     else if (type == "OXYGEN_CONSUMPTION_LAW_HEAVISIDE")
-      return Teuchos::make_rcp<PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>>(params);
+      return std::make_shared<PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>>(params);
     else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_OXY")
-      return Teuchos::make_rcp<PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>>(params);
+      return std::make_shared<PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>>(params);
     else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
-      return Teuchos::make_rcp<PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>>(params);
+      return std::make_shared<PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>>(params);
     else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT")
     {
-      return Teuchos::RCP(
-          new PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>(params));
+      return std::make_shared<PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>>(
+          params);
     }
     else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC")
     {
-      return Teuchos::RCP(
-          new PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>(params));
+      return std::make_shared<PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>>(
+          params);
     }
     else if (type == "LUNG_OXYGEN_EXCHANGE_LAW")
     {
-      return Teuchos::make_rcp<PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>>(params);
+      return std::make_shared<PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>>(params);
     }
     else if (type == "LUNG_CARBONDIOXIDE_EXCHANGE_LAW")
     {
-      return Teuchos::make_rcp<PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>>(params);
+      return std::make_shared<PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>>(params);
     }
     else
     {
       FOUR_C_THROW("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
-      return Teuchos::RCP<Core::Utils::FunctionOfAnything>(nullptr);
+      return std::shared_ptr<Core::Utils::FunctionOfAnything>(nullptr);
     }
   }
 
 
 
   template <int dim>
-  Teuchos::RCP<Core::Utils::FunctionOfAnything> try_create_poro_function(
+  std::shared_ptr<Core::Utils::FunctionOfAnything> try_create_poro_function(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
-    if (function_line_defs.size() != 1) return Teuchos::null;
+    if (function_line_defs.size() != 1) return nullptr;
 
     const auto& function_lin_def = function_line_defs.front();
 
@@ -84,7 +83,7 @@ namespace
     }
     else
     {
-      return Teuchos::RCP<Core::Utils::FunctionOfAnything>(nullptr);
+      return std::shared_ptr<Core::Utils::FunctionOfAnything>(nullptr);
     }
   }
 

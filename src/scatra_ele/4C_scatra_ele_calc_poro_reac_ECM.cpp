@@ -61,9 +61,9 @@ Discret::Elements::ScaTraEleCalcPoroReacECM<distype>::instance(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcPoroReacECM<distype>::materials(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity
@@ -99,27 +99,27 @@ void Discret::Elements::ScaTraEleCalcPoroReacECM<distype>::get_material_params(
   poro::compute_porosity(ele);
 
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   if (material->material_type() == Core::Materials::m_matlist_reactions)
   {
-    const Teuchos::RCP<Mat::MatListReactions> actmat =
-        Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(material);
+    const std::shared_ptr<Mat::MatListReactions> actmat =
+        std::dynamic_pointer_cast<Mat::MatListReactions>(material);
     if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < actmat->num_reac(); ++k)
     {
       int matid = actmat->reac_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
-      Teuchos::RCP<Mat::ScatraMatPoroECM> scatramat =
-          Teuchos::rcp_dynamic_cast<Mat::ScatraMatPoroECM>(singlemat);
+      std::shared_ptr<Mat::ScatraMatPoroECM> scatramat =
+          std::dynamic_pointer_cast<Mat::ScatraMatPoroECM>(singlemat);
 
-      if (scatramat != Teuchos::null)
+      if (scatramat != nullptr)
       {
-        Teuchos::RCP<Mat::StructPoroReactionECM> structmat =
-            Teuchos::rcp_dynamic_cast<Mat::StructPoroReactionECM>(my::ele_->material(1));
-        if (structmat == Teuchos::null) FOUR_C_THROW("cast to Mat::StructPoroReactionECM failed!");
+        std::shared_ptr<Mat::StructPoroReactionECM> structmat =
+            std::dynamic_pointer_cast<Mat::StructPoroReactionECM>(my::ele_->material(1));
+        if (structmat == nullptr) FOUR_C_THROW("cast to Mat::StructPoroReactionECM failed!");
         double structpot = compute_struct_chem_potential(*structmat, iquad);
 
         scatramat->compute_reac_coeff(structpot);

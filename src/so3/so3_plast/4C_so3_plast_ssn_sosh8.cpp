@@ -17,6 +17,7 @@
 #include "4C_so3_utils.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_parameter_list.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
@@ -63,27 +64,27 @@ Core::Communication::ParObject* Discret::Elements::SoSh8PlastType::create(
 | create the new element type (public)                     seitz 05/14 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh8PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoSh8PlastType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::SoSh8Plast>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::SoSh8Plast>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
 | create the new element type (public)                     seitz 05/14 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh8PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoSh8PlastType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::SoSh8Plast>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::SoSh8Plast>(id, owner);
   return ele;
 }
 
@@ -307,9 +308,9 @@ Discret::Elements::SoSh8Plast::SoSh8Plast(int id, int owner)
   nodes_rearranged_ = false;
   thickvec_.resize(3, 0.);
 
-  Teuchos::RCP<const Teuchos::ParameterList> params =
+  std::shared_ptr<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
-  if (params != Teuchos::null)
+  if (params != nullptr)
   {
     Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
@@ -427,7 +428,7 @@ bool Discret::Elements::SoSh8Plast::read_element(const std::string& eletype,
 
   set_material(0, Mat::factory(material_id));
 
-  Teuchos::RCP<Mat::So3Material> so3mat = solid_material();
+  std::shared_ptr<Mat::So3Material> so3mat = solid_material();
   so3mat->setup(numgpt_, container);
   so3mat->valid_kinematics(Inpar::Solid::KinemType::nonlinearTotLag);
   if (have_plastic_spin())
@@ -504,7 +505,7 @@ bool Discret::Elements::SoSh8Plast::read_element(const std::string& eletype,
   Teuchos::ParameterList plparams = Global::Problem::instance()->semi_smooth_plast_params();
   Core::Utils::add_enum_class_to_parameter_list(
       "Core::ProblemType", Global::Problem::instance()->get_problem_type(), plparams);
-  read_parameter_list(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
+  read_parameter_list(Core::Utils::shared_ptr_from_ref<Teuchos::ParameterList>(plparams));
 
   if (tsi_)
     FOUR_C_THROW(
@@ -924,15 +925,15 @@ void Discret::Elements::SoSh8Plast::re_init_eas(const Discret::Elements::So3Plas
 
   if (eastype_ != soh8p_easnone)
   {
-    KaaInv_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, neas_, true);
-    Kad_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, numdofperelement_, true);
-    feas_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
-    alpha_eas_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
-    alpha_eas_last_timestep_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
+    KaaInv_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, neas_, true);
+    Kad_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, numdofperelement_, true);
+    feas_ = std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
+    alpha_eas_ = std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
+    alpha_eas_last_timestep_ = std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
     alpha_eas_delta_over_last_timestep_ =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
-    alpha_eas_inc_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
-    Kba_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseMatrix>>(
+        std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
+    alpha_eas_inc_ = std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
+    Kba_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseMatrix>>(
         numgpt_, Core::LinAlg::SerialDenseMatrix(5, neas_, true));
   }
 
@@ -1189,7 +1190,7 @@ void Discret::Elements::SoSh8Plast::nln_stiffmass(
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_inverseKaa;
-    solve_for_inverseKaa.setMatrix(KaaInv_);
+    solve_for_inverseKaa.setMatrix(Teuchos::rcpFromRef(*KaaInv_));
     solve_for_inverseKaa.invert();
 
     Core::LinAlg::SerialDenseMatrix kdakaai(numdofperelement_, neas_);

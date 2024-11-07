@@ -35,7 +35,7 @@ namespace Mat
       const double density_;
       //@}
 
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
     };
 
     class LinElast1DGrowth : public LinElast1D
@@ -58,7 +58,7 @@ namespace Mat
       const bool amount_prop_growth_;
       //@}
 
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
     };
   }  // namespace PAR
 
@@ -80,9 +80,9 @@ namespace Mat
    public:
     explicit LinElast1D(Mat::PAR::LinElast1D* params);
 
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<LinElast1D>(*this);
+      return std::make_shared<LinElast1D>(*this);
     }
 
     /// mass density
@@ -144,9 +144,9 @@ namespace Mat
     /// growth proportional to amount of substance or to concentration
     bool amount_prop_growth() const { return growth_params_->amount_prop_growth_; }
 
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<LinElast1DGrowth>(*this);
+      return std::make_shared<LinElast1DGrowth>(*this);
     }
     /// elastic energy based on @p def_grad and @p conc
     double evaluate_elastic_energy(double def_grad, double conc) const;

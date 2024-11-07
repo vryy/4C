@@ -15,7 +15,8 @@
 #include "4C_structure_timint.hpp"
 
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -23,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*======================================================================*/
 /* constructor */
 Adapter::StructureFSITimIntAda::StructureFSITimIntAda(
-    Teuchos::RCP<Solid::TimAda> sta, Teuchos::RCP<Structure> sti)
+    std::shared_ptr<Solid::TimAda> sta, std::shared_ptr<Structure> sti)
     : FSIStructureWrapper(sti), StructureTimIntAda(sta, sti), str_time_integrator_(sti)
 {
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
@@ -37,10 +38,10 @@ Adapter::StructureFSITimIntAda::StructureFSITimIntAda(
   //----------------------------------------------------------------------------
   // Create intersection of fluid DOFs that hold a Dirichlet boundary condition
   // and are located at the FSI interface.
-  std::vector<Teuchos::RCP<const Epetra_Map>> intersectionmaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> intersectionmaps;
   intersectionmaps.push_back(sti->get_dbc_map_extractor()->cond_map());
   intersectionmaps.push_back(interface()->fsi_cond_map());
-  Teuchos::RCP<Epetra_Map> intersectionmap =
+  std::shared_ptr<Epetra_Map> intersectionmap =
       Core::LinAlg::MultiMapExtractor::intersect_maps(intersectionmaps);
 
   numdbcdofs_ = sti->get_dbc_map_extractor()->cond_map()->NumGlobalElements();
@@ -68,7 +69,7 @@ void Adapter::StructureFSITimIntAda::indicate_errors(double& err, double& errcon
     double& errinf, double& errinfcond, double& errinfother)
 {
   // vector with local discretization error for each DOF
-  Teuchos::RCP<Core::LinAlg::Vector<double>> error = str_ada()->loc_err_dis();
+  std::shared_ptr<Core::LinAlg::Vector<double>> error = str_ada()->loc_err_dis();
 
   // extract the condition part of the full error vector
   // (i.e. only interface displacement DOFs)

@@ -28,22 +28,23 @@ namespace Adapter
     //@{
 
     //! constructor
-    explicit AleFpsiWrapper(Teuchos::RCP<Ale> ale);
+    explicit AleFpsiWrapper(std::shared_ptr<Ale> ale);
 
     //! specialized method to apply displacements to fpsi interface
-    void apply_interface_displacements(Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp);
+    void apply_interface_displacements(std::shared_ptr<const Core::LinAlg::Vector<double>> idisp);
 
     //! specialized method to apply displacements to fsi interface
-    void apply_fsi_interface_displacements(Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp);
+    void apply_fsi_interface_displacements(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> idisp);
 
     //! communicate object at the interface
-    Teuchos::RCP<const ALE::Utils::MapExtractor> interface() const;
+    std::shared_ptr<const ALE::Utils::MapExtractor> interface() const;
 
     //@}
 
    private:
     //! interface map extractor
-    Teuchos::RCP<ALE::Utils::MapExtractor> interface_;
+    std::shared_ptr<ALE::Utils::MapExtractor> interface_;
 
 
   };  // class AleFpsiWrapper

@@ -41,8 +41,8 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseScaTra
       itmax_(0),
       itmin_(1),
       itnum_(0),
-      blockrowdofmap_(Teuchos::null),
-      equilibration_(Teuchos::null),
+      blockrowdofmap_(nullptr),
+      equilibration_(nullptr),
       equilibration_method_(Core::LinAlg::EquilibrationMethod::none),
       solveradaptolbetter_(0.0),
       solveradapttol_(false),
@@ -101,7 +101,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::init(
   ittolinc_ = algoparams.sublist("MONOLITHIC").get<double>("TOLINC_GLOBAL");
   ittolres_ = algoparams.sublist("MONOLITHIC").get<double>("TOLRES_GLOBAL");
 
-  blockrowdofmap_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
+  blockrowdofmap_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();
 
   fdcheck_ = Teuchos::getIntegralValue<Inpar::PoroMultiPhaseScaTra::FdCheck>(
       algoparams.sublist("MONOLITHIC"), "FDCHECK");
@@ -134,20 +134,20 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system()
 
   // initialize Poroscatra-systemmatrix_
   systemmatrix_ =
-      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+      std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           *extractor(), *extractor(), 81, false, true);
 
   //! structure-scatra coupling matrix k_pss_ --> equal to zero so far
   //! fluid-scatra coupling matrix
-  k_pfs_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*(poro_field()->fluid_dof_row_map()),
+  k_pfs_ = std::make_shared<Core::LinAlg::SparseMatrix>(*(poro_field()->fluid_dof_row_map()),
       //*(fluid_field()->dof_row_map()),
       81, true, true);
 
   //! scatra-structure coupling matrix
-  k_sps_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  k_sps_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *(scatra_algo()->scatra_field()->discretization()->dof_row_map()), 81, true, true);
   //! scatra-fluid coupling matrix
-  k_spf_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  k_spf_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *(scatra_algo()->scatra_field()->discretization()->dof_row_map()),
       //*(fluid_field()->dof_row_map()),
       81, true, true);
@@ -166,7 +166,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system()
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_maps()
 {
   // create combined map
-  std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
+  std::vector<std::shared_ptr<const Epetra_Map>> vecSpaces;
 
   if (solve_structure_)
   {
@@ -174,7 +174,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_maps()
     vecSpaces.push_back(poro_field()->fluid_dof_row_map());
     const Epetra_Map* dofrowmapscatra =
         (scatra_algo()->scatra_field()->discretization())->dof_row_map(0);
-    vecSpaces.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
+    vecSpaces.push_back(Core::Utils::shared_ptr_from_ref(*dofrowmapscatra));
 
     if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro structure equation. Panic.");
     if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No poro fluid equation. Panic.");
@@ -185,7 +185,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_maps()
     vecSpaces.push_back(poro_field()->fluid_dof_row_map());
     const Epetra_Map* dofrowmapscatra =
         (scatra_algo()->scatra_field()->discretization())->dof_row_map(0);
-    vecSpaces.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
+    vecSpaces.push_back(Core::Utils::shared_ptr_from_ref(*dofrowmapscatra));
 
     if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro fluid equation. Panic.");
     if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No scatra equation. Panic.");
@@ -208,8 +208,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_maps()
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_combined_dbc_map()
 {
   // Combined DBC map of poromultielast-problem
-  const Teuchos::RCP<const Epetra_Map> porocondmap = poro_field()->combined_dbc_map();
-  const Teuchos::RCP<const Epetra_Map> scatracondmap =
+  const std::shared_ptr<const Epetra_Map> porocondmap = poro_field()->combined_dbc_map();
+  const std::shared_ptr<const Epetra_Map> scatracondmap =
       scatra_algo()->scatra_field()->dirich_maps()->cond_map();
   combinedDBCMap_ = Core::LinAlg::merge_map(porocondmap, scatracondmap, false);
 
@@ -271,7 +271,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_solver()
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::create_linear_solver(
     const Teuchos::ParameterList& solverparams, const Core::LinearSolver::SolverType solvertype)
 {
-  solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(solverparams, get_comm(),
+  solver_ = std::make_shared<Core::LinAlg::Solver>(solverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
@@ -366,7 +366,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::time_step()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::evaluate(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> iterinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate");
 
@@ -377,9 +377,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::evaluate(
   // *********** time measurement ***********
 
   // displacement, fluid variable and scatra variable incremental vector
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> porostructinc;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> porofluidinc;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> scatrainc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> porostructinc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> porofluidinc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> scatrainc;
   extract_field_vectors(iterinc, porostructinc, porofluidinc, scatrainc);
 
   // (1) Newton update of the scatra field
@@ -427,7 +427,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system_ma
   // has dimensions ((ndim+n_phases)*n_nodes)x((ndim+n_phases)*n_nodes)
   //----------------------------------------------------------------------
   // get matrix block
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mat_pp = poro_field()->block_system_matrix();
+  std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> mat_pp = poro_field()->block_system_matrix();
 
   // uncomplete matrix block (appears to be required in certain cases (locsys+iterative solver))
   mat_pp->un_complete();
@@ -446,7 +446,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system_ma
   // has dimensions (n_species*n_nodes)x(n_species*n_nodes)
   //----------------------------------------------------------------------
   // get matrix block
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_ss = scatra_algo()->scatra_field()->system_matrix();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mat_ss =
+      scatra_algo()->scatra_field()->system_matrix();
 
   // uncomplete matrix block (appears to be required in certain cases)
   mat_ss->un_complete();
@@ -465,7 +466,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system_ma
   //----------------------------------------------------------------------
 
   // create empty matrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_pfs = poro_fluid_scatra_coupling_matrix();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> k_pfs = poro_fluid_scatra_coupling_matrix();
 
   // call the porofluid-elements and calculate the off-diagonal scatra matrix block
   apply_poro_fluid_scatra_coupl_matrix(k_pfs);
@@ -488,7 +489,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system_ma
   //----------------------------------------------------------------------
 
   // create empty matrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_sps = scatra_struct_coupling_matrix();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> k_sps = scatra_struct_coupling_matrix();
 
   // call the scatra-elements and calculate the off-diagonal structure matrix block
   apply_scatra_struct_coupl_matrix(k_sps);
@@ -498,7 +499,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system_ma
   k_sps->apply_dirichlet(*scatra_algo()->scatra_field()->dirich_maps()->cond_map(), false);
 
   // create empty matrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_spf = scatra_poro_fluid_coupling_matrix();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> k_spf = scatra_poro_fluid_coupling_matrix();
 
   // call the scatra-elements and calculate the off-diagonal structure matrix block
   apply_scatra_poro_fluid_coupl_matrix(k_spf);
@@ -521,36 +522,36 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system_ma
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix>
+std::shared_ptr<Core::LinAlg::SparseMatrix>
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::poro_fluid_scatra_coupling_matrix()
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse =
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(k_pfs_);
-  if (sparse == Teuchos::null) FOUR_C_THROW("cast to Core::LinAlg::SparseMatrix failed!");
+  std::shared_ptr<Core::LinAlg::SparseMatrix> sparse =
+      std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(k_pfs_);
+  if (sparse == nullptr) FOUR_C_THROW("cast to Core::LinAlg::SparseMatrix failed!");
 
   return sparse;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix>
+std::shared_ptr<Core::LinAlg::SparseMatrix>
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::scatra_struct_coupling_matrix()
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse =
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(k_sps_);
-  if (sparse == Teuchos::null) FOUR_C_THROW("cast to Core::LinAlg::SparseMatrix failed!");
+  std::shared_ptr<Core::LinAlg::SparseMatrix> sparse =
+      std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(k_sps_);
+  if (sparse == nullptr) FOUR_C_THROW("cast to Core::LinAlg::SparseMatrix failed!");
 
   return sparse;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix>
+std::shared_ptr<Core::LinAlg::SparseMatrix>
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::scatra_poro_fluid_coupling_matrix()
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse =
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(k_spf_);
-  if (sparse == Teuchos::null) FOUR_C_THROW("cast to Core::LinAlg::SparseMatrix failed!");
+  std::shared_ptr<Core::LinAlg::SparseMatrix> sparse =
+      std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(k_spf_);
+  if (sparse == nullptr) FOUR_C_THROW("cast to Core::LinAlg::SparseMatrix failed!");
 
   return sparse;
 }
@@ -566,7 +567,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::evaluate_scatra
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::
     apply_poro_fluid_scatra_coupl_matrix(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> k_pfs  //!< off-diagonal tangent matrix term
+        std::shared_ptr<Core::LinAlg::SparseOperator> k_pfs  //!< off-diagonal tangent matrix term
     )
 {
   // reset
@@ -581,7 +582,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::apply_scatra_struct_coupl_matrix(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> k_sps  //!< off-diagonal tangent matrix term
+    std::shared_ptr<Core::LinAlg::SparseOperator> k_sps  //!< off-diagonal tangent matrix term
 )
 {
   // create the parameters for the discretization
@@ -612,7 +613,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::apply_scatra_st
     Core::FE::AssembleStrategy scatrastrategy_struct(0,  // scatradofset for row
         1,                                               // structuredofset for column
         k_sps,                                           // scatra-structure coupling matrix
-        Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+        nullptr, nullptr, nullptr, nullptr);
 
     scatra_algo()->scatra_field()->discretization()->evaluate(
         sparams_struct, scatrastrategy_struct);
@@ -629,7 +630,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::apply_scatra_st
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::
     apply_scatra_poro_fluid_coupl_matrix(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> k_spf  //!< off-diagonal tangent matrix term
+        std::shared_ptr<Core::LinAlg::SparseOperator> k_spf  //!< off-diagonal tangent matrix term
     )
 {
   // create the parameters for the discretization
@@ -659,7 +660,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::
   Core::FE::AssembleStrategy scatrastrategy_fluid(0,  // scatradofset for row
       2,                                              // fluiddofset for column
       k_spf,                                          // scatra-structure coupling matrix
-      Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+      nullptr, nullptr, nullptr, nullptr);
 
   scatra_algo()->scatra_field()->discretization()->evaluate(sparams_fluid, scatrastrategy_fluid);
 
@@ -675,9 +676,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::update_fields_after_convergence()
 {
   // displacement, fluid variable and scatra variable incremental vector
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> porostructinc;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> porofluidinc;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> scatrainc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> porostructinc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> porofluidinc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> scatrainc;
   extract_field_vectors(iterinc_, porostructinc, porofluidinc, scatrainc);
 
   // update ScaTra field
@@ -689,7 +690,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::update_fields_a
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::update_scatra(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> scatrainc)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> scatrainc)
 {
   scatra_algo()->scatra_field()->update_iter(*scatrainc);
 }
@@ -699,8 +700,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::update_scatra(
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_rhs()
 {
   // create full monolithic rhs vector
-  if (rhs_ == Teuchos::null)
-    rhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
+  if (rhs_ == nullptr) rhs_ = std::make_shared<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
 
   // note: rhs of fluid-structure system already setup in evaluate call
 
@@ -711,15 +711,15 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_rhs()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_vector(
-    Core::LinAlg::Vector<double>& f, Teuchos::RCP<const Core::LinAlg::Vector<double>> pv,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv)
+    Core::LinAlg::Vector<double>& f, std::shared_ptr<const Core::LinAlg::Vector<double>> pv,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> sv)
 {
   // extract dofs of the two fields
   // and put the poro/scatra field vector into the global vector f
   // noticing the block number
 
-  //  Teuchos::RCP<const Core::LinAlg::Vector<double>> psx;
-  //  Teuchos::RCP<const Core::LinAlg::Vector<double>> pfx;
+  //  std::shared_ptr<const Core::LinAlg::Vector<double>> psx;
+  //  std::shared_ptr<const Core::LinAlg::Vector<double>> pfx;
 
   if (solve_structure_)
     extractor()->insert_vector(*(poro_field()->extractor()->extract_vector(*pv, 0)), 0, f);
@@ -731,10 +731,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_vector(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::extract_field_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& stx,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& flx,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& scx)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& stx,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& flx,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& scx)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
       "PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::extract_field_vectors");
@@ -743,8 +743,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::extract_field_v
   if (solve_structure_)
     stx = extractor()->extract_vector(*x, 0);
   else
-    stx =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*poro_field()->struct_dof_row_map(), true);
+    stx = std::make_shared<Core::LinAlg::Vector<double>>(*poro_field()->struct_dof_row_map(), true);
 
   // process fluid unknowns of the second field
   flx = extractor()->extract_vector(*x, struct_offset_);
@@ -756,10 +755,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::extract_field_v
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::extract_3d_field_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& stx,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& flx,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& scx)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& stx,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& flx,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& scx)
 {
   PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::extract_field_vectors(
       x, stx, flx, scx);
@@ -817,9 +816,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_convergen
 {
   //------------------------------------------------------------ build residual force norms
   normrhs_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_);
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_st;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fl;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_sc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_st;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_fl;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_sc;
 
   // get structure and fluid RHS
   extract_3d_field_vectors(rhs_, rhs_st, rhs_fl, rhs_sc);
@@ -831,9 +830,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_convergen
 
   //------------------------------------------------------------- build residual increment norms
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincst;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincfl;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincsc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> iterincst;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> iterincfl;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> iterincsc;
 
   // get structure and fluid increment
   extract_3d_field_vectors(iterinc_, iterincst, iterincfl, iterincsc);
@@ -901,13 +900,13 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_newton()
   maxres_ = 0.0;
 
   // incremental solution vector with length of all dofs
-  if (iterinc_ == Teuchos::null)
+  if (iterinc_ == nullptr)
     iterinc_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   else
     iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
-  if (zeros_ == Teuchos::null)
+  if (zeros_ == nullptr)
     zeros_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   else
     zeros_->PutScalar(0.0);
@@ -1005,7 +1004,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::newton_error_ch
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map>
+std::shared_ptr<const Epetra_Map>
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::dof_row_map()
 {
   return blockrowdofmap_->full_map();
@@ -1075,7 +1074,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::poro_multi_phas
                  "============================================================\n\n";
   }
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Vector<double>> iterinc = nullptr;
   iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
 
   const int dofs = iterinc->GlobalLength();
@@ -1086,14 +1085,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::poro_multi_phas
 
   iterinc->ReplaceGlobalValue(0, 0, delta);
 
-  Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
+  std::shared_ptr<Epetra_CrsMatrix> stiff_approx = nullptr;
   stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
   Core::LinAlg::Vector<double> rhs_old(*dof_row_map(), true);
   rhs_old.Update(1.0, *rhs_, 0.0);
   Core::LinAlg::Vector<double> rhs_copy(*dof_row_map(), true);
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
   Core::LinAlg::SparseMatrix sparse_copy(*sparse, Core::LinAlg::Copy);
 
 
@@ -1179,15 +1178,15 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::poro_multi_phas
 
   stiff_approx->FillComplete();
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_approx_sparse = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_approx_sparse = nullptr;
   stiff_approx_sparse =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(stiff_approx, Core::LinAlg::Copy);
+      std::make_shared<Core::LinAlg::SparseMatrix>(stiff_approx, Core::LinAlg::Copy);
 
   stiff_approx_sparse->add(sparse_copy, false, -1.0, 1.0);
 
-  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = sparse_copy.epetra_matrix();
+  std::shared_ptr<Epetra_CrsMatrix> sparse_crs = sparse_copy.epetra_matrix();
 
-  Teuchos::RCP<Epetra_CrsMatrix> error_crs = stiff_approx_sparse->epetra_matrix();
+  std::shared_ptr<Epetra_CrsMatrix> error_crs = stiff_approx_sparse->epetra_matrix();
 
   error_crs->FillComplete();
   sparse_crs->FillComplete();
@@ -1313,8 +1312,8 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseScaTraMonolithicTwoWay(comm, globaltimeparams)
 {
-  blockrowdofmap_artscatra_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
-  blockrowdofmap_artporo_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
+  blockrowdofmap_artscatra_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();
+  blockrowdofmap_artporo_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();
   nodal_coupl_inactive_ = false;
 }
 
@@ -1326,7 +1325,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
 
   //! arteryscatra-artery coupling matrix, this matrix has the full map of all coupled + uncoupled
   //! DOFs
-  k_asa_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  k_asa_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *(scatramsht_->art_scatra_field()->discretization()->dof_row_map()), 81, true, true);
 
   //! simple check if nodal coupling active or not, if condensed and un-condensed dofrowmaps have
@@ -1346,7 +1345,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::setup_maps()
 {
   // create combined map
-  std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
+  std::vector<std::shared_ptr<const Epetra_Map>> vecSpaces;
 
   if (solve_structure_)
   {
@@ -1354,7 +1353,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
     vecSpaces.push_back(poro_field()->fluid_dof_row_map());
     const Epetra_Map* dofrowmapscatra =
         (scatra_algo()->scatra_field()->discretization())->dof_row_map(0);
-    vecSpaces.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
+    vecSpaces.push_back(Core::Utils::shared_ptr_from_ref(*dofrowmapscatra));
     vecSpaces.push_back(poro_field()->artery_dof_row_map());
     vecSpaces.push_back(scatramsht_->art_scatra_dof_row_map());
     if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro structure equation. Panic.");
@@ -1368,7 +1367,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
     vecSpaces.push_back(poro_field()->fluid_dof_row_map());
     const Epetra_Map* dofrowmapscatra =
         (scatra_algo()->scatra_field()->discretization())->dof_row_map(0);
-    vecSpaces.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
+    vecSpaces.push_back(Core::Utils::shared_ptr_from_ref(*dofrowmapscatra));
     vecSpaces.push_back(poro_field()->artery_dof_row_map());
     vecSpaces.push_back(scatramsht_->art_scatra_dof_row_map());
     if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro fluid equation. Panic.");
@@ -1406,7 +1405,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::update_scatra(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> scatrainc)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> scatrainc)
 {
   scatra_algo()->scatra_field()->update_iter(
       *blockrowdofmap_artscatra_->extract_vector(*scatrainc, 0));
@@ -1416,10 +1415,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::u
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
-    extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& stx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& flx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& scx)
+    extract_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& stx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& flx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& scx)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
       "PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::extract_field_vectors");
@@ -1428,17 +1427,16 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
   if (solve_structure_)
     stx = extractor()->extract_vector(*x, 0);
   else
-    stx =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*poro_field()->struct_dof_row_map(), true);
+    stx = std::make_shared<Core::LinAlg::Vector<double>>(*poro_field()->struct_dof_row_map(), true);
 
   // process artery and porofluid unknowns
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> porofluid =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> porofluid =
       extractor()->extract_vector(*x, struct_offset_);
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> artery =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> artery =
       extractor()->extract_vector(*x, struct_offset_ + 2);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dummy1 =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fullmap_artporo_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> dummy1 =
+      std::make_shared<Core::LinAlg::Vector<double>>(*fullmap_artporo_);
 
   // build the combined increment of porofluid and artery
   blockrowdofmap_artporo_->insert_vector(*porofluid, 0, *dummy1);
@@ -1447,13 +1445,13 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
   flx = dummy1;
 
   // process scatra and artery scatra unknowns of the third field
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> scatra =
       extractor()->extract_vector(*x, struct_offset_ + 1);
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> artscatra =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> artscatra =
       extractor()->extract_vector(*x, struct_offset_ + 3);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dummy2 =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fullmap_artscatra_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> dummy2 =
+      std::make_shared<Core::LinAlg::Vector<double>>(*fullmap_artscatra_);
 
   // build the combined increment of artery and artery-scatra
   blockrowdofmap_artscatra_->insert_vector(*scatra, 0, *dummy2);
@@ -1469,7 +1467,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
 
   // --------------------------------------------------------------------------- artery-porofluid
   // get matrix block
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mat_pp = poro_field()->block_system_matrix();
+  std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> mat_pp = poro_field()->block_system_matrix();
 
   // artery part
   systemmatrix_->assign(
@@ -1495,7 +1493,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
   if (nodal_coupl_inactive_)
   {
     // create empty matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_asa = artery_scatra_artery_coupling_matrix();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_asa = artery_scatra_artery_coupling_matrix();
 
     // call the scatra-elements and calculate the off-diagonal structure matrix block
     apply_artery_scatra_artery_coupl_matrix(k_asa);
@@ -1516,8 +1514,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::setup_rhs()
 {
   // create full monolithic rhs vector
-  if (rhs_ == Teuchos::null)
-    rhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
+  if (rhs_ == nullptr) rhs_ = std::make_shared<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
 
   // structure
   if (solve_structure_)
@@ -1545,9 +1542,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
     build_convergence_norms()
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryrhs =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> arteryrhs =
       extractor()->extract_vector(*rhs_, struct_offset_ + 2);
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryinc =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> arteryinc =
       extractor()->extract_vector(*iterinc_, struct_offset_ + 2);
 
   // build also norms for artery
@@ -1556,9 +1553,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
   arterypressnorm_ = Utils::calculate_vector_norm(
       vectornorminc_, (*poro_field()->fluid_field()->art_net_tim_int()->pressurenp()));
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryscarhs =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> arteryscarhs =
       extractor()->extract_vector(*rhs_, struct_offset_ + 3);
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryscainc =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> arteryscainc =
       extractor()->extract_vector(*iterinc_, struct_offset_ + 3);
 
   // build also norms for artery
@@ -1587,7 +1584,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
 {
   PoroMultiPhaseScaTraMonolithicTwoWay::build_combined_dbc_map();
 
-  const Teuchos::RCP<const Epetra_Map> artscatracondmap =
+  const std::shared_ptr<const Epetra_Map> artscatracondmap =
       scatramsht_->art_scatra_field()->dirich_maps()->cond_map();
 
   combinedDBCMap_ = Core::LinAlg::merge_map(combinedDBCMap_, artscatracondmap, false);
@@ -1595,12 +1592,12 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> PoroMultiPhaseScaTra::
+std::shared_ptr<Core::LinAlg::SparseMatrix> PoroMultiPhaseScaTra::
     PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::artery_scatra_artery_coupling_matrix()
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse =
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(k_asa_);
-  if (sparse == Teuchos::null) FOUR_C_THROW("cast to Core::LinAlg::SparseMatrix failed!");
+  std::shared_ptr<Core::LinAlg::SparseMatrix> sparse =
+      std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(k_asa_);
+  if (sparse == nullptr) FOUR_C_THROW("cast to Core::LinAlg::SparseMatrix failed!");
 
   return sparse;
 }
@@ -1609,7 +1606,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> PoroMultiPhaseScaTra::
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
     apply_artery_scatra_artery_coupl_matrix(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> k_asa  //!< off-diagonal tangent matrix term
+        std::shared_ptr<Core::LinAlg::SparseOperator> k_asa  //!< off-diagonal tangent matrix term
     )
 {
   // create the parameters for the discretization
@@ -1635,7 +1632,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
   Core::FE::AssembleStrategy artscatrastrategy_artery(0,  // scatradofset for row
       2,                                                  // arterydofset for column
       k_asa,                                              // scatra-artery coupling matrix
-      Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+      nullptr, nullptr, nullptr, nullptr);
 
   scatramsht_->art_scatra_field()->discretization()->evaluate(
       sparams_artery, artscatrastrategy_artery);

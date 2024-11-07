@@ -17,6 +17,7 @@
 #include <MueLu_UseDefaultTypes.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_RCPStdSharedPtrConversions.hpp>
 #include <Xpetra_BlockedCrsMatrix.hpp>
 #include <Xpetra_CrsMatrix.hpp>
 #include <Xpetra_EpetraCrsMatrix.hpp>
@@ -84,12 +85,12 @@ void Core::LinearSolver::MueLuPreconditioner::setup(bool create, Epetra_Operator
       Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> row_map = mueluA->getRowMap();
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
           Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(
-              row_map, inverseList);
+              *row_map, inverseList);
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> coordinates =
-          Teuchos::make_rcp<EpetraMultiVector>(
-              inverseList.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("Coordinates")
-                  ->get_ptr_of_Epetra_MultiVector());
+          Teuchos::make_rcp<EpetraMultiVector>(Teuchos::rcpFromRef(
+              *inverseList.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("Coordinates")
+                   ->get_ptr_of_Epetra_MultiVector()));
 
       muelu_params->set("number of equations", number_of_equations);
       Teuchos::ParameterList& user_param_list = muelu_params->sublist("user data");
@@ -105,7 +106,7 @@ void Core::LinearSolver::MueLuPreconditioner::setup(bool create, Epetra_Operator
 
       for (int block = 0; block < A->rows(); block++)
       {
-        EpetraCrsMatrix crsA(A->matrix(block, block).epetra_matrix());
+        EpetraCrsMatrix crsA(Teuchos::rcpFromRef(*A->matrix(block, block).epetra_matrix()));
 
         std::string inverse = "Inverse" + std::to_string(block + 1);
         Teuchos::ParameterList& inverseList =
@@ -135,8 +136,8 @@ void Core::LinearSolver::MueLuPreconditioner::setup(bool create, Epetra_Operator
       {
         for (int col = 0; col < A->cols(); col++)
         {
-          Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> crsA =
-              Teuchos::make_rcp<EpetraCrsMatrix>(A->matrix(row, col).epetra_matrix());
+          Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> crsA = Teuchos::make_rcp<EpetraCrsMatrix>(
+              Teuchos::rcpFromRef(*A->matrix(row, col).epetra_matrix()));
           Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> mat =
               Xpetra::MatrixFactory<SC, LO, GO, NO>::BuildCopy(
                   Teuchos::make_rcp<Xpetra::CrsMatrixWrap<SC, LO, GO, NO>>(crsA));
@@ -167,9 +168,9 @@ void Core::LinearSolver::MueLuPreconditioner::setup(bool create, Epetra_Operator
             muelulist_.sublist(inverse).sublist("MueLu Parameters");
 
         Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
-            Teuchos::make_rcp<EpetraMultiVector>(
-                inverseList.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace")
-                    ->get_ptr_of_Epetra_MultiVector());
+            Teuchos::make_rcp<EpetraMultiVector>(Teuchos::rcpFromRef(
+                *inverseList.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace")
+                     ->get_ptr_of_Epetra_MultiVector()));
 
         H->GetLevel(0)->Set("Nullspace" + std::to_string(block + 1), nullspace);
       }
@@ -199,7 +200,7 @@ void Core::LinearSolver::MueLuContactSpPreconditioner::setup(bool create, Epetra
 
   // Check whether input matrix is an actual blocked operator
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(Teuchos::rcpFromRef(*matrix));
+      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(Teuchos::RCP(matrix, false));
   if (A == Teuchos::null) FOUR_C_THROW("Matrix is not a BlockSparseMatrix");
 
   // store blocked operator
@@ -248,7 +249,6 @@ void Core::LinearSolver::MueLuContactSpPreconditioner::setup(bool create, Epetra
   Teuchos::RCP<EpetraMap> xSlaveDofMap = Teuchos::make_rcp<EpetraMap>(epSlaveDofMap);
 
   // Get maps and matrix blocks for blocked operator
-  Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> fullrangemap = Teuchos::null;
   Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xCrsA11 = Teuchos::null;
   Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xCrsA12 = Teuchos::null;
   Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xCrsA21 = Teuchos::null;
@@ -257,26 +257,25 @@ void Core::LinearSolver::MueLuContactSpPreconditioner::setup(bool create, Epetra
   {
     // (Re-)create the preconditioner, so extract everything from the input matrix 'A'.
 
-    // Prepare maps for blocked operator
-    fullrangemap = Teuchos::make_rcp<EpetraMap>(Teuchos::rcpFromRef(A->full_range_map()));
-
     // Transform matrix blocks
-    xCrsA11 = Teuchos::make_rcp<EpetraCrsMatrix>(A->matrix(0, 0).epetra_matrix());
-    xCrsA12 = Teuchos::make_rcp<EpetraCrsMatrix>(A->matrix(0, 1).epetra_matrix());
-    xCrsA21 = Teuchos::make_rcp<EpetraCrsMatrix>(A->matrix(1, 0).epetra_matrix());
-    xCrsA22 = Teuchos::make_rcp<EpetraCrsMatrix>(A->matrix(1, 1).epetra_matrix());
+    xCrsA11 = Teuchos::make_rcp<EpetraCrsMatrix>(Teuchos::rcp(A->matrix(0, 0).epetra_matrix()));
+    xCrsA12 = Teuchos::make_rcp<EpetraCrsMatrix>(Teuchos::rcp(A->matrix(0, 1).epetra_matrix()));
+    xCrsA21 = Teuchos::make_rcp<EpetraCrsMatrix>(Teuchos::rcp(A->matrix(1, 0).epetra_matrix()));
+    xCrsA22 = Teuchos::make_rcp<EpetraCrsMatrix>(Teuchos::rcp(A->matrix(1, 1).epetra_matrix()));
   }
   else
   {
     // Re-use the preconditioner, so extract everything from the existing preconditioner 'Pmatrix_'.
 
-    // create maps
-    fullrangemap = Teuchos::make_rcp<EpetraMap>(Teuchos::rcpFromRef(pmatrix_->full_range_map()));
 
-    xCrsA11 = Teuchos::make_rcp<EpetraCrsMatrix>(pmatrix_->matrix(0, 0).epetra_matrix());
-    xCrsA12 = Teuchos::make_rcp<EpetraCrsMatrix>(pmatrix_->matrix(0, 1).epetra_matrix());
-    xCrsA21 = Teuchos::make_rcp<EpetraCrsMatrix>(pmatrix_->matrix(1, 0).epetra_matrix());
-    xCrsA22 = Teuchos::make_rcp<EpetraCrsMatrix>(pmatrix_->matrix(1, 1).epetra_matrix());
+    xCrsA11 =
+        Teuchos::make_rcp<EpetraCrsMatrix>(Teuchos::rcp(pmatrix_->matrix(0, 0).epetra_matrix()));
+    xCrsA12 =
+        Teuchos::make_rcp<EpetraCrsMatrix>(Teuchos::rcp(pmatrix_->matrix(0, 1).epetra_matrix()));
+    xCrsA21 =
+        Teuchos::make_rcp<EpetraCrsMatrix>(Teuchos::rcp(pmatrix_->matrix(1, 0).epetra_matrix()));
+    xCrsA22 =
+        Teuchos::make_rcp<EpetraCrsMatrix>(Teuchos::rcp(pmatrix_->matrix(1, 1).epetra_matrix()));
   }
 
   // Define strided maps
@@ -405,7 +404,7 @@ void Core::LinearSolver::MueLuContactSpPreconditioner::setup(bool create, Epetra
     {
       // Extract pre-computed nullspace for block (0,0) from 4C's MueLu parameter list
       nullspace11 = Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(
-          stridedRangeMapPrimal, contactList);
+          *stridedRangeMapPrimal, contactList);
 
       // Compute default nullspace for block (1,1)
       {

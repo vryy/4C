@@ -17,20 +17,20 @@ FOUR_C_NAMESPACE_OPEN
 
 /// constructor
 Adapter::StructurePoroWrapper::StructurePoroWrapper(
-    Teuchos::RCP<Field> field, FieldWrapper::Fieldtype type, bool NOXCorrection)
+    std::shared_ptr<Field> field, FieldWrapper::Fieldtype type, bool NOXCorrection)
     : FieldWrapper(field, type, NOXCorrection)
 {
   switch (type_)
   {
     case FieldWrapper::type_StructureField:
-      structure_ = Teuchos::rcp_dynamic_cast<FSIStructureWrapper>(field_);
-      if (structure_ == Teuchos::null)
+      structure_ = std::dynamic_pointer_cast<FSIStructureWrapper>(field_);
+      if (structure_ == nullptr)
         FOUR_C_THROW("StructurePoroWrapper: Cast from Field to FSIStructureWrapper failed!");
-      poro_ = Teuchos::null;
+      poro_ = nullptr;
       break;
     case FieldWrapper::type_PoroField:
-      poro_ = Teuchos::rcp_dynamic_cast<PoroElast::Monolithic>(field_);
-      if (poro_ == Teuchos::null)
+      poro_ = std::dynamic_pointer_cast<PoroElast::Monolithic>(field_);
+      if (poro_ == nullptr)
         FOUR_C_THROW("StructurePoroWrapper: Cast from Field to PoroBase failed!");
       structure_ = poro_->structure_field();
       break;
@@ -53,7 +53,7 @@ void Adapter::StructurePoroWrapper::setup()
 }
 
 //! unique map of all dofs that should be constrained with DBC
-Teuchos::RCP<const Epetra_Map> Adapter::StructurePoroWrapper::combined_dbc_map()
+std::shared_ptr<const Epetra_Map> Adapter::StructurePoroWrapper::combined_dbc_map()
 {
   switch (type_)
   {
@@ -65,7 +65,7 @@ Teuchos::RCP<const Epetra_Map> Adapter::StructurePoroWrapper::combined_dbc_map()
       break;
     default:
       FOUR_C_THROW("StructurePoroWrapper: type for this wrapper not considered!");
-      return Teuchos::null;
+      return nullptr;
       break;
   }
 }
@@ -79,7 +79,7 @@ void Adapter::StructurePoroWrapper::test_results(Global::Problem* problem)
     problem->add_field_test(poro_->fluid_field()->create_field_test());
 }
 
-const Teuchos::RCP<PoroElast::Monolithic>& Adapter::StructurePoroWrapper::poro_field()
+const std::shared_ptr<PoroElast::Monolithic>& Adapter::StructurePoroWrapper::poro_field()
 {
   if (type_ == Adapter::FieldWrapper::type_PoroField)
     return poro_;
@@ -88,7 +88,8 @@ const Teuchos::RCP<PoroElast::Monolithic>& Adapter::StructurePoroWrapper::poro_f
   return poro_;  // do not remove FOUR_C_THROW!!! - return just to make complier happy :-)
 }
 
-const Teuchos::RCP<Adapter::FSIStructureWrapper>& Adapter::StructurePoroWrapper::structure_field()
+const std::shared_ptr<Adapter::FSIStructureWrapper>&
+Adapter::StructurePoroWrapper::structure_field()
 {
   if (type_ == FieldWrapper::type_PoroField || type_ == FieldWrapper::type_StructureField)
     return structure_;
@@ -98,7 +99,7 @@ const Teuchos::RCP<Adapter::FSIStructureWrapper>& Adapter::StructurePoroWrapper:
 }
 
 //! return poro fluid_field
-const Teuchos::RCP<Adapter::FluidPoro>& Adapter::StructurePoroWrapper::fluid_field()
+const std::shared_ptr<Adapter::FluidPoro>& Adapter::StructurePoroWrapper::fluid_field()
 {
   if (type_ == FieldWrapper::type_PoroField)
     return poro_->fluid_field();
@@ -109,10 +110,10 @@ const Teuchos::RCP<Adapter::FluidPoro>& Adapter::StructurePoroWrapper::fluid_fie
 }
 
 //! Insert FSI Condition Vector
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::StructurePoroWrapper::insert_fsi_cond_vector(
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::StructurePoroWrapper::insert_fsi_cond_vector(
     const Core::LinAlg::Vector<double>& cond)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tmpcond;
+  std::shared_ptr<Core::LinAlg::Vector<double>> tmpcond;
   switch (type_)
   {
     case FieldWrapper::type_StructureField:
@@ -124,14 +125,14 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::StructurePoroWrapper::insert
       break;
     default:
       FOUR_C_THROW("StructurePoroWrapper: type for this wrapper not considered!");
-      return Teuchos::null;
+      return nullptr;
       break;
   }
 }
 
 //! Recover Lagrange Multiplier during iteration (does nothing for structure)
 void Adapter::StructurePoroWrapper::recover_lagrange_multiplier_after_newton_step(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc)
+    std::shared_ptr<Core::LinAlg::Vector<double>> iterinc)
 {
   if (type_ == FieldWrapper::type_PoroField)
     poro_->recover_lagrange_multiplier_after_newton_step(iterinc);

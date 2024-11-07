@@ -34,7 +34,7 @@ namespace Solid
       virtual ~Factory() = default;
 
       //! build the desired predictor
-      Teuchos::RCP<Solid::Predict::Generic> build_predictor(
+      std::shared_ptr<Solid::Predict::Generic> build_predictor(
           const enum Inpar::Solid::PredEnum& predType) const;
     };
 
@@ -42,7 +42,7 @@ namespace Solid
      *
      * \note Call this method from outside!
      */
-    Teuchos::RCP<Solid::Predict::Generic> build_predictor(
+    std::shared_ptr<Solid::Predict::Generic> build_predictor(
         const enum Inpar::Solid::PredEnum& predType);
 
   }  // namespace Predict

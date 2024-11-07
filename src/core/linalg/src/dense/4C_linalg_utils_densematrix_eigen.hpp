@@ -16,9 +16,9 @@
 #include "4C_linalg_serialdensevector.hpp"
 
 #include <Teuchos_LAPACK.hpp>
-#include <Teuchos_RCP.hpp>
 
 #include <complex>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 

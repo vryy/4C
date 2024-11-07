@@ -10,7 +10,7 @@
 #include "4C_utils_cubic_spline_interpolation.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -24,10 +24,10 @@ namespace
       const std::vector<double> x = {0.30, 0.35, 0.40, 0.45};
       const std::vector<double> y = {4.40, 4.30, 4.25, 4.10};
 
-      cubic_spline_ = Teuchos::make_rcp<Core::Utils::CubicSplineInterpolation>(x, y);
+      cubic_spline_ = std::make_shared<Core::Utils::CubicSplineInterpolation>(x, y);
     }
 
-    Teuchos::RCP<Core::Utils::CubicSplineInterpolation> cubic_spline_;
+    std::shared_ptr<Core::Utils::CubicSplineInterpolation> cubic_spline_;
   };
 
   TEST_F(CubicSplineInterpolationTest, InputArgumentSortedAscending)

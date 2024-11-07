@@ -71,7 +71,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
     case ScaTra::Action::integrate_shape_functions:
     {
       // calculate integral of shape functions
-      const auto dofids = params.get<Teuchos::RCP<Core::LinAlg::IntSerialDenseVector>>("dofids");
+      const auto dofids = params.get<std::shared_ptr<Core::LinAlg::IntSerialDenseVector>>("dofids");
       integrate_shape_functions(ele, elevec1_epetra, *dofids);
 
       break;
@@ -83,13 +83,13 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
       const int ndsvel = scatrapara_->nds_vel();
 
       // get velocity values at nodes
-      const Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
+      const std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
           discretization.get_state(ndsvel, "convective velocity field");
-      const Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
+      const std::shared_ptr<const Core::LinAlg::Vector<double>> vel =
           discretization.get_state(ndsvel, "velocity field");
 
       // safety check
-      if (convel == Teuchos::null or vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector");
+      if (convel == nullptr or vel == nullptr) FOUR_C_THROW("Cannot get state vector");
 
       // determine number of velocity related dofs per node
       const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -110,13 +110,13 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
 
       // need current values of transported scalar
       // -> extract local values from global vectors
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+      if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       // access control parameter for flux calculation
       Inpar::ScaTra::FluxType fluxtype = scatrapara_->calc_flux_domain();
-      Teuchos::RCP<std::vector<int>> writefluxids = scatrapara_->write_flux_ids();
+      std::shared_ptr<std::vector<int>> writefluxids = scatrapara_->write_flux_ids();
 
       // we always get an 3D flux vector for each node
       Core::LinAlg::Matrix<3, nen_> eflux(true);
@@ -150,7 +150,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
       // need current scalar vector
       // -> extract local values from the global vectors
       auto phinp = discretization.get_state("phinp");
-      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+      if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       // calculate scalars and domain integral
@@ -183,22 +183,22 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
       if (nsd_ == 3)
       {
         // get required quantities, set in dynamic Smagorinsky class
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_vel =
-            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("col_filtered_vel");
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel =
-            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("col_filtered_dens_vel");
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel_temp =
-            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_vel =
+            params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("col_filtered_vel");
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel =
+            params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("col_filtered_dens_vel");
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel_temp =
+            params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>(
                 "col_filtered_dens_vel_temp");
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_dens_rateofstrain_temp =
-            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_dens_rateofstrain_temp =
+            params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>(
                 "col_filtered_dens_rateofstrain_temp");
-        Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_temp =
-            params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_filtered_temp");
-        Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_dens =
-            params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_filtered_dens");
-        Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_dens_temp =
-            params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_filtered_dens_temp");
+        std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_temp =
+            params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("col_filtered_temp");
+        std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_dens =
+            params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("col_filtered_dens");
+        std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_dens_temp =
+            params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("col_filtered_dens_temp");
 
         // initialize variables to calculate
         double LkMk = 0.0;
@@ -262,14 +262,15 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
     {
       if (nsd_ == 3)
       {
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_phi =
-            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("col_filtered_phi");
-        Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_phi2 =
-            params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_filtered_phi2");
-        Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_phiexpression =
-            params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_filtered_phiexpression");
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_alphaijsc =
-            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("col_filtered_alphaijsc");
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_phi =
+            params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("col_filtered_phi");
+        std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_phi2 =
+            params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("col_filtered_phi2");
+        std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_phiexpression =
+            params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("col_filtered_phiexpression");
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_alphaijsc =
+            params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>(
+                "col_filtered_alphaijsc");
 
         // initialize variables to calculate
         double dt_numerator = 0.0;
@@ -327,9 +328,9 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
       const int ndsvel = scatrapara_->nds_vel();
 
       // get convective (velocity - mesh displacement) velocity at nodes
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
           discretization.get_state(ndsvel, "convective velocity field");
-      if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
+      if (convel == nullptr) FOUR_C_THROW("Cannot get state vector convective velocity");
 
       // determine number of velocity related dofs per node
       const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -347,8 +348,8 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
       rotsymmpbc_->rotate_my_values_if_necessary(econvelnp_);
 
       // get phi for material parameters
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+      if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       if (turbparams_->turb_model() != Inpar::FLUID::multifractal_subgrid_scales)
@@ -387,7 +388,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
           // diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific
           // heat) in case of loma
 
-          diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManager>(numscal_);
+          diffmanager_ = std::make_shared<ScaTraEleDiffManager>(numscal_);
 
           // fluid viscosity
           double visc(0.0);
@@ -460,8 +461,9 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
       {
         // need current scalar vector
         // -> extract local values from the global vectors
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-        if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+        std::shared_ptr<const Core::LinAlg::Vector<double>> phinp =
+            discretization.get_state("phinp");
+        if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
         Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
         // calculate momentum vector and volume for element.
@@ -476,8 +478,8 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
       if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
 
       // need current solution
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+      if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       cal_error_compared_to_analyt_solution(ele, params, elevec1_epetra);
@@ -511,7 +513,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
         for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
         {
           // initialize micro scale in multi-scale simulations
-          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->material())
+          std::static_pointer_cast<Mat::ScatraMultiScale>(ele->material())
               ->initialize(ele->id(), iquad, scatrapara_->is_ale());
         }
       }
@@ -543,7 +545,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
           if (action == ScaTra::Action::micro_scale_prepare_time_step)
           {
             // prepare time step on micro scale
-            Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->material())
+            std::static_pointer_cast<Mat::ScatraMultiScale>(ele->material())
                 ->prepare_time_step(iquad, std::vector<double>(1, scatravarmanager_->phinp(0)));
           }
           else
@@ -555,7 +557,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
 
             // solve micro scale
             std::vector<double> dummy(1, 0.);
-            Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->material())
+            std::static_pointer_cast<Mat::ScatraMultiScale>(ele->material())
                 ->evaluate(iquad, std::vector<double>(1, scatravarmanager_->phinp(0)), dummy[0],
                     dummy, detF);
           }
@@ -575,7 +577,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
           // update multi-scale scalar transport material
-          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->material())->update(iquad);
+          std::static_pointer_cast<Mat::ScatraMultiScale>(ele->material())->update(iquad);
       }
 
       break;
@@ -591,7 +593,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
           // create output on micro scale
-          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->material())->output(iquad);
+          std::static_pointer_cast<Mat::ScatraMultiScale>(ele->material())->output(iquad);
       }
 
       break;
@@ -608,7 +610,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
         for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
         {
           // create output on micro scale
-          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->material())
+          std::static_pointer_cast<Mat::ScatraMultiScale>(ele->material())
               ->collect_output_data(iquad);
         }
       }
@@ -626,7 +628,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
           // read restart on micro scale
-          Teuchos::rcp_dynamic_cast<Mat::ScatraMultiScale>(ele->material())->read_restart(iquad);
+          std::dynamic_pointer_cast<Mat::ScatraMultiScale>(ele->material())->read_restart(iquad);
       }
 
       break;
@@ -642,7 +644,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
         {
-          Teuchos::rcp_dynamic_cast<Mat::ScatraMultiScale>(ele->material())
+          std::dynamic_pointer_cast<Mat::ScatraMultiScale>(ele->material())
               ->set_time_stepping(iquad, params.get<double>("dt"), params.get<double>("time"),
                   params.get<int>("step"));
         }
@@ -744,8 +746,8 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
 
       eval_shape_func_and_derivs_in_parameter_space();
 
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+      if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       if (params.get<int>("NUMSCAL") > numscal_)
@@ -796,9 +798,9 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_service(
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = scatrapara_->nds_disp();
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
         discretization.get_state(ndsdisp, "dispnp");
-    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
+    if (dispnp == nullptr) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
     const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
@@ -836,17 +838,17 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_box_filter(
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
   // extract scalar values from global vector
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar = discretization.get_state("scalar");
-  if (scalar == Teuchos::null) FOUR_C_THROW("Cannot get scalar!");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> scalar = discretization.get_state("scalar");
+  if (scalar == nullptr) FOUR_C_THROW("Cannot get scalar!");
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*scalar, ephinp_, la[0].lm_);
 
   // get number of dofset associated with velocity related dofs
   const int ndsvel = scatrapara_->nds_vel();
 
   // get convective (velocity - mesh displacement) velocity at nodes
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
       discretization.get_state(ndsvel, "convective velocity field");
-  if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
+  if (convel == nullptr) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -872,18 +874,18 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_box_filter(
   double phi2_hat = 0.0;
   double phiexpression_hat = 0.0;
   // get pointers for vector quantities
-  Teuchos::RCP<std::vector<double>> vel_hat =
-      params.get<Teuchos::RCP<std::vector<double>>>("vel_hat");
-  Teuchos::RCP<std::vector<double>> densvel_hat =
-      params.get<Teuchos::RCP<std::vector<double>>>("densvel_hat");
-  Teuchos::RCP<std::vector<double>> densveltemp_hat =
-      params.get<Teuchos::RCP<std::vector<double>>>("densveltemp_hat");
-  Teuchos::RCP<std::vector<double>> densstraintemp_hat =
-      params.get<Teuchos::RCP<std::vector<double>>>("densstraintemp_hat");
-  Teuchos::RCP<std::vector<double>> phi_hat =
-      params.get<Teuchos::RCP<std::vector<double>>>("phi_hat");
-  Teuchos::RCP<std::vector<std::vector<double>>> alphaijsc_hat =
-      params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("alphaijsc_hat");
+  std::shared_ptr<std::vector<double>> vel_hat =
+      params.get<std::shared_ptr<std::vector<double>>>("vel_hat");
+  std::shared_ptr<std::vector<double>> densvel_hat =
+      params.get<std::shared_ptr<std::vector<double>>>("densvel_hat");
+  std::shared_ptr<std::vector<double>> densveltemp_hat =
+      params.get<std::shared_ptr<std::vector<double>>>("densveltemp_hat");
+  std::shared_ptr<std::vector<double>> densstraintemp_hat =
+      params.get<std::shared_ptr<std::vector<double>>>("densstraintemp_hat");
+  std::shared_ptr<std::vector<double>> phi_hat =
+      params.get<std::shared_ptr<std::vector<double>>>("phi_hat");
+  std::shared_ptr<std::vector<std::vector<double>>> alphaijsc_hat =
+      params.get<std::shared_ptr<std::vector<std::vector<double>>>>("alphaijsc_hat");
   // integrate the convolution with the box filter function for this element
   // the results are assembled onto the *_hat arrays
   switch (distype)
@@ -1319,9 +1321,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calculate_scalar_time_d
 )
 {
   // extract scalar time derivatives from global state vector
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> phidtnp =
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> phidtnp =
       discretization.get_state("phidtnp");
-  if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phidtnp\"!");
+  if (phidtnp == nullptr) FOUR_C_THROW("Cannot get state vector \"phidtnp\"!");
   static std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(numscal_);
   Core::FE::extract_my_values(*phidtnp, ephidtnp, lm);
 

@@ -49,10 +49,10 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -137,16 +137,16 @@ namespace Discret
       int num_line() const override { return 12; }
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
+      \brief Get vector of std::shared_ptrs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -358,7 +358,7 @@ namespace Discret
       double pstime_;
       double time_;
       /// Prestressing object
-      Teuchos::RCP<Discret::Elements::PreStress> prestress_;
+      std::shared_ptr<Discret::Elements::PreStress> prestress_;
       /// compute Jacobian mapping wrt to deformed configuration
       void update_jacobian_mapping(
           const std::vector<double>& disp, Discret::Elements::PreStress& prestress);

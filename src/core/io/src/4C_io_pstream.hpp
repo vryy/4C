@@ -15,10 +15,10 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <sstream>
 
 FOUR_C_NAMESPACE_OPEN
@@ -70,7 +70,7 @@ namespace Core::IO
         const bool writetofile,                ///< bool whether output is written to file
         const bool prefixgroupID,              ///< bool whether group ID is prefixed in each line
         const Core::IO::Verbositylevel level,  ///< verbosity level
-        Teuchos::RCP<Epetra_Comm> comm,        ///< MPI communicator
+        std::shared_ptr<Epetra_Comm> comm,     ///< MPI communicator
         const int targetpid,                   ///< target processor ID from which to print
         const int groupID,                     ///< the ID
         const std::string fileprefix           ///< prefix for the output file
@@ -169,7 +169,7 @@ namespace Core::IO
     bool is_initialized_;
 
     /// MPI communicator
-    Teuchos::RCP<Epetra_Comm> comm_;
+    std::shared_ptr<Epetra_Comm> comm_;
 
     /// Target processor ID from which to print
     int targetpid_;

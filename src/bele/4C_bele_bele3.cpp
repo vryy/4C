@@ -35,7 +35,7 @@ Core::Communication::ParObject* Discret::Elements::Bele3Type::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Bele3Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Bele3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   // Search for "BELE3". If found, search for "_"
@@ -50,8 +50,8 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::Bele3Type::create(
 
       int numdof = -1;
       is >> numdof;
-      Teuchos::RCP<Discret::Elements::Bele3> ele =
-          Teuchos::make_rcp<Discret::Elements::Bele3>(id, owner);
+      std::shared_ptr<Discret::Elements::Bele3> ele =
+          std::make_shared<Discret::Elements::Bele3>(id, owner);
       ele->set_num_dof_per_node(numdof);
       return ele;
     }
@@ -61,15 +61,15 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::Bele3Type::create(
     }
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Bele3Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Bele3Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Bele3>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Bele3>(id, owner);
   return ele;
 }
 
@@ -147,11 +147,11 @@ void Discret::Elements::Bele3Type::setup_element_definition(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Bele3LineType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Bele3LineType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Bele3Line( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -250,7 +250,7 @@ void Discret::Elements::Bele3::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Bele3::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Bele3::lines()
 {
   return Core::Communication::element_boundary_factory<Bele3Line, Bele3>(
       Core::Communication::buildLines, *this);
@@ -260,9 +260,9 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Bele3::lin
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)               gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Bele3::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Bele3::surfaces()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 

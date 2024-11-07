@@ -123,24 +123,24 @@ void Inpar::FPSI::set_valid_parameters(Teuchos::ParameterList& list)
 
 
 void Inpar::FPSI::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 
   /*--------------------------------------------------------------------*/
   // FPSI
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linefpsi =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linefpsi =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN FPSI COUPLING LINE CONDITIONS", "fpsi_coupling", "FPSI Coupling",
           Core::Conditions::fpsi_coupling, true, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surffpsi =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surffpsi =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN FPSI COUPLING SURF CONDITIONS", "fpsi_coupling", "FPSI Coupling",
           Core::Conditions::fpsi_coupling, true, Core::Conditions::geometry_type_surface);
 
-  linefpsi->add_component(Teuchos::make_rcp<Input::IntComponent>("coupling id"));
-  surffpsi->add_component(Teuchos::make_rcp<Input::IntComponent>("coupling id"));
+  linefpsi->add_component(std::make_shared<Input::IntComponent>("coupling id"));
+  surffpsi->add_component(std::make_shared<Input::IntComponent>("coupling id"));
 
   condlist.push_back(linefpsi);
   condlist.push_back(surffpsi);
@@ -152,8 +152,8 @@ void Inpar::FPSI::set_valid_conditions(
   // elements which share a node with the fpsi interface. Tangential
   // Beaver-Joseph-Condition must not be overwritten by prescribed value!
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> neumannintegration_surf =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN SURFACE NEUMANN INTEGRATION",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> neumannintegration_surf =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURFACE NEUMANN INTEGRATION",
           "NeumannIntegration", "Neumann Integration", Core::Conditions::NeumannIntegration, true,
           Core::Conditions::geometry_type_surface);
 
@@ -162,8 +162,8 @@ void Inpar::FPSI::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // condition for evaluation of boundary terms in fpsi problems
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> neumannintegration_line =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN LINE NEUMANN INTEGRATION",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> neumannintegration_line =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN LINE NEUMANN INTEGRATION",
           "NeumannIntegration", "Neumann Integration", Core::Conditions::NeumannIntegration, true,
           Core::Conditions::geometry_type_line);
 

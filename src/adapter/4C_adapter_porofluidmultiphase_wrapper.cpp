@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Adapter::PoroFluidMultiphaseWrapper::PoroFluidMultiphaseWrapper(
-    Teuchos::RCP<PoroFluidMultiphase> porofluid)
+    std::shared_ptr<PoroFluidMultiphase> porofluid)
     : porofluid_(porofluid)
 {
   return;
@@ -49,35 +49,37 @@ void Adapter::PoroFluidMultiphaseWrapper::init(const bool isale,  ///< ALE flag
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest> Adapter::PoroFluidMultiphaseWrapper::create_field_test()
+std::shared_ptr<Core::Utils::ResultTest> Adapter::PoroFluidMultiphaseWrapper::create_field_test()
 {
   return porofluid_->create_field_test();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Adapter::PoroFluidMultiphaseWrapper::dof_row_map(unsigned nds) const
+std::shared_ptr<const Epetra_Map> Adapter::PoroFluidMultiphaseWrapper::dof_row_map(
+    unsigned nds) const
 {
   return porofluid_->dof_row_map(nds);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Adapter::PoroFluidMultiphaseWrapper::artery_dof_row_map() const
+std::shared_ptr<const Epetra_Map> Adapter::PoroFluidMultiphaseWrapper::artery_dof_row_map() const
 {
   return porofluid_->artery_dof_row_map();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
+std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>
 Adapter::PoroFluidMultiphaseWrapper::artery_porofluid_sysmat() const
 {
   return porofluid_->artery_porofluid_sysmat();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization> Adapter::PoroFluidMultiphaseWrapper::discretization() const
+std::shared_ptr<Core::FE::Discretization> Adapter::PoroFluidMultiphaseWrapper::discretization()
+    const
 {
   return porofluid_->discretization();
 }
@@ -92,7 +94,7 @@ void Adapter::PoroFluidMultiphaseWrapper::read_restart(int restart)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::PoroFluidMultiphaseWrapper::apply_mesh_movement(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp  //!< displacement vector
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp  //!< displacement vector
 )
 {
   porofluid_->apply_mesh_movement(dispnp);
@@ -101,15 +103,15 @@ void Adapter::PoroFluidMultiphaseWrapper::apply_mesh_movement(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::PoroFluidMultiphaseWrapper::set_velocity_field(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel)
 {
   porofluid_->set_velocity_field(vel);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::PoroFluidMultiphaseWrapper::set_state(
-    unsigned nds, const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector<double>> state)
+void Adapter::PoroFluidMultiphaseWrapper::set_state(unsigned nds, const std::string& name,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> state)
 {
   porofluid_->set_state(nds, name, state);
 }
@@ -118,7 +120,7 @@ void Adapter::PoroFluidMultiphaseWrapper::set_state(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::PoroFluidMultiphaseWrapper::set_scatra_solution(
-    unsigned nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> scalars)
+    unsigned nds, std::shared_ptr<const Core::LinAlg::Vector<double>> scalars)
 {
   set_state(nds, "scalars", scalars);
 }
@@ -126,21 +128,23 @@ void Adapter::PoroFluidMultiphaseWrapper::set_scatra_solution(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::PoroFluidMultiphaseWrapper::phinp() const
+std::shared_ptr<const Core::LinAlg::Vector<double>> Adapter::PoroFluidMultiphaseWrapper::phinp()
+    const
 {
   return porofluid_->phinp();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::PoroFluidMultiphaseWrapper::phin() const
+std::shared_ptr<const Core::LinAlg::Vector<double>> Adapter::PoroFluidMultiphaseWrapper::phin()
+    const
 {
   return porofluid_->phin();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Adapter::PoroFluidMultiphaseWrapper::solid_pressure() const
 {
   return porofluid_->solid_pressure();
@@ -148,7 +152,7 @@ Adapter::PoroFluidMultiphaseWrapper::solid_pressure() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::PoroFluidMultiphaseWrapper::pressure()
+std::shared_ptr<const Core::LinAlg::Vector<double>> Adapter::PoroFluidMultiphaseWrapper::pressure()
     const
 {
   return porofluid_->pressure();
@@ -156,15 +160,15 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::PoroFluidMultiphaseWra
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::PoroFluidMultiphaseWrapper::saturation()
-    const
+std::shared_ptr<const Core::LinAlg::Vector<double>>
+Adapter::PoroFluidMultiphaseWrapper::saturation() const
 {
   return porofluid_->saturation();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Adapter::PoroFluidMultiphaseWrapper::valid_vol_frac_spec_dofs() const
 {
   return porofluid_->valid_vol_frac_spec_dofs();
@@ -172,7 +176,7 @@ Adapter::PoroFluidMultiphaseWrapper::valid_vol_frac_spec_dofs() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MultiVector<double>> Adapter::PoroFluidMultiphaseWrapper::flux()
+std::shared_ptr<const Core::LinAlg::MultiVector<double>> Adapter::PoroFluidMultiphaseWrapper::flux()
     const
 {
   return porofluid_->flux();
@@ -217,20 +221,20 @@ void Adapter::PoroFluidMultiphaseWrapper::solve() { porofluid_->solve(); }
 void Adapter::PoroFluidMultiphaseWrapper::prepare_time_loop() { porofluid_->prepare_time_loop(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MapExtractor>
+std::shared_ptr<const Core::LinAlg::MapExtractor>
 Adapter::PoroFluidMultiphaseWrapper::get_dbc_map_extractor() const
 {
   return porofluid_->get_dbc_map_extractor();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::PoroFluidMultiphaseWrapper::rhs() const
+std::shared_ptr<const Core::LinAlg::Vector<double>> Adapter::PoroFluidMultiphaseWrapper::rhs() const
 {
   return porofluid_->rhs();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Adapter::PoroFluidMultiphaseWrapper::artery_porofluid_rhs() const
 {
   return porofluid_->artery_porofluid_rhs();
@@ -238,7 +242,7 @@ Adapter::PoroFluidMultiphaseWrapper::artery_porofluid_rhs() const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::PoroFluidMultiphaseWrapper::update_iter(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> inc)
 {
   porofluid_->update_iter(inc);
 }
@@ -262,27 +266,27 @@ void Adapter::PoroFluidMultiphaseWrapper::calculate_phase_velocities()
 void Adapter::PoroFluidMultiphaseWrapper::evaluate() { porofluid_->evaluate(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::PoroFluidMultiphaseWrapper::system_matrix()
+std::shared_ptr<Core::LinAlg::SparseMatrix> Adapter::PoroFluidMultiphaseWrapper::system_matrix()
 {
   return porofluid_->system_matrix();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::PoroFluidMultiphaseWrapper::assemble_fluid_struct_coupling_mat(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs)
+    std::shared_ptr<Core::LinAlg::SparseOperator> k_fs)
 {
   return porofluid_->assemble_fluid_struct_coupling_mat(k_fs);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::PoroFluidMultiphaseWrapper::assemble_fluid_scatra_coupling_mat(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> k_pfs)
+    std::shared_ptr<Core::LinAlg::SparseOperator> k_pfs)
 {
   return porofluid_->assemble_fluid_scatra_coupling_mat(k_pfs);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Adapter::ArtNet> Adapter::PoroFluidMultiphaseWrapper::art_net_tim_int()
+std::shared_ptr<Adapter::ArtNet> Adapter::PoroFluidMultiphaseWrapper::art_net_tim_int()
 {
   return porofluid_->art_net_tim_int();
 }

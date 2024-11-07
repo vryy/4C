@@ -19,9 +19,10 @@
 #include "4C_timestepping_mstep.hpp"
 
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -91,7 +92,7 @@ void FSI::Monolithic::init_tim_int_ada(const Teuchos::ParameterList& fsidyn)
     }
   }
 
-  dt_ = Teuchos::make_rcp<TimeStepping::TimIntMStep<double>>(-avgweights_.size(), 1, 0.0);
+  dt_ = std::make_shared<TimeStepping::TimIntMStep<double>>(-avgweights_.size(), 1, 0.0);
   dt_->set_step(1, dt());
 
   //----------------------------------------------------------------------------
@@ -99,7 +100,7 @@ void FSI::Monolithic::init_tim_int_ada(const Teuchos::ParameterList& fsidyn)
   //----------------------------------------------------------------------------
   std::string fileada = Global::Problem::instance()->output_control_file()->file_name();
   fileada.append(".adaptivity");
-  logada_ = Teuchos::make_rcp<std::ofstream>(fileada.c_str());
+  logada_ = std::make_shared<std::ofstream>(fileada.c_str());
 
   //----------------------------------------------------------------------------
   // set algorithmic parameters
@@ -135,10 +136,10 @@ void FSI::Monolithic::init_tim_int_ada(const Teuchos::ParameterList& fsidyn)
   //----------------------------------------------------------------------------
   // Create intersection of fluid DOFs that hold a Dirichlet boundary condition
   // and are located at the FSI interface.
-  std::vector<Teuchos::RCP<const Epetra_Map>> intersectionmapsfluid;
+  std::vector<std::shared_ptr<const Epetra_Map>> intersectionmapsfluid;
   intersectionmapsfluid.push_back(fluid_field()->get_dbc_map_extractor()->cond_map());
   intersectionmapsfluid.push_back(fluid_field()->interface()->fsi_cond_map());
-  Teuchos::RCP<Epetra_Map> intersectionmapfluid =
+  std::shared_ptr<Epetra_Map> intersectionmapfluid =
       Core::LinAlg::MultiMapExtractor::intersect_maps(intersectionmapsfluid);
 
   // store number of interface DOFs subject to Dirichlet BCs on structure and fluid side of the
@@ -177,7 +178,7 @@ void FSI::Monolithic::init_tim_int_ada(const Teuchos::ParameterList& fsidyn)
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::timeloop_ada_dt(
-    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
+    const std::shared_ptr<::NOX::Epetra::Interface::Required>& interface)
 {
   /*--------------------------------------------------------------------------*/
   /* Initialize some parameters                                               */
@@ -323,7 +324,7 @@ void FSI::Monolithic::print_header_repeated_step() const
 void FSI::Monolithic::write_ada_file_header() const
 {
   // write to adaptivity file
-  if (get_comm().MyPID() == 0 and (not logada_.is_null()))
+  if (get_comm().MyPID() == 0 and (logada_))
   {
     // get string of type of auxiliary time integration scheme in structure field
     const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
@@ -358,7 +359,7 @@ void FSI::Monolithic::write_ada_file_header() const
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::write_ada_file() const
 {
-  if (logada_.is_null()) FOUR_C_THROW("No access to adaptivity file!");
+  if (!logada_) FOUR_C_THROW("No access to adaptivity file!");
 
   if (get_comm().MyPID() == 0)
   {
@@ -427,7 +428,7 @@ void FSI::Monolithic::time_step_auxiliar()
   // ---------------------------------------------------------------------------
   if (is_ada_structure())
   {
-    Teuchos::rcp_dynamic_cast<Adapter::StructureFSITimIntAda>(structure_field(), true)
+    std::dynamic_pointer_cast<Adapter::StructureFSITimIntAda>(structure_field())
         ->time_step_auxiliar();
   }
   // ---------------------------------------------------------------------------
@@ -461,16 +462,16 @@ void FSI::Monolithic::adapt_time_step_size()
   // ---------------------------------------------------------------------------
   if (is_ada_structure())
   {
-    Teuchos::rcp_dynamic_cast<Adapter::StructureFSITimIntAda>(structure_field(), true)
+    std::dynamic_pointer_cast<Adapter::StructureFSITimIntAda>(structure_field())
         ->indicate_error_norms(
             strnorm_, strfsinorm_, strinnernorm_, strinfnorm_, strinffsinorm_, strinfinnernorm_);
 
     // structure based time step size suggestions
-    dtstr_ = Teuchos::rcp_dynamic_cast<Adapter::StructureFSITimIntAda>(structure_field(), true)
+    dtstr_ = std::dynamic_pointer_cast<Adapter::StructureFSITimIntAda>(structure_field())
                  ->calculate_dt(strnorm_);
-    dtstrfsi_ = Teuchos::rcp_dynamic_cast<Adapter::StructureFSITimIntAda>(structure_field(), true)
+    dtstrfsi_ = std::dynamic_pointer_cast<Adapter::StructureFSITimIntAda>(structure_field())
                     ->calculate_dt(strfsinorm_);
-    dtstrinner_ = Teuchos::rcp_dynamic_cast<Adapter::StructureFSITimIntAda>(structure_field(), true)
+    dtstrinner_ = std::dynamic_pointer_cast<Adapter::StructureFSITimIntAda>(structure_field())
                       ->calculate_dt(strinnernorm_);
   }
   // ---------------------------------------------------------------------------
@@ -680,8 +681,7 @@ double FSI::Monolithic::calculate_time_step_size(
 void FSI::Monolithic::reset_step()
 {
   if (is_ada_structure())
-    Teuchos::rcp_dynamic_cast<Adapter::StructureFSITimIntAda>(structure_field(), true)
-        ->reset_step();
+    std::dynamic_pointer_cast<Adapter::StructureFSITimIntAda>(structure_field())->reset_step();
   else
     structure_field()->reset_step();
 
@@ -707,8 +707,7 @@ void FSI::Monolithic::set_dt(const double dtnew)
 {
   // single fields
   if (is_ada_structure())
-    Teuchos::rcp_dynamic_cast<Adapter::StructureFSITimIntAda>(structure_field(), true)
-        ->set_dt(dtnew);
+    std::dynamic_pointer_cast<Adapter::StructureFSITimIntAda>(structure_field())->set_dt(dtnew);
   else
     structure_field()->set_dt(dtnew);
 
@@ -764,8 +763,7 @@ bool FSI::Monolithic::check_if_dts_same()
 
   double dtstrada = -1.0;
   if (is_ada_structure())
-    dtstrada =
-        Teuchos::rcp_dynamic_cast<Adapter::StructureFSITimIntAda>(structure_field(), true)->dt();
+    dtstrada = std::dynamic_pointer_cast<Adapter::StructureFSITimIntAda>(structure_field())->dt();
 
   // print time step sizes in all fields
   if (get_comm().MyPID() == 0)

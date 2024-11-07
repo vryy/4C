@@ -44,11 +44,11 @@ Discret::Elements::ScaTraEleCalcElchElectrode<distype, probdim>::ScaTraEleCalcEl
     : myelch::ScaTraEleCalcElch(numdofpernode, numscal, disname)
 {
   // replace elch diffusion manager by diffusion manager for electrodes
-  my::diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManagerElchElectrode>(my::numscal_);
+  my::diffmanager_ = std::make_shared<ScaTraEleDiffManagerElchElectrode>(my::numscal_);
 
   // replace elch internal variable manager by internal variable manager for electrodes
   my::scatravarmanager_ =
-      Teuchos::make_rcp<ScaTraEleInternalVariableManagerElchElectrode<nsd_, nen_>>(
+      std::make_shared<ScaTraEleInternalVariableManagerElchElectrode<nsd_, nen_>>(
           my::numscal_, myelch::elchparams_);
 
   // replace elch utility class by utility class for electrodes
@@ -276,7 +276,7 @@ void Discret::Elements::ScaTraEleCalcElchElectrode<distype, probdim>::get_materi
     std::vector<double>& densam, double& visc, const int iquad)
 {
   // get material
-  Teuchos::RCP<const Core::Mat::Material> material = ele->material();
+  std::shared_ptr<const Core::Mat::Material> material = ele->material();
 
   // evaluate electrode material
   if (material->material_type() == Core::Materials::m_electrode)

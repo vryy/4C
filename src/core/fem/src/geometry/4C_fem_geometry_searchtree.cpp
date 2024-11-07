@@ -31,8 +31,8 @@ Core::Geo::SearchTree::SearchTree(const int max_depth) : max_depth_(max_depth), 
 void Core::Geo::SearchTree::initialize_tree(const Core::LinAlg::Matrix<3, 2>& nodeBox,
     const std::map<int, std::set<int>>& elementsByLabel, const TreeType treetype)
 {
-  tree_root_ = Teuchos::null;
-  tree_root_ = Teuchos::make_rcp<TreeNode>(nullptr, max_depth_, nodeBox, treetype);
+  tree_root_ = nullptr;
+  tree_root_ = std::make_shared<TreeNode>(nullptr, max_depth_, nodeBox, treetype);
 
   // insert element map into tree root node
   if (elementsByLabel.size() > 0) tree_root_->set_element_list(elementsByLabel);
@@ -47,8 +47,8 @@ void Core::Geo::SearchTree::initialize_tree(const Core::LinAlg::Matrix<3, 2>& no
 void Core::Geo::SearchTree::initialize_tree(const Core::LinAlg::Matrix<3, 2>& nodeBox,
     const Core::FE::Discretization& dis, const TreeType treetype)
 {
-  tree_root_ = Teuchos::null;
-  tree_root_ = Teuchos::make_rcp<TreeNode>(nullptr, max_depth_, nodeBox, treetype);
+  tree_root_ = nullptr;
+  tree_root_ = std::make_shared<TreeNode>(nullptr, max_depth_, nodeBox, treetype);
 
   // inserts all elements in a map with key -1 and global id
   for (int i = 0; i < dis.num_my_col_elements(); i++)
@@ -62,8 +62,8 @@ void Core::Geo::SearchTree::initialize_tree(const Core::LinAlg::Matrix<3, 2>& no
 void Core::Geo::SearchTree::initialize_tree(
     const Core::LinAlg::Matrix<3, 2>& nodeBox, const TreeType treetype)
 {
-  tree_root_ = Teuchos::null;
-  tree_root_ = Teuchos::make_rcp<TreeNode>(nullptr, max_depth_, nodeBox, treetype);
+  tree_root_ = nullptr;
+  tree_root_ = std::make_shared<TreeNode>(nullptr, max_depth_, nodeBox, treetype);
 }
 
 void Core::Geo::SearchTree::insert_element(const int eid)
@@ -76,12 +76,12 @@ void Core::Geo::SearchTree::insert_element(const int eid)
  | initialization of searchtree for SlipAle                 u.may 09/09 |
  *----------------------------------------------------------------------*/
 void Core::Geo::SearchTree::initialize_tree_slide_ale(const Core::LinAlg::Matrix<3, 2>& nodeBox,
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements, const TreeType treetype)
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& elements, const TreeType treetype)
 {
-  tree_root_ = Teuchos::null;
-  tree_root_ = Teuchos::make_rcp<TreeNode>(nullptr, max_depth_, nodeBox, treetype);
+  tree_root_ = nullptr;
+  tree_root_ = std::make_shared<TreeNode>(nullptr, max_depth_, nodeBox, treetype);
 
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator elemiter;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
     tree_root_->insert_element(-1, elemiter->first);
@@ -100,7 +100,7 @@ std::map<int, std::set<int>> Core::Geo::SearchTree::search_elements_in_radius(
 
   std::map<int, std::set<int>> nodeset;
 
-  if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
+  if (tree_root_ == nullptr) FOUR_C_THROW("tree is not yet initialized !!!");
 
   if (!(tree_root_->get_element_list().empty()))
     nodeset = tree_root_->search_elements_in_radius(dis, currentpositions, point, radius, label);
@@ -119,7 +119,7 @@ void Core::Geo::SearchTree::build_static_search_tree(
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - build_static_search_tree");
 
-  if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
+  if (tree_root_ == nullptr) FOUR_C_THROW("tree is not yet initialized !!!");
 
   if (!tree_root_->get_element_list().empty())
   {
@@ -139,7 +139,7 @@ void Core::Geo::SearchTree::build_static_search_tree(
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - build_static_search_tree");
 
-  if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
+  if (tree_root_ == nullptr) FOUR_C_THROW("tree is not yet initialized !!!");
 
   if (!tree_root_->get_element_list().empty())
   {
@@ -161,7 +161,7 @@ void Core::Geo::SearchTree::search_collisions(
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
-  if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
+  if (tree_root_ == nullptr) FOUR_C_THROW("tree is not yet initialized !!!");
 
   if (!tree_root_->get_element_list().empty())
   {
@@ -183,7 +183,7 @@ void Core::Geo::SearchTree::search_collisions(
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
-  if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
+  if (tree_root_ == nullptr) FOUR_C_THROW("tree is not yet initialized !!!");
 
   if (!tree_root_->get_element_list().empty())
     tree_root_->search_collisions(currentKDOPs, queryKDOP, label, contactEleIds);
@@ -208,7 +208,7 @@ Core::Geo::SearchTree::TreeNode::TreeNode(const TreeNode* const parent, const in
       y_plane_coordinate_((node_box_(1, 0) + 0.5 * (node_box_(1, 1) - node_box_(1, 0)))),
       z_plane_coordinate_((node_box_(2, 0) + 0.5 * (node_box_(2, 1) - node_box_(2, 0))))
 {
-  children_.assign(get_num_children(), Teuchos::null);
+  children_.assign(get_num_children(), nullptr);
 }
 
 
@@ -276,7 +276,7 @@ int Core::Geo::SearchTree::TreeNode::get_num_children() const
   return -1;
 }
 
-Teuchos::RCP<Core::Geo::SearchTree::TreeNode> Core::Geo::SearchTree::TreeNode::get_child(
+std::shared_ptr<Core::Geo::SearchTree::TreeNode> Core::Geo::SearchTree::TreeNode::get_child(
     const int index) const
 {
   return children_[index];
@@ -397,7 +397,7 @@ void Core::Geo::SearchTree::TreeNode::create_children(const Core::FE::Discretiza
   // create empty children
   for (int index = 0; index < get_num_children(); index++)
     children_[index] =
-        Teuchos::make_rcp<TreeNode>(this, (treedepth_ - 1), get_child_node_box(index), tree_type_);
+        std::make_shared<TreeNode>(this, (treedepth_ - 1), get_child_node_box(index), tree_type_);
 
   // insert elements into child node
   for (std::map<int, std::set<int>>::const_iterator labelIter = element_list_.begin();
@@ -426,8 +426,7 @@ void Core::Geo::SearchTree::TreeNode::create_children(
   for (int index = 0; index < get_num_children(); index++)
   {
     get_child_node_box(index, childNodeBox);
-    children_[index] =
-        Teuchos::make_rcp<TreeNode>(this, (treedepth_ - 1), childNodeBox, tree_type_);
+    children_[index] = std::make_shared<TreeNode>(this, (treedepth_ - 1), childNodeBox, tree_type_);
   }
   std::vector<int> elementClassification;
   // insert elements into child node
@@ -458,8 +457,7 @@ void Core::Geo::SearchTree::TreeNode::create_children(
   for (int index = 0; index < get_num_children(); index++)
   {
     get_child_node_box(index, childNodeBox);
-    children_[index] =
-        Teuchos::make_rcp<TreeNode>(this, (treedepth_ - 1), childNodeBox, tree_type_);
+    children_[index] = std::make_shared<TreeNode>(this, (treedepth_ - 1), childNodeBox, tree_type_);
   }
 
   static std::vector<int> elementClassification;
@@ -1104,7 +1102,7 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
  | classifiy element in tree node                           u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
-    const Teuchos::RCP<Core::Elements::Element> element,
+    const std::shared_ptr<Core::Elements::Element> element,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions) const
 {
   const Core::LinAlg::SerialDenseMatrix xyze(

@@ -162,42 +162,42 @@ void Inpar::Mortar::set_valid_parameters(Teuchos::ParameterList& list)
 }
 
 void Inpar::Mortar::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 
   /*--------------------------------------------------------------------*/
   // mortar contact
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linecontact =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linecontact =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE MORTAR CONTACT CONDITIONS 2D", "Contact", "Line Contact Coupling",
           Core::Conditions::Contact, true, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfcontact =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfcontact =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF MORTAR CONTACT CONDITIONS 3D", "Contact", "Surface Contact Coupling",
           Core::Conditions::Contact, true, Core::Conditions::geometry_type_surface);
 
   for (const auto& cond : {linecontact, surfcontact})
   {
-    cond->add_component(Teuchos::make_rcp<Input::IntComponent>("Interface ID"));
-    cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("Side", "Master",
+    cond->add_component(std::make_shared<Input::IntComponent>("Interface ID"));
+    cond->add_component(std::make_shared<Input::SelectionComponent>("Side", "Master",
         Teuchos::tuple<std::string>("Master", "Slave", "Selfcontact"),
         Teuchos::tuple<std::string>("Master", "Slave", "Selfcontact")));
-    cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("Initialization", "Inactive",
+    cond->add_component(std::make_shared<Input::SelectionComponent>("Initialization", "Inactive",
         Teuchos::tuple<std::string>("Inactive", "Active"),
         Teuchos::tuple<std::string>("Inactive", "Active"), true));
 
     add_named_real(cond, "FrCoeffOrBound", "friction coefficient bound", 0.0, true);
     add_named_real(cond, "AdhesionBound", "adhesion bound", 0.0, true);
 
-    cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("Application", "Solidcontact",
+    cond->add_component(std::make_shared<Input::SelectionComponent>("Application", "Solidcontact",
         Teuchos::tuple<std::string>("Solidcontact", "Beamtosolidcontact", "Beamtosolidmeshtying"),
         Teuchos::tuple<std::string>("Solidcontact", "Beamtosolidcontact", "Beamtosolidmeshtying"),
         true));
 
     // optional DBC handling
-    cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("dbc_handling", "DoNothing",
+    cond->add_component(std::make_shared<Input::SelectionComponent>("dbc_handling", "DoNothing",
         Teuchos::tuple<std::string>("DoNothing", "RemoveDBCSlaveNodes"),
         Teuchos::tuple<int>(static_cast<int>(DBCHandling::do_nothing),
             static_cast<int>(DBCHandling::remove_dbc_nodes_from_slave_side)),
@@ -214,22 +214,22 @@ void Inpar::Mortar::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // mortar coupling (for ALL kinds of interface problems except contact)
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linemortar =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linemortar =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE MORTAR COUPLING CONDITIONS 2D", "Mortar", "Line Mortar Coupling",
           Core::Conditions::Mortar, true, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfmortar =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfmortar =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF MORTAR COUPLING CONDITIONS 3D", "Mortar", "Surface Mortar Coupling",
           Core::Conditions::Mortar, true, Core::Conditions::geometry_type_surface);
 
   for (const auto& cond : {linemortar, surfmortar})
   {
-    cond->add_component(Teuchos::make_rcp<Input::IntComponent>("Interface ID"));
-    cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("Side", "Master",
+    cond->add_component(std::make_shared<Input::IntComponent>("Interface ID"));
+    cond->add_component(std::make_shared<Input::SelectionComponent>("Side", "Master",
         Teuchos::tuple<std::string>("Master", "Slave"),
         Teuchos::tuple<std::string>("Master", "Slave")));
-    cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("Initialization", "Inactive",
+    cond->add_component(std::make_shared<Input::SelectionComponent>("Initialization", "Inactive",
         Teuchos::tuple<std::string>("Inactive", "Active"),
         Teuchos::tuple<std::string>("Inactive", "Active"), true));
 
@@ -240,14 +240,14 @@ void Inpar::Mortar::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // mortar coupling symmetry condition
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linemrtrsym =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linemrtrsym =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE MORTAR SYMMETRY CONDITIONS 3D", "mrtrsym",
           "Symmetry plane normal for 3D contact", Core::Conditions::LineMrtrSym, true,
           Core::Conditions::geometry_type_line);
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointmrtrsym =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointmrtrsym =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT MORTAR SYMMETRY CONDITIONS 2D/3D", "mrtrsym",
           "Symmetry plane normal for 2D/3D contact", Core::Conditions::PointMrtrSym, true,
           Core::Conditions::geometry_type_point);
@@ -262,13 +262,13 @@ void Inpar::Mortar::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // mortar edge/corner condition
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> edgemrtr =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> edgemrtr =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE MORTAR EDGE CONDITIONS 3D", "mrtredge", "Geometrical edge for 3D contact",
           Core::Conditions::EdgeMrtr, true, Core::Conditions::geometry_type_line);
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> cornermrtr =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> cornermrtr =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT MORTAR CORNER CONDITIONS 2D/3D", "mrtrcorner",
           "Geometrical corner for 2D/3D contact", Core::Conditions::CornerMrtr, true,
           Core::Conditions::geometry_type_point);
@@ -281,24 +281,24 @@ void Inpar::Mortar::set_valid_conditions(
     /*--------------------------------------------------------------------*/
     // mortar coupling (for ALL kinds of interface problems except contact)
 
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> linemortar =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+    std::shared_ptr<Core::Conditions::ConditionDefinition> linemortar =
+        std::make_shared<Core::Conditions::ConditionDefinition>(
             "DESIGN LINE MORTAR MULTI-COUPLING CONDITIONS 2D", "MortarMulti",
             "Line Mortar Multi-Coupling", Core::Conditions::MortarMulti, true,
             Core::Conditions::geometry_type_line);
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> surfmortar =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+    std::shared_ptr<Core::Conditions::ConditionDefinition> surfmortar =
+        std::make_shared<Core::Conditions::ConditionDefinition>(
             "DESIGN SURF MORTAR MULTI-COUPLING CONDITIONS 3D", "MortarMulti",
             "Surface Mortar Multi-Coupling", Core::Conditions::MortarMulti, true,
             Core::Conditions::geometry_type_surface);
 
     for (const auto& cond : {linemortar, surfmortar})
     {
-      cond->add_component(Teuchos::make_rcp<Input::IntComponent>("Interface ID"));
-      cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("Side", "Master",
+      cond->add_component(std::make_shared<Input::IntComponent>("Interface ID"));
+      cond->add_component(std::make_shared<Input::SelectionComponent>("Side", "Master",
           Teuchos::tuple<std::string>("Master", "Slave"),
           Teuchos::tuple<std::string>("Master", "Slave")));
-      cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("Initialization", "Inactive",
+      cond->add_component(std::make_shared<Input::SelectionComponent>("Initialization", "Inactive",
           Teuchos::tuple<std::string>("Inactive", "Active"),
           Teuchos::tuple<std::string>("Inactive", "Active"), true));
 

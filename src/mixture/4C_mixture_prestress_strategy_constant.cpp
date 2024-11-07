@@ -50,7 +50,7 @@ void Mixture::ConstantPrestressStrategy::setup(
 }
 
 void Mixture::ConstantPrestressStrategy::evaluate_prestress(const MixtureRule& mixtureRule,
-    const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
+    const std::shared_ptr<const Mat::CoordinateSystemProvider> cosy,
     Mixture::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
@@ -61,7 +61,7 @@ void Mixture::ConstantPrestressStrategy::evaluate_prestress(const MixtureRule& m
 }
 
 void Mixture::ConstantPrestressStrategy::update(
-    const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+    const std::shared_ptr<const Mat::CoordinateSystemProvider> anisotropy,
     Mixture::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
     Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {

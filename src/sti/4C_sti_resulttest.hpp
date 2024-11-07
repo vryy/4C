@@ -36,7 +36,7 @@ namespace STI
   {
    public:
     //! constructor
-    STIResultTest(const Teuchos::RCP<STI::Algorithm>&
+    STIResultTest(const std::shared_ptr<STI::Algorithm>&
             sti_algorithm  //!< time integrator for scatra-thermo interaction
     );
 
@@ -57,7 +57,7 @@ namespace STI
     const STI::Monolithic& sti_monolithic() const;
 
     //! time integrator for scatra-thermo interaction
-    const Teuchos::RCP<const STI::Algorithm> sti_algorithm_;
+    const std::shared_ptr<const STI::Algorithm> sti_algorithm_;
   };
 }  // namespace STI
 FOUR_C_NAMESPACE_CLOSE

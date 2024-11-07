@@ -46,7 +46,7 @@ namespace Core::LinAlg
 
 
     /// make a copy of me
-    virtual Teuchos::RCP<BlockSparseMatrixBase> clone(DataAccess access) = 0;
+    virtual std::unique_ptr<BlockSparseMatrixBase> clone(DataAccess access) = 0;
 
     /// destroy the underlying Epetra objects
     virtual bool destroy(bool throw_exception_for_blocks = true);
@@ -59,7 +59,7 @@ namespace Core::LinAlg
     virtual void setup_preconditioner() {}
 
     /// Merge block matrix into a SparseMatrix
-    Teuchos::RCP<SparseMatrix> merge(bool explicitdirichlet = true) const;
+    std::shared_ptr<SparseMatrix> merge(bool explicitdirichlet = true) const;
 
     /** \name Block matrix access */
     //@{
@@ -245,10 +245,10 @@ namespace Core::LinAlg
     std::vector<SparseMatrix> blocks_;
 
     /// full matrix row map
-    Teuchos::RCP<Epetra_Map> fullrowmap_;
+    std::shared_ptr<Epetra_Map> fullrowmap_;
 
     /// full matrix column map
-    Teuchos::RCP<Epetra_Map> fullcolmap_;
+    std::shared_ptr<Epetra_Map> fullcolmap_;
 
     /// see matrix as transposed
     bool usetranspose_;
@@ -289,7 +289,7 @@ namespace Core::LinAlg
 
     /** Do not forget to call Complete() after cloning, even if you
      *  use Core::LinAlg::View! */
-    Teuchos::RCP<BlockSparseMatrixBase> clone(DataAccess access) override;
+    std::unique_ptr<BlockSparseMatrixBase> clone(DataAccess access) override;
 
     /// clone only a part of the block sparse matrix
     /** Do not forget to call Complete() after cloning, even if you
@@ -300,7 +300,7 @@ namespace Core::LinAlg
      *  \param[in] col_block_ids : ID's of the column blocks to clone
      *
      *  \author hiermeier \date 04/17 */
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> clone(DataAccess access,
+    std::unique_ptr<Core::LinAlg::BlockSparseMatrixBase> clone(DataAccess access,
         const std::vector<unsigned>& row_block_ids, const std::vector<unsigned>& col_block_ids);
 
     /// just a dummy that switches from strided assembly to standard assembly
@@ -338,7 +338,7 @@ namespace Core::LinAlg
      *  \param[in] range_extractor : necessary range extractor
      *
      *  \author hiermeier \date 04/17 */
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> clone(DataAccess access,
+    std::unique_ptr<Core::LinAlg::BlockSparseMatrixBase> clone(DataAccess access,
         const std::vector<unsigned>& row_block_ids, const std::vector<unsigned>& col_block_ids,
         const MultiMapExtractor& domain_extractor, const MultiMapExtractor& range_extractor);
   };
@@ -408,20 +408,20 @@ namespace Core::LinAlg
   //////////////////////////////////
   /// helper functions
 
-  Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> block_matrix2x2(
+  std::shared_ptr<BlockSparseMatrix<DefaultBlockMatrixStrategy>> block_matrix2x2(
       SparseMatrix& A00, SparseMatrix& A01, SparseMatrix& A10, SparseMatrix& A11);
 
   //! Cast matrix of type SparseOperator to BlockSparseMatrixBase and check in debug mode if cast
   //! was successful
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
+  std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>
   cast_to_block_sparse_matrix_base_and_check_success(
-      Teuchos::RCP<Core::LinAlg::SparseOperator> input_matrix);
+      std::shared_ptr<Core::LinAlg::SparseOperator> input_matrix);
 
   //! Cast matrix of type SparseOperator to const BlockSparseMatrixBase and check in debug mode if
   //! cast was successful
-  Teuchos::RCP<const Core::LinAlg::BlockSparseMatrixBase>
+  std::shared_ptr<const Core::LinAlg::BlockSparseMatrixBase>
   cast_to_const_block_sparse_matrix_base_and_check_success(
-      Teuchos::RCP<const Core::LinAlg::SparseOperator> input_matrix);
+      std::shared_ptr<const Core::LinAlg::SparseOperator> input_matrix);
 
   //////////////////////////////////
 
@@ -445,8 +445,8 @@ Core::LinAlg::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtra
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatrix<Strategy>::clone(
-    DataAccess access)
+std::unique_ptr<Core::LinAlg::BlockSparseMatrixBase>
+Core::LinAlg::BlockSparseMatrix<Strategy>::clone(DataAccess access)
 {
   std::vector<unsigned> row_block_ids(rows());
   for (unsigned i = 0; i < static_cast<unsigned>(rows()); ++i) row_block_ids[i] = i;
@@ -460,15 +460,15 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatri
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatrix<Strategy>::clone(
-    DataAccess access, const std::vector<unsigned>& row_block_ids,
-    const std::vector<unsigned>& col_block_ids, const MultiMapExtractor& domain_extractor,
-    const MultiMapExtractor& range_extractor)
+std::unique_ptr<Core::LinAlg::BlockSparseMatrixBase>
+Core::LinAlg::BlockSparseMatrix<Strategy>::clone(DataAccess access,
+    const std::vector<unsigned>& row_block_ids, const std::vector<unsigned>& col_block_ids,
+    const MultiMapExtractor& domain_extractor, const MultiMapExtractor& range_extractor)
 {
   int npr = matrix(0, 0).max_num_entries();
   bool explicitdirichlet = matrix(0, 0).explicit_dirichlet();
   bool savegraph = matrix(0, 0).save_graph();
-  Teuchos::RCP<BlockSparseMatrixBase> bsm = Teuchos::make_rcp<BlockSparseMatrix<Strategy>>(
+  std::unique_ptr<BlockSparseMatrixBase> bsm = std::make_unique<BlockSparseMatrix<Strategy>>(
       domain_extractor, range_extractor, npr, explicitdirichlet, savegraph);
 
   for (std::vector<unsigned>::const_iterator r = row_block_ids.begin(); r != row_block_ids.end();
@@ -486,9 +486,9 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatri
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatrix<Strategy>::clone(
-    DataAccess access, const std::vector<unsigned>& row_block_ids,
-    const std::vector<unsigned>& col_block_ids)
+std::unique_ptr<Core::LinAlg::BlockSparseMatrixBase>
+Core::LinAlg::BlockSparseMatrix<Strategy>::clone(DataAccess access,
+    const std::vector<unsigned>& row_block_ids, const std::vector<unsigned>& col_block_ids)
 {
   if (std::lower_bound(row_block_ids.begin(), row_block_ids.end(), static_cast<unsigned>(rows())) !=
       row_block_ids.end())

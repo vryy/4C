@@ -41,11 +41,11 @@ Solid::TimeInt::Base::Base()
       issetup_(false),
       isrestarting_(false),
       state_is_insync_with_noxgroup_(true),
-      dataio_(Teuchos::null),
-      datasdyn_(Teuchos::null),
-      dataglobalstate_(Teuchos::null),
-      int_ptr_(Teuchos::null),
-      dbc_ptr_(Teuchos::null)
+      dataio_(nullptr),
+      datasdyn_(nullptr),
+      dataglobalstate_(nullptr),
+      int_ptr_(nullptr),
+      dbc_ptr_(nullptr)
 {
   Epetra_Object::SetTracebackMode(1);
   // empty constructor
@@ -53,9 +53,9 @@ Solid::TimeInt::Base::Base()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Base::init(const Teuchos::RCP<Solid::TimeInt::BaseDataIO> dataio,
-    const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> datasdyn,
-    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> dataglobalstate)
+void Solid::TimeInt::Base::init(const std::shared_ptr<Solid::TimeInt::BaseDataIO> dataio,
+    const std::shared_ptr<Solid::TimeInt::BaseDataSDyn> datasdyn,
+    const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> dataglobalstate)
 {
   // ---------------------------------------------------------------------------
   // We need to call setup() after init()
@@ -89,8 +89,9 @@ void Solid::TimeInt::Base::setup()
    * unfortunately this wasn't considered during the implementation of the
    * discretization routines. Therefore many methods need a slight modification
    * (most times adding a "const" should fix the problem).          hiermeier */
-  Teuchos::RCP<Core::FE::Discretization> discret_ptr = data_global_state().get_discret();
-  dbc_ptr_->init(discret_ptr, data_global_state().get_freact_np(), Teuchos::rcpFromRef(*this));
+  std::shared_ptr<Core::FE::Discretization> discret_ptr = data_global_state().get_discret();
+  dbc_ptr_->init(
+      discret_ptr, data_global_state().get_freact_np(), Core::Utils::shared_ptr_from_ref(*this));
   dbc_ptr_->setup();
 
   // ---------------------------------------------------------------------------
@@ -98,7 +99,7 @@ void Solid::TimeInt::Base::setup()
   // ---------------------------------------------------------------------------
   int_ptr_ = Solid::build_integrator(data_sdyn());
   int_ptr_->init(data_s_dyn_ptr(), data_global_state_ptr(), data_io_ptr(), dbc_ptr_,
-      Teuchos::rcpFromRef(*this));
+      Core::Utils::shared_ptr_from_ref(*this));
   int_ptr_->setup();
   int_ptr_->post_setup();
   // Initialize and Setup the input/output writer for every Newton iteration
@@ -162,10 +163,10 @@ bool Solid::TimeInt::Base::not_finished() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Base::set_restart(int stepn, double timen,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> accn, Teuchos::RCP<std::vector<char>> elementdata,
-    Teuchos::RCP<std::vector<char>> nodedata)
+    std::shared_ptr<Core::LinAlg::Vector<double>> disn,
+    std::shared_ptr<Core::LinAlg::Vector<double>> veln,
+    std::shared_ptr<Core::LinAlg::Vector<double>> accn,
+    std::shared_ptr<std::vector<char>> elementdata, std::shared_ptr<std::vector<char>> nodedata)
 {
   check_init_setup();
 
@@ -182,7 +183,7 @@ const Epetra_Map& Solid::TimeInt::Base::get_mass_domain_map() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MapExtractor> Solid::TimeInt::Base::get_dbc_map_extractor()
+std::shared_ptr<const Core::LinAlg::MapExtractor> Solid::TimeInt::Base::get_dbc_map_extractor()
 {
   check_init_setup();
   return dbc_ptr_->get_dbc_map_extractor();
@@ -190,7 +191,8 @@ Teuchos::RCP<const Core::LinAlg::MapExtractor> Solid::TimeInt::Base::get_dbc_map
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MapExtractor> Solid::TimeInt::Base::get_dbc_map_extractor() const
+std::shared_ptr<const Core::LinAlg::MapExtractor> Solid::TimeInt::Base::get_dbc_map_extractor()
+    const
 {
   check_init_setup();
   return dbc_ptr_->get_dbc_map_extractor();
@@ -198,7 +200,7 @@ Teuchos::RCP<const Core::LinAlg::MapExtractor> Solid::TimeInt::Base::get_dbc_map
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Conditions::LocsysManager> Solid::TimeInt::Base::locsys_manager()
+std::shared_ptr<Core::Conditions::LocsysManager> Solid::TimeInt::Base::locsys_manager()
 {
   check_init_setup();
   return dbc_ptr_->loc_sys_manager_ptr();
@@ -381,10 +383,10 @@ void Solid::TimeInt::Base::initialize_energy_file_stream_and_write_headers()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest> Solid::TimeInt::Base::create_field_test()
+std::shared_ptr<Core::Utils::ResultTest> Solid::TimeInt::Base::create_field_test()
 {
   check_init_setup();
-  Teuchos::RCP<Solid::ResultTest> resulttest = Teuchos::make_rcp<Solid::ResultTest>();
+  std::shared_ptr<Solid::ResultTest> resulttest = std::make_shared<Solid::ResultTest>();
   resulttest->init(get_data_global_state(), integrator().eval_data());
   resulttest->setup();
 
@@ -393,18 +395,18 @@ Teuchos::RCP<Core::Utils::ResultTest> Solid::TimeInt::Base::create_field_test()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Base::get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> accnp, Teuchos::RCP<std::vector<char>> elementdata,
-    Teuchos::RCP<std::vector<char>> nodedata)
+void Solid::TimeInt::Base::get_restart_data(std::shared_ptr<int> step, std::shared_ptr<double> time,
+    std::shared_ptr<Core::LinAlg::Vector<double>> disnp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> accnp,
+    std::shared_ptr<std::vector<char>> elementdata, std::shared_ptr<std::vector<char>> nodedata)
 {
   check_init_setup();
   // at some point we have to create a copy
   *step = dataglobalstate_->get_step_n();
   *time = dataglobalstate_->get_time_n();
-  Teuchos::RCP<const Core::FE::Discretization> discret_ptr =
-      Teuchos::rcp_dynamic_cast<const Core::FE::Discretization>(dataglobalstate_->get_discret());
+  std::shared_ptr<const Core::FE::Discretization> discret_ptr =
+      std::dynamic_pointer_cast<const Core::FE::Discretization>(dataglobalstate_->get_discret());
   *elementdata = *(discret_ptr->pack_my_elements());
   *nodedata = *(discret_ptr->pack_my_nodes());
 
@@ -428,8 +430,8 @@ void Solid::TimeInt::Base::prepare_output(bool force_prepare_timestep)
 
     if (dataio_->is_write_current_ele_volume())
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> elevolumes = Teuchos::null;
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp = dataglobalstate_->get_dis_np();
+      std::shared_ptr<Core::LinAlg::Vector<double>> elevolumes = nullptr;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disnp = dataglobalstate_->get_dis_np();
 
       int_ptr_->determine_element_volumes(*disnp, elevolumes);
       int_ptr_->eval_data().set_element_volume_data(elevolumes);
@@ -634,9 +636,10 @@ void Solid::TimeInt::Base::output_element_volume(Core::IO::DiscretizationWriter&
   Solid::ModelEvaluator::Data& evaldata = int_ptr_->eval_data();
 
   iowriter.write_vector("current_ele_volumes",
-      Teuchos::rcpFromRef(evaldata.current_element_volume_data()), Core::IO::elementvector);
+      Core::Utils::shared_ptr_from_ref(evaldata.current_element_volume_data()),
+      Core::IO::elementvector);
 
-  evaldata.set_element_volume_data(Teuchos::null);
+  evaldata.set_element_volume_data(nullptr);
 }
 
 /*----------------------------------------------------------------------------*
@@ -646,7 +649,7 @@ void Solid::TimeInt::Base::output_stress_strain()
   check_init_setup();
 
   Solid::ModelEvaluator::Data& evaldata = int_ptr_->eval_data();
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio_->get_output_ptr();
+  std::shared_ptr<Core::IO::DiscretizationWriter> output_ptr = dataio_->get_output_ptr();
 
   // ---------------------------------------------------------------------------
   // write stress output
@@ -669,7 +672,7 @@ void Solid::TimeInt::Base::output_stress_strain()
     output_ptr->write_vector(text, evaldata.stress_data(), *(discretization()->element_row_map()));
   }
   // we don't need this anymore
-  evaldata.stress_data_ptr() = Teuchos::null;
+  evaldata.stress_data_ptr() = nullptr;
 
   // ---------------------------------------------------------------------------
   // write coupling stress output
@@ -719,7 +722,7 @@ void Solid::TimeInt::Base::output_stress_strain()
     output_ptr->write_vector(text, evaldata.strain_data(), *(discretization()->element_row_map()));
   }
   // we don't need this anymore
-  evaldata.strain_data_ptr() = Teuchos::null;
+  evaldata.strain_data_ptr() = nullptr;
 
   // ---------------------------------------------------------------------------
   // write plastic strain output
@@ -743,7 +746,7 @@ void Solid::TimeInt::Base::output_stress_strain()
         text, evaldata.plastic_strain_data(), *(discretization()->element_row_map()));
   }
   // we don't need this anymore
-  evaldata.plastic_strain_data_ptr() = Teuchos::null;
+  evaldata.plastic_strain_data_ptr() = nullptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -783,7 +786,7 @@ void Solid::TimeInt::Base::output_optional_quantity()
   check_init_setup();
 
   Solid::ModelEvaluator::Data& evaldata = int_ptr_->eval_data();
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio_->get_output_ptr();
+  std::shared_ptr<Core::IO::DiscretizationWriter> output_ptr = dataio_->get_output_ptr();
 
   // ---------------------------------------------------------------------------
   // write optional quantity output
@@ -804,7 +807,7 @@ void Solid::TimeInt::Base::output_optional_quantity()
         text, evaldata.opt_quantity_data(), *(discretization()->element_row_map()));
   }
   // we don't need this anymore
-  evaldata.opt_quantity_data_ptr() = Teuchos::null;
+  evaldata.opt_quantity_data_ptr() = nullptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -813,7 +816,7 @@ void Solid::TimeInt::Base::output_restart(bool& datawritten)
 {
   check_init_setup();
 
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio_->get_output_ptr();
+  std::shared_ptr<Core::IO::DiscretizationWriter> output_ptr = dataio_->get_output_ptr();
   // write restart output, please
   if (dataglobalstate_->get_step_n() != 0)
     output_ptr->write_mesh(dataglobalstate_->get_step_n(), dataglobalstate_->get_time_n());
@@ -844,7 +847,7 @@ void Solid::TimeInt::Base::output_restart(bool& datawritten)
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Base::add_restart_to_output_state()
 {
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio_->get_output_ptr();
+  std::shared_ptr<Core::IO::DiscretizationWriter> output_ptr = dataio_->get_output_ptr();
 
   // force output of velocity and acceleration in case it is not written previously by the model
   // evaluators
@@ -905,7 +908,7 @@ void Solid::TimeInt::Base::read_restart(const int stepn)
   dataglobalstate_->get_step_n() = stepn;
   dataglobalstate_->get_step_np() = stepn + 1;
   dataglobalstate_->get_multi_time() =
-      Teuchos::make_rcp<TimeStepping::TimIntMStep<double>>(0, 0, ioreader.read_double("time"));
+      std::make_shared<TimeStepping::TimIntMStep<double>>(0, 0, ioreader.read_double("time"));
   const double& timen = dataglobalstate_->get_time_n();
   const double& dt = (*dataglobalstate_->get_delta_time())[0];
   dataglobalstate_->get_time_np() = timen + dt;
@@ -927,10 +930,10 @@ void Solid::TimeInt::Base::read_restart(const int stepn)
   setup();
 
   // (2) read (or overwrite) the general dynamic state
-  Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp = dataglobalstate_->get_vel_np();
+  std::shared_ptr<Core::LinAlg::Vector<double>>& velnp = dataglobalstate_->get_vel_np();
   ioreader.read_vector(velnp, "velocity");
   dataglobalstate_->get_multi_vel()->update_steps(*velnp);
-  Teuchos::RCP<Core::LinAlg::Vector<double>>& accnp = dataglobalstate_->get_acc_np();
+  std::shared_ptr<Core::LinAlg::Vector<double>>& accnp = dataglobalstate_->get_acc_np();
   ioreader.read_vector(accnp, "acceleration");
   dataglobalstate_->get_multi_acc()->update_steps(*accnp);
 
@@ -950,7 +953,7 @@ void Solid::TimeInt::Base::read_restart(const int stepn)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization> Solid::TimeInt::Base::discretization()
+std::shared_ptr<Core::FE::Discretization> Solid::TimeInt::Base::discretization()
 {
   check_init();
   return dataglobalstate_->get_discret();
@@ -968,7 +971,7 @@ void Solid::TimeInt::Base::set_action_type(const Core::Elements::ActionType& act
  *----------------------------------------------------------------------------*/
 int Solid::TimeInt::Base::group_id() const
 {
-  Teuchos::RCP<Core::Communication::Communicators> group =
+  std::shared_ptr<Core::Communication::Communicators> group =
       Global::Problem::instance()->get_communicators();
   return group->group_id();
 }

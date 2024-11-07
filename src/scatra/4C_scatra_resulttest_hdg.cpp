@@ -15,9 +15,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                           hoermann 09/15 |
  *----------------------------------------------------------------------*/
-ScaTra::HDGResultTest::HDGResultTest(const Teuchos::RCP<ScaTraTimIntImpl> timint)
+ScaTra::HDGResultTest::HDGResultTest(const std::shared_ptr<ScaTraTimIntImpl> timint)
     : ScaTraResultTest::ScaTraResultTest(timint),
-      scatratiminthdg_(Teuchos::rcp_dynamic_cast<const TimIntHDG>(timint))
+      scatratiminthdg_(std::dynamic_pointer_cast<const TimIntHDG>(timint))
 
 {
   errors_ = scatratiminthdg_->compute_error();

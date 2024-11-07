@@ -25,19 +25,20 @@ namespace CONTACT
 
     */
     PoroMtLagrangeStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<Mortar::Interface>> interface,
-        int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+        Teuchos::ParameterList params, std::vector<std::shared_ptr<Mortar::Interface>> interface,
+        int dim, std::shared_ptr<Epetra_Comm> comm, double alphaf, int maxdof);
 
 
     /*!
     /brief initial Poro Meshtying calculations
     */
-    void initialize_poro_mt(Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteffoffdiag);
+    void initialize_poro_mt(std::shared_ptr<Core::LinAlg::SparseMatrix>& kteffoffdiag);
 
     /*!
     /brief modify off diagonal system matrix for structural displacement meshtying
      */
-    void evaluate_meshtying_poro_off_diag(Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteffoffdiag);
+    void evaluate_meshtying_poro_off_diag(
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& kteffoffdiag);
 
     /*!
     \brief Recovery method
@@ -48,9 +49,9 @@ namespace CONTACT
 
     void recover_coupling_matrix_partof_lmp(Core::LinAlg::Vector<double>& veli);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> cs_;  // slave matrix block row (needed for LM)
+    std::shared_ptr<Core::LinAlg::SparseMatrix> cs_;  // slave matrix block row (needed for LM)
 
-    Teuchos::RCP<Epetra_Map> fvelrow_;  // fluid row map (needed for splitting)
+    std::shared_ptr<Epetra_Map> fvelrow_;  // fluid row map (needed for splitting)
 
   };  // class POROLagrangeStrategy
 }  // namespace CONTACT

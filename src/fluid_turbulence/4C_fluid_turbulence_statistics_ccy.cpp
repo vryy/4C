@@ -23,10 +23,10 @@ FOUR_C_NAMESPACE_OPEN
                   Standard Constructor (public)
 
   ---------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Discretization> actdis,
-    bool alefluid, Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp,
-    Teuchos::ParameterList& params, const std::string& statistics_outfilename,
-    const bool withscatra)
+FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
+    std::shared_ptr<Core::FE::Discretization> actdis, bool alefluid,
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispnp, Teuchos::ParameterList& params,
+    const std::string& statistics_outfilename, const bool withscatra)
     : discret_(actdis),
       dispnp_(dispnp),
       params_(params),
@@ -80,11 +80,11 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
   // compute all planes for sampling
 
   // available shells of element corners (Nurbs) of elements
-  nodeshells_ = Teuchos::make_rcp<std::vector<double>>();
+  nodeshells_ = std::make_shared<std::vector<double>>();
 
   // available homogeneous (sampling) shells --- there are
   // numsubdivisions layers per element layer
-  shellcoordinates_ = Teuchos::make_rcp<std::vector<double>>();
+  shellcoordinates_ = std::make_shared<std::vector<double>>();
 
   const int numsubdivisions = 5;
 
@@ -117,7 +117,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
     std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
     // get the knotvector itself
-    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
+    std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
 
     // resize and initialise to 0
     {
@@ -393,46 +393,46 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
   // --------------------------------
 
   // first order moments
-  pointsumu_ = Teuchos::make_rcp<std::vector<double>>();
+  pointsumu_ = std::make_shared<std::vector<double>>();
   pointsumu_->resize(size, 0.0);
 
-  pointsumv_ = Teuchos::make_rcp<std::vector<double>>();
+  pointsumv_ = std::make_shared<std::vector<double>>();
   pointsumv_->resize(size, 0.0);
 
-  pointsumw_ = Teuchos::make_rcp<std::vector<double>>();
+  pointsumw_ = std::make_shared<std::vector<double>>();
   pointsumw_->resize(size, 0.0);
 
-  pointsump_ = Teuchos::make_rcp<std::vector<double>>();
+  pointsump_ = std::make_shared<std::vector<double>>();
   pointsump_->resize(size, 0.0);
 
   // now the second order moments
-  pointsumuu_ = Teuchos::make_rcp<std::vector<double>>();
+  pointsumuu_ = std::make_shared<std::vector<double>>();
   pointsumuu_->resize(size, 0.0);
 
-  pointsumvv_ = Teuchos::make_rcp<std::vector<double>>();
+  pointsumvv_ = std::make_shared<std::vector<double>>();
   pointsumvv_->resize(size, 0.0);
 
-  pointsumww_ = Teuchos::make_rcp<std::vector<double>>();
+  pointsumww_ = std::make_shared<std::vector<double>>();
   pointsumww_->resize(size, 0.0);
 
-  pointsumpp_ = Teuchos::make_rcp<std::vector<double>>();
+  pointsumpp_ = std::make_shared<std::vector<double>>();
   pointsumpp_->resize(size, 0.0);
 
-  pointsumuv_ = Teuchos::make_rcp<std::vector<double>>();
+  pointsumuv_ = std::make_shared<std::vector<double>>();
   pointsumuv_->resize(size, 0.0);
 
-  pointsumuw_ = Teuchos::make_rcp<std::vector<double>>();
+  pointsumuw_ = std::make_shared<std::vector<double>>();
   pointsumuw_->resize(size, 0.0);
 
-  pointsumvw_ = Teuchos::make_rcp<std::vector<double>>();
+  pointsumvw_ = std::make_shared<std::vector<double>>();
   pointsumvw_->resize(size, 0.0);
 
   if (withscatra_)
   {
-    pointsumc_ = Teuchos::make_rcp<std::vector<double>>();
+    pointsumc_ = std::make_shared<std::vector<double>>();
     pointsumc_->resize(size, 0.0);
 
-    pointsumcc_ = Teuchos::make_rcp<std::vector<double>>();
+    pointsumcc_ = std::make_shared<std::vector<double>>();
     pointsumcc_->resize(size, 0.0);
 
     // pointsumphi_/pointsumphiphi_ are allocated in ApplyScatraResults()
@@ -441,14 +441,14 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
   //----------------------------------------------------------------------
   // initialise output
 
-  Teuchos::RCP<std::ofstream> log;
+  std::shared_ptr<std::ofstream> log;
 
   if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
-    log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::out);
+    log = std::make_shared<std::ofstream>(s.c_str(), std::ios::out);
     (*log) << "# Statistics for turbulent incompressible flow in a rotating cylinder (first- and "
               "second-order moments)\n\n";
 
@@ -470,8 +470,8 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
 
  -----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCcy::do_time_sample(Core::LinAlg::Vector<double>& velnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scanp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fullphinp)
+    std::shared_ptr<Core::LinAlg::Vector<double>> scanp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> fullphinp)
 {
   // we have an additional sample
   numsamp_++;
@@ -481,18 +481,18 @@ void FLD::TurbulenceStatisticsCcy::do_time_sample(Core::LinAlg::Vector<double>& 
 
   if (withscatra_)
   {
-    if (scanp != Teuchos::null)
+    if (scanp != nullptr)
       meanscanp_->Update(1.0, *scanp, 0.0);
     else
-      FOUR_C_THROW("Vector scanp is Teuchos::null");
+      FOUR_C_THROW("Vector scanp is nullptr");
 
-    if (fullphinp != Teuchos::null)
+    if (fullphinp != nullptr)
     {
       int err = meanfullphinp_->Update(1.0, *fullphinp, 0.0);
       if (err) FOUR_C_THROW("Could not update meanfullphinp_");
     }
     else
-      FOUR_C_THROW("Vector fullphinp is Teuchos::null");
+      FOUR_C_THROW("Vector fullphinp is nullptr");
   }
 
   //----------------------------------------------------------------------
@@ -585,8 +585,8 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     if (scatranurbsdis == nullptr)
       FOUR_C_THROW("Oops. Your discretization is not a NurbsDiscretization.");
 
-    if (meanfullphinp_ == Teuchos::null)
-      FOUR_C_THROW("Teuchos::RCP is Teuchos::null");
+    if (meanfullphinp_ == nullptr)
+      FOUR_C_THROW("std::shared_ptr is nullptr");
     else
       scatranurbsdis->set_state("phinp_for_statistics", meanfullphinp_);
 
@@ -605,7 +605,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
   // get the knotvector itself
-  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
+  std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
 
   // get element map
   const Epetra_Map* elementmap = nurbsdis->element_row_map();
@@ -712,9 +712,9 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
       actscatraele->location_vector(*scatranurbsdis, scatralm, scatralmowner, scatralmstride);
 
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp =
           scatranurbsdis->get_state("phinp_for_statistics");
-      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp' for statistics");
+      if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp' for statistics");
       std::vector<double> myphinp(scatralm.size());
       Core::FE::extract_my_values(*phinp, myphinp, scatralm);
 
@@ -1340,13 +1340,13 @@ void FLD::TurbulenceStatisticsCcy::time_average_means_and_output_of_statistics(i
 
   //----------------------------------------------------------------------
   // output to log-file
-  Teuchos::RCP<std::ofstream> log;
+  std::shared_ptr<std::ofstream> log;
   if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
-    log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::app);
+    log = std::make_shared<std::ofstream>(s.c_str(), std::ios::app);
     (*log) << "\n\n\n";
     (*log) << "# Statistics record " << countrecord_;
     (*log) << " (Steps " << step - numsamp_ + 1 << "--" << step << ")\n";
@@ -1465,12 +1465,12 @@ void FLD::TurbulenceStatisticsCcy::clear_statistics()
       (*pointsumcc_)[i] = 0.0;
     }
 
-    if (meanscanp_ == Teuchos::null)
-      FOUR_C_THROW("meanscanp_ is Teuchos::null");
+    if (meanscanp_ == nullptr)
+      FOUR_C_THROW("meanscanp_ is nullptr");
     else
       meanscanp_->PutScalar(0.0);
 
-    if (meanfullphinp_ != Teuchos::null)
+    if (meanfullphinp_ != nullptr)
     {
       meanfullphinp_->PutScalar(0.0);
 
@@ -1491,11 +1491,11 @@ Add results from scalar transport fields to statistics
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCcy::add_scatra_results(
-    Teuchos::RCP<Core::FE::Discretization> scatradis, Core::LinAlg::Vector<double>& phinp)
+    std::shared_ptr<Core::FE::Discretization> scatradis, Core::LinAlg::Vector<double>& phinp)
 {
   if (withscatra_)
   {
-    if (scatradis == Teuchos::null)
+    if (scatradis == nullptr)
       FOUR_C_THROW("Halleluja.");
     else
       scatradis_ = scatradis;  // now we have access
@@ -1506,9 +1506,8 @@ void FLD::TurbulenceStatisticsCcy::add_scatra_results(
 
     // now we know about the number of scatra dofs and can allocate:
     int size = shellcoordinates_->size();
-    pointsumphi_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(size, numscatradofpernode_);
-    pointsumphiphi_ =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(size, numscatradofpernode_);
+    pointsumphi_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(size, numscatradofpernode_);
+    pointsumphiphi_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(size, numscatradofpernode_);
 
     if (discret_->get_comm().MyPID() == 0)
     {

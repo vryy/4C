@@ -35,27 +35,27 @@ Mat::PAR::MatList::MatList(const Core::Mat::PAR::Parameter::Data& matdata)
     for (m = matids_.begin(); m != matids_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(matid);
-      mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(matid, mat));
+      std::shared_ptr<Core::Mat::Material> mat = Mat::factory(matid);
+      mat_.insert(std::pair<int, std::shared_ptr<Core::Mat::Material>>(matid, mat));
     }
   }
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatList::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::MatList::create_material()
 {
-  return Teuchos::make_rcp<Mat::MatList>(this);
+  return std::make_shared<Mat::MatList>(this);
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatList::material_by_id(const int id) const
+std::shared_ptr<Core::Mat::Material> Mat::PAR::MatList::material_by_id(const int id) const
 {
   if (not local_)
   {
-    std::map<int, Teuchos::RCP<Core::Mat::Material>>::const_iterator m = mat_.find(id);
+    std::map<int, std::shared_ptr<Core::Mat::Material>>::const_iterator m = mat_.find(id);
 
     if (m == mat_.end())
     {
       FOUR_C_THROW("Material %d could not be found", id);
-      return Teuchos::null;
+      return nullptr;
     }
     else
       return m->second;
@@ -63,7 +63,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatList::material_by_id(const int id
   else
     FOUR_C_THROW("This is not allowed");
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -110,9 +110,9 @@ void Mat::MatList::setup_mat_map()
   for (m = params_->mat_ids()->begin(); m != params_->mat_ids()->end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(matid);
-    if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(matid, mat));
+    std::shared_ptr<Core::Mat::Material> mat = Mat::factory(matid);
+    if (mat == nullptr) FOUR_C_THROW("Failed to allocate this material");
+    mat_.insert(std::pair<int, std::shared_ptr<Core::Mat::Material>>(matid, mat));
   }
   return;
 }
@@ -147,7 +147,7 @@ void Mat::MatList::pack(Core::Communication::PackBuffer& data) const
       // loop map of associated local materials
       if (params_ != nullptr)
       {
-        // std::map<int, Teuchos::RCP<Core::Mat::Material> >::const_iterator m;
+        // std::map<int, std::shared_ptr<Core::Mat::Material> >::const_iterator m;
         std::vector<int>::const_iterator m;
         for (m = params_->mat_ids()->begin(); m != params_->mat_ids()->end(); m++)
         {
@@ -173,7 +173,7 @@ void Mat::MatList::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid(-1);
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -193,9 +193,9 @@ void Mat::MatList::unpack(Core::Communication::UnpackBuffer& buffer)
     for (m = params_->mat_ids()->begin(); m != params_->mat_ids()->end(); m++)
     {
       const int actmatid = *m;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(actmatid);
-      if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-      mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(actmatid, mat));
+      std::shared_ptr<Core::Mat::Material> mat = Mat::factory(actmatid);
+      if (mat == nullptr) FOUR_C_THROW("Failed to allocate this material");
+      mat_.insert(std::pair<int, std::shared_ptr<Core::Mat::Material>>(actmatid, mat));
     }
 
     if (params_->local_)
@@ -233,16 +233,16 @@ int Mat::MatList::mat_id(const unsigned index) const
  | provide access to material by its ID                      thon 11/14 |
  *----------------------------------------------------------------------*/
 ///
-Teuchos::RCP<Core::Mat::Material> Mat::MatList::material_by_id(const int id) const
+std::shared_ptr<Core::Mat::Material> Mat::MatList::material_by_id(const int id) const
 {
   if (params_->local_)
   {
-    std::map<int, Teuchos::RCP<Core::Mat::Material>>::const_iterator m =
+    std::map<int, std::shared_ptr<Core::Mat::Material>>::const_iterator m =
         material_map_read()->find(id);
     if (m == mat_.end())
     {
       FOUR_C_THROW("Material %d could not be found", id);
-      return Teuchos::null;
+      return nullptr;
     }
     else
       return m->second;

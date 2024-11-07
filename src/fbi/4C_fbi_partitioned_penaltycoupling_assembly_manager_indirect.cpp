@@ -28,14 +28,14 @@ FOUR_C_NAMESPACE_OPEN
  */
 BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect::
     PartitionedBeamInteractionAssemblyManagerIndirect(
-        std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& assembly_contact_elepairs,
-        Teuchos::RCP<const Core::FE::Discretization>& discretization1,
-        Teuchos::RCP<const Core::FE::Discretization>& discretization2,
-        Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_contact_params_ptr)
+        std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& assembly_contact_elepairs,
+        std::shared_ptr<const Core::FE::Discretization>& discretization1,
+        std::shared_ptr<const Core::FE::Discretization>& discretization2,
+        std::shared_ptr<FBI::BeamToFluidMeshtyingParams> beam_contact_params_ptr)
     : PartitionedBeamInteractionAssemblyManager(assembly_contact_elepairs)
 {
   // Create the mortar manager.
-  mortar_manager_ = Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMortarManager>(discretization1,
+  mortar_manager_ = std::make_shared<BEAMINTERACTION::BeamToFluidMortarManager>(discretization1,
       discretization2, beam_contact_params_ptr, discretization1->dof_row_map()->MaxAllGID());
 
   // Setup the mortar manager.
@@ -49,16 +49,15 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerInd
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect::
     evaluate_force_stiff(const Core::FE::Discretization& discretization1,
-        const Core::FE::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
-        Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<Core::LinAlg::SparseOperator> cff,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbf,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vel,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> beam_vel)
+        const Core::FE::Discretization& discretization2, std::shared_ptr<Epetra_FEVector>& ff,
+        std::shared_ptr<Epetra_FEVector>& fb, std::shared_ptr<Core::LinAlg::SparseOperator> cff,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& cbb,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& cfb,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& cbf,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_vel,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> beam_vel)
 {
-  Teuchos::RCP<Teuchos::Time> t =
-      Teuchos::TimeMonitor::getNewTimer("FBI::PartitionedAssemblyManagerIndirect");
+  auto t = Teuchos::TimeMonitor::getNewTimer("FBI::PartitionedAssemblyManagerIndirect");
   Teuchos::TimeMonitor monitor(*t);
 
   for (auto& elepairptr : assembly_contact_elepairs_)
@@ -71,7 +70,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
 
   // Add the global mortar matrices to the force vector and stiffness matrix.
   mortar_manager_->add_global_force_stiffness_contributions(ff, *fb, cbb, cbf,
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(cff, true), cfb, beam_vel, fluid_vel);
+      std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(cff), cfb, beam_vel, fluid_vel);
 }
 
 FOUR_C_NAMESPACE_CLOSE

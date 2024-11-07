@@ -16,8 +16,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 void CONTACT::NitscheStrategyFsi::apply_force_stiff_cmt(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dis, Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter, bool predictor)
+    std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+    std::shared_ptr<Core::LinAlg::SparseOperator>& kt,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+    bool predictor)
 {
   if (predictor) return;
   CONTACT::NitscheStrategy::apply_force_stiff_cmt(dis, kt, f, step, iter, predictor);

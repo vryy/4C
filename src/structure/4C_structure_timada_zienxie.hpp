@@ -15,7 +15,7 @@
 #include "4C_structure_timada.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -43,14 +43,14 @@ namespace Solid
     //! Constructor
     TimAdaZienXie(const Teuchos::ParameterList& timeparams,  //!< TIS input parameters
         const Teuchos::ParameterList& adaparams,             //!< adaptive input flags
-        Teuchos::RCP<TimInt> tis                             //!< marching time integrator
+        std::shared_ptr<TimInt> tis                          //!< marching time integrator
     );
 
     //! @name Actions
     //@{
 
     //! Finalize the class initialization (nothing to do here)
-    void init(Teuchos::RCP<TimInt>& sti) override {}
+    void init(std::shared_ptr<TimInt>& sti) override {}
 
     /*! \brief Make one step with auxiliary scheme
      *

@@ -85,7 +85,8 @@ namespace BEAMINTERACTION
      * \brief Returns a pointer to the visualization output parameters.
      * @return Pointer to visualization output parameters.
      */
-    Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams> get_visualization_output_params_ptr()
+    std::shared_ptr<BeamToSolidSurfaceVisualizationOutputParams>
+    get_visualization_output_params_ptr()
     {
       return output_params_ptr_;
     }
@@ -104,7 +105,7 @@ namespace BEAMINTERACTION
     Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn mortar_contact_configuration_;
 
     //! Pointer to the visualization output parameters for beam to solid surface problems.
-    Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams> output_params_ptr_;
+    std::shared_ptr<BeamToSolidSurfaceVisualizationOutputParams> output_params_ptr_;
   };
 
 }  // namespace BEAMINTERACTION

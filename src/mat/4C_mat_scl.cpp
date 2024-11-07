@@ -47,9 +47,9 @@ Mat::PAR::Scl::Scl(const Core::Mat::PAR::Parameter::Data& matdata)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::Scl::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::Scl::create_material()
 {
-  return Teuchos::make_rcp<Mat::Scl>(this);
+  return std::make_shared<Mat::Scl>(this);
 }
 
 Mat::SclType Mat::SclType::instance_;
@@ -97,7 +97,7 @@ void Mat::Scl::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {

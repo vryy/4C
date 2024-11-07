@@ -42,13 +42,13 @@ int Discret::Elements::Bele3Line::evaluate(Teuchos::ParameterList& params,
   {
     case integrate_Shapefunction:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp;
       std::vector<double> mydispnp;
 
       //      if (parent_->IsMoving())
       {
         dispnp = discretization.get_state("dispnp");
-        if (dispnp != Teuchos::null)
+        if (dispnp != nullptr)
         {
           mydispnp.resize(lm.size());
           Core::FE::extract_my_values(*dispnp, mydispnp, lm);

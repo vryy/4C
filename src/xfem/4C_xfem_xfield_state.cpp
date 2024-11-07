@@ -17,11 +17,11 @@ FOUR_C_NAMESPACE_OPEN
 XFEM::XFieldState::XFieldState()
     : isinit_(false),
       issetup_(false),
-      wizard_(Teuchos::null),
-      condition_manager_(Teuchos::null),
-      xdofset_(Teuchos::null),
-      xfield_discret_ptr_(Teuchos::null),
-      field_discret_ptr_(Teuchos::null)
+      wizard_(nullptr),
+      condition_manager_(nullptr),
+      xdofset_(nullptr),
+      xfield_discret_ptr_(nullptr),
+      field_discret_ptr_(nullptr)
 {
   // intentionally left blank
 }
@@ -29,10 +29,10 @@ XFEM::XFieldState::XFieldState()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFEM::XFieldState::init(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-    const Teuchos::RCP<Cut::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
-    const Teuchos::RCP<Core::FE::Discretization>& xfielddiscret,
-    const Teuchos::RCP<Core::FE::Discretization>& fielddiscret)
+void XFEM::XFieldState::init(const std::shared_ptr<XFEM::ConditionManager>& condition_manager,
+    const std::shared_ptr<Cut::CutWizard>& wizard, const std::shared_ptr<XFEM::XFEMDofSet>& xdofset,
+    const std::shared_ptr<Core::FE::Discretization>& xfielddiscret,
+    const std::shared_ptr<Core::FE::Discretization>& fielddiscret)
 {
   // Ensure, that the setup() routines are called afterwards.
   issetup_ = false;

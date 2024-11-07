@@ -69,7 +69,7 @@ int Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate(Artery* ele,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
-    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, std::shared_ptr<Core::Mat::Material> mat)
 {
   // the number of nodes
   const int numnode = my::iel_;
@@ -98,10 +98,10 @@ int Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate(Artery* ele,
   // get all general state vectors: flow./area.,
   // ---------------------------------------------------------------------
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> qanp = discretization.get_state("qanp");
-  //  Teuchos::RCP<Core::LinAlg::Vector<double>> Wfnp        = discretization.GetState("Wfnp");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> qanp = discretization.get_state("qanp");
+  //  std::shared_ptr<Core::LinAlg::Vector<double>> Wfnp        = discretization.GetState("Wfnp");
 
-  if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
+  if (qanp == nullptr) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
   std::vector<double> myqanp(la[0].lm_.size());
@@ -136,7 +136,7 @@ int Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_service(Artery* el
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
-    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, std::shared_ptr<Core::Mat::Material> mat)
 {
   switch (action)
   {
@@ -194,7 +194,7 @@ int Discret::Elements::ArteryEleCalcLinExp<distype>::scatra_evaluate(Artery* ele
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
-    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, std::shared_ptr<Core::Mat::Material> mat)
 {
   // the number of nodes
   const int numnode = my::iel_;
@@ -223,23 +223,23 @@ int Discret::Elements::ArteryEleCalcLinExp<distype>::scatra_evaluate(Artery* ele
   // get all general state vectors: flow./area.,
   // ---------------------------------------------------------------------
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> qanp =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("qanp");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> qan =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("qan");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wfnp =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wfnp");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wbnp =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wbnp");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wfo =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wfo");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wbo =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wbo");
+  std::shared_ptr<Core::LinAlg::Vector<double>> qanp =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("qanp");
+  std::shared_ptr<Core::LinAlg::Vector<double>> qan =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("qan");
+  std::shared_ptr<Core::LinAlg::Vector<double>> wfnp =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wfnp");
+  std::shared_ptr<Core::LinAlg::Vector<double>> wbnp =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wbnp");
+  std::shared_ptr<Core::LinAlg::Vector<double>> wfo =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wfo");
+  std::shared_ptr<Core::LinAlg::Vector<double>> wbo =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wbo");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> scatran =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("scatran");
+  std::shared_ptr<Core::LinAlg::Vector<double>> scatran =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("scatran");
 
-  if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
+  if (qanp == nullptr) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
@@ -287,14 +287,14 @@ int Discret::Elements::ArteryEleCalcLinExp<distype>::scatra_evaluate(Artery* ele
 template <Core::FE::CellType distype>
 void Discret::Elements::ArteryEleCalcLinExp<distype>::initial(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<const Core::Mat::Material> material)
+    std::shared_ptr<const Core::Mat::Material> material)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> qa0 =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("qa0");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wfo =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("wfo");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wbo =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("wbo");
+  std::shared_ptr<Core::LinAlg::Vector<double>> qa0 =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("qa0");
+  std::shared_ptr<Core::LinAlg::Vector<double>> wfo =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("wfo");
+  std::shared_ptr<Core::LinAlg::Vector<double>> wbo =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("wbo");
 
   Core::Nodes::Node** nodes = ele->nodes();
 
@@ -401,7 +401,7 @@ template <Core::FE::CellType distype>
 void Discret::Elements::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
     const Core::LinAlg::Matrix<my::iel_, 1>& eqnp, const Core::LinAlg::Matrix<my::iel_, 1>& eareanp,
     Core::LinAlg::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
-    Core::LinAlg::Matrix<2 * my::iel_, 1>& rhs, Teuchos::RCP<const Core::Mat::Material> material,
+    Core::LinAlg::Matrix<2 * my::iel_, 1>& rhs, std::shared_ptr<const Core::Mat::Material> material,
     double dt)
 {
   Core::LinAlg::Matrix<2 * my::iel_, 1> qan;
@@ -921,7 +921,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::scatra_sysmat(Artery* ele,
 template <Core::FE::CellType distype>
 bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<const Core::Mat::Material> material)
+    std::shared_ptr<const Core::Mat::Material> material)
 {
   // Define Geometric variables
   double Ao1 = 0.0;
@@ -983,13 +983,13 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
   // the number of nodes
   const int numnode = my::iel_;
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> qanp = discretization.get_state("qanp");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Wfnp =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wfnp");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Wbnp =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wbnp");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> qanp = discretization.get_state("qanp");
+  std::shared_ptr<Core::LinAlg::Vector<double>> Wfnp =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wfnp");
+  std::shared_ptr<Core::LinAlg::Vector<double>> Wbnp =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wbnp");
 
-  if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
+  if (qanp == nullptr) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
@@ -1121,9 +1121,9 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
       if (ele->nodes()[i]->get_condition("ArtJunctionCond"))
       {
         // Update the characteristic wave speed
-        Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>
-            junc_nodal_vals = params.get<Teuchos::RCP<
-                std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>>(
+        std::shared_ptr<std::map<const int, std::shared_ptr<Arteries::Utils::JunctionNodeParams>>>
+            junc_nodal_vals = params.get<std::shared_ptr<
+                std::map<const int, std::shared_ptr<Arteries::Utils::JunctionNodeParams>>>>(
                 "Junctions Parameters");
 
         int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
@@ -1159,12 +1159,12 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
 template <Core::FE::CellType distype>
 void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material> material)
+    std::shared_ptr<Core::Mat::Material> material)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Wfnp =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wfnp");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Wbnp =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wbnp");
+  std::shared_ptr<Core::LinAlg::Vector<double>> Wfnp =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wfnp");
+  std::shared_ptr<Core::LinAlg::Vector<double>> Wbnp =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wbnp");
 
   // get time-step size
   const double dt = params.get<double>("time step size");
@@ -1229,9 +1229,9 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
   // the number of nodes
   const int numnode = my::iel_;
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> qanp = discretization.get_state("qanp");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> qanp = discretization.get_state("qanp");
 
-  if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
+  if (qanp == nullptr) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
@@ -1277,12 +1277,12 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
             "Something is severely wrong! In/Out terminal condition should be either \"outlet\" or "
             "\"inlet\"");
 
-      Teuchos::RCP<Core::LinAlg::Vector<double>> bcval =
-          params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("bcval");
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dbctog =
-          params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("dbctog");
+      std::shared_ptr<Core::LinAlg::Vector<double>> bcval =
+          params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("bcval");
+      std::shared_ptr<Core::LinAlg::Vector<double>> dbctog =
+          params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("dbctog");
 
-      if (bcval == Teuchos::null || dbctog == Teuchos::null)
+      if (bcval == nullptr || dbctog == nullptr)
         FOUR_C_THROW("Cannot get state vectors 'bcval' and 'dbctog'");
 
 
@@ -1336,11 +1336,11 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
       // -----------------------------------------------------------------------------
       if (ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond"))
       {
-        Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
-            params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
+        std::shared_ptr<Teuchos::ParameterList> CoupledTo3DParams =
+            params.get<std::shared_ptr<Teuchos::ParameterList>>("coupling with 3D fluid params");
         const Core::Conditions::Condition* condition =
             ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
-        Cparams.set<Teuchos::RCP<Teuchos::ParameterList>>(
+        Cparams.set<std::shared_ptr<Teuchos::ParameterList>>(
             "coupling with 3D fluid params", CoupledTo3DParams);
         Cparams.set<std::string>("Condition Name", "Art_redD_3D_CouplingCond");
 
@@ -1433,16 +1433,16 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
   {
     if (ele->nodes()[i]->get_condition("ArtJunctionCond"))
     {
-      Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>
+      std::shared_ptr<std::map<const int, std::shared_ptr<Arteries::Utils::JunctionNodeParams>>>
           junc_nodal_vals;
-      junc_nodal_vals = params.get<
-          Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>>(
+      junc_nodal_vals = params.get<std::shared_ptr<
+          std::map<const int, std::shared_ptr<Arteries::Utils::JunctionNodeParams>>>>(
           "Junctions Parameters");
 
-      Teuchos::RCP<Core::LinAlg::Vector<double>> bcval =
-          params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("bcval");
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dbctog =
-          params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("dbctog");
+      std::shared_ptr<Core::LinAlg::Vector<double>> bcval =
+          params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("bcval");
+      std::shared_ptr<Core::LinAlg::Vector<double>> dbctog =
+          params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("dbctog");
 
       // -------------------------------------------------------------------------------
       // Update the Dirichlet BC vector
@@ -1476,7 +1476,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
 template <Core::FE::CellType distype>
 void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_scatra_bc(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& disctretization, std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material> material)
+    std::shared_ptr<Core::Mat::Material> material)
 {
   //  const int numnode = my::iel_;
 
@@ -1485,10 +1485,10 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_scatra_bc(Artery*
   {
     if (ele->nodes()[i]->get_condition("ArtInOutCond"))
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> bcval =
-          params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("bcval");
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dbctog =
-          params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("dbctog");
+      std::shared_ptr<Core::LinAlg::Vector<double>> bcval =
+          params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("bcval");
+      std::shared_ptr<Core::LinAlg::Vector<double>> dbctog =
+          params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("dbctog");
       double time = params.get<double>("time");
 
       //
@@ -1546,18 +1546,18 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_scatra_bc(Artery*
 template <Core::FE::CellType distype>
 void Discret::Elements::ArteryEleCalcLinExp<distype>::calc_postprocessing_values(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material> material)
+    std::shared_ptr<Core::Mat::Material> material)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> qanp = discretization.get_state("qanp");
-  //  Teuchos::RCP<const Core::LinAlg::Vector<double>> Wfnp  = discretization.GetState("Wfnp");
-  //  Teuchos::RCP<const Core::LinAlg::Vector<double>> Wbnp  = discretization.GetState("Wbnp");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> qanp = discretization.get_state("qanp");
+  //  std::shared_ptr<const Core::LinAlg::Vector<double>> Wfnp  = discretization.GetState("Wfnp");
+  //  std::shared_ptr<const Core::LinAlg::Vector<double>> Wbnp  = discretization.GetState("Wbnp");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> pn =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("pressure");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> qn =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("flow");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> an =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("art_area");
+  std::shared_ptr<Core::LinAlg::Vector<double>> pn =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("pressure");
+  std::shared_ptr<Core::LinAlg::Vector<double>> qn =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("flow");
+  std::shared_ptr<Core::LinAlg::Vector<double>> an =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("art_area");
 
   // get time-step size
   //  const double dt = params.get<double>("time step size");
@@ -1622,7 +1622,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
   // the number of nodes
   const int numnode = my::iel_;
 
-  if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
+  if (qanp == nullptr) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
@@ -1694,12 +1694,12 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
 template <Core::FE::CellType distype>
 void Discret::Elements::ArteryEleCalcLinExp<distype>::calc_scatra_from_scatra_fw(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material> material)
+    std::shared_ptr<Core::Mat::Material> material)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> scatra_fb =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("scatra_fb");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> scatra =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("scatra");
+  std::shared_ptr<Core::LinAlg::Vector<double>> scatra_fb =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("scatra_fb");
+  std::shared_ptr<Core::LinAlg::Vector<double>> scatra =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("scatra");
 
   // the number of nodes
   const int numnode = my::iel_;
@@ -1728,7 +1728,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::calc_scatra_from_scatra_fw
 template <Core::FE::CellType distype>
 void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_wf_and_wb(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material> material)
+    std::shared_ptr<Core::Mat::Material> material)
 {
   // Define Geometric variables
   double Ao1 = 0.0;
@@ -1788,13 +1788,13 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_wf_and_wb(Artery*
   // the number of nodes
   const int numnode = my::iel_;
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> qanp = discretization.get_state("qanp");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Wfnp =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wfnp");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Wbnp =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wbnp");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> qanp = discretization.get_state("qanp");
+  std::shared_ptr<Core::LinAlg::Vector<double>> Wfnp =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wfnp");
+  std::shared_ptr<Core::LinAlg::Vector<double>> Wbnp =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wbnp");
 
-  if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
+  if (qanp == nullptr) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
@@ -1862,7 +1862,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_wf_and_wb(Artery*
 template <Core::FE::CellType distype>
 void Discret::Elements::ArteryEleCalcLinExp<distype>::solve_scatra_analytically(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material> material)
+    std::shared_ptr<Core::Mat::Material> material)
 {
   // the number of nodes
   const int numnode = my::iel_;
@@ -1885,19 +1885,19 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::solve_scatra_analytically(
   // ---------------------------------------------------------------------
   // get all general state vectors: flow./area.,
   // ---------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wfn =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wfn");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wbn =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wbn");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wfo =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wfo");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wbo =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wbo");
+  std::shared_ptr<Core::LinAlg::Vector<double>> wfn =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wfn");
+  std::shared_ptr<Core::LinAlg::Vector<double>> wbn =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wbn");
+  std::shared_ptr<Core::LinAlg::Vector<double>> wfo =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wfo");
+  std::shared_ptr<Core::LinAlg::Vector<double>> wbo =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wbo");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> scatran =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("scatran");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> scatranp =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("scatranp");
+  std::shared_ptr<Core::LinAlg::Vector<double>> scatran =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("scatran");
+  std::shared_ptr<Core::LinAlg::Vector<double>> scatranp =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("scatranp");
 
   // extract local values from the global vectors
   std::vector<double> myescatran(lm.size());

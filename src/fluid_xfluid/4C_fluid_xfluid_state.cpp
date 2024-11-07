@@ -26,14 +26,14 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor  Initialize coupling matrices                     schott 01/15 |
  *----------------------------------------------------------------------*/
 FLD::XFluidState::CouplingState::CouplingState(
-    const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
-    const Teuchos::RCP<Core::FE::Discretization>& slavediscret_mat,
-    const Teuchos::RCP<Core::FE::Discretization>& slavediscret_rhs)
+    const std::shared_ptr<const Epetra_Map>& xfluiddofrowmap,
+    const std::shared_ptr<Core::FE::Discretization>& slavediscret_mat,
+    const std::shared_ptr<Core::FE::Discretization>& slavediscret_rhs)
     : is_active_(true)
 {
-  if (slavediscret_mat == Teuchos::null)
+  if (slavediscret_mat == nullptr)
     FOUR_C_THROW("invalid slave discretization for coupling application");
-  if (slavediscret_rhs == Teuchos::null)
+  if (slavediscret_rhs == nullptr)
     FOUR_C_THROW("invalid slave discretization for coupling application");
 
 
@@ -42,11 +42,11 @@ FLD::XFluidState::CouplingState::CouplingState(
   // no explicit Dirichlet, otherwise new matrices will be created in ApplyDirichlet
   // NOTE: setting explicit Dirichlet to false can cause problems with ML preconditioner (see remark
   // in Core::LinAlg::Sparsematrix) however, we prefer not to build new matrices in ApplyDirichlet
-  C_xs_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  C_xs_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *xfluiddofrowmap, 300, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
-  C_sx_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  C_sx_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *slavediscret_mat->dof_row_map(), 300, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
-  C_ss_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  C_ss_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *slavediscret_mat->dof_row_map(), 300, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   rhC_s_ = Core::LinAlg::create_vector(*slavediscret_rhs->dof_row_map(), true);
@@ -119,10 +119,10 @@ void FLD::XFluidState::CouplingState::destroy(bool throw_exception)
 /*----------------------------------------------------------------------*
  |  Constructor for XFluidState                             kruse 08/14 |
  *----------------------------------------------------------------------*/
-FLD::XFluidState::XFluidState(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-    const Teuchos::RCP<Cut::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
-    const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
-    const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap)
+FLD::XFluidState::XFluidState(const std::shared_ptr<XFEM::ConditionManager>& condition_manager,
+    const std::shared_ptr<Cut::CutWizard>& wizard, const std::shared_ptr<XFEM::XFEMDofSet>& dofset,
+    const std::shared_ptr<const Epetra_Map>& xfluiddofrowmap,
+    const std::shared_ptr<const Epetra_Map>& xfluiddofcolmap)
     : xfluiddofrowmap_(xfluiddofrowmap),
       xfluiddofcolmap_(xfluiddofcolmap),
       dofset_(dofset),
@@ -166,7 +166,7 @@ void FLD::XFluidState::init_system_matrix()
   // elements around a node
   //   + edge-based couplings component-wise v_x->u_x, v_y->u_y, v_z->u_z, q->p
   //   number of non-zeros (for hex8 elements): 108+54 = 162
-  sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  sysmat_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *xfluiddofrowmap_, 162, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
 }
 
@@ -226,19 +226,20 @@ void FLD::XFluidState::init_coupling_matrices_and_rhs()
   // loop all coupling objects
   for (int coup_idx = 0; coup_idx < condition_manager_->num_coupling(); coup_idx++)
   {
-    Teuchos::RCP<XFEM::CouplingBase> coupling = condition_manager_->get_coupling_by_idx(coup_idx);
+    std::shared_ptr<XFEM::CouplingBase> coupling =
+        condition_manager_->get_coupling_by_idx(coup_idx);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-    if (coupling == Teuchos::null) FOUR_C_THROW("invalid coupling object!");
+    if (coupling == nullptr) FOUR_C_THROW("invalid coupling object!");
 #endif
 
-    Teuchos::RCP<XFluidState::CouplingState> coup_state = Teuchos::null;
+    std::shared_ptr<XFluidState::CouplingState> coup_state = nullptr;
 
     if (!condition_manager_->is_coupling_condition(
             coupling->get_name()))  // coupling or one-sided non-coupling object
     {
-      // create coupling state object with coupling matrices initialized with Teuchos::null
-      coup_state = Teuchos::make_rcp<XFluidState::CouplingState>();
+      // create coupling state object with coupling matrices initialized with nullptr
+      coup_state = std::make_shared<XFluidState::CouplingState>();
     }
     else
     {
@@ -247,22 +248,15 @@ void FLD::XFluidState::init_coupling_matrices_and_rhs()
         // coupling matrices can be assembled into the fluid sysmat
         // coupling rhs terms can be assembled into the fluid residual
 
-        // create weak rcp's which simplifies deleting the systemmatrix
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_weakRCP =
-            sysmat_.create_weak();  // no increment in strong reference counter
-        Teuchos::RCP<Core::LinAlg::Vector<double>> residual_weakRCP = residual_.create_weak();
-        Teuchos::RCP<Core::LinAlg::Vector<double>> residual_col_weakRCP =
-            residual_col_.create_weak();
-
-        coup_state = Teuchos::make_rcp<XFluidState::CouplingState>(
-            sysmat_weakRCP, sysmat_weakRCP, sysmat_weakRCP, residual_weakRCP, residual_col_weakRCP);
+        coup_state = std::make_shared<XFluidState::CouplingState>(
+            sysmat_, sysmat_, sysmat_, residual_, residual_col_);
       }
       else if (condition_manager_->is_mesh_condition(coup_idx))
       {
         // for matrix use the full condition dis to enable assign in blockmatrix (row map of matrix
         // is not changed by complete!) for rhs we need the additional ghosting of the boundary zone
         // on slave side, therefore the specifically modified coupling dis
-        coup_state = Teuchos::make_rcp<XFluidState::CouplingState>(
+        coup_state = std::make_shared<XFluidState::CouplingState>(
             xfluiddofrowmap_, coupling->get_cond_dis(), coupling->get_coupling_dis());
       }
       else
@@ -298,7 +292,7 @@ void FLD::XFluidState::init_ale_state_vectors(XFEM::DiscretizationXFEM& xdiscret
 void FLD::XFluidState::zero_coupling_matrices_and_rhs()
 {
   // loop all coupling objects
-  for (std::map<int, Teuchos::RCP<CouplingState>>::iterator cs = coup_state_.begin();
+  for (std::map<int, std::shared_ptr<CouplingState>>::iterator cs = coup_state_.begin();
        cs != coup_state_.end(); cs++)
     cs->second->zero_coupling_matrices_and_rhs();
 }
@@ -320,7 +314,7 @@ void FLD::XFluidState::complete_coupling_matrices_and_rhs(
 )
 {
   // loop all coupling objects
-  for (std::map<int, Teuchos::RCP<CouplingState>>::iterator cs = coup_state_.begin();
+  for (std::map<int, std::shared_ptr<CouplingState>>::iterator cs = coup_state_.begin();
        cs != coup_state_.end(); cs++)
   {
     int coupl_idx = cs->first;
@@ -329,7 +323,7 @@ void FLD::XFluidState::complete_coupling_matrices_and_rhs(
     // sysmat->Complete call
     if (condition_manager_->is_mesh_condition(coupl_idx))
     {
-      Teuchos::RCP<XFEM::CouplingBase> coupling =
+      std::shared_ptr<XFEM::CouplingBase> coupling =
           condition_manager_->get_coupling_by_idx(coupl_idx);
       cs->second->complete_coupling_matrices_and_rhs(
           fluiddofrowmap, *coupling->get_cond_dis()->dof_row_map());  // complete w.r.t
@@ -356,7 +350,7 @@ void FLD::XFluidState::zero_system_matrix_and_rhs()
  |  Set dirichlet- and velocity/pressure-map extractor      kruse 08/14 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidState::setup_map_extractors(
-    const Teuchos::RCP<Core::FE::Discretization>& xfluiddiscret, const double& time)
+    const std::shared_ptr<Core::FE::Discretization>& xfluiddiscret, const double& time)
 {
   // create dirichlet map extractor
   Teuchos::ParameterList eleparams;
@@ -365,15 +359,14 @@ void FLD::XFluidState::setup_map_extractors(
   eleparams.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
-  xfluiddiscret->evaluate_dirichlet(
-      eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
+  dbcmaps_ = std::make_shared<Core::LinAlg::MapExtractor>();
+  xfluiddiscret->evaluate_dirichlet(eleparams, zeros_, nullptr, nullptr, nullptr, dbcmaps_);
 
   zeros_->PutScalar(0.0);
 
   // create vel-pres splitter
   const int numdim = Global::Problem::instance()->n_dim();
-  velpressplitter_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+  velpressplitter_ = std::make_shared<Core::LinAlg::MapExtractor>();
   Core::LinAlg::create_map_extractor_from_discretization(
       *xfluiddiscret, numdim, 1, *velpressplitter_);
 }
@@ -386,15 +379,15 @@ bool FLD::XFluidState::destroy()
   XFEM::destroy_matrix(sysmat_);
 
   // destroy all coupling system matrices and rhs vectors (except for levelset coupling objects
-  for (std::map<int, Teuchos::RCP<CouplingState>>::iterator i = coup_state_.begin();
+  for (std::map<int, std::shared_ptr<CouplingState>>::iterator i = coup_state_.begin();
        i != coup_state_.end(); ++i)
   {
-    Teuchos::RCP<CouplingState>& cs = i->second;  // RCP reference!
-    if (cs != Teuchos::null)
+    std::shared_ptr<CouplingState>& cs = i->second;  // RCP reference!
+    if (cs != nullptr)
     {
-      cs->destroy(true);   // throw exception when object could not be deleted or more than one
-                           // strong RCP points to it
-      cs = Teuchos::null;  // invalidate coupling state object
+      cs->destroy(true);  // throw exception when object could not be deleted or more than one
+                          // strong RCP points to it
+      cs = nullptr;       // invalidate coupling state object
     }
   }
 
@@ -433,9 +426,9 @@ bool FLD::XFluidState::destroy()
 
   // wizard, dofset and conditionmanager keep RCPs pointing to them and cannot be destroyed as they
   // are further used in xfluid-class decrease at least the strong reference counter
-  wizard_ = Teuchos::null;
-  dofset_ = Teuchos::null;
-  condition_manager_ = Teuchos::null;
+  wizard_ = nullptr;
+  dofset_ = nullptr;
+  condition_manager_ = nullptr;
 
   return true;
 }
@@ -445,7 +438,7 @@ void FLD::XFluidState::update_boundary_cell_coords()
   // loop all mesh coupling objects
   for (int mc_idx = 0; mc_idx < condition_manager_->num_mesh_coupling(); mc_idx++)
   {
-    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->get_mesh_coupling(mc_idx);
+    std::shared_ptr<XFEM::MeshCoupling> mc_coupl = condition_manager_->get_mesh_coupling(mc_idx);
 
     if (!mc_coupl->cut_geometry()) continue;  // If don't cut the background mesh.
 

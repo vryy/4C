@@ -39,9 +39,10 @@ int Discret::Elements::ScaTraEleCalcLS<distype>::evaluate_action(Core::Elements:
     case ScaTra::Action::calc_error:
     {
       // extract local values from the global vectors
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phizero = discretization.get_state("phiref");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phizero == Teuchos::null or phinp == Teuchos::null)
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phizero =
+          discretization.get_state("phiref");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+      if (phizero == nullptr or phinp == nullptr)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
 
       std::vector<Core::LinAlg::Matrix<nen_, 1>> ephizero(my::numscal_);

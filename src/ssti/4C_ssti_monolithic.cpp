@@ -33,22 +33,22 @@ FOUR_C_NAMESPACE_OPEN
  *--------------------------------------------------------------------------*/
 SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : SSTIAlgorithm(comm, globaltimeparams),
-      increment_(Teuchos::null),
-      residual_(Teuchos::null),
-      solver_(Teuchos::make_rcp<Core::LinAlg::Solver>(
+      increment_(nullptr),
+      residual_(nullptr),
+      solver_(std::make_shared<Core::LinAlg::Solver>(
           Global::Problem::instance()->solver_params(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
           comm, Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"))),
-      scatrastructureoffdiagcoupling_(Teuchos::null),
-      scatrathermooffdiagcoupling_(Teuchos::null),
-      thermostructureoffdiagcoupling_(Teuchos::null),
+      scatrastructureoffdiagcoupling_(nullptr),
+      scatrathermooffdiagcoupling_(nullptr),
+      thermostructureoffdiagcoupling_(nullptr),
       dtassemble_(0.0),
       dtevaluate_(0.0),
       dtnewton_(0.0),
       dtsolve_(0.0),
-      timer_(Teuchos::make_rcp<Teuchos::Time>("SSTI_Monolithic", true)),
+      timer_(std::make_shared<Teuchos::Time>("SSTI_Monolithic", true)),
       equilibration_method_{Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(
                                 globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION"),
           Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(
@@ -59,11 +59,11 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_THERMO")},
       matrixtype_(Teuchos::getIntegralValue<Core::LinAlg::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
-      convcheck_(Teuchos::make_rcp<SSTI::ConvCheckMono>(globaltimeparams)),
-      ssti_maps_mono_(Teuchos::null),
-      ssti_matrices_(Teuchos::null),
-      strategy_assemble_(Teuchos::null),
-      strategy_equilibration_(Teuchos::null)
+      convcheck_(std::make_shared<SSTI::ConvCheckMono>(globaltimeparams)),
+      ssti_maps_mono_(nullptr),
+      ssti_matrices_(nullptr),
+      strategy_assemble_(nullptr),
+      strategy_equilibration_(nullptr)
 {
 }
 
@@ -334,7 +334,7 @@ void SSTI::SSTIMono::setup_system()
         structure_field()->get_dbc_map_extractor()->cond_map());
 
   // Setup all kind of maps
-  ssti_maps_mono_ = Teuchos::make_rcp<SSTI::SSTIMapsMono>(*this);
+  ssti_maps_mono_ = std::make_shared<SSTI::SSTIMapsMono>(*this);
 
   // initialize global increment vector for Newton-Raphson iteration
   increment_ = Core::LinAlg::create_vector(*ssti_maps_mono_->maps_sub_problems()->full_map(), true);
@@ -354,21 +354,21 @@ void SSTI::SSTIMono::setup_system()
   }
 
   // initialize submatrices and system matrix
-  ssti_matrices_ = Teuchos::make_rcp<SSTI::SSTIMatrices>(
+  ssti_matrices_ = std::make_shared<SSTI::SSTIMatrices>(
       ssti_maps_mono_, matrixtype_, scatra_field()->matrix_type(), interface_meshtying());
 
   // initialize strategy for assembly
   strategy_assemble_ = SSTI::build_assemble_strategy(
-      Teuchos::rcpFromRef(*this), matrixtype_, scatra_field()->matrix_type());
+      Core::Utils::shared_ptr_from_ref(*this), matrixtype_, scatra_field()->matrix_type());
 
   // initialize evaluation objects for coupling between subproblems
-  scatrastructureoffdiagcoupling_ = Teuchos::make_rcp<SSI::ScatraStructureOffDiagCouplingSSTI>(
+  scatrastructureoffdiagcoupling_ = std::make_shared<SSI::ScatraStructureOffDiagCouplingSSTI>(
       ssti_maps_mono_->block_map_structure(),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::scalar_transport)),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::structure)),
       ssti_structure_mesh_tying(), meshtying_scatra(), scatra_field(), structure_field());
 
-  thermostructureoffdiagcoupling_ = Teuchos::make_rcp<SSTI::ThermoStructureOffDiagCoupling>(
+  thermostructureoffdiagcoupling_ = std::make_shared<SSTI::ThermoStructureOffDiagCoupling>(
       ssti_maps_mono_->block_map_structure(), ssti_maps_mono_->block_map_thermo(),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::structure)),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::thermo)),
@@ -377,7 +377,7 @@ void SSTI::SSTIMono::setup_system()
   // Note: STI evaluation of off diagonal coupling is designed to use interface maps for the
   // interface coupling matrices. In SSTI we always use the full maps and thus hand in the same map
   // multiple times for both domain and interface contributions.
-  scatrathermooffdiagcoupling_ = Teuchos::make_rcp<STI::ScatraThermoOffDiagCouplingMatchingNodes>(
+  scatrathermooffdiagcoupling_ = std::make_shared<STI::ScatraThermoOffDiagCouplingMatchingNodes>(
       ssti_maps_mono_->block_map_thermo(), ssti_maps_mono_->block_map_thermo(),
       ssti_maps_mono_->block_map_thermo(),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::scalar_transport)),
@@ -463,9 +463,9 @@ void SSTI::SSTIMono::update()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> SSTI::SSTIMono::extract_sub_increment(Subproblem sub)
+std::shared_ptr<Core::LinAlg::Vector<double>> SSTI::SSTIMono::extract_sub_increment(Subproblem sub)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> subincrement(Teuchos::null);
+  std::shared_ptr<Core::LinAlg::Vector<double>> subincrement(nullptr);
   switch (sub)
   {
     case Subproblem::structure:

@@ -14,8 +14,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <NOX_Direction_Newton.H>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN

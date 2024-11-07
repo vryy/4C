@@ -28,7 +28,7 @@ Mixture::PAR::MixtureConstituent::MixtureConstituent(const Core::Mat::PAR::Param
 }
 
 // Create an instance of the constituent from the parameters
-Teuchos::RCP<Core::Mat::Material> Mixture::PAR::MixtureConstituent::create_material()
+std::shared_ptr<Core::Mat::Material> Mixture::PAR::MixtureConstituent::create_material()
 {
   FOUR_C_THROW(
       "Cannot create mixture constituent from this method. Use CreateConstituent() instead.");
@@ -39,7 +39,7 @@ Teuchos::RCP<Core::Mat::Material> Mixture::PAR::MixtureConstituent::create_mater
 Mixture::PAR::MixtureConstituent* Mixture::PAR::MixtureConstituent::factory(int matnum)
 {
   // for the sake of safety
-  if (Global::Problem::instance()->materials() == Teuchos::null)
+  if (Global::Problem::instance()->materials() == nullptr)
   {
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   }

@@ -16,15 +16,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::DOFSets::DofSetGIDBasedWrapper::DofSetGIDBasedWrapper(
-    Teuchos::RCP<Core::FE::Discretization> sourcedis,
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> sourcedofset)
+    std::shared_ptr<Core::FE::Discretization> sourcedis,
+    std::shared_ptr<Core::DOFSets::DofSetInterface> sourcedofset)
     : DofSetBase(),
       sourcedis_(sourcedis),
       sourcedofset_(sourcedofset),
       isassigned_(sourcedofset->filled())
 {
-  if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("Source dof set is null pointer.");
-  if (sourcedis_ == Teuchos::null) FOUR_C_THROW("Source discretization is null pointer.");
+  if (sourcedofset_ == nullptr) FOUR_C_THROW("Source dof set is null pointer.");
+  if (sourcedis_ == nullptr) FOUR_C_THROW("Source discretization is null pointer.");
 
   sourcedofset_->register_proxy(this);
 }
@@ -33,7 +33,7 @@ Core::DOFSets::DofSetGIDBasedWrapper::DofSetGIDBasedWrapper(
  *----------------------------------------------------------------------*/
 Core::DOFSets::DofSetGIDBasedWrapper::~DofSetGIDBasedWrapper()
 {
-  if (sourcedofset_ != Teuchos::null) sourcedofset_->unregister(this);
+  if (sourcedofset_ != nullptr) sourcedofset_->unregister(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -72,8 +72,8 @@ void Core::DOFSets::DofSetGIDBasedWrapper::disconnect(DofSetInterface* dofset)
 {
   if (dofset == sourcedofset_.get())
   {
-    sourcedofset_ = Teuchos::null;
-    sourcedis_ = Teuchos::null;
+    sourcedofset_ = nullptr;
+    sourcedis_ = nullptr;
   }
   else
     FOUR_C_THROW("cannot disconnect from non-connected DofSet");
@@ -90,7 +90,7 @@ void Core::DOFSets::DofSetGIDBasedWrapper::check_is_assigned() const
   FOUR_C_ASSERT(isassigned_,
       "assign_degrees_of_freedom was not called on parent dofset of this proxy,\n"
       "and/or this proxy was not notified.");
-  FOUR_C_ASSERT(sourcedofset_ != Teuchos::null, "dofset_ pointer is nullptr");
+  FOUR_C_ASSERT(sourcedofset_ != nullptr, "dofset_ pointer is nullptr");
 
   return;
 }

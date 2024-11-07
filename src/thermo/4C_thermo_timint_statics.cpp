@@ -16,13 +16,13 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Thermo::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
-      fint_(Teuchos::null),
-      fintn_(Teuchos::null),
-      fext_(Teuchos::null),
-      fextn_(Teuchos::null)
+      fint_(nullptr),
+      fintn_(nullptr),
+      fext_(nullptr),
+      fextn_(nullptr)
 {
   // info to user
   if (myrank_ == 0)
@@ -231,7 +231,7 @@ void Thermo::TimIntStatics::update_step_element()
   // action for elements
   p.set<Thermo::Action>("action", Thermo::calc_thermo_update_istep);
   // go to elements
-  discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
 
 }  // update_step_element()
 
@@ -250,7 +250,8 @@ void Thermo::TimIntStatics::read_restart_force()
 /*----------------------------------------------------------------------*
  | write internal and external forces for restart            dano 07/13 |
  *----------------------------------------------------------------------*/
-void Thermo::TimIntStatics::write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void Thermo::TimIntStatics::write_restart_force(
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
 {
   // do nothing
   return;
@@ -263,10 +264,10 @@ void Thermo::TimIntStatics::write_restart_force(Teuchos::RCP<Core::IO::Discretiz
  *----------------------------------------------------------------------*/
 void Thermo::TimIntStatics::apply_force_tang_internal(const double time,  //!< evaluation time
     const double dt,                                                      //!< step size
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,                //!< temperature state
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> tempi,               //!< residual temperatures
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fint,                      //!< internal force
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang                         //!< tangent matrix
+    const std::shared_ptr<Core::LinAlg::Vector<double>> temp,             //!< temperature state
+    const std::shared_ptr<Core::LinAlg::Vector<double>> tempi,            //!< residual temperatures
+    std::shared_ptr<Core::LinAlg::Vector<double>> fint,                   //!< internal force
+    std::shared_ptr<Core::LinAlg::SparseMatrix> tang                      //!< tangent matrix
 )
 {
   //! create the parameters for the discretization
@@ -287,9 +288,9 @@ void Thermo::TimIntStatics::apply_force_tang_internal(const double time,  //!< e
  *----------------------------------------------------------------------*/
 void Thermo::TimIntStatics::apply_force_internal(const double time,  //!< evaluation time
     const double dt,                                                 //!< step size
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,           //!< temperature state
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> tempi,          //!< incremental temperatures
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fint                  //!< internal force
+    const std::shared_ptr<Core::LinAlg::Vector<double>> temp,        //!< temperature state
+    const std::shared_ptr<Core::LinAlg::Vector<double>> tempi,       //!< incremental temperatures
+    std::shared_ptr<Core::LinAlg::Vector<double>> fint               //!< internal force
 )
 {
   //! create the parameters for the discretization
@@ -308,10 +309,10 @@ void Thermo::TimIntStatics::apply_force_internal(const double time,  //!< evalua
  | evaluate the convective boundary condition                dano 01/11 |
  *----------------------------------------------------------------------*/
 void Thermo::TimIntStatics::apply_force_external_conv(const double time,  //!< evaluation time
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> tempn,  //!< old temperature state T_n
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,   //!< temperature state T_n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext,         //!< external force
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
+    const std::shared_ptr<Core::LinAlg::Vector<double>> tempn,  //!< old temperature state T_n
+    const std::shared_ptr<Core::LinAlg::Vector<double>> temp,   //!< temperature state T_n+1
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext,         //!< external force
+    std::shared_ptr<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
 )
 {
   // create the parameters for the discretization

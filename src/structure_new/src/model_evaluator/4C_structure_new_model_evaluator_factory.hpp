@@ -13,8 +13,7 @@
 #include "4C_inpar_structure.hpp"
 #include "4C_structure_new_model_evaluator_manager.hpp"  // typedef
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -38,23 +37,23 @@ namespace Solid
       virtual ~Factory() = default;
 
 
-      Teuchos::RCP<Solid::ModelEvaluatorManager::Map> build_model_evaluators(
+      std::shared_ptr<Solid::ModelEvaluatorManager::Map> build_model_evaluators(
           const std::set<enum Inpar::Solid::ModelType>& modeltypes,
-          const Teuchos::RCP<Solid::ModelEvaluator::Generic>& coupling_model_ptr) const;
+          const std::shared_ptr<Solid::ModelEvaluator::Generic>& coupling_model_ptr) const;
 
      private:
       //! return the proper type for the contact model evaluator
-      Teuchos::RCP<Solid::ModelEvaluator::Generic> build_contact_model_evaluator() const;
+      std::shared_ptr<Solid::ModelEvaluator::Generic> build_contact_model_evaluator() const;
 
       //! return the proper type for the standard structural model evaluator
-      Teuchos::RCP<Solid::ModelEvaluator::Generic> build_structure_model_evaluator() const;
+      std::shared_ptr<Solid::ModelEvaluator::Generic> build_structure_model_evaluator() const;
 
     };  // class Factory
 
     //! non-member function, which relates to the Solid::ModelEvaluator::Factory
-    Teuchos::RCP<Solid::ModelEvaluatorManager::Map> build_model_evaluators(
+    std::shared_ptr<Solid::ModelEvaluatorManager::Map> build_model_evaluators(
         const std::set<enum Inpar::Solid::ModelType>& modeltypes,
-        const Teuchos::RCP<Solid::ModelEvaluator::Generic>& coupling_model_ptr);
+        const std::shared_ptr<Solid::ModelEvaluator::Generic>& coupling_model_ptr);
 
   }  // namespace ModelEvaluator
 }  // namespace Solid

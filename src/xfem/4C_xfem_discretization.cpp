@@ -20,11 +20,11 @@ FOUR_C_NAMESPACE_OPEN
  |  comm             (in)  a communicator object                        |
  *----------------------------------------------------------------------*/
 XFEM::DiscretizationXFEM::DiscretizationXFEM(
-    const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
+    const std::string name, std::shared_ptr<Epetra_Comm> comm, const unsigned int n_dim)
     : Core::FE::DiscretizationFaces(name, comm, n_dim),
       initialized_(false),
-      initialfulldofrowmap_(Teuchos::null),
-      initialpermdofrowmap_(Teuchos::null)
+      initialfulldofrowmap_(nullptr),
+      initialpermdofrowmap_(nullptr)
 {
   return;
 }
@@ -72,7 +72,7 @@ void XFEM::DiscretizationXFEM::store_initial_dofs(const std::vector<int>& nds)
   initialdofsets_.clear();
 
   initialdofsets_.push_back(
-      Teuchos::rcp_dynamic_cast<Core::DOFSets::DofSet>(dofsets_[nds[0]], true)->clone());
+      std::dynamic_pointer_cast<Core::DOFSets::DofSet>(dofsets_[nds[0]])->clone());
 
   // store map required for export to active dofs
   if (initialdofsets_.size() > 1)
@@ -80,14 +80,14 @@ void XFEM::DiscretizationXFEM::store_initial_dofs(const std::vector<int>& nds)
         "DiscretizationXFEM: At the moment just one initial dofset is supported by "
         "DiscretisationXFEM!");
 
-  Teuchos::RCP<Core::DOFSets::FixedSizeDofSet> fsds =
-      Teuchos::rcp_dynamic_cast<Core::DOFSets::FixedSizeDofSet>(initialdofsets_[0]);
-  if (fsds == Teuchos::null)
+  std::shared_ptr<Core::DOFSets::FixedSizeDofSet> fsds =
+      std::dynamic_pointer_cast<Core::DOFSets::FixedSizeDofSet>(initialdofsets_[0]);
+  if (fsds == nullptr)
     FOUR_C_THROW("DiscretizationXFEM: Cast to Core::DOFSets::FixedSizeDofSet failed!");
 
-  Teuchos::RCP<XFEM::XFEMDofSet> xfds =
-      Teuchos::rcp_dynamic_cast<XFEM::XFEMDofSet>(initialdofsets_[0]);
-  if (xfds != Teuchos::null)
+  std::shared_ptr<XFEM::XFEMDofSet> xfds =
+      std::dynamic_pointer_cast<XFEM::XFEMDofSet>(initialdofsets_[0]);
+  if (xfds != nullptr)
     FOUR_C_THROW("DiscretizationXFEM: Initial Dofset shouldn't be a XFEM::XFEMDofSet!");
 
   int numdofspernode = 0;
@@ -183,7 +183,7 @@ const Epetra_Map* XFEM::DiscretizationXFEM::initial_dof_col_map(unsigned nds) co
  * Takes dof_row_map with just one xfem-Dofset and duplicates                  |
  * the dof gids for export to active dofs                          ager 11/14|
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> XFEM::DiscretizationXFEM::extend_map(
+std::shared_ptr<Epetra_Map> XFEM::DiscretizationXFEM::extend_map(
     const Epetra_Map* srcmap, int numdofspernodedofset, int numdofsets, bool uniquenumbering)
 {
   int numsrcelements = srcmap->NumMyElements();
@@ -201,14 +201,14 @@ Teuchos::RCP<Epetra_Map> XFEM::DiscretizationXFEM::extend_map(
     }
   }
 
-  return Teuchos::make_rcp<Epetra_Map>(-1, dstgids.size(), dstgids.data(), 0, srcmap->Comm());
+  return std::make_shared<Epetra_Map>(-1, dstgids.size(), dstgids.data(), 0, srcmap->Comm());
 }
 
 /*----------------------------------------------------------------------*
  |  set a reference to a data vector (public)                mwgee 12/06|
  *----------------------------------------------------------------------*/
-void XFEM::DiscretizationXFEM::set_initial_state(
-    unsigned nds, const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector<double>> state)
+void XFEM::DiscretizationXFEM::set_initial_state(unsigned nds, const std::string& name,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> state)
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::DiscretizationXFEM::SetInitialState");
 
@@ -236,7 +236,7 @@ void XFEM::DiscretizationXFEM::set_initial_state(
           name.c_str());
     }
 #endif
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tmp = Core::LinAlg::create_vector(*colmap, false);
+    std::shared_ptr<Core::LinAlg::Vector<double>> tmp = Core::LinAlg::create_vector(*colmap, false);
     Core::LinAlg::export_to(*state, *tmp);
     state_[nds][name] = tmp;
   }

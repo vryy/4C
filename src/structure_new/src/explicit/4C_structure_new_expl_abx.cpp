@@ -20,10 +20,10 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 template <int t_order>
 Solid::EXPLICIT::AdamsBashforthX<t_order>::AdamsBashforthX()
-    : fvisconp_ptr_(Teuchos::null),
-      fviscon_ptr_(Teuchos::null),
-      finertianp_ptr_(Teuchos::null),
-      finertian_ptr_(Teuchos::null),
+    : fvisconp_ptr_(nullptr),
+      fviscon_ptr_(nullptr),
+      finertianp_ptr_(nullptr),
+      finertian_ptr_(nullptr),
       compute_phase_(0)
 {
 }
@@ -95,7 +95,7 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::set_state(const Core::LinAlg::Ve
   // ---------------------------------------------------------------------------
   // new end-point acceleration
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_ptr = global_state().extract_displ_entries(x);
+  std::shared_ptr<Core::LinAlg::Vector<double>> accnp_ptr = global_state().extract_displ_entries(x);
   global_state().get_acc_np()->Scale(1.0, *accnp_ptr);
   if (compute_phase_ < t_order)
   {
@@ -180,7 +180,7 @@ template <int t_order>
 void Solid::EXPLICIT::AdamsBashforthX<t_order>::add_visco_mass_contributions(
     Core::LinAlg::SparseOperator& jac) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
   // set mass matrix
   stiff_ptr->add(*global_state().get_mass_matrix(), false, 1.0, 0.0);
 }
@@ -206,15 +206,15 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::write_restart(
     {
       std::stringstream velname;
       velname << "histvel_" << i;
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> vel_ptr_ =
-          Teuchos::rcpFromRef<const Core::LinAlg::Vector<double>>(
+      std::shared_ptr<const Core::LinAlg::Vector<double>> vel_ptr_ =
+          Core::Utils::shared_ptr_from_ref<const Core::LinAlg::Vector<double>>(
               (*(global_state().get_multi_vel()))[-i]);
       iowriter.write_vector(velname.str(), vel_ptr_);
 
       std::stringstream accname;
       accname << "histacc_" << i;
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> acc_ptr_ =
-          Teuchos::rcpFromRef<const Core::LinAlg::Vector<double>>(
+      std::shared_ptr<const Core::LinAlg::Vector<double>> acc_ptr_ =
+          Core::Utils::shared_ptr_from_ref<const Core::LinAlg::Vector<double>>(
               (*(global_state().get_multi_acc()))[-i]);
       iowriter.write_vector(accname.str(), acc_ptr_);
     }
@@ -251,15 +251,15 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::read_restart(
     {
       std::stringstream velname;
       velname << "histvel_" << i;
-      Teuchos::RCP<Core::LinAlg::Vector<double>> vel_ptr =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().get_vel_n());
+      std::shared_ptr<Core::LinAlg::Vector<double>> vel_ptr =
+          std::make_shared<Core::LinAlg::Vector<double>>(*global_state().get_vel_n());
       ioreader.read_vector(vel_ptr, velname.str());
       global_state().get_multi_vel()->update_steps(*vel_ptr);
 
       std::stringstream accname;
       accname << "histacc_" << i;
-      Teuchos::RCP<Core::LinAlg::Vector<double>> acc_ptr =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().get_acc_n());
+      std::shared_ptr<Core::LinAlg::Vector<double>> acc_ptr =
+          std::make_shared<Core::LinAlg::Vector<double>>(*global_state().get_acc_n());
       ioreader.read_vector(acc_ptr, accname.str());
       global_state().get_multi_acc()->update_steps(*acc_ptr);
     }

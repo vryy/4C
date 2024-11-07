@@ -14,7 +14,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -57,7 +57,7 @@ namespace CONSTRAINTS
     */
 
     Constraint(
-        Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization constraint lives on
+        std::shared_ptr<Core::FE::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname,  ///< Name of condition to creat constraint from
         int& minID,                        ///< minimum constraint or monitor ID so far
         int& maxID                         ///< maximum constraint or monitor ID so far
@@ -68,7 +68,7 @@ namespace CONSTRAINTS
     */
 
     Constraint(
-        Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization constraint lives on
+        std::shared_ptr<Core::FE::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname  ///< Name of condition to create constraints from
     );
 
@@ -96,19 +96,19 @@ namespace CONSTRAINTS
     void evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector1,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector2,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector3  ///< distributed vector that may be filled
                            ///< by assembly of element contributions
     );
@@ -120,7 +120,7 @@ namespace CONSTRAINTS
     std::vector<int> get_active_cond_id();
 
    protected:
-    Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization
+    std::shared_ptr<Core::FE::Discretization> actdisc_;  ///< standard discretization
     std::vector<Core::Conditions::Condition*>
         constrcond_;         ///< conditions, that define the constraint (all of the same kind)
     ConstrType constrtype_;  ///< constraint type
@@ -142,18 +142,18 @@ namespace CONSTRAINTS
     void evaluate_constraint(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector1,                            ///< distributed vector that may be filled by
                                                       ///< aasembly of element contributions
         Core::LinAlg::Vector<double>& systemvector2,  ///< distributed vector that may be filled by
                                                       ///< aasembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector3  ///< distributed vector that may be filled
                            ///< by aasembly of element contributions
     );

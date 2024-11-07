@@ -39,14 +39,15 @@ namespace Mat
       ParameterAniso(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// return pointer to strategy
-      const Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>& structural_tensor_strategy()
+      const std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>&
+      structural_tensor_strategy()
       {
         return structural_tensor_strategy_;
       };
 
      private:
       /// structural tensor strategy
-      Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase> structural_tensor_strategy_;
+      std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase> structural_tensor_strategy_;
 
     };  // class ParameterAniso
 

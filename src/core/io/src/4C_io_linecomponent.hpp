@@ -14,9 +14,9 @@
 #include "4C_io_input_parameter_container.hpp"
 
 #include <Teuchos_Array.hpp>
-#include <Teuchos_RCP.hpp>
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <utility>
 #include <variant>
@@ -52,8 +52,9 @@ namespace Input
     /// A human-readable description of this component used in help messages.
     virtual void describe(std::ostream& stream) {}
 
-    virtual Teuchos::RCP<std::stringstream> read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, Core::IO::InputParameterContainer& container) = 0;
+    virtual std::shared_ptr<std::stringstream> read(const std::string& section_name,
+        std::shared_ptr<std::stringstream> condline,
+        Core::IO::InputParameterContainer& container) = 0;
 
     /* write my part of a default line of the condition
      * as restructuredText for ReadTheDocs
@@ -125,8 +126,8 @@ namespace Input
 
     std::string write_read_the_docs() override;
 
-    Teuchos::RCP<std::stringstream> read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline,
+    std::shared_ptr<std::stringstream> read(const std::string& section_name,
+        std::shared_ptr<std::stringstream> condline,
         Core::IO::InputParameterContainer& container) override;
 
    private:
@@ -152,8 +153,8 @@ namespace Input
 
     void describe(std::ostream& stream) override;
 
-    Teuchos::RCP<std::stringstream> read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline,
+    std::shared_ptr<std::stringstream> read(const std::string& section_name,
+        std::shared_ptr<std::stringstream> condline,
         Core::IO::InputParameterContainer& container) override;
 
    private:
@@ -186,8 +187,8 @@ namespace Input
 
     Teuchos::Array<std::string> get_options() override;
 
-    Teuchos::RCP<std::stringstream> read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline,
+    std::shared_ptr<std::stringstream> read(const std::string& section_name,
+        std::shared_ptr<std::stringstream> condline,
         Core::IO::InputParameterContainer& container) override;
 
    private:
@@ -225,8 +226,8 @@ namespace Input
 
     void describe(std::ostream& stream) override;
 
-    Teuchos::RCP<std::stringstream> read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline,
+    std::shared_ptr<std::stringstream> read(const std::string& section_name,
+        std::shared_ptr<std::stringstream> condline,
         Core::IO::InputParameterContainer& container) override;
 
     std::string write_read_the_docs() override;
@@ -255,8 +256,8 @@ namespace Input
 
     void describe(std::ostream& stream) override;
 
-    Teuchos::RCP<std::stringstream> read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline,
+    std::shared_ptr<std::stringstream> read(const std::string& section_name,
+        std::shared_ptr<std::stringstream> condline,
         Core::IO::InputParameterContainer& container) override;
 
     void set_length(int newlength);
@@ -293,8 +294,8 @@ namespace Input
 
     void describe(std::ostream& stream) override;
 
-    Teuchos::RCP<std::stringstream> read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline,
+    std::shared_ptr<std::stringstream> read(const std::string& section_name,
+        std::shared_ptr<std::stringstream> condline,
         Core::IO::InputParameterContainer& container) override;
 
    private:
@@ -323,8 +324,8 @@ namespace Input
 
     void describe(std::ostream& stream) override;
 
-    Teuchos::RCP<std::stringstream> read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline,
+    std::shared_ptr<std::stringstream> read(const std::string& section_name,
+        std::shared_ptr<std::stringstream> condline,
         Core::IO::InputParameterContainer& container) override;
 
    private:
@@ -348,8 +349,8 @@ namespace Input
 
     void describe(std::ostream& stream) override;
 
-    Teuchos::RCP<std::stringstream> read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline,
+    std::shared_ptr<std::stringstream> read(const std::string& section_name,
+        std::shared_ptr<std::stringstream> condline,
         Core::IO::InputParameterContainer& container) override;
 
    private:
@@ -385,7 +386,8 @@ namespace Input
      * continues with these components. By default, the selection is made based on @p default_key.
      */
     SwitchComponent(std::string name, const KeyType& default_key,
-        std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<Input::LineComponent>>>>
+        std::map<KeyType,
+            std::pair<std::string, std::vector<std::shared_ptr<Input::LineComponent>>>>
             choices);
 
     void default_line(std::ostream& stream) override;
@@ -398,13 +400,13 @@ namespace Input
 
     void print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
-    Teuchos::RCP<std::stringstream> read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline,
+    std::shared_ptr<std::stringstream> read(const std::string& section_name,
+        std::shared_ptr<std::stringstream> condline,
         Core::IO::InputParameterContainer& container) override;
 
    private:
     KeyType default_key_;
-    std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<Input::LineComponent>>>>
+    std::map<KeyType, std::pair<std::string, std::vector<std::shared_ptr<Input::LineComponent>>>>
         choices_;
 
     //! Helper component to read the selected key from input.
@@ -447,8 +449,8 @@ namespace Input
 
     void print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
-    Teuchos::RCP<std::stringstream> read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline,
+    std::shared_ptr<std::stringstream> read(const std::string& section_name,
+        std::shared_ptr<std::stringstream> condline,
         Core::IO::InputParameterContainer& container) override;
 
    private:
@@ -467,18 +469,19 @@ namespace Input
   /// The name on the input line becomes the name used to put the int value into
   /// the parsed container.
   template <typename DefinitionType>
-  inline void add_named_int(const Teuchos::RCP<DefinitionType>& definition, const std::string& name,
-      const std::string& description = {}, const int defaultvalue = 0, const bool optional = false,
-      const bool none_allowed = false, const bool fortran_style = false)
+  inline void add_named_int(const std::shared_ptr<DefinitionType>& definition,
+      const std::string& name, const std::string& description = {}, const int defaultvalue = 0,
+      const bool optional = false, const bool none_allowed = false,
+      const bool fortran_style = false)
   {
     definition->add_component(
-        Teuchos::make_rcp<Input::SeparatorComponent>(name, description, optional));
+        std::make_shared<Input::SeparatorComponent>(name, description, optional));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
     data.none_allowed = none_allowed;
     data.fortran_style = fortran_style;
-    definition->add_component(Teuchos::make_rcp<Input::IntComponent>(name, data));
+    definition->add_component(std::make_shared<Input::IntComponent>(name, data));
   }
 
   /// add a separator followed by a number integer values
@@ -486,17 +489,17 @@ namespace Input
   /// The name on the input line becomes the name used to put the int value into
   /// the parsed Container.
   template <typename DefinitionType>
-  inline void add_named_int_vector(const Teuchos::RCP<DefinitionType>& definition,
+  inline void add_named_int_vector(const std::shared_ptr<DefinitionType>& definition,
       const std::string& name, const std::string& description, const int size,
       const int defaultvalue = 0, const bool optional = false, const bool none_allowed = false)
   {
     definition->add_component(
-        Teuchos::make_rcp<Input::SeparatorComponent>(name, description, optional));
+        std::make_shared<Input::SeparatorComponent>(name, description, optional));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
     data.none_allowed = none_allowed;
-    definition->add_component(Teuchos::make_rcp<Input::IntVectorComponent>(name, size, data));
+    definition->add_component(std::make_shared<Input::IntVectorComponent>(name, size, data));
   }
 
   /// add a separator followed by a number integer values
@@ -504,45 +507,45 @@ namespace Input
   /// The name on the input line becomes the name used to put the int value into
   /// the parsed Container.
   template <typename DefinitionType>
-  inline void add_named_int_vector(const Teuchos::RCP<DefinitionType>& definition,
+  inline void add_named_int_vector(const std::shared_ptr<DefinitionType>& definition,
       const std::string& name, const std::string& description, const std::string& sizename,
       const int defaultvalue = 0, const bool optional = false, const bool none_allowed = false)
   {
     definition->add_component(
-        Teuchos::make_rcp<Input::SeparatorComponent>(name, description, optional));
+        std::make_shared<Input::SeparatorComponent>(name, description, optional));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
     data.none_allowed = none_allowed;
     definition->add_component(
-        Teuchos::make_rcp<Input::IntVectorComponent>(name, LengthFromInt(sizename), data));
+        std::make_shared<Input::IntVectorComponent>(name, LengthFromInt(sizename), data));
   }
 
   /// add a separator followed by a single real value
   ///
   /// The name on the input line becomes the name used to put the value into the parsed Container
   template <typename DefinitionType>
-  inline void add_named_real(const Teuchos::RCP<DefinitionType>& definition,
+  inline void add_named_real(const std::shared_ptr<DefinitionType>& definition,
       const std::string& name, const std::string& description = {}, const double defaultvalue = 0.0,
       const bool optional = false)
   {
     definition->add_component(
-        Teuchos::make_rcp<Input::SeparatorComponent>(name, description, optional));
+        std::make_shared<Input::SeparatorComponent>(name, description, optional));
     definition->add_component(
-        Teuchos::make_rcp<Input::RealComponent>(name, RealComponentData{defaultvalue, optional}));
+        std::make_shared<Input::RealComponent>(name, RealComponentData{defaultvalue, optional}));
   }
 
   /// add a separator followed by a number of real values
   ///
   /// The name on the input line becomes the name used to put the value into the parsed Container.
   template <typename DefinitionType>
-  inline void add_named_real_vector(const Teuchos::RCP<DefinitionType>& definition,
+  inline void add_named_real_vector(const std::shared_ptr<DefinitionType>& definition,
       const std::string& name, const std::string& description, const int size,
       const double defaultvalue = 0.0, const bool optional = false)
   {
     definition->add_component(
-        Teuchos::make_rcp<Input::SeparatorComponent>(name, description, optional));
-    definition->add_component(Teuchos::make_rcp<Input::RealVectorComponent>(
+        std::make_shared<Input::SeparatorComponent>(name, description, optional));
+    definition->add_component(std::make_shared<Input::RealVectorComponent>(
         name, size, RealComponentData{defaultvalue, optional}));
   }
 
@@ -550,28 +553,28 @@ namespace Input
   ///
   /// The name on the input line becomes the name used to put the value into the parsed Container.
   template <typename DefinitionType>
-  inline void add_named_real_vector(const Teuchos::RCP<DefinitionType>& definition,
+  inline void add_named_real_vector(const std::shared_ptr<DefinitionType>& definition,
       const std::string& name, const std::string& description, const std::string& sizename,
       const double defaultvalue = 0.0, const bool optional = false)
   {
     definition->add_component(
-        Teuchos::make_rcp<Input::SeparatorComponent>(name, description, optional));
-    definition->add_component(Teuchos::RCP(
-        new Input::RealVectorComponent(name, LengthFromInt(sizename), {defaultvalue, optional})));
+        std::make_shared<Input::SeparatorComponent>(name, description, optional));
+    definition->add_component(std::make_shared<Input::RealVectorComponent>(
+        name, LengthFromInt(sizename), Input::RealComponentData{defaultvalue, optional}));
   }
 
   /// add a separator followed by a single string value
   ///
   /// The name on the input line becomes the name used to put the value into the parsed Container
   template <typename DefinitionType>
-  inline void add_named_string(const Teuchos::RCP<DefinitionType>& definition,
+  inline void add_named_string(const std::shared_ptr<DefinitionType>& definition,
       const std::string& name, const std::string& description, const std::string& defaultvalue,
       const bool optional = false)
   {
     definition->add_component(
-        Teuchos::make_rcp<Input::SeparatorComponent>(name, description, optional));
+        std::make_shared<Input::SeparatorComponent>(name, description, optional));
     definition->add_component(
-        Teuchos::make_rcp<Input::StringComponent>(name, defaultvalue, optional));
+        std::make_shared<Input::StringComponent>(name, defaultvalue, optional));
   }
 
   /// add a separator followed by a single Boolean value
@@ -579,14 +582,13 @@ namespace Input
   /// The name on the input line becomes the name used to put the bool value into
   /// the parsed Container.
   template <typename DefinitionType>
-  inline void add_named_bool(const Teuchos::RCP<DefinitionType>& definition,
+  inline void add_named_bool(const std::shared_ptr<DefinitionType>& definition,
       const std::string& name, const std::string& description, const bool defaultvalue = false,
       const bool optional = false)
   {
     definition->add_component(
-        Teuchos::make_rcp<Input::SeparatorComponent>(name, description, optional));
-    definition->add_component(
-        Teuchos::make_rcp<Input::BoolComponent>(name, defaultvalue, optional));
+        std::make_shared<Input::SeparatorComponent>(name, description, optional));
+    definition->add_component(std::make_shared<Input::BoolComponent>(name, defaultvalue, optional));
   }
 
   /*!
@@ -620,15 +622,15 @@ namespace Input
    * and a print_string "integer vector retrieved from the FILE".
    */
   template <typename T, typename DefinitionType>
-  inline void add_named_processed_component(const Teuchos::RCP<DefinitionType>& definition,
+  inline void add_named_processed_component(const std::shared_ptr<DefinitionType>& definition,
       const std::string& name, const std::string& separator_description,
       const std::function<T(const std::string&)>& process_operation,
       const std::string& print_string, const bool optional = false)
   {
     definition->add_component(
-        Teuchos::make_rcp<Input::SeparatorComponent>(name, separator_description, optional));
-    definition->add_component(Teuchos::RCP(
-        new Input::ProcessedComponent(name, process_operation, print_string, optional)));
+        std::make_shared<Input::SeparatorComponent>(name, separator_description, optional));
+    definition->add_component(std::make_shared<Input::ProcessedComponent>(
+        name, process_operation, print_string, optional));
   }
 
 
@@ -641,14 +643,14 @@ namespace Input
    * optional tag.
    */
   template <typename DefinitionType>
-  inline void add_named_selection_component(const Teuchos::RCP<DefinitionType>& definition,
+  inline void add_named_selection_component(const std::shared_ptr<DefinitionType>& definition,
       const std::string& name, const std::string& separator_description,
       const std::string& defaultvalue, const Teuchos::Array<std::string>& datfilevalues,
       const Teuchos::Array<std::string>& condvalues, bool optional = false)
   {
     definition->add_component(
-        Teuchos::make_rcp<Input::SeparatorComponent>(name, separator_description, optional));
-    definition->add_component(Teuchos::make_rcp<Input::SelectionComponent>(
+        std::make_shared<Input::SeparatorComponent>(name, separator_description, optional));
+    definition->add_component(std::make_shared<Input::SelectionComponent>(
         name, defaultvalue, datfilevalues, condvalues, optional));
   }
 
@@ -661,14 +663,14 @@ namespace Input
    * optional tag.
    */
   template <typename DefinitionType>
-  inline void add_named_selection_component(const Teuchos::RCP<DefinitionType>& definition,
+  inline void add_named_selection_component(const std::shared_ptr<DefinitionType>& definition,
       const std::string& name, const std::string& separator_description,
       const std::string& defaultvalue, const Teuchos::Array<std::string>& datfilevalues,
       const Teuchos::Array<int>& condvalues, bool optional = false)
   {
     definition->add_component(
-        Teuchos::make_rcp<Input::SeparatorComponent>(name, separator_description, optional));
-    definition->add_component(Teuchos::make_rcp<Input::SelectionComponent>(
+        std::make_shared<Input::SeparatorComponent>(name, separator_description, optional));
+    definition->add_component(std::make_shared<Input::SelectionComponent>(
         name, defaultvalue, datfilevalues, condvalues, optional));
   }
 

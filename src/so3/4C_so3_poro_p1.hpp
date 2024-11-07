@@ -102,16 +102,16 @@ namespace Discret
       void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
+      \brief Get vector of std::shared_ptrs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       //! @name Access methods
 
@@ -274,7 +274,7 @@ namespace Discret
           Core::LinAlg::Matrix<Base::numdof_, (Base::numdim_ + 1) * Base::numnod_>* sub_stiff);
 
       //! Initial porosity at the nodes of the element
-      Teuchos::RCP<Core::LinAlg::Matrix<Base::numnod_, 1>> init_porosity_;
+      std::shared_ptr<Core::LinAlg::Matrix<Base::numnod_, 1>> init_porosity_;
 
       bool is_init_porosity_;
     };

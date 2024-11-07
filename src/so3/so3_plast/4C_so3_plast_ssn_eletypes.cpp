@@ -44,17 +44,17 @@ Core::Communication::ParObject* Discret::Elements::SoHex8PlastType::create(
  | create the new element type (public)                     seitz 07/13 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex8PlastType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::So3Plast<Core::FE::CellType::hex8>>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::So3Plast<Core::FE::CellType::hex8>>(id, owner);
 
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }  // Create()
 
 
@@ -62,11 +62,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8PlastType::create
  | create the new element type (public)                     seitz 07/13 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex8PlastType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::So3Plast<Core::FE::CellType::hex8>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::So3Plast<Core::FE::CellType::hex8>>(id, owner);
   return ele;
 
 }  // Create()
@@ -148,16 +148,16 @@ Core::Communication::ParObject* Discret::Elements::SoHex18PlastType::create(
 | create the new element type (public)                     seitz 07/13 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex18PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex18PlastType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::So3Plast<Core::FE::CellType::hex18>>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::So3Plast<Core::FE::CellType::hex18>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }  // Create()
 
 
@@ -165,11 +165,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex18PlastType::creat
 | create the new element type (public)                     seitz 07/13 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex18PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex18PlastType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::So3Plast<Core::FE::CellType::hex18>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::So3Plast<Core::FE::CellType::hex18>>(id, owner);
   return ele;
 }  // Create()
 
@@ -251,16 +251,16 @@ Core::Communication::ParObject* Discret::Elements::SoHex27PlastType::create(
 | create the new element type (public)                     seitz 07/13 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex27PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex27PlastType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::So3Plast<Core::FE::CellType::hex27>>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::So3Plast<Core::FE::CellType::hex27>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }  // Create()
 
 
@@ -268,11 +268,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex27PlastType::creat
 | create the new element type (public)                     seitz 07/13 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex27PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex27PlastType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::So3Plast<Core::FE::CellType::hex27>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::So3Plast<Core::FE::CellType::hex27>>(id, owner);
   return ele;
 }  // Create()
 
@@ -350,16 +350,16 @@ Core::Communication::ParObject* Discret::Elements::SoTet4PlastType::create(
 | create the new element type (public)                     seitz 07/13 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoTet4PlastType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::So3Plast<Core::FE::CellType::tet4>>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::So3Plast<Core::FE::CellType::tet4>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }  // Create()
 
 
@@ -367,11 +367,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4PlastType::create
 | create the new element type (public)                     seitz 07/13 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoTet4PlastType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::So3Plast<Core::FE::CellType::tet4>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::So3Plast<Core::FE::CellType::tet4>>(id, owner);
   return ele;
 }  // Create()
 
@@ -447,16 +447,16 @@ Core::Communication::ParObject* Discret::Elements::SoNurbs27PlastType::create(
 | create the new element type (public)                     seitz 07/13 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoNurbs27PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoNurbs27PlastType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::So3Plast<Core::FE::CellType::nurbs27>>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::So3Plast<Core::FE::CellType::nurbs27>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }  // Create()
 
 
@@ -464,11 +464,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoNurbs27PlastType::cre
 | create the new element type (public)                     seitz 07/13 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoNurbs27PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoNurbs27PlastType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::So3Plast<Core::FE::CellType::nurbs27>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::So3Plast<Core::FE::CellType::nurbs27>>(id, owner);
   return ele;
 }  // Create()
 

@@ -12,8 +12,8 @@
 /* headers */
 #include "4C_config.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <map>
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -41,7 +41,7 @@ namespace CONTACT
        * \param[in] id ID od the contact constitutive law in the input file
        * \law[in] container holding the law parameter read from the input file
        */
-      void insert(int id, Teuchos::RCP<Container> mat);
+      void insert(int id, std::shared_ptr<Container> mat);
 
       /** \brief check if a contact constitutive law exists for provided ID
        *
@@ -60,14 +60,14 @@ namespace CONTACT
        *
        * \param[in] id ID of the contact constitutive law given in the input file
        */
-      Teuchos::RCP<Container> by_id(const int id) const;
+      std::shared_ptr<Container> by_id(const int id) const;
 
       /// return problem index to read from
       int get_read_from_problem() const { return readfromproblem_; }
 
      private:
       /// the map linking contact constitutive law IDs to input constitutive laws
-      std::map<int, Teuchos::RCP<Container>> map_;
+      std::map<int, std::shared_ptr<Container>> map_;
 
       /// the index of problem instance of which contact constitutive law read-in shall be performed
       int readfromproblem_;

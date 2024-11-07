@@ -42,11 +42,12 @@ namespace Cut
   {
    public:
     /// \brief create an element with the given type
-    static Teuchos::RCP<Cut::Element> create(const Core::FE::CellType& elementtype, const int& eid,
-        const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active);
+    static std::shared_ptr<Cut::Element> create(const Core::FE::CellType& elementtype,
+        const int& eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes,
+        const bool& active);
 
     /// create an element with the given shards-key (coming from trilinos library)
-    static Teuchos::RCP<Cut::Element> create(const unsigned& shardskey, const int& eid,
+    static std::shared_ptr<Cut::Element> create(const unsigned& shardskey, const int& eid,
         const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active);
 
     //! constructor
@@ -623,7 +624,7 @@ namespace Cut
     Core::FE::CellType quadshape_;
 
     /// the bounding volume of the element
-    Teuchos::RCP<BoundingBox> boundingvolume_;
+    std::shared_ptr<BoundingBox> boundingvolume_;
 
     /// type of integration-rule for this element
     Cut::ElementIntegrationType eleinttype_;
@@ -992,7 +993,7 @@ namespace Cut
     /// constructor
     ElementFactory(){};
 
-    Teuchos::RCP<Element> create_element(Core::FE::CellType elementtype, int eid,
+    std::shared_ptr<Element> create_element(Core::FE::CellType elementtype, int eid,
         const std::vector<Side*>& sides, const std::vector<Node*>& nodes, bool active) const;
 
    private:

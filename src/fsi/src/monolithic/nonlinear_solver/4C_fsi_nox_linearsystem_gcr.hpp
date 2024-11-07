@@ -19,9 +19,9 @@
 #include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Utils.H>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -259,7 +259,7 @@ namespace NOX
       Teuchos::RCP<::NOX::Epetra::Scaling> scaling;
 
       //! An extra temporary vector, only allocated if needed.
-      mutable Teuchos::RCP<::NOX::Epetra::Vector> tmpVectorPtr;
+      mutable std::shared_ptr<::NOX::Epetra::Vector> tmpVectorPtr;
 
       mutable double conditionNumberEstimate;
 
@@ -280,9 +280,9 @@ namespace NOX
       //! Total time spent in applyJacobianInverse (sec.).
       mutable double timeApplyJacbianInverse;
 
-      std::vector<Teuchos::RCP<::NOX::Epetra::Vector>> u_;
+      std::vector<std::shared_ptr<::NOX::Epetra::Vector>> u_;
 
-      std::vector<Teuchos::RCP<::NOX::Epetra::Vector>> c_;
+      std::vector<std::shared_ptr<::NOX::Epetra::Vector>> c_;
     };
 
   }  // namespace FSI

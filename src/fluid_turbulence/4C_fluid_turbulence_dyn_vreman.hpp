@@ -18,8 +18,9 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -36,7 +37,7 @@ namespace FLD
     \brief Standard Constructor (public)
 
     */
-    Vreman(Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params);
+    Vreman(std::shared_ptr<Core::FE::Discretization> actdis, Teuchos::ParameterList& params);
 
     /*!
     \brief Destructor
@@ -47,16 +48,16 @@ namespace FLD
 
 
     void apply_filter_for_dynamic_computation_of_cv(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> velocity,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle);
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> velocity,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle);
 
     void apply_filter_for_dynamic_computation_of_dt(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle,
         Teuchos::ParameterList& extraparams, const int ndsvel);
 
-    void add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
+    void add_scatra(std::shared_ptr<Core::FE::Discretization> scatradis);
 
     void get_cv(double& Cv)
     {
@@ -68,21 +69,21 @@ namespace FLD
 
    private:
     /// provide access to the box filter
-    Teuchos::RCP<FLD::Boxfilter> boxfilter();
+    std::shared_ptr<FLD::Boxfilter> boxfilter();
     // Boxfilter
-    Teuchos::RCP<FLD::Boxfilter> boxf_;
-    Teuchos::RCP<FLD::Boxfilter> boxfsc_;
+    std::shared_ptr<FLD::Boxfilter> boxf_;
+    std::shared_ptr<FLD::Boxfilter> boxfsc_;
 
 
 
     //! the discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
     //! parameterlist including time params, stabilization params and turbulence sublist
     Teuchos::ParameterList& params_;
     //! flag for physical type of fluid flow
     Inpar::FLUID::PhysicalType physicaltype_;
     // scatra specific
-    Teuchos::RCP<Core::FE::Discretization> scatradiscret_;
+    std::shared_ptr<Core::FE::Discretization> scatradiscret_;
 
 
     double dyn_vreman_compute_cv();
@@ -95,14 +96,14 @@ namespace FLD
     //        --------------------------
 
     //! the filtered reystress exported to column map
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_strainrate_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_expression_;
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_alphaij_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_alpha2_;
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_phi_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_phi2_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_phiexpression_;
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_alphaijsc_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_strainrate_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_expression_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_alphaij_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_alpha2_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_phi_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_phi2_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_phiexpression_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_alphaijsc_;
     //@}
 
     //! @name homogeneous flow specials

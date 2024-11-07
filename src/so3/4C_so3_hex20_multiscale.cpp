@@ -47,7 +47,7 @@ void Discret::Elements::SoHex20::soh20_homog(Teuchos::ParameterList& params)
  *----------------------------------------------------------------------*/
 void Discret::Elements::SoHex20::soh20_read_restart_multi()
 {
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   if (mat->material_type() == Core::Materials::m_struct_multiscale)
   {

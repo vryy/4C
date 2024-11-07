@@ -47,7 +47,7 @@ void tsi_dyn_drt()
       Teuchos::getIntegralValue<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // create an empty TSI::Algorithm instance
-  Teuchos::RCP<TSI::Algorithm> tsi;
+  std::shared_ptr<TSI::Algorithm> tsi;
 
   // choose algorithm depending on solution type
   switch (coupling)
@@ -55,7 +55,7 @@ void tsi_dyn_drt()
     case Inpar::TSI::Monolithic:
     {
       // create an TSI::Monolithic instance
-      tsi = Teuchos::make_rcp<TSI::Monolithic>(comm, sdynparams);
+      tsi = std::make_shared<TSI::Monolithic>(comm, sdynparams);
       break;
     }
     case Inpar::TSI::OneWay:
@@ -67,7 +67,7 @@ void tsi_dyn_drt()
     {
       // Any partitioned algorithm. Stable of working horses.
       // create an TSI::Algorithm instance
-      tsi = Teuchos::make_rcp<TSI::Partitioned>(comm);
+      tsi = std::make_shared<TSI::Partitioned>(comm);
       break;
     }
     default:

@@ -90,7 +90,7 @@ namespace GEOMETRYPAIR
      * \brief Constructor.
      * @param core_element (in) Pointer to the DRT element.
      */
-    FaceElement(const Teuchos::RCP<const Core::Elements::Element>& core_element)
+    FaceElement(const std::shared_ptr<const Core::Elements::Element>& core_element)
         : core_element_(core_element), part_of_pair_(false), patch_dof_gid_(){};
 
     /**
@@ -101,15 +101,16 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the RCP to the DRT element.
      */
-    const Core::Elements::Element* get_element() const { return core_element_.getRawPtr(); }
+    const Core::Elements::Element* get_element() const { return core_element_.get(); }
 
     /**
      * \brief Setup the object. Has to be implemented in derived class.
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    virtual void setup(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements) = 0;
+    virtual void setup(const std::shared_ptr<const Core::FE::Discretization>& discret,
+        const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>&
+            face_elements) = 0;
 
     /**
      * \brief Set the needed displacement vectors for this face. Has to be implemented in derived
@@ -118,8 +119,9 @@ namespace GEOMETRYPAIR
      * @param displacement (in) Current displacement vector.
      * @param face_elements (in) Map with all the faces in this condition.
      */
-    virtual void set_state(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements) = 0;
+    virtual void set_state(const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement,
+        const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>&
+            face_elements) = 0;
 
     /**
      * \brief Calculate the averaged normals on the nodes of this face. Has to be implemented in
@@ -128,7 +130,7 @@ namespace GEOMETRYPAIR
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
     virtual void calculate_averaged_reference_normals(
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements){};
+        const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements){};
 
     /**
      * \brief Return the position on this face as a double.
@@ -176,7 +178,7 @@ namespace GEOMETRYPAIR
 
    protected:
     //! Pointer to the drt element.
-    Teuchos::RCP<const Core::Elements::Element> core_element_;
+    std::shared_ptr<const Core::Elements::Element> core_element_;
 
     //! Flag if this face element is part of a contact pair, i.e. if it has evaluate it's averaged
     //! normals.
@@ -205,7 +207,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor (derived).
      */
-    FaceElementTemplate(const Teuchos::RCP<const Core::Elements::Element>& core_element)
+    FaceElementTemplate(const std::shared_ptr<const Core::Elements::Element>& core_element)
         : FaceElement(core_element), n_dof_other_element_(0){};
 
 
@@ -215,15 +217,15 @@ namespace GEOMETRYPAIR
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    void setup(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    void setup(const std::shared_ptr<const Core::FE::Discretization>& discret,
+        const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
     /**
      * \brief Set the needed displacement vectors for this face (derived).
      */
-    void set_state(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    void set_state(const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement,
+        const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
     /**
@@ -332,7 +334,7 @@ namespace GEOMETRYPAIR
      * \brief Constructor (derived).
      * @param evaluate_current_normals (in) If the current normals should be evaluated.
      */
-    FaceElementPatchTemplate(const Teuchos::RCP<const Core::Elements::Element>& core_element,
+    FaceElementPatchTemplate(const std::shared_ptr<const Core::Elements::Element>& core_element,
         const bool evaluate_current_normals)
         : base_class(core_element),
           connected_faces_(),
@@ -350,22 +352,22 @@ namespace GEOMETRYPAIR
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    void setup(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    void setup(const std::shared_ptr<const Core::FE::Discretization>& discret,
+        const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
     /**
      * \brief Set the needed displacement vectors for this face (derived).
      */
-    void set_state(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    void set_state(const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement,
+        const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
     /**
      * \brief Calculate the averaged normals on the nodes of this face (derived).
      */
     void calculate_averaged_reference_normals(
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+        const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
     /**
@@ -416,7 +418,7 @@ namespace GEOMETRYPAIR
      * \brief Constructor (derived).
      */
     FaceElementTemplateExtendedVolume(
-        const Teuchos::RCP<const Core::Elements::Element>& core_element)
+        const std::shared_ptr<const Core::Elements::Element>& core_element)
         : base_class(core_element),
           surface_dof_lid_map_(true),
           face_to_volume_coordinate_axis_map_(true),
@@ -430,15 +432,15 @@ namespace GEOMETRYPAIR
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    void setup(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    void setup(const std::shared_ptr<const Core::FE::Discretization>& discret,
+        const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
     /**
      * \brief Set the needed displacement vectors for this face (derived).
      */
-    void set_state(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
-        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    void set_state(const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement,
+        const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
     /**
@@ -500,8 +502,8 @@ namespace GEOMETRYPAIR
    * @param surface_normal_strategy (in) strategy to be used for surface normals.
    * @return RCP to the created GEOMETRYPAIR FaceElement.
    */
-  Teuchos::RCP<FaceElement> face_element_factory(
-      const Teuchos::RCP<const Core::Elements::Element>& core_element, const int fad_order,
+  std::shared_ptr<FaceElement> face_element_factory(
+      const std::shared_ptr<const Core::Elements::Element>& core_element, const int fad_order,
       const Inpar::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
 
 }  // namespace GEOMETRYPAIR

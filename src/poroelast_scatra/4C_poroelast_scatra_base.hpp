@@ -95,41 +95,41 @@ namespace PoroElastScaTra
     void set_scatra_solution();
 
     //! return pointer to porous medium problem
-    const Teuchos::RCP<PoroElast::PoroBase>& poro_field() { return poro_; };
+    const std::shared_ptr<PoroElast::PoroBase>& poro_field() { return poro_; };
 
     //! return pointer to interstitial fluid
-    const Teuchos::RCP<Adapter::FluidPoro>& fluid_field() { return poro_->fluid_field(); };
+    const std::shared_ptr<Adapter::FluidPoro>& fluid_field() { return poro_->fluid_field(); };
 
     //! return pointer to porous structure
-    const Teuchos::RCP<Adapter::FPSIStructureWrapper>& structure_field()
+    const std::shared_ptr<Adapter::FPSIStructureWrapper>& structure_field()
     {
       return poro_->structure_field();
     };
 
     //! return pointer to scalar transport problem
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_field() { return scatra_->scatra_field(); };
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> scatra_field() { return scatra_->scatra_field(); };
 
     //! return pointer to scalar problem adapter base class
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_field_base() { return scatra_; };
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra_field_base() { return scatra_; };
 
     //! setup solver (for monolithic only)
     virtual bool setup_solver() { return true; };
 
    protected:
     //! setup up of dofsets for two way coupling
-    void replace_dof_sets(Teuchos::RCP<Core::FE::Discretization> structdis,
-        Teuchos::RCP<Core::FE::Discretization> fluiddis,
-        Teuchos::RCP<Core::FE::Discretization> scatradis);
+    void replace_dof_sets(std::shared_ptr<Core::FE::Discretization> structdis,
+        std::shared_ptr<Core::FE::Discretization> fluiddis,
+        std::shared_ptr<Core::FE::Discretization> scatradis);
 
     //! setup up coupling objects if necessary
-    void setup_coupling(Teuchos::RCP<Core::FE::Discretization> structdis,
-        Teuchos::RCP<Core::FE::Discretization> fluiddis,
-        Teuchos::RCP<Core::FE::Discretization> scatradis);
+    void setup_coupling(std::shared_ptr<Core::FE::Discretization> structdis,
+        std::shared_ptr<Core::FE::Discretization> fluiddis,
+        std::shared_ptr<Core::FE::Discretization> scatradis);
 
     //! Pointer to the porous media problem. (poroelastic)
-    Teuchos::RCP<PoroElast::PoroBase> poro_;
+    std::shared_ptr<PoroElast::PoroBase> poro_;
     //! Pointer to the ScaTra problem.     (scatra)
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra_;
 
     //! @name Volume Mortar stuff
 
@@ -137,8 +137,8 @@ namespace PoroElastScaTra
     const bool matchinggrid_;
 
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> volcoupl_structurescatra_;
-    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> volcoupl_fluidscatra_;
+    std::shared_ptr<Coupling::Adapter::MortarVolCoupl> volcoupl_structurescatra_;
+    std::shared_ptr<Coupling::Adapter::MortarVolCoupl> volcoupl_fluidscatra_;
     //@}
 
    private:

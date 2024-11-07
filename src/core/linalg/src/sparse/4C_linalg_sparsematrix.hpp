@@ -93,8 +93,8 @@ namespace Core::LinAlg
     template <typename... T>
     SparseMatrix(T...) = delete;
     /// construction of sparse matrix
-    SparseMatrix(Teuchos::RCP<Epetra_CrsGraph> crsgraph,
-        Teuchos::RCP<Core::LinAlg::MultiMapExtractor> dbcmaps);
+    SparseMatrix(std::shared_ptr<Epetra_CrsGraph> crsgraph,
+        std::shared_ptr<Core::LinAlg::MultiMapExtractor> dbcmaps);
 
     /// construction of sparse matrix
     SparseMatrix(const Epetra_Map& rowmap, const int npr, bool explicitdirichlet = true,
@@ -109,10 +109,10 @@ namespace Core::LinAlg
        Makes either a deep copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix.
        (Note: \pre matrix.Filled()==true)
        or an implicit construction from a Epetra_CrsMatrix or Epetra_FECrsMatrix
-       where the Teuchos::RCP is copied internally leading to a new view on the
+       where the std::shared_ptr is copied internally leading to a new view on the
        Epetra_CrsMatrix or Epetra_FECrsMatrix.
      */
-    SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, DataAccess access,
+    SparseMatrix(std::shared_ptr<Epetra_CrsMatrix> matrix, DataAccess access,
         bool explicitdirichlet = true, bool savegraph = false, MatrixType matrixtype = CRS_MATRIX);
 
     /// construction of a diagonal matrix from a vector
@@ -301,11 +301,11 @@ namespace Core::LinAlg
         const Epetra_Map& dbctoggle, bool diagonalblock = true, bool complete = true);
 
     /// create matrix that contains all Dirichlet lines from my
-    Teuchos::RCP<SparseMatrix> extract_dirichlet_rows(
+    std::shared_ptr<SparseMatrix> extract_dirichlet_rows(
         const Core::LinAlg::Vector<double>& dbctoggle);
 
     /// create matrix that contains all Dirichlet lines from my
-    Teuchos::RCP<SparseMatrix> extract_dirichlet_rows(const Epetra_Map& dbctoggle);
+    std::shared_ptr<SparseMatrix> extract_dirichlet_rows(const Epetra_Map& dbctoggle);
 
     //@}
 
@@ -366,10 +366,10 @@ namespace Core::LinAlg
 
    private:
     /// saved graph (if any)
-    Teuchos::RCP<Epetra_CrsGraph> graph_;
+    std::shared_ptr<Epetra_CrsGraph> graph_;
 
     /// Dirichlet row map (if known)
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> dbcmaps_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> dbcmaps_;
 
     /// whether to modify the matrix graph on apply Dirichlet
     bool explicitdirichlet_;
@@ -383,13 +383,13 @@ namespace Core::LinAlg
 
   //! Cast matrix of type SparseOperator to const SparseMatrix and check in debug mode if cast was
   //! successful
-  Teuchos::RCP<const Core::LinAlg::SparseMatrix> cast_to_const_sparse_matrix_and_check_success(
-      Teuchos::RCP<const Core::LinAlg::SparseOperator> input_matrix);
+  std::shared_ptr<const Core::LinAlg::SparseMatrix> cast_to_const_sparse_matrix_and_check_success(
+      std::shared_ptr<const Core::LinAlg::SparseOperator> input_matrix);
 
   //! Cast matrix of type SparseOperator to SparseMatrix and check in debug mode if cast was
   //! successful
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> cast_to_sparse_matrix_and_check_success(
-      Teuchos::RCP<Core::LinAlg::SparseOperator> input_matrix);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> cast_to_sparse_matrix_and_check_success(
+      std::shared_ptr<Core::LinAlg::SparseOperator> input_matrix);
 }  // namespace Core::LinAlg
 
 

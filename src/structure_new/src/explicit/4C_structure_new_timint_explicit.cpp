@@ -34,14 +34,14 @@ void Solid::TimeInt::Explicit::setup()
   // ---------------------------------------------------------------------------
   // cast the base class integrator
   // ---------------------------------------------------------------------------
-  explint_ptr_ = Teuchos::rcp_dynamic_cast<Solid::EXPLICIT::Generic>(integrator_ptr(), true);
+  explint_ptr_ = std::dynamic_pointer_cast<Solid::EXPLICIT::Generic>(integrator_ptr());
   // ---------------------------------------------------------------------------
   // build NOX interface
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Solid::TimeInt::NoxInterface> noxinterface_ptr =
-      Teuchos::make_rcp<Solid::TimeInt::NoxInterface>();
+  std::shared_ptr<Solid::TimeInt::NoxInterface> noxinterface_ptr =
+      std::make_shared<Solid::TimeInt::NoxInterface>();
   noxinterface_ptr->init(
-      data_global_state_ptr(), explint_ptr_, dbc_ptr(), Teuchos::rcpFromRef(*this));
+      data_global_state_ptr(), explint_ptr_, dbc_ptr(), Core::Utils::shared_ptr_from_ref(*this));
   noxinterface_ptr->setup();
   // ---------------------------------------------------------------------------
   // build non-linear solver
@@ -56,7 +56,7 @@ void Solid::TimeInt::Explicit::setup()
   }
   nlnsolver_ptr_ = Solid::Nln::SOLVER::build_nln_solver(nlnSolverType);
   nlnsolver_ptr_->init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, explint_ptr_,
-      Teuchos::rcpFromRef(*this));
+      Core::Utils::shared_ptr_from_ref(*this));
   nlnsolver_ptr_->setup();
   // set setup flag
   issetup_ = true;
@@ -78,7 +78,7 @@ void Solid::TimeInt::Explicit::prepare_time_step()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Explicit::update_state_incrementally(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc)
 {
   check_init_setup();
   FOUR_C_THROW(
@@ -93,7 +93,8 @@ void Solid::TimeInt::Explicit::determine_stress_strain() { expl_int().determine_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Explicit::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc)
+void Solid::TimeInt::Explicit::evaluate(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc)
 {
   check_init_setup();
   FOUR_C_THROW(
@@ -125,7 +126,7 @@ void Solid::TimeInt::Explicit::evaluate()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Explicit::set_state(const Teuchos::RCP<Core::LinAlg::Vector<double>>& x)
+void Solid::TimeInt::Explicit::set_state(const std::shared_ptr<Core::LinAlg::Vector<double>>& x)
 {
   FOUR_C_THROW(
       "All coupled problems work with implicit time "
@@ -214,11 +215,11 @@ Inpar::Solid::StcScale Solid::TimeInt::Explicit::get_stc_algo()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::Explicit::get_stc_mat()
+std::shared_ptr<Core::LinAlg::SparseMatrix> Solid::TimeInt::Explicit::get_stc_mat()
 {
   check_init_setup();
   FOUR_C_THROW("get_stc_mat() has not been tested for explicit time integration.");
-  return Teuchos::null;
+  return nullptr;
 };
 
 
@@ -249,55 +250,55 @@ int Solid::TimeInt::Explicit::integrate_step()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Solid::TimeInt::Explicit::initial_guess()
+std::shared_ptr<const Core::LinAlg::Vector<double>> Solid::TimeInt::Explicit::initial_guess()
 {
   FOUR_C_THROW("initial_guess() is not available for explicit time integration");
-  return Teuchos::null;
+  return nullptr;
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Solid::TimeInt::Explicit::get_f() const
+std::shared_ptr<const Core::LinAlg::Vector<double>> Solid::TimeInt::Explicit::get_f() const
 {
   FOUR_C_THROW("RHS() is not available for explicit time integration");
-  return Teuchos::null;
+  return nullptr;
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::TimeInt::Explicit::freact()
+std::shared_ptr<Core::LinAlg::Vector<double>> Solid::TimeInt::Explicit::freact()
 {
   check_init_setup();
   FOUR_C_THROW("Not implemented!");
-  return Teuchos::null;
+  return nullptr;
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::Explicit::system_matrix()
+std::shared_ptr<Core::LinAlg::SparseMatrix> Solid::TimeInt::Explicit::system_matrix()
 {
   FOUR_C_THROW("system_matrix() is not available for explicit time integration");
-  return Teuchos::null;
+  return nullptr;
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Solid::TimeInt::Explicit::block_system_matrix()
+std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> Solid::TimeInt::Explicit::block_system_matrix()
 {
   FOUR_C_THROW("block_system_matrix() is not available for explicit time integration");
-  return Teuchos::null;
+  return nullptr;
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Explicit::use_block_matrix(
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps)
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> domainmaps,
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> rangemaps)
 {
   FOUR_C_THROW("use_block_matrix() is not available for explicit time integration");
 }

@@ -551,15 +551,15 @@ void Inpar::PARTICLE::set_valid_parameters(Teuchos::ParameterList& list)
  | set the particle conditions                                sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
 void Inpar::PARTICLE::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 
   /*-------------------------------------------------------------------------*
    | particle wall condition                                                 |
    *-------------------------------------------------------------------------*/
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfpartwall =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN SURFACE PARTICLE WALL",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfpartwall =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURFACE PARTICLE WALL",
           "ParticleWall", "Wall for particle interaction with (optional) material definition",
           Core::Conditions::ParticleWall, true, Core::Conditions::geometry_type_surface);
 

@@ -19,11 +19,11 @@ FOUR_C_NAMESPACE_OPEN
 
 PoroElast::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
-    Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
+    std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter)
     : Monolithic(comm, timeparams, porosity_splitter), normrhsfactiven_(0.0), tolfres_ncoup_(0.0)
 {
   // Initialize mortar adapter for meshtying interface
-  mortar_adapter_ = Teuchos::make_rcp<Adapter::CouplingPoroMortar>(
+  mortar_adapter_ = std::make_shared<Adapter::CouplingPoroMortar>(
       Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
       Global::Problem::instance()->spatial_approximation_type());
@@ -34,7 +34,7 @@ PoroElast::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
   mortar_adapter_->setup(structure_field()->discretization(), structure_field()->discretization(),
       coupleddof, "Mortar");
 
-  fvelactiverowdofmap_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
+  fvelactiverowdofmap_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();
 
   // mesh tying not yet works for non-matching structure and fluid discretizations
   if (not matchinggrid_)
@@ -48,24 +48,24 @@ PoroElast::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
 void PoroElast::MonolithicMeshtying::setup_system() { Monolithic::setup_system(); }
 
 void PoroElast::MonolithicMeshtying::evaluate(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc, bool firstiter)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> iterinc, bool firstiter)
 {
   // evaluate monolithic system for newton iterations
   Monolithic::evaluate(iterinc, firstiter);
 
   // get state vectors to store in contact data container
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fvel = fluid_structure_coupling().slave_to_master(
+  std::shared_ptr<Core::LinAlg::Vector<double>> fvel = fluid_structure_coupling().slave_to_master(
       *fluid_field()->extract_velocity_part(fluid_field()->velnp()));
 
   // modified pressure vector modfpres is used to get pressure values to mortar/contact integrator.
   // the pressure values will be written on first displacement DOF
 
   // extract fluid pressures from full fluid state vector
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> fpres =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> fpres =
       fluid_field()->extract_pressure_part(fluid_field()->velnp());
   // initialize modified pressure vector with fluid velocity dof map
-  Teuchos::RCP<Core::LinAlg::Vector<double>> modfpres =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_field()->velocity_row_map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> modfpres =
+      std::make_shared<Core::LinAlg::Vector<double>>(*fluid_field()->velocity_row_map(), true);
 
   const int ndim = Global::Problem::instance()->n_dim();
   int* mygids = fpres->Map().MyGlobalElements();
@@ -81,16 +81,16 @@ void PoroElast::MonolithicMeshtying::evaluate(
 
   // for the set_state() methods in EvaluatePoroMt() non const state vectores are needed
   // ->WriteAccess... methods are used (even though we will not change the states ...)
-  Teuchos::RCP<Core::LinAlg::Vector<double>> svel = structure_field()->write_access_velnp();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> sdisp = structure_field()->write_access_dispnp();
+  std::shared_ptr<Core::LinAlg::Vector<double>> svel = structure_field()->write_access_velnp();
+  std::shared_ptr<Core::LinAlg::Vector<double>> sdisp = structure_field()->write_access_dispnp();
 
   // for the EvaluatePoroMt() method RCPs on the matrices are needed...
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> f =
-      Teuchos::rcpFromRef<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(1, 1));
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs =
-      Teuchos::rcpFromRef<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(1, 0));
+  std::shared_ptr<Core::LinAlg::SparseMatrix> f =
+      Core::Utils::shared_ptr_from_ref<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(1, 1));
+  std::shared_ptr<Core::LinAlg::SparseMatrix> k_fs =
+      Core::Utils::shared_ptr_from_ref<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(1, 0));
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> frhs = extractor()->extract_vector(*rhs_, 1);
+  std::shared_ptr<Core::LinAlg::Vector<double>> frhs = extractor()->extract_vector(*rhs_, 1);
 
   // modify system matrix and rhs for meshtying
   mortar_adapter_->evaluate_poro_mt(fvel, svel, modfpres, sdisp,
@@ -116,20 +116,20 @@ void PoroElast::MonolithicMeshtying::update()
 }
 
 void PoroElast::MonolithicMeshtying::recover_lagrange_multiplier_after_newton_step(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> iterinc)
 {
   Monolithic::recover_lagrange_multiplier_after_newton_step(iterinc);
 
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> s_iterinc;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> f_iterinc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> s_iterinc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> f_iterinc;
   extract_field_vectors(iterinc, s_iterinc, f_iterinc);
 
   // RecoverStructuralLM
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tmpsx =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*s_iterinc);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tmpfx =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*f_iterinc);
+  std::shared_ptr<Core::LinAlg::Vector<double>> tmpsx =
+      std::make_shared<Core::LinAlg::Vector<double>>(*s_iterinc);
+  std::shared_ptr<Core::LinAlg::Vector<double>> tmpfx =
+      std::make_shared<Core::LinAlg::Vector<double>>(*f_iterinc);
 
   mortar_adapter_->recover_fluid_lm_poro_mt(tmpsx, tmpfx);
 }
@@ -138,14 +138,14 @@ void PoroElast::MonolithicMeshtying::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
   normrhs_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_);
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_s;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_s;
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_f;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fvel;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_f;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_fvel;
   // split velocity into part of normal coupling & tangential condition and velocities
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fvel_activen;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fvel_other;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fpres;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_fvel_activen;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_fvel_other;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_fpres;
 
   // process structure unknowns of the first field (structure)
   rhs_s = extractor()->extract_vector(*rhs_, 0);
@@ -183,10 +183,10 @@ void PoroElast::MonolithicMeshtying::build_convergence_norms()
   iterinc_->Norm2(&norminc_);
 
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> interincs;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> interincf;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> interincfvel;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> interincfpres;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> interincs;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> interincf;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> interincfvel;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> interincfpres;
   // process structure unknowns of the first field
   interincs = extractor()->extract_vector(*iterinc_, 0);
   // process fluid unknowns of the second field
@@ -203,9 +203,9 @@ void PoroElast::MonolithicMeshtying::build_convergence_norms()
 void PoroElast::MonolithicMeshtying::setup_extractor()
 {
   // some maps and vectors
-  Teuchos::RCP<Epetra_Map> factivenmap;
-  Teuchos::RCP<Epetra_Map> factivenmapcomplement;
-  std::vector<Teuchos::RCP<const Epetra_Map>> fluidveldofmapvec;
+  std::shared_ptr<Epetra_Map> factivenmap;
+  std::shared_ptr<Epetra_Map> factivenmapcomplement;
+  std::vector<std::shared_ptr<const Epetra_Map>> fluidveldofmapvec;
 
   // get activemap from poro lagrange strategy of the adapter
   factivenmap = mortar_adapter_->get_poro_strategy()->fluid_active_n_dof_map();

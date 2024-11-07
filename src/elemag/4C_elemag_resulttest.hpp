@@ -43,12 +43,12 @@ namespace EleMag
         const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
 
    private:
-    /// Teuchos::RCP to elemagstical discretization
-    Teuchos::RCP<Core::FE::Discretization> dis_;
-    /// Teuchos::RCP to solution vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mysol_;
+    /// std::shared_ptr to elemagstical discretization
+    std::shared_ptr<Core::FE::Discretization> dis_;
+    /// std::shared_ptr to solution vector
+    std::shared_ptr<Core::LinAlg::Vector<double>> mysol_;
     /// Error vector
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> error_;
+    std::shared_ptr<Core::LinAlg::SerialDenseVector> error_;
 
   };  // class ElemagResultTest
 

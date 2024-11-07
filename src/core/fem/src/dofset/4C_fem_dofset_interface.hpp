@@ -12,8 +12,8 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -136,7 +136,7 @@ namespace Core::DOFSets
     virtual void add_dof_setto_list() = 0;
 
     /// Replace a Dof Set in list #static_dofsets_ with this
-    virtual void replace_in_static_dofsets(Teuchos::RCP<DofSetInterface> olddofset) = 0;
+    virtual void replace_in_static_dofsets(std::shared_ptr<DofSetInterface> olddofset) = 0;
 
     /// Get Number of Global Elements of degree of freedom row map
     virtual int num_global_elements() const = 0;

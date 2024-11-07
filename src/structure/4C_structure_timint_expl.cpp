@@ -28,10 +28,10 @@ Solid::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& timeparams,  //! tim
     const Teuchos::ParameterList& ioparams,                              //!< ioflags
     const Teuchos::ParameterList& sdynparams,                            //!< input parameters
     const Teuchos::ParameterList& xparams,                               //!< extra flags
-    Teuchos::RCP<Core::FE::Discretization> actdis,                       //!< current discretisation
-    Teuchos::RCP<Core::LinAlg::Solver> solver,                           //!< the solver
-    Teuchos::RCP<Core::LinAlg::Solver> contactsolver,    //!< the solver for contact meshtying
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
+    std::shared_ptr<Core::FE::Discretization> actdis,                    //!< current discretisation
+    std::shared_ptr<Core::LinAlg::Solver> solver,                        //!< the solver
+    std::shared_ptr<Core::LinAlg::Solver> contactsolver,    //!< the solver for contact meshtying
+    std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< the output
     )
     : TimInt(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output)
 {
@@ -48,7 +48,7 @@ Solid::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& timeparams,  //! tim
  *----------------------------------------------------------------------------------------------*/
 void Solid::TimIntExpl::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
+    std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver)
 {
   // call init() in base class
   Solid::TimInt::init(timeparams, sdynparams, xparams, actdis, solver);
@@ -82,7 +82,7 @@ void Solid::TimIntExpl::setup()
   }
 
   // cannot handle rotated DOFs
-  if (locsysman_ != Teuchos::null)
+  if (locsysman_ != nullptr)
     FOUR_C_THROW("Explicit time integration schemes cannot handle local co-ordinate systems");
 
   // explicit time integrators cannot handle nonlinear inertia forces
@@ -96,8 +96,8 @@ void Solid::TimIntExpl::setup()
 /*----------------------------------------------------------------------*/
 /* evaluate external forces at t_{n+1} */
 void Solid::TimIntExpl::apply_force_external(const double time,  //!< evaluation time
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,        //!< displacement state
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> vel,        //!< velocity state
+    const std::shared_ptr<Core::LinAlg::Vector<double>> dis,     //!< displacement state
+    const std::shared_ptr<Core::LinAlg::Vector<double>> vel,     //!< velocity state
     Core::LinAlg::Vector<double>& fext                           //!< external force
 )
 {

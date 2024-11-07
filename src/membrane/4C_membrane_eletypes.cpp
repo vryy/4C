@@ -32,23 +32,23 @@ Core::Communication::ParObject* Discret::Elements::MembraneTri3Type::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::MembraneTri3Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneTri3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE3" && eledistype == "TRI3")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Membrane<Core::FE::CellType::tri3>>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Membrane<Core::FE::CellType::tri3>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::MembraneTri3Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneTri3Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Membrane<Core::FE::CellType::tri3>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Membrane<Core::FE::CellType::tri3>>(id, owner);
   return ele;
 }
 
@@ -105,23 +105,23 @@ Core::Communication::ParObject* Discret::Elements::MembraneTri6Type::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::MembraneTri6Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneTri6Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE6" && eledistype == "TRI6")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Membrane<Core::FE::CellType::tri6>>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Membrane<Core::FE::CellType::tri6>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::MembraneTri6Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneTri6Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Membrane<Core::FE::CellType::tri6>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Membrane<Core::FE::CellType::tri6>>(id, owner);
   return ele;
 }
 
@@ -178,23 +178,23 @@ Core::Communication::ParObject* Discret::Elements::MembraneQuad4Type::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::MembraneQuad4Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneQuad4Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE4" && eledistype == "QUAD4")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Membrane<Core::FE::CellType::quad4>>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Membrane<Core::FE::CellType::quad4>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::MembraneQuad4Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneQuad4Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Membrane<Core::FE::CellType::quad4>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Membrane<Core::FE::CellType::quad4>>(id, owner);
   return ele;
 }
 
@@ -251,23 +251,23 @@ Core::Communication::ParObject* Discret::Elements::MembraneQuad9Type::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::MembraneQuad9Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneQuad9Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE9" && eledistype == "QUAD9")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Membrane<Core::FE::CellType::quad9>>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Membrane<Core::FE::CellType::quad9>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::MembraneQuad9Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneQuad9Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Membrane<Core::FE::CellType::quad9>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Membrane<Core::FE::CellType::quad9>>(id, owner);
   return ele;
 }
 

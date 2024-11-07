@@ -327,7 +327,7 @@ namespace PARTICLEENGINE
      *
      * \return bin row map
      */
-    Teuchos::RCP<Epetra_Map> get_bin_row_map() const { return binrowmap_; };
+    std::shared_ptr<Epetra_Map> get_bin_row_map() const { return binrowmap_; };
 
     /*!
      * \brief get bin column map
@@ -336,7 +336,7 @@ namespace PARTICLEENGINE
      *
      * \return bin column map
      */
-    Teuchos::RCP<Epetra_Map> get_bin_col_map() const { return bincolmap_; };
+    std::shared_ptr<Epetra_Map> get_bin_col_map() const { return bincolmap_; };
 
     ParticleContainerBundleShrdPtr get_particle_container_bundle() const override
     {
@@ -785,10 +785,10 @@ namespace PARTICLEENGINE
     std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy_;
 
     //! distribution of row bins
-    Teuchos::RCP<Epetra_Map> binrowmap_;
+    std::shared_ptr<Epetra_Map> binrowmap_;
 
     //! distribution of column bins
-    Teuchos::RCP<Epetra_Map> bincolmap_;
+    std::shared_ptr<Epetra_Map> bincolmap_;
 
     //! minimum relevant bin size
     double minbinsize_;
@@ -797,10 +797,10 @@ namespace PARTICLEENGINE
     int typevectorsize_;
 
     //! vector of bin center coordinates
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> bincenters_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> bincenters_;
 
     //! vector of bin weights
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> binweights_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> binweights_;
 
     //! vector of particle type weights for dynamic load balancing
     std::vector<double> typeweights_;

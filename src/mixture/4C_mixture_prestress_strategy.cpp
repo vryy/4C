@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 Mixture::PAR::PrestressStrategy* Mixture::PAR::PrestressStrategy::factory(int matid)
 {
   // for the sake of safety
-  if (Global::Problem::instance()->materials() == Teuchos::null)
+  if (Global::Problem::instance()->materials() == nullptr)
   {
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   }

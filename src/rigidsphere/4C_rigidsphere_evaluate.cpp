@@ -51,13 +51,13 @@ int Discret::Elements::Rigidsphere::evaluate(Teuchos::ParameterList& params,
       // values for each degree of freedom
 
       // get element displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> vel;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> vel;
       std::vector<double> myvel(lm.size());
       myvel.clear();
 
@@ -91,15 +91,16 @@ int Discret::Elements::Rigidsphere::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_brownianstiff:
     {
       // get element displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // get element velocity
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> vel = discretization.get_state("velocity");
-      if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> vel =
+          discretization.get_state("velocity");
+      if (vel == nullptr) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       Core::FE::extract_my_values(*vel, myvel, lm);
 
@@ -267,8 +268,9 @@ void Discret::Elements::Rigidsphere::get_background_velocity(
   //  double starttime = params.get<double>("STARTTIMEACT",0.0);
   //  double dt = params.get<double>("delta time");
   //
-  //  Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
-  //  Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
+  //  std::shared_ptr<std::vector<double> > defvalues = Teuchos::rcp(new
+  //  std::vector<double>(3,0.0)); std::shared_ptr<std::vector<double> > periodlength =
+  //  params.get("PERIODLENGTH", defvalues);
   //
   //  // check and throw error if shear flow is applied
   //  Inpar::STATMECH::DBCType dbctype = params.get<Inpar::STATMECH::DBCType>("DBCTYPE",
@@ -284,7 +286,7 @@ void Discret::Elements::Rigidsphere::get_background_velocity(
   //  }
   //
   //  // constant background velocity specified in input file?
-  //  Teuchos::RCP<std::vector<double> > constbackgroundvel = params.get("CONSTBACKGROUNDVEL",
+  //  std::shared_ptr<std::vector<double> > constbackgroundvel = params.get("CONSTBACKGROUNDVEL",
   //  defvalues);
   //
   //  if (constbackgroundvel->size() != 3) FOUR_C_THROW("\nSpecified vector for constant background
@@ -395,7 +397,7 @@ void Discret::Elements::Rigidsphere::calc_stochastic_force(
 
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic
    * forces with zero mean and standard deviation (2*kT / dt)^0.5*/
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> randomnumbers =
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> randomnumbers =
       params_interface().get_brownian_dyn_param_interface()->get_random_forces();
 
   if (force != nullptr)

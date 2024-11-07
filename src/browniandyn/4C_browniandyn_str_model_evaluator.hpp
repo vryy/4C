@@ -13,7 +13,7 @@
 #include "4C_structure_new_elements_paramsinterface.hpp"  // interface to the element evaluation
 #include "4C_structure_new_model_evaluator_generic.hpp"   // base class
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -114,13 +114,13 @@ namespace Solid
       void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
       //! derived
@@ -148,17 +148,17 @@ namespace Solid
       bool apply_force_stiff_external();
 
       //! evaluate brownian specific neumann conditions
-      void evaluate_neumann_brownian_dyn(Teuchos::RCP<Core::LinAlg::Vector<double>> eval_vec,
-          Teuchos::RCP<Core::LinAlg::SparseOperator> eval_mat);
+      void evaluate_neumann_brownian_dyn(std::shared_ptr<Core::LinAlg::Vector<double>> eval_vec,
+          std::shared_ptr<Core::LinAlg::SparseOperator> eval_mat);
 
       //! evaluate brownian (stochastic and damping forces)
-      void evaluate_brownian(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec);
+      void evaluate_brownian(std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+          std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec);
 
       //! evaluate brownian (stochastic and damping forces)
       void evaluate_brownian(Teuchos::ParameterList& p,
-          Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec);
+          std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+          std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec);
 
       //! \brief retrieve random numbers per element
       void random_numbers_per_element();
@@ -176,16 +176,16 @@ namespace Solid
       };
 
       //! brownian dyn evaluation data container
-      Teuchos::RCP<Solid::ModelEvaluator::BrownianDynData> eval_browniandyn_ptr_;
+      std::shared_ptr<Solid::ModelEvaluator::BrownianDynData> eval_browniandyn_ptr_;
 
       //! global internal force at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> f_brown_np_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> f_brown_np_ptr_;
 
       //! global external force at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> f_ext_np_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> f_ext_np_ptr_;
 
       //! stiffness contributions from brownian dynamics simulations
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_brownian_ptr_;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_brownian_ptr_;
 
       //! \brief maximal number of random numbers to be generated in each time step per element
       int maxrandnumelement_;
@@ -194,7 +194,7 @@ namespace Solid
       BrownDynStateData brown_dyn_state_data_;
 
       //! casted pointer ( necessary due to need of column information )
-      Teuchos::RCP<Core::FE::Discretization> discret_ptr_;
+      std::shared_ptr<Core::FE::Discretization> discret_ptr_;
 
     };  // class BrownianDyn
   }     // namespace ModelEvaluator

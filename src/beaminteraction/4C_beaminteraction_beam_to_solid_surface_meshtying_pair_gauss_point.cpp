@@ -37,10 +37,10 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
  */
 template <typename Beam, typename Surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
-    Surface>::evaluate_and_assemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    Surface>::evaluate_and_assemble(const std::shared_ptr<const Core::FE::Discretization>& discret,
+    const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
   if (!this->meshtying_is_evaluated_)
@@ -115,7 +115,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
       *discret, *this->element1(), *this->face_element_);
 
   // If given, assemble force terms into the global vector.
-  if (force_vector != Teuchos::null)
+  if (force_vector != nullptr)
   {
     const auto force_pair_double = Core::FADUtils::cast_to_double(force_pair);
     force_vector->SumIntoGlobalValues(
@@ -123,7 +123,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
   }
 
   // If given, assemble force terms into the global stiffness matrix.
-  if (stiffness_matrix != Teuchos::null)
+  if (stiffness_matrix != nullptr)
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_ + Surface::n_dof_; i_dof++)
       for (unsigned int j_dof = 0; j_dof < Beam::n_dof_ + Surface::n_dof_; j_dof++)
         stiffness_matrix->fe_assemble(Core::FADUtils::cast_to_double(force_pair(i_dof).dx(j_dof)),

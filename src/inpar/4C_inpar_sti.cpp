@@ -106,7 +106,7 @@ void Inpar::STI::set_valid_parameters(Teuchos::ParameterList& list)
  | set valid conditions for scatra-thermo interaction          fang 10/16 |
  *------------------------------------------------------------------------*/
 void Inpar::STI::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 

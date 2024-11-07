@@ -19,7 +19,8 @@
 #include <Epetra_LinearProblem.h>
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -48,7 +49,7 @@ namespace Core::LinearSolver
         Core::LinAlg::MultiVector<double>* b) = 0;
 
     /// linear operator used for preconditioning
-    virtual Teuchos::RCP<Epetra_Operator> prec_operator() const = 0;
+    virtual std::shared_ptr<Epetra_Operator> prec_operator() const = 0;
   };
 }  // namespace Core::LinearSolver
 

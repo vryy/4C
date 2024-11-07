@@ -340,7 +340,7 @@ void Core::Communication::Exporter::do_export(std::map<int, double>& data)
 }
 
 void Core::Communication::Exporter::do_export(
-    std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& data)
+    std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>& data)
 {
   AnyObjectExporterHelper<Core::LinAlg::SerialDenseMatrix> helper(data);
   generic_export(helper);

@@ -43,9 +43,9 @@ void Solid::Predict::ConstDisVelAccPress::compute(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>>& disnp_ptr = global_state().get_dis_np();
-  Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp_ptr = global_state().get_vel_np();
-  Teuchos::RCP<Core::LinAlg::Vector<double>>& accnp_ptr = global_state().get_acc_np();
+  std::shared_ptr<Core::LinAlg::Vector<double>>& disnp_ptr = global_state().get_dis_np();
+  std::shared_ptr<Core::LinAlg::Vector<double>>& velnp_ptr = global_state().get_vel_np();
+  std::shared_ptr<Core::LinAlg::Vector<double>>& accnp_ptr = global_state().get_acc_np();
 
   bool ok = true;
   switch (get_type())

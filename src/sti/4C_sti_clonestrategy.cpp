@@ -60,17 +60,18 @@ bool STI::ScatraThermoCloneStrategy::determine_ele_type(
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-void STI::ScatraThermoCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
-    Core::Elements::Element* oldele, const int matid, const bool isnurbs)
+void STI::ScatraThermoCloneStrategy::set_element_data(
+    std::shared_ptr<Core::Elements::Element> newele, Core::Elements::Element* oldele,
+    const int matid, const bool isnurbs)
 {
   // cast pointers to current element on source discretization and to current cloned element on
   // target discretization
   auto* oldele_transport = dynamic_cast<Discret::Elements::Transport*>(oldele);
-  Teuchos::RCP<Discret::Elements::Transport> newele_transport =
-      Teuchos::rcp_dynamic_cast<Discret::Elements::Transport>(newele);
+  std::shared_ptr<Discret::Elements::Transport> newele_transport =
+      std::dynamic_pointer_cast<Discret::Elements::Transport>(newele);
 
   // safety check
-  if (oldele_transport == nullptr or newele_transport == Teuchos::null)
+  if (oldele_transport == nullptr or newele_transport == nullptr)
     FOUR_C_THROW("Expected transport element, but received element of type '%s'!",
         Core::Utils::get_dynamic_type_name(*newele).c_str());
 

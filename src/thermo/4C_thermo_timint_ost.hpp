@@ -133,9 +133,9 @@ namespace Thermo
     TimIntOneStepTheta(const Teuchos::ParameterList& ioparams,  //!< ioflags
         const Teuchos::ParameterList& tdynparams,               //!< input parameters
         const Teuchos::ParameterList& xparams,                  //!< extra flags
-        Teuchos::RCP<Core::FE::Discretization> actdis,          //!< current discretisation
-        Teuchos::RCP<Core::LinAlg::Solver> solver,              //!< the solver
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output     //!< the output
+        std::shared_ptr<Core::FE::Discretization> actdis,       //!< current discretisation
+        std::shared_ptr<Core::LinAlg::Solver> solver,           //!< the solver
+        std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
@@ -170,30 +170,30 @@ namespace Thermo
     void predict_const_temp_consist_rate() override;
 
     //! Evaluate ordinary internal force, its tangent at state
-    void apply_force_tang_internal(const double time,            //!< evaluation time
-        const double dt,                                         //!< step size
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,   //!< temperature state
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> tempi,  //!< residual temperatures
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fcap,         //!< capacity force
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fint,         //!< internal force
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
+    void apply_force_tang_internal(const double time,               //!< evaluation time
+        const double dt,                                            //!< step size
+        const std::shared_ptr<Core::LinAlg::Vector<double>> temp,   //!< temperature state
+        const std::shared_ptr<Core::LinAlg::Vector<double>> tempi,  //!< residual temperatures
+        std::shared_ptr<Core::LinAlg::Vector<double>> fcap,         //!< capacity force
+        std::shared_ptr<Core::LinAlg::Vector<double>> fint,         //!< internal force
+        std::shared_ptr<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
     );
 
     //! Evaluate ordinary internal force
-    void apply_force_internal(const double time,                 //!< evaluation time
-        const double dt,                                         //!< step size
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,   //!< temperature state
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> tempi,  //!< incremental temperatures
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fint          //!< internal force
+    void apply_force_internal(const double time,                    //!< evaluation time
+        const double dt,                                            //!< step size
+        const std::shared_ptr<Core::LinAlg::Vector<double>> temp,   //!< temperature state
+        const std::shared_ptr<Core::LinAlg::Vector<double>> tempi,  //!< incremental temperatures
+        std::shared_ptr<Core::LinAlg::Vector<double>> fint          //!< internal force
     );
 
     //! Evaluate a convective boundary condition
     // (nonlinear --> add term to tangent)
-    void apply_force_external_conv(const double time,            //!< evaluation time
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> tempn,  //!< temperature state T_n
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,   //!< temperature state T_n+1
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fext,         //!< internal force
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
+    void apply_force_external_conv(const double time,               //!< evaluation time
+        const std::shared_ptr<Core::LinAlg::Vector<double>> tempn,  //!< temperature state T_n
+        const std::shared_ptr<Core::LinAlg::Vector<double>> temp,   //!< temperature state T_n+1
+        std::shared_ptr<Core::LinAlg::Vector<double>> fext,         //!< internal force
+        std::shared_ptr<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
     );
 
     //! Create force residual #fres_ and its tangent #tang_
@@ -235,7 +235,7 @@ namespace Thermo
     void read_restart_force() override;
 
     //! Write internal and external forces for restart
-    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
+    void write_restart_force(std::shared_ptr<Core::IO::DiscretizationWriter> output) override;
 
     //@}
 
@@ -243,10 +243,10 @@ namespace Thermo
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext() override { return fext_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext() override { return fext_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext_new() override { return fextn_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext_new() override { return fextn_; }
 
     //@}
 
@@ -273,23 +273,23 @@ namespace Thermo
     //! @name Global mid-state vectors
     //@{
     //! mid-temperatures \f$T_m = T_{n+\theta}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tempt_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> tempt_;
 
     //@}
 
     //! @name Global force vectors
     //! Residual \c fres_ exists already in base class
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fint_;   //!< internal force at \f$t_n\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fintn_;  //!< internal force at \f$t_{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fint_;   //!< internal force at \f$t_n\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         fcap_;  //!< capacity force \f$C\cdot\Theta_n\f$ at \f$t_n\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         fcapn_;  //!< capacity force \f$C\cdot\Theta_{n+1}\f$ at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext_;   //!< external force at \f$t_n\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fextn_;  //!< external force at \f$t_{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext_;   //!< external force at \f$t_n\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fextn_;  //!< external force at \f$t_{n+1}\f$
 
     //@}
 

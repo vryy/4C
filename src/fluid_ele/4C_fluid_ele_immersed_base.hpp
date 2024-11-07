@@ -31,13 +31,13 @@ namespace Discret
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
 
       */
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
       */
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override = 0;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override = 0;
 
       /*!
       \brief Setup the definition line for this element
@@ -193,19 +193,19 @@ namespace Discret
       /*!
       \brief returns rcp to vector containing gps with projected divergence
       */
-      virtual Teuchos::RCP<std::vector<int>> get_rcp_int_point_has_projected_divergence()
+      virtual std::shared_ptr<std::vector<int>> get_rcp_int_point_has_projected_divergence()
       {
         FOUR_C_THROW("not implemented in base class");
-        return Teuchos::null;
+        return nullptr;
       };
 
       /*!
       \brief returns rcp to vector containing projected divergence values
       */
-      virtual Teuchos::RCP<std::vector<double>> get_rcp_projected_int_point_divergence()
+      virtual std::shared_ptr<std::vector<double>> get_rcp_projected_int_point_divergence()
       {
         FOUR_C_THROW("not implemented in base class");
-        return Teuchos::null;
+        return nullptr;
       };
 
       /*!

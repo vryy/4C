@@ -234,7 +234,7 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
 ::NOX::Abstract::Group::ReturnType NOX::Nln::Group::compute_element_volumes(
     Core::LinAlg::Vector<double>& ele_vols) const
 {
-  auto ele_vols_epetra = ele_vols.get_ptr_of_Epetra_Vector();
+  auto ele_vols_epetra = Teuchos::rcpFromRef(*ele_vols.get_ptr_of_Epetra_Vector());
   const bool success = get_nln_req_interface_ptr()->compute_element_volumes(
       xVector.getEpetraVector(), ele_vols_epetra);
 
@@ -255,7 +255,7 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
   const ::NOX::Epetra::Vector& dir_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
   tmpVectorPtr->Update(step, dir_epetra.getEpetraVector(), 1.0);
 
-  auto ele_vols_epetra = ele_vols.get_ptr_of_Epetra_Vector();
+  auto ele_vols_epetra = Teuchos::rcpFromRef(*ele_vols.get_ptr_of_Epetra_Vector());
   const bool success =
       get_nln_req_interface_ptr()->compute_element_volumes(*tmpVectorPtr, ele_vols_epetra);
 

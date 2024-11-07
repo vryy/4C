@@ -45,7 +45,8 @@ namespace Mixture
      * \param structuralTensorStrategy Structural tensor strategy to compute the structural tensors
      */
     explicit ElastinMembraneAnisotropyExtension(
-        const Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>& structuralTensorStrategy);
+        const std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>&
+            structuralTensorStrategy);
 
     /*!
      * \brief This method will be called when all global data is initialized. Here we need to create
@@ -317,7 +318,7 @@ namespace Mixture
     std::vector<double> mue_frac_;
 
     /// map to membrane materials/potential summands (only IsoNeoHooke is possible)
-    std::vector<Teuchos::RCP<Mat::Elastic::IsoNeoHooke>> potsum_membrane_;
+    std::vector<std::shared_ptr<Mat::Elastic::IsoNeoHooke>> potsum_membrane_;
 
     /// Anisotropy extension holding the structural tensor of the anisotropy
     ElastinMembraneAnisotropyExtension anisotropy_extension_;

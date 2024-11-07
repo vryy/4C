@@ -31,11 +31,11 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   Adapter::FluidBaseAlgorithm fluid(
       prbdyn, Global::Problem::instance()->fluid_dynamic_params(), "fluid", true, false);
   fluid_ = fluid.fluid_field();
-  Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::make_rcp<Adapter::AleBaseAlgorithm>(
+  std::shared_ptr<Adapter::AleBaseAlgorithm> ale = std::make_shared<Adapter::AleBaseAlgorithm>(
       prbdyn, Global::Problem::instance()->get_dis("ale"));
-  ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleFluidWrapper>(ale->ale_field(), true);
+  ale_ = std::dynamic_pointer_cast<Adapter::AleFluidWrapper>(ale->ale_field());
 
-  if (ale_ == Teuchos::null) FOUR_C_THROW("Failed to cast to problem-specific ALE-wrapper");
+  if (ale_ == nullptr) FOUR_C_THROW("Failed to cast to problem-specific ALE-wrapper");
 
   const int ndim = Global::Problem::instance()->n_dim();
 
@@ -64,8 +64,8 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
      * exact same location. Thus, we specify a very tight tolerance for the
      * octree search.
      */
-    Teuchos::RCP<Coupling::Adapter::Coupling> coupfa_matching =
-        Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+    std::shared_ptr<Coupling::Adapter::Coupling> coupfa_matching =
+        std::make_shared<Coupling::Adapter::Coupling>();
     coupfa_matching->setup_coupling(*fluid_field()->discretization(),
         *ale_field()->discretization(), *fluidnodemap, *alenodemap, ndim,
         Global::Problem::instance()->fsi_dynamic_params().get<bool>("MATCHALL"), tolerance,
@@ -75,8 +75,8 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   else
   {
     // non matching volume meshes of fluid and ale
-    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> coupfa_volmortar =
-        Teuchos::make_rcp<Coupling::Adapter::MortarVolCoupl>();
+    std::shared_ptr<Coupling::Adapter::MortarVolCoupl> coupfa_volmortar =
+        std::make_shared<Coupling::Adapter::MortarVolCoupl>();
 
     // couple displacement dofs of ale and velocity dofs of fluid
 
@@ -95,7 +95,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
     // initialize coupling adapter
     coupfa_volmortar->init(ndim, fluid_field()->discretization(),
         ale_field()->write_access_discretization(), &coupleddof12, &coupleddof21, &dofsets12,
-        &dofsets21, Teuchos::null, false);
+        &dofsets21, nullptr, false);
 
     // setup coupling adapter
     coupfa_volmortar->setup(Global::Problem::instance()->volmortar_params(),
@@ -111,7 +111,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
       Inpar::ALE::initdisp_zero_disp)
   {
     fluid_field()->set_mesh_map(coupfa_->master_dof_map(), nds_master);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> initfluiddisp =
+    std::shared_ptr<Core::LinAlg::Vector<double>> initfluiddisp =
         ale_to_fluid_field(ale_field()->dispn());
     fluid_field()->apply_initial_mesh_displacement(initfluiddisp);
   }
@@ -125,8 +125,8 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
   if (Global::Problem::instance()->fsi_dynamic_params().get<bool>("MATCHGRID_STRUCTALE"))
   {
-    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfa =
-        Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+    std::shared_ptr<Coupling::Adapter::Coupling> icoupfa =
+        std::make_shared<Coupling::Adapter::Coupling>();
     icoupfa->setup_condition_coupling(*fluid_field()->discretization(),
         fluid_field()->interface()->fsi_cond_map(), *ale_field()->discretization(),
         ale_field()->interface()->fsi_cond_map(), condname, ndim, true, nds_master, nds_slave);
@@ -134,8 +134,8 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   }
   else
   {
-    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> icoupfa =
-        Teuchos::make_rcp<Coupling::Adapter::MortarVolCoupl>();
+    std::shared_ptr<Coupling::Adapter::MortarVolCoupl> icoupfa =
+        std::make_shared<Coupling::Adapter::MortarVolCoupl>();
 
     // couple displacement dofs of ale and velocity dofs of fluid
 
@@ -153,7 +153,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
     icoupfa->init(ndim, Global::Problem::instance()->get_dis("fluid"),
         Global::Problem::instance()->get_dis("ale"), &coupleddof12, &coupleddof21, &dofsets12,
-        &dofsets21, Teuchos::null, false);
+        &dofsets21, nullptr, false);
 
     icoupfa->setup(Global::Problem::instance()->volmortar_params(),
         Global::Problem::instance()->cut_general_params());
@@ -161,7 +161,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
     icoupfa_ = icoupfa;
   }
 
-  aucoupfa_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+  aucoupfa_ = std::make_shared<Coupling::Adapter::Coupling>();
   aucoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
       fluid_field()->interface()->au_cond_map(), *ale_field()->discretization(),
       ale_field()->interface()->au_cond_map(), "ALEUPDATECoupling", ndim, true, nds_master,
@@ -176,7 +176,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization> Adapter::FluidAle::discretization()
+std::shared_ptr<Core::FE::Discretization> Adapter::FluidAle::discretization()
 {
   return fluid_field()->discretization();
 }
@@ -219,8 +219,9 @@ void Adapter::FluidAle::output()
     if ((uprestart != 0 && fluid_field()->step() % uprestart == 0) ||
         fluid_field()->step() % upres == 0)
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> lambda = fluid_field()->extract_interface_forces();
-      Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
+      std::shared_ptr<Core::LinAlg::Vector<double>> lambda =
+          fluid_field()->extract_interface_forces();
+      std::shared_ptr<Core::LinAlg::Vector<double>> lambdafull =
           fluid_field()->interface()->insert_fsi_cond_vector(*lambda);
       fluid_field()->disc_writer()->write_vector("fsilambda", lambdafull);
     }
@@ -242,10 +243,10 @@ double Adapter::FluidAle::read_restart(int step)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Adapter::FluidAle::nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel)
+void Adapter::FluidAle::nonlinear_solve(std::shared_ptr<Core::LinAlg::Vector<double>> idisp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> ivel)
 {
-  if (idisp != Teuchos::null)
+  if (idisp != nullptr)
   {
     // if we have values at the interface we need to apply them
     ale_field()->apply_interface_displacements(fluid_to_ale(idisp));
@@ -255,8 +256,8 @@ void Adapter::FluidAle::nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double
   // Update the ale update part
   if (fluid_field()->interface()->au_cond_relevant())
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = fluid_field()->dispnp();
-    Teuchos::RCP<Core::LinAlg::Vector<double>> audispnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp = fluid_field()->dispnp();
+    std::shared_ptr<Core::LinAlg::Vector<double>> audispnp =
         fluid_field()->interface()->extract_au_cond_vector(*dispnp);
     ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(*audispnp));
   }
@@ -267,7 +268,8 @@ void Adapter::FluidAle::nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double
   // notice.
 
   ale_field()->solve();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
+  std::shared_ptr<Core::LinAlg::Vector<double>> fluiddisp =
+      ale_to_fluid_field(ale_field()->dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
   fluid_field()->solve();
 }
@@ -275,11 +277,12 @@ void Adapter::FluidAle::nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel,
-    Teuchos::RCP<FSI::InterfaceCorrector> icorrector)
+void Adapter::FluidAle::nonlinear_solve_vol_coupl(
+    std::shared_ptr<Core::LinAlg::Vector<double>> idisp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> ivel,
+    std::shared_ptr<FSI::InterfaceCorrector> icorrector)
 {
-  if (idisp != Teuchos::null)
+  if (idisp != nullptr)
   {
     ale_field()->apply_interface_displacements(
         ale_field()->interface()->extract_fsi_cond_vector(*idisp));
@@ -289,8 +292,8 @@ void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Core::LinAlg::Vec
   // Update the ale update part
   if (fluid_field()->interface()->au_cond_relevant())
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = fluid_field()->dispnp();
-    Teuchos::RCP<Core::LinAlg::Vector<double>> audispnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp = fluid_field()->dispnp();
+    std::shared_ptr<Core::LinAlg::Vector<double>> audispnp =
         fluid_field()->interface()->extract_au_cond_vector(*dispnp);
     ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(*audispnp));
   }
@@ -301,7 +304,8 @@ void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Core::LinAlg::Vec
   // notice.
 
   ale_field()->solve();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
+  std::shared_ptr<Core::LinAlg::Vector<double>> fluiddisp =
+      ale_to_fluid_field(ale_field()->dispnp());
 
   icorrector->correct_interface_displacements(fluiddisp, fluid_field()->interface());
   fluid_field()->apply_mesh_displacement(fluiddisp);
@@ -311,25 +315,26 @@ void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Core::LinAlg::Vec
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Adapter::FluidAle::apply_interface_values(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel)
+void Adapter::FluidAle::apply_interface_values(std::shared_ptr<Core::LinAlg::Vector<double>> idisp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> ivel)
 {
-  if (idisp != Teuchos::null)
+  if (idisp != nullptr)
   {
     // if we have values at the interface we need to apply them
     ale_field()->apply_interface_displacements(fluid_to_ale(idisp));
     fluid_field()->apply_interface_velocities(ivel);
   }
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
+  std::shared_ptr<Core::LinAlg::Vector<double>> fluiddisp =
+      ale_to_fluid_field(ale_field()->dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
 }
 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::relaxation_solve(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt)
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidAle::relaxation_solve(
+    std::shared_ptr<Core::LinAlg::Vector<double>> idisp, double dt)
 {
   // Here we have a mesh position independent of the
   // given trial vector, but still the grid velocity depends on the
@@ -339,7 +344,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::relaxation_solve(
   ale_field()->apply_interface_displacements(fluid_to_ale(idisp));
 
   ale_field()->solve();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
+  std::shared_ptr<Core::LinAlg::Vector<double>> fluiddisp =
+      ale_to_fluid_field(ale_field()->dispnp());
   fluiddisp->Scale(1. / dt);
 
   fluid_field()->apply_mesh_velocity(fluiddisp);
@@ -355,7 +361,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::relaxation_solve(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::extract_interface_forces()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidAle::extract_interface_forces()
 {
   return fluid_field()->extract_interface_forces();
 }
@@ -363,7 +369,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::extract_interface_
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::extract_interface_velnp()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidAle::extract_interface_velnp()
 {
   return fluid_field()->extract_interface_velnp();
 }
@@ -371,7 +377,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::extract_interface_
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::extract_interface_veln()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidAle::extract_interface_veln()
 {
   return fluid_field()->extract_interface_veln();
 }
@@ -379,7 +385,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::extract_interface_
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::integrate_interface_shape()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidAle::integrate_interface_shape()
 {
   return fluid_field()->integrate_interface_shape();
 }
@@ -387,7 +393,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::integrate_interfac
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest> Adapter::FluidAle::create_field_test()
+std::shared_ptr<Core::Utils::ResultTest> Adapter::FluidAle::create_field_test()
 {
   return fluid_field()->create_field_test();
 }
@@ -395,8 +401,8 @@ Teuchos::RCP<Core::Utils::ResultTest> Adapter::FluidAle::create_field_test()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::ale_to_fluid_field(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidAle::ale_to_fluid_field(
+    std::shared_ptr<Core::LinAlg::Vector<double>> iv) const
 {
   return coupfa_->slave_to_master(*iv);
 }
@@ -404,8 +410,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::ale_to_fluid_field
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::ale_to_fluid_field(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidAle::ale_to_fluid_field(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupfa_->slave_to_master(*iv);
 }
@@ -413,8 +419,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::ale_to_fluid_field
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::fluid_to_ale(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidAle::fluid_to_ale(
+    std::shared_ptr<Core::LinAlg::Vector<double>> iv) const
 {
   return icoupfa_->master_to_slave(*iv);
 }
@@ -422,8 +428,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::fluid_to_ale(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::fluid_to_ale(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidAle::fluid_to_ale(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const
 {
   return icoupfa_->master_to_slave(*iv);
 }

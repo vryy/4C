@@ -50,23 +50,23 @@ Core::Communication::ParObject* Discret::Elements::ElemagDiffType::create(
 /*----------------------------------------------------------------------*
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ElemagDiffType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ElemagDiffType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ELECTROMAGNETICDIFF")
   {
-    return Teuchos::make_rcp<Discret::Elements::ElemagDiff>(id, owner);
+    return std::make_shared<Discret::Elements::ElemagDiff>(id, owner);
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ElemagDiffType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ElemagDiffType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::ElemagDiff>(id, owner);
+  return std::make_shared<Discret::Elements::ElemagDiff>(id, owner);
 }
 
 void Discret::Elements::ElemagDiffType::nodal_block_information(
@@ -171,7 +171,7 @@ void Discret::Elements::ElemagDiff::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)           berardocco 03/19|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ElemagDiff::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::ElemagDiff::lines()
 {
   return Core::Communication::get_element_lines<ElemagDiffBoundary, ElemagDiff>(*this);
 }
@@ -180,7 +180,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ElemagDiff
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                     berardocco 03/19|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ElemagDiff::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::ElemagDiff::surfaces()
 {
   return Core::Communication::get_element_surfaces<ElemagDiffBoundary, ElemagDiff>(*this);
 }
@@ -189,7 +189,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ElemagDiff
 /*----------------------------------------------------------------------*
  |  get face element (public)                           berardocco 03/19|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ElemagDiff::create_face_element(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ElemagDiff::create_face_element(
     Core::Elements::Element* parent_slave,  //!< parent slave fluid3 element
     int nnode,                              //!< number of surface nodes
     const int* nodeids,                     //!< node ids of surface element
@@ -231,10 +231,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::ElemagDiff::create_face
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ElemagDiffBoundaryType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ElemagDiffBoundaryType::create(
     const int id, const int owner)
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -364,10 +364,10 @@ void Discret::Elements::ElemagDiffBoundary::location_vector(const Core::FE::Disc
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ElemagDiffIntFaceType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ElemagDiffIntFaceType::create(
     const int id, const int owner)
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*

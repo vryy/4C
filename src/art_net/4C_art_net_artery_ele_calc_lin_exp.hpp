@@ -56,7 +56,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<Core::Mat::Material> mat) override;
+          std::shared_ptr<Core::Mat::Material> mat) override;
 
       int scatra_evaluate(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
@@ -65,7 +65,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<Core::Mat::Material> mat) override;
+          std::shared_ptr<Core::Mat::Material> mat) override;
 
       int evaluate_service(Artery* ele, const Arteries::Action action,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
@@ -74,7 +74,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<Core::Mat::Material> mat) override;
+          std::shared_ptr<Core::Mat::Material> mat) override;
 
       /*!
         \brief calculate element matrix and rhs
@@ -94,7 +94,7 @@ namespace Discret
           const Core::LinAlg::Matrix<my::iel_, 1>& eareanp,
           Core::LinAlg::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
           Core::LinAlg::Matrix<2 * my::iel_, 1>& rhs,
-          Teuchos::RCP<const Core::Mat::Material> material, double dt);
+          std::shared_ptr<const Core::Mat::Material> material, double dt);
 
       void scatra_sysmat(Artery* ele, const Core::LinAlg::Matrix<2 * my::iel_, 1>& escatran,
           const Core::LinAlg::Matrix<my::iel_, 1>& ewfnp,
@@ -107,31 +107,31 @@ namespace Discret
 
       virtual bool solve_riemann(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<const Core::Mat::Material> mat);
+          std::shared_ptr<const Core::Mat::Material> mat);
 
       virtual void evaluate_terminal_bc(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> mat);
+          std::shared_ptr<Core::Mat::Material> mat);
 
       virtual void evaluate_scatra_bc(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& disctretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> material);
+          std::shared_ptr<Core::Mat::Material> material);
 
       virtual void calc_postprocessing_values(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> mat);
+          std::shared_ptr<Core::Mat::Material> mat);
 
       virtual void calc_scatra_from_scatra_fw(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> material);
+          std::shared_ptr<Core::Mat::Material> material);
 
       virtual void evaluate_wf_and_wb(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> material);
+          std::shared_ptr<Core::Mat::Material> material);
 
       virtual void solve_scatra_analytically(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> material);
+          std::shared_ptr<Core::Mat::Material> material);
 
       /*!
         \brief get the initial values of the degrees of freedome at the node
@@ -149,7 +149,7 @@ namespace Discret
         */
       virtual void initial(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<const Core::Mat::Material> material);
+          std::shared_ptr<const Core::Mat::Material> material);
 
       /*!
        \Essential functions to compute the results of essential matrices

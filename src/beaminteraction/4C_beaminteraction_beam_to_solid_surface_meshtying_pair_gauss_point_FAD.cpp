@@ -33,10 +33,10 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, Beam,
  */
 template <typename ScalarType, typename Beam, typename Surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, Beam,
-    Surface>::evaluate_and_assemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    Surface>::evaluate_and_assemble(const std::shared_ptr<const Core::FE::Discretization>& discret,
+    const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
   if (!this->meshtying_is_evaluated_)
@@ -57,7 +57,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, B
       *discret, *this->element1(), *this->face_element_);
 
   // If given, assemble force terms into the global vector.
-  if (force_vector != Teuchos::null)
+  if (force_vector != nullptr)
   {
     std::vector<double> force_pair_double(pair_gid.size());
     for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
@@ -66,7 +66,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, B
   }
 
   // If given, assemble force terms into the global stiffness matrix.
-  if (stiffness_matrix != Teuchos::null)
+  if (stiffness_matrix != nullptr)
     for (unsigned int i_dof = 0; i_dof < pair_gid.size(); i_dof++)
       for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
         stiffness_matrix->fe_assemble(Core::FADUtils::cast_to_double(potential.dx(i_dof).dx(j_dof)),

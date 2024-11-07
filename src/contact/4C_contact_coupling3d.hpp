@@ -80,7 +80,7 @@ namespace CONTACT
      and assembled into the slave element nodes.
 
      */
-    bool integrate_cells(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
+    bool integrate_cells(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr) override;
 
     //@}
 
@@ -293,7 +293,7 @@ namespace CONTACT
      \brief Get coupling pairs
 
      */
-    virtual std::vector<Teuchos::RCP<CONTACT::Coupling3d>>& coupling() { return coup_; }
+    virtual std::vector<std::shared_ptr<CONTACT::Coupling3d>>& coupling() { return coup_; }
 
     /*!
      \brief Get number of integration cells
@@ -335,13 +335,13 @@ namespace CONTACT
      \brief Evaluate coupling pairs
 
      */
-    virtual bool evaluate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+    virtual bool evaluate_coupling(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
 
     /*!
      \brief Evaluate mortar coupling pairs
 
      */
-    virtual void integrate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+    virtual void integrate_coupling(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
 
     /*!
      \brief Return the LM shape fcn type
@@ -384,9 +384,9 @@ namespace CONTACT
     Teuchos::ParameterList& imortar_;     // containing contact input parameters
     Mortar::Element* sele_;               // slave element
     std::vector<Mortar::Element*> mele_;  // master elements
-    std::vector<Teuchos::RCP<Coupling3d>> coup_;  // coupling pairs
-    int ncells_;                                  // total number of integration cells
-    Inpar::CONTACT::SolvingStrategy stype_;       // solving strategy
+    std::vector<std::shared_ptr<Coupling3d>> coup_;  // coupling pairs
+    int ncells_;                                     // total number of integration cells
+    Inpar::CONTACT::SolvingStrategy stype_;          // solving strategy
   };
   // class Coupling3dManager
 
@@ -429,13 +429,13 @@ namespace CONTACT
      \brief Evaluate coupling pairs
 
      */
-    bool evaluate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
+    bool evaluate_coupling(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr) override;
 
     /*!
      \brief Evaluate mortar coupling pairs
 
      */
-    void integrate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
+    void integrate_coupling(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr) override;
 
     /*!
      \brief spatial dimension

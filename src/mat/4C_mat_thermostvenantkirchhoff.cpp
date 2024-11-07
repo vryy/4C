@@ -39,9 +39,9 @@ Mat::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from read_materials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ThermoStVenantKirchhoff::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ThermoStVenantKirchhoff::create_material()
 {
-  return Teuchos::make_rcp<Mat::ThermoStVenantKirchhoff>(this);
+  return std::make_shared<Mat::ThermoStVenantKirchhoff>(this);
 }
 
 
@@ -63,16 +63,14 @@ Core::Communication::ParObject* Mat::ThermoStVenantKirchhoffType::create(
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     dano 02/10 |
  *----------------------------------------------------------------------*/
-Mat::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff() : params_(nullptr), thermo_(Teuchos::null)
-{
-}
+Mat::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff() : params_(nullptr), thermo_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 02/10 |
  *----------------------------------------------------------------------*/
 Mat::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(Mat::PAR::ThermoStVenantKirchhoff* params)
-    : params_(params), thermo_(Teuchos::null)
+    : params_(params), thermo_(nullptr)
 {
   create_thermo_material_if_set();
 }
@@ -83,8 +81,8 @@ void Mat::ThermoStVenantKirchhoff::create_thermo_material_if_set()
   if (thermoMatId != -1)
   {
     auto mat = Mat::factory(thermoMatId);
-    if (mat == Teuchos::null) FOUR_C_THROW("Failed to create thermo material, id=%d", thermoMatId);
-    thermo_ = Teuchos::rcp_dynamic_cast<Mat::Trait::Thermo>(mat);
+    if (mat == nullptr) FOUR_C_THROW("Failed to create thermo material, id=%d", thermoMatId);
+    thermo_ = std::dynamic_pointer_cast<Mat::Trait::Thermo>(mat);
   }
 }
 
@@ -118,7 +116,7 @@ void Mat::ThermoStVenantKirchhoff::unpack(Core::Communication::UnpackBuffer& buf
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -232,16 +230,16 @@ double Mat::ThermoStVenantKirchhoff::capacity_deriv_t() const
 void Mat::ThermoStVenantKirchhoff::reinit(double temperature, unsigned gp)
 {
   current_temperature_ = temperature;
-  if (thermo_ != Teuchos::null) thermo_->reinit(temperature, gp);
+  if (thermo_ != nullptr) thermo_->reinit(temperature, gp);
 }
 void Mat::ThermoStVenantKirchhoff::reset_current_state()
 {
-  if (thermo_ != Teuchos::null) thermo_->reset_current_state();
+  if (thermo_ != nullptr) thermo_->reset_current_state();
 }
 
 void Mat::ThermoStVenantKirchhoff::commit_current_state()
 {
-  if (thermo_ != Teuchos::null) thermo_->commit_current_state();
+  if (thermo_ != nullptr) thermo_->commit_current_state();
 }
 
 void Mat::ThermoStVenantKirchhoff::reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,

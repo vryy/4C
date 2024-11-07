@@ -17,7 +17,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -173,9 +173,9 @@ namespace PaSI
      * \param[in] intfvelnp  interface velocity
      * \param[in] intfaccnp  interface acceleration
      */
-    void set_interface_states(Teuchos::RCP<const Core::LinAlg::Vector<double>> intfdispnp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> intfvelnp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> intfaccnp);
+    void set_interface_states(std::shared_ptr<const Core::LinAlg::Vector<double>> intfdispnp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> intfvelnp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> intfaccnp);
 
     /*!
      * \brief output of structure field
@@ -204,22 +204,22 @@ namespace PaSI
     };
 
     //! structural field
-    Teuchos::RCP<Adapter::PASIStructureWrapper> structurefield_;
+    std::shared_ptr<Adapter::PASIStructureWrapper> structurefield_;
 
     //! particle algorithm
-    Teuchos::RCP<PARTICLEALGORITHM::ParticleAlgorithm> particlealgorithm_;
+    std::shared_ptr<PARTICLEALGORITHM::ParticleAlgorithm> particlealgorithm_;
 
     //! communication object at the interface
-    Teuchos::RCP<const Solid::MapExtractor> interface_;
+    std::shared_ptr<const Solid::MapExtractor> interface_;
 
     //! interface displacement
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intfdispnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> intfdispnp_;
 
     //! interface velocity
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intfvelnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> intfvelnp_;
 
     //! interface acceleration
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intfaccnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> intfaccnp_;
 
    private:
     /*!
@@ -244,7 +244,7 @@ namespace PaSI
     void build_structure_model_evaluator();
 
     //! ptr to the underlying structure problem base algorithm
-    Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
+    std::shared_ptr<Adapter::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
 
     //! flag indicating correct initialization
     bool isinit_;

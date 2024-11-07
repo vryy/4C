@@ -180,10 +180,10 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam, Solid>::eva
  */
 template <typename Beam, typename Solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam, Solid>::evaluate_and_assemble(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    const std::shared_ptr<const Core::FE::Discretization>& discret,
+    const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // This function only gives contributions for rotational coupling.
   auto rot_coupling_type =
@@ -252,11 +252,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam, Solid>::eva
 
 
   // If given, assemble force terms into the global force vector.
-  if (force_vector != Teuchos::null)
+  if (force_vector != nullptr)
     force_vector->SumIntoGlobalValues(gid_pair.num_rows(), gid_pair.data(), local_force.data());
 
   // If given, assemble force terms into the global stiffness matrix.
-  if (stiffness_matrix != Teuchos::null)
+  if (stiffness_matrix != nullptr)
     for (unsigned int i_dof = 0; i_dof < n_dof_pair_; i_dof++)
       for (unsigned int j_dof = 0; j_dof < n_dof_pair_; j_dof++)
         stiffness_matrix->fe_assemble(Core::FADUtils::cast_to_double(local_stiff(i_dof, j_dof)),

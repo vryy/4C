@@ -115,7 +115,7 @@ namespace TSI
     void setup_system_matrix();
 
     //! composed system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const
     {
       return systemmatrix_;
     }
@@ -128,29 +128,29 @@ namespace TSI
 
     //! Evaluate mechanical-thermal system matrix
     void apply_str_coupl_matrix(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> k_st  //!< mechanical-thermal stiffness matrix
+        std::shared_ptr<Core::LinAlg::SparseMatrix> k_st  //!< mechanical-thermal stiffness matrix
     );
 
     //! Evaluate thermal-mechanical system matrix
     void apply_thr_coupl_matrix(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
+        std::shared_ptr<Core::LinAlg::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
     );
 
     //! Evaluate thermal-mechanical system matrix for geonln + heat convection BC
     void apply_thr_coupl_matrix_conv_bc(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
+        std::shared_ptr<Core::LinAlg::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
     );
 
     //@}
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>>
+    virtual void evaluate(std::shared_ptr<Core::LinAlg::Vector<double>>
             stepinc  //!< increment between time step n and n+1
     );
 
     //! extract initial guess from fields
     //! returns \f$\Delta x_{n+1}^{<k>}\f$
-    virtual void initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> ig);
+    virtual void initial_guess(std::shared_ptr<Core::LinAlg::Vector<double>> ig);
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
@@ -228,14 +228,14 @@ namespace TSI
       \param sx (o) structural vector (e.g. displacements)
       \param tx (o) thermal vector (e.g. temperatures)
       */
-    virtual void extract_field_vectors(Teuchos::RCP<Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& sx,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& tx);
+    virtual void extract_field_vectors(std::shared_ptr<Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& sx,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& tx);
 
     //! @name Access methods for subclasses
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const;
+    std::shared_ptr<const Epetra_Map> dof_row_map() const;
 
     //! set full monolithic dof row map
     /*!
@@ -247,10 +247,10 @@ namespace TSI
 
     //! combined DBC map
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<Epetra_Map> combined_dbc_map();
+    std::shared_ptr<Epetra_Map> combined_dbc_map();
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> extractor() const { return blockrowdofmap_; }
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> extractor() const { return blockrowdofmap_; }
 
     //! setup list with default parameters
     void set_default_parameters();
@@ -264,9 +264,9 @@ namespace TSI
     //! @name General purpose algorithm members
     //@{
 
-    bool solveradapttol_;                        //!< adapt solver tolerance
-    double solveradaptolbetter_;                 //!< tolerance to which is adpated ????
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
+    bool solveradapttol_;                           //!< adapt solver tolerance
+    double solveradaptolbetter_;                    //!< tolerance to which is adpated ????
+    std::shared_ptr<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
 
     //@}
 
@@ -283,15 +283,15 @@ namespace TSI
     //@}
 
     //! @name Global vectors
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
     //@}
 
     //! enum for STR time integartion
     enum Inpar::Solid::DynamicType strmethodname_;
 
     //! apply structural displacements and velocities on thermo discretization
-    void apply_struct_coupling_state(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) override;
+    void apply_struct_coupling_state(std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel) override;
 
    private:
     //! if just rho_inf is specified for genAlpha, the other parameters in the global parameter
@@ -302,13 +302,13 @@ namespace TSI
     const Teuchos::ParameterList& tsidynmono_;  //!< monolithic TSI dynamic parameter list
 
     //! dofrowmap splitted in (field) blocks
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector
     void setup_vector(Core::LinAlg::Vector<double>& f,  //!< vector of length of all dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             sv,  //!< vector containing only structural dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             tv  //!< vector containing only thermal dofs
     );
 
@@ -316,11 +316,11 @@ namespace TSI
     bool l_sadmissible();
 
     //! block systemmatrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     //! off diagonal matrixes
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_st_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ts_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_st_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_ts_;
 
     bool merge_tsi_blockmatrix_;  //!< bool whether TSI block matrix is merged
 
@@ -390,28 +390,28 @@ namespace TSI
     //! @name Various global forces
 
     //! rhs of TSI system
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_;
 
     //! increment between Newton steps k and k+1 \f$\Delta{x}^{<k>}_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> iterinc_;
 
     //! global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel_;
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<Core::Conditions::LocsysManager> locsysman_;
+    std::shared_ptr<Core::Conditions::LocsysManager> locsysman_;
 
     //@}
 
     //! @name infnorm scaling
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         srowsum_;  //!< sum of absolute values of the rows of the structural block
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         scolsum_;  //!< sum of absolute values of the column of the structural block
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         trowsum_;  //!< sum of absolute values of the rows of the thermal block
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         tcolsum_;  //!< sum of absolute values of the column of the thermal block
 
     //@}

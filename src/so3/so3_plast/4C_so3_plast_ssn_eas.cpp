@@ -43,22 +43,22 @@ void Discret::Elements::So3Plast<distype>::eas_init()
 
   if (eastype_ != soh8p_easnone)
   {
-    KaaInv_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, neas_, true);
-    Kad_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, numdofperelement_, true);
-    feas_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
-    alpha_eas_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
-    alpha_eas_last_timestep_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
+    KaaInv_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, neas_, true);
+    Kad_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, numdofperelement_, true);
+    feas_ = std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
+    alpha_eas_ = std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
+    alpha_eas_last_timestep_ = std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
     alpha_eas_delta_over_last_timestep_ =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
-    alpha_eas_inc_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
-    Kba_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseMatrix>>(
+        std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
+    alpha_eas_inc_ = std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
+    Kba_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseMatrix>>(
         numgpt_, Core::LinAlg::SerialDenseMatrix(5, neas_, true));
 
     Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
     if (probtype == Core::ProblemType::tsi)
     {
-      KaT_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, nen_, true);
-      KdT_eas_ = Teuchos::make_rcp<Core::LinAlg::Matrix<numdofperelement_, nen_>>();
+      KaT_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, nen_, true);
+      KdT_eas_ = std::make_shared<Core::LinAlg::Matrix<numdofperelement_, nen_>>();
     }
   }
 
@@ -135,7 +135,7 @@ void Discret::Elements::So3Plast<distype>::eas_setup()
   // reset EAS matrices
   KaaInv_->shape(neas_, neas_);
   Kad_->shape(neas_, numdofperelement_);
-  if (KaT_ != Teuchos::null) KaT_->shape(neas_, nen_);
+  if (KaT_ != nullptr) KaT_->shape(neas_, nen_);
   feas_->size(neas_);
 
   return;

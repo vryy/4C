@@ -42,7 +42,7 @@ namespace Mat
   void elast_hyper_evaluate(const Core::LinAlg::Matrix<3, 3>& defgrd,
       const Core::LinAlg::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID,
-      const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
+      const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
       const SummandProperties& properties, bool checkpolyconvexity = false);
 
   /*!
@@ -69,7 +69,7 @@ namespace Mat
    */
   void elast_hyper_evaluate_invariant_derivatives(const Core::LinAlg::Matrix<3, 1>& prinv,
       Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII,
-      const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
+      const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
       const SummandProperties& properties, int gp, int eleGID);
 
   /*!
@@ -197,7 +197,7 @@ namespace Mat
    */
   void elast_hyper_add_response_stretches(Core::LinAlg::Matrix<6, 6>& cmat,
       Core::LinAlg::Matrix<6, 1>& S_stress, const Core::LinAlg::Matrix<6, 1>& C_strain,
-      const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
+      const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
       const SummandProperties& properties, int gp, int eleGID);
 
   /*!
@@ -215,7 +215,7 @@ namespace Mat
   void elast_hyper_add_anisotropic_princ(Core::LinAlg::Matrix<6, 1>& S_stress,
       Core::LinAlg::Matrix<6, 6>& cmat, const Core::LinAlg::Matrix<6, 1>& C_strain,
       Teuchos::ParameterList& params, int gp, int eleGID,
-      const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum);
+      const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum);
 
   /*!
    * \brief Evaluates the anisotropic stress response from the potsum elements formulated in the
@@ -234,7 +234,7 @@ namespace Mat
       Core::LinAlg::Matrix<6, 6>& cmat, const Core::LinAlg::Matrix<6, 1>& C_strain,
       const Core::LinAlg::Matrix<6, 1>& iC_strain, const Core::LinAlg::Matrix<3, 1>& prinv, int gp,
       int eleGID, Teuchos::ParameterList& params,
-      const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum);
+      const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum);
 
   /*!
    * \brief Calculate coefficients gamma and delta from partial derivatives w.r.t. invariants.
@@ -333,7 +333,7 @@ namespace Mat
    * @param potsum List of the summands
    * @param properties Class holding the properties of the formulation of the summands
    */
-  void elast_hyper_properties(const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
+  void elast_hyper_properties(const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
       SummandProperties& properties);
 
   /**

@@ -18,20 +18,20 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-XFEM::XfaCouplingManager::XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
-    Teuchos::RCP<Adapter::AleFpsiWrapper> ale, std::vector<int> idx,
-    Teuchos::RCP<Adapter::Structure> structure)
+XFEM::XfaCouplingManager::XfaCouplingManager(std::shared_ptr<FLD::XFluid> xfluid,
+    std::shared_ptr<Adapter::AleFpsiWrapper> ale, std::vector<int> idx,
+    std::shared_ptr<Adapter::Structure> structure)
     : CouplingCommManager(xfluid->discretization(), ale->discretization(), "", 0, 3),
       ale_(ale),
       xfluid_(xfluid),
       idx_(idx),
       structure_(structure)
 {
-  if (idx_.size() != static_cast<std::size_t>(2 + (structure_ != Teuchos::null)))
+  if (idx_.size() != static_cast<std::size_t>(2 + (structure_ != nullptr)))
     FOUR_C_THROW("XFACoupling_Manager required (two + num coupled block) ( %d != %d)",
-        (2 + (structure_ != Teuchos::null)), idx_.size());
+        (2 + (structure_ != nullptr)), idx_.size());
 
-  if (structure_ != Teuchos::null)
+  if (structure_ != nullptr)
   {
     if (ale_->discretization()->get_condition("StructAleCoupling") != nullptr &&
         structure_->discretization()->get_condition("StructAleCoupling") != nullptr)
@@ -45,7 +45,7 @@ XFEM::XfaCouplingManager::XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
       }
 
       std::cout << "|== XFACoupling_Manager: Setup of Ale Structure Coupling! ==|" << std::endl;
-      ale_struct_coupling_ = Teuchos::make_rcp<XFEM::CouplingCommManager>(
+      ale_struct_coupling_ = std::make_shared<XFEM::CouplingCommManager>(
           ale_->discretization(), structure_->discretization(), "StructAleCoupling");
     }
   }
@@ -54,7 +54,7 @@ XFEM::XfaCouplingManager::XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
 void XFEM::XfaCouplingManager::predict_coupling_states()
 {
   /*
-    if (Ale_Struct_coupling_ != Teuchos::null)
+    if (Ale_Struct_coupling_ != nullptr)
     {
       std::cout << "XFEM::XFACoupling_Manager::predict_coupling_states"<< std::endl;
 
@@ -87,13 +87,13 @@ void XFEM::XfaCouplingManager::predict_coupling_states()
 void XFEM::XfaCouplingManager::set_coupling_states()
 {
   // 1 Sets structural conditioned Dispnp onto Ale
-  if (ale_struct_coupling_ != Teuchos::null)
+  if (ale_struct_coupling_ != nullptr)
     ale_struct_coupling_->insert_vector(1, structure_->dispnp(), 0, ale_->write_access_dispnp(),
         XFEM::CouplingCommManager::full_to_full);
 
   // 2 Get AleDisplacements
-  Teuchos::RCP<Core::LinAlg::Vector<double>> aledisplacements =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->Map(1), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> aledisplacements =
+      std::make_shared<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->Map(1), true);
   insert_vector(1, ale_->dispnp(), 0, aledisplacements, CouplingCommManager::partial_to_partial);
   // 3 Set Fluid Dispnp
   get_map_extractor(0)->insert_vector(*aledisplacements, 1, *xfluid_->write_access_dispnp());
@@ -115,14 +115,14 @@ void XFEM::XfaCouplingManager::add_coupling_matrix(
 {
   // Get Idx of fluid and ale field map extractors
   const int& aidx_other = ALE::Utils::MapExtractor::cond_other;
-  const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_->block_system_matrix();
+  const std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> a = ale_->block_system_matrix();
 
   // ALE Condensation
   Core::LinAlg::SparseMatrix& aii = a->matrix(aidx_other, aidx_other);
 
   systemmatrix.assign(idx_[1], idx_[1], Core::LinAlg::View, aii);
 
-  if (ale_struct_coupling_ != Teuchos::null)
+  if (ale_struct_coupling_ != nullptr)
   {
     const int& aidx_as = ALE::Utils::MapExtractor::cond_lung_asi;
     Core::LinAlg::SparseMatrix& ai_gau = a->matrix(aidx_other, aidx_as);
@@ -145,11 +145,11 @@ void XFEM::XfaCouplingManager::add_coupling_matrix(
 /*-----------------------------------------------------------------------------------------*
 | Add the coupling rhs                                                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XfaCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
+void XFEM::XfaCouplingManager::add_coupling_rhs(std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
     const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> av = ale_->rhs();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> aov = ale_->interface()->extract_other_vector(*av);
+  std::shared_ptr<const Core::LinAlg::Vector<double>> av = ale_->rhs();
+  std::shared_ptr<Core::LinAlg::Vector<double>> aov = ale_->interface()->extract_other_vector(*av);
   me.insert_vector(*aov, idx_[1], *rhs);  // add ALE contributions to 'rhs'
   return;
 }

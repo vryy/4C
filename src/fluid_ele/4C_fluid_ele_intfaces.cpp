@@ -23,10 +23,10 @@ Discret::Elements::FluidIntFaceType& Discret::Elements::FluidIntFaceType::instan
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidIntFaceType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidIntFaceType::create(
     const int id, const int owner)
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -122,7 +122,7 @@ void Discret::Elements::FluidIntFace::patch_location_vector(
     std::vector<int>& lm_faceToPatch,          ///< local map between lm_face and lm_patch
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch,   ///< local map between slave nodes and nodes in patch
-    Teuchos::RCP<std::map<int, int>>
+    std::shared_ptr<std::map<int, int>>
         pbcconnectivity  ///< connectivity between slave and PBC's master nodes
 )
 {
@@ -164,7 +164,7 @@ void Discret::Elements::FluidIntFace::patch_location_vector(
 
   //----------------------------------------------------
   // check for PBC nodes
-  bool has_PBC = (pbcconnectivity != Teuchos::null);
+  bool has_PBC = (pbcconnectivity != nullptr);
 
 
   // ---------------------------------------------------
@@ -334,7 +334,7 @@ void Discret::Elements::FluidIntFace::patch_location_vector(
     std::vector<int>& lm_faceToPatch,          ///< local map between lm_face and lm_patch
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch,   ///< local map between slave nodes and nodes in patch
-    Teuchos::RCP<std::map<int, int>>
+    std::shared_ptr<std::map<int, int>>
         pbcconnectivity  ///< connectivity between slave and PBC's master nodes
 )
 {
@@ -390,7 +390,7 @@ void Discret::Elements::FluidIntFace::patch_location_vector(
 
   //----------------------------------------------------
   // check for PBC nodes
-  bool has_PBC = (pbcconnectivity != Teuchos::null);
+  bool has_PBC = (pbcconnectivity != nullptr);
 
   // ---------------------------------------------------
   const int dofset = 0;  // assume dofset 0
@@ -574,7 +574,7 @@ void Discret::Elements::FluidIntFace::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                           schott 03/12 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidIntFace::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::FluidIntFace::lines()
 {
   FOUR_C_THROW("Lines of FluidIntFace not implemented");
 }
@@ -582,7 +582,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidIntFa
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                           schott 03/12 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidIntFace::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::FluidIntFace::surfaces()
 {
   FOUR_C_THROW("Surfaces of FluidIntFace not implemented");
 }

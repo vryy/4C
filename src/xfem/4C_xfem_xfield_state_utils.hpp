@@ -14,7 +14,7 @@
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -26,70 +26,9 @@ namespace XFEM
    *  \author hiermeier
    *  \date 07/16 */
   inline void destroy_matrix(
-      Teuchos::RCP<Core::LinAlg::SparseOperator>& mat, bool throw_exception = true)
+      std::shared_ptr<Core::LinAlg::SparseOperator>& mat, bool throw_exception = true)
   {
-    // reference-counted object can be deleted by setting RCP = Teuchos::null when strong_count() ==
-    // 1 given a weak RCP we do not have the permission to delete the reference-counted object given
-    // a strong RCP with strong_count() > 1 we only can decrement the strong reference counter
-
-    if (mat.strength() == Teuchos::RCP_STRONG)  // strong RCP
-    {
-      if (mat.strong_count() == 1)
-      {
-        // which operator type do we have?
-        NOX::Nln::LinSystem::OperatorType optype = NOX::Nln::Aux::get_operator_type(*mat);
-        // destroy underlying Epetra objects of the reference-counted object
-        switch (optype)
-        {
-          case NOX::Nln::LinSystem::LinalgSparseMatrix:
-          {
-            Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mat)->destroy();
-            break;
-          }
-          case NOX::Nln::LinSystem::LinalgBlockSparseMatrix:
-          {
-            Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
-                block_mat = Teuchos::rcp_dynamic_cast<
-                    Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
-                    mat, true);
-            block_mat->destroy(false);
-            break;
-          }
-          default:
-          {
-            std::stringstream msg;
-            msg << "The given Core::LinAlg::SparseOperator type is not supported! ( "
-                << NOX::Nln::LinSystem::operator_type_to_string(optype) << " )";
-            FOUR_C_THROW(msg.str());
-            break;
-          }
-        }
-        mat = Teuchos::null;  // destroy the rcp itself and delete the reference-counted object
-      }
-      else if (mat.strong_count() > 1)
-      {
-        if (throw_exception)
-        {
-          std::stringstream msg;
-          msg << "Could not destroy matrix object: " << mat.strong_count() << "!=1 pointers";
-          FOUR_C_THROW(msg.str());
-        }
-        else
-          mat = Teuchos::null;  // decrement the strong reference counter
-      }
-    }
-    else if (mat.strength() == Teuchos::RCP_WEAK)  // weak RCP
-    {
-      mat = Teuchos::null;  // invalidate the RCP, reference-counted object won't be deleted by this
-                            // weak pointer
-    }
-    else
-    {
-      std::stringstream msg;
-      msg << "invalid strength of RCP: "
-          << Teuchos::ToStringTraits<Teuchos::ERCPStrength>::toString(mat.strength());
-      FOUR_C_THROW(msg.str());
-    }
+    mat = nullptr;
   }
 
   /** \brief Destroy the Core::LinAlg::SparseMatrix object and it's date
@@ -97,38 +36,9 @@ namespace XFEM
    *  \author schott
    *  \date 01/15 */
   inline void destroy_matrix(
-      Teuchos::RCP<Core::LinAlg::SparseMatrix>& mat, bool throw_exception = true)
+      std::shared_ptr<Core::LinAlg::SparseMatrix>& mat, bool throw_exception = true)
   {
-    // reference-counted object can be deleted by setting RCP = Teuchos::null when strong_count() ==
-    // 1 given a weak RCP we do not have the permission to delete the reference-counted object given
-    // a strong RCP with strong_count() > 1 we only can decrement the strong reference counter
-
-    if (mat.strength() == Teuchos::RCP_STRONG)  // strong RCP
-    {
-      if (mat.strong_count() == 1)
-      {
-        mat->destroy();       // destroy underlying Epetra objects of the reference-counted object
-        mat = Teuchos::null;  // destroy the rcp itself and delete the reference-counted object
-      }
-      else if (mat.strong_count() > 1)
-      {
-        if (throw_exception)
-        {
-          std::ostringstream msg;
-          msg << "Could not destroy matrix object: " << mat.strong_count() << "!=1 pointers";
-          FOUR_C_THROW(msg.str());
-        }
-        else
-          mat = Teuchos::null;  // decrement the strong reference counter
-      }
-    }
-    else if (mat.strength() == Teuchos::RCP_WEAK)  // weak RCP
-    {
-      mat = Teuchos::null;  // invalidate the RCP, reference-counted object won't be deleted by this
-                            // weak pointer
-    }
-    else
-      FOUR_C_THROW("invalid strength of RCP");
+    mat = nullptr;
   }
 
 
@@ -137,40 +47,9 @@ namespace XFEM
    *  \author schott
    *  \date 01/15 */
   template <class OBJECT>
-  inline void destroy_rcp_object(Teuchos::RCP<OBJECT>& obj_rcp, bool throw_exception = true)
+  inline void destroy_rcp_object(std::shared_ptr<OBJECT>& obj_rcp, bool throw_exception = true)
   {
-    // reference-counted object can be deleted by setting RCP = Teuchos::null when strong_count() ==
-    // 1 given a weak RCP we do not have the permission to delete the reference-counted object given
-    // a strong RCP with strong_count() > 1 we only can decrement the strong reference counter
-
-    if (obj_rcp == Teuchos::null) return;
-
-    if (obj_rcp.strength() == Teuchos::RCP_STRONG)  // strong RCP
-    {
-      if (obj_rcp.strong_count() == 1)
-      {
-        obj_rcp = Teuchos::null;  // destroy the rcp itself and delete the reference-counted object
-      }
-      else if (obj_rcp.strong_count() > 1)
-      {
-        if (throw_exception)
-        {
-          std::ostringstream msg;
-          msg << "Could not destroy reference-counted object! strong_count() = "
-              << obj_rcp.strong_count() << " (!=1 pointers)";
-          FOUR_C_THROW(msg.str());
-        }
-        else
-          obj_rcp = Teuchos::null;  // decrement the strong reference counter
-      }
-    }
-    else if (obj_rcp.strength() == Teuchos::RCP_WEAK)  // weak RCP
-    {
-      obj_rcp = Teuchos::null;  // invalidate the RCP, reference-counted object won't be deleted by
-                                // this weak pointer
-    }
-    else
-      FOUR_C_THROW("invalid strength of RCP");
+    obj_rcp = nullptr;
   }
 
 

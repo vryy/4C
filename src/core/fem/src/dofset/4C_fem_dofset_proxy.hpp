@@ -45,13 +45,13 @@ namespace Core::DOFSets
     ~DofSetProxy() override;
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSetProxy> clone() { return Teuchos::make_rcp<DofSetProxy>(*this); }
+    virtual std::shared_ptr<DofSetProxy> clone() { return std::make_shared<DofSetProxy>(*this); }
 
     /// Add Dof Set to list #static_dofsets_
     void add_dof_setto_list() override;
 
     /// Replace a Dof Set in list #static_dofsets_ with this
-    void replace_in_static_dofsets(Teuchos::RCP<DofSetInterface> olddofset) override
+    void replace_in_static_dofsets(std::shared_ptr<DofSetInterface> olddofset) override
     {
       dofset_->replace_in_static_dofsets(olddofset);
     };

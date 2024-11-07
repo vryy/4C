@@ -92,8 +92,8 @@ int Discret::Elements::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
       //       it would be wrong to suppress results for a ghosted boundary!
 
       // get actual values of transported scalars
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+      if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
       // extract local values from the global vector
       std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
@@ -104,9 +104,9 @@ int Discret::Elements::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
       const int ndsvel = my::scatraparams_->nds_vel();
 
       // get convective (velocity - mesh displacement) velocity at nodes
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
           discretization.get_state(ndsvel, "convective velocity field");
-      if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
+      if (convel == nullptr) FOUR_C_THROW("Cannot get state vector convective velocity");
 
       // determine number of velocity related dofs per node
       const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -143,10 +143,10 @@ int Discret::Elements::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
         // get number of dofset associated with velocity related dofs
         const int ndsdisp = my::scatraparams_->nds_disp();
 
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
             discretization.get_state(ndsdisp, "dispnp");
 
-        if (disp != Teuchos::null)
+        if (disp != nullptr)
         {
           std::vector<double> mydisp(la[ndsdisp].lm_.size());
           Core::FE::extract_my_values(*disp, mydisp, la[ndsdisp].lm_);

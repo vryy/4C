@@ -100,9 +100,9 @@ struct Mat::SuperElasticSMA::LoadingData
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from read_materials()    hemmler 09/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::SuperElasticSMA::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::SuperElasticSMA::create_material()
 {
-  return Teuchos::make_rcp<Mat::SuperElasticSMA>(this);
+  return std::make_shared<Mat::SuperElasticSMA>(this);
 }
 
 
@@ -191,7 +191,7 @@ void Mat::SuperElasticSMA::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -210,10 +210,10 @@ void Mat::SuperElasticSMA::unpack(Core::Communication::UnpackBuffer& buffer)
 
   // if system is not yet initialized, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
-  druckerpragerloadinglast_ = Teuchos::make_rcp<std::vector<double>>();
-  druckerpragerloadingcurr_ = Teuchos::make_rcp<std::vector<double>>();
-  xi_s_curr_ = Teuchos::make_rcp<std::vector<double>>();
-  xi_s_last_ = Teuchos::make_rcp<std::vector<double>>();
+  druckerpragerloadinglast_ = std::make_shared<std::vector<double>>();
+  druckerpragerloadingcurr_ = std::make_shared<std::vector<double>>();
+  xi_s_curr_ = std::make_shared<std::vector<double>>();
+  xi_s_last_ = std::make_shared<std::vector<double>>();
 
 
   for (int var = 0; var < histsize; ++var)
@@ -247,10 +247,10 @@ void Mat::SuperElasticSMA::unpack(Core::Communication::UnpackBuffer& buffer)
  *---------------------------------------------------------------------*/
 void Mat::SuperElasticSMA::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
-  druckerpragerloadingcurr_ = Teuchos::make_rcp<std::vector<double>>();
-  druckerpragerloadinglast_ = Teuchos::make_rcp<std::vector<double>>();
-  xi_s_curr_ = Teuchos::make_rcp<std::vector<double>>();
-  xi_s_last_ = Teuchos::make_rcp<std::vector<double>>();
+  druckerpragerloadingcurr_ = std::make_shared<std::vector<double>>();
+  druckerpragerloadinglast_ = std::make_shared<std::vector<double>>();
+  xi_s_curr_ = std::make_shared<std::vector<double>>();
+  xi_s_last_ = std::make_shared<std::vector<double>>();
 
   druckerpragerloadingcurr_->resize(numgp);
   druckerpragerloadinglast_->resize(numgp);
@@ -280,8 +280,8 @@ void Mat::SuperElasticSMA::update()
   druckerpragerloadinglast_ = druckerpragerloadingcurr_;
   xi_s_last_ = xi_s_curr_;
 
-  druckerpragerloadingcurr_ = Teuchos::make_rcp<std::vector<double>>();
-  xi_s_curr_ = Teuchos::make_rcp<std::vector<double>>();
+  druckerpragerloadingcurr_ = std::make_shared<std::vector<double>>();
+  xi_s_curr_ = std::make_shared<std::vector<double>>();
 
   // Empty vectors of current data
   const int histsize = xi_s_last_->size();

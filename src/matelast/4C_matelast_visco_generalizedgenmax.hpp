@@ -46,7 +46,7 @@ namespace Mat
 
         /// create material instance of matching type with my parameters
 
-        Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
+        std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };
       };  // class GeneralizedGenMax
 
 
@@ -76,12 +76,12 @@ namespace Mat
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<Core::Mat::Material> create_material() override
+        std::shared_ptr<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
               "Mat::Elastic::Summand::Factory.");
-          return Teuchos::null;
+          return nullptr;
         };
       };  // class ViscoBranch
 
@@ -107,7 +107,7 @@ namespace Mat
         //@}
 
         /// create material instance of matching type with my parameters
-        Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
+        std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };
       };  // class ViscoPart
 
     }  // namespace PAR
@@ -138,7 +138,7 @@ namespace Mat
 
       /// @name Access methods
       //@{
-      std::vector<std::vector<Teuchos::RCP<Mat::Elastic::Summand>>> get_branchespotsum() const
+      std::vector<std::vector<std::shared_ptr<Mat::Elastic::Summand>>> get_branchespotsum() const
       {
         return branchespotsum_;
       }
@@ -177,9 +177,9 @@ namespace Mat
 
      protected:
       /// summands of the GeneralizedGenMax material or each branch
-      std::vector<std::vector<Teuchos::RCP<Mat::Elastic::Summand>>> branchespotsum_;
+      std::vector<std::vector<std::shared_ptr<Mat::Elastic::Summand>>> branchespotsum_;
       /// summands in one particular branch
-      std::vector<Teuchos::RCP<Mat::Elastic::Summand>> internalpotsum_;
+      std::vector<std::shared_ptr<Mat::Elastic::Summand>> internalpotsum_;
     };
 
     class ViscoBranch : public Summand

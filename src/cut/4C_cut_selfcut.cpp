@@ -32,10 +32,10 @@ Cut::SelfCut::SelfCut(MeshHandle& cut_mesh_handle, int myrank)
     : myrank_(myrank), mesh_(cut_mesh_handle.linear_mesh()), meshhandle_(cut_mesh_handle)
 {
   meshsizeparam_ = 1e200;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator sit = mesh_.sides().begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator sit = mesh_.sides().begin();
        sit != mesh_.sides().end(); ++sit)
   {
-    Teuchos::RCP<BoundingBox> sbb = Teuchos::RCP(BoundingBox::create(*(sit->second)));
+    std::shared_ptr<BoundingBox> sbb(BoundingBox::create(*(sit->second)));
     meshsizeparam_ = std::min(meshsizeparam_, sbb->diagonal());
   }
 }
@@ -129,12 +129,12 @@ void Cut::SelfCut::status_inspection()
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::find_cutting_sides()
 {
-  const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = mesh_.sides();
+  const std::map<plain_int_set, std::shared_ptr<Side>>& cutsides = mesh_.sides();
   const std::map<int, Core::LinAlg::Matrix<3, 2>>& selfcutbvs = mesh_.self_cut_bvs();
-  const Teuchos::RCP<Core::Geo::SearchTree>& selfcuttree = mesh_.self_cut_tree();
+  const std::shared_ptr<Core::Geo::SearchTree>& selfcuttree = mesh_.self_cut_tree();
   const std::map<int, Side*>& shadowsides = mesh_.shadow_sides();
 
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -284,12 +284,12 @@ void Cut::SelfCut::operations_for_node_merging(
 {
   // The following "edge" and "side" data structure has to be modified accodingly
   // the node numbers has to be set accordingly
-  std::map<plain_int_set, Teuchos::RCP<Edge>>& edges =
-      const_cast<std::map<plain_int_set, Teuchos::RCP<Edge>>&>(mesh_.edges());
-  std::map<plain_int_set, Teuchos::RCP<Side>>& sides =
-      const_cast<std::map<plain_int_set, Teuchos::RCP<Side>>&>(mesh_.sides());
+  std::map<plain_int_set, std::shared_ptr<Edge>>& edges =
+      const_cast<std::map<plain_int_set, std::shared_ptr<Edge>>&>(mesh_.edges());
+  std::map<plain_int_set, std::shared_ptr<Side>>& sides =
+      const_cast<std::map<plain_int_set, std::shared_ptr<Side>>&>(mesh_.sides());
 
-  /*for (std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator it =
+  /*for (std::map<plain_int_set, std::shared_ptr<Edge> >::iterator it =
   edges.begin();it!=edges.end();it++)
   {
     plain_int_set pis = it->first;
@@ -320,8 +320,8 @@ void Cut::SelfCut::operations_for_node_merging(
 
     // modify the "edge" and "side data structure in the mesh
     // delete node "nod" by "replwith" in both edges and sides data-structure
-    modify_edge_or_side_map<plain_int_set, Teuchos::RCP<Edge>>(edges, nod->id(), replwith->id());
-    modify_edge_or_side_map<plain_int_set, Teuchos::RCP<Side>>(sides, nod->id(), replwith->id());
+    modify_edge_or_side_map<plain_int_set, std::shared_ptr<Edge>>(edges, nod->id(), replwith->id());
+    modify_edge_or_side_map<plain_int_set, std::shared_ptr<Side>>(sides, nod->id(), replwith->id());
   }
 }
 /*----------------------------------------------------------------------------------------------------*
@@ -384,8 +384,8 @@ void Cut::SelfCut::modify_edge_or_side_map(std::map<A, B>& data, int nod, int re
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::find_self_cut_points()
 {
-  const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = mesh_.sides();
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  const std::map<plain_int_set, std::shared_ptr<Side>>& cutsides = mesh_.sides();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -426,11 +426,11 @@ void Cut::SelfCut::find_self_cut_points()
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::get_self_cut_objects()
 {
-  const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = mesh_.sides();
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  const std::map<plain_int_set, std::shared_ptr<Side>>& cutsides = mesh_.sides();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
-    Teuchos::RCP<Side> cutside = i->second;
+    std::shared_ptr<Side> cutside = i->second;
     if (cutside->cutting_sides().size() != 0)
     {
       plain_int_set cutsidenodeids = i->first;
@@ -438,13 +438,13 @@ void Cut::SelfCut::get_self_cut_objects()
     }
   }
 
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
     get_self_cut_edges(*cutside);
   }
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -452,8 +452,8 @@ void Cut::SelfCut::get_self_cut_objects()
     for (std::vector<Node*>::const_iterator i = cutsidenodes.begin(); i != cutsidenodes.end(); ++i)
     {
       int cutsidenodeid = (*i)->id();
-      const std::map<int, Teuchos::RCP<Node>>& cutsidenodercp = mesh_.nodes();
-      std::map<int, Teuchos::RCP<Node>>::const_iterator nodeiterator =
+      const std::map<int, std::shared_ptr<Node>>& cutsidenodercp = mesh_.nodes();
+      std::map<int, std::shared_ptr<Node>>::const_iterator nodeiterator =
           cutsidenodercp.find(cutsidenodeid);
       selfcut_nodes_[cutsidenodeid] = nodeiterator->second;
     }
@@ -467,7 +467,7 @@ void Cut::SelfCut::get_self_cut_objects()
 void Cut::SelfCut::create_self_cut_nodes()
 {
   std::vector<Node*> cuttedsidesnodes;
-  for (std::map<int, Teuchos::RCP<Node>>::iterator i = selfcut_nodes_.begin();
+  for (std::map<int, std::shared_ptr<Node>>::iterator i = selfcut_nodes_.begin();
        i != selfcut_nodes_.end(); ++i)
   {
     Node* cuttedsidesnode = &*i->second;
@@ -480,7 +480,7 @@ void Cut::SelfCut::create_self_cut_nodes()
   // 2.If not we create a new node at this location and add it to the mesh, and corresponding cut
   // side
   //   set their position as "oncutsurface"
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -505,13 +505,13 @@ void Cut::SelfCut::create_self_cut_nodes()
       }
       else
       {
-        const std::map<int, Teuchos::RCP<Node>>& cutsidenodes = mesh_.nodes();
+        const std::map<int, std::shared_ptr<Node>>& cutsidenodes = mesh_.nodes();
         int selfcutnodeid = cutsidenodes.begin()->first - 1;
         Node* selfcutnode = new Node(selfcutnodeid, cutsideselfcutpoint, 0.0);
         selfcutnode->self_cut_position(Point::oncutsurface);
         mesh_.get_node(selfcutnodeid, selfcutnode);
-        const std::map<int, Teuchos::RCP<Node>>& selfcutnodercp = mesh_.nodes();
-        std::map<int, Teuchos::RCP<Node>>::const_iterator nodeiterator =
+        const std::map<int, std::shared_ptr<Node>>& selfcutnodercp = mesh_.nodes();
+        std::map<int, std::shared_ptr<Node>>::const_iterator nodeiterator =
             selfcutnodercp.find(selfcutnodeid);
         selfcut_nodes_[selfcutnodeid] = nodeiterator->second;
         cutside->get_self_cut_node(selfcutnode);
@@ -532,7 +532,7 @@ void Cut::SelfCut::create_self_cut_edges()
 {
   // Find common nodes between a cut side and its self-cutting sides
   // create edges between these common nodes
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -557,7 +557,7 @@ void Cut::SelfCut::create_self_cut_edges()
       }
       if (commonselfcutnodeids.size() == 2)
       {
-        std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator edgeiterator =
+        std::map<plain_int_set, std::shared_ptr<Edge>>::iterator edgeiterator =
             selfcut_edges_.find(commonselfcutnodeids);
         if (edgeiterator !=
             selfcut_edges_.end())  // this edge is already formed when processing other side
@@ -568,12 +568,12 @@ void Cut::SelfCut::create_self_cut_edges()
         }
         else
         {
-          Teuchos::RCP<Edge> selfcutedge =
+          std::shared_ptr<Edge> selfcutedge =
               Cut::Edge::create(Core::FE::CellType::line2, commonselfcutnodes);
           selfcutedge->self_cut_position(Point::oncutsurface);
           mesh_.get_edge(commonselfcutnodeids, selfcutedge);
-          const std::map<plain_int_set, Teuchos::RCP<Edge>>& cutsideedgercp = mesh_.edges();
-          std::map<plain_int_set, Teuchos::RCP<Edge>>::const_iterator edgeiterator =
+          const std::map<plain_int_set, std::shared_ptr<Edge>>& cutsideedgercp = mesh_.edges();
+          std::map<plain_int_set, std::shared_ptr<Edge>>::const_iterator edgeiterator =
               cutsideedgercp.find(commonselfcutnodeids);
           selfcut_edges_[commonselfcutnodeids] = edgeiterator->second;
           cutside->get_self_cut_edge(selfcutedge.get());
@@ -592,7 +592,7 @@ void Cut::SelfCut::create_self_cut_edges()
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::find_self_cut_triangulation()
 {
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = i->second.get();
@@ -617,7 +617,7 @@ void Cut::SelfCut::find_self_cut_triangulation()
     Cycle* maincycle = &*(pointgraph.fbegin());
     bool IsCorrectNormal = check_normal(cutsideplane, *maincycle);
     std::vector<Cycle*> maincycles;
-    std::vector<Teuchos::RCP<Cycle>> newmaincyclercp;
+    std::vector<std::shared_ptr<Cycle>> newmaincyclercp;
     for (Impl::PointGraph::facet_iterator i = pointgraph.fbegin(); i != pointgraph.fend(); ++i)
     {
       Cycle* maincycle = &*i;
@@ -713,7 +713,7 @@ void Cut::SelfCut::find_self_cut_triangulation()
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::create_self_cut_sides()
 {
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -781,8 +781,8 @@ void Cut::SelfCut::create_self_cut_sides()
       Side* selfcutside =
           mesh_.create_side(cutside->id(), selfcutsidenodeids, Core::FE::CellType::tri3);
       meshhandle_.add_sub_side(selfcutside);
-      const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsideedgercp = mesh_.sides();
-      std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator sideiterator =
+      const std::map<plain_int_set, std::shared_ptr<Side>>& cutsideedgercp = mesh_.sides();
+      std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator sideiterator =
           cutsideedgercp.find(selfcutsidenodeidsset);
       selfcut_sides_[selfcutsidenodeidsset] = sideiterator->second;
       get_self_cut_edges(*selfcutside);
@@ -799,7 +799,7 @@ void Cut::SelfCut::create_self_cut_sides()
 void Cut::SelfCut::erase_cutted_sides()
 {
   std::vector<plain_int_set> cutsideids;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -818,7 +818,7 @@ void Cut::SelfCut::erase_cutted_sides()
 void Cut::SelfCut::erase_cutted_edges()
 {
   std::vector<plain_int_set> cutsideedgeids;
-  for (std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = selfcut_edges_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = selfcut_edges_.begin();
        i != selfcut_edges_.end(); ++i)
   {
     Edge* cutsideedge = &*i->second;
@@ -860,7 +860,7 @@ bool Cut::SelfCut::connectedto_background(Node* node)
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::determine_self_cut_position()
 {
-  for (std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = selfcut_edges_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = selfcut_edges_.begin();
        i != selfcut_edges_.end(); ++i)
   {
     Edge* cutsideedge = &*i->second;
@@ -997,7 +997,7 @@ void Cut::SelfCut::determine_self_cut_position()
 void Cut::SelfCut::propagate_self_cut_position()
 {
   plain_side_set undecidedsides;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -1131,9 +1131,9 @@ void Cut::SelfCut::erase_inside_sides()
   int initial_cutsides = mesh_.sides().size();
   int final_cutsides = 0;
 
-  const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = mesh_.sides();
+  const std::map<plain_int_set, std::shared_ptr<Side>>& cutsides = mesh_.sides();
   std::vector<plain_int_set> cutsideids;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -1158,9 +1158,9 @@ void Cut::SelfCut::erase_inside_sides()
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::erase_inside_edges()
 {
-  const std::map<plain_int_set, Teuchos::RCP<Edge>>& cutsideedges = mesh_.edges();
+  const std::map<plain_int_set, std::shared_ptr<Edge>>& cutsideedges = mesh_.edges();
   std::vector<plain_int_set> cutsideedgeids;
-  for (std::map<plain_int_set, Teuchos::RCP<Edge>>::const_iterator i = cutsideedges.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Edge>>::const_iterator i = cutsideedges.begin();
        i != cutsideedges.end(); ++i)
   {
     Edge* cutsideedge = &*i->second;
@@ -1182,9 +1182,9 @@ void Cut::SelfCut::erase_inside_edges()
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::erase_inside_nodes()
 {
-  const std::map<int, Teuchos::RCP<Node>>& cutsidenodes = mesh_.nodes();
+  const std::map<int, std::shared_ptr<Node>>& cutsidenodes = mesh_.nodes();
   std::vector<int> cutsidenodeids;
-  for (std::map<int, Teuchos::RCP<Node>>::const_iterator i = cutsidenodes.begin();
+  for (std::map<int, std::shared_ptr<Node>>::const_iterator i = cutsidenodes.begin();
        i != cutsidenodes.end(); ++i)
   {
     Node* cutsidenode = &*i->second;
@@ -1210,11 +1210,11 @@ void Cut::SelfCut::erase_inside_nodes()
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::construct_connectivity()
 {
-  const std::map<int, Teuchos::RCP<Node>>& cutsidenodes = mesh_.nodes();
+  const std::map<int, std::shared_ptr<Node>>& cutsidenodes = mesh_.nodes();
   plain_node_set remainingnodes;
   int count = 0;
 
-  for (std::map<int, Teuchos::RCP<Node>>::const_iterator i = cutsidenodes.begin();
+  for (std::map<int, std::shared_ptr<Node>>::const_iterator i = cutsidenodes.begin();
        i != cutsidenodes.end(); ++i)
   {
     Node* cutsidenode = &*i->second;
@@ -1263,9 +1263,9 @@ void Cut::SelfCut::find_islands()
 {
   plain_side_set selfcutsides;
 
-  const std::map<plain_int_set, Teuchos::RCP<Side>>& fullcut_sides = mesh_.sides();
+  const std::map<plain_int_set, std::shared_ptr<Side>>& fullcut_sides = mesh_.sides();
 
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = fullcut_sides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = fullcut_sides.begin();
        i != fullcut_sides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -1281,7 +1281,7 @@ void Cut::SelfCut::find_islands()
     islandsides.insert(cutside);
     selfcutsides.erase(cutside);
 
-    Teuchos::RCP<BoundingBox> tmp_bb = Teuchos::RCP(BoundingBox::create(*cutside));
+    std::shared_ptr<BoundingBox> tmp_bb(BoundingBox::create(*cutside));
     next_sides(cutside, tmp_bb, selfcutsides, islandsides, IsIsland);
 
     if (tmp_bb->diagonal() <=
@@ -1301,7 +1301,7 @@ void Cut::SelfCut::find_islands()
  * finds the next sides in a recursive way
  *                                                                          wirtz 02/15
  *-------------------------------------------------------------------------------------*/
-void Cut::SelfCut::next_sides(Side* cutside, Teuchos::RCP<Cut::BoundingBox>& tmpbb,
+void Cut::SelfCut::next_sides(Side* cutside, std::shared_ptr<Cut::BoundingBox>& tmpbb,
     plain_side_set& selfcutsides, plain_side_set& islandsides, bool& IsIsland)
 {
   const std::vector<Edge*>& cutsideedges = cutside->edges();
@@ -1344,7 +1344,7 @@ void Cut::SelfCut::cutted_side_status_text()
 {
   int selfcutsidesize = selfcut_sides_.size();
   int j = 1;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -1418,7 +1418,7 @@ void Cut::SelfCut::cut_mesh_status_text()
   plot_across();
   std::cout << "\n" << selfcut_nodes_.size() << " Nodes: \n";
   node_plot_head();
-  for (std::map<int, Teuchos::RCP<Node>>::iterator i = selfcut_nodes_.begin();
+  for (std::map<int, std::shared_ptr<Node>>::iterator i = selfcut_nodes_.begin();
        i != selfcut_nodes_.end(); ++i)
   {
     Node* node = &*i->second;
@@ -1427,7 +1427,7 @@ void Cut::SelfCut::cut_mesh_status_text()
   plot_across();
   std::cout << "\n" << selfcut_edges_.size() << " Edges: \n";
   edge_plot_head();
-  for (std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = selfcut_edges_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = selfcut_edges_.begin();
        i != selfcut_edges_.end(); ++i)
   {
     Edge* edge = &*i->second;
@@ -1436,7 +1436,7 @@ void Cut::SelfCut::cut_mesh_status_text()
   plot_across();
   std::cout << "\n" << selfcut_sides_.size() << " Sides: \n";
   side_plot_head();
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
   {
     Side* side = &*i->second;
@@ -1521,10 +1521,10 @@ void Cut::SelfCut::error_status_text(Side& cutside)
 void Cut::SelfCut::cutted_side_status_gmsh(const std::string& name)
 {
   std::ofstream file(name.c_str());
-  const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = mesh_.sides();
+  const std::map<plain_int_set, std::shared_ptr<Side>>& cutsides = mesh_.sides();
   int cutsidessize = cutsides.size();
   file << "View \"" << cutsidessize << " Sides\" {\n";
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -1579,10 +1579,10 @@ void Cut::SelfCut::cutted_side_status_gmsh(const std::string& name)
   }
   file << "};\n";
 
-  const std::map<plain_int_set, Teuchos::RCP<Edge>>& cutsideedges = mesh_.edges();
+  const std::map<plain_int_set, std::shared_ptr<Edge>>& cutsideedges = mesh_.edges();
   int cutedgessize = cutsideedges.size();
   file << "View \"" << cutedgessize << " Edges\" {\n";
-  for (std::map<plain_int_set, Teuchos::RCP<Edge>>::const_iterator i = cutsideedges.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Edge>>::const_iterator i = cutsideedges.begin();
        i != cutsideedges.end(); ++i)
   {
     Edge* cutsideedge = &*i->second;
@@ -1613,10 +1613,10 @@ void Cut::SelfCut::cutted_side_status_gmsh(const std::string& name)
   }
   file << "};\n";
 
-  const std::map<int, Teuchos::RCP<Node>>& cutsidenodes = mesh_.nodes();
+  const std::map<int, std::shared_ptr<Node>>& cutsidenodes = mesh_.nodes();
   int cutnodessize = cutsidenodes.size();
   file << "View \"" << cutnodessize << " Nodes\" {\n";
-  for (std::map<int, Teuchos::RCP<Node>>::const_iterator i = cutsidenodes.begin();
+  for (std::map<int, std::shared_ptr<Node>>::const_iterator i = cutsidenodes.begin();
        i != cutsidenodes.end(); ++i)
   {
     Node* cutsidenode = &*i->second;
@@ -1678,7 +1678,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
    x[2] = 0.005;
    elementbox.add_point( x );
    plain_side_set cutsides;
-   for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
+   for ( std::map<plain_int_set, std::shared_ptr<Side> >::iterator i=selfcut_sides_.begin();
    i!=selfcut_sides_.end();
    ++i )
    {
@@ -1691,11 +1691,11 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
    }
    }*/
 
-  const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = mesh_.sides();
+  const std::map<plain_int_set, std::shared_ptr<Side>>& cutsides = mesh_.sides();
 
   int cutsidessize = cutsides.size();
   file << "View \"" << cutsidessize << " Sides\" {\n";
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -1750,7 +1750,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
   file << "};\n";
 
   plain_edge_set cutsideedges;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -1794,7 +1794,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
   file << "};\n";
 
   plain_node_set cutsidenodes;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -1824,7 +1824,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
   file << "};\n";
 
   plain_side_set cuttingsides;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -1891,7 +1891,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
   file << "};\n";
 
   plain_node_set selfcutnodes;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -1921,7 +1921,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
   file << "};\n";
 
   plain_edge_set selfcutedges;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -1965,7 +1965,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
   file << "};\n";
 
   std::vector<std::vector<Point*>> selfcuttriangles;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -2064,7 +2064,7 @@ void Cut::SelfCut::sc_objects_gmsh(const std::string& name)
    x[2] = 0.005;
    elementbox.add_point( x );
    plain_side_set cutsides;
-   for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
+   for ( std::map<plain_int_set, std::shared_ptr<Side> >::iterator i=selfcut_sides_.begin();
    i!=selfcut_sides_.end();
    ++i )
    {
@@ -2077,11 +2077,11 @@ void Cut::SelfCut::sc_objects_gmsh(const std::string& name)
    }
    }*/
 
-  const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = mesh_.sides();
+  const std::map<plain_int_set, std::shared_ptr<Side>>& cutsides = mesh_.sides();
 
   int cutsidessize = cutsides.size();
   file << "View \"" << cutsidessize << " Sides\" {\n";
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -2137,7 +2137,7 @@ void Cut::SelfCut::sc_objects_gmsh(const std::string& name)
   file << "};\n";
 
   plain_edge_set cutsideedges;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -2181,7 +2181,7 @@ void Cut::SelfCut::sc_objects_gmsh(const std::string& name)
   file << "};\n";
 
   plain_node_set cutsidenodes;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -2214,7 +2214,7 @@ void Cut::SelfCut::sc_objects_gmsh(const std::string& name)
 
   int selfcutsidessize = selfcut_sides_.size();
   file << "View \"" << selfcutsidessize << " Sides\" {\n";
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = selfcut_sides_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
   {
     Side* selfcutside = &*i->second;
@@ -2271,7 +2271,7 @@ void Cut::SelfCut::sc_objects_gmsh(const std::string& name)
 
   int selfcutedgessize = selfcut_edges_.size();
   file << "View \"" << selfcutedgessize << " Edges\" {\n";
-  for (std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = selfcut_edges_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = selfcut_edges_.begin();
        i != selfcut_edges_.end(); ++i)
   {
     Edge* selfcutedge = &*i->second;
@@ -2304,7 +2304,7 @@ void Cut::SelfCut::sc_objects_gmsh(const std::string& name)
 
   int selfcutnodessize = selfcut_nodes_.size();
   file << "View \"" << selfcutnodessize << " Nodes\" {\n";
-  for (std::map<int, Teuchos::RCP<Node>>::iterator i = selfcut_nodes_.begin();
+  for (std::map<int, std::shared_ptr<Node>>::iterator i = selfcut_nodes_.begin();
        i != selfcut_nodes_.end(); ++i)
   {
     Node* selfcutnode = &*i->second;
@@ -2365,7 +2365,7 @@ void Cut::SelfCut::s_cmgm_gmsh(const std::string& name)
    x[2] = 0.005;
    elementbox.add_point( x );
    plain_side_set cutsides;
-   for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
+   for ( std::map<plain_int_set, std::shared_ptr<Side> >::iterator i=selfcut_sides_.begin();
    i!=selfcut_sides_.end();
    ++i )
    {
@@ -2378,7 +2378,7 @@ void Cut::SelfCut::s_cmgm_gmsh(const std::string& name)
    }
    }*/
   plain_side_set cutsides;
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -2712,7 +2712,7 @@ void Cut::SelfCut::s_cmgm_gmsh(const std::string& name)
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::all_single_gmsh(const std::string& location)
 {
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -2772,7 +2772,7 @@ void Cut::SelfCut::error_gmsh(const std::string& name, Side& cutside)
    x[2] = 0.005;
    elementbox.add_point( x );
    plain_side_set cutsides;
-   for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
+   for ( std::map<plain_int_set, std::shared_ptr<Side> >::iterator i=selfcut_sides_.begin();
    i!=selfcut_sides_.end();
    ++i )
    {
@@ -2785,7 +2785,7 @@ void Cut::SelfCut::error_gmsh(const std::string& name, Side& cutside)
    }
    }*/
   plain_side_set cutsides;
-  /*  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
+  /*  for ( std::map<plain_int_set, std::shared_ptr<Side> >::iterator i=selfcut_sides_.begin();
    i!=selfcut_sides_.end();
    ++i )
    {
@@ -3158,12 +3158,12 @@ void Cut::SelfCut::get_self_cut_edges(Side& cutside)
       cutsideedgenodeids.insert(cutsideedgenodeid);
     }
 
-    std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator edgeiterator =
+    std::map<plain_int_set, std::shared_ptr<Edge>>::iterator edgeiterator =
         selfcut_edges_.find(cutsideedgenodeids);
     if (edgeiterator == selfcut_edges_.end())
     {
-      const std::map<plain_int_set, Teuchos::RCP<Edge>>& cutsideedgercp = mesh_.edges();
-      std::map<plain_int_set, Teuchos::RCP<Edge>>::const_iterator edgeiterator =
+      const std::map<plain_int_set, std::shared_ptr<Edge>>& cutsideedgercp = mesh_.edges();
+      std::map<plain_int_set, std::shared_ptr<Edge>>::const_iterator edgeiterator =
           cutsideedgercp.find(cutsideedgenodeids);
       selfcut_edges_[cutsideedgenodeids] = edgeiterator->second;
     }

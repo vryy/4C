@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FSIResultTest::FSIResultTest(
-    Teuchos::RCP<FSI::Monolithic>& fsi, const Teuchos::ParameterList& fsidyn)
+    std::shared_ptr<FSI::Monolithic>& fsi, const Teuchos::ParameterList& fsidyn)
     : Core::Utils::ResultTest("FSI"), fsi_(fsi)
 {
   const auto coupling = Teuchos::getIntegralValue<FsiCoupling>(fsidyn, "COUPALGO");
@@ -42,10 +42,10 @@ FSI::FSIResultTest::FSIResultTest(
     case fsi_iter_monolithicfluidsplit:
     case fsi_iter_fluidfluid_monolithicfluidsplit:
     {
-      const Teuchos::RCP<FSI::MonolithicFluidSplit>& fsiobject =
-          Teuchos::rcp_dynamic_cast<FSI::MonolithicFluidSplit>(fsi);
+      const std::shared_ptr<FSI::MonolithicFluidSplit>& fsiobject =
+          std::dynamic_pointer_cast<FSI::MonolithicFluidSplit>(fsi);
 
-      if (fsiobject == Teuchos::null) FOUR_C_THROW("Cast to FSI::MonolithicFluidSplit failed.");
+      if (fsiobject == nullptr) FOUR_C_THROW("Cast to FSI::MonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->fluid_field()->discretization();
@@ -56,10 +56,10 @@ FSI::FSIResultTest::FSIResultTest(
     case fsi_iter_monolithicstructuresplit:
     case fsi_iter_fluidfluid_monolithicstructuresplit:
     {
-      const Teuchos::RCP<FSI::MonolithicStructureSplit>& fsiobject =
-          Teuchos::rcp_dynamic_cast<FSI::MonolithicStructureSplit>(fsi);
+      const std::shared_ptr<FSI::MonolithicStructureSplit>& fsiobject =
+          std::dynamic_pointer_cast<FSI::MonolithicStructureSplit>(fsi);
 
-      if (fsiobject == Teuchos::null) FOUR_C_THROW("Cast to FSI::MonolithicStructureSplit failed.");
+      if (fsiobject == nullptr) FOUR_C_THROW("Cast to FSI::MonolithicStructureSplit failed.");
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->structure_field()->discretization();
@@ -69,11 +69,10 @@ FSI::FSIResultTest::FSIResultTest(
     }
     case fsi_iter_mortar_monolithicfluidsplit:
     {
-      const Teuchos::RCP<FSI::MortarMonolithicFluidSplit>& fsiobject =
-          Teuchos::rcp_dynamic_cast<FSI::MortarMonolithicFluidSplit>(fsi);
+      const std::shared_ptr<FSI::MortarMonolithicFluidSplit>& fsiobject =
+          std::dynamic_pointer_cast<FSI::MortarMonolithicFluidSplit>(fsi);
 
-      if (fsiobject == Teuchos::null)
-        FOUR_C_THROW("Cast to FSI::MortarMonolithicFluidSplit failed.");
+      if (fsiobject == nullptr) FOUR_C_THROW("Cast to FSI::MortarMonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->fluid_field()->discretization();
@@ -83,15 +82,15 @@ FSI::FSIResultTest::FSIResultTest(
     }
     case fsi_iter_mortar_monolithicfluidsplit_saddlepoint:
     {
-      const Teuchos::RCP<FSI::MortarMonolithicFluidSplitSaddlePoint>& fsiobject =
-          Teuchos::rcp_dynamic_cast<FSI::MortarMonolithicFluidSplitSaddlePoint>(fsi);
+      const std::shared_ptr<FSI::MortarMonolithicFluidSplitSaddlePoint>& fsiobject =
+          std::dynamic_pointer_cast<FSI::MortarMonolithicFluidSplitSaddlePoint>(fsi);
 
-      if (fsiobject == Teuchos::null)
+      if (fsiobject == nullptr)
         FOUR_C_THROW("Cast to FSI::MortarMonolithicFluidSplitSaddlePoint failed.");
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->fluid_field()->discretization();
-      auto copy = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fsiobject->lag_mult_);
+      auto copy = std::make_shared<Core::LinAlg::Vector<double>>(*fsiobject->lag_mult_);
       copy->ReplaceMap(*fsiobject->fluid_field()->interface()->fsi_cond_map());
       fsilambda_ = copy;
 
@@ -99,11 +98,10 @@ FSI::FSIResultTest::FSIResultTest(
     }
     case fsi_iter_mortar_monolithicstructuresplit:
     {
-      const Teuchos::RCP<FSI::MortarMonolithicStructureSplit>& fsiobject =
-          Teuchos::rcp_dynamic_cast<FSI::MortarMonolithicStructureSplit>(fsi);
+      const std::shared_ptr<FSI::MortarMonolithicStructureSplit>& fsiobject =
+          std::dynamic_pointer_cast<FSI::MortarMonolithicStructureSplit>(fsi);
 
-      if (fsiobject == Teuchos::null)
-        FOUR_C_THROW("Cast to FSI::MortarMonolithicStructureSplit failed.");
+      if (fsiobject == nullptr) FOUR_C_THROW("Cast to FSI::MortarMonolithicStructureSplit failed.");
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->structure_field()->discretization();
@@ -113,11 +111,10 @@ FSI::FSIResultTest::FSIResultTest(
     }
     case fsi_iter_sliding_monolithicfluidsplit:
     {
-      const Teuchos::RCP<FSI::SlidingMonolithicFluidSplit>& fsiobject =
-          Teuchos::rcp_dynamic_cast<FSI::SlidingMonolithicFluidSplit>(fsi);
+      const std::shared_ptr<FSI::SlidingMonolithicFluidSplit>& fsiobject =
+          std::dynamic_pointer_cast<FSI::SlidingMonolithicFluidSplit>(fsi);
 
-      if (fsiobject == Teuchos::null)
-        FOUR_C_THROW("Cast to FSI::SlidingMonolithicFluidSplit failed.");
+      if (fsiobject == nullptr) FOUR_C_THROW("Cast to FSI::SlidingMonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->fluid_field()->discretization();
@@ -127,10 +124,10 @@ FSI::FSIResultTest::FSIResultTest(
     }
     case fsi_iter_sliding_monolithicstructuresplit:
     {
-      const Teuchos::RCP<FSI::SlidingMonolithicStructureSplit>& fsiobject =
-          Teuchos::rcp_dynamic_cast<FSI::SlidingMonolithicStructureSplit>(fsi);
+      const std::shared_ptr<FSI::SlidingMonolithicStructureSplit>& fsiobject =
+          std::dynamic_pointer_cast<FSI::SlidingMonolithicStructureSplit>(fsi);
 
-      if (fsiobject == Teuchos::null)
+      if (fsiobject == nullptr)
         FOUR_C_THROW("Cast to FSI::SlidingMonolithicStructureSplit failed.");
 
       // Lagrange multipliers live on the slave field
@@ -141,8 +138,8 @@ FSI::FSIResultTest::FSIResultTest(
     }
     default:
     {
-      slavedisc_ = Teuchos::null;
-      fsilambda_ = Teuchos::null;
+      slavedisc_ = nullptr;
+      fsilambda_ = nullptr;
 
       std::cout << "\nNo FSI test routines implemented for this coupling algorithm." << std::endl;
 
@@ -154,7 +151,7 @@ FSI::FSIResultTest::FSIResultTest(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FSIResultTest::FSIResultTest(
-    Teuchos::RCP<FSI::MonolithicNoNOX> fsi, const Teuchos::ParameterList& fsidyn)
+    std::shared_ptr<FSI::MonolithicNoNOX> fsi, const Teuchos::ParameterList& fsidyn)
     : Core::Utils::ResultTest("FSI")
 {
   const auto coupling = Teuchos::getIntegralValue<FsiCoupling>(fsidyn, "COUPALGO");
@@ -165,10 +162,10 @@ FSI::FSIResultTest::FSIResultTest(
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsi->structure_field()->discretization();
 
-      const Teuchos::RCP<FSI::FluidFluidMonolithicStructureSplitNoNOX>& fsiobject =
-          Teuchos::rcp_dynamic_cast<FSI::FluidFluidMonolithicStructureSplitNoNOX>(fsi);
+      const std::shared_ptr<FSI::FluidFluidMonolithicStructureSplitNoNOX>& fsiobject =
+          std::dynamic_pointer_cast<FSI::FluidFluidMonolithicStructureSplitNoNOX>(fsi);
 
-      if (fsiobject == Teuchos::null)
+      if (fsiobject == nullptr)
         FOUR_C_THROW("Cast to FSI::FluidFluidMonolithicStructureSplitNoNOX failed.");
       fsilambda_ = fsiobject->lambda_;
 
@@ -179,10 +176,10 @@ FSI::FSIResultTest::FSIResultTest(
       // Lagrange multiplier lives on the slave field (fluid in this case!)
       slavedisc_ = fsi->fluid_field()->discretization();
 
-      const Teuchos::RCP<FSI::FluidFluidMonolithicFluidSplitNoNOX>& fsiobject =
-          Teuchos::rcp_dynamic_cast<FSI::FluidFluidMonolithicFluidSplitNoNOX>(fsi);
+      const std::shared_ptr<FSI::FluidFluidMonolithicFluidSplitNoNOX>& fsiobject =
+          std::dynamic_pointer_cast<FSI::FluidFluidMonolithicFluidSplitNoNOX>(fsi);
 
-      if (fsiobject == Teuchos::null)
+      if (fsiobject == nullptr)
         FOUR_C_THROW("Cast to FSI::FluidFluidMonolithicFluidSplitNoNOX failed.");
 
       fsilambda_ = fsiobject->lambda_;
@@ -191,8 +188,8 @@ FSI::FSIResultTest::FSIResultTest(
     }
     default:
     {
-      slavedisc_ = Teuchos::null;
-      fsilambda_ = Teuchos::null;
+      slavedisc_ = nullptr;
+      fsilambda_ = nullptr;
 
       std::cout << "\nNo FSI test routines implemented for this coupling algorithm." << std::endl;
 
@@ -234,7 +231,7 @@ void FSI::FSIResultTest::test_node(
       double result = 0.0;          // will hold the actual result of run
 
       // test Lagrange multipliers
-      if (fsilambda_ != Teuchos::null)
+      if (fsilambda_ != nullptr)
       {
         const Epetra_BlockMap& fsilambdamap = fsilambda_->Map();
         if (quantity == "lambdax")

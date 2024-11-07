@@ -29,7 +29,7 @@ namespace Discret::Elements
     }
     else
     {
-      return *params.get<Teuchos::RCP<std::vector<char>>>("couplstress");
+      return *params.get<std::shared_ptr<std::vector<char>>>("couplstress");
     }
   }
 

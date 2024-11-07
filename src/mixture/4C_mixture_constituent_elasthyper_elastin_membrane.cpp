@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 Mixture::ElastinMembraneAnisotropyExtension::ElastinMembraneAnisotropyExtension(
-    const Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>& structuralTensorStrategy)
+    const std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>& structuralTensorStrategy)
     : FiberAnisotropyExtension<1>(structuralTensorStrategy)
 {
   register_needed_tensors(
@@ -122,19 +122,19 @@ Mixture::MixtureConstituentElastHyperElastinMembrane::MixtureConstituentElastHyp
     Mixture::PAR::MixtureConstituentElastHyperElastinMembrane* params, int id)
     : MixtureConstituentElastHyperBase(params, id),
       params_(params),
-      anisotropy_extension_(Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
+      anisotropy_extension_(std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>(
           new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)))
 {
   // Create summands
   for (const auto& matid : params_->matids_membrane_)
   {
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-    if (sum == Teuchos::null) FOUR_C_THROW("Failed to read elastic summand.");
+    std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
+    if (sum == nullptr) FOUR_C_THROW("Failed to read elastic summand.");
 
-    Teuchos::RCP<Mat::Elastic::IsoNeoHooke> neoHooke =
-        Teuchos::rcp_dynamic_cast<Mat::Elastic::IsoNeoHooke>(sum);
+    std::shared_ptr<Mat::Elastic::IsoNeoHooke> neoHooke =
+        std::dynamic_pointer_cast<Mat::Elastic::IsoNeoHooke>(sum);
 
-    if (Teuchos::is_null(neoHooke))
+    if (!neoHooke)
     {
       FOUR_C_THROW(
           "Currently, only the an IsoNeoHooke material law is possible for use as an elastin "

@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor for lts/stl (public)                                farah 07/16|
  *----------------------------------------------------------------------*/
 CONTACT::LineToSurfaceCoupling3d::LineToSurfaceCoupling3d(Core::FE::Discretization& idiscret,
-    int dim, Teuchos::ParameterList& params, Element& pEle, Teuchos::RCP<Mortar::Element>& lEle,
+    int dim, Teuchos::ParameterList& params, Element& pEle, std::shared_ptr<Mortar::Element>& lEle,
     std::vector<Element*> surfEles, LineToSurfaceCoupling3d::IntType type)
     : idiscret_(idiscret),
       dim_(dim),
@@ -142,7 +142,7 @@ void CONTACT::LineToSurfaceCoupling3d::initialize()
   temp_inter_sections().clear();
 
   // clear integration line
-  int_line() = Teuchos::null;
+  int_line() = nullptr;
 
   return;
 }
@@ -163,8 +163,8 @@ bool CONTACT::LineToSurfaceCoupling3d::check_orientation()
   // CHECK LINE TO SURFACE ORIENTATION!
   // calculate line ele vector
   std::array<double, 3> lvec = {0.0, 0.0, 0.0};
-  Node* ns1 = dynamic_cast<Node*>(line_element()()->nodes()[0]);
-  Node* ns2 = dynamic_cast<Node*>(line_element()()->nodes()[1]);
+  Node* ns1 = dynamic_cast<Node*>(line_element()->nodes()[0]);
+  Node* ns2 = dynamic_cast<Node*>(line_element()->nodes()[1]);
   lvec[0] = ns1->xspatial()[0] - ns2->xspatial()[0];
   lvec[1] = ns1->xspatial()[1] - ns2->xspatial()[1];
   lvec[2] = ns1->xspatial()[2] - ns2->xspatial()[2];
@@ -219,7 +219,7 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
   // Dual shape functions coefficient matrix and linearization
   Core::LinAlg::SerialDenseMatrix ae(nnodes, nnodes, true);
   surface_element().mo_data().deriv_dual_shape() =
-      Teuchos::make_rcp<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>(
+      std::make_shared<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>(
           (nnodes + mnodes) * ndof, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes));
   Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& derivae =
       *(surface_element().mo_data().deriv_dual_shape());
@@ -246,7 +246,7 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
   // get number of master nodes
   const int ncol = line_element()->num_node();
 
-  Teuchos::RCP<Mortar::IntCell> currcell = int_line();
+  std::shared_ptr<Mortar::IntCell> currcell = int_line();
 
   A_tot += currcell->area();
 
@@ -399,7 +399,7 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
   }
 
   // store ae matrix in slave element data container
-  surface_element().mo_data().dual_shape() = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(ae);
+  surface_element().mo_data().dual_shape() = std::make_shared<Core::LinAlg::SerialDenseMatrix>(ae);
 
   return;
 }
@@ -413,7 +413,7 @@ void CONTACT::LineToSurfaceCoupling3d::integrate_line()
   auto sol = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(imortar_, "STRATEGY");
 
   // create integrator object
-  Teuchos::RCP<CONTACT::Integrator> integrator =
+  std::shared_ptr<CONTACT::Integrator> integrator =
       CONTACT::INTEGRATOR::build_integrator(sol, imortar_, int_line()->shape(), get_comm());
 
   // perform integration
@@ -1315,7 +1315,7 @@ void CONTACT::LineToSurfaceCoupling3d::create_integration_lines(
   }
 
   // create Integration Line
-  int_line() = Teuchos::make_rcp<Mortar::IntCell>(parent_element().id(), 2, coords, auxn(),
+  int_line() = std::make_shared<Mortar::IntCell>(parent_element().id(), 2, coords, auxn(),
       Core::FE::CellType::line2, linvertex[0], linvertex[1],
       linvertex[1],  // dummy
       get_deriv_auxn());
@@ -2316,8 +2316,8 @@ const Epetra_Comm& CONTACT::LineToSurfaceCoupling3d::get_comm() const
  |  ctor for ltl (public)                                    farah 07/16|
  *----------------------------------------------------------------------*/
 CONTACT::LineToLineCouplingPoint3d::LineToLineCouplingPoint3d(Core::FE::Discretization& idiscret,
-    int dim, Teuchos::ParameterList& params, Teuchos::RCP<Mortar::Element>& lsele,
-    Teuchos::RCP<Mortar::Element>& lmele)
+    int dim, Teuchos::ParameterList& params, std::shared_ptr<Mortar::Element>& lsele,
+    std::shared_ptr<Mortar::Element>& lmele)
     : idiscret_(idiscret), dim_(dim), imortar_(params), l_sele_(lsele), l_mele_(lmele)
 {
   // empty constructor

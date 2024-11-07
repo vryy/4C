@@ -1309,10 +1309,10 @@ void Cut::Output::gmsh_element_cut_test(
          << "\n";
     file << "  Cut::Mesh mesh = intersection.NormalMesh();"
          << "\n";
-    file << "  const std::list<Teuchos::RCP<Cut::VolumeCell> > & other_cells = "
+    file << "  const std::list<std::shared_ptr<Cut::VolumeCell> > & other_cells = "
             "mesh.VolumeCells();"
          << "\n";
-    file << "  for ( std::list<Teuchos::RCP<Cut::VolumeCell> >::const_iterator "
+    file << "  for ( std::list<std::shared_ptr<Cut::VolumeCell> >::const_iterator "
             "i=other_cells.begin();"
          << "\n";
     file << "        i!=other_cells.end();"
@@ -1325,7 +1325,7 @@ void Cut::Output::gmsh_element_cut_test(
          << "\n";
     file << "    tessVol.push_back(vc->Volume());"
          << "\n";
-    file << "  for ( std::list<Teuchos::RCP<Cut::VolumeCell> >::const_iterator "
+    file << "  for ( std::list<std::shared_ptr<Cut::VolumeCell> >::const_iterator "
             "i=other_cells.begin();"
          << "\n";
     file << "        i!=other_cells.end();"
@@ -1347,7 +1347,7 @@ void Cut::Output::gmsh_element_cut_test(
          << "\n";
     file << ""
          << "\n";
-    file << "  for ( std::list<Teuchos::RCP<Cut::VolumeCell> >::const_iterator "
+    file << "  for ( std::list<std::shared_ptr<Cut::VolumeCell> >::const_iterator "
             "i=other_cells.begin();"
          << "\n";
     file << "           i!=other_cells.end();"

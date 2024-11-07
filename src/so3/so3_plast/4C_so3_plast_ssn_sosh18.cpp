@@ -48,27 +48,27 @@ Core::Communication::ParObject* Discret::Elements::SoSh18PlastType::create(
 | create the new element type (public)                     seitz 11/14 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh18PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoSh18PlastType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::SoSh18Plast>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::SoSh18Plast>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
 | create the new element type (public)                     seitz 11/14 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh18PlastType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoSh18PlastType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::SoSh18Plast>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::SoSh18Plast>(id, owner);
   return ele;
 }
 
@@ -106,9 +106,9 @@ Discret::Elements::SoSh18Plast::SoSh18Plast(int id, int owner)
       Discret::Elements::SoHex18(id, owner),
       Discret::Elements::SoSh18(id, owner)
 {
-  Teuchos::RCP<const Teuchos::ParameterList> params =
+  std::shared_ptr<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
-  if (params != Teuchos::null)
+  if (params != nullptr)
   {
     Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
@@ -216,36 +216,36 @@ void Discret::Elements::SoSh18Plast::sync_eas()
     eastype_ = soh18p_eassosh18;
     neas_ = num_eas;
     So3Plast<Core::FE::CellType::hex18>::KaaInv_ =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(
+        std::make_shared<Core::LinAlg::SerialDenseMatrix>(
             Teuchos::View, SoSh18::KaaInv_.data(), num_eas, num_eas, num_eas);
-    So3Plast<Core::FE::CellType::hex18>::Kad_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(
+    So3Plast<Core::FE::CellType::hex18>::Kad_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(
         Teuchos::View, SoSh18::Kad_.data(), num_eas, num_eas, numdofperelement_);
-    So3Plast<Core::FE::CellType::hex18>::feas_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+    So3Plast<Core::FE::CellType::hex18>::feas_ = std::make_shared<Core::LinAlg::SerialDenseVector>(
         Teuchos::View, SoSh18::feas_.data(), num_eas);
     So3Plast<Core::FE::CellType::hex18>::alpha_eas_ =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+        std::make_shared<Core::LinAlg::SerialDenseVector>(
             Teuchos::View, SoSh18::alpha_eas_.data(), num_eas);
     So3Plast<Core::FE::CellType::hex18>::alpha_eas_last_timestep_ =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+        std::make_shared<Core::LinAlg::SerialDenseVector>(
             Teuchos::View, SoSh18::alpha_eas_last_timestep_.data(), num_eas);
     So3Plast<Core::FE::CellType::hex18>::alpha_eas_delta_over_last_timestep_ =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+        std::make_shared<Core::LinAlg::SerialDenseVector>(
             Teuchos::View, SoSh18::alpha_eas_delta_over_last_timestep_.data(), num_eas);
     So3Plast<Core::FE::CellType::hex18>::alpha_eas_inc_ =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+        std::make_shared<Core::LinAlg::SerialDenseVector>(
             Teuchos::View, SoSh18::alpha_eas_inc_.data(), num_eas);
-    Kba_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseMatrix>>(
+    Kba_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseMatrix>>(
         numgpt_, Core::LinAlg::SerialDenseMatrix(plspintype_, num_eas, true));
   }
   else
   {
     eastype_ = soh8p_easnone;
     neas_ = 0;
-    So3Plast<Core::FE::CellType::hex18>::KaaInv_ = Teuchos::null;
-    So3Plast<Core::FE::CellType::hex18>::Kad_ = Teuchos::null;
-    So3Plast<Core::FE::CellType::hex18>::feas_ = Teuchos::null;
-    So3Plast<Core::FE::CellType::hex18>::alpha_eas_ = Teuchos::null;
-    Kba_ = Teuchos::null;
+    So3Plast<Core::FE::CellType::hex18>::KaaInv_ = nullptr;
+    So3Plast<Core::FE::CellType::hex18>::Kad_ = nullptr;
+    So3Plast<Core::FE::CellType::hex18>::feas_ = nullptr;
+    So3Plast<Core::FE::CellType::hex18>::alpha_eas_ = nullptr;
+    Kba_ = nullptr;
   }
 }
 
@@ -397,7 +397,7 @@ void Discret::Elements::SoSh18Plast::nln_stiffmass(
     // calculate the deformation gradient consistent to the modified strains
     // but only if the material needs a deformation gradient (e.g. plasticity)
     Core::LinAlg::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd;
-    if (Teuchos::rcp_static_cast<Mat::So3Material>(material())->needs_defgrd() ||
+    if (std::static_pointer_cast<Mat::So3Material>(material())->needs_defgrd() ||
         iostrain == Inpar::Solid::strain_ea || iostress == Inpar::Solid::stress_cauchy)
     {
       // compute the deformation gradient - shell-style

@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WallDiscretizationRuntimeVtuWriter(
-    const Teuchos::RCP<Core::FE::Discretization> walldiscretization,
+    const std::shared_ptr<Core::FE::Discretization> walldiscretization,
     const std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate, const double restart_time)
     : walldiscretization_(walldiscretization), walldatastate_(walldatastate)
 {
@@ -46,7 +46,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
 
   // node displacements
   {
-    if (walldatastate_->get_disp_col() != Teuchos::null)
+    if (walldatastate_->get_disp_col() != nullptr)
     {
       std::vector<std::optional<std::string>> context(3, "disp");
       runtime_vtuwriter_->append_result_data_vector_with_context(

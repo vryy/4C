@@ -24,31 +24,31 @@ namespace
     void SetUp() override
     {
       // create a discretization, that creates node to element pointers and keeps the nodes alive
-      testdis_ = Teuchos::make_rcp<Core::FE::Discretization>(
-          "dummy", Teuchos::make_rcp<Epetra_SerialComm>(), 3);
+      testdis_ = std::make_shared<Core::FE::Discretization>(
+          "dummy", std::make_shared<Epetra_SerialComm>(), 3);
 
       // create 4 nodes
       const std::array<int, 4> nodeids = {0, 1, 2, 3};
       std::vector<std::vector<double>> coords = {
           {-0.1, -0.2, -0.5}, {1.25, 0.23, 0.66}, {1.20, 0.99, 0.5}, {-0.10, -0.2, 1.96}};
       for (int lid = 0; lid < 4; ++lid)
-        testdis_->add_node(Teuchos::make_rcp<Core::Nodes::Node>(lid, coords[lid], 0));
+        testdis_->add_node(std::make_shared<Core::Nodes::Node>(lid, coords[lid], 0));
 
       // create 1 element
-      testele_ = Teuchos::make_rcp<Discret::Elements::SoTet4>(0, 0);
+      testele_ = std::make_shared<Discret::Elements::SoTet4>(0, 0);
       testele_->set_node_ids(4, nodeids.data());
       testdis_->add_element(testele_);
       testdis_->fill_complete(false, false, false);
 
-      copytestele_ = Teuchos::make_rcp<Discret::Elements::SoTet4>(*testele_);
+      copytestele_ = std::make_shared<Discret::Elements::SoTet4>(*testele_);
     }
 
     // Delete pointers.
     void TearDown() override
     {
-      copytestele_ = Teuchos::null;
-      testele_ = Teuchos::null;
-      testdis_ = Teuchos::null;
+      copytestele_ = nullptr;
+      testele_ = nullptr;
+      testdis_ = nullptr;
 
       // We need to make sure the Global::Problem instance created in setUp is deleted again. If
       // this is not done, some troubles arise where unit tests influence each other on some
@@ -56,11 +56,11 @@ namespace
       Global::Problem::done();
     }
     //! dummy discretization for holding element and node pointers
-    Teuchos::RCP<Core::FE::Discretization> testdis_;
+    std::shared_ptr<Core::FE::Discretization> testdis_;
     //! the tet4 element to be tested
-    Teuchos::RCP<Discret::Elements::SoTet4> testele_;
+    std::shared_ptr<Discret::Elements::SoTet4> testele_;
     //! a copy of the tet element to test the copy constructor
-    Teuchos::RCP<Discret::Elements::SoTet4> copytestele_;
+    std::shared_ptr<Discret::Elements::SoTet4> copytestele_;
   };
 
   /**

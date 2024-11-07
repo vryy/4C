@@ -26,7 +26,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactParams::BeamToSolidSurfaceContactParam
       penalty_parameter_g0_(0.0),
       mortar_contact_configuration_(
           Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn::none),
-      output_params_ptr_(Teuchos::null)
+      output_params_ptr_(nullptr)
 {
   // Empty Constructor.
 }
@@ -63,7 +63,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactParams::init()
 
   // Setup the output parameter object.
   {
-    output_params_ptr_ = Teuchos::make_rcp<BeamToSolidSurfaceVisualizationOutputParams>();
+    output_params_ptr_ = std::make_shared<BeamToSolidSurfaceVisualizationOutputParams>();
     output_params_ptr_->init();
     output_params_ptr_->setup();
   }

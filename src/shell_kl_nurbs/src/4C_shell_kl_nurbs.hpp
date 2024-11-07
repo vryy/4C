@@ -24,9 +24,8 @@
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <array>
+#include <memory>
 
 
 FOUR_C_NAMESPACE_OPEN
@@ -47,10 +46,10 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -113,9 +112,9 @@ namespace Discret
       [[nodiscard]] int num_surface() const override { return 1; }
 
       /**
-       * @brief Get vector of Teuchos::RCPs to the surfaces of this element
+       * @brief Get vector of std::shared_ptrs to the surfaces of this element
        */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       /**
        * @brief Return unique ParObject id
@@ -172,7 +171,7 @@ namespace Discret
        */
       [[nodiscard]] bool is_params_interface() const override
       {
-        return (not interface_ptr_.is_null());
+        return (interface_ptr_ != nullptr);
       }
 
       /**
@@ -244,7 +243,7 @@ namespace Discret
       std::array<Core::FE::GaussRule1D, 2> gaussrule_;
 
       //! Data exchange between the element and the time integrator
-      Teuchos::RCP<Solid::Elements::ParamsInterface> interface_ptr_;
+      std::shared_ptr<Solid::Elements::ParamsInterface> interface_ptr_;
     };
   }  // namespace Elements
 }  // namespace Discret

@@ -25,15 +25,15 @@ namespace ALE
   {
    public:
     //! Constructor
-    Meshsliding(Teuchos::RCP<Core::FE::Discretization> dis,     ///> actual discretisation
+    Meshsliding(std::shared_ptr<Core::FE::Discretization> dis,  ///> actual discretisation
         Core::LinAlg::Solver& solver,                           ///> solver
         int msht,                                               ///> meshting parameter list
         int nsd,                                                ///> number space dimensions
         const Utils::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
 
     //! Set up mesh sliding framework
-    Teuchos::RCP<Core::LinAlg::SparseOperator> setup(
-        std::vector<int> coupleddof, Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp) override;
+    std::shared_ptr<Core::LinAlg::SparseOperator> setup(std::vector<int> coupleddof,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& dispnp) override;
 
    private:
     //! Call the constructor and the setup of the mortar coupling adapter
@@ -46,56 +46,58 @@ namespace ALE
     void dof_row_maps() override;
 
     //! Get function for the P matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mortar_matrix_p() override;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_mortar_matrix_p() override;
 
     //! Condensation operation for a block matrix
     void condensation_operation_block_matrix(
-        Teuchos::RCP<Core::LinAlg::SparseOperator>&
+        std::shared_ptr<Core::LinAlg::SparseOperator>&
             sysmat,  ///> sysmat established by the element routine
-        Teuchos::RCP<Core::LinAlg::Vector<double>>&
+        std::shared_ptr<Core::LinAlg::Vector<double>>&
             residual,  ///> residual established by the element routine
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp)
+        std::shared_ptr<Core::LinAlg::Vector<double>>& dispnp)
         override;  ///> current displacement vector
 
     //! Get functions for the mortar matrices
-    void get_mortar_matrices(Teuchos::RCP<Core::LinAlg::SparseMatrix>& Aco_mm,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& Aco_ms,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& Aco_sm,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& Aco_ss,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& N_m,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& N_s);
+    void get_mortar_matrices(std::shared_ptr<Core::LinAlg::SparseMatrix>& Aco_mm,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& Aco_ms,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& Aco_sm,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& Aco_ss,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& N_m,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& N_s);
 
     //! Split the mortar matrix into its slave and its master part
-    void split_mortar_matrix(Teuchos::RCP<Core::LinAlg::SparseMatrix>& MortarMatrix,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& MasterMatrix,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& SlaveMatrix,
-        Teuchos::RCP<const Epetra_Map>& dofrowmap);
+    void split_mortar_matrix(std::shared_ptr<Core::LinAlg::SparseMatrix>& MortarMatrix,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& MasterMatrix,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& SlaveMatrix,
+        std::shared_ptr<const Epetra_Map>& dofrowmap);
 
     //! Compute and update the increments of the slave node (do nothing in the mesh sliding case)
-    void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp) override{};
+    void update_slave_dof(std::shared_ptr<Core::LinAlg::Vector<double>>& inc,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& dispnp) override{};
 
     //! Recover method for Lagrange multipliers
-    void recover(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc) override;
+    void recover(std::shared_ptr<Core::LinAlg::Vector<double>>& inc) override;
 
     //! Solve ALE mesh sliding problem
     int solve_meshtying(Core::LinAlg::Solver& solver,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& disi,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> residual,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp) override;
+        std::shared_ptr<Core::LinAlg::SparseOperator> sysmat,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& disi,
+        std::shared_ptr<Core::LinAlg::Vector<double>> residual,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& dispnp) override;
 
     //! adapter to nonlinear mortar coupling framework
-    Teuchos::RCP<Adapter::CouplingNonLinMortar> adaptermeshsliding_;
+    std::shared_ptr<Adapter::CouplingNonLinMortar> adaptermeshsliding_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         lm_;  // current vector of Lagrange multipliers at t_n+1
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> a_ss_;   // stiffness block A_ss (needed for LM)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> a_sm_;   // stiffness block A_sm (needed for LM)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> a_sn_;   // stiffness block A_sn (needed for LM)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> d_inv_;  // inverse of Mortar matrix D (needed for LM)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rs_;   // slave side effective forces (needed for LM)
+    std::shared_ptr<Core::LinAlg::SparseMatrix> a_ss_;  // stiffness block A_ss (needed for LM)
+    std::shared_ptr<Core::LinAlg::SparseMatrix> a_sm_;  // stiffness block A_sm (needed for LM)
+    std::shared_ptr<Core::LinAlg::SparseMatrix> a_sn_;  // stiffness block A_sn (needed for LM)
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
+        d_inv_;  // inverse of Mortar matrix D (needed for LM)
+    std::shared_ptr<Core::LinAlg::Vector<double>>
+        rs_;  // slave side effective forces (needed for LM)
   };
 
 }  // namespace ALE

@@ -17,9 +17,9 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
 #include <list>
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -88,7 +88,7 @@ change. To achieve this we keep a list of dof sets internally.
 Please note that even though Michael does not like it this class
 contains neither copy constructor nor assignment operator. This is
 intended. It is legal to copy this objects of class. The internal
-variables (all Teuchos::RCPs) know how to copy themselves. So the
+variables (all std::shared_ptrs) know how to copy themselves. So the
 default versions will do just fine. (Far better than buggy hand
 written versions.) And due to the two possible states there is no
 reason to deep copy any of the local map and vector variables.
@@ -106,7 +106,7 @@ namespace Core::DOFSets
 
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSet> clone() { return Teuchos::make_rcp<DofSet>(*this); }
+    virtual std::shared_ptr<DofSet> clone() { return std::make_shared<DofSet>(*this); }
 
     //! @name Access methods
 
@@ -125,7 +125,7 @@ namespace Core::DOFSets
       int lid = element->lid();
       if (lid == -1) return 0;
       if (element->is_face_element())
-        return (numdfcolfaces_ != Teuchos::null) ? (*numdfcolfaces_)[lid] : 0;
+        return (numdfcolfaces_ != nullptr) ? (*numdfcolfaces_)[lid] : 0;
       else
         return (*numdfcolelements_)[lid];
     }
@@ -147,7 +147,7 @@ namespace Core::DOFSets
       int lid = element->lid();
       if (lid == -1) return -1;
       if (element->is_face_element())
-        return (idxcolfaces_ != Teuchos::null) ? (*idxcolfaces_)[lid] + dof : -1;
+        return (idxcolfaces_ != nullptr) ? (*idxcolfaces_)[lid] + dof : -1;
       else
         return (*idxcolelements_)[lid] + dof;
     }
@@ -185,7 +185,7 @@ namespace Core::DOFSets
       int lid = element->lid();
       if (lid == -1) return std::vector<int>();
 
-      if (element->is_face_element() && idxcolfaces_ == Teuchos::null) return std::vector<int>();
+      if (element->is_face_element() && idxcolfaces_ == nullptr) return std::vector<int>();
 
       int idx = element->is_face_element() ? (*idxcolfaces_)[lid] : (*idxcolelements_)[lid];
       std::vector<int> dof(
@@ -236,7 +236,7 @@ namespace Core::DOFSets
       int lid = element->lid();
       if (lid == -1) return;
 
-      if (element->is_face_element() && idxcolfaces_ == Teuchos::null) return;
+      if (element->is_face_element() && idxcolfaces_ == nullptr) return;
 
       int idx = element->is_face_element() ? (*idxcolfaces_)[lid] : (*idxcolelements_)[lid];
       int size = element->is_face_element() ? (*numdfcolfaces_)[lid] : (*numdfcolelements_)[lid];
@@ -364,28 +364,28 @@ namespace Core::DOFSets
     unsigned dspos_;
 
     /// unique row map of degrees of freedom (node, face, and element dofs))
-    Teuchos::RCP<Epetra_Map> dofrowmap_;
+    std::shared_ptr<Epetra_Map> dofrowmap_;
 
     /// unique column map of degrees of freedom (node, face, and element dofs)
-    Teuchos::RCP<Epetra_Map> dofcolmap_;
+    std::shared_ptr<Epetra_Map> dofcolmap_;
 
     /// number of dofs for each node
-    Teuchos::RCP<Core::LinAlg::Vector<int>> numdfcolnodes_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> numdfcolnodes_;
 
     /// number of dofs for each face
-    Teuchos::RCP<Core::LinAlg::Vector<int>> numdfcolfaces_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> numdfcolfaces_;
 
     /// number of dofs for each element
-    Teuchos::RCP<Core::LinAlg::Vector<int>> numdfcolelements_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> numdfcolelements_;
 
     /// column map gid of first dof for each node
-    Teuchos::RCP<Core::LinAlg::Vector<int>> idxcolnodes_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> idxcolnodes_;
 
     /// column map gid of first dof for each face
-    Teuchos::RCP<Core::LinAlg::Vector<int>> idxcolfaces_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> idxcolfaces_;
 
     /// column map gid of first dof for each element
-    Teuchos::RCP<Core::LinAlg::Vector<int>> idxcolelements_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> idxcolelements_;
 
     /*!
     \brief Activate special dof handling due to point coupling conditions?
@@ -416,10 +416,10 @@ namespace Core::DOFSets
     bool pccdofhandling_;
 
     /// column map of all dofs for each node (possibly non-unique)
-    Teuchos::RCP<Epetra_Map> dofscolnodes_;
+    std::shared_ptr<Epetra_Map> dofscolnodes_;
 
     /// shift value for access to column map of all dofs for each node
-    Teuchos::RCP<Core::LinAlg::Vector<int>> shiftcolnodes_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> shiftcolnodes_;
     //***************************************************************************
 
   };  // class DofSet

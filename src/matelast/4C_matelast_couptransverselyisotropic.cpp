@@ -334,10 +334,10 @@ void Mat::Elastic::CoupTransverselyIsotropic::error_handling(
 {
   if (params and params->isParameter("interface"))
   {
-    Teuchos::RCP<Core::Elements::ParamsInterface> interface_ptr = Teuchos::null;
-    interface_ptr = params->get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface");
-    Teuchos::RCP<Solid::Elements::ParamsInterface> pinter =
-        Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(interface_ptr, true);
+    std::shared_ptr<Core::Elements::ParamsInterface> interface_ptr = nullptr;
+    interface_ptr = params->get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface");
+    std::shared_ptr<Solid::Elements::ParamsInterface> pinter =
+        std::dynamic_pointer_cast<Solid::Elements::ParamsInterface>(interface_ptr);
 
     if (pinter->is_tolerate_errors())
     {

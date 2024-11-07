@@ -23,13 +23,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Adapter::StructureTimeAda::StructureTimeAda(Teuchos::RCP<Structure> structure)
+Adapter::StructureTimeAda::StructureTimeAda(std::shared_ptr<Structure> structure)
     : StructureWrapper(structure)
 {
-  stm_ = Teuchos::rcp_dynamic_cast<Solid::TimeInt::Base>(structure_);
+  stm_ = std::dynamic_pointer_cast<Solid::TimeInt::Base>(structure_);
 
-  if (stm_ == Teuchos::null)
-    FOUR_C_THROW("cast from Adapter::Structure to Solid::TimeInt::Base failed");
+  if (stm_ == nullptr) FOUR_C_THROW("cast from Adapter::Structure to Solid::TimeInt::Base failed");
 
   // call the setup once if stm_ has been setup
   if (stm_->is_setup()) setup_time_ada();
@@ -37,27 +36,27 @@ Adapter::StructureTimeAda::StructureTimeAda(Teuchos::RCP<Structure> structure)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Adapter::Structure> Adapter::StructureTimeAda::create(
+std::shared_ptr<Adapter::Structure> Adapter::StructureTimeAda::create(
     const Teuchos::ParameterList& taflags,  //!< adaptive input flags
-    Teuchos::RCP<Solid::TimeInt::Base> ti_strategy)
+    std::shared_ptr<Solid::TimeInt::Base> ti_strategy)
 {
   auto kind = Teuchos::getIntegralValue<Inpar::Solid::TimAdaKind>(taflags, "KIND");
   switch (kind)
   {
     case Inpar::Solid::timada_kind_zienxie:
       // Adaptive time integration with Zienkiewicz-Xie error indicator
-      return Teuchos::make_rcp<Adapter::StructureTimeAdaZienXie>(ti_strategy);
+      return std::make_shared<Adapter::StructureTimeAdaZienXie>(ti_strategy);
 
     case Inpar::Solid::timada_kind_joint_explicit:
       // Adaptive time integration using auxiliary time integrator
-      return Teuchos::make_rcp<Adapter::StructureTimeAdaJoint>(ti_strategy);
+      return std::make_shared<Adapter::StructureTimeAdaJoint>(ti_strategy);
 
     default:
       // Unknown adaptive time integration
-      return Teuchos::null;
+      return nullptr;
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*/
@@ -119,7 +118,7 @@ void Adapter::StructureTimeAda::setup_time_ada()
   outstrtime_ = timeinitial_ + outstrperiod_;
   outenetime_ = timeinitial_ + outeneperiod_;
   outresttime_ = timeinitial_ + outrestperiod_;
-  outsizefile_ = Teuchos::null;
+  outsizefile_ = nullptr;
 
   // allocate displacement local error vector
   locerrdisn_ = Core::LinAlg::create_vector(*(stm_->dof_row_map()), true);
@@ -364,7 +363,7 @@ void Adapter::StructureTimeAda::size_for_output()
 void Adapter::StructureTimeAda::output(bool forced_writerestart)
 {
   Solid::TimeInt::BaseDataIO& dataio = stm_->data_io();
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio.get_output_ptr();
+  std::shared_ptr<Core::IO::DiscretizationWriter> output_ptr = dataio.get_output_ptr();
 
   StructureWrapper::output(forced_writerestart);
   output_ptr->write_double("next_delta_time", stepsize_);

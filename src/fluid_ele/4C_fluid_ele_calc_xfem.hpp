@@ -118,7 +118,8 @@ namespace Discret
       /// evaluate the XFEM cut element
       int evaluate_xfem(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          std::shared_ptr<Core::Mat::Material>& mat,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -135,19 +136,19 @@ namespace Discret
 
       /// error computation
       int compute_error(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
+          std::shared_ptr<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& ele_dom_norms) override;
 
       int compute_error(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
+          std::shared_ptr<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& ele_dom_norms,
           const Core::FE::GaussIntegration& intpoints) override;
 
-      int compute_error_interface(Discret::Elements::Fluid* ele,     ///< fluid element
-          Core::FE::Discretization& dis,                             ///< background discretization
-          const std::vector<int>& lm,                                ///< element local map
-          const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          Teuchos::RCP<Core::Mat::Material>& mat,                    ///< material
+      int compute_error_interface(Discret::Elements::Fluid* ele,  ///< fluid element
+          Core::FE::Discretization& dis,                          ///< background discretization
+          const std::vector<int>& lm,                             ///< element local map
+          const std::shared_ptr<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
+          std::shared_ptr<Core::Mat::Material>& mat,                    ///< material
           Core::LinAlg::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
           const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
           const std::map<int, std::vector<Core::FE::GaussIntegration>>&
@@ -159,19 +160,19 @@ namespace Discret
       /// add terms from mixed/hybrid Lagrange multiplier coupling approach to element matrix and
       /// rhs
       void element_xfem_interface_hybrid_lm(Discret::Elements::Fluid* ele,  ///< fluid element
-          Core::FE::Discretization& dis,                             ///< background discretization
-          const std::vector<int>& lm,                                ///< element local map
-          const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          const std::vector<Core::FE::GaussIntegration>& intpoints,  ///< element gauss points
+          Core::FE::Discretization& dis,  ///< background discretization
+          const std::vector<int>& lm,     ///< element local map
+          const std::shared_ptr<XFEM::ConditionManager>& cond_manager,   ///< XFEM condition manager
+          const std::vector<Core::FE::GaussIntegration>& intpoints,      ///< element gauss points
           const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
           const std::map<int, std::vector<Core::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>&
               patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
           std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
-              side_coupling,                       ///< side coupling matrices
-          Teuchos::ParameterList& params,          ///< parameter list
-          Teuchos::RCP<Core::Mat::Material>& mat,  ///< material
+              side_coupling,                          ///< side coupling matrices
+          Teuchos::ParameterList& params,             ///< parameter list
+          std::shared_ptr<Core::Mat::Material>& mat,  ///< material
           Core::LinAlg::SerialDenseMatrix&
               elemat1_epetra,  ///< local system matrix of intersected element
           Core::LinAlg::SerialDenseVector&
@@ -184,17 +185,17 @@ namespace Discret
       void element_xfem_interface_nit(Discret::Elements::Fluid* ele,  ///< fluid element
           Core::FE::Discretization& dis,                              ///< background discretization
           const std::vector<int>& lm,                                 ///< element local map
-          const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,   ///< XFEM condition manager
+          const std::shared_ptr<XFEM::ConditionManager>& cond_manager,   ///< XFEM condition manager
           const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
           const std::map<int, std::vector<Core::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>& patchcouplm,
-          Teuchos::ParameterList& params,                   ///< parameter list
-          Teuchos::RCP<Core::Mat::Material>& mat_master,    ///< material for the coupled side
-          Teuchos::RCP<Core::Mat::Material>& mat_slave,     ///< material for the coupled side
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  ///< element matrix
-          Core::LinAlg::SerialDenseVector& elevec1_epetra,  ///< element vector
-          const Cut::plain_volumecell_set& vcSet,           ///< volumecell sets in this element
+          Teuchos::ParameterList& params,                    ///< parameter list
+          std::shared_ptr<Core::Mat::Material>& mat_master,  ///< material for the coupled side
+          std::shared_ptr<Core::Mat::Material>& mat_slave,   ///< material for the coupled side
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,   ///< element matrix
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,   ///< element vector
+          const Cut::plain_volumecell_set& vcSet,            ///< volumecell sets in this element
           std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
               side_coupling,                       ///< side coupling matrices
           Core::LinAlg::SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
@@ -225,12 +226,12 @@ namespace Discret
           double& p,                                 ///< exact pressure
           Core::LinAlg::Matrix<nsd_, 1>& xyzint,     ///< xyz position of gaussian point
           const double& t,                           ///< time
-          Teuchos::RCP<Core::Mat::Material> mat = Teuchos::null);
+          std::shared_ptr<Core::Mat::Material> mat = nullptr);
 
       //! get the interface jump vectors for velocity and traction at the Gaussian point
       void get_interface_jump_vectors(
           const XFEM::EleCoupCond& coupcond,  ///< coupling condition for given interface side
-          Teuchos::RCP<XFEM::CouplingBase> coupling,  ///< coupling object
+          std::shared_ptr<XFEM::CouplingBase> coupling,  ///< coupling object
           Core::LinAlg::Matrix<nsd_, 1>&
               ivelint_jump,  ///< prescribed interface jump vector for velocity
           Core::LinAlg::Matrix<nsd_, 1>&
@@ -398,7 +399,7 @@ namespace Discret
           const bool is_MHVS);
 
       //! Initiates dummy variables and calls FLuidEleCalc get_material_params routine.
-      void get_material_parameters_volume_cell(Teuchos::RCP<const Core::Mat::Material> material,
+      void get_material_parameters_volume_cell(std::shared_ptr<const Core::Mat::Material> material,
           double& densaf,  // done
           double& viscaf,  // done
           double& gamma    // done

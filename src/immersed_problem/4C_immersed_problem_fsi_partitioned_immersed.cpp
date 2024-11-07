@@ -34,12 +34,12 @@ void FSI::PartitionedImmersed::setup_coupling(
     std::cout << "\n setup_coupling in FSI::PartitionedImmersed ..." << std::endl;
 
   // for immersed fsi
-  coupsfm_ = Teuchos::null;
+  coupsfm_ = nullptr;
   matchingnodes_ = false;
 
   // enable debugging
   if (fsidyn.get<bool>("DEBUGOUTPUT"))
-    debugwriter_ = Teuchos::make_rcp<Utils::DebugWriter>(structure_field()->discretization());
+    debugwriter_ = std::make_shared<Utils::DebugWriter>(structure_field()->discretization());
 }
 
 

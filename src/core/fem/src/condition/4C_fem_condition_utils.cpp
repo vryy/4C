@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   template <typename Range>
-  Teuchos::RCP<Epetra_Map> fill_condition_map(
+  std::shared_ptr<Epetra_Map> fill_condition_map(
       const Core::FE::Discretization& dis, const Range& nodeRange, const std::string& condname)
   {
     std::set<int> condnodeset;
@@ -39,7 +39,7 @@ namespace
       }
     }
 
-    Teuchos::RCP<Epetra_Map> condnodemap = Core::LinAlg::create_map(condnodeset, dis.get_comm());
+    std::shared_ptr<Epetra_Map> condnodemap = Core::LinAlg::create_map(condnodeset, dis.get_comm());
     return condnodemap;
   }
 }  // namespace
@@ -140,7 +140,7 @@ void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& di
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& dis,
-    const std::vector<Condition*>& conds, std::map<int, Teuchos::RCP<std::vector<int>>>& nodes,
+    const std::vector<Condition*>& conds, std::map<int, std::shared_ptr<std::vector<int>>>& nodes,
     bool use_coupling_id)
 {
   std::map<int, std::set<int>> nodeset;
@@ -159,7 +159,7 @@ void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& di
 
   for (const auto& [id, gids] : nodeset)
   {
-    nodes[id] = Teuchos::make_rcp<std::vector<int>>(gids.size());
+    nodes[id] = std::make_shared<std::vector<int>>(gids.size());
     nodes[id]->assign(gids.begin(), gids.end());
   }
 }
@@ -188,7 +188,7 @@ void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& di
 /*----------------------------------------------------------------------*/
 void Core::Conditions::find_condition_objects(const Core::FE::Discretization& dis,
     std::map<int, Core::Nodes::Node*>& nodes,
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements, const std::string& condname)
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& elements, const std::string& condname)
 {
   int myrank = dis.get_comm().MyPID();
   std::vector<Condition*> conds;
@@ -199,8 +199,8 @@ void Core::Conditions::find_condition_objects(const Core::FE::Discretization& di
   for (auto& cond : conds)
   {
     // get this condition's elements
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geo = cond->geometry();
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator iter, pos;
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& geo = cond->geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
     {
@@ -216,7 +216,7 @@ void Core::Conditions::find_condition_objects(const Core::FE::Discretization& di
 /*----------------------------------------------------------------------*/
 void Core::Conditions::find_condition_objects(const Core::FE::Discretization& dis,
     std::map<int, Core::Nodes::Node*>& nodes, std::map<int, Core::Nodes::Node*>& gnodes,
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& elements,
     const std::vector<Condition*>& conds)
 {
   find_conditioned_nodes(dis, conds, nodes);
@@ -224,8 +224,8 @@ void Core::Conditions::find_condition_objects(const Core::FE::Discretization& di
   for (const auto& cond : conds)
   {
     // get this condition's elements
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geo = cond->geometry();
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator iter, pos;
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& geo = cond->geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
     {
@@ -249,14 +249,14 @@ void Core::Conditions::find_condition_objects(const Core::FE::Discretization& di
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::Conditions::find_condition_objects(
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& elements,
     const std::vector<Condition*>& conds)
 {
   for (auto cond : conds)
   {
     // get this condition's elements
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geo = cond->geometry();
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator iter, pos;
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& geo = cond->geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
     {
@@ -271,7 +271,7 @@ void Core::Conditions::find_condition_objects(
 /*----------------------------------------------------------------------*/
 void Core::Conditions::find_condition_objects(const Core::FE::Discretization& dis,
     std::map<int, Core::Nodes::Node*>& nodes, std::map<int, Core::Nodes::Node*>& gnodes,
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements, const std::string& condname)
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& elements, const std::string& condname)
 {
   std::vector<Condition*> conds;
   dis.get_condition(condname, conds);
@@ -281,8 +281,8 @@ void Core::Conditions::find_condition_objects(const Core::FE::Discretization& di
   for (const auto& cond : conds)
   {
     // get this condition's elements
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geo = cond->geometry();
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator iter, pos;
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& geo = cond->geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
     {
@@ -308,7 +308,7 @@ void Core::Conditions::find_condition_objects(const Core::FE::Discretization& di
 void Core::Conditions::find_condition_objects(const Core::FE::Discretization& dis,
     std::map<int, std::map<int, Core::Nodes::Node*>>& nodes,
     std::map<int, std::map<int, Core::Nodes::Node*>>& gnodes,
-    std::map<int, std::map<int, Teuchos::RCP<Core::Elements::Element>>>& elements,
+    std::map<int, std::map<int, std::shared_ptr<Core::Elements::Element>>>& elements,
     const std::string& condname)
 {
   std::vector<Condition*> conds;
@@ -320,8 +320,8 @@ void Core::Conditions::find_condition_objects(const Core::FE::Discretization& di
   {
     int id = cond->parameters().get<int>("coupling id");
     // get this condition's elements
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geo = cond->geometry();
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator iter, pos;
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& geo = cond->geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator iter, pos;
     pos = elements[id].begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
     {
@@ -345,7 +345,7 @@ void Core::Conditions::find_condition_objects(const Core::FE::Discretization& di
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::Conditions::find_condition_objects(const Core::FE::Discretization& dis,
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements, const std::string& condname,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& elements, const std::string& condname,
     const int label)
 {
   std::vector<Condition*> conds;
@@ -363,8 +363,8 @@ void Core::Conditions::find_condition_objects(const Core::FE::Discretization& di
     }
 
     // get this condition's elements
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geo = cond->geometry();
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator iter, pos;
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& geo = cond->geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
     {
@@ -430,7 +430,7 @@ void Core::Conditions::find_element_conditions(const Core::Elements::Element* el
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::Conditions::condition_node_row_map(
+std::shared_ptr<Epetra_Map> Core::Conditions::condition_node_row_map(
     const Core::FE::Discretization& dis, const std::string& condname)
 {
   return fill_condition_map(dis, dis.my_row_node_range(), condname);
@@ -439,7 +439,7 @@ Teuchos::RCP<Epetra_Map> Core::Conditions::condition_node_row_map(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::Conditions::condition_node_col_map(
+std::shared_ptr<Epetra_Map> Core::Conditions::condition_node_col_map(
     const Core::FE::Discretization& dis, const std::string& condname)
 {
   return fill_condition_map(dis, dis.my_col_node_range(), condname);
@@ -448,12 +448,12 @@ Teuchos::RCP<Epetra_Map> Core::Conditions::condition_node_col_map(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> Core::Conditions::conditioned_element_map(
+std::shared_ptr<std::set<int>> Core::Conditions::conditioned_element_map(
     const Core::FE::Discretization& dis, const std::string& condname)
 {
   ConditionSelector conds(dis, condname);
 
-  Teuchos::RCP<std::set<int>> condelementmap = Teuchos::make_rcp<std::set<int>>();
+  std::shared_ptr<std::set<int>> condelementmap = std::make_shared<std::set<int>>();
   const int nummyelements = dis.num_my_col_elements();
   for (int i = 0; i < nummyelements; ++i)
   {

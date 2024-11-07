@@ -41,7 +41,7 @@ Discret::Elements::ElemagEleCalc<distype>::ElemagEleCalc()
 template <Core::FE::CellType distype>
 int Discret::Elements::ElemagEleCalc<distype>::evaluate(Discret::Elements::Elemag* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -59,7 +59,7 @@ int Discret::Elements::ElemagEleCalc<distype>::evaluate(Discret::Elements::Elema
 template <Core::FE::CellType distype>
 int Discret::Elements::ElemagEleCalc<distype>::evaluate(Discret::Elements::Elemag* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix&,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector&, bool offdiag)
@@ -276,24 +276,24 @@ template <Core::FE::CellType distype>
 void Discret::Elements::ElemagEleCalc<distype>::initialize_shapes(
     const Discret::Elements::Elemag* ele)
 {
-  if (shapes_ == Teuchos::null)
-    shapes_ = Teuchos::RCP(
-        new Core::FE::ShapeValues<distype>(ele->degree(), usescompletepoly_, 2 * ele->degree()));
+  if (shapes_ == nullptr)
+    shapes_ = std::make_shared<Core::FE::ShapeValues<distype>>(
+        ele->degree(), usescompletepoly_, 2 * ele->degree());
   else if (shapes_->degree_ != unsigned(ele->degree()) ||
            shapes_->usescompletepoly_ != usescompletepoly_)
-    shapes_ = Teuchos::RCP(
-        new Core::FE::ShapeValues<distype>(ele->degree(), usescompletepoly_, 2 * ele->degree()));
+    shapes_ = std::make_shared<Core::FE::ShapeValues<distype>>(
+        ele->degree(), usescompletepoly_, 2 * ele->degree());
 
-  if (shapesface_ == Teuchos::null)
+  if (shapesface_ == nullptr)
   {
     Core::FE::ShapeValuesFaceParams svfparams(ele->degree(), usescompletepoly_, 2 * ele->degree());
-    shapesface_ = Teuchos::make_rcp<Core::FE::ShapeValuesFace<distype>>(svfparams);
+    shapesface_ = std::make_shared<Core::FE::ShapeValuesFace<distype>>(svfparams);
   }
 
-  if (local_solver_ == Teuchos::null)
-    local_solver_ = Teuchos::make_rcp<LocalSolver>(ele, *shapes_, shapesface_, dyna_);
+  if (local_solver_ == nullptr)
+    local_solver_ = std::make_shared<LocalSolver>(ele, *shapes_, shapesface_, dyna_);
   else if (local_solver_->ndofs_ != shapes_->ndofs_)
-    local_solver_ = Teuchos::make_rcp<LocalSolver>(ele, *shapes_, shapesface_, dyna_);
+    local_solver_ = std::make_shared<LocalSolver>(ele, *shapes_, shapesface_, dyna_);
 }
 
 /*----------------------------------------------------------------------*
@@ -329,7 +329,7 @@ void Discret::Elements::ElemagEleCalc<distype>::read_global_vectors(Core::Elemen
   if (discretization.has_state("trace"))  // in case of "update interior variables"
   {
     elemagele->elenodeTrace2d_.size(lm.size());
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
         discretization.get_state("trace");
     Core::FE::extract_my_values(*matrix_state, elemagele->elenodeTrace2d_, lm);
   }
@@ -358,7 +358,7 @@ void Discret::Elements::ElemagEleCalc<distype>::fill_restart_vectors(
   std::vector<int> localDofs = discretization.dof(1, ele);
   const Epetra_Map* intdofcolmap = discretization.dof_col_map(1);
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
         discretization.get_state(1, "intVar");
     Core::LinAlg::Vector<double>& secondary =
         const_cast<Core::LinAlg::Vector<double>&>(*matrix_state);
@@ -376,7 +376,7 @@ void Discret::Elements::ElemagEleCalc<distype>::fill_restart_vectors(
     interiorVarnm[shapes_->ndofs_ * nsd_ + i] = interior_electricnm_(i);
   }
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> intVarnm =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> intVarnm =
       discretization.get_state(1, "intVarnm");
   Core::LinAlg::Vector<double>& secondary = const_cast<Core::LinAlg::Vector<double>&>(*intVarnm);
   for (unsigned int i = 0; i < localDofs.size(); ++i)
@@ -400,7 +400,8 @@ void Discret::Elements::ElemagEleCalc<distype>::element_init_from_restart(
 
   std::vector<double> interiorVar(size);
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> intVar = discretization.get_state(1, "intVar");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> intVar =
+      discretization.get_state(1, "intVar");
   std::vector<int> localDofs1 = discretization.dof(1, ele);
   Core::FE::extract_my_values(*intVar, interiorVar, localDofs1);
   // now write this in corresponding eleinteriorElectric_ and eleinteriorMagnetic_
@@ -412,7 +413,7 @@ void Discret::Elements::ElemagEleCalc<distype>::element_init_from_restart(
 
   std::vector<double> interiorVarnm(size);
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> intVarnm =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> intVarnm =
       discretization.get_state(1, "intVarnm");
   Core::FE::extract_my_values(*intVarnm, interiorVarnm, localDofs1);
   for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
@@ -597,7 +598,7 @@ void Discret::Elements::ElemagEleCalc<distype>::LocalSolver::compute_error(
   const int func = params.get<int>("funcno");
   const double time = params.get<double>("time");
   // for the calculation of the error, we use a higher integration rule
-  Teuchos::RCP<Core::FE::GaussPoints> highquad =
+  std::shared_ptr<Core::FE::GaussPoints> highquad =
       Core::FE::GaussPointCache::instance().create(distype, (ele->degree() + 2) * 2);
   Core::LinAlg::Matrix<nsd_, 1> xsi;
   Core::LinAlg::SerialDenseVector values(shapes_.ndofs_);
@@ -1169,7 +1170,7 @@ Discret::Elements::ElemagEleCalc<distype>* Discret::Elements::ElemagEleCalc<dist
 template <Core::FE::CellType distype>
 Discret::Elements::ElemagEleCalc<distype>::LocalSolver::LocalSolver(
     const Discret::Elements::Elemag* ele, Core::FE::ShapeValues<distype>& shapeValues,
-    Teuchos::RCP<Core::FE::ShapeValuesFace<distype>>& shapeValuesFace,
+    std::shared_ptr<Core::FE::ShapeValuesFace<distype>>& shapeValuesFace,
     Inpar::EleMag::DynamicType& dyna)
     : ndofs_(shapeValues.ndofs_), shapes_(shapeValues), shapesface_(shapeValuesFace), dyna_(dyna)
 {
@@ -1399,7 +1400,7 @@ void Discret::Elements::ElemagEleCalc<distype>::update_interior_variables_and_co
 template <Core::FE::CellType distype>
 void Discret::Elements::ElemagEleCalc<distype>::LocalSolver::compute_absorbing_bc(
     Core::FE::Discretization& discretization, Discret::Elements::Elemag* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat, int face,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat, int face,
     Core::LinAlg::SerialDenseMatrix& elemat, int indexstart,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -1416,7 +1417,7 @@ void Discret::Elements::ElemagEleCalc<distype>::LocalSolver::compute_absorbing_b
   if (do_rhs)
   {
     // Get the user defined functions
-    auto* cond = params.getPtr<Teuchos::RCP<Core::Conditions::Condition>>("condition");
+    auto* cond = params.getPtr<std::shared_ptr<Core::Conditions::Condition>>("condition");
     const auto& funct = (*cond)->parameters().get<std::vector<int>>("FUNCT");
     const double time = params.get<double>("time");
 
@@ -2081,7 +2082,7 @@ void Discret::Elements::ElemagEleCalc<distype>::LocalSolver::condense_local_part
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ElemagEleCalc<distype>::LocalSolver::compute_matrices(
-    Core::FE::Discretization& discretization, const Teuchos::RCP<Core::Mat::Material>& mat,
+    Core::FE::Discretization& discretization, const std::shared_ptr<Core::Mat::Material>& mat,
     Discret::Elements::Elemag& ele, double dt, Inpar::EleMag::DynamicType dyna, const double tau)
 {
   // The material properties change elementwise or can also be computed pointwise?

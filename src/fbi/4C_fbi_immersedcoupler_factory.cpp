@@ -16,21 +16,21 @@
 FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FBI::FBIGeometryCoupler> FBI::GeometryCouplerFactory::create_geometry_coupler(
+std::shared_ptr<FBI::FBIGeometryCoupler> FBI::GeometryCouplerFactory::create_geometry_coupler(
     const Teuchos::ParameterList& fbidyn)
 {
   Inpar::FBI::BeamToFluidPreSortStrategy presort_strategy =
       Teuchos::getIntegralValue<Inpar::FBI::BeamToFluidPreSortStrategy>(fbidyn, "PRESORT_STRATEGY");
 
-  Teuchos::RCP<FBI::FBIGeometryCoupler> coupler;
+  std::shared_ptr<FBI::FBIGeometryCoupler> coupler;
 
   if (presort_strategy == Inpar::FBI::BeamToFluidPreSortStrategy::bruteforce)
   {
-    coupler = Teuchos::RCP(new FBI::FBIGeometryCoupler());
+    coupler = std::shared_ptr<FBI::FBIGeometryCoupler>(new FBI::FBIGeometryCoupler);
   }
   else if (presort_strategy == Inpar::FBI::BeamToFluidPreSortStrategy::binning)
   {
-    coupler = Teuchos::RCP(new FBI::FBIBinningGeometryCoupler());
+    coupler = std::shared_ptr<FBI::FBIBinningGeometryCoupler>(new FBIBinningGeometryCoupler);
   }
   else
     FOUR_C_THROW("Unknown Beam to Fluid PreSort Strategy");

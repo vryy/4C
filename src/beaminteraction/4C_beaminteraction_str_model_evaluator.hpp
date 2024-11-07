@@ -59,9 +59,9 @@ namespace Solid
     {
      public:
       typedef std::map<enum Inpar::BEAMINTERACTION::SubModelType,
-          Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::Generic>>
+          std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::Generic>>
           Map;
-      typedef std::vector<Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::Generic>> Vector;
+      typedef std::vector<std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::Generic>> Vector;
 
       //! constructor
       BeamInteraction();
@@ -149,13 +149,13 @@ namespace Solid
       void runtime_output_step_state() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
       //! derived
@@ -189,7 +189,7 @@ namespace Solid
       void init_and_setup_sub_model_evaluators();
 
       //! give submodels a certain order in which they are evaluated
-      virtual Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Vector> transform_to_vector(
+      virtual std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Vector> transform_to_vector(
           Solid::ModelEvaluator::BeamInteraction::Map submodel_map,
           std::vector<Inpar::BEAMINTERACTION::SubModelType>& sorted_submodel_types) const;
 
@@ -234,19 +234,19 @@ namespace Solid
 
      private:
       //! pointer to the problem discretization (cast of base class member)
-      Teuchos::RCP<Core::FE::Discretization> discret_ptr_;
+      std::shared_ptr<Core::FE::Discretization> discret_ptr_;
 
       //! data container holding all beaminteraction related parameters
-      Teuchos::RCP<BEAMINTERACTION::BeamInteractionParams> beaminteraction_params_ptr_;
+      std::shared_ptr<BEAMINTERACTION::BeamInteractionParams> beaminteraction_params_ptr_;
 
       //!@name data for submodel management
       //! @{
       /// current active model types for the model evaluator
-      Teuchos::RCP<std::set<enum Inpar::BEAMINTERACTION::SubModelType>> submodeltypes_;
+      std::shared_ptr<std::set<enum Inpar::BEAMINTERACTION::SubModelType>> submodeltypes_;
 
-      Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> me_map_ptr_;
+      std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> me_map_ptr_;
 
-      Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Vector> me_vec_ptr_;
+      std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Vector> me_vec_ptr_;
       //! @}
 
       //!@name data for handling two distinct parallel distributed discretizations
@@ -255,10 +255,10 @@ namespace Solid
       int myrank_;
 
       //! coupling adapter to transfer vectors and matrices between discret() and intactids_
-      Teuchos::RCP<Coupling::Adapter::Coupling> coupsia_;
+      std::shared_ptr<Coupling::Adapter::Coupling> coupsia_;
 
       //! transform object for structure stiffness matrix
-      Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> siatransform_;
+      std::shared_ptr<Coupling::Adapter::MatrixRowTransform> siatransform_;
       //! @}
 
 
@@ -266,37 +266,37 @@ namespace Solid
       //! @{
       //! interaction discretization handling all interactions (e.g. crosslinker to beam,
       //! beam to beam, potential ...)
-      Teuchos::RCP<Core::FE::Discretization> ia_discret_;
+      std::shared_ptr<Core::FE::Discretization> ia_discret_;
 
       /// map extractor for split of different element types
-      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> eletypeextractor_;
+      std::shared_ptr<Core::LinAlg::MultiMapExtractor> eletypeextractor_;
 
       //! pointer to the global state data container
-      Teuchos::RCP<Solid::ModelEvaluator::BeamInteractionDataState> ia_state_ptr_;
+      std::shared_ptr<Solid::ModelEvaluator::BeamInteractionDataState> ia_state_ptr_;
 
       //! force based on ia_discret at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> ia_force_beaminteraction_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> ia_force_beaminteraction_;
 
       //! global force based on discret() at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> force_beaminteraction_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> force_beaminteraction_;
 
       //! structural stiffness matrix based on discret()
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_beaminteraction_;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_beaminteraction_;
 
       //! beam crosslinker handler
-      Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> beam_crosslinker_handler_;
+      std::shared_ptr<BEAMINTERACTION::BeamCrosslinkerHandler> beam_crosslinker_handler_;
 
       //! binning strategy
-      Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy_;
+      std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy_;
 
       //! crosslinker and bin discretization
-      Teuchos::RCP<Core::FE::Discretization> bindis_;
+      std::shared_ptr<Core::FE::Discretization> bindis_;
 
       //! elerowmap of bindis
-      Teuchos::RCP<Epetra_Map> rowbins_;
+      std::shared_ptr<Epetra_Map> rowbins_;
 
       //! displacement of nodes since last redistribution
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dis_at_last_redistr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> dis_at_last_redistr_;
 
       //! depending on which submodels are active this variable has different values
       //! and determines how often a redistribution needs to be done

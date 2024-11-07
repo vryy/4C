@@ -17,9 +17,9 @@
 #include <Epetra_LinearProblem.h>
 #include <Epetra_Operator.h>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
 
 #include <functional>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -50,7 +50,7 @@ namespace Core::LinAlg
     bool reset = false;
 
     //! Krylov space projector
-    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector = Teuchos::null;
+    std::shared_ptr<Core::LinAlg::KrylovProjector> projector = nullptr;
 
     //! for adaptivity of the tolerance: tolerance of the nonlinear solver
     double nonlin_tolerance = {};
@@ -116,9 +116,9 @@ namespace Core::LinAlg
                                to matrix kernel.
     \param params  (in)    : parameters for the solver. See documentation of SolverParams
     */
-    void setup(Teuchos::RCP<Epetra_Operator> matrix,
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> x,
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> b, const SolverParams &params);
+    void setup(std::shared_ptr<Epetra_Operator> matrix,
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const SolverParams &params);
 
     /*!
     \brief Solve system of equations in one go
@@ -133,12 +133,13 @@ namespace Core::LinAlg
                                to matrix kernel.
     \param params  (in)    : parameters for the solver. See documentation of SolverParams
     */
-    int solve_with_multi_vector(Teuchos::RCP<Epetra_Operator> matrix,
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> x,
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> b, const SolverParams &params);
+    int solve_with_multi_vector(std::shared_ptr<Epetra_Operator> matrix,
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const SolverParams &params);
 
-    int solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> b, const SolverParams &params);
+    int solve(std::shared_ptr<Epetra_Operator> matrix,
+        std::shared_ptr<Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<Core::LinAlg::Vector<double>> b, const SolverParams &params);
 
     /*!
     \brief Reset the solver and clear data
@@ -280,10 +281,10 @@ namespace Core::LinAlg
     const Epetra_Comm &comm_;
 
     //! (internal) parameter list
-    Teuchos::RCP<Teuchos::ParameterList> params_;
+    std::shared_ptr<Teuchos::ParameterList> params_;
 
     /// internal solver strategy
-    Teuchos::RCP<
+    std::shared_ptr<
         Core::LinearSolver::SolverTypeBase<Epetra_Operator, Core::LinAlg::MultiVector<double>>>
         solver_;
 

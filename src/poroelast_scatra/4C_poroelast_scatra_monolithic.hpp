@@ -84,7 +84,7 @@ namespace PoroElastScaTra
     virtual void setup_system_matrix();
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    virtual void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
             stepinc  //!< increment between time step n and n+1
     );
 
@@ -103,28 +103,28 @@ namespace PoroElastScaTra
     //! @name Access methods
 
     //! composed system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix();
 
     //! right hand side vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs() { return rhs_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs() { return rhs_; };
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const;
+    std::shared_ptr<const Epetra_Map> dof_row_map() const;
 
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> combined_dbc_map() const;
+    std::shared_ptr<const Epetra_Map> combined_dbc_map() const;
 
     //@}
 
    protected:
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> extractor() const
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> extractor() const
     {
       return blockrowdofmap_;
     }
 
     //! extractor for DBCs
-    const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbc_extractor() const { return dbcmaps_; }
+    const std::shared_ptr<Core::LinAlg::MapExtractor>& dbc_extractor() const { return dbcmaps_; }
 
     //! set full monolithic dof row map
     /*!
@@ -132,7 +132,7 @@ namespace PoroElastScaTra
      defines the number of blocks, their maps and the block order. The block
      maps must be row maps by themselves and must not contain identical GIDs.
      */
-    void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    void set_dof_row_maps(const std::vector<std::shared_ptr<const Epetra_Map>>& maps);
 
     //! @name Apply current field state to system
 
@@ -148,9 +148,10 @@ namespace PoroElastScaTra
    private:
     //! build block vector from field vectors, e.g. rhs, increment vector
     void setup_vector(Core::LinAlg::Vector<double>& f,  //!< vector of length of all dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             pv,  //!< vector containing only structural dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv  //!< vector containing only fluid dofs
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
+            sv  //!< vector containing only fluid dofs
     );
 
     //! perform one time step (setup + solve + output)
@@ -201,9 +202,9 @@ namespace PoroElastScaTra
 
     //! @name General purpose algorithm members
     //@{
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
-    double solveradaptolbetter_;                 //!< tolerance to which is adpated ?
-    bool solveradapttol_;                        //!< adapt solver tolerance
+    std::shared_ptr<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
+    double solveradaptolbetter_;                    //!< tolerance to which is adpated ?
+    bool solveradapttol_;                           //!< adapt solver tolerance
     //@}
 
     //! @name Iterative solution technique
@@ -258,40 +259,40 @@ namespace PoroElastScaTra
 
     int iter_;  //!< iteration step
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         iterinc_;  //!< increment between Newton steps k and k+1
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
 
     //@}
 
     //! @name variables of monolithic system
 
     //! block systemmatrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     //! rhs of monolithic system
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_;
 
     //! structure-scatra coupling matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_pss_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_pss_;
     //! fluid-scatra coupling matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_pfs_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_pfs_;
 
     //! scatra-structure coupling matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_sps_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_sps_;
     //! scatra-fluid coupling matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_spf_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_spf_;
 
     //! dof row map splitted in (field) blocks
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! scatra row map as map extractor (used to build coupling matrixes)
     Core::LinAlg::MultiMapExtractor scatrarowdofmap_;
     Core::LinAlg::MultiMapExtractor pororowdofmap_;
 
     //! dirichlet map of monolithic system
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;
     //@}
 
     //! flag for direct solver

@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-ALE::Meshsliding::Meshsliding(Teuchos::RCP<Core::FE::Discretization> dis,
+ALE::Meshsliding::Meshsliding(std::shared_ptr<Core::FE::Discretization> dis,
     Core::LinAlg::Solver& solver, int msht, int nsd, const Utils::MapExtractor* surfacesplitter)
     : Meshtying(dis, solver, msht, nsd, surfacesplitter)
 {
@@ -34,7 +34,7 @@ ALE::Meshsliding::Meshsliding(Teuchos::RCP<Core::FE::Discretization> dis,
 /*-------------------------------------------------------*/
 void ALE::Meshsliding::adapter_mortar(std::vector<int> coupleddof)
 {
-  adaptermeshsliding_ = Teuchos::make_rcp<Adapter::CouplingNonLinMortar>(
+  adaptermeshsliding_ = std::make_shared<Adapter::CouplingNonLinMortar>(
       Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
       Global::Problem::instance()->spatial_approximation_type());
@@ -47,10 +47,10 @@ void ALE::Meshsliding::adapter_mortar(std::vector<int> coupleddof)
 /*  Setup mesh sliding problem               wirtz 02/16 */
 /*                                                       */
 /*-------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshsliding::setup(
-    std::vector<int> coupleddof, Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp)
+std::shared_ptr<Core::LinAlg::SparseOperator> ALE::Meshsliding::setup(
+    std::vector<int> coupleddof, std::shared_ptr<Core::LinAlg::Vector<double>>& dispnp)
 {
-  Teuchos::RCP<Core::LinAlg::SparseOperator> mat = Meshtying::setup(coupleddof, dispnp);
+  std::shared_ptr<Core::LinAlg::SparseOperator> mat = Meshtying::setup(coupleddof, dispnp);
 
   lm_ = Core::LinAlg::create_vector(*gsdofrowmap_, true);
 
@@ -92,7 +92,7 @@ void ALE::Meshsliding::dof_row_maps()
 /*  Get function for the P matrix            wirtz 02/16 */
 /*                                                       */
 /*-------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> ALE::Meshsliding::get_mortar_matrix_p()
+std::shared_ptr<Core::LinAlg::SparseMatrix> ALE::Meshsliding::get_mortar_matrix_p()
 {
   return adaptermeshsliding_->get_mortar_matrix_p();
 }
@@ -102,22 +102,22 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> ALE::Meshsliding::get_mortar_matrix_p()
 /*                                          wirtz 02/16  */
 /*-------------------------------------------------------*/
 void ALE::Meshsliding::condensation_operation_block_matrix(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>&
+    std::shared_ptr<Core::LinAlg::SparseOperator>&
         sysmat,  ///> sysmat established by the element routine
-    Teuchos::RCP<Core::LinAlg::Vector<double>>&
+    std::shared_ptr<Core::LinAlg::Vector<double>>&
         residual,  ///> residual established by the element routine
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp)  ///> current displacement vector
+    std::shared_ptr<Core::LinAlg::Vector<double>>& dispnp)  ///> current displacement vector
 {
   // condensation operation for a block matrix
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmatnew =
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat);
+  std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmatnew =
+      std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat);
 
   /**********************************************************************/
   /* Split residual into 3 subvectors                                   */
   /**********************************************************************/
 
   // container for split residual vector
-  std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> splitres(3);
+  std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> splitres(3);
   split_vector(*residual, splitres);
 
   /**********************************************************************/
@@ -128,17 +128,17 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   adaptermeshsliding_->evaluate_sliding("displacement", dispnp, lm_);
 
   // get all mortar matrices necessary for mesh sliding
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Aco_mm;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Aco_ms;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Aco_sm;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Aco_ss;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> N_m;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> N_s;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Aco_mm;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Aco_ms;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Aco_sm;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Aco_ss;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> N_m;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> N_s;
   get_mortar_matrices(Aco_mm, Aco_ms, Aco_sm, Aco_ss, N_m, N_s);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> P = get_mortar_matrix_p();
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> T = adaptermeshsliding_->t_matrix();
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> H = adaptermeshsliding_->h_matrix();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gap = adaptermeshsliding_->gap();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> P = get_mortar_matrix_p();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> T = adaptermeshsliding_->t_matrix();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> H = adaptermeshsliding_->h_matrix();
+  std::shared_ptr<Core::LinAlg::Vector<double>> gap = adaptermeshsliding_->gap();
 
   /**********************************************************************/
   /* Step 1: Add sliding stiffnesses to the system matrix               */
@@ -162,11 +162,11 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   /* Store some quantities for static condensation of LM                */
   /**********************************************************************/
 
-  a_ss_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmatnew->matrix(2, 2));
-  a_sm_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmatnew->matrix(2, 1));
-  a_sn_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmatnew->matrix(2, 0));
+  a_ss_ = std::make_shared<Core::LinAlg::SparseMatrix>(sysmatnew->matrix(2, 2));
+  a_sm_ = std::make_shared<Core::LinAlg::SparseMatrix>(sysmatnew->matrix(2, 1));
+  a_sn_ = std::make_shared<Core::LinAlg::SparseMatrix>(sysmatnew->matrix(2, 0));
   d_inv_ = adaptermeshsliding_->get_mortar_matrix_dinv();
-  rs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*splitres[2]);
+  rs_ = std::make_shared<Core::LinAlg::Vector<double>>(*splitres[2]);
 
   /**********************************************************************/
   /* Step 2: condensate the system matrix                               */
@@ -186,7 +186,7 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   //---------------------------------------------------------- SECOND LINE
 
   // compute modification for block mn       (+ P^T * A_sn)
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Amn_mod =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Amn_mod =
       matrix_multiply(*P, true, sysmatnew->matrix(2, 0), false, false, false, true);
 
   // Add modification block to mn
@@ -194,7 +194,7 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   sysmatnew->matrix(1, 0).add(*Amn_mod, false, 1.0, 1.0);
 
   // compute modification for block mm       (+ P^T * A_sm)
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Amm_mod =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Amm_mod =
       matrix_multiply(*P, true, sysmatnew->matrix(2, 1), false, false, false, true);
 
   // Add modification block to mm
@@ -202,7 +202,7 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   sysmatnew->matrix(1, 1).add(*Amm_mod, false, 1.0, 1.0);
 
   // compute modification for block ms       (+ P^T * A_ss)
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Ams_mod =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Ams_mod =
       matrix_multiply(*P, true, sysmatnew->matrix(2, 2), false, false, false, true);
 
   // Add modification block to ms
@@ -212,9 +212,9 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   //----------------------------------------------------------- THIRD LINE
 
   // compute replacement for block sn      - (T * D^(-1) * A_sn)
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Asn_mod_interm =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Asn_mod_interm =
       matrix_multiply(*d_inv_, false, sysmatnew->matrix(2, 0), false, false, false, true);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Asn_mod =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Asn_mod =
       matrix_multiply(*T, false, *Asn_mod_interm, false, false, false, true);
 
   // Replace sn block with (negative) modification block
@@ -222,9 +222,9 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   sysmatnew->matrix(2, 0).add(*Asn_mod, false, -1.0, 0.0);
 
   // compute replacement for block sm      - (T * D^(-1) * A_sm)   +  N_m
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Asm_mod_interm =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Asm_mod_interm =
       matrix_multiply(*d_inv_, false, sysmatnew->matrix(2, 1), false, false, false, true);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Asm_mod =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Asm_mod =
       matrix_multiply(*T, false, *Asm_mod_interm, false, false, false, true);
 
   // Replace sm block with (negative) modification block
@@ -233,9 +233,9 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   sysmatnew->matrix(2, 1).add(*N_m, false, 1.0, 1.0);
 
   // compute replacement for block ss      (- T * D^(-1) *A_ss)   +  H  +  N_s
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Ass_mod_interm =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Ass_mod_interm =
       matrix_multiply(*d_inv_, false, sysmatnew->matrix(2, 2), false, false, false, true);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Ass_mod =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Ass_mod =
       matrix_multiply(*T, false, *Ass_mod_interm, false, false, false, true);
 
   // Replace ss block with (negative) modification block
@@ -296,15 +296,16 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 /*  Get functions for the mortar matrices    wirtz 02/16 */
 /*                                                       */
 /*-------------------------------------------------------*/
-void ALE::Meshsliding::get_mortar_matrices(Teuchos::RCP<Core::LinAlg::SparseMatrix>& Aco_mm,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& Aco_ms,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& Aco_sm,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& Aco_ss, Teuchos::RCP<Core::LinAlg::SparseMatrix>& N_m,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& N_s)
+void ALE::Meshsliding::get_mortar_matrices(std::shared_ptr<Core::LinAlg::SparseMatrix>& Aco_mm,
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& Aco_ms,
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& Aco_sm,
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& Aco_ss,
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& N_m,
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& N_s)
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> MLin = adaptermeshsliding_->m_lin_matrix();
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> DLin = adaptermeshsliding_->d_lin_matrix();
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> N = adaptermeshsliding_->n_matrix();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> MLin = adaptermeshsliding_->m_lin_matrix();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> DLin = adaptermeshsliding_->d_lin_matrix();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> N = adaptermeshsliding_->n_matrix();
 
   split_mortar_matrix(MLin, Aco_mm, Aco_ms, gmdofrowmap_);
   split_mortar_matrix(DLin, Aco_sm, Aco_ss, gsdofrowmap_);
@@ -315,20 +316,21 @@ void ALE::Meshsliding::get_mortar_matrices(Teuchos::RCP<Core::LinAlg::SparseMatr
 /*  Split the mortar matrix into its slave and its       */
 /*  master part                              wirtz 02/16 */
 /*-------------------------------------------------------*/
-void ALE::Meshsliding::split_mortar_matrix(Teuchos::RCP<Core::LinAlg::SparseMatrix>& MortarMatrix,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& MasterMatrix,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& SlaveMatrix,
-    Teuchos::RCP<const Epetra_Map>& dofrowmapconst)
+void ALE::Meshsliding::split_mortar_matrix(
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& MortarMatrix,
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& MasterMatrix,
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& SlaveMatrix,
+    std::shared_ptr<const Epetra_Map>& dofrowmapconst)
 {
   // dummy Matrices for second row and dummy map
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp21;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp22;
-  Teuchos::RCP<Epetra_Map> dummy;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> temp21;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> temp22;
+  std::shared_ptr<Epetra_Map> dummy;
 
   // const casts
-  Teuchos::RCP<Epetra_Map> gmdofrowmap = Teuchos::rcp_const_cast<Epetra_Map>(gmdofrowmap_);
-  Teuchos::RCP<Epetra_Map> gsdofrowmap = Teuchos::rcp_const_cast<Epetra_Map>(gsdofrowmap_);
-  Teuchos::RCP<Epetra_Map> dofrowmap = Teuchos::rcp_const_cast<Epetra_Map>(dofrowmapconst);
+  std::shared_ptr<Epetra_Map> gmdofrowmap = std::const_pointer_cast<Epetra_Map>(gmdofrowmap_);
+  std::shared_ptr<Epetra_Map> gsdofrowmap = std::const_pointer_cast<Epetra_Map>(gsdofrowmap_);
+  std::shared_ptr<Epetra_Map> dofrowmap = std::const_pointer_cast<Epetra_Map>(dofrowmapconst);
 
   // split matrix operation
   bool suc = Core::LinAlg::split_matrix2x2(MortarMatrix, dofrowmap, dummy, gmdofrowmap, gsdofrowmap,
@@ -345,7 +347,7 @@ void ALE::Meshsliding::split_mortar_matrix(Teuchos::RCP<Core::LinAlg::SparseMatr
 /*  Recover method for Lagrange multipliers  wirtz 02/16 */
 /*                                                       */
 /*-------------------------------------------------------*/
-void ALE::Meshsliding::recover(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc)
+void ALE::Meshsliding::recover(std::shared_ptr<Core::LinAlg::Vector<double>>& inc)
 {
   // recover lm from the condensation:
   // lm = - D^(-1) * (r_s + A_ss*d_s + A_sm*d_m + A_sn*d_n)
@@ -353,7 +355,7 @@ void ALE::Meshsliding::recover(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc)
   // with respect to master dofs is already included
 
   // split displacement increment
-  std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> splitinc(3);
+  std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> splitinc(3);
   split_vector(*inc, splitinc);
 
   Core::LinAlg::Vector<double> lm_temp(*gsdofrowmap_, true);
@@ -384,20 +386,20 @@ void ALE::Meshsliding::recover(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc)
 /*                                                       */
 /*-------------------------------------------------------*/
 int ALE::Meshsliding::solve_meshtying(Core::LinAlg::Solver& solver,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& disi,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp)
+    std::shared_ptr<Core::LinAlg::SparseOperator> sysmat,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& disi,
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& dispnp)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("Meshsliding:  3)   Solve ALE mesh sliding problem");
 
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmatnew =
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat);
+  std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmatnew =
+      std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat);
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mergedmatrix = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mergedmatrix = nullptr;
 
-  mergedmatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*mergedmap_, 108, false, true);
+  mergedmatrix = std::make_shared<Core::LinAlg::SparseMatrix>(*mergedmap_, 108, false, true);
 
   int errorcode = 0;
 

@@ -14,9 +14,9 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -54,7 +54,7 @@ namespace Core::DOFSets
     \return void
 
     */
-    PBCDofSet(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes);
+    PBCDofSet(std::shared_ptr<std::map<int, std::vector<int>>> couplednodes);
 
 
     /// Get maximum GID of degree of freedom row map
@@ -64,20 +64,20 @@ namespace Core::DOFSets
     int min_all_gid() const override;
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> clone() override { return Teuchos::make_rcp<PBCDofSet>(*this); }
+    std::shared_ptr<DofSet> clone() override { return std::make_shared<PBCDofSet>(*this); }
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
         const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// Update the coupled nodes map of dofset
-    virtual void set_coupled_nodes(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes);
+    virtual void set_coupled_nodes(std::shared_ptr<std::map<int, std::vector<int>>> couplednodes);
 
     /// Get coupled nodes map (corresponding col format)
     std::map<int, std::vector<int>>* get_coupled_nodes() { return perbndcouples_.get(); }
 
     /// Get connectivity map between slave node and its master node
-    virtual Teuchos::RCP<std::map<int, int>> get_slave_to_master_node_connectivity()
+    virtual std::shared_ptr<std::map<int, int>> get_slave_to_master_node_connectivity()
     {
       return perbnd_slavetomaster_;
     };
@@ -94,7 +94,7 @@ namespace Core::DOFSets
     }
 
     //!\brief master and slave node connectivity for periodic boundary conditions
-    Teuchos::RCP<std::map<int, std::vector<int>>> perbndcouples_;
+    std::shared_ptr<std::map<int, std::vector<int>>> perbndcouples_;
 
     //!\brief the largest original GID, to stop the dofset from 'shrinking'
     int myMaxGID_;
@@ -106,11 +106,11 @@ namespace Core::DOFSets
     /// Build the connectivity between slave node and its master node
     void build_slave_to_master_node_connectivity();
 
-    Teuchos::RCP<std::set<int>> slavenodeids_;
+    std::shared_ptr<std::set<int>> slavenodeids_;
 
     //!\brief slave node to master node connectivity for periodic boundary conditions (key=slave
     //! nid, value=master nid)
-    Teuchos::RCP<std::map<int, int>> perbnd_slavetomaster_;
+    std::shared_ptr<std::map<int, int>> perbnd_slavetomaster_;
 
   };  // class PBCDofSet
 

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::validate_input_file(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile)
+void EXODUS::validate_input_file(const std::shared_ptr<Epetra_Comm> comm, const std::string datfile)
 {
   using namespace FourC;
 
@@ -85,12 +85,12 @@ void EXODUS::validate_mesh_element_jacobians(Mesh& mymesh)
 {
   if (mymesh.get_num_dim() != 3) FOUR_C_THROW("Element Validation only for 3 Dimensions");
 
-  std::map<int, Teuchos::RCP<ElementBlock>> myebs = mymesh.get_element_blocks();
-  std::map<int, Teuchos::RCP<ElementBlock>>::iterator i_eb;
+  std::map<int, std::shared_ptr<ElementBlock>> myebs = mymesh.get_element_blocks();
+  std::map<int, std::shared_ptr<ElementBlock>>::iterator i_eb;
 
   for (i_eb = myebs.begin(); i_eb != myebs.end(); ++i_eb)
   {
-    Teuchos::RCP<ElementBlock> eb = i_eb->second;
+    std::shared_ptr<ElementBlock> eb = i_eb->second;
     const Core::FE::CellType distype = pre_shape_to_drt(eb->get_shape());
     // check and rewind if necessary
     validate_element_jacobian(mymesh, distype, *eb);
@@ -154,7 +154,7 @@ void EXODUS::validate_element_jacobian(
   Core::LinAlg::SerialDenseMatrix deriv(NSD, iel);
 
   // go through all elements
-  Teuchos::RCP<std::map<int, std::vector<int>>> eleconn = eb.get_ele_conn();
+  std::shared_ptr<std::map<int, std::vector<int>>> eleconn = eb.get_ele_conn();
   std::map<int, std::vector<int>>::iterator i_ele;
   int numrewindedeles = 0;
   for (i_ele = eleconn->begin(); i_ele != eleconn->end(); ++i_ele)
@@ -241,7 +241,7 @@ int EXODUS::validate_element_jacobian_fullgp(
 
   // go through all elements
   int invalids = 0;
-  Teuchos::RCP<std::map<int, std::vector<int>>> eleconn = eb.get_ele_conn();
+  std::shared_ptr<std::map<int, std::vector<int>>> eleconn = eb.get_ele_conn();
   std::map<int, std::vector<int>>::iterator i_ele;
   for (i_ele = eleconn->begin(); i_ele != eleconn->end(); ++i_ele)
   {

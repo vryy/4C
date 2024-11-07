@@ -16,7 +16,8 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -86,13 +87,13 @@ namespace CONTACT
     \brief Get contact manager
 
     */
-    Teuchos::RCP<Mortar::ManagerBase> contact_manager() const;
+    std::shared_ptr<Mortar::ManagerBase> contact_manager() const;
 
     /*!
     \brief Get meshtying manager
 
     */
-    Teuchos::RCP<Mortar::ManagerBase> mt_manager() const;
+    std::shared_ptr<Mortar::ManagerBase> mt_manager() const;
 
     /*!
     \brief Get strategy of meshtying/contact problem
@@ -104,13 +105,13 @@ namespace CONTACT
     \brief return bool indicating if contact is defined
 
     */
-    bool have_contact() const { return (cman_ != Teuchos::null); }
+    bool have_contact() const { return (cman_ != nullptr); }
 
     /*!
     \brief return bool indicating if meshtying is defined
 
     */
-    bool have_meshtying() const { return (mtman_ != Teuchos::null); }
+    bool have_meshtying() const { return (mtman_ != nullptr); }
 
     /*!
     \brief Write results for visualization for meshtying/contact problems
@@ -129,20 +130,20 @@ namespace CONTACT
 
     \param[in] outputParams Parameter list with stuff required by interfaces to write output
     */
-    void postprocess_quantities_per_interface(Teuchos::RCP<Teuchos::ParameterList> outputParams);
+    void postprocess_quantities_per_interface(std::shared_ptr<Teuchos::ParameterList> outputParams);
 
     /*!
     \brief read restart
 
     */
     void read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> zero);
+        std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::Vector<double>> zero);
     /*!
     \brief recover lagr. mult. for contact/meshtying and slave displ for mesht.
 
     */
-    void recover(Teuchos::RCP<Core::LinAlg::Vector<double>> disi);
+    void recover(std::shared_ptr<Core::LinAlg::Vector<double>> disi);
 
     /*!
     \brief set state vector
@@ -154,13 +155,13 @@ namespace CONTACT
     \brief store dirichlet status
 
     */
-    void store_dirichlet_status(Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps);
+    void store_dirichlet_status(std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps);
 
     /*!
     \brief update
 
     */
-    void update(Teuchos::RCP<Core::LinAlg::Vector<double>> dis);
+    void update(std::shared_ptr<Core::LinAlg::Vector<double>> dis);
 
     /*!
     \brief visualize stuff with gmsh
@@ -182,10 +183,10 @@ namespace CONTACT
     MeshtyingContactBridge(const MeshtyingContactBridge& old) = delete;
 
     //! Contact manager
-    Teuchos::RCP<Mortar::ManagerBase> cman_;
+    std::shared_ptr<Mortar::ManagerBase> cman_;
 
     //! Meshtying manager
-    Teuchos::RCP<Mortar::ManagerBase> mtman_;
+    std::shared_ptr<Mortar::ManagerBase> mtman_;
 
   };  // class meshtying_contact_bridge
 }  // namespace CONTACT

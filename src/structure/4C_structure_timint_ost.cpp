@@ -29,22 +29,23 @@ void Solid::TimIntOneStepTheta::verify_coeff()
 /* constructor */
 Solid::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    const Teuchos::ParameterList& xparams, std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Core::LinAlg::Solver> contactsolver,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       theta_(sdynparams.sublist("ONESTEPTHETA").get<double>("THETA")),
-      dist_(Teuchos::null),
-      velt_(Teuchos::null),
-      acct_(Teuchos::null),
-      fint_(Teuchos::null),
-      fintn_(Teuchos::null),
-      fext_(Teuchos::null),
-      fextn_(Teuchos::null),
-      finert_(Teuchos::null),
-      finertt_(Teuchos::null),
-      finertn_(Teuchos::null),
-      fvisct_(Teuchos::null)
+      dist_(nullptr),
+      velt_(nullptr),
+      acct_(nullptr),
+      fint_(nullptr),
+      fintn_(nullptr),
+      fext_(nullptr),
+      fextn_(nullptr),
+      finert_(nullptr),
+      finertt_(nullptr),
+      finertn_(nullptr),
+      fvisct_(nullptr)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -59,7 +60,7 @@ Solid::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& time
  *----------------------------------------------------------------------------------------------*/
 void Solid::TimIntOneStepTheta::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
+    std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver)
 {
   // call init() in base class
   Solid::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
@@ -653,8 +654,7 @@ void Solid::TimIntOneStepTheta::update_step_element()
 
   if (!have_nonlinear_mass())
   {
-    discret_->evaluate(
-        p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
   else
   {
@@ -665,17 +665,17 @@ void Solid::TimIntOneStepTheta::update_step_element()
     discret_->set_state("velocity", (*vel_)(0));
     discret_->set_state("acceleration", (*acc_)(0));
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> update_disp;
+    std::shared_ptr<Core::LinAlg::Vector<double>> update_disp;
     update_disp = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> update_vel;
+    std::shared_ptr<Core::LinAlg::Vector<double>> update_vel;
     update_vel = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> update_acc;
+    std::shared_ptr<Core::LinAlg::Vector<double>> update_acc;
     update_acc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
 
-    discret_->evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);
+    discret_->evaluate(p, nullptr, nullptr, update_disp, update_vel, update_acc);
 
     disn_->Update(1.0, *update_disp, 1.0);
     (*dis_)(0)->Update(1.0, *update_disp, 1.0);
@@ -706,7 +706,7 @@ void Solid::TimIntOneStepTheta::read_restart_force()
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
 void Solid::TimIntOneStepTheta::write_restart_force(
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
 {
   output->write_vector("fexternal", fext_);
   output->write_vector("fint", fint_);

@@ -56,13 +56,13 @@ Mat::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMateri
 }
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material>
+std::shared_ptr<Core::Mat::Material>
 Mat::PAR::BeamReissnerElastPlasticMaterialParams::create_material()
 {
   /* all the different parameter sets (Reissner/Kirchhoff/..., 'classic'/'by modes') are used to
    * parameterize the same constitutive relations based on a hyperelastic stored energy function
    * formulated for cross-section resultants which are implemented in BeamElastHyperMaterial */
-  Teuchos::RCP<Core::Mat::Material> matobject;
+  std::shared_ptr<Core::Mat::Material> matobject;
 
   if (uses_fad())
   {
@@ -71,7 +71,7 @@ Mat::PAR::BeamReissnerElastPlasticMaterialParams::create_material()
         "differentiation!");
   }
   else
-    matobject = Teuchos::make_rcp<Mat::BeamPlasticMaterial<double>>(this);
+    matobject = std::make_shared<Mat::BeamPlasticMaterial<double>>(this);
   return matobject;
 }
 
@@ -207,7 +207,7 @@ void Mat::BeamPlasticMaterial<T>::unpack(Core::Communication::UnpackBuffer& buff
 
   this->set_parameter(nullptr);
 
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

@@ -70,16 +70,19 @@ namespace FSI
     //! @name Access to single fields
 
     //! access to structural & poro field
-    const Teuchos::RCP<Adapter::StructurePoroWrapper>& structure_poro() { return structureporo_; }
+    const std::shared_ptr<Adapter::StructurePoroWrapper>& structure_poro()
+    {
+      return structureporo_;
+    }
 
     //! access to fluid field
-    const Teuchos::RCP<FLD::XFluid>& fluid_field() { return fluid_; }
+    const std::shared_ptr<FLD::XFluid>& fluid_field() { return fluid_; }
 
     //! access to ale field
-    const Teuchos::RCP<Adapter::AleFpsiWrapper>& ale_field() { return ale_; }
+    const std::shared_ptr<Adapter::AleFpsiWrapper>& ale_field() { return ale_; }
 
     //! is an monolithic ale computations
-    bool have_ale() { return (ale_field() != Teuchos::null); }
+    bool have_ale() { return (ale_field() != nullptr); }
 
     //! number of physical fields to solve involved
     int num_fields() { return num_fields_; }
@@ -108,13 +111,13 @@ namespace FSI
     //! @name Underlying fields
 
     //! underlying structure / poro of the FSI/FPSI problem
-    Teuchos::RCP<Adapter::StructurePoroWrapper> structureporo_;
+    std::shared_ptr<Adapter::StructurePoroWrapper> structureporo_;
 
     //! underlying fluid of the FSI problem
-    Teuchos::RCP<FLD::XFluid> fluid_;
+    std::shared_ptr<FLD::XFluid> fluid_;
 
     // underlying ale of the FSI problem
-    Teuchos::RCP<Adapter::AleFpsiWrapper> ale_;
+    std::shared_ptr<Adapter::AleFpsiWrapper> ale_;
 
     //@}
 

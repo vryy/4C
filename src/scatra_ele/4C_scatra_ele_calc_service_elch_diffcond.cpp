@@ -30,8 +30,8 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_
   // 2) Check if numdofpernode, numscal is set correctly
   if (ele->material()->material_type() == Core::Materials::m_elchmat)
   {
-    const Teuchos::RCP<const Mat::ElchMat>& actmat =
-        Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->material());
+    const std::shared_ptr<const Mat::ElchMat>& actmat =
+        std::dynamic_pointer_cast<const Mat::ElchMat>(ele->material());
 
     int numphase = actmat->num_phase();
 
@@ -43,11 +43,11 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_
     {
       // access phase material
       const int phaseid = actmat->phase_id(iphase);
-      Teuchos::RCP<const Core::Mat::Material> singlephase = actmat->phase_by_id(phaseid);
+      std::shared_ptr<const Core::Mat::Material> singlephase = actmat->phase_by_id(phaseid);
 
       // dynmic cast: get access to mat_phase
-      const Teuchos::RCP<const Mat::ElchPhase>& actphase =
-          Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(singlephase);
+      const std::shared_ptr<const Mat::ElchPhase>& actphase =
+          std::dynamic_pointer_cast<const Mat::ElchPhase>(singlephase);
 
       // Check if numdofpernode, numscal is set correctly
       int nummat = actphase->num_mat();
@@ -79,7 +79,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_
       for (int imat = 0; imat < actphase->num_mat(); ++imat)
       {
         const int matid = actphase->mat_id(imat);
-        Teuchos::RCP<const Core::Mat::Material> singlemat = actphase->mat_by_id(matid);
+        std::shared_ptr<const Core::Mat::Material> singlemat = actphase->mat_by_id(matid);
 
         if (singlemat->material_type() == Core::Materials::m_newman)
         {
@@ -156,7 +156,7 @@ int Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_act
     case ScaTra::Action::calc_elch_boundary_kinetics_point:
     {
       // access material of parent element
-      Teuchos::RCP<Core::Mat::Material> material = ele->material();
+      std::shared_ptr<Core::Mat::Material> material = ele->material();
 
       // extract porosity from material and store in diffusion manager
       if (material->material_type() == Core::Materials::m_elchmat)
@@ -165,7 +165,7 @@ int Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_act
 
         for (int iphase = 0; iphase < elchmat->num_phase(); ++iphase)
         {
-          Teuchos::RCP<const Core::Mat::Material> phase =
+          std::shared_ptr<const Core::Mat::Material> phase =
               elchmat->phase_by_id(elchmat->phase_id(iphase));
 
           if (phase->material_type() == Core::Materials::m_elchphase)
@@ -218,7 +218,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {
   // from scatra_ele_boundary_calc_elch_diffcond.cpp
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   if (material->material_type() == Core::Materials::m_elchmat)
   {
@@ -226,7 +226,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
 
     for (int iphase = 0; iphase < elchmat->num_phase(); ++iphase)
     {
-      Teuchos::RCP<const Core::Mat::Material> phase =
+      std::shared_ptr<const Core::Mat::Material> phase =
           elchmat->phase_by_id(elchmat->phase_id(iphase));
 
       if (phase->material_type() == Core::Materials::m_elchphase)
@@ -243,12 +243,12 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
     FOUR_C_THROW("Invalid material!");
 
   // get actual values of transported scalars
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // get history variable (needed for double layer modeling)
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
-  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'hist'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'hist'");
 
   // state and history variables at element nodes
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
@@ -259,9 +259,9 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*hist, ehist, lm);
 
   // get current condition
-  Teuchos::RCP<Core::Conditions::Condition> cond =
-      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-  if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchDomainKinetics'");
+  std::shared_ptr<Core::Conditions::Condition> cond =
+      params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
+  if (cond == nullptr) FOUR_C_THROW("Cannot access condition 'ElchDomainKinetics'");
 
   // access parameters of the condition
   const int kinetics = cond->parameters().get<int>("KINETIC_MODEL");
@@ -351,8 +351,9 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
   else
   {
     // get actual values of transported scalars
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phidtnp = discretization.get_state("phidtnp");
-    if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'ephidtnp'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phidtnp =
+        discretization.get_state("phidtnp");
+    if (phidtnp == nullptr) FOUR_C_THROW("Cannot get state vector 'ephidtnp'");
     std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(
         my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phidtnp, ephidtnp, lm);
@@ -379,8 +380,9 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype,
     Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs,
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist, double timefac,
-    Teuchos::RCP<Core::Conditions::Condition> cond, const int nume, const std::vector<int> stoich,
-    const int kinetics, const double pot0, const double frt, const double scalar)
+    std::shared_ptr<Core::Conditions::Condition> cond, const int nume,
+    const std::vector<int> stoich, const int kinetics, const double pot0, const double frt,
+    const double scalar)
 {
   // call base class routine
   myelch::evaluate_elch_boundary_kinetics_point(

@@ -40,15 +40,15 @@ Core::Communication::ParObject* Thermo::ElementType::create(
  | create the new element type (public)                      dano 09/09 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Thermo::ElementType::create(
+std::shared_ptr<Core::Elements::Element> Thermo::ElementType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "THERMO")
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<Thermo::Element>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele = std::make_shared<Thermo::Element>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }  // Create()
 
 
@@ -56,9 +56,9 @@ Teuchos::RCP<Core::Elements::Element> Thermo::ElementType::create(
  | create the new element type (public)                      dano 09/09 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Thermo::ElementType::create(const int id, const int owner)
+std::shared_ptr<Core::Elements::Element> Thermo::ElementType::create(const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<Thermo::Element>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele = std::make_shared<Thermo::Element>(id, owner);
   return ele;
 }  // Create()
 
@@ -91,10 +91,11 @@ Core::LinAlg::SerialDenseMatrix Thermo::ElementType::compute_null_space(
  | create the new element type (public)                      dano 09/09 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Thermo::FaceElementType::create(const int id, const int owner)
+std::shared_ptr<Core::Elements::Element> Thermo::FaceElementType::create(
+    const int id, const int owner)
 {
   // return Teuchos::rcp(new FaceElement(id,owner));
-  return Teuchos::null;
+  return nullptr;
 }  // Create()
 
 
@@ -267,7 +268,7 @@ void Thermo::Element::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | get vector of lines (public)                              dano 09/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Thermo::Element::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Thermo::Element::lines()
 {
   return Core::Communication::get_element_lines<FaceElement, Element>(*this);
 }  // Lines()
@@ -276,7 +277,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Thermo::Element::lines()
 /*----------------------------------------------------------------------*
  | get vector of surfaces (public)                           dano 09/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Thermo::Element::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Thermo::Element::surfaces()
 {
   return Core::Communication::get_element_surfaces<FaceElement, Element>(*this);
 }  // Surfaces()
@@ -422,7 +423,7 @@ void Thermo::FaceElement::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | get vector of lines (public)                              dano 09/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Thermo::FaceElement::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Thermo::FaceElement::lines()
 {
   FOUR_C_THROW("Lines of FaceElement not implemented");
 }  // Lines()
@@ -431,7 +432,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Thermo::FaceElement::lines()
 /*----------------------------------------------------------------------*
  | get vector of lines (public)                              dano 09/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Thermo::FaceElement::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Thermo::FaceElement::surfaces()
 {
   FOUR_C_THROW("Surfaces of FaceElement not implemented");
 }  // Surfaces()

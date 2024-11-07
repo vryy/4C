@@ -13,9 +13,9 @@
 #include "4C_io_linecomponent.hpp"
 
 #include <Teuchos_Array.hpp>
-#include <Teuchos_RCP.hpp>
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -78,7 +78,7 @@ namespace CONTACT
        *
        * \param[in] c new component needed as parameter for the contact constitutive law
        */
-      void add_component(Teuchos::RCP<Input::LineComponent> c);
+      void add_component(std::shared_ptr<Input::LineComponent> c);
 
       /** \brief read all materials from my input file section
        *
@@ -103,7 +103,7 @@ namespace CONTACT
       [[nodiscard]] std::string description() const { return description_; }
 
       /// get contact constitutive law inputline
-      [[nodiscard]] std::vector<Teuchos::RCP<Input::LineComponent>> inputline() const
+      [[nodiscard]] std::vector<std::shared_ptr<Input::LineComponent>> inputline() const
       {
         return inputline_;
       }
@@ -116,7 +116,7 @@ namespace CONTACT
       /// type of ontact constitutive law to be build
       Inpar::CONTACT::ConstitutiveLawType coconstlawtype_;
       /// the list of valid components
-      std::vector<Teuchos::RCP<Input::LineComponent>> inputline_;
+      std::vector<std::shared_ptr<Input::LineComponent>> inputline_;
     };
 
 
@@ -127,8 +127,8 @@ namespace CONTACT
      *
      */
     void append_co_const_law_component_definition(
-        std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& list,
-        Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> def);
+        std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>& list,
+        std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition> def);
 
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT

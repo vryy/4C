@@ -24,11 +24,11 @@ namespace ScaTra
   {
    public:
     //! standard constructor
-    TimIntHDG(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<Teuchos::ParameterList>& extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    TimIntHDG(const std::shared_ptr<Core::FE::Discretization>& actdis,
+        const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Teuchos::ParameterList>& params,
+        const std::shared_ptr<Teuchos::ParameterList>& extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     //! setup
     void setup() override;
@@ -54,7 +54,7 @@ namespace ScaTra
 
     //! read restart
     void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr) override;
 
     //! set the initial scalar field phi
     void set_initial_field(const Inpar::ScaTra::InitialField init,  //!< type of initial field
@@ -62,10 +62,10 @@ namespace ScaTra
         ) override;
 
     //! accessor to interior concentrations
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> return_int_phinp() { return intphinp_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> return_int_phin() { return intphin_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> return_int_phinp() { return intphinp_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> return_int_phin() { return intphin_; }
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> interpolated_phinp() const
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> interpolated_phinp() const
     {
       return interpolatedPhinp_;
     }
@@ -76,9 +76,9 @@ namespace ScaTra
     /*!
     \brief Compare the numerical solution to the analytical one.
     */
-    virtual Teuchos::RCP<Core::LinAlg::SerialDenseVector> compute_error() const;
+    virtual std::shared_ptr<Core::LinAlg::SerialDenseVector> compute_error() const;
 
-    Teuchos::RCP<Core::Utils::ResultTest> create_scatra_field_test() override;
+    std::shared_ptr<Core::Utils::ResultTest> create_scatra_field_test() override;
 
    protected:
     //! copy constructor
@@ -96,13 +96,14 @@ namespace ScaTra
     //! @name concentration and concentration gradient at different times for element interior for
     //! HDG
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intphinp_;  //!< concentration at time \f$t^{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intphin_;   //!< concentration at time \f$t^{n}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>>
+        intphinp_;  //!< concentration at time \f$t^{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> intphin_;  //!< concentration at time \f$t^{n}\f$
     //@}
 
     //! @name other HDG-specific auxiliary vectors
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         interpolatedPhinp_;  //!< concentrations for output at time \f$t^{n+1}\f$
     //@}
 
@@ -113,16 +114,17 @@ namespace ScaTra
     void compute_interior_values() override;
 
     //! update interior variables
-    virtual void update_interior_variables(Teuchos::RCP<Core::LinAlg::Vector<double>> updatevector);
+    virtual void update_interior_variables(
+        std::shared_ptr<Core::LinAlg::Vector<double>> updatevector);
 
     //! write problem specific output
     virtual void write_problem_specific_output(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedPhi)
+        std::shared_ptr<Core::LinAlg::Vector<double>> interpolatedPhi)
     {
     }
 
     virtual void collect_problem_specific_runtime_output_data(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedPhi)
+        std::shared_ptr<Core::LinAlg::Vector<double>> interpolatedPhi)
     {
     }
 
@@ -139,11 +141,11 @@ namespace ScaTra
     virtual void adapt_degree();
 
     //! adapt variable vectors required due to the change of the degrees of the test functions
-    virtual void adapt_variable_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> phi_new,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> phi_old,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> intphi_new,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> intphi_old, int nds_var_old, int nds_intvar_old,
-        std::vector<Core::Elements::LocationArray> la_old);
+    virtual void adapt_variable_vector(std::shared_ptr<Core::LinAlg::Vector<double>> phi_new,
+        std::shared_ptr<Core::LinAlg::Vector<double>> phi_old,
+        std::shared_ptr<Core::LinAlg::Vector<double>> intphi_new,
+        std::shared_ptr<Core::LinAlg::Vector<double>> intphi_old, int nds_var_old,
+        int nds_intvar_old, std::vector<Core::Elements::LocationArray> la_old);
 
     //! calculate matrices on element
     virtual void calc_mat_initial();
@@ -174,7 +176,7 @@ namespace ScaTra
     double theta_;
 
     //! activation_time at times n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> activation_time_interpol_np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> activation_time_interpol_np_;
 
     //! HDG discretization
     Core::FE::DiscretizationHDG* hdgdis_;
@@ -193,7 +195,7 @@ namespace ScaTra
     double padaptdegreemax_;
 
     //! element degree
-    Teuchos::RCP<Core::LinAlg::Vector<double>> elementdegree_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> elementdegree_;
 
   };  // class TimIntHDG
 }  // namespace ScaTra

@@ -26,9 +26,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
-    Teuchos::RCP<const Core::FE::Discretization> targetdis, const Teuchos::ParameterList& params,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sourcedisp)
+XFEM::MeshProjector::MeshProjector(std::shared_ptr<const Core::FE::Discretization> sourcedis,
+    std::shared_ptr<const Core::FE::Discretization> targetdis, const Teuchos::ParameterList& params,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> sourcedisp)
     : sourcedis_(sourcedis),
       targetdis_(targetdis),
       searchradius_fac_(
@@ -63,7 +63,7 @@ XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const Core::FE::Discretization> 
 }
 
 void XFEM::MeshProjector::set_source_position_vector(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sourcedisp)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> sourcedisp)
 {
   src_nodepositions_n_.clear();
   // set position of source nodes
@@ -75,7 +75,7 @@ void XFEM::MeshProjector::set_source_position_vector(
     std::vector<int> src_dofs(4);
     std::vector<double> mydisp(3, 0.0);
 
-    if (sourcedisp != Teuchos::null)
+    if (sourcedisp != nullptr)
     {
       // get the current displacement
       sourcedis_->dof(node, 0, src_dofs);
@@ -178,7 +178,7 @@ void XFEM::MeshProjector::find_search_radius()
 void XFEM::MeshProjector::setup_search_tree()
 {
   // init of 3D search tree
-  search_tree_ = Teuchos::make_rcp<Core::Geo::SearchTree>(5);
+  search_tree_ = std::make_shared<Core::Geo::SearchTree>(5);
 
   // find the bounding box of all elements of source discretization
   const Core::LinAlg::Matrix<3, 2> sourceEleBox =
@@ -190,8 +190,8 @@ void XFEM::MeshProjector::setup_search_tree()
 }
 
 void XFEM::MeshProjector::project(std::map<int, std::set<int>>& projection_nodeToDof,
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> target_statevecs,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> targetdisp)
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> target_statevecs,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> targetdisp)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "XFEM::MeshProjector::Project" );
 
@@ -222,7 +222,7 @@ void XFEM::MeshProjector::project(std::map<int, std::set<int>>& projection_nodeT
     std::vector<int> tar_dofs(4);
     std::vector<double> mydisp(4, 0.0);
 
-    if (targetdisp != Teuchos::null)
+    if (targetdisp != nullptr)
     {
       // get the current displacement
       targetdis_->dof(node, 0, tar_dofs);
@@ -273,7 +273,7 @@ void XFEM::MeshProjector::project(std::map<int, std::set<int>>& projection_nodeT
     int offset = 0;
     for (size_t iv = 0; iv < target_statevecs.size(); ++iv)
     {
-      if (target_statevecs[iv] == Teuchos::null) continue;
+      if (target_statevecs[iv] == nullptr) continue;
 
       std::vector<int> dofs;
       dofs.reserve(dofsets.size() * numdofperset);
@@ -297,13 +297,13 @@ void XFEM::MeshProjector::project(std::map<int, std::set<int>>& projection_nodeT
 }
 
 void XFEM::MeshProjector::project_in_full_target_discretization(
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> target_statevecs,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> targetdisp)
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> target_statevecs,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> targetdisp)
 {
   // this routine supports only non-XFEM discretizations!
-  Teuchos::RCP<const XFEM::DiscretizationXFEM> xdiscret =
-      Teuchos::rcp_dynamic_cast<const XFEM::DiscretizationXFEM>(targetdis_);
-  if (xdiscret != Teuchos::null)
+  std::shared_ptr<const XFEM::DiscretizationXFEM> xdiscret =
+      std::dynamic_pointer_cast<const XFEM::DiscretizationXFEM>(targetdis_);
+  if (xdiscret != nullptr)
     FOUR_C_THROW(
         "Value projection for between different mesh deformation states does not support "
         "DiscretizationXFEM.");
@@ -341,7 +341,7 @@ bool XFEM::MeshProjector::check_position_and_project(const Core::Elements::Eleme
   }
 
   // compute node position w.r.t. embedded element
-  Teuchos::RCP<Cut::Position> pos =
+  std::shared_ptr<Cut::Position> pos =
       Cut::PositionFactory::build_position<3, distype>(src_xyze, node_xyz);
   bool inside = pos->compute();
 
@@ -368,7 +368,7 @@ bool XFEM::MeshProjector::check_position_and_project(const Core::Elements::Eleme
       unsigned offset = 0;
       for (size_t iv = 0; iv < source_statevecs_.size(); ++iv)
       {
-        if (source_statevecs_[iv] == Teuchos::null) continue;
+        if (source_statevecs_[iv] == nullptr) continue;
 
         Core::FE::extract_my_values(*source_statevecs_[iv], myval, src_dofs);
         for (unsigned isd = 0; isd < numdofpernode; ++isd)
@@ -595,7 +595,7 @@ void XFEM::MeshProjector::pack_values(std::vector<Core::LinAlg::Matrix<3, 1>>& t
 }
 
 void XFEM::MeshProjector::gmsh_output(
-    int step, Teuchos::RCP<const Core::LinAlg::Vector<double>> targetdisp)
+    int step, std::shared_ptr<const Core::LinAlg::Vector<double>> targetdisp)
 {
   // output of source discretization with element numbers and target nodes together with element id
   // of source element for value projection
@@ -605,7 +605,7 @@ void XFEM::MeshProjector::gmsh_output(
   std::ofstream gmshfilecontent(filename.c_str());
   {
     XFEM::Utils::print_discretization_to_stream(
-        Teuchos::rcp_const_cast<Core::FE::Discretization>(sourcedis_), sourcedis_->name(), true,
+        std::const_pointer_cast<Core::FE::Discretization>(sourcedis_), sourcedis_->name(), true,
         false, false, false, false, false, gmshfilecontent, &src_nodepositions_n_);
 
     gmshfilecontent << "View \" "
@@ -617,7 +617,7 @@ void XFEM::MeshProjector::gmsh_output(
     {
       const Core::Nodes::Node* actnode = targetdis_->l_col_node(i);
       Core::LinAlg::Matrix<3, 1> pos(actnode->x().data(), false);
-      if (targetdisp != Teuchos::null)
+      if (targetdisp != nullptr)
       {
         // get the current displacement
         targetdis_->dof(actnode, 0, tar_dofs);

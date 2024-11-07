@@ -45,27 +45,28 @@ namespace Adapter
     //@{
 
     //! constructor
-    explicit AleFluidWrapper(Teuchos::RCP<Ale> ale);
+    explicit AleFluidWrapper(std::shared_ptr<Ale> ale);
 
     //@}
 
     //! communicate object at the interface
-    Teuchos::RCP<const ALE::Utils::MapExtractor> interface() const;
+    std::shared_ptr<const ALE::Utils::MapExtractor> interface() const;
 
     //! solve
     int solve() override;
 
     //! apply displacements at the free surface nodes
-    void apply_free_surface_displacements(Teuchos::RCP<const Core::LinAlg::Vector<double>> fsdisp);
+    void apply_free_surface_displacements(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fsdisp);
 
     //! apply displacements at the ale update condition nodes
-    void apply_ale_update_displacements(Teuchos::RCP<const Core::LinAlg::Vector<double>> audisp);
+    void apply_ale_update_displacements(std::shared_ptr<const Core::LinAlg::Vector<double>> audisp);
 
     //! apply FSI interface displacements (required for staggered FSI)
-    void apply_interface_displacements(Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp);
+    void apply_interface_displacements(std::shared_ptr<const Core::LinAlg::Vector<double>> idisp);
 
    private:
-    Teuchos::RCP<ALE::Utils::MapExtractor> interface_;
+    std::shared_ptr<ALE::Utils::MapExtractor> interface_;
 
   };  // class AleFluidWrapper
 }  // namespace Adapter

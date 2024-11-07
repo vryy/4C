@@ -15,7 +15,7 @@
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -43,7 +43,7 @@ namespace Mat
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class ViscoNeoHooke
 
@@ -130,9 +130,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ViscoNeoHooke>(*this);
+      return std::make_shared<ViscoNeoHooke>(*this);
     }
 
     /// Initialize internal stress variables
@@ -157,7 +157,7 @@ namespace Mat
     double shear_mod() const { return 0.5 * params_->youngs_slow_ / (1.0 + params_->poisson_); };
 
     /// Check if history variables are already initialized
-    bool initialized() const { return isinit_ && (histstresscurr_ != Teuchos::null); }
+    bool initialized() const { return isinit_ && (histstresscurr_ != nullptr); }
 
     /// Return quick accessible material parameter data
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
@@ -167,13 +167,13 @@ namespace Mat
     Mat::PAR::ViscoNeoHooke* params_;
 
     /// visco history stresses
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         histstresscurr_;  ///< current stress
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         histstresslast_;  ///< stress of last converged state
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         artstresscurr_;  ///< current artificial stress
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         artstresslast_;  ///< artificial stress in last converged state
 
     bool isinit_;  ///< indicates if #Initialized routine has been called

@@ -13,10 +13,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Adapter::AleFpsiWrapper::AleFpsiWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
+Adapter::AleFpsiWrapper::AleFpsiWrapper(std::shared_ptr<Ale> ale) : AleWrapper(ale)
 {
   // create the FSI interface
-  interface_ = Teuchos::make_rcp<ALE::Utils::MapExtractor>();
+  interface_ = std::make_shared<ALE::Utils::MapExtractor>();
   interface_->setup(*discretization(), true);  // create overlapping maps for fpsi problem
 
   return;
@@ -26,7 +26,7 @@ Adapter::AleFpsiWrapper::AleFpsiWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void Adapter::AleFpsiWrapper::apply_interface_displacements(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> idisp)
 {
   interface_->insert_fpsi_cond_vector(*idisp, *write_access_dispnp());
 }
@@ -34,7 +34,7 @@ void Adapter::AleFpsiWrapper::apply_interface_displacements(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void Adapter::AleFpsiWrapper::apply_fsi_interface_displacements(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> idisp)
 {
   interface_->insert_fsi_cond_vector(*idisp, *write_access_dispnp());
 }
@@ -42,7 +42,7 @@ void Adapter::AleFpsiWrapper::apply_fsi_interface_displacements(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const ALE::Utils::MapExtractor> Adapter::AleFpsiWrapper::interface() const
+std::shared_ptr<const ALE::Utils::MapExtractor> Adapter::AleFpsiWrapper::interface() const
 {
   return interface_;
 }

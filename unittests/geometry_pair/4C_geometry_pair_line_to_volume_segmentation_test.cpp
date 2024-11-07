@@ -37,7 +37,7 @@ namespace
       Teuchos::ParameterList line_to_volume_params_list;
       Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(line_to_volume_params_list);
       evaluation_data_ =
-          Teuchos::make_rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(line_to_volume_params_list);
+          std::make_shared<GEOMETRYPAIR::LineTo3DEvaluationData>(line_to_volume_params_list);
     }
 
     /**
@@ -53,7 +53,7 @@ namespace
      */
     template <typename El1, typename El2>
     void create_evaluate_pairs(
-        std::vector<Teuchos::RCP<
+        std::vector<std::shared_ptr<
             GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, El1, El2>>>& geometry_pairs,
         const std::vector<Core::LinAlg::Matrix<El1::n_dof_, 1, double>>& q_line_elements,
         const std::vector<double>& line_ref_lengths,
@@ -87,7 +87,7 @@ namespace
         // Loop over each solid with this beam and create a pair.
         for (auto& volume : volume_elements_)
         {
-          geometry_pairs.push_back(Teuchos::make_rcp<
+          geometry_pairs.push_back(std::make_shared<
               GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, El1, El2>>(
               line.get(), volume.get(), evaluation_data_));
         }
@@ -108,13 +108,13 @@ namespace
     }
 
     //! Evaluation data container for geometry pairs.
-    Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
+    std::shared_ptr<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
 
     //! Vector of line elements.
-    std::vector<Teuchos::RCP<Core::Elements::Element>> line_elements_;
+    std::vector<std::shared_ptr<Core::Elements::Element>> line_elements_;
 
     //! Vector of volume elements.
-    std::vector<Teuchos::RCP<Core::Elements::Element>> volume_elements_;
+    std::vector<std::shared_ptr<Core::Elements::Element>> volume_elements_;
   };
 
   /**
@@ -127,7 +127,7 @@ namespace
     std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
     std::vector<Core::LinAlg::Matrix<24, 1, double>> q_volume_elements;
-    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+    std::vector<std::shared_ptr<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
         geometry_pairs;
 
@@ -168,7 +168,7 @@ namespace
     std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
     std::vector<Core::LinAlg::Matrix<24, 1, double>> q_volume_elements;
-    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+    std::vector<std::shared_ptr<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
         geometry_pairs;
 
@@ -209,7 +209,7 @@ namespace
     std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
     std::vector<Core::LinAlg::Matrix<81, 1, double>> q_volume_elements;
-    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+    std::vector<std::shared_ptr<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>>>
         geometry_pairs;
 
@@ -250,7 +250,7 @@ namespace
     std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
     std::vector<Core::LinAlg::Matrix<30, 1, double>> q_volume_elements;
-    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+    std::vector<std::shared_ptr<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>>>
         geometry_pairs;
 
@@ -291,7 +291,7 @@ namespace
     std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
     std::vector<Core::LinAlg::Matrix<81, 1, double>> q_volume_elements;
-    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+    std::vector<std::shared_ptr<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>>>
         geometry_pairs;
 
@@ -299,8 +299,8 @@ namespace
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Add the relevant nurbs information to the discretization.
-    Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> structdis =
-        Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>("structure", Teuchos::null, 3);
+    std::shared_ptr<Core::FE::Nurbs::NurbsDiscretization> structdis =
+        std::make_shared<Core::FE::Nurbs::NurbsDiscretization>("structure", nullptr, 3);
     Global::Problem::instance()->add_dis("structure", structdis);
 
     // Get the geometry.
@@ -333,7 +333,7 @@ namespace
     std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
     std::vector<Core::LinAlg::Matrix<24, 1, double>> q_volume_elements;
-    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+    std::vector<std::shared_ptr<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
         geometry_pairs;
 
@@ -374,7 +374,7 @@ namespace
     std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
     std::vector<Core::LinAlg::Matrix<24, 1, double>> q_volume_elements;
-    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+    std::vector<std::shared_ptr<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
         geometry_pairs;
 
@@ -390,7 +390,7 @@ namespace
     line_to_volume_params_list.set(
         "GEOMETRY_PAIR_SEGMENTATION_NOT_ALL_GAUSS_POINTS_PROJECT_VALID_ACTION", "warning");
     evaluation_data_ =
-        Teuchos::make_rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(line_to_volume_params_list);
+        std::make_shared<GEOMETRYPAIR::LineTo3DEvaluationData>(line_to_volume_params_list);
 
     // Vector with vector of segments for Evaluate.
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
@@ -418,7 +418,7 @@ namespace
     std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
     std::vector<Core::LinAlg::Matrix<24, 1, double>> q_volume_elements;
-    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+    std::vector<std::shared_ptr<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
         geometry_pairs;
 
@@ -432,7 +432,7 @@ namespace
     Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(line_to_volume_params_list);
     line_to_volume_params_list.set("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 2);
     evaluation_data_ =
-        Teuchos::make_rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(line_to_volume_params_list);
+        std::make_shared<GEOMETRYPAIR::LineTo3DEvaluationData>(line_to_volume_params_list);
 
     // Vector with vector of segments for Evaluate.
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;

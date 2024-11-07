@@ -79,11 +79,11 @@ void FS3I::PartFS3I::init()
   // and structure-based scalar transport and get material map for fluid
   // and scalar transport elements
   //---------------------------------------------------------------------
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
-  Teuchos::RCP<Core::FE::Discretization> fluidscatradis = problem->get_dis("scatra1");
-  Teuchos::RCP<Core::FE::Discretization> structscatradis = problem->get_dis("scatra2");
-  Teuchos::RCP<Core::FE::Discretization> aledis = problem->get_dis("ale");
+  std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
+  std::shared_ptr<Core::FE::Discretization> structdis = problem->get_dis("structure");
+  std::shared_ptr<Core::FE::Discretization> fluidscatradis = problem->get_dis("scatra1");
+  std::shared_ptr<Core::FE::Discretization> structscatradis = problem->get_dis("scatra2");
+  std::shared_ptr<Core::FE::Discretization> aledis = problem->get_dis("ale");
 
   //---------------------------------------------------------------------
   // create ale discretization as a clone from fluid discretization
@@ -139,7 +139,7 @@ void FS3I::PartFS3I::init()
         element->set_impl_type(impltype_fluid);
     }
 
-    volume_coupling_objects_.push_back(Teuchos::null);
+    volume_coupling_objects_.push_back(nullptr);
 
     // care for secondary dof sets:
     // add proxy of fluid degrees of freedom to scatra discretization
@@ -183,7 +183,7 @@ void FS3I::PartFS3I::init()
         *structdis, *structscatradis, Global::Problem::instance()->cloning_material_map());
     structscatradis->fill_complete();
 
-    volume_coupling_objects_.push_back(Teuchos::null);
+    volume_coupling_objects_.push_back(nullptr);
 
     // care for secondary dof sets:
     // add proxy of structure scatra degrees of freedom to structure discretization
@@ -247,12 +247,12 @@ void FS3I::PartFS3I::init()
   {
     case fsi_iter_monolithicfluidsplit:
     {
-      fsi_ = Teuchos::make_rcp<FSI::MonolithicFluidSplit>(comm_, fsitimeparams);
+      fsi_ = std::make_shared<FSI::MonolithicFluidSplit>(comm_, fsitimeparams);
       break;
     }
     case fsi_iter_monolithicstructuresplit:
     {
-      fsi_ = Teuchos::make_rcp<FSI::MonolithicStructureSplit>(comm_, fsitimeparams);
+      fsi_ = std::make_shared<FSI::MonolithicStructureSplit>(comm_, fsitimeparams);
       break;
     }
     default:
@@ -281,7 +281,7 @@ void FS3I::PartFS3I::init()
         "no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 "
         "in FS3I DYNAMIC to a valid number!");
 
-  fluidscatra_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(fs3idyn,
+  fluidscatra_ = std::make_shared<Adapter::ScaTraBaseAlgorithm>(fs3idyn,
       problem->scalar_transport_dynamic_params(), problem->solver_params(linsolver1number),
       "scatra1", true);
   fluidscatra_->init();
@@ -289,7 +289,7 @@ void FS3I::PartFS3I::init()
   fluidscatra_->scatra_field()->set_number_of_dof_set_velocity(1);
   fluidscatra_->scatra_field()->set_number_of_dof_set_wall_shear_stress(1);
 
-  structscatra_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(fs3idyn,
+  structscatra_ = std::make_shared<Adapter::ScaTraBaseAlgorithm>(fs3idyn,
       problem->scalar_transport_dynamic_params(), problem->solver_params(linsolver2number),
       "scatra2", true);
   structscatra_->init();
@@ -325,9 +325,9 @@ void FS3I::PartFS3I::setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_object(
-    Teuchos::RCP<Core::FE::Discretization> masterdis,
-    Teuchos::RCP<Core::FE::Discretization> slavedis)
+std::shared_ptr<Coupling::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_object(
+    std::shared_ptr<Core::FE::Discretization> masterdis,
+    std::shared_ptr<Core::FE::Discretization> slavedis)
 {
   // copy conditions
   // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
@@ -348,12 +348,12 @@ Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_morta
   const int ndofpernode_struct = masterdis->num_dof(0, masterdis->l_row_node(0));
   const int ndofperelement_struct = 0;
 
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-  dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+  std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux;
+  dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
       ndofpernode_scatra, ndofperelement_scatra, 0, true);
   if (masterdis->add_dof_set(dofsetaux) != 1)
     FOUR_C_THROW("unexpected dof sets in structure field");
-  dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+  dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
       ndofpernode_struct, ndofperelement_struct, 0, true);
   if (slavedis->add_dof_set(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in scatra field");
 
@@ -368,8 +368,8 @@ Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_morta
 
 
   // Scheme: non matching meshes --> volumetric mortar coupling...
-  Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> volume_coupling_object =
-      Teuchos::make_rcp<Coupling::Adapter::MortarVolCoupl>();
+  std::shared_ptr<Coupling::Adapter::MortarVolCoupl> volume_coupling_object =
+      std::make_shared<Coupling::Adapter::MortarVolCoupl>();
 
   // setup projection matrices (use default material strategy)
   volume_coupling_object->init(Global::Problem::instance()->n_dim(), masterdis, slavedis);
@@ -390,7 +390,7 @@ Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_morta
 
   auto determine_relevant_points = [correct_node](const Core::FE::Discretization& discret,
                                        const Core::Elements::Element& ele,
-                                       Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)
+                                       std::shared_ptr<const Core::LinAlg::Vector<double>> disnp)
       -> std::vector<std::array<double, 3>>
   {
     if (dynamic_cast<const Discret::Elements::Beam3Base*>(&ele))
@@ -443,7 +443,7 @@ void FS3I::PartFS3I::read_restart()
 
       for (unsigned i = 0; i < scatravec_.size(); ++i)
       {
-        Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
+        std::shared_ptr<Adapter::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
         currscatra->scatra_field()->read_restart(restart);
       }
     }
@@ -455,7 +455,7 @@ void FS3I::PartFS3I::read_restart()
       // we need to set time and step in scatra to have it matching with the fsi ones
       for (unsigned i = 0; i < scatravec_.size(); ++i)
       {
-        Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
+        std::shared_ptr<Adapter::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
         currscatra->scatra_field()->set_time_step(
             fsi_->fluid_field()->time(), fsi_->fluid_field()->step());
       }
@@ -481,13 +481,14 @@ void FS3I::PartFS3I::setup_system()
   // create map extractors needed for scatra condition coupling
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-    Teuchos::RCP<Core::FE::Discretization> currdis = currscatra->scatra_field()->discretization();
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
+    std::shared_ptr<Core::FE::Discretization> currdis =
+        currscatra->scatra_field()->discretization();
     const int numscal = currscatra->scatra_field()->num_scal();
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mapex =
-        Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> mapex =
+        std::make_shared<Core::LinAlg::MultiMapExtractor>();
     Core::Conditions::MultiConditionSelector mcs;
-    mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+    mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
         *currdis, "ScaTraCoupling", 0, numscal));
     mcs.setup_extractor(*currdis, *currdis->dof_row_map(), *mapex);
     scatrafieldexvec_.push_back(mapex);
@@ -502,7 +503,7 @@ void FS3I::PartFS3I::setup_system()
 
   // create map extractor for coupled scatra fields
   // the second field (currently structure) is always split
-  std::vector<Teuchos::RCP<const Epetra_Map>> maps;
+  std::vector<std::shared_ptr<const Epetra_Map>> maps;
 
   // In the limiting case of an infinite permeability of the interface between
   // different scatra fields, the concentrations on both sides of the interface are
@@ -521,7 +522,7 @@ void FS3I::PartFS3I::setup_system()
     maps.push_back(scatrafieldexvec_[0]->full_map());
     maps.push_back(scatrafieldexvec_[1]->full_map());
   }
-  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
+  std::shared_ptr<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   scatraglobalex_->setup(*fullmap, maps);
 
   // create coupling vectors and matrices (only needed for finite surface permeabilities)
@@ -529,17 +530,16 @@ void FS3I::PartFS3I::setup_system()
   {
     for (unsigned i = 0; i < scatravec_.size(); ++i)
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> scatracoupforce =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(scatraglobalex_->Map(i)), true);
+      std::shared_ptr<Core::LinAlg::Vector<double>> scatracoupforce =
+          std::make_shared<Core::LinAlg::Vector<double>>(*(scatraglobalex_->Map(i)), true);
       scatracoupforce_.push_back(scatracoupforce);
 
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> scatracoupmat =
-          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-              *(scatraglobalex_->Map(i)), 27, false, true);
+      std::shared_ptr<Core::LinAlg::SparseMatrix> scatracoupmat =
+          std::make_shared<Core::LinAlg::SparseMatrix>(*(scatraglobalex_->Map(i)), 27, false, true);
       scatracoupmat_.push_back(scatracoupmat);
 
       const Epetra_Map* dofrowmap = scatravec_[i]->scatra_field()->discretization()->dof_row_map();
-      Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
+      std::shared_ptr<Core::LinAlg::Vector<double>> zeros =
           Core::LinAlg::create_vector(*dofrowmap, true);
       scatrazeros_.push_back(zeros);
     }
@@ -547,22 +547,22 @@ void FS3I::PartFS3I::setup_system()
 
   // create scatra block matrix
   scatrasystemmatrix_ =
-      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+      std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           *scatraglobalex_, *scatraglobalex_, 27, false, true);
 
   // create scatra rhs vector
-  scatrarhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scatraglobalex_->full_map(), true);
+  scatrarhs_ = std::make_shared<Core::LinAlg::Vector<double>>(*scatraglobalex_->full_map(), true);
 
   // create scatra increment vector
   scatraincrement_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scatraglobalex_->full_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*scatraglobalex_->full_map(), true);
 
   // check whether potential Dirichlet conditions at scatra interface are
   // defined for both discretizations
   check_interface_dirichlet_bc();
 
   // scatra solver
-  Teuchos::RCP<Core::FE::Discretization> firstscatradis =
+  std::shared_ptr<Core::FE::Discretization> firstscatradis =
       (scatravec_[0])->scatra_field()->discretization();
   const Teuchos::ParameterList& fs3idyn = Global::Problem::instance()->f_s3_i_dynamic_params();
   // get solver number used for fs3i
@@ -588,7 +588,7 @@ void FS3I::PartFS3I::setup_system()
     FOUR_C_THROW("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object
-  scatrasolver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(coupledscatrasolvparams,
+  scatrasolver_ = std::make_shared<Core::LinAlg::Solver>(coupledscatrasolvparams,
       firstscatradis->get_comm(), Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
@@ -641,7 +641,7 @@ void FS3I::PartFS3I::test_results(const Epetra_Comm& comm)
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
     Global::Problem::instance()->add_field_test(scatra->create_scatra_field_test());
   }
   Global::Problem::instance()->test_all(comm);
@@ -681,12 +681,12 @@ void FS3I::PartFS3I::set_struct_scatra_solution() const
 void FS3I::PartFS3I::set_mesh_disp() const
 {
   // fluid field
-  Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> fluidscatra = scatravec_[0];
+  std::shared_ptr<Adapter::ScaTraBaseAlgorithm> fluidscatra = scatravec_[0];
   fluidscatra->scatra_field()->apply_mesh_movement(
       fluid_to_fluid_scalar(fsi_->fluid_field()->dispnp()));
 
   // structure field
-  Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> structscatra = scatravec_[1];
+  std::shared_ptr<Adapter::ScaTraBaseAlgorithm> structscatra = scatravec_[1];
   structscatra->scatra_field()->apply_mesh_movement(
       structure_to_structure_scalar(fsi_->structure_field()->dispnp()));
 }
@@ -696,15 +696,15 @@ void FS3I::PartFS3I::set_mesh_disp() const
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::set_velocity_fields() const
 {
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> convel;
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> vel;
+  std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> convel;
+  std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> vel;
   extract_vel(convel, vel);
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->scatra_field()->set_velocity_field(vol_mortar_master_to_slavei(i, convel[i]),
-        Teuchos::null, vol_mortar_master_to_slavei(i, vel[i]), Teuchos::null);
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
+    scatra->scatra_field()->set_velocity_field(vol_mortar_master_to_slavei(i, convel[i]), nullptr,
+        vol_mortar_master_to_slavei(i, vel[i]), nullptr);
   }
 }
 
@@ -712,8 +712,8 @@ void FS3I::PartFS3I::set_velocity_fields() const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::extract_vel(
-    std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& convel,
-    std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& vel) const
+    std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>& convel,
+    std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>& vel) const
 {
   // extract fluid velocities
 
@@ -721,8 +721,8 @@ void FS3I::PartFS3I::extract_vel(
   {
     case Inpar::FLUID::timeint_afgenalpha:
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> fluidconvel =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(fsi_->fluid_field()->velaf()));
+      std::shared_ptr<Core::LinAlg::Vector<double>> fluidconvel =
+          std::make_shared<Core::LinAlg::Vector<double>>(*(fsi_->fluid_field()->velaf()));
       vel.push_back(fluidconvel);
       // now subtract the grid velocity
       fluidconvel->Update(-1.0, *(fsi_->fluid_field()->grid_vel()), 1.0);
@@ -742,12 +742,12 @@ void FS3I::PartFS3I::extract_vel(
 
   // extract structure velocities and accelerations
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> velocity =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(fsi_->structure_field()->velnp()));
+  std::shared_ptr<Core::LinAlg::Vector<double>> velocity =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(fsi_->structure_field()->velnp()));
   vel.push_back(velocity);
   // structure ScaTra: velocity and grid velocity are identical!
-  Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(velocity->Map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> zeros =
+      std::make_shared<Core::LinAlg::Vector<double>>(velocity->Map(), true);
   convel.push_back(zeros);
 }
 
@@ -756,12 +756,12 @@ void FS3I::PartFS3I::extract_vel(
  *----------------------------------------------------------------------*/
 void FS3I::PartFS3I::set_wall_shear_stresses() const
 {
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> wss;
+  std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> wss;
   extract_wss(wss);
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
     scatra->scatra_field()->set_wall_shear_stresses(vol_mortar_master_to_slavei(i, wss[i]));
   }
 }
@@ -770,15 +770,15 @@ void FS3I::PartFS3I::set_wall_shear_stresses() const
  |  Extract wall shear stresses                              Thon 11/14 |
  *----------------------------------------------------------------------*/
 void FS3I::PartFS3I::extract_wss(
-    std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& wss) const
+    std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>& wss) const
 {
   // ############ Fluid Field ###############
 
-  Teuchos::RCP<Adapter::FluidFSI> fluid =
-      Teuchos::rcp_dynamic_cast<Adapter::FluidFSI>(fsi_->fluid_field());
-  if (fluid == Teuchos::null) FOUR_C_THROW("Dynamic cast to Adapter::FluidFSI failed!");
+  std::shared_ptr<Adapter::FluidFSI> fluid =
+      std::dynamic_pointer_cast<Adapter::FluidFSI>(fsi_->fluid_field());
+  if (fluid == nullptr) FOUR_C_THROW("Dynamic cast to Adapter::FluidFSI failed!");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> WallShearStress =
+  std::shared_ptr<Core::LinAlg::Vector<double>> WallShearStress =
       fluid->calculate_wall_shear_stresses();
 
   if (Teuchos::getIntegralValue<Inpar::FLUID::WSSType>(
@@ -797,7 +797,7 @@ void FS3I::PartFS3I::extract_wss(
   WallShearStress = fsi_->fluid_to_struct(WallShearStress);
 
   // insert structure interface entries into vector with full structure length
-  Teuchos::RCP<Core::LinAlg::Vector<double>> structure =
+  std::shared_ptr<Core::LinAlg::Vector<double>> structure =
       Core::LinAlg::create_vector(*(fsi_->structure_field()->interface()->full_map()), true);
 
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
@@ -809,8 +809,8 @@ void FS3I::PartFS3I::extract_wss(
 /*----------------------------------------------------------------------*
  |  transport quantity from fluid to fluid-scalar            Thon 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::fluid_to_fluid_scalar(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidvector) const
+std::shared_ptr<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::fluid_to_fluid_scalar(
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> fluidvector) const
 {
   return vol_mortar_master_to_slavei(0, fluidvector);
 }
@@ -818,8 +818,8 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::fluid_to_fluid_
 /*----------------------------------------------------------------------*
  |  transport quantity from fluid-scalar to fluid            Thon 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::fluid_scalar_to_fluid(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidscalarvector) const
+std::shared_ptr<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::fluid_scalar_to_fluid(
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> fluidscalarvector) const
 {
   return vol_mortar_slave_to_masteri(0, fluidscalarvector);
 }
@@ -827,8 +827,8 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::fluid_scalar_to
 /*----------------------------------------------------------------------*
  |  transport quantity from structure to structure-scalar    Thon 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::structure_to_structure_scalar(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> structurevector) const
+std::shared_ptr<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::structure_to_structure_scalar(
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> structurevector) const
 {
   return vol_mortar_master_to_slavei(1, structurevector);
 }
@@ -836,8 +836,8 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::structure_to_st
 /*----------------------------------------------------------------------*
  |  transport quantity from structure-scalar to structure    Thon 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::structure_scalar_to_structure(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> structurescalavector) const
+std::shared_ptr<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::structure_scalar_to_structure(
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> structurescalavector) const
 {
   return vol_mortar_slave_to_masteri(1, structurescalavector);
 }
@@ -845,8 +845,8 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::structure_scala
 /*-------------------------------------------------------------------------------------*
  |  transport quantity from i-th volmortar master to i-th volmortar slave   Thon 08/16 |
  *-------------------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::vol_mortar_master_to_slavei(
-    const int i, const Teuchos::RCP<const Core::LinAlg::Vector<double>> mastervector) const
+std::shared_ptr<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::vol_mortar_master_to_slavei(
+    const int i, const std::shared_ptr<const Core::LinAlg::Vector<double>> mastervector) const
 {
   switch (volume_fieldcouplings_[i])
   {
@@ -858,7 +858,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::vol_mortar_mast
       break;
     default:
       FOUR_C_THROW("unknown field coupling type");
-      return Teuchos::null;
+      return nullptr;
       break;
   }
 }
@@ -866,8 +866,8 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::vol_mortar_mast
 /*-------------------------------------------------------------------------------------*
  |  transport quantity from i-th volmortar slave to i-th volmortar master   Thon 08/16 |
  *-------------------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::vol_mortar_slave_to_masteri(
-    const int i, const Teuchos::RCP<const Core::LinAlg::Vector<double>> slavevector) const
+std::shared_ptr<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::vol_mortar_slave_to_masteri(
+    const int i, const std::shared_ptr<const Core::LinAlg::Vector<double>> slavevector) const
 {
   switch (volume_fieldcouplings_[i])
   {
@@ -879,7 +879,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::vol_mortar_slav
       break;
     default:
       FOUR_C_THROW("unknown field coupling type");
-      return Teuchos::null;
+      return nullptr;
       break;
   }
 }

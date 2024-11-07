@@ -39,28 +39,29 @@ int Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
   {
     case ScaTra::Action::time_update_material:
     {
-      std::vector<Teuchos::RCP<Mat::Myocard>> updatemat;
+      std::vector<std::shared_ptr<Mat::Myocard>> updatemat;
       updatemat.reserve(my::numscal_);
 
       // access the general material
-      Teuchos::RCP<Core::Mat::Material> material = ele->material();
+      std::shared_ptr<Core::Mat::Material> material = ele->material();
 
       // first, determine the materials which need a time update, i.e. myocard materials
       if (material->material_type() == Core::Materials::m_matlist)
       {
-        const Teuchos::RCP<Mat::MatList> actmat = Teuchos::rcp_dynamic_cast<Mat::MatList>(material);
+        const std::shared_ptr<Mat::MatList> actmat =
+            std::dynamic_pointer_cast<Mat::MatList>(material);
         if (actmat->num_mat() < my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
         for (int k = 0; k < my::numscal_; ++k)
         {
           const int matid = actmat->mat_id(k);
-          Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+          std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
           if (singlemat->material_type() == Core::Materials::m_myocard)
           {
             // reference to Teuchos::rcp not possible here, since the material
             // is required to be not const for this application
-            updatemat.push_back(Teuchos::rcp_dynamic_cast<Mat::Myocard>(singlemat));
+            updatemat.push_back(std::dynamic_pointer_cast<Mat::Myocard>(singlemat));
           }
         }
       }
@@ -68,7 +69,7 @@ int Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
       if (material->material_type() == Core::Materials::m_myocard)
       {  // reference to Teuchos::rcp not possible here, since the material is required to be
         // not const for this application
-        updatemat.push_back(Teuchos::rcp_dynamic_cast<Mat::Myocard>(material));
+        updatemat.push_back(std::dynamic_pointer_cast<Mat::Myocard>(material));
       }
 
       if (updatemat.size() > 0)  // found at least one material to be updated
@@ -81,8 +82,9 @@ int Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
         const double dt = my::scatraparatimint_->dt();
 
         // extract local values from the global vectors
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-        if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+        std::shared_ptr<const Core::LinAlg::Vector<double>> phinp =
+            discretization.get_state("phinp");
+        if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
         Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
         my::eval_shape_func_and_derivs_at_ele_center();
@@ -103,14 +105,15 @@ int Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
       if (ele->owner() == discretization.get_comm().MyPID())
       {
         // access the general material
-        Teuchos::RCP<Core::Mat::Material> material = ele->material();
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> material_internal_state =
-            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("material_internal_state");
+        std::shared_ptr<Core::Mat::Material> material = ele->material();
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> material_internal_state =
+            params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>(
+                "material_internal_state");
 
         if (material->material_type() == Core::Materials::m_myocard)
         {
-          Teuchos::RCP<Mat::Myocard> material =
-              Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
+          std::shared_ptr<Mat::Myocard> material =
+              std::dynamic_pointer_cast<Mat::Myocard>(ele->material());
           for (int k = 0; k < material_internal_state->NumVectors(); ++k)
           {
             int err = material_internal_state->ReplaceGlobalValue(
@@ -118,7 +121,7 @@ int Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
             if (err != 0) FOUR_C_THROW("%i", err);
           }
         }
-        params.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
+        params.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>(
             "material_internal_state", material_internal_state);
       }
 
@@ -131,15 +134,15 @@ int Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
       if (ele->owner() == discretization.get_comm().MyPID())
       {
         // access the general material
-        Teuchos::RCP<Core::Mat::Material> material = ele->material();
-        Teuchos::RCP<Core::LinAlg::Vector<double>> material_internal_state_component =
-            params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+        std::shared_ptr<Core::Mat::Material> material = ele->material();
+        std::shared_ptr<Core::LinAlg::Vector<double>> material_internal_state_component =
+            params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>(
                 "material_internal_state_component");
 
         if (material->material_type() == Core::Materials::m_myocard)
         {
-          Teuchos::RCP<Mat::Myocard> material =
-              Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
+          std::shared_ptr<Mat::Myocard> material =
+              std::dynamic_pointer_cast<Mat::Myocard>(ele->material());
           int k = params.get<int>("k");
           material->set_internal_state(k, (*material_internal_state_component)[ele->id()]);
         }
@@ -154,14 +157,15 @@ int Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
       if (ele->owner() == discretization.get_comm().MyPID())
       {
         // access the general material
-        Teuchos::RCP<Core::Mat::Material> material = ele->material();
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> material_ionic_currents =
-            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("material_ionic_currents");
+        std::shared_ptr<Core::Mat::Material> material = ele->material();
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> material_ionic_currents =
+            params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>(
+                "material_ionic_currents");
 
         if (material->material_type() == Core::Materials::m_myocard)
         {
-          Teuchos::RCP<Mat::Myocard> material =
-              Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
+          std::shared_ptr<Mat::Myocard> material =
+              std::dynamic_pointer_cast<Mat::Myocard>(ele->material());
           for (int k = 0; k < material_ionic_currents->NumVectors(); ++k)
           {
             int err = material_ionic_currents->ReplaceGlobalValue(
@@ -169,7 +173,7 @@ int Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
             if (err != 0) FOUR_C_THROW("%i", err);
           }
         }
-        params.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
+        params.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>(
             "material_ionic_currents", material_ionic_currents);
       }
 

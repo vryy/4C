@@ -13,6 +13,7 @@
 #include "4C_structure_new_nln_solver_generic.hpp"  // base class
 
 #include <NOX_StatusTest_Generic.H>
+#include <Teuchos_RCPDecl.hpp>
 
 namespace NOX
 {
@@ -77,7 +78,7 @@ namespace Solid
         const ::NOX::StatusTest::Generic& get_outer_status_test() const
         {
           check_init_setup();
-          FOUR_C_ASSERT(!ostatus_.is_null(), "The outer status test object is not defined!");
+          FOUR_C_ASSERT(ostatus_, "The outer status test object is not defined!");
           return *ostatus_;
         }
 

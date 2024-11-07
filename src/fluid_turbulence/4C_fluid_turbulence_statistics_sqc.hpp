@@ -15,7 +15,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -33,7 +34,7 @@ namespace FLD
     o Allocate distributed vector for squares
 
     */
-    TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Discretization> actdis,
+    TurbulenceStatisticsSqc(std::shared_ptr<Core::FE::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename);
 
     /*!
@@ -108,7 +109,7 @@ namespace FLD
     double dragsq_;
 
     //! The discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! parameter list
     Teuchos::ParameterList& params_;
@@ -118,124 +119,124 @@ namespace FLD
 
 
     //! pointer to vel/pres^2 field (space allocated in constructor)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> squaredvelnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> squaredvelnp_;
 
     //! toogle vectors: sums are computed by scalarproducts
-    Teuchos::RCP<Core::LinAlg::Vector<double>> toggleu_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglev_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglew_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglep_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> toggleu_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglev_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglew_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglep_;
 
     //! the coordinates of various lines
-    Teuchos::RCP<std::vector<double>> x1ccoordinates_;
-    Teuchos::RCP<std::vector<double>> x2ccoordinates_;
-    Teuchos::RCP<std::vector<double>> x2wcoordinates_;
-    Teuchos::RCP<std::vector<double>> clrcoordinates_;
-    Teuchos::RCP<std::vector<double>> ctbcoordinates_;
+    std::shared_ptr<std::vector<double>> x1ccoordinates_;
+    std::shared_ptr<std::vector<double>> x2ccoordinates_;
+    std::shared_ptr<std::vector<double>> x2wcoordinates_;
+    std::shared_ptr<std::vector<double>> clrcoordinates_;
+    std::shared_ptr<std::vector<double>> ctbcoordinates_;
     //! all coordinates in x1- and x2-direction (required for averaging of Smagorinsky constant)
-    Teuchos::RCP<std::vector<double>> x1coordinates_;
-    Teuchos::RCP<std::vector<double>> x2coordinates_;
+    std::shared_ptr<std::vector<double>> x1coordinates_;
+    std::shared_ptr<std::vector<double>> x2coordinates_;
 
     //! sum over u
-    Teuchos::RCP<std::vector<double>> x1csumu_;
-    Teuchos::RCP<std::vector<double>> x2csumu_;
-    Teuchos::RCP<std::vector<double>> x2w1sumu_;
-    Teuchos::RCP<std::vector<double>> x2w2sumu_;
-    Teuchos::RCP<std::vector<double>> cyllsumu_;
-    Teuchos::RCP<std::vector<double>> cyltsumu_;
-    Teuchos::RCP<std::vector<double>> cylrsumu_;
-    Teuchos::RCP<std::vector<double>> cylbsumu_;
+    std::shared_ptr<std::vector<double>> x1csumu_;
+    std::shared_ptr<std::vector<double>> x2csumu_;
+    std::shared_ptr<std::vector<double>> x2w1sumu_;
+    std::shared_ptr<std::vector<double>> x2w2sumu_;
+    std::shared_ptr<std::vector<double>> cyllsumu_;
+    std::shared_ptr<std::vector<double>> cyltsumu_;
+    std::shared_ptr<std::vector<double>> cylrsumu_;
+    std::shared_ptr<std::vector<double>> cylbsumu_;
     //! sum over v
-    Teuchos::RCP<std::vector<double>> x1csumv_;
-    Teuchos::RCP<std::vector<double>> x2csumv_;
-    Teuchos::RCP<std::vector<double>> x2w1sumv_;
-    Teuchos::RCP<std::vector<double>> x2w2sumv_;
-    Teuchos::RCP<std::vector<double>> cyllsumv_;
-    Teuchos::RCP<std::vector<double>> cyltsumv_;
-    Teuchos::RCP<std::vector<double>> cylrsumv_;
-    Teuchos::RCP<std::vector<double>> cylbsumv_;
+    std::shared_ptr<std::vector<double>> x1csumv_;
+    std::shared_ptr<std::vector<double>> x2csumv_;
+    std::shared_ptr<std::vector<double>> x2w1sumv_;
+    std::shared_ptr<std::vector<double>> x2w2sumv_;
+    std::shared_ptr<std::vector<double>> cyllsumv_;
+    std::shared_ptr<std::vector<double>> cyltsumv_;
+    std::shared_ptr<std::vector<double>> cylrsumv_;
+    std::shared_ptr<std::vector<double>> cylbsumv_;
     //! sum over w
-    Teuchos::RCP<std::vector<double>> x1csumw_;
-    Teuchos::RCP<std::vector<double>> x2csumw_;
-    Teuchos::RCP<std::vector<double>> x2w1sumw_;
-    Teuchos::RCP<std::vector<double>> x2w2sumw_;
-    Teuchos::RCP<std::vector<double>> cyllsumw_;
-    Teuchos::RCP<std::vector<double>> cyltsumw_;
-    Teuchos::RCP<std::vector<double>> cylrsumw_;
-    Teuchos::RCP<std::vector<double>> cylbsumw_;
+    std::shared_ptr<std::vector<double>> x1csumw_;
+    std::shared_ptr<std::vector<double>> x2csumw_;
+    std::shared_ptr<std::vector<double>> x2w1sumw_;
+    std::shared_ptr<std::vector<double>> x2w2sumw_;
+    std::shared_ptr<std::vector<double>> cyllsumw_;
+    std::shared_ptr<std::vector<double>> cyltsumw_;
+    std::shared_ptr<std::vector<double>> cylrsumw_;
+    std::shared_ptr<std::vector<double>> cylbsumw_;
     //! sum over p
-    Teuchos::RCP<std::vector<double>> x1csump_;
-    Teuchos::RCP<std::vector<double>> x2csump_;
-    Teuchos::RCP<std::vector<double>> x2w1sump_;
-    Teuchos::RCP<std::vector<double>> x2w2sump_;
-    Teuchos::RCP<std::vector<double>> cyllsump_;
-    Teuchos::RCP<std::vector<double>> cyltsump_;
-    Teuchos::RCP<std::vector<double>> cylrsump_;
-    Teuchos::RCP<std::vector<double>> cylbsump_;
+    std::shared_ptr<std::vector<double>> x1csump_;
+    std::shared_ptr<std::vector<double>> x2csump_;
+    std::shared_ptr<std::vector<double>> x2w1sump_;
+    std::shared_ptr<std::vector<double>> x2w2sump_;
+    std::shared_ptr<std::vector<double>> cyllsump_;
+    std::shared_ptr<std::vector<double>> cyltsump_;
+    std::shared_ptr<std::vector<double>> cylrsump_;
+    std::shared_ptr<std::vector<double>> cylbsump_;
 
     //! sum over u^2
-    Teuchos::RCP<std::vector<double>> x1csumsqu_;
-    Teuchos::RCP<std::vector<double>> x2csumsqu_;
-    Teuchos::RCP<std::vector<double>> x2w1sumsqu_;
-    Teuchos::RCP<std::vector<double>> x2w2sumsqu_;
-    Teuchos::RCP<std::vector<double>> cyllsumsqu_;
-    Teuchos::RCP<std::vector<double>> cyltsumsqu_;
-    Teuchos::RCP<std::vector<double>> cylrsumsqu_;
-    Teuchos::RCP<std::vector<double>> cylbsumsqu_;
+    std::shared_ptr<std::vector<double>> x1csumsqu_;
+    std::shared_ptr<std::vector<double>> x2csumsqu_;
+    std::shared_ptr<std::vector<double>> x2w1sumsqu_;
+    std::shared_ptr<std::vector<double>> x2w2sumsqu_;
+    std::shared_ptr<std::vector<double>> cyllsumsqu_;
+    std::shared_ptr<std::vector<double>> cyltsumsqu_;
+    std::shared_ptr<std::vector<double>> cylrsumsqu_;
+    std::shared_ptr<std::vector<double>> cylbsumsqu_;
     //! sum over v^2
-    Teuchos::RCP<std::vector<double>> x1csumsqv_;
-    Teuchos::RCP<std::vector<double>> x2csumsqv_;
-    Teuchos::RCP<std::vector<double>> x2w1sumsqv_;
-    Teuchos::RCP<std::vector<double>> x2w2sumsqv_;
-    Teuchos::RCP<std::vector<double>> cyllsumsqv_;
-    Teuchos::RCP<std::vector<double>> cyltsumsqv_;
-    Teuchos::RCP<std::vector<double>> cylrsumsqv_;
-    Teuchos::RCP<std::vector<double>> cylbsumsqv_;
+    std::shared_ptr<std::vector<double>> x1csumsqv_;
+    std::shared_ptr<std::vector<double>> x2csumsqv_;
+    std::shared_ptr<std::vector<double>> x2w1sumsqv_;
+    std::shared_ptr<std::vector<double>> x2w2sumsqv_;
+    std::shared_ptr<std::vector<double>> cyllsumsqv_;
+    std::shared_ptr<std::vector<double>> cyltsumsqv_;
+    std::shared_ptr<std::vector<double>> cylrsumsqv_;
+    std::shared_ptr<std::vector<double>> cylbsumsqv_;
     //! sum over w^2
-    Teuchos::RCP<std::vector<double>> x1csumsqw_;
-    Teuchos::RCP<std::vector<double>> x2csumsqw_;
-    Teuchos::RCP<std::vector<double>> x2w1sumsqw_;
-    Teuchos::RCP<std::vector<double>> x2w2sumsqw_;
-    Teuchos::RCP<std::vector<double>> cyllsumsqw_;
-    Teuchos::RCP<std::vector<double>> cyltsumsqw_;
-    Teuchos::RCP<std::vector<double>> cylrsumsqw_;
-    Teuchos::RCP<std::vector<double>> cylbsumsqw_;
+    std::shared_ptr<std::vector<double>> x1csumsqw_;
+    std::shared_ptr<std::vector<double>> x2csumsqw_;
+    std::shared_ptr<std::vector<double>> x2w1sumsqw_;
+    std::shared_ptr<std::vector<double>> x2w2sumsqw_;
+    std::shared_ptr<std::vector<double>> cyllsumsqw_;
+    std::shared_ptr<std::vector<double>> cyltsumsqw_;
+    std::shared_ptr<std::vector<double>> cylrsumsqw_;
+    std::shared_ptr<std::vector<double>> cylbsumsqw_;
     //! sum over uv
-    Teuchos::RCP<std::vector<double>> x1csumuv_;
-    Teuchos::RCP<std::vector<double>> x2csumuv_;
-    Teuchos::RCP<std::vector<double>> x2w1sumuv_;
-    Teuchos::RCP<std::vector<double>> x2w2sumuv_;
-    Teuchos::RCP<std::vector<double>> cyllsumuv_;
-    Teuchos::RCP<std::vector<double>> cyltsumuv_;
-    Teuchos::RCP<std::vector<double>> cylrsumuv_;
-    Teuchos::RCP<std::vector<double>> cylbsumuv_;
+    std::shared_ptr<std::vector<double>> x1csumuv_;
+    std::shared_ptr<std::vector<double>> x2csumuv_;
+    std::shared_ptr<std::vector<double>> x2w1sumuv_;
+    std::shared_ptr<std::vector<double>> x2w2sumuv_;
+    std::shared_ptr<std::vector<double>> cyllsumuv_;
+    std::shared_ptr<std::vector<double>> cyltsumuv_;
+    std::shared_ptr<std::vector<double>> cylrsumuv_;
+    std::shared_ptr<std::vector<double>> cylbsumuv_;
     //! sum over uw
-    Teuchos::RCP<std::vector<double>> x1csumuw_;
-    Teuchos::RCP<std::vector<double>> x2csumuw_;
-    Teuchos::RCP<std::vector<double>> x2w1sumuw_;
-    Teuchos::RCP<std::vector<double>> x2w2sumuw_;
-    Teuchos::RCP<std::vector<double>> cyllsumuw_;
-    Teuchos::RCP<std::vector<double>> cyltsumuw_;
-    Teuchos::RCP<std::vector<double>> cylrsumuw_;
-    Teuchos::RCP<std::vector<double>> cylbsumuw_;
+    std::shared_ptr<std::vector<double>> x1csumuw_;
+    std::shared_ptr<std::vector<double>> x2csumuw_;
+    std::shared_ptr<std::vector<double>> x2w1sumuw_;
+    std::shared_ptr<std::vector<double>> x2w2sumuw_;
+    std::shared_ptr<std::vector<double>> cyllsumuw_;
+    std::shared_ptr<std::vector<double>> cyltsumuw_;
+    std::shared_ptr<std::vector<double>> cylrsumuw_;
+    std::shared_ptr<std::vector<double>> cylbsumuw_;
     //! sum over vw
-    Teuchos::RCP<std::vector<double>> x1csumvw_;
-    Teuchos::RCP<std::vector<double>> x2csumvw_;
-    Teuchos::RCP<std::vector<double>> x2w1sumvw_;
-    Teuchos::RCP<std::vector<double>> x2w2sumvw_;
-    Teuchos::RCP<std::vector<double>> cyllsumvw_;
-    Teuchos::RCP<std::vector<double>> cyltsumvw_;
-    Teuchos::RCP<std::vector<double>> cylrsumvw_;
-    Teuchos::RCP<std::vector<double>> cylbsumvw_;
+    std::shared_ptr<std::vector<double>> x1csumvw_;
+    std::shared_ptr<std::vector<double>> x2csumvw_;
+    std::shared_ptr<std::vector<double>> x2w1sumvw_;
+    std::shared_ptr<std::vector<double>> x2w2sumvw_;
+    std::shared_ptr<std::vector<double>> cyllsumvw_;
+    std::shared_ptr<std::vector<double>> cyltsumvw_;
+    std::shared_ptr<std::vector<double>> cylrsumvw_;
+    std::shared_ptr<std::vector<double>> cylbsumvw_;
     //! sum over p^2
-    Teuchos::RCP<std::vector<double>> x1csumsqp_;
-    Teuchos::RCP<std::vector<double>> x2csumsqp_;
-    Teuchos::RCP<std::vector<double>> x2w1sumsqp_;
-    Teuchos::RCP<std::vector<double>> x2w2sumsqp_;
-    Teuchos::RCP<std::vector<double>> cyllsumsqp_;
-    Teuchos::RCP<std::vector<double>> cyltsumsqp_;
-    Teuchos::RCP<std::vector<double>> cylrsumsqp_;
-    Teuchos::RCP<std::vector<double>> cylbsumsqp_;
+    std::shared_ptr<std::vector<double>> x1csumsqp_;
+    std::shared_ptr<std::vector<double>> x2csumsqp_;
+    std::shared_ptr<std::vector<double>> x2w1sumsqp_;
+    std::shared_ptr<std::vector<double>> x2w2sumsqp_;
+    std::shared_ptr<std::vector<double>> cyllsumsqp_;
+    std::shared_ptr<std::vector<double>> cyltsumsqp_;
+    std::shared_ptr<std::vector<double>> cylrsumsqp_;
+    std::shared_ptr<std::vector<double>> cylbsumsqp_;
   };
 
 }  // namespace FLD

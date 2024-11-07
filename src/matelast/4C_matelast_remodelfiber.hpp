@@ -209,7 +209,7 @@ namespace Mat
     struct FiberData
     {
       /// Constructor
-      FiberData(Teuchos::RCP<Mat::Elastic::Summand> sum) : fiber(std::move(sum)), G(0){};
+      FiberData(std::shared_ptr<Mat::Elastic::Summand> sum) : fiber(std::move(sum)), G(0){};
 
       /// Update of internal data
       void update_newton(int const gp, double const dt)
@@ -239,8 +239,8 @@ namespace Mat
         last_rho[gp] = cur_rho[gp];
       };
 
-      Teuchos::RCP<Mat::Elastic::Summand> fiber;  ///< Type of remodel fiber
-      double G;                                   ///< Prestretch of a fiber family
+      std::shared_ptr<Mat::Elastic::Summand> fiber;  ///< Type of remodel fiber
+      double G;                                      ///< Prestretch of a fiber family
       std::vector<double> cur_rho;    ///< Mass density (in reference configuration) at time t_{n+1}
       std::vector<double> last_rho;   ///< Mass density (in reference configuration) at time t_{n}
       std::vector<double> cur_lambr;  ///< Inelastic stretch in fiber direction at time t_{n+1}
@@ -261,8 +261,8 @@ namespace Mat
           FrdotM;  ///< Time derivative of inelastic remodel deformation gradient
       std::vector<Core::LinAlg::Matrix<3, 3>>
           dFrdotdlambrM;  ///< Time derivative of inelastic remodel deformation gradient
-      Teuchos::RCP<RemodelEvolution> remodel;  ///< Remodel evolution equation
-      Teuchos::RCP<GrowthEvolution> growth;    ///< Growth evolution equation
+      std::shared_ptr<RemodelEvolution> remodel;  ///< Remodel evolution equation
+      std::shared_ptr<GrowthEvolution> growth;    ///< Growth evolution equation
 
       friend std::ostream& operator<<(std::ostream& output, Mat::Elastic::FiberData const& F)
       {
@@ -330,12 +330,12 @@ namespace Mat
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<Core::Mat::Material> create_material() override
+        std::shared_ptr<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
               "Mat::Elastic::Summand::Factory.");
-          return Teuchos::null;
+          return nullptr;
         };
 
       };  // class RemodelFiber
@@ -585,10 +585,10 @@ namespace Mat
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
           Core::LinAlg::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
-          Teuchos::RCP<Mat::Elastic::Summand> const& fiber,  ///< Type of remodel fiber
-          int gp,                                            ///< Gauss point
-          int eleGID,                                        ///< Element Id
-          T& sig) const;                                     ///< Local Cauchy stress
+          std::shared_ptr<Mat::Elastic::Summand> const& fiber,  ///< Type of remodel fiber
+          int gp,                                               ///< Gauss point
+          int eleGID,                                           ///< Element Id
+          T& sig) const;                                        ///< Local Cauchy stress
 
       /// Evaluate derivative of local Cauchy stress in current fiber direction w.r.t. the elastic
       /// right Cauchy Green tensor (analytical differentiation)
@@ -600,9 +600,9 @@ namespace Mat
               iFrM,  ///< Inverse remodeling deformation gradient (used in G&R)
           Core::LinAlg::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
-          Teuchos::RCP<Mat::Elastic::Summand> const& fiber,  ///< Type of remodel fiber
-          int gp,                                            ///< Gauss point
-          int eleGID,                                        ///< Element Id
+          std::shared_ptr<Mat::Elastic::Summand> const& fiber,  ///< Type of remodel fiber
+          int gp,                                               ///< Gauss point
+          int eleGID,                                           ///< Element Id
           Core::LinAlg::Matrix<3, 3, T>& dsigdCeM)
           const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy-Green tensor
 
@@ -617,10 +617,10 @@ namespace Mat
               iFrM,  ///< Inverse remodeling deformation gradient (used in G&R)
           Core::LinAlg::Matrix<3, 3> const&
               AM,  ///< Structural tensor of associated anisotropic direction
-          Teuchos::RCP<Mat::Elastic::Summand> const fiber,  ///< Type of remodel fiber
-          int gp,                                           ///< Gauss point
-          ForceAnalytical const eleGID,                     ///< Element Id
-          Core::LinAlg::Matrix<6, 6>& dsigdCedC) const;     ///< Output
+          std::shared_ptr<Mat::Elastic::Summand> const fiber,  ///< Type of remodel fiber
+          int gp,                                              ///< Gauss point
+          ForceAnalytical const eleGID,                        ///< Element Id
+          Core::LinAlg::Matrix<6, 6>& dsigdCedC) const;        ///< Output
 
       /// Evaluate derivative of the derivative of the local Cauchy stress in current fiber
       /// direction w.r.t. the elastic right Cauchy Green tensor w.r.t. the right Cauchy Green
@@ -632,7 +632,7 @@ namespace Mat
               iFrM,  ///< Inverse remodeling deformation gradient (used in G&R)
           Core::LinAlg::Matrix<3, 3> const&
               AM,  ///< Structural tensor of associated anisotropic direction
-          Teuchos::RCP<Mat::Elastic::Summand> const&
+          std::shared_ptr<Mat::Elastic::Summand> const&
               fiber,                                     ///< Type of remodel fiberEvaluatedsigdCedC
           int gp,                                        ///< Gauss point
           int eleGID,                                    ///< Element Id
@@ -646,9 +646,9 @@ namespace Mat
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
           Core::LinAlg::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
-          Teuchos::RCP<Mat::Elastic::Summand> const fiber,  ///< Type of remodel fiber
-          int gp,                                           ///< Gauss point
-          ForceAnalytical const eleGID,                     ///< Element Id
+          std::shared_ptr<Mat::Elastic::Summand> const fiber,  ///< Type of remodel fiber
+          int gp,                                              ///< Gauss point
+          ForceAnalytical const eleGID,                        ///< Element Id
           Core::LinAlg::Matrix<3, 3, T>& dsigdC)
           const;  ///< First derivative of local Cauchy stress
                   ///< w.r.t. the right Cauchy-Green tensor
@@ -661,7 +661,7 @@ namespace Mat
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
           Core::LinAlg::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
-          Teuchos::RCP<Mat::Elastic::Summand> const& fiber,  ///< Type of remodel fiber
+          std::shared_ptr<Mat::Elastic::Summand> const& fiber,  ///< Type of remodel fiber
           int gp,
           int eleGID,  ///< Element Id
           Core::LinAlg::Matrix<3, 3, T>& dsigdC)
@@ -845,7 +845,7 @@ namespace Mat
       Mat::Elastic::PAR::RemodelFiber* params_;
 
       /// Map of data containers for each fiber family including material summand
-      std::vector<Teuchos::RCP<Mat::Elastic::FiberData>> potsumfiber_;
+      std::vector<std::shared_ptr<Mat::Elastic::FiberData>> potsumfiber_;
 
       /// Initial individual mass density of each fiber family at the last time step
       std::vector<double> init_rho_col_;

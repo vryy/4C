@@ -36,13 +36,13 @@ namespace PoroElast
       const bool matchinggrid = porodyn.get<bool>("MATCHINGGRID");
 
       // access the structure discretization, make sure it is filled
-      Teuchos::RCP<Core::FE::Discretization> structdis;
+      std::shared_ptr<Core::FE::Discretization> structdis;
       structdis = problem->get_dis("structure");
       // set degrees of freedom in the discretization
       if (!structdis->filled() or !structdis->have_dofs()) structdis->fill_complete();
 
       // access the fluid discretization
-      Teuchos::RCP<Core::FE::Discretization> fluiddis;
+      std::shared_ptr<Core::FE::Discretization> fluiddis;
       fluiddis = problem->get_dis("porofluid");
       if (!fluiddis->filled()) fluiddis->fill_complete();
 
@@ -84,11 +84,11 @@ namespace PoroElast
          */
         if (numglobalstructnodes != numglobalfluidnodes)
         {
-          Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structsubdofset =
-              Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(
+          std::shared_ptr<Core::DOFSets::DofSetGIDBasedWrapper> structsubdofset =
+              std::make_shared<Core::DOFSets::DofSetGIDBasedWrapper>(
                   structdis, structdis->get_dof_set_proxy());
-          Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> fluidsubdofset =
-              Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(
+          std::shared_ptr<Core::DOFSets::DofSetGIDBasedWrapper> fluidsubdofset =
+              std::make_shared<Core::DOFSets::DofSetGIDBasedWrapper>(
                   fluiddis, fluiddis->get_dof_set_proxy());
 
           // check if fluid_field has 2 discretizations, so that coupling is possible
@@ -100,10 +100,11 @@ namespace PoroElast
         else
         {
           // build a proxy of the structure discretization for the fluid field
-          Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset =
+          std::shared_ptr<Core::DOFSets::DofSetInterface> structdofset =
               structdis->get_dof_set_proxy();
           // build a proxy of the fluid discretization for the structure field
-          Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->get_dof_set_proxy();
+          std::shared_ptr<Core::DOFSets::DofSetInterface> fluiddofset =
+              fluiddis->get_dof_set_proxy();
 
           // check if fluid_field has 2 discretizations, so that coupling is possible
           if (fluiddis->add_dof_set(structdofset) != 1)
@@ -135,12 +136,12 @@ namespace PoroElast
         const int ndofpernode_struct = Global::Problem::instance()->n_dim();
         const int ndofperelement_struct = 0;
 
-        Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-        dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+        std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux;
+        dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
             ndofpernode_fluid, ndofperelement_fluid, 0, true);
         if (structdis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in structure field");
-        dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+        dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
             ndofpernode_struct, ndofperelement_struct, 0, true);
         if (fluiddis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in fluid field");

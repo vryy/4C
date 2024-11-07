@@ -12,7 +12,7 @@
 
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -45,19 +45,19 @@ namespace Solid
     virtual ~Factory() = default;
 
     //! build the internal integrator
-    Teuchos::RCP<Solid::Integrator> build_integrator(
+    std::shared_ptr<Solid::Integrator> build_integrator(
         const Solid::TimeInt::BaseDataSDyn& datasdyn) const;
 
     //! build the desired  dirichlet boundary condition object
-    Teuchos::RCP<Solid::Dbc> build_dbc(const Solid::TimeInt::BaseDataSDyn& datasdyn) const;
+    std::shared_ptr<Solid::Dbc> build_dbc(const Solid::TimeInt::BaseDataSDyn& datasdyn) const;
 
    protected:
     //! build the implicit integrator
-    Teuchos::RCP<Solid::Integrator> build_implicit_integrator(
+    std::shared_ptr<Solid::Integrator> build_implicit_integrator(
         const Solid::TimeInt::BaseDataSDyn& datasdyn) const;
 
     //! build the explicit integrator
-    Teuchos::RCP<Solid::Integrator> build_explicit_integrator(
+    std::shared_ptr<Solid::Integrator> build_explicit_integrator(
         const Solid::TimeInt::BaseDataSDyn& datasdyn) const;
 
   };  // class Factory
@@ -66,13 +66,13 @@ namespace Solid
    *
    * \note Call this method from outside!
    */
-  Teuchos::RCP<Solid::Integrator> build_integrator(const Solid::TimeInt::BaseDataSDyn& datasdyn);
+  std::shared_ptr<Solid::Integrator> build_integrator(const Solid::TimeInt::BaseDataSDyn& datasdyn);
 
   /*! \brief Non-member function, which relates to the Solid::Factory class
    *
    * \note Call this method from outside!
    */
-  Teuchos::RCP<Solid::Dbc> build_dbc(const Solid::TimeInt::BaseDataSDyn& datasdyn);
+  std::shared_ptr<Solid::Dbc> build_dbc(const Solid::TimeInt::BaseDataSDyn& datasdyn);
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

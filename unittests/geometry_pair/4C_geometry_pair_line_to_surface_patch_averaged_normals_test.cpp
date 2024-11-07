@@ -33,8 +33,8 @@ namespace
      */
     GeometryPairLineToSurfacePatchTest()
     {
-      Teuchos::RCP<Epetra_SerialComm> comm = Teuchos::make_rcp<Epetra_SerialComm>();
-      discret_ = Teuchos::make_rcp<Core::FE::Discretization>("unit_test", comm, 3);
+      std::shared_ptr<Epetra_SerialComm> comm = std::make_shared<Epetra_SerialComm>();
+      discret_ = std::make_shared<Core::FE::Discretization>("unit_test", comm, 3);
     }
 
     /**
@@ -56,7 +56,7 @@ namespace
     }
 
     //! Pointer to the discretization object that holds the geometry for the tests.
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
   };
 
   /**
@@ -75,7 +75,7 @@ namespace
     const double eps = 1e-12;
 
     // Fill the discretization object with the geometry.
-    std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>> face_elements_map;
+    std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>> face_elements_map;
     xtest_surface_patch_quad4<face_element_type>(*discret_, face_elements_map);
 
     // Load the result vectors.
@@ -89,7 +89,7 @@ namespace
 
     // Face element that will be analyzed.
     const unsigned int investigated_face_element_volume_id = 14;
-    Teuchos::RCP<face_element_type> face_element = Teuchos::rcp_dynamic_cast<face_element_type>(
+    std::shared_ptr<face_element_type> face_element = std::dynamic_pointer_cast<face_element_type>(
         face_elements_map[investigated_face_element_volume_id]);
 
     // Offset in the derivatives for the beam dof.
@@ -148,7 +148,7 @@ namespace
     // Set the state in the face element, here also the FAD variables for each patch are set.
     Epetra_Map gid_map(discret_->num_global_nodes() * 3, discret_->num_global_nodes() * 3, 0,
         discret_->get_comm());
-    auto displacement_vector = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(gid_map);
+    auto displacement_vector = std::make_shared<Core::LinAlg::Vector<double>>(gid_map);
     for (int i = 0; i < displacement_vector->GlobalLength(); i++)
       (*displacement_vector)[i] = i * 0.01;
     face_element->set_state(displacement_vector, face_elements_map);

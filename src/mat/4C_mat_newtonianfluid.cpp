@@ -30,9 +30,9 @@ Mat::PAR::NewtonianFluid::NewtonianFluid(const Core::Mat::PAR::Parameter::Data& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::NewtonianFluid::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::NewtonianFluid::create_material()
 {
-  return Teuchos::make_rcp<Mat::NewtonianFluid>(this);
+  return std::make_shared<Mat::NewtonianFluid>(this);
 }
 
 
@@ -84,7 +84,7 @@ void Mat::NewtonianFluid::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

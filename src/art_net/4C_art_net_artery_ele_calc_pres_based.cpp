@@ -61,7 +61,7 @@ int Discret::Elements::ArteryEleCalcPresBased<distype>::evaluate(Artery* ele,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
-    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, std::shared_ptr<Core::Mat::Material> mat)
 {
   // the number of nodes
   const int numnode = my::iel_;
@@ -88,7 +88,7 @@ int Discret::Elements::ArteryEleCalcPresBased<distype>::evaluate_service(Artery*
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
-    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, std::shared_ptr<Core::Mat::Material> mat)
 {
   switch (action)
   {
@@ -109,7 +109,7 @@ int Discret::Elements::ArteryEleCalcPresBased<distype>::scatra_evaluate(Artery* 
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
-    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, std::shared_ptr<Core::Mat::Material> mat)
 {
   FOUR_C_THROW(
       "not implemented by pressure-based formulation, should be done by cloned "
@@ -124,7 +124,7 @@ template <Core::FE::CellType distype>
 void Discret::Elements::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::Matrix<my::iel_, my::iel_>& sysmat, Core::LinAlg::Matrix<my::iel_, 1>& rhs,
-    Teuchos::RCP<const Core::Mat::Material> material)
+    std::shared_ptr<const Core::Mat::Material> material)
 {
   // clear
   rhs.clear();
@@ -134,9 +134,9 @@ void Discret::Elements::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
   const int numnode = my::iel_;
 
   // get pressure
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pressnp =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pressnp =
       discretization.get_state(0, "pressurenp");
-  if (pressnp == Teuchos::null) FOUR_C_THROW("could not get pressure inside artery element");
+  if (pressnp == nullptr) FOUR_C_THROW("could not get pressure inside artery element");
 
   // extract local values of pressure field from global state vector
   Core::LinAlg::Matrix<my::iel_, 1> mypress(true);
@@ -209,12 +209,12 @@ void Discret::Elements::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
 template <Core::FE::CellType distype>
 void Discret::Elements::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* ele,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
-    Core::LinAlg::SerialDenseVector& flowVec, Teuchos::RCP<const Core::Mat::Material> material)
+    Core::LinAlg::SerialDenseVector& flowVec, std::shared_ptr<const Core::Mat::Material> material)
 {
   // get pressure
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pressnp =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pressnp =
       discretization.get_state(0, "pressurenp");
-  if (pressnp == Teuchos::null) FOUR_C_THROW("could not get pressure inside artery element");
+  if (pressnp == nullptr) FOUR_C_THROW("could not get pressure inside artery element");
 
   // extract local values of pressure field from global state vector
   Core::LinAlg::Matrix<my::iel_, 1> mypress(true);
@@ -253,7 +253,7 @@ double Discret::Elements::ArteryEleCalcPresBased<distype>::calculate_ele_length(
   // get current element length
   if (discretization.num_dof_sets() > 1 && discretization.has_state(1, "curr_seg_lengths"))
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> curr_seg_lengths =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> curr_seg_lengths =
         discretization.get_state(1, "curr_seg_lengths");
     std::vector<double> seglengths(la[1].lm_.size());
 

@@ -40,7 +40,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter
   volume = eval_shape_func_and_derivs_at_ele_center();
 
   // get material
-  Teuchos::RCP<const Core::Mat::Material> material = ele->material();
+  std::shared_ptr<const Core::Mat::Material> material = ele->material();
 
   // get phi at integration point
   const double phinp = funct_.dot(ephinp_[0]);
@@ -174,7 +174,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 double Discret::Elements::ScaTraEleCalc<distype, probdim>::get_density(
-    const Core::Elements::Element* ele, Teuchos::RCP<const Core::Mat::Material> material,
+    const Core::Elements::Element* ele, std::shared_ptr<const Core::Mat::Material> material,
     Teuchos::ParameterList& params, const double tempnp)
 {
   // initialization
@@ -183,17 +183,17 @@ double Discret::Elements::ScaTraEleCalc<distype, probdim>::get_density(
   if (material->material_type() == Core::Materials::m_scatra)
   {
     // access fluid discretization
-    Teuchos::RCP<Core::FE::Discretization> fluiddis = Teuchos::null;
+    std::shared_ptr<Core::FE::Discretization> fluiddis = nullptr;
     fluiddis = Global::Problem::instance()->get_dis("fluid");
     // get corresponding fluid element (it has the same global ID as the scatra element)
     Core::Elements::Element* fluidele = fluiddis->g_element(ele->id());
     if (fluidele == nullptr) FOUR_C_THROW("Fluid element %i not on local processor", ele->id());
     // get fluid material
-    Teuchos::RCP<Core::Mat::Material> fluidmat = fluidele->material();
+    std::shared_ptr<Core::Mat::Material> fluidmat = fluidele->material();
     if (fluidmat->material_type() != Core::Materials::m_fluid)
       FOUR_C_THROW("Invalid fluid material for passive scalar transport in turbulent flow!");
 
-    density = Teuchos::rcp_dynamic_cast<const Mat::NewtonianFluid>(fluidmat)->density();
+    density = std::dynamic_pointer_cast<const Mat::NewtonianFluid>(fluidmat)->density();
     if (density != 1.0) FOUR_C_THROW("Check your diffusivity! Dynamic diffusivity required!");
   }
 
@@ -481,10 +481,10 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::get_mean_prt_of_homogen
 
   if (turbmodelparams.get<std::string>("HOMDIR", "not_specified") != "not_specified")
   {
-    Teuchos::RCP<std::vector<double>> averaged_LkMk =
-        turbmodelparams.get<Teuchos::RCP<std::vector<double>>>("averaged_LkMk_");
-    Teuchos::RCP<std::vector<double>> averaged_MkMk =
-        turbmodelparams.get<Teuchos::RCP<std::vector<double>>>("averaged_MkMk_");
+    std::shared_ptr<std::vector<double>> averaged_LkMk =
+        turbmodelparams.get<std::shared_ptr<std::vector<double>>>("averaged_LkMk_");
+    std::shared_ptr<std::vector<double>> averaged_MkMk =
+        turbmodelparams.get<std::shared_ptr<std::vector<double>>>("averaged_MkMk_");
 
     // get homogeneous direction
     std::string homdir = turbmodelparams.get<std::string>("HOMDIR", "not_specified");
@@ -511,8 +511,8 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::get_mean_prt_of_homogen
     }
     else if (homdir == "xy" or homdir == "xz" or homdir == "yz")
     {
-      Teuchos::RCP<std::vector<double>> planecoords =
-          turbmodelparams.get<Teuchos::RCP<std::vector<double>>>("planecoords_");
+      std::shared_ptr<std::vector<double>> planecoords =
+          turbmodelparams.get<std::shared_ptr<std::vector<double>>>("planecoords_");
       // get center
       double center = 0.0;
       if (homdir == "xy")
@@ -539,10 +539,10 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::get_mean_prt_of_homogen
     }
     else if (homdir == "x" or homdir == "y" or homdir == "z")
     {
-      Teuchos::RCP<std::vector<double>> dir1coords =
-          turbmodelparams.get<Teuchos::RCP<std::vector<double>>>("dir1coords_");
-      Teuchos::RCP<std::vector<double>> dir2coords =
-          turbmodelparams.get<Teuchos::RCP<std::vector<double>>>("dir2coords_");
+      std::shared_ptr<std::vector<double>> dir1coords =
+          turbmodelparams.get<std::shared_ptr<std::vector<double>>>("dir1coords_");
+      std::shared_ptr<std::vector<double>> dir2coords =
+          turbmodelparams.get<std::shared_ptr<std::vector<double>>>("dir2coords_");
       // get center
       double dim1_center = 0.0;
       double dim2_center = 0.0;
@@ -1345,20 +1345,20 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::store_model_parameters_
           if (tpn_ > 1.0E-16)
           {
             // get dynamically estimated Smagorinsky constant from fluid element, i.e., (Cs*h)^2
-            double Cs_delta_sq = (*(turbulencelist.get<Teuchos::RCP<std::vector<double>>>(
+            double Cs_delta_sq = (*(turbulencelist.get<std::shared_ptr<std::vector<double>>>(
                 "global_Cs_delta_sq_sum")))[nlayer];
             // since Cs_delta_sq contains the sum over all elements of this layer,
             // we have to divide by the number of elements of this layer
             int numele_layer = turbulencelist.get<int>("numele_layer");
-            (*(turbulencelist.get<Teuchos::RCP<std::vector<double>>>("local_Prt_sum")))[nlayer] +=
-                (Cs_delta_sq / numele_layer) / tpn_;
+            (*(turbulencelist.get<std::shared_ptr<std::vector<double>>>(
+                "local_Prt_sum")))[nlayer] += (Cs_delta_sq / numele_layer) / tpn_;
           }
           else
-            (*(turbulencelist.get<Teuchos::RCP<std::vector<double>>>("local_Prt_sum")))[nlayer] +=
-                0.0;
+            (*(turbulencelist.get<std::shared_ptr<std::vector<double>>>(
+                "local_Prt_sum")))[nlayer] += 0.0;
 
           // set (Cs*h)^2/Prt and diffeff for output
-          (*(turbulencelist.get<Teuchos::RCP<std::vector<double>>>(
+          (*(turbulencelist.get<std::shared_ptr<std::vector<double>>>(
               "local_Cs_delta_sq_Prt_sum")))[nlayer] += tpn_;
           if (numscal_ > 1) FOUR_C_THROW("One scalar assumed for dynamic Smagorinsky model!");
 
@@ -1382,8 +1382,8 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::store_model_parameters_
 
           calc_subgr_diff(visc, vol, 0, densnp[0]);
 
-          (*(turbulencelist.get<Teuchos::RCP<std::vector<double>>>("local_diffeff_sum")))[nlayer] +=
-              diffmanager_->get_isotropic_diff(0);
+          (*(turbulencelist.get<std::shared_ptr<std::vector<double>>>(
+              "local_diffeff_sum")))[nlayer] += diffmanager_->get_isotropic_diff(0);
         }
       }
     }
@@ -1434,8 +1434,8 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
   {
     Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
     // remark: for dynamic estimation, this returns (Cs*h)^2 / Pr_t
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ele_prt =
-        turbulencelist.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_ele_Prt");
+    std::shared_ptr<Core::LinAlg::Vector<double>> ele_prt =
+        turbulencelist.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("col_ele_Prt");
     const int id = ele->lid();
     tpn_ = (*ele_prt)[id];
 
@@ -1453,11 +1453,11 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
   const int ndsvel = scatrapara_->nds_vel();
 
   // get velocity values at nodes
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
       discretization.get_state(ndsvel, "convective velocity field");
 
   // safety check
-  if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
+  if (convel == nullptr) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -1481,9 +1481,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
   if (scatrapara_->rb_sub_gr_vel())
   {
     // get acceleration values at nodes
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> acc =
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> acc =
         discretization.get_state(ndsvel, "acceleration field");
-    if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vector acceleration field");
+    if (acc == nullptr) FOUR_C_THROW("Cannot get state vector acceleration field");
 
     // extract local values of acceleration field from global state vector
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*acc, eaccnp_, lmvel);
@@ -1501,9 +1501,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
   }
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (hist == Teuchos::null || phinp == Teuchos::null)
+  std::shared_ptr<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+  if (hist == nullptr || phinp == nullptr)
     FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phinp'");
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*hist, ehist_, la[0].lm_);
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, la[0].lm_);
@@ -1517,15 +1517,16 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
       turbparams_->turb_model() == Inpar::FLUID::multifractal_subgrid_scales)
   {
     // get fine scale scalar field
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> gfsphinp = discretization.get_state("fsphinp");
-    if (gfsphinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fsphinp'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> gfsphinp =
+        discretization.get_state("fsphinp");
+    if (gfsphinp == nullptr) FOUR_C_THROW("Cannot get state vector 'fsphinp'");
 
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*gfsphinp, fsphinp_, la[0].lm_);
 
     // get fine-scale velocity at nodes
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvelocity =
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> fsvelocity =
         discretization.get_state(ndsvel, "fine-scale velocity field");
-    if (fsvelocity == Teuchos::null)
+    if (fsvelocity == nullptr)
       FOUR_C_THROW("Cannot get fine-scale velocity field from scatra discretization!");
 
     // extract local values of fine-scale velocity field from global state vector
@@ -1541,9 +1542,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
 
   // the coordinates of the element layers in the channel
   // planecoords are named nodeplanes in turbulence_statistics_channel!
-  Teuchos::RCP<std::vector<double>> planecoords =
-      params.get<Teuchos::RCP<std::vector<double>>>("planecoords_", Teuchos::null);
-  if (planecoords == Teuchos::null)
+  std::shared_ptr<std::vector<double>> planecoords =
+      params.get<std::shared_ptr<std::vector<double>>>("planecoords_", nullptr);
+  if (planecoords == nullptr)
     FOUR_C_THROW("planecoords is null, but need channel_flow_of_height_2\n");
 
   // this will be the y-coordinate of a point in the element interior
@@ -1955,37 +1956,37 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
   eps_rey /= vol;
 
 
-  Teuchos::RCP<std::vector<double>> incrvol =
-      params.get<Teuchos::RCP<std::vector<double>>>("incrvol");
+  std::shared_ptr<std::vector<double>> incrvol =
+      params.get<std::shared_ptr<std::vector<double>>>("incrvol");
 
-  Teuchos::RCP<std::vector<double>> incr_eps_visc =
-      params.get<Teuchos::RCP<std::vector<double>>>("incr_scatra_eps_visc");
-  Teuchos::RCP<std::vector<double>> incr_eps_conv =
-      params.get<Teuchos::RCP<std::vector<double>>>("incr_scatra_eps_conv");
-  Teuchos::RCP<std::vector<double>> incr_eps_smag =
-      params.get<Teuchos::RCP<std::vector<double>>>("incr_scatra_eps_eddyvisc");
-  Teuchos::RCP<std::vector<double>> incr_eps_avm3 =
-      params.get<Teuchos::RCP<std::vector<double>>>("incr_scatra_eps_avm3");
-  Teuchos::RCP<std::vector<double>> incr_eps_mfs =
-      params.get<Teuchos::RCP<std::vector<double>>>("incr_scatra_eps_mfs");
-  Teuchos::RCP<std::vector<double>> incr_eps_mfscross =
-      params.get<Teuchos::RCP<std::vector<double>>>("incr_scatra_eps_mfscross");
-  Teuchos::RCP<std::vector<double>> incr_eps_mfsrey =
-      params.get<Teuchos::RCP<std::vector<double>>>("incr_scatra_eps_mfsrey");
-  Teuchos::RCP<std::vector<double>> incr_eps_supg =
-      params.get<Teuchos::RCP<std::vector<double>>>("incr_scatra_eps_supg");
-  Teuchos::RCP<std::vector<double>> incr_eps_cross =
-      params.get<Teuchos::RCP<std::vector<double>>>("incr_scatra_eps_cross");
-  Teuchos::RCP<std::vector<double>> incr_eps_rey =
-      params.get<Teuchos::RCP<std::vector<double>>>("incr_scatra_eps_rey");
+  std::shared_ptr<std::vector<double>> incr_eps_visc =
+      params.get<std::shared_ptr<std::vector<double>>>("incr_scatra_eps_visc");
+  std::shared_ptr<std::vector<double>> incr_eps_conv =
+      params.get<std::shared_ptr<std::vector<double>>>("incr_scatra_eps_conv");
+  std::shared_ptr<std::vector<double>> incr_eps_smag =
+      params.get<std::shared_ptr<std::vector<double>>>("incr_scatra_eps_eddyvisc");
+  std::shared_ptr<std::vector<double>> incr_eps_avm3 =
+      params.get<std::shared_ptr<std::vector<double>>>("incr_scatra_eps_avm3");
+  std::shared_ptr<std::vector<double>> incr_eps_mfs =
+      params.get<std::shared_ptr<std::vector<double>>>("incr_scatra_eps_mfs");
+  std::shared_ptr<std::vector<double>> incr_eps_mfscross =
+      params.get<std::shared_ptr<std::vector<double>>>("incr_scatra_eps_mfscross");
+  std::shared_ptr<std::vector<double>> incr_eps_mfsrey =
+      params.get<std::shared_ptr<std::vector<double>>>("incr_scatra_eps_mfsrey");
+  std::shared_ptr<std::vector<double>> incr_eps_supg =
+      params.get<std::shared_ptr<std::vector<double>>>("incr_scatra_eps_supg");
+  std::shared_ptr<std::vector<double>> incr_eps_cross =
+      params.get<std::shared_ptr<std::vector<double>>>("incr_scatra_eps_cross");
+  std::shared_ptr<std::vector<double>> incr_eps_rey =
+      params.get<std::shared_ptr<std::vector<double>>>("incr_scatra_eps_rey");
 
-  Teuchos::RCP<std::vector<double>> incrresS =
-      params.get<Teuchos::RCP<std::vector<double>>>("incrresS");
-  Teuchos::RCP<std::vector<double>> incrresS_sq =
-      params.get<Teuchos::RCP<std::vector<double>>>("incrresS_sq");
+  std::shared_ptr<std::vector<double>> incrresS =
+      params.get<std::shared_ptr<std::vector<double>>>("incrresS");
+  std::shared_ptr<std::vector<double>> incrresS_sq =
+      params.get<std::shared_ptr<std::vector<double>>>("incrresS_sq");
 
-  Teuchos::RCP<std::vector<double>> incrtauS =
-      params.get<Teuchos::RCP<std::vector<double>>>("incrtauS");
+  std::shared_ptr<std::vector<double>> incrtauS =
+      params.get<std::shared_ptr<std::vector<double>>>("incrtauS");
 
   bool found = false;
 

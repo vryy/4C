@@ -40,7 +40,7 @@ namespace ScaTra
 
     bool system_matrix_initialization_needed() const override { return true; }
 
-    Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const override;
+    std::shared_ptr<Core::LinAlg::SparseOperator> init_system_matrix() const override;
     //@}
 
    private:

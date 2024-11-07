@@ -18,8 +18,8 @@
 #include "4C_xfem_discretization.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -27,18 +27,18 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-Adapter::XFluidFSI::XFluidFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
-    const std::string coupling_name,                      // name of the FSI coupling condition
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+Adapter::XFluidFSI::XFluidFSI(std::shared_ptr<Fluid> fluid,  // the XFluid object
+    const std::string coupling_name,                         // name of the FSI coupling condition
+    std::shared_ptr<Core::LinAlg::Solver> solver, std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : FluidWrapper(fluid),  // the XFluid object is set as fluid_ in the FluidWrapper
-      fpsiinterface_(Teuchos::make_rcp<FLD::Utils::MapExtractor>()),
+      fpsiinterface_(std::make_shared<FLD::Utils::MapExtractor>()),
       coupling_name_(coupling_name),
       solver_(solver),
       params_(params)
 {
   // make sure
-  if (fluid_ == Teuchos::null) FOUR_C_THROW("Failed to create the underlying fluid adapter");
+  if (fluid_ == nullptr) FOUR_C_THROW("Failed to create the underlying fluid adapter");
   return;
 }
 
@@ -50,27 +50,27 @@ void Adapter::XFluidFSI::init()
   FluidWrapper::init();
 
   // cast fluid to fluidimplicit
-  xfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid_);
-  if (xfluid_ == Teuchos::null) FOUR_C_THROW("Failed to cast Adapter::Fluid to FLD::XFluid.");
+  xfluid_ = std::dynamic_pointer_cast<FLD::XFluid>(fluid_);
+  if (xfluid_ == nullptr) FOUR_C_THROW("Failed to cast Adapter::Fluid to FLD::XFluid.");
 
   // NOTE: currently we are using the XFluidFSI adapter also for pure ALE-fluid problems with
   // level-set boundary in this case no mesh coupling object is available and no interface objects
   // can be created
-  Teuchos::RCP<XFEM::MeshCoupling> mc = xfluid_->get_mesh_coupling(coupling_name_);
+  std::shared_ptr<XFEM::MeshCoupling> mc = xfluid_->get_mesh_coupling(coupling_name_);
 
-  if (mc != Teuchos::null)  // classical mesh coupling case for FSI
+  if (mc != nullptr)  // classical mesh coupling case for FSI
   {
     // get the mesh coupling object
-    mesh_coupling_fsi_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(mc, true);
+    mesh_coupling_fsi_ = std::dynamic_pointer_cast<XFEM::MeshCouplingFSI>(mc);
 
-    structinterface_ = Teuchos::make_rcp<FLD::Utils::MapExtractor>();
+    structinterface_ = std::make_shared<FLD::Utils::MapExtractor>();
 
     // the solid mesh has to match the interface mesh
     // so we have to compute a interface true residual vector itrueresidual_
     structinterface_->setup(*mesh_coupling_fsi_->get_cutter_dis());
   }
 
-  interface_ = Teuchos::make_rcp<FLD::Utils::MapExtractor>();
+  interface_ = std::make_shared<FLD::Utils::MapExtractor>();
 
   interface_->setup(
       *xfluid_->discretization(), false, true);  // Always Create overlapping FSI/FPSI Interface
@@ -78,7 +78,7 @@ void Adapter::XFluidFSI::init()
   fpsiinterface_->setup(
       *xfluid_->discretization(), true, true);  // Always Create overlapping FSI/FPSI Interface
 
-  meshmap_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+  meshmap_ = std::make_shared<Core::LinAlg::MapExtractor>();
 }
 
 
@@ -95,7 +95,7 @@ double Adapter::XFluidFSI::time_scaling() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization> Adapter::XFluidFSI::boundary_discretization()
+std::shared_ptr<Core::FE::Discretization> Adapter::XFluidFSI::boundary_discretization()
 {
   return mesh_coupling_fsi_->get_cutter_dis();
 }
@@ -103,7 +103,7 @@ Teuchos::RCP<Core::FE::Discretization> Adapter::XFluidFSI::boundary_discretizati
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::XFluidFSI::extract_struct_interface_forces()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::XFluidFSI::extract_struct_interface_forces()
 {
   // the trueresidual vector has to match the solid dis
   // it contains the forces acting on the structural surface
@@ -113,7 +113,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::XFluidFSI::extract_struct_in
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::XFluidFSI::extract_struct_interface_veln()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::XFluidFSI::extract_struct_interface_veln()
 {
   // it depends, when this method is called, and when velnp is updated
   // the FSI algorithm expects first an time update and then asks for the old time step velocity
@@ -128,7 +128,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::XFluidFSI::extract_struct_in
 // apply the interface velocities to the fluid
 /*----------------------------------------------------------------------*/
 void Adapter::XFluidFSI::apply_struct_interface_velocities(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel)
+    std::shared_ptr<Core::LinAlg::Vector<double>> ivel)
 {
   structinterface_->insert_fsi_cond_vector(*ivel, *mesh_coupling_fsi_->i_velnp());
 }
@@ -138,7 +138,7 @@ void Adapter::XFluidFSI::apply_struct_interface_velocities(
 //  apply the interface displacements to the fluid
 /*----------------------------------------------------------------------*/
 void Adapter::XFluidFSI::apply_struct_mesh_displacement(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> interface_disp)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> interface_disp)
 {
   // update last increment, before we set new idispnp
   mesh_coupling_fsi_->update_displacement_iteration_vectors();
@@ -149,7 +149,7 @@ void Adapter::XFluidFSI::apply_struct_mesh_displacement(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Adapter::XFluidFSI::set_mesh_map(Teuchos::RCP<const Epetra_Map> mm, const int nds_master)
+void Adapter::XFluidFSI::set_mesh_map(std::shared_ptr<const Epetra_Map> mm, const int nds_master)
 {
   // check nds_master
   if (nds_master != 0) FOUR_C_THROW("nds_master is supposed to be 0 here");
@@ -162,7 +162,7 @@ void Adapter::XFluidFSI::set_mesh_map(Teuchos::RCP<const Epetra_Map> mm, const i
 //  apply the ale displacements to the fluid
 /*----------------------------------------------------------------------*/
 void Adapter::XFluidFSI::apply_mesh_displacement(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluiddisp)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fluiddisp)
 {
   meshmap_->insert_cond_vector(*fluiddisp, *xfluid_->write_access_dispnp());
 
@@ -178,11 +178,11 @@ void Adapter::XFluidFSI::apply_mesh_displacement(
  * via first order or second order OST-discretization of d/dt d(t) = u(t)
  *----------------------------------------------------------------------*/
 void Adapter::XFluidFSI::displacement_to_velocity(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcx  /// Delta d = d^(n+1,i+1)-d^n
+    std::shared_ptr<Core::LinAlg::Vector<double>> fcx  /// Delta d = d^(n+1,i+1)-d^n
 )
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> veln =
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> veln =
       structinterface_->extract_fsi_cond_vector(*mesh_coupling_fsi_->i_veln());
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -206,25 +206,25 @@ void Adapter::XFluidFSI::displacement_to_velocity(
 
 
 /// return xfluid coupling matrix between structure and fluid as sparse matrices
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::XFluidFSI::c_struct_fluid_matrix()
+std::shared_ptr<Core::LinAlg::SparseMatrix> Adapter::XFluidFSI::c_struct_fluid_matrix()
 {
   return xfluid_->c_sx_matrix(coupling_name_);
 }
 
 /// return xfluid coupling matrix between fluid and structure as sparse matrices
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::XFluidFSI::c_fluid_struct_matrix()
+std::shared_ptr<Core::LinAlg::SparseMatrix> Adapter::XFluidFSI::c_fluid_struct_matrix()
 {
   return xfluid_->c_xs_matrix(coupling_name_);
 }
 
 /// return xfluid coupling matrix between structure and structure as sparse matrices
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::XFluidFSI::c_struct_struct_matrix()
+std::shared_ptr<Core::LinAlg::SparseMatrix> Adapter::XFluidFSI::c_struct_struct_matrix()
 {
   return xfluid_->c_ss_matrix(coupling_name_);
 }
 
 /// return xfluid coupling matrix between structure and structure as sparse matrices
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::XFluidFSI::rhs_struct_vec()
+std::shared_ptr<const Core::LinAlg::Vector<double>> Adapter::XFluidFSI::rhs_struct_vec()
 {
   return xfluid_->rhs_s_vec(coupling_name_);
 }
@@ -234,7 +234,7 @@ void Adapter::XFluidFSI::gmsh_output(const std::string& name,  ///< name for out
     const int step,                                            ///< step number
     const int count,                    ///< counter for iterations within a global time step
     Core::LinAlg::Vector<double>& vel,  ///< vector holding velocity and pressure dofs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acc  ///< vector holding accelerations
+    std::shared_ptr<Core::LinAlg::Vector<double>> acc  ///< vector holding accelerations
 )
 {
   // TODO (kruse): find a substitute!

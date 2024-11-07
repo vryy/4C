@@ -59,33 +59,33 @@ namespace FSI
      *
      * \returns interface force
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_op(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, const FillType fillFlag) final;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fluid_op(
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp, const FillType fillFlag) final;
 
 
     void extract_previous_interface_solution() override;
 
     /// structure to ale mapping
-    Teuchos::RCP<Core::LinAlg::Vector<double>> stucture_to_ale(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+    std::shared_ptr<Core::LinAlg::Vector<double>> stucture_to_ale(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) const;
 
     /// structure to ale mapping
-    Teuchos::RCP<Core::LinAlg::Vector<double>> structure_to_ale(
+    std::shared_ptr<Core::LinAlg::Vector<double>> structure_to_ale(
         const Core::LinAlg::Vector<double>& iv) const;
 
     /// ale to structure mapping
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_structure(
+    std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_structure(
         Core::LinAlg::Vector<double>& iv) const;
 
     /// ale to structure
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_structure(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_structure(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
 
     /// coupling of structure and ale at the interface
-    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> coupsa_;
+    std::shared_ptr<Coupling::Adapter::MortarVolCoupl> coupsa_;
 
     /// coupling of structure and ale at the interface
-    Teuchos::RCP<InterfaceCorrector> icorrector_;
+    std::shared_ptr<InterfaceCorrector> icorrector_;
   };
 
   class VolCorrector;
@@ -94,28 +94,28 @@ namespace FSI
   {
    public:
     /// constructor
-    InterfaceCorrector() : idisp_(Teuchos::null){};
+    InterfaceCorrector() : idisp_(nullptr){};
 
     /// destructor
     virtual ~InterfaceCorrector() = default;
 
-    virtual void setup(Teuchos::RCP<Adapter::FluidAle> fluidale);
+    virtual void setup(std::shared_ptr<Adapter::FluidAle> fluidale);
 
-    void set_interface_displacements(Teuchos::RCP<Core::LinAlg::Vector<double>>& idisp_struct,
+    void set_interface_displacements(std::shared_ptr<Core::LinAlg::Vector<double>>& idisp_struct,
         Coupling::Adapter::Coupling& icoupfs);
 
     virtual void correct_interface_displacements(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_fluid,
-        Teuchos::RCP<FLD::Utils::MapExtractor> const& finterface);
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp_fluid,
+        std::shared_ptr<FLD::Utils::MapExtractor> const& finterface);
 
    private:
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp_;
-    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfs_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> idisp_;
+    std::shared_ptr<Coupling::Adapter::Coupling> icoupfs_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp_;
-    Teuchos::RCP<Adapter::FluidAle> fluidale_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> deltadisp_;
+    std::shared_ptr<Adapter::FluidAle> fluidale_;
 
-    Teuchos::RCP<VolCorrector> volcorrector_;
+    std::shared_ptr<VolCorrector> volcorrector_;
   };
 
 
@@ -128,23 +128,23 @@ namespace FSI
     /// destructor
     virtual ~VolCorrector() = default;
 
-    virtual void setup(const int dim, Teuchos::RCP<Adapter::FluidAle> fluidale);
+    virtual void setup(const int dim, std::shared_ptr<Adapter::FluidAle> fluidale);
 
-    virtual void correct_vol_displacements(Teuchos::RCP<Adapter::FluidAle> fluidale,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_fluid,
-        Teuchos::RCP<FLD::Utils::MapExtractor> const& finterface);
+    virtual void correct_vol_displacements(std::shared_ptr<Adapter::FluidAle> fluidale,
+        std::shared_ptr<Core::LinAlg::Vector<double>> deltadisp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp_fluid,
+        std::shared_ptr<FLD::Utils::MapExtractor> const& finterface);
 
    private:
-    virtual void correct_vol_displacements_para_space(Teuchos::RCP<Adapter::FluidAle> fluidale,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_fluid,
-        Teuchos::RCP<FLD::Utils::MapExtractor> const& finterface);
+    virtual void correct_vol_displacements_para_space(std::shared_ptr<Adapter::FluidAle> fluidale,
+        std::shared_ptr<Core::LinAlg::Vector<double>> deltadisp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp_fluid,
+        std::shared_ptr<FLD::Utils::MapExtractor> const& finterface);
 
-    virtual void correct_vol_displacements_phys_space(Teuchos::RCP<Adapter::FluidAle> fluidale,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_fluid,
-        Teuchos::RCP<FLD::Utils::MapExtractor> const& finterface);
+    virtual void correct_vol_displacements_phys_space(std::shared_ptr<Adapter::FluidAle> fluidale,
+        std::shared_ptr<Core::LinAlg::Vector<double>> deltadisp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp_fluid,
+        std::shared_ptr<FLD::Utils::MapExtractor> const& finterface);
 
     void init_dop_normals();
 
@@ -160,7 +160,7 @@ namespace FSI
     int dim_;
 
     //! Searchtree for mortar evaluations
-    Teuchos::RCP<Core::Geo::SearchTree> search_tree_;
+    std::shared_ptr<Core::Geo::SearchTree> search_tree_;
 
     //! Dop normals for search algorithm
     Core::LinAlg::Matrix<9, 3> dopnormals_;

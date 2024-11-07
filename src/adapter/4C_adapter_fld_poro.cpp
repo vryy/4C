@@ -21,14 +21,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-Adapter::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
+Adapter::FluidPoro::FluidPoro(std::shared_ptr<Fluid> fluid,
+    std::shared_ptr<Core::FE::Discretization> dis, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : Adapter::FluidFPSI::FluidFPSI(fluid, dis, solver, params, output, isale, dirichletcond)
 {
   // make sure
 
-  if (fluid_ == Teuchos::null) FOUR_C_THROW("Failed to create the underlying fluid adapter");
+  if (fluid_ == nullptr) FOUR_C_THROW("Failed to create the underlying fluid adapter");
 
   discretization()->get_condition("no_penetration", nopencond_);
 }
@@ -36,10 +37,10 @@ Adapter::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::
 /*======================================================================*/
 /* evaluate poroelasticity specific constraint*/
 void Adapter::FluidPoro::evaluate_no_penetration_cond(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> Cond_RHS,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstraintMatrix,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_vel_constraint_matrix,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> condVector, std::set<int>& condIDs,
+    std::shared_ptr<Core::LinAlg::Vector<double>> Cond_RHS,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> ConstraintMatrix,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> struct_vel_constraint_matrix,
+    std::shared_ptr<Core::LinAlg::Vector<double>> condVector, std::set<int>& condIDs,
     PoroElast::Coupltype coupltype)
 {
   if (!(discretization()->filled())) FOUR_C_THROW("fill_complete() was not called");
@@ -87,14 +88,14 @@ void Adapter::FluidPoro::evaluate_no_penetration_cond(
 
     // set action for elements
     params.set<FLD::BoundaryAction>("action", FLD::no_penetration);
-    // params.set<Teuchos::RCP< std::set<int> > >("condIDs",condIDs);
+    // params.set<std::shared_ptr< std::set<int> > >("condIDs",condIDs);
     params.set<PoroElast::Coupltype>("coupling", PoroElast::fluidfluid);
     params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro);
 
     Core::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
         0,                                       // fluiddofset for column
         ConstraintMatrix,                        // fluid matrix
-        Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+        nullptr, nullptr, nullptr, nullptr);
 
     discretization()->set_state(0, "condVector", condVector);
 
@@ -119,7 +120,7 @@ void Adapter::FluidPoro::evaluate_no_penetration_cond(
         1,                                       // structdofset for column
         ConstraintMatrix,
         struct_vel_constraint_matrix,  // fluid-mechanical matrix
-        Cond_RHS, Teuchos::null, Teuchos::null);
+        Cond_RHS, nullptr, nullptr);
 
     // evaluate the fluid-mechanical system matrix on the fluid element
     discretization()->evaluate_condition(params, couplstrategy, "no_penetration");
@@ -134,7 +135,7 @@ void Adapter::FluidPoro::evaluate_no_penetration_cond(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MapExtractor> Adapter::FluidPoro::vel_pres_splitter()
+std::shared_ptr<Core::LinAlg::MapExtractor> Adapter::FluidPoro::vel_pres_splitter()
 {
   return fluidimpl_->vel_pres_splitter();
 }
@@ -172,7 +173,7 @@ void Adapter::FluidPoro::output(const int step, const double time)
     // velocity/pressure vector
     fluid_field()->disc_writer()->write_vector("velnp", fluid_field()->velnp());
     // (hydrodynamic) pressure
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pressure =
+    std::shared_ptr<Core::LinAlg::Vector<double>> pressure =
         fluid_field()->get_vel_press_splitter()->extract_cond_vector(*fluid_field()->velnp());
     fluid_field()->disc_writer()->write_vector("pressure", pressure);
 

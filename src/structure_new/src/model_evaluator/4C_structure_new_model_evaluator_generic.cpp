@@ -22,11 +22,11 @@ FOUR_C_NAMESPACE_OPEN
 Solid::ModelEvaluator::Generic::Generic()
     : isinit_(false),
       issetup_(false),
-      eval_data_ptr_(Teuchos::null),
-      gstate_ptr_(Teuchos::null),
-      gio_ptr_(Teuchos::null),
-      discret_ptr_(Teuchos::null),
-      timint_ptr_(Teuchos::null),
+      eval_data_ptr_(nullptr),
+      gstate_ptr_(nullptr),
+      gio_ptr_(nullptr),
+      discret_ptr_(nullptr),
+      timint_ptr_(nullptr),
       dof_offset_(0)
 {
   // empty constructor
@@ -35,11 +35,11 @@ Solid::ModelEvaluator::Generic::Generic()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Generic::init(
-    const Teuchos::RCP<Solid::ModelEvaluator::Data>& eval_data_ptr,
-    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
-    const Teuchos::RCP<Solid::Integrator>& int_ptr,
-    const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr, const int& dof_offset)
+    const std::shared_ptr<Solid::ModelEvaluator::Data>& eval_data_ptr,
+    const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+    const std::shared_ptr<Solid::TimeInt::BaseDataIO>& gio_ptr,
+    const std::shared_ptr<Solid::Integrator>& int_ptr,
+    const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr, const int& dof_offset)
 {
   // call setup after init()
   issetup_ = false;
@@ -87,7 +87,7 @@ const Solid::ModelEvaluator::Data& Solid::ModelEvaluator::Generic::eval_data() c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::ModelEvaluator::Data>& Solid::ModelEvaluator::Generic::eval_data_ptr()
+std::shared_ptr<Solid::ModelEvaluator::Data>& Solid::ModelEvaluator::Generic::eval_data_ptr()
 {
   check_init();
   return eval_data_ptr_;
@@ -103,7 +103,7 @@ Solid::TimeInt::BaseDataGlobalState& Solid::ModelEvaluator::Generic::global_stat
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>&
+std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>&
 Solid::ModelEvaluator::Generic::global_state_ptr()
 {
   check_init();
@@ -128,7 +128,7 @@ Solid::TimeInt::BaseDataIO& Solid::ModelEvaluator::Generic::global_in_output()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::TimeInt::BaseDataIO> Solid::ModelEvaluator::Generic::global_in_output_ptr()
+std::shared_ptr<Solid::TimeInt::BaseDataIO> Solid::ModelEvaluator::Generic::global_in_output_ptr()
 {
   check_init();
   return gio_ptr_;
@@ -152,7 +152,7 @@ Core::FE::Discretization& Solid::ModelEvaluator::Generic::discret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization>& Solid::ModelEvaluator::Generic::discret_ptr()
+std::shared_ptr<Core::FE::Discretization>& Solid::ModelEvaluator::Generic::discret_ptr()
 {
   check_init();
   return discret_ptr_;
@@ -184,7 +184,7 @@ const Solid::Integrator& Solid::ModelEvaluator::Generic::integrator() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::Integrator>& Solid::ModelEvaluator::Generic::integrator_ptr()
+std::shared_ptr<Solid::Integrator>& Solid::ModelEvaluator::Generic::integrator_ptr()
 {
   return int_ptr_;
 }
@@ -207,14 +207,14 @@ const int& Solid::ModelEvaluator::Generic::dof_offset() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Generic::get_fext_incr() const
+std::shared_ptr<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Generic::get_fext_incr() const
 {
   check_init_setup();
   const Core::LinAlg::Vector<double>& fextn = *global_state().get_fext_n();
   const Core::LinAlg::Vector<double>& fextnp = *global_state().get_fext_np();
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fext_incr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fextnp);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fext_incr =
+      std::make_shared<Core::LinAlg::Vector<double>>(fextnp);
   fext_incr->Update(-1.0, fextn, 1.0);
 
   return fext_incr;

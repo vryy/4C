@@ -16,7 +16,8 @@
 #include "4C_fem_general_node.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -51,8 +52,8 @@ namespace Core::DOFSets
   {
    public:
     //! Standard Constructor
-    DofSetGIDBasedWrapper(Teuchos::RCP<Core::FE::Discretization> sourcedis,
-        Teuchos::RCP<DofSetInterface> sourcedofset);
+    DofSetGIDBasedWrapper(std::shared_ptr<Core::FE::Discretization> sourcedis,
+        std::shared_ptr<DofSetInterface> sourcedofset);
 
     //! Destructor
     ~DofSetGIDBasedWrapper() override;
@@ -267,10 +268,10 @@ namespace Core::DOFSets
     void check_is_assigned() const;
 
     //! source discretization
-    Teuchos::RCP<Core::FE::Discretization> sourcedis_;
+    std::shared_ptr<Core::FE::Discretization> sourcedis_;
 
     //! source dofset wrapped in this class
-    Teuchos::RCP<DofSetInterface> sourcedofset_;
+    std::shared_ptr<DofSetInterface> sourcedofset_;
 
     bool isassigned_;
   };

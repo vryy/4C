@@ -11,6 +11,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_mortar_node.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -19,13 +20,13 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor BinaryTreeNode (public)                              popp 10/08|
  *----------------------------------------------------------------------*/
 Mortar::BinaryTreeNode::BinaryTreeNode(Mortar::BinaryTreeNodeType type,
-    Core::FE::Discretization& discret, Teuchos::RCP<BinaryTreeNode> parent,
+    Core::FE::Discretization& discret, std::shared_ptr<BinaryTreeNode> parent,
     std::vector<int> elelist, const Core::LinAlg::SerialDenseMatrix& dopnormals, const int& kdop,
     const int& dim, const bool& useauxpos, const int layer,
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& streenodesmap,
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& mtreenodesmap,
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& sleafsmap,
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& mleafsmap)
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& streenodesmap,
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& mtreenodesmap,
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& sleafsmap,
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& mleafsmap)
     : Mortar::BaseBinaryTreeNode::BaseBinaryTreeNode(
           discret, elelist, dopnormals, kdop, dim, useauxpos, layer),
       type_(type),
@@ -293,14 +294,14 @@ void Mortar::BinaryTreeNode::divide_tree_node()
     }
 
     // build left child treenode
-    leftchild_ = Teuchos::make_rcp<BinaryTreeNode>(lefttype, discret(), Teuchos::rcpFromRef(*this),
-        leftelements, dopnormals(), kdop(), n_dim(), use_aux_pos(), (get_layer() + 1),
-        streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_);
+    leftchild_ = std::make_shared<BinaryTreeNode>(lefttype, discret(),
+        Core::Utils::shared_ptr_from_ref(*this), leftelements, dopnormals(), kdop(), n_dim(),
+        use_aux_pos(), (get_layer() + 1), streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_);
 
     // build right child treenode
-    rightchild_ = Teuchos::make_rcp<BinaryTreeNode>(righttype, discret(),
-        Teuchos::rcpFromRef(*this), rightelements, dopnormals(), kdop(), n_dim(), use_aux_pos(),
-        (get_layer() + 1), streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_);
+    rightchild_ = std::make_shared<BinaryTreeNode>(righttype, discret(),
+        Core::Utils::shared_ptr_from_ref(*this), rightelements, dopnormals(), kdop(), n_dim(),
+        use_aux_pos(), (get_layer() + 1), streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_);
 
     // update slave and mastertreenodes map
     // if parent treenode is slave
@@ -374,8 +375,8 @@ void Mortar::BinaryTreeNode::print_type()
  |  ctor BinaryTree(public)                                   popp 10/08|
  *----------------------------------------------------------------------*/
 Mortar::BinaryTree::BinaryTree(Core::FE::Discretization& discret,
-    Teuchos::RCP<Epetra_Map> selements, Teuchos::RCP<Epetra_Map> melements, int dim, double eps,
-    Inpar::Mortar::BinaryTreeUpdateType updatetype, bool useauxpos)
+    std::shared_ptr<Epetra_Map> selements, std::shared_ptr<Epetra_Map> melements, int dim,
+    double eps, Inpar::Mortar::BinaryTreeUpdateType updatetype, bool useauxpos)
     : Mortar::BaseBinaryTree(discret, dim, eps),
       selements_(selements),
       melements_(melements),
@@ -421,7 +422,7 @@ void Mortar::BinaryTree::init()
   // check slave root node case
   if (slist.size() >= 2)
   {
-    sroot_ = Teuchos::make_rcp<BinaryTreeNode>(Mortar::SLAVE_INNER, discret(), sroot_, slist,
+    sroot_ = std::make_shared<BinaryTreeNode>(Mortar::SLAVE_INNER, discret(), sroot_, slist,
         dop_normals(), kdop(), n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_,
         mleafsmap_);
 
@@ -431,7 +432,7 @@ void Mortar::BinaryTree::init()
   }
   else if (slist.size() == 1)
   {
-    sroot_ = Teuchos::make_rcp<BinaryTreeNode>(Mortar::SLAVE_LEAF, discret(), sroot_, slist,
+    sroot_ = std::make_shared<BinaryTreeNode>(Mortar::SLAVE_LEAF, discret(), sroot_, slist,
         dop_normals(), kdop(), n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_,
         mleafsmap_);
 
@@ -441,7 +442,7 @@ void Mortar::BinaryTree::init()
   }
   else
   {
-    sroot_ = Teuchos::make_rcp<BinaryTreeNode>(Mortar::NOSLAVE_ELEMENTS, discret(), sroot_, slist,
+    sroot_ = std::make_shared<BinaryTreeNode>(Mortar::NOSLAVE_ELEMENTS, discret(), sroot_, slist,
         dop_normals(), kdop(), n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_,
         mleafsmap_);
 
@@ -452,7 +453,7 @@ void Mortar::BinaryTree::init()
   // check master root node case
   if (mlist.size() >= 2)
   {
-    mroot_ = Teuchos::make_rcp<BinaryTreeNode>(Mortar::MASTER_INNER, discret(), mroot_, mlist,
+    mroot_ = std::make_shared<BinaryTreeNode>(Mortar::MASTER_INNER, discret(), mroot_, mlist,
         dop_normals(), kdop(), n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_,
         mleafsmap_);
 
@@ -462,7 +463,7 @@ void Mortar::BinaryTree::init()
   }
   else if (mlist.size() == 1)
   {
-    mroot_ = Teuchos::make_rcp<BinaryTreeNode>(Mortar::MASTER_LEAF, discret(), mroot_, mlist,
+    mroot_ = std::make_shared<BinaryTreeNode>(Mortar::MASTER_LEAF, discret(), mroot_, mlist,
         dop_normals(), kdop(), n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_,
         mleafsmap_);
 
@@ -472,7 +473,7 @@ void Mortar::BinaryTree::init()
   }
   else
   {
-    mroot_ = Teuchos::make_rcp<BinaryTreeNode>(Mortar::NOMASTER_ELEMENTS, discret(), mroot_, mlist,
+    mroot_ = std::make_shared<BinaryTreeNode>(Mortar::NOMASTER_ELEMENTS, discret(), mroot_, mlist,
         dop_normals(), kdop(), n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_,
         mleafsmap_);
 
@@ -665,7 +666,7 @@ void Mortar::BinaryTree::print_tree(BinaryTreeNode& treenode)
  | Print tree with treenodesmap_ (public)                     popp 10/08|
  *----------------------------------------------------------------------*/
 void Mortar::BinaryTree::print_tree_of_map(
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& treenodesmap)
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& treenodesmap)
 {
   // print tree, elements listet in brackets (), belong to one treenode!
   for (int i = 0; i < (int)(treenodesmap.size()); i++)
@@ -673,7 +674,7 @@ void Mortar::BinaryTree::print_tree_of_map(
     std::cout << "\n" << get_comm().MyPID() << " Tree at layer: " << i << " Elements: ";
     for (int k = 0; k < (int)(treenodesmap[i].size()); k++)
     {
-      Teuchos::RCP<BinaryTreeNode> currentnode = treenodesmap[i][k];
+      std::shared_ptr<BinaryTreeNode> currentnode = treenodesmap[i][k];
       std::cout << " (";
       for (int l = 0; l < (int)(currentnode->elelist().size()); l++)
       {
@@ -710,7 +711,7 @@ void Mortar::BinaryTree::evaluate_update_tree_top_down(BinaryTreeNode& treenode)
  | Update tree bottom up based on list (public)               popp 10/08|
  *----------------------------------------------------------------------*/
 void Mortar::BinaryTree::evaluate_update_tree_bottom_up(
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& treenodesmap)
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& treenodesmap)
 {
   // update tree bottom up (for every treelayer)
   for (int i = ((int)(treenodesmap.size() - 1)); i >= 0; i = i - 1)
@@ -726,7 +727,7 @@ void Mortar::BinaryTree::evaluate_update_tree_bottom_up(
  | Search for contact (public)                                popp 10/08|
  *----------------------------------------------------------------------*/
 void Mortar::BinaryTree::evaluate_search(
-    Teuchos::RCP<BinaryTreeNode> streenode, Teuchos::RCP<BinaryTreeNode> mtreenode)
+    std::shared_ptr<BinaryTreeNode> streenode, std::shared_ptr<BinaryTreeNode> mtreenode)
 {
   // tree needs to be updated before running contact search!
 

@@ -50,9 +50,9 @@ int Discret::Elements::ConstraintElement3::evaluate(Teuchos::ParameterList& para
     break;
     case calc_MPC_state:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numnod = num_node();
@@ -74,8 +74,8 @@ int Discret::Elements::ConstraintElement3::evaluate(Teuchos::ParameterList& para
       }
       else if (numnod == 2)
       {
-        Teuchos::RCP<Core::Conditions::Condition> condition =
-            params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
+        std::shared_ptr<Core::Conditions::Condition> condition =
+            params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
         const auto& direct = condition->parameters().get<std::vector<double>>("direction");
         const auto& value = condition->parameters().get<std::string>("value");
         if (value == "disp")
@@ -93,9 +93,9 @@ int Discret::Elements::ConstraintElement3::evaluate(Teuchos::ParameterList& para
     break;
     case calc_MPC_stiff:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numnod = num_node();
@@ -125,8 +125,8 @@ int Discret::Elements::ConstraintElement3::evaluate(Teuchos::ParameterList& para
       }
       else if (numnod == 2)
       {
-        Teuchos::RCP<Core::Conditions::Condition> condition =
-            params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
+        std::shared_ptr<Core::Conditions::Condition> condition =
+            params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
         const std::vector<double>& direct =
             condition->parameters().get<std::vector<double>>("direction");
 

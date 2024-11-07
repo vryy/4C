@@ -22,8 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------
 // constructor
 //----------------------------------------------------------------------
-FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::ParameterList& params, const std::string& statistics_outfilename)
+FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
+    std::shared_ptr<Core::FE::Discretization> actdis, Teuchos::ParameterList& params,
+    const std::string& statistics_outfilename)
     : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
 {
   if (discret_->get_comm().MyPID() == 0)
@@ -52,8 +53,8 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
   //----------------------------------------------------------------------
   // create sets of coordinates
   //----------------------------------------------------------------------
-  x1coordinates_ = Teuchos::make_rcp<std::vector<double>>();
-  x2coordinates_ = Teuchos::make_rcp<std::vector<double>>();
+  x1coordinates_ = std::make_shared<std::vector<double>>();
+  x2coordinates_ = std::make_shared<std::vector<double>>();
 
   // the criterion allows differences in coordinates by 1e-9
   std::set<double, LineSortCriterion> x1avcoords;
@@ -227,7 +228,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
 #ifndef SAMP_ALL
   // define vector containing x1-coords for sampling
 
-  x1setstatlocations_ = Teuchos::RCP(new std::vector<double>);
+  x1setstatlocations_ = std::shared_ptr(new std::vector<double>);
 
   //! x1-coordinates for statistical sampling  !!! in sampling routine the offwall distance has to
   //! be modified for different statlocations
@@ -387,50 +388,50 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
   //----------------------------------------------------------------------
 
   // x1-direction
-  x1sump_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x1sump_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x1sump_->reshape(numx1statlocations_, 2);
 
-  x1sumu_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x1sumu_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x1sumu_->reshape(numx1statlocations_, 1);
 
-  x1sumf_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x1sumf_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x1sumf_->reshape(numx1statlocations_, 3);
 
 
   // x2-direction
   // first-order moments
-  x2sumu_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x2sumu_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x2sumu_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumv_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x2sumv_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x2sumv_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumw_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x2sumw_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x2sumw_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sump_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x2sump_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x2sump_->reshape(numx1statlocations_, numx2coor_);
 
   // second-order moments
-  x2sumsqu_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x2sumsqu_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x2sumsqu_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqv_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x2sumsqv_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x2sumsqv_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqw_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x2sumsqw_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x2sumsqw_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqp_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x2sumsqp_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x2sumsqp_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumuv_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x2sumuv_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x2sumuv_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumuw_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x2sumuw_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x2sumuw_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumvw_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+  x2sumvw_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>();
   x2sumvw_->reshape(numx1statlocations_, numx2coor_);
 
   // set number of samples to zero
@@ -444,14 +445,14 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
   if (modelparams->get<std::string>("PHYSICAL_MODEL", "no_model") == "Dynamic_Smagorinsky")
   {
     // store them in parameterlist for access on the element
-    modelparams->set<Teuchos::RCP<std::vector<double>>>("dir1coords_", x1coordinates_);
-    modelparams->set<Teuchos::RCP<std::vector<double>>>("dir2coords_", x2coordinates_);
+    modelparams->set<std::shared_ptr<std::vector<double>>>("dir1coords_", x1coordinates_);
+    modelparams->set<std::shared_ptr<std::vector<double>>>("dir2coords_", x2coordinates_);
   }
 
   //----------------------------------------------------------------------
   // initialize output and initially open respective statistics output file
 
-  Teuchos::RCP<std::ofstream> log;
+  std::shared_ptr<std::ofstream> log;
 
   if (discret_->get_comm().MyPID() == 0)
   {
@@ -459,7 +460,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
 
     s.append(".flow_statistics");
 
-    log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::out);
+    log = std::make_shared<std::ofstream>(s.c_str(), std::ios::out);
     (*log) << "# Statistics for turbulent incompressible flow over periodic hill (first- and "
               "second-order moments)\n\n";
 
@@ -831,14 +832,14 @@ void FLD::TurbulenceStatisticsPh::dump_statistics(int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
-  Teuchos::RCP<std::ofstream> log;
+  std::shared_ptr<std::ofstream> log;
 
   if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
-    log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::out);
+    log = std::make_shared<std::ofstream>(s.c_str(), std::ios::out);
     (*log) << "# Statistics for turbulent incompressible flow for a periodic hill (first- and "
               "second-order moments)";
     (*log) << "\n\n";

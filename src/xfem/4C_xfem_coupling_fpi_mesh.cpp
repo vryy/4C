@@ -32,10 +32,10 @@ FOUR_C_NAMESPACE_OPEN
 
 //! constructor
 XFEM::MeshCouplingFPI::MeshCouplingFPI(
-    Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+    std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<Core::FE::Discretization>&
+    std::shared_ptr<Core::FE::Discretization>&
         cond_dis,           ///< discretization from which cutter discretization can be derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -52,7 +52,7 @@ XFEM::MeshCouplingFPI::MeshCouplingFPI(
       contact_(false),
       fpsi_contact_hfraction_(0.0),
       fpsi_contact_fullpcfraction_(0.0),
-      xf_c_comm_(Teuchos::null)
+      xf_c_comm_(nullptr)
 {
   // TODO: init here, but set in set_condition_specific_parameters
 }
@@ -405,7 +405,7 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
 )
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  FOUR_C_ASSERT(xf_c_comm_ != Teuchos::null,
+  FOUR_C_ASSERT(xf_c_comm_ != nullptr,
       "update_configuration_map_gp_contact but no Xfluid Contact Communicator assigned!");
 #endif
 
@@ -683,7 +683,7 @@ void XFEM::MeshCouplingFPI::gmsh_output_discretization(std::ostream& gmshfilecon
   std::map<int, Core::LinAlg::Matrix<3, 1>> currsolidpositions;
 
   // write dis with zero solid displacements here!
-  Teuchos::RCP<Core::LinAlg::Vector<double>> solid_dispnp =
+  std::shared_ptr<Core::LinAlg::Vector<double>> solid_dispnp =
       Core::LinAlg::create_vector(*cond_dis_->dof_row_map(), true);
 
   XFEM::Utils::extract_node_vectors(*cond_dis_, currsolidpositions, solid_dispnp);
@@ -831,7 +831,7 @@ void XFEM::MeshCouplingFPI::lift_drag(const int step, const double time) const
 {
   // get forces on all procs
   // create interface DOF vectors using the fluid parallel distribution
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> iforcecol =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> iforcecol =
       Core::Rebalance::get_col_version_of_row_vector(*cutter_dis_, itrueresidual_);
 
   if (myrank_ == 0)
@@ -892,10 +892,10 @@ double XFEM::MeshCouplingFPI::calctr_permeability(
   if (!fele) FOUR_C_THROW("Cast to Faceele failed!");
   Core::Elements::Element* coupl_ele = fele->parent_element();
   if (coupl_ele == nullptr) FOUR_C_THROW("No coupl_ele!");
-  Teuchos::RCP<Mat::FluidPoro> poromat;
+  std::shared_ptr<Mat::FluidPoro> poromat;
   // access second material in structure element
   if (coupl_ele->num_material() > 1)
-    poromat = Teuchos::rcp_dynamic_cast<Mat::FluidPoro>(coupl_ele->material(1));
+    poromat = std::dynamic_pointer_cast<Mat::FluidPoro>(coupl_ele->material(1));
   else
     FOUR_C_THROW("no second material defined for element %i", ele->id());
 
@@ -921,11 +921,11 @@ double XFEM::MeshCouplingFPI::calc_porosity(
   double pres = 0.0;
   J = compute_jacobianand_pressure(ele, rst_slave, pres);
 
-  Teuchos::RCP<Mat::StructPoro> poromat;
+  std::shared_ptr<Mat::StructPoro> poromat;
   // access second material in structure element
   if (coupl_ele->num_material() > 1)
   {
-    poromat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(coupl_ele->material(0));
+    poromat = std::dynamic_pointer_cast<Mat::StructPoro>(coupl_ele->material(0));
     if (poromat->material_type() != Core::Materials::m_structporo and
         poromat->material_type() != Core::Materials::m_structpororeaction and
         poromat->material_type() != Core::Materials::m_structpororeactionECM)
@@ -1063,10 +1063,10 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-bool XFEM::MeshCouplingFPI::initialize_fluid_state(Teuchos::RCP<Cut::CutWizard> cutwizard,
-    Teuchos::RCP<Core::FE::Discretization> fluiddis,
-    Teuchos::RCP<XFEM::ConditionManager> condition_manager,
-    Teuchos::RCP<Teuchos::ParameterList> fluidparams)
+bool XFEM::MeshCouplingFPI::initialize_fluid_state(std::shared_ptr<Cut::CutWizard> cutwizard,
+    std::shared_ptr<Core::FE::Discretization> fluiddis,
+    std::shared_ptr<XFEM::ConditionManager> condition_manager,
+    std::shared_ptr<Teuchos::ParameterList> fluidparams)
 {
   if (contact_)
     get_contact_comm()->initialize_fluid_state(cutwizard, fluiddis, condition_manager, fluidparams);

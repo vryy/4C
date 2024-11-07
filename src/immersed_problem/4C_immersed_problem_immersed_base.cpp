@@ -27,8 +27,8 @@ Immersed::ImmersedBase::ImmersedBase() : issetup_(false), isinit_(false)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Immersed::ImmersedBase::build_condition_dof_map(
-    const Teuchos::RCP<const Core::FE::Discretization>& dis, const std::string condname,
-    const Epetra_Map& cond_dofmap_orig, const int numdof, Teuchos::RCP<Epetra_Map>& cond_dofmap)
+    const std::shared_ptr<const Core::FE::Discretization>& dis, const std::string condname,
+    const Epetra_Map& cond_dofmap_orig, const int numdof, std::shared_ptr<Epetra_Map>& cond_dofmap)
 {
   // declare dof vector
   std::vector<int> mydirichdofs(0);
@@ -65,7 +65,7 @@ void Immersed::ImmersedBase::build_condition_dof_map(
 
   int nummydirichvals = mydirichdofs.size();
   cond_dofmap =
-      Teuchos::make_rcp<Epetra_Map>(-1, nummydirichvals, mydirichdofs.data(), 0, dis->get_comm());
+      std::make_shared<Epetra_Map>(-1, nummydirichvals, mydirichdofs.data(), 0, dis->get_comm());
 
   return;
 }  // build_condition_dof_row_map
@@ -141,12 +141,12 @@ void Immersed::ImmersedBase::do_dirichlet_cond(Core::LinAlg::Vector<double>& sta
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Immersed::ImmersedBase::apply_dirichlet(
-    const Teuchos::RCP<Adapter::StructureWrapper>& field_wrapper,
-    const Teuchos::RCP<Core::FE::Discretization>& dis, const std::string condname,
-    Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dirichvals)
+    const std::shared_ptr<Adapter::StructureWrapper>& field_wrapper,
+    const std::shared_ptr<Core::FE::Discretization>& dis, const std::string condname,
+    std::shared_ptr<Epetra_Map>& cond_dofrowmap, const int numdof,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& dirichvals)
 {
-  const Teuchos::RCP<const Epetra_Map> condmap_orig =
+  const std::shared_ptr<const Epetra_Map> condmap_orig =
       field_wrapper->get_dbc_map_extractor()->cond_map();
 
   // build map of dofs subjected to Dirichlet condition
@@ -166,13 +166,13 @@ void Immersed::ImmersedBase::apply_dirichlet(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Immersed::ImmersedBase::apply_dirichlet_to_fluid(
-    const Teuchos::RCP<Adapter::FluidWrapper>& field_wrapper,
-    const Teuchos::RCP<Core::FE::Discretization>& dis, const std::string condname,
-    Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dirichvals)
+    const std::shared_ptr<Adapter::FluidWrapper>& field_wrapper,
+    const std::shared_ptr<Core::FE::Discretization>& dis, const std::string condname,
+    std::shared_ptr<Epetra_Map>& cond_dofrowmap, const int numdof,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& dirichvals)
 {
   // save the original condition map
-  const Teuchos::RCP<const Epetra_Map> condmap_orig =
+  const std::shared_ptr<const Epetra_Map> condmap_orig =
       field_wrapper->get_dbc_map_extractor()->cond_map();
 
   // build map of dofs subjected to Dirichlet condition
@@ -190,8 +190,8 @@ void Immersed::ImmersedBase::apply_dirichlet_to_fluid(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Immersed::ImmersedBase::remove_dirichlet(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
-    const Teuchos::RCP<Adapter::StructureWrapper>& field_wrapper)
+void Immersed::ImmersedBase::remove_dirichlet(const std::shared_ptr<const Epetra_Map>& cond_dofmap,
+    const std::shared_ptr<Adapter::StructureWrapper>& field_wrapper)
 {
   field_wrapper->remove_dirich_dofs(cond_dofmap);
   return;
@@ -201,8 +201,8 @@ void Immersed::ImmersedBase::remove_dirichlet(const Teuchos::RCP<const Epetra_Ma
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Immersed::ImmersedBase::remove_dirichlet_from_fluid(
-    const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
-    const Teuchos::RCP<Adapter::FluidWrapper>& field_wrapper)
+    const std::shared_ptr<const Epetra_Map>& cond_dofmap,
+    const std::shared_ptr<Adapter::FluidWrapper>& field_wrapper)
 {
   field_wrapper->remove_dirich_cond(cond_dofmap);
   return;
@@ -214,7 +214,7 @@ void Immersed::ImmersedBase::remove_dirichlet_from_fluid(
 void Immersed::ImmersedBase::evaluate_immersed(Teuchos::ParameterList& params,
     Core::FE::Discretization& dis, Core::FE::AssembleStrategy* strategy,
     std::map<int, std::set<int>>* elementstoeval,
-    Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
+    std::shared_ptr<Core::Geo::SearchTree> structsearchtree,
     std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, const FLD::Action action,
     bool evaluateonlyboundary)
 {
@@ -241,7 +241,7 @@ void Immersed::ImmersedBase::evaluate_immersed(Teuchos::ParameterList& params,
       int col = strategy->second_dof_set();
 
       params.set<FLD::Action>("action", action);
-      params.set<Teuchos::RCP<Core::Geo::SearchTree>>("structsearchtree_rcp", structsearchtree);
+      params.set<std::shared_ptr<Core::Geo::SearchTree>>("structsearchtree_rcp", structsearchtree);
       params.set<std::map<int, Core::LinAlg::Matrix<3, 1>>*>(
           "currpositions_struct", currpositions_struct);
       params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro_p1);
@@ -272,7 +272,7 @@ void Immersed::ImmersedBase::evaluate_immersed(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*/
 void Immersed::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterList& params,
     Core::FE::Discretization& dis, std::map<int, std::set<int>>* elementstoeval,
-    Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
+    std::shared_ptr<Core::Geo::SearchTree> structsearchtree,
     std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, const FLD::Action action)
 {
   // pointer to element
@@ -295,7 +295,7 @@ void Immersed::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterLis
 
       // provide important objects to ParameterList
       params.set<FLD::Action>("action", action);
-      params.set<Teuchos::RCP<Core::Geo::SearchTree>>("structsearchtree_rcp", structsearchtree);
+      params.set<std::shared_ptr<Core::Geo::SearchTree>>("structsearchtree_rcp", structsearchtree);
       params.set<std::map<int, Core::LinAlg::Matrix<3, 1>>*>(
           "currpositions_struct", currpositions_struct);
       params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro_p1);
@@ -325,7 +325,7 @@ void Immersed::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterLis
 void Immersed::ImmersedBase::evaluate_scatra_with_internal_communication(
     Core::FE::Discretization& dis, const Core::FE::Discretization& idis,
     Core::FE::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
-    Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
+    std::shared_ptr<Core::Geo::SearchTree> structsearchtree,
     std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, Teuchos::ParameterList& params,
     bool evaluateonlyboundary)
 {
@@ -353,7 +353,7 @@ void Immersed::ImmersedBase::evaluate_scatra_with_internal_communication(
       int row = strategy->first_dof_set();
       int col = strategy->second_dof_set();
 
-      params.set<Teuchos::RCP<Core::Geo::SearchTree>>("structsearchtree_rcp", structsearchtree);
+      params.set<std::shared_ptr<Core::Geo::SearchTree>>("structsearchtree_rcp", structsearchtree);
       params.set<std::map<int, Core::LinAlg::Matrix<3, 1>>*>(
           "currpositions_struct", currpositions_struct);
       params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro_p1);
@@ -406,7 +406,7 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(Core::FE::Discreti
 
   Core::Elements::LocationArray la(evaldis.num_dof_sets());
 
-  std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>>::iterator fool;
+  std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>>::iterator fool;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -419,12 +419,12 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(Core::FE::Discreti
       Core::Conditions::Condition& cond = *(fool->second);
       if (condid == -1 || condid == cond.parameters().get<int>("ConditionID"))
       {
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond.geometry();
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = cond.geometry();
         if (geom.empty())
           FOUR_C_THROW(
               "evaluation of condition with empty geometry on proc %d", evaldis.get_comm().MyPID());
 
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+        std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
 
         // Evaluate Loadcurve if defined. Put current load factor in parameterlist
         const auto* curve = cond.parameters().get_if<int>("curve");
@@ -452,7 +452,7 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(Core::FE::Discreti
         {
           params.set("LoadCurveFactor", curvefac);
         }
-        params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", fool->second);
+        params.set<std::shared_ptr<Core::Conditions::Condition>>("condition", fool->second);
 
         int mygeometrysize = -1234;
         if (geom.empty() == true)
@@ -524,7 +524,7 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(Core::FE::Discreti
 /*----------------------------------------------------------------------*/
 void Immersed::ImmersedBase::search_potentially_covered_backgrd_elements(
     std::map<int, std::set<int>>* current_subset_tofill,
-    Teuchos::RCP<Core::Geo::SearchTree> backgrd_SearchTree, const Core::FE::Discretization& dis,
+    std::shared_ptr<Core::Geo::SearchTree> backgrd_SearchTree, const Core::FE::Discretization& dis,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const Core::LinAlg::Matrix<3, 1>& point, const double radius, const int label)
 {

@@ -121,7 +121,7 @@ int Discret::Elements::ScaTraHDGBoundaryImpl<distype>::evaluate_neumann(
   const int* nodeids = ele->node_ids();
 
   Core::Elements::Element* parent = ele->parent_element();
-  Teuchos::RCP<Core::Elements::FaceElement>* faces = parent->faces();
+  std::shared_ptr<Core::Elements::FaceElement>* faces = parent->faces();
   bool same = false;
   for (int i = 0; i < parent->num_face(); ++i)
   {

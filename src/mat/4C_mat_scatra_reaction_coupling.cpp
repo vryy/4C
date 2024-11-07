@@ -16,40 +16,40 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  * factory method                                            vuong 09/16
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Mat::PAR::REACTIONCOUPLING::ReactionInterface>
+std::shared_ptr<Mat::PAR::REACTIONCOUPLING::ReactionInterface>
 Mat::PAR::REACTIONCOUPLING::ReactionInterface::create_reaction(
     Mat::PAR::ReactionCoupling couplingtype,  //!< coupling type defining reaction
     bool isreacstart,                         //!< flag for reaction start feature
     const std::vector<double>& reacstart      //!< reaction start vector
 )
 {
-  Teuchos::RCP<Mat::PAR::REACTIONCOUPLING::ReactionInterface> tmpreaction = Teuchos::null;
+  std::shared_ptr<Mat::PAR::REACTIONCOUPLING::ReactionInterface> tmpreaction = nullptr;
 
   switch (couplingtype)
   {
     case Mat::PAR::reac_coup_simple_multiplicative:  // reaction of type A*B*C:
     {
-      tmpreaction = Teuchos::make_rcp<Mat::PAR::REACTIONCOUPLING::SimpleMultiplicative>();
+      tmpreaction = std::make_shared<Mat::PAR::REACTIONCOUPLING::SimpleMultiplicative>();
       break;
     }
     case Mat::PAR::reac_coup_power_multiplicative:  // reaction of type A^2*B^-1.5*C:
     {
-      tmpreaction = Teuchos::make_rcp<Mat::PAR::REACTIONCOUPLING::PowerMultiplicative>();
+      tmpreaction = std::make_shared<Mat::PAR::REACTIONCOUPLING::PowerMultiplicative>();
       break;
     }
     case Mat::PAR::reac_coup_constant:  // constant source term:
     {
-      tmpreaction = Teuchos::make_rcp<Mat::PAR::REACTIONCOUPLING::Constant>();
+      tmpreaction = std::make_shared<Mat::PAR::REACTIONCOUPLING::Constant>();
       break;
     }
     case Mat::PAR::reac_coup_michaelis_menten:  // reaction of type A*B/(B+4)
     {
-      tmpreaction = Teuchos::make_rcp<Mat::PAR::REACTIONCOUPLING::MichaelisMenten>();
+      tmpreaction = std::make_shared<Mat::PAR::REACTIONCOUPLING::MichaelisMenten>();
       break;
     }
     case Mat::PAR::reac_coup_byfunction:  // reaction by function
     {
-      tmpreaction = Teuchos::make_rcp<Mat::PAR::REACTIONCOUPLING::ByFunction>();
+      tmpreaction = std::make_shared<Mat::PAR::REACTIONCOUPLING::ByFunction>();
       break;
     }
     case Mat::PAR::reac_coup_none:
@@ -61,13 +61,13 @@ Mat::PAR::REACTIONCOUPLING::ReactionInterface::create_reaction(
   }
 
   // we always use potentially scaled phis for the reactions (for reference concentrations)
-  Teuchos::RCP<Mat::PAR::REACTIONCOUPLING::ReactionInterface> scaledreaction =
-      Teuchos::make_rcp<Mat::PAR::REACTIONCOUPLING::ReactionWithPhiScaling>(tmpreaction);
+  std::shared_ptr<Mat::PAR::REACTIONCOUPLING::ReactionInterface> scaledreaction =
+      std::make_shared<Mat::PAR::REACTIONCOUPLING::ReactionWithPhiScaling>(tmpreaction);
 
-  Teuchos::RCP<Mat::PAR::REACTIONCOUPLING::ReactionInterface> reaction = Teuchos::null;
+  std::shared_ptr<Mat::PAR::REACTIONCOUPLING::ReactionInterface> reaction = nullptr;
   // in case of reac start feature, wrap it one more time
   if (isreacstart)
-    reaction = Teuchos::make_rcp<Mat::PAR::REACTIONCOUPLING::ReacStart>(scaledreaction, reacstart);
+    reaction = std::make_shared<Mat::PAR::REACTIONCOUPLING::ReacStart>(scaledreaction, reacstart);
   else
     reaction = scaledreaction;
 

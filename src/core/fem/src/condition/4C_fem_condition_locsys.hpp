@@ -15,7 +15,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_function_manager.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -99,7 +99,7 @@ namespace Core::Conditions
      * nodenormals my remain empty. It is only required for
      * calc_rotation_vector_for_normal_system().
      */
-    void update(double time, std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> nodenormals,
+    void update(double time, std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> nodenormals,
         const Core::Utils::FunctionManager& function_manager);
 
     /*!
@@ -177,7 +177,7 @@ namespace Core::Conditions
      * \brief Retrieve the global transformation matrix
      *
      */
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> trafo() const { return trafo_; }
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> trafo() const { return trafo_; }
 
     //@}
 
@@ -195,7 +195,7 @@ namespace Core::Conditions
      *   \f[ \tilde{R} = Q \cdot R \f]
      */
     void rotate_global_to_local(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
+        std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
         Core::LinAlg::Vector<double>& rhs  ///< right-hand-side vector, will be transformed
     ) const;
 
@@ -203,7 +203,7 @@ namespace Core::Conditions
      * \brief Apply forward transformation of a single matrix
      *
      */
-    void rotate_global_to_local(Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const;
+    void rotate_global_to_local(std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat) const;
 
     /*!
      * \brief Apply forward transformation of a single vector
@@ -216,7 +216,8 @@ namespace Core::Conditions
      *
      */
     void rotate_local_to_global(Core::LinAlg::Vector<double>& result,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat, Core::LinAlg::Vector<double>& rhs) const;
+        std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat,
+        Core::LinAlg::Vector<double>& rhs) const;
 
     /*!
      * \brief Apply backward transformation of a single vector
@@ -262,7 +263,7 @@ namespace Core::Conditions
     int numlocsys_;
 
     /// list of Node Normals for massConsistent BC
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> nodenormals_;
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> nodenormals_;
 
     /// types of local system conditions
     std::vector<Core::Conditions::ConditionType> typelocsys_;
@@ -276,10 +277,10 @@ namespace Core::Conditions
     std::map<int, Core::LinAlg::Matrix<3, 1>> nodalrotvectors_;
 
     /// assignment of local systems to nodes
-    Teuchos::RCP<Core::LinAlg::Vector<double>> locsystoggle_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> locsystoggle_;
 
     /// maps containing the DOFs affected by locsys
-    Teuchos::RCP<Epetra_Map> locsysdofmap_;
+    std::shared_ptr<Epetra_Map> locsysdofmap_;
 
     /// Transformation matrix which maps globally oriented components
     /// into locally oriented components (dubbed 'forward' transformation)
@@ -288,13 +289,13 @@ namespace Core::Conditions
     /// one should be aware of that it is treated like a rotational
     /// transformation matrix. This means: The inverse (or 'backward') mapping
     /// is simply implemented as its transpose rather than a general inverse.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> trafo_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> trafo_;
 
     /// Transformation 'sub'-matrix with non-identity entries
     ///
     /// This is actually not a sub-matrix, but a global matrix
     /// with nil entries at (a lot) places
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> subtrafo_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> subtrafo_;
 
     // Boolean, which is yes if a locsys warning has already been thrown
     bool warning_thrown_;

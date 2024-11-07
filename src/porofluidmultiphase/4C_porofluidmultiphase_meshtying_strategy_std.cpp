@@ -45,7 +45,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::update() { return; }
  | initialize the linear solver                            kremheller 07/20 |
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::initialize_linear_solver(
-    Teuchos::RCP<Core::LinAlg::Solver> solver)
+    std::shared_ptr<Core::LinAlg::Solver> solver)
 {
   porofluidmultitimint_->discretization()->compute_null_space_if_necessary(solver->params());
 }
@@ -54,9 +54,11 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::initialize_linear_solver(
  | solve linear system of equations                        kremheller 04/18 |
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::linear_solve(
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> increment,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual, Core::LinAlg::SolverParams& solver_params)
+    std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Core::LinAlg::SparseOperator> sysmat,
+    std::shared_ptr<Core::LinAlg::Vector<double>> increment,
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual,
+    Core::LinAlg::SolverParams& solver_params)
 {
   solver_params.refactor = true;
   solver_params.reset = true;
@@ -70,7 +72,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::linear_solve(
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::calculate_norms(std::vector<double>& preresnorm,
     std::vector<double>& incprenorm, std::vector<double>& prenorm,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> increment)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> increment)
 {
   preresnorm.resize(1);
   incprenorm.resize(1);
@@ -106,9 +108,9 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::evaluate() { return; }
 /*----------------------------------------------------------------------*
  | extract and update                                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 POROFLUIDMULTIPHASE::MeshtyingStrategyStd::extract_and_update_iter(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> inc)
 {
   return inc;
 }
@@ -116,9 +118,9 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyStd::extract_and_update_iter(
 /*----------------------------------------------------------------------*
  | extract and update                                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 POROFLUIDMULTIPHASE::MeshtyingStrategyStd::combined_increment(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) const
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> inc) const
 {
   return inc;
 }
@@ -127,7 +129,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyStd::combined_increment(
  | check initial fields                                kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::check_initial_fields(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_cont) const
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vec_cont) const
 {
   return;
 }

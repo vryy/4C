@@ -56,14 +56,6 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
-    : beam_contact_params_ptr_(Teuchos::null),
-      beam_interaction_params_ptr_(Teuchos::null),
-      beam_interaction_conditions_ptr_(Teuchos::null),
-      geometric_search_params_ptr_(Teuchos::null),
-      contact_elepairs_(Teuchos::null),
-      assembly_managers_(Teuchos::null),
-      beam_to_solid_volume_meshtying_visualization_output_writer_ptr_(Teuchos::null),
-      beam_to_solid_surface_visualization_output_writer_ptr_(Teuchos::null)
 {
   // clear stl stuff
   nearby_elements_map_.clear();
@@ -77,12 +69,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
   check_init();
 
   // build a new data container to manage beam interaction parameters
-  beam_interaction_params_ptr_ = Teuchos::make_rcp<BEAMINTERACTION::BeamInteractionParams>();
+  beam_interaction_params_ptr_ = std::make_shared<BEAMINTERACTION::BeamInteractionParams>();
   beam_interaction_params_ptr_->init();
   beam_interaction_params_ptr_->setup();
 
   // build a new data container to manage geometric search parameters
-  geometric_search_params_ptr_ = Teuchos::make_rcp<Core::GeometricSearch::GeometricSearchParams>(
+  geometric_search_params_ptr_ = std::make_shared<Core::GeometricSearch::GeometricSearchParams>(
       Global::Problem::instance()->geometric_search_params(),
       Global::Problem::instance()->io_params());
   if (beam_interaction_params_ptr_->get_search_strategy() ==
@@ -90,7 +82,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
       geometric_search_params_ptr_->get_write_visualization_flag())
   {
     geometric_search_visualization_ptr_ =
-        Teuchos::make_rcp<Core::GeometricSearch::GeometricSearchVisualization>(
+        std::make_shared<Core::GeometricSearch::GeometricSearchVisualization>(
             Core::IO::visualization_parameters_factory(
                 Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
                 *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
@@ -98,7 +90,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
   }
 
   // build a new data container to manage beam contact parameters
-  beam_contact_params_ptr_ = Teuchos::make_rcp<BEAMINTERACTION::BeamContactParams>();
+  beam_contact_params_ptr_ = std::make_shared<BEAMINTERACTION::BeamContactParams>();
 
   // build runtime visualization writer if desired
   if (Global::Problem::instance()
@@ -158,7 +150,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
             ->get_output_flag())
     {
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ =
-          Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>(
+          std::make_shared<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>(
 
               Core::IO::visualization_parameters_factory(
                   Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
@@ -186,7 +178,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
             ->get_output_flag())
     {
       beam_to_solid_surface_visualization_output_writer_ptr_ =
-          Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>(
+          std::make_shared<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>(
 
               Core::IO::visualization_parameters_factory(
                   Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
@@ -214,7 +206,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
             ->get_output_flag())
     {
       beam_to_solid_surface_visualization_output_writer_contact_ptr_ =
-          Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriterContact>(
+          std::make_shared<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriterContact>(
 
               Core::IO::visualization_parameters_factory(
                   Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
@@ -225,8 +217,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
   }
 
   // Build the container to manage beam-to-solid conditions and get all coupling conditions.
-  beam_interaction_conditions_ptr_ =
-      Teuchos::make_rcp<BEAMINTERACTION::BeamInteractionConditions>();
+  beam_interaction_conditions_ptr_ = std::make_shared<BEAMINTERACTION::BeamInteractionConditions>();
   beam_interaction_conditions_ptr_->set_beam_interaction_conditions(
       *discret_ptr(), *beam_contact_params_ptr_);
 
@@ -250,7 +241,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::post_setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_submodel_dependencies(
-    Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
+    std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
   // no active influence on other submodels
@@ -263,10 +254,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::reset()
 {
   check_init_setup();
 
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>::const_iterator iter;
+  std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>::const_iterator iter;
   for (iter = contact_elepairs_.begin(); iter != contact_elepairs_.end(); ++iter)
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
+    std::shared_ptr<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
 
     std::vector<const Core::Elements::Element*> element_ptr(2);
 
@@ -312,7 +303,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::evaluate_force()
   for (auto& assembly_manager : assembly_managers_)
   {
     assembly_manager->evaluate_force_stiff(discret_ptr(), beam_interaction_data_state_ptr(),
-        beam_interaction_data_state_ptr()->get_force_np(), Teuchos::null);
+        beam_interaction_data_state_ptr()->get_force_np(), nullptr);
   }
 
   return true;
@@ -330,7 +321,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::evaluate_stiff()
   for (auto& assembly_manager : assembly_managers_)
   {
     assembly_manager->evaluate_force_stiff(discret_ptr(), beam_interaction_data_state_ptr(),
-        Teuchos::null, beam_interaction_data_state_ptr()->get_stiff());
+        nullptr, beam_interaction_data_state_ptr()->get_stiff());
   }
 
   return true;
@@ -391,7 +382,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bo
   /* Note: another option would be to not use any data from state vectors or elements and only
    * write previously computed and (locally) stored data at this point. Like
    * this, it works in SUBMODELEVALUATOR::BeamPotential */
-  if (visualization_manager_ptr_ != Teuchos::null and
+  if (visualization_manager_ptr_ != nullptr and
       g_state().get_step_n() % beam_contact_params()
                                    .beam_contact_runtime_visualization_output_params()
                                    ->output_interval_in_steps() ==
@@ -399,11 +390,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bo
   {
     write_time_step_output_runtime_beam_contact();
   }
-  if (beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ != Teuchos::null)
+  if (beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ != nullptr)
     beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->write_output_runtime(this);
-  if (beam_to_solid_surface_visualization_output_writer_ptr_ != Teuchos::null)
+  if (beam_to_solid_surface_visualization_output_writer_ptr_ != nullptr)
     beam_to_solid_surface_visualization_output_writer_ptr_->write_output_runtime(this);
-  if (beam_to_solid_surface_visualization_output_writer_contact_ptr_ != Teuchos::null)
+  if (beam_to_solid_surface_visualization_output_writer_contact_ptr_ != nullptr)
     beam_to_solid_surface_visualization_output_writer_contact_ptr_->write_output_runtime(this);
 
   // not repartition of binning discretization necessary
@@ -470,7 +461,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_output_runtime_beam_c
 {
   check_init();
 
-  visualization_manager_ptr_ = Teuchos::make_rcp<Core::IO::VisualizationManager>(
+  visualization_manager_ptr_ = std::make_shared<Core::IO::VisualizationManager>(
       beam_contact_params()
           .beam_contact_runtime_visualization_output_params()
           ->get_visualization_parameters(),
@@ -520,7 +511,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_output_runtime_beam_
   unsigned int num_row_points = 0;
 
   // loop over contact pairs and retrieve number of all active contact point pairs
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>::const_iterator pair_iter;
+  std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>::const_iterator pair_iter;
   for (pair_iter = contact_elepairs_.begin(); pair_iter != contact_elepairs_.end(); ++pair_iter)
   {
     num_row_points += 2 * (*pair_iter)->get_num_all_active_contact_point_pairs();
@@ -662,24 +653,24 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::run_post_iterate(
 {
   check_init_setup();
 
-  if (visualization_manager_ptr_ != Teuchos::null and
+  if (visualization_manager_ptr_ != nullptr and
       beam_contact_params()
           .beam_contact_runtime_visualization_output_params()
           ->output_every_iteration())
   {
     write_iteration_output_runtime_beam_contact(solver.getNumIterations());
   }
-  if (beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ != Teuchos::null)
+  if (beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ != nullptr)
   {
     beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->write_output_runtime_iteration(
         this, solver.getNumIterations());
   }
-  if (beam_to_solid_surface_visualization_output_writer_ptr_ != Teuchos::null)
+  if (beam_to_solid_surface_visualization_output_writer_ptr_ != nullptr)
   {
     beam_to_solid_surface_visualization_output_writer_ptr_->write_output_runtime_iteration(
         this, solver.getNumIterations());
   }
-  if (beam_to_solid_surface_visualization_output_writer_contact_ptr_ != Teuchos::null)
+  if (beam_to_solid_surface_visualization_output_writer_contact_ptr_ != nullptr)
   {
     beam_to_solid_surface_visualization_output_writer_contact_ptr_->write_output_runtime_iteration(
         this, solver.getNumIterations());
@@ -895,7 +886,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
         other_bounding_boxes.emplace_back(
             std::make_pair(currele->id(), currele->get_bounding_volume(discret(),
                                               *beam_interaction_data_state_ptr()->get_dis_col_np(),
-                                              *geometric_search_params_ptr_.getConst())));
+                                              *geometric_search_params_ptr_)));
       }
     }
 
@@ -921,7 +912,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
     }
 
     // Check if the primitives and predicates should be output
-    if (geometric_search_visualization_ptr_ != Teuchos::null)
+    if (geometric_search_visualization_ptr_ != nullptr)
     {
       // Output is desired, so create it right here, because we only search the pairs once per time
       // step anyways.
@@ -1008,10 +999,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
       ele_ptrs[1] = *secondeleiter;
 
       // construct, init and setup contact pairs
-      Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
+      std::shared_ptr<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
           BEAMINTERACTION::BeamContactPair::create(ele_ptrs, *beam_interaction_conditions_ptr_);
 
-      if (newbeaminteractionpair != Teuchos::null)
+      if (newbeaminteractionpair != nullptr)
       {
         newbeaminteractionpair->init(beam_contact_params_ptr_, ele_ptrs);
         newbeaminteractionpair->setup();
@@ -1026,7 +1017,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
   beam_interaction_conditions_ptr_->setup(discret_ptr());
 
   // Get the pairs that can be assembled directly.
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_pairs_direct;
+  std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> assembly_pairs_direct;
   for (auto& elepairptr : contact_elepairs_)
     if (elepairptr->is_assembly_direct()) assembly_pairs_direct.push_back(elepairptr);
 
@@ -1040,7 +1031,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
   // Create the needed assembly manager.
   if (global_direct_pairs > 0)
     assembly_managers_.push_back(
-        Teuchos::make_rcp<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(
+        std::make_shared<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(
 
             assembly_pairs_direct));
 
@@ -1087,7 +1078,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::print_all_beam_contact_ele
     std::ostream& out) const
 {
   out << "\n\nCurrent BeamContactElementPairs: ";
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>::const_iterator iter;
+  std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>::const_iterator iter;
   for (iter = contact_elepairs_.begin(); iter != contact_elepairs_.end(); ++iter)
     (*iter)->print(out);
 }

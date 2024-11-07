@@ -37,15 +37,15 @@ Mat::PAR::ElchMat::ElchMat(const Core::Mat::PAR::Parameter::Data& matdata)
     for (n = phaseids_.begin(); n != phaseids_.end(); ++n)
     {
       const int phaseid = *n;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(phaseid);
-      mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(phaseid, mat));
+      std::shared_ptr<Core::Mat::Material> mat = Mat::factory(phaseid);
+      mat_.insert(std::pair<int, std::shared_ptr<Core::Mat::Material>>(phaseid, mat));
     }
   }
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ElchMat::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ElchMat::create_material()
 {
-  return Teuchos::make_rcp<Mat::ElchMat>(this);
+  return std::make_shared<Mat::ElchMat>(this);
 }
 
 
@@ -93,9 +93,9 @@ void Mat::ElchMat::setup_mat_map()
   for (n = params_->phase_ids().begin(); n != params_->phase_ids().end(); ++n)
   {
     const int phaseid = *n;
-    Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(phaseid);
-    if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(phaseid, mat));
+    std::shared_ptr<Core::Mat::Material> mat = Mat::factory(phaseid);
+    if (mat == nullptr) FOUR_C_THROW("Failed to allocate this material");
+    mat_.insert(std::pair<int, std::shared_ptr<Core::Mat::Material>>(phaseid, mat));
   }
   return;
 }
@@ -151,7 +151,7 @@ void Mat::ElchMat::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid(-1);
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -171,9 +171,9 @@ void Mat::ElchMat::unpack(Core::Communication::UnpackBuffer& buffer)
     for (n = params_->phase_ids().begin(); n != params_->phase_ids().end(); n++)
     {
       const int actphaseid = *n;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(actphaseid);
-      if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-      mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(actphaseid, mat));
+      std::shared_ptr<Core::Mat::Material> mat = Mat::factory(actphaseid);
+      if (mat == nullptr) FOUR_C_THROW("Failed to allocate this material");
+      mat_.insert(std::pair<int, std::shared_ptr<Core::Mat::Material>>(actphaseid, mat));
     }
 
     if (params_->local_)

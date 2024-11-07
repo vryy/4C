@@ -49,34 +49,34 @@ namespace Discret
       /*========================================================================*/
 
       //! evaluate material
-      void materials(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,       //!< density at t_(n+alpha_M)
-          double& visc,         //!< fluid viscosity
-          const int iquad = -1  //!< id of current gauss point (default = -1)
+      void materials(const std::shared_ptr<const Core::Mat::Material>
+                         material,  //!< pointer to current material
+          const int k,              //!< id of current scalar
+          double& densn,            //!< density at t_(n)
+          double& densnp,           //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,           //!< density at t_(n+alpha_M)
+          double& visc,             //!< fluid viscosity
+          const int iquad = -1      //!< id of current gauss point (default = -1)
           ) override;
 
       //! material Sutherland
-      void mat_sutherland(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,  //!< density at t_(n+alpha_M)
-          double& visc     //!< fluid viscosity
+      void mat_sutherland(const std::shared_ptr<const Core::Mat::Material>
+                              material,  //!< pointer to current material
+          const int k,                   //!< id of current scalar
+          double& densn,                 //!< density at t_(n)
+          double& densnp,                //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,                //!< density at t_(n+alpha_M)
+          double& visc                   //!< fluid viscosity
       );
 
       //! material thermo St. Venant Kirchhoff
-      void mat_thermo_st_venant_kirchhoff(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,  //!< density at t_(n+alpha_M)
-          double& visc     //!< fluid viscosity
+      void mat_thermo_st_venant_kirchhoff(const std::shared_ptr<const Core::Mat::Material>
+                                              material,  //!< pointer to current material
+          const int k,                                   //!< id of current scalar
+          double& densn,                                 //!< density at t_(n)
+          double& densnp,                                //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,                                //!< density at t_(n+alpha_M)
+          double& visc                                   //!< fluid viscosity
       );
 
       /*========================================================================*/
@@ -128,7 +128,7 @@ namespace Discret
 
       //! get density at integration point
       double get_density(const Core::Elements::Element* ele,
-          Teuchos::RCP<const Core::Mat::Material> material, Teuchos::ParameterList& params,
+          std::shared_ptr<const Core::Mat::Material> material, Teuchos::ParameterList& params,
           const double tempnp) override;
 
       //! calculate viscous part of subgrid-scale velocity

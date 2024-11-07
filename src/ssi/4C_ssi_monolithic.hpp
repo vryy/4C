@@ -71,26 +71,26 @@ namespace SSI
     );
 
     //! return global map of degrees of freedom
-    const Teuchos::RCP<const Epetra_Map>& dof_row_map() const;
+    const std::shared_ptr<const Epetra_Map>& dof_row_map() const;
 
     void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
     //! return global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> maps_sub_problems() const;
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> maps_sub_problems() const;
 
     //! return map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_scatra() const;
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> block_map_scatra() const;
 
     //! return map extractor associated with all degrees of freedom inside scatra manifold field
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_scatra_manifold() const;
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> block_map_scatra_manifold() const;
 
     //! return map extractor associated with all degrees of freedom inside structural field
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_structure() const;
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> block_map_structure() const;
 
     //! return map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_system_matrix() const;
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> block_map_system_matrix() const;
 
     //! Return matrix type of global system matrix
     Core::LinAlg::MatrixType matrix_type() const { return matrixtype_; };
@@ -110,7 +110,7 @@ namespace SSI
     void solve_linear_system();
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps() const { return ssi_maps_; }
+    std::shared_ptr<SSI::Utils::SSIMaps> ssi_maps() const { return ssi_maps_; }
 
     //! return algebraic solver for global system of equations
     const Core::LinAlg::Solver& solver() const { return *solver_; };
@@ -221,7 +221,7 @@ namespace SSI
     void update_iter_structure();
 
     //! Dirichlet boundary condition handler
-    Teuchos::RCP<SSI::DBCHandlerBase> dbc_handler_;
+    std::shared_ptr<SSI::DBCHandlerBase> dbc_handler_;
 
     //! time for element evaluation and assembly of global system of equations
     double dt_eval_ = 0.0;
@@ -233,7 +233,7 @@ namespace SSI
     const struct SSIMonoEquilibrationMethod equilibration_method_;
 
     //! Evaluation of coupling flux between scatra and manifold on scatra
-    Teuchos::RCP<SSI::ScaTraManifoldScaTraFluxEvaluator> manifoldscatraflux_;
+    std::shared_ptr<SSI::ScaTraManifoldScaTraFluxEvaluator> manifoldscatraflux_;
 
     //! type of global system matrix in global system of equations
     const Core::LinAlg::MatrixType matrixtype_;
@@ -249,40 +249,40 @@ namespace SSI
     const int relax_lin_solver_iter_step_;
 
     //! all OD evaluation is in here
-    Teuchos::RCP<SSI::ScatraStructureOffDiagCoupling> scatrastructure_off_diagcoupling_;
+    std::shared_ptr<SSI::ScatraStructureOffDiagCoupling> scatrastructure_off_diagcoupling_;
 
     //! algebraic solver for global system of equations
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;
+    std::shared_ptr<Core::LinAlg::Solver> solver_;
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps_;
+    std::shared_ptr<SSI::Utils::SSIMaps> ssi_maps_;
 
     //! this object holds the system matrix and all sub blocks
-    Teuchos::RCP<SSI::Utils::SSIMatrices> ssi_matrices_;
+    std::shared_ptr<SSI::Utils::SSIMatrices> ssi_matrices_;
 
     //! this object holds the system residuals and increment
-    Teuchos::RCP<SSI::Utils::SSIVectors> ssi_vectors_;
+    std::shared_ptr<SSI::Utils::SSIVectors> ssi_vectors_;
 
     //! strategy how to assembly system matrix and rhs
-    Teuchos::RCP<SSI::AssembleStrategyBase> strategy_assemble_;
+    std::shared_ptr<SSI::AssembleStrategyBase> strategy_assemble_;
 
     //! strategy how to apply contact contributions to sub matrices and rhs
-    Teuchos::RCP<SSI::ContactStrategyBase> strategy_contact_;
+    std::shared_ptr<SSI::ContactStrategyBase> strategy_contact_;
 
     //! strategy for Newton-Raphson convergence check
-    Teuchos::RCP<SSI::SsiMono::ConvCheckStrategyBase> strategy_convcheck_;
+    std::shared_ptr<SSI::SsiMono::ConvCheckStrategyBase> strategy_convcheck_;
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<Core::LinAlg::Equilibration> strategy_equilibration_;
+    std::shared_ptr<Core::LinAlg::Equilibration> strategy_equilibration_;
 
     //! strategy how to apply mesh tying on manifold domains
-    Teuchos::RCP<SSI::ManifoldMeshTyingStrategyBase> strategy_manifold_meshtying_;
+    std::shared_ptr<SSI::ManifoldMeshTyingStrategyBase> strategy_manifold_meshtying_;
 
     //! strategy how to apply mesh tying to system matrix and rhs
-    Teuchos::RCP<SSI::MeshtyingStrategyBase> strategy_meshtying_;
+    std::shared_ptr<SSI::MeshtyingStrategyBase> strategy_meshtying_;
 
     //! timer for Newton-Raphson iteration
-    Teuchos::RCP<Teuchos::Time> timer_;
+    std::shared_ptr<Teuchos::Time> timer_;
   };
 }  // namespace SSI
 FOUR_C_NAMESPACE_CLOSE

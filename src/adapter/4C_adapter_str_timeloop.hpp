@@ -30,7 +30,9 @@ namespace Adapter
   {
    public:
     /// constructor
-    explicit StructureTimeLoop(Teuchos::RCP<Structure> structure) : StructureWrapper(structure) {}
+    explicit StructureTimeLoop(std::shared_ptr<Structure> structure) : StructureWrapper(structure)
+    {
+    }
 
     /// actual time loop
     int integrate() override;

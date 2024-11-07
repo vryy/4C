@@ -78,7 +78,7 @@ namespace Inpar
 
     /// set specific immersed conditions
     void set_valid_conditions(
-        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
+        std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace Immersed
 }  // namespace Inpar

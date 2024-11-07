@@ -30,30 +30,30 @@ namespace CONTACT
     //! Standard constructor
     NitscheStrategySsi(const Epetra_Map* dofRowMap, const Epetra_Map* nodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
-        const Teuchos::RCP<Epetra_Comm>& comm, double alphaf, int maxdof)
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
+        const std::shared_ptr<Epetra_Comm>& comm, double alphaf, int maxdof)
         : NitscheStrategy(
               dofRowMap, nodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof)
     {
     }
 
     //! Shared data constructor
-    NitscheStrategySsi(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategySsi(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dofRowMap, const Epetra_Map* nodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
-        const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
+        const std::shared_ptr<const Epetra_Comm>& comm, double alphaf, int maxdof)
         : NitscheStrategy(data_ptr, dofRowMap, nodeRowMap, params, std::move(interface), dim, comm,
               alphaf, maxdof)
     {
     }
 
-    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+    void apply_force_stiff_cmt(std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& kt,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
         bool predictor) override
     {
-      if (kt != Teuchos::null && f != Teuchos::null)
+      if (kt != nullptr && f != nullptr)
       {
         NitscheStrategy::apply_force_stiff_cmt(dis, kt, f, step, iter, predictor);
       }
@@ -70,7 +70,7 @@ namespace CONTACT
     void set_parent_state(const enum Mortar::StateType& statename,
         const Core::LinAlg::Vector<double>& vec, const Core::FE::Discretization& dis) override;
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bp) const override;
 
     /*!
@@ -79,7 +79,7 @@ namespace CONTACT
      * @param[in] bt   block type of requested matrix block
      * @return pointer to matrix block
      */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bp) const;
 
     //! don't want = operator
@@ -88,25 +88,25 @@ namespace CONTACT
     NitscheStrategySsi(const NitscheStrategySsi& old) = delete;
 
    protected:
-    Teuchos::RCP<Epetra_FEVector> setup_rhs_block_vec(
+    std::shared_ptr<Epetra_FEVector> setup_rhs_block_vec(
         const enum CONTACT::VecBlockType& bt) const override;
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> setup_matrix_block_ptr(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> setup_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt) override;
 
-    void complete_matrix_block_ptr(
-        const enum CONTACT::MatBlockType& bt, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) override;
+    void complete_matrix_block_ptr(const enum CONTACT::MatBlockType& bt,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> kc) override;
 
     //! current scalar state vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> curr_state_scalar_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> curr_state_scalar_;
     //! ScaTra residual
-    Teuchos::RCP<Epetra_FEVector> fs_;
+    std::shared_ptr<Epetra_FEVector> fs_;
     //! linearization of ScaTra residual w.r.t ScaTra dofs
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kss_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kss_;
     //! linearization of ScaTra residual w.r.t displacement dofs
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> ksd_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> ksd_;
     //! linearization of displacement residual w.r.t ScaTra dofs
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kds_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kds_;
   };
 }  // namespace CONTACT
 

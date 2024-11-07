@@ -76,7 +76,7 @@ namespace Cut
   {
    public:
     /// constructor
-    Mesh(Options& options, double norm = 1, Teuchos::RCP<PointPool> pp = Teuchos::null,
+    Mesh(Options& options, double norm = 1, std::shared_ptr<PointPool> pp = nullptr,
         bool cutmesh = false, int myrank = -1);
 
     /*========================================================================*/
@@ -340,7 +340,7 @@ namespace Cut
 
 
     //! Return the elements of this mesh
-    std::map<int, Teuchos::RCP<Element>> get_mesh_elements() { return elements_; }
+    std::map<int, std::shared_ptr<Element>> get_mesh_elements() { return elements_; }
 
     /*========================================================================*/
     //! @name print statistics
@@ -463,13 +463,13 @@ namespace Cut
     /*========================================================================*/
 
     /// get the octTree based PointPool that contains all points of the current mesh
-    Teuchos::RCP<PointPool> points() { return pp_; }
+    std::shared_ptr<PointPool> points() { return pp_; }
 
     /// get a list of all volumecells
-    const std::list<Teuchos::RCP<VolumeCell>>& volume_cells() const { return cells_; }
+    const std::list<std::shared_ptr<VolumeCell>>& volume_cells() const { return cells_; }
 
     /// ???
-    const std::map<plain_int_set, Teuchos::RCP<Edge>>& edges() const { return edges_; }
+    const std::map<plain_int_set, std::shared_ptr<Edge>>& edges() const { return edges_; }
 
 
     /*========================================================================*/
@@ -510,10 +510,10 @@ namespace Cut
     /*========================================================================*/
 
     /// Returns all sides of the cutmesh
-    const std::map<plain_int_set, Teuchos::RCP<Side>>& sides() const { return sides_; }
+    const std::map<plain_int_set, std::shared_ptr<Side>>& sides() const { return sides_; }
 
     /// Returns of search tree all sides of the cutmesh
-    const Teuchos::RCP<Core::Geo::SearchTree>& self_cut_tree() const { return selfcuttree_; }
+    const std::shared_ptr<Core::Geo::SearchTree>& self_cut_tree() const { return selfcuttree_; }
 
     /// Returns the bounding volumes of all sides of the cutmesh
     const std::map<int, Core::LinAlg::Matrix<3, 2>>& self_cut_bvs() const { return selfcutbvs_; }
@@ -522,13 +522,13 @@ namespace Cut
     const std::map<int, Side*>& shadow_sides() const { return shadow_sides_; }
 
     /// Returns all nodes of the cutmesh
-    const std::map<int, Teuchos::RCP<Node>>& nodes() const { return nodes_; }
+    const std::map<int, std::shared_ptr<Node>>& nodes() const { return nodes_; }
 
     /// Creates a new node in the cutmesh
-    void get_node(int nid, Node* node) { nodes_[nid] = Teuchos::RCP(node); }
+    void get_node(int nid, Node* node) { nodes_[nid] = std::shared_ptr<Node>(node); }
 
     /// Creates a new edge in the cutmesh
-    void get_edge(plain_int_set eid, const Teuchos::RCP<Edge>& edge) { edges_[eid] = edge; }
+    void get_edge(plain_int_set eid, const std::shared_ptr<Edge>& edge) { edges_[eid] = edge; }
 
     /// Erases a side of the cutmesh
     void erase_side(plain_int_set sid) { sides_.erase(sid); }
@@ -582,10 +582,10 @@ namespace Cut
     double norm_;
 
     /// shared point storage with geometry based access (octtree)
-    Teuchos::RCP<PointPool> pp_;
+    std::shared_ptr<PointPool> pp_;
 
     /// bounding box of this mesh
-    Teuchos::RCP<BoundingBox> bb_;
+    std::shared_ptr<BoundingBox> bb_;
 
     /// (output) flag for cut mesh
     ///  TODO: Remove this!
@@ -593,13 +593,13 @@ namespace Cut
     bool cutmesh_;
 
     /// the spatial partitioning octree for a fast collision detection in the self cut
-    Teuchos::RCP<Core::Geo::SearchTree> selfcuttree_;
+    std::shared_ptr<Core::Geo::SearchTree> selfcuttree_;
 
     /// the bounding volumes for a fast collision detection in the self cut
     std::map<int, Core::LinAlg::Matrix<3, 2>> selfcutbvs_;
 
     /// the spatial partitioning octree for a fast collision detection
-    Teuchos::RCP<Core::Geo::SearchTree> searchtree_;
+    std::shared_ptr<Core::Geo::SearchTree> searchtree_;
 
     /// the bounding volumes for a fast collision detection
     std::map<int, Core::LinAlg::Matrix<3, 2>> boundingvolumes_;
@@ -609,24 +609,24 @@ namespace Cut
     /*========================================================================*/
 
     /// Plain pointers are used within the library. Memory management is done here.
-    std::list<Teuchos::RCP<Line>> lines_;
-    std::list<Teuchos::RCP<Facet>> facets_;
-    std::list<Teuchos::RCP<VolumeCell>> cells_;
-    std::list<Teuchos::RCP<BoundaryCell>> boundarycells_;
-    std::list<Teuchos::RCP<IntegrationCell>> integrationcells_;
+    std::list<std::shared_ptr<Line>> lines_;
+    std::list<std::shared_ptr<Facet>> facets_;
+    std::list<std::shared_ptr<VolumeCell>> cells_;
+    std::list<std::shared_ptr<BoundaryCell>> boundarycells_;
+    std::list<std::shared_ptr<IntegrationCell>> integrationcells_;
 
     /// nodes by unique id, contains also shadow nodes with negative node-Ids
     /// Remark: the negative nids of shadow nodes are not unique over processors!
-    std::map<int, Teuchos::RCP<Node>> nodes_;
+    std::map<int, std::shared_ptr<Node>> nodes_;
 
     /// edges by set of nodal ids
-    std::map<plain_int_set, Teuchos::RCP<Edge>> edges_;
+    std::map<plain_int_set, std::shared_ptr<Edge>> edges_;
 
     /// sides by set of nodal ids
-    std::map<plain_int_set, Teuchos::RCP<Side>> sides_;
+    std::map<plain_int_set, std::shared_ptr<Side>> sides_;
 
     /// elements by unique id
-    std::map<int, Teuchos::RCP<Element>> elements_;
+    std::map<int, std::shared_ptr<Element>> elements_;
 
     /// internally generated nodes by nodal ids of element nodes
     /// there is at most one unique shadow node for each 2D side element (no for quad9 side, one
@@ -645,15 +645,15 @@ namespace Cut
     std::map<int, Side*> shadow_sides_;
 
     /// new: unique map between int ( < 0 ) and element; int is not eid and not parentid
-    std::map<int, Teuchos::RCP<Element>> shadow_elements_;
+    std::map<int, std::shared_ptr<Element>> shadow_elements_;
 
     /// A storage container for sides which should not interact with the CUT anymore (If we want
     /// to access these geometric objects still from outside)
-    std::map<plain_int_set, Teuchos::RCP<Side>> storagecontainer_sides_;
+    std::map<plain_int_set, std::shared_ptr<Side>> storagecontainer_sides_;
 
     /// A storage container for nodes which should not interact with the CUT anymore (If we want
     /// to access these geometric objects still from outside)
-    std::map<int, Teuchos::RCP<Node>> storagecontainer_nodes_;
+    std::map<int, std::shared_ptr<Node>> storagecontainer_nodes_;
 
     /// processor id --> required just for output!
     int myrank_;

@@ -18,8 +18,9 @@
 #include "4C_linalg_vector.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -72,7 +73,7 @@ namespace FLD
   {
    public:
     /// ctor
-    XFluidStateCreator(Teuchos::RCP<XFEM::ConditionManager> condition_manager,
+    XFluidStateCreator(std::shared_ptr<XFEM::ConditionManager> condition_manager,
         Teuchos::ParameterList& params_xfem, int maxnumdofsets, int minnumdofsets,
         bool include_inner)
         : condition_manager_(condition_manager),
@@ -90,9 +91,9 @@ namespace FLD
     }
 
     /// create a state-object after a cut (pure XFEM fluid)
-    Teuchos::RCP<XFluidState> create(const Teuchos::RCP<XFEM::DiscretizationXFEM>&
-                                         xdiscret,  //!< xfluid background discretization
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    std::shared_ptr<XFluidState> create(const std::shared_ptr<XFEM::DiscretizationXFEM>&
+                                            xdiscret,  //!< xfluid background discretization
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
         Teuchos::ParameterList& solver_params,  //!< solver parameters
         const int step,                         //!< current time step
@@ -100,11 +101,11 @@ namespace FLD
     );
 
     /// create a state-object after a cut (XFEM fluid with embedded fluid mesh)
-    Teuchos::RCP<XFluidFluidState> create(const Teuchos::RCP<XFEM::DiscretizationXFEM>&
-                                              xdiscret,  //!< xfluid background discretization
-        const Teuchos::RCP<Core::FE::Discretization>&
+    std::shared_ptr<XFluidFluidState> create(const std::shared_ptr<XFEM::DiscretizationXFEM>&
+                                                 xdiscret,  //!< xfluid background discretization
+        const std::shared_ptr<Core::FE::Discretization>&
             embfluiddiscret,  //!< embedded fluid discretization
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
         Teuchos::ParameterList& solver_params,  //!< solver parameters
         const int step,                         //!< current time step
@@ -115,12 +116,12 @@ namespace FLD
    private:
     /// create wizard, perform cut, create new dofset and update xfem discretization
     void create_new_cut_state(
-        Teuchos::RCP<XFEM::XFEMDofSet>& dofset,  //!< xfem dofset obtained from the new wizard
-        Teuchos::RCP<Cut::CutWizard>&
+        std::shared_ptr<XFEM::XFEMDofSet>& dofset,  //!< xfem dofset obtained from the new wizard
+        std::shared_ptr<Cut::CutWizard>&
             wizard,  //!< cut wizard associated with current intersection state
-        const Teuchos::RCP<XFEM::DiscretizationXFEM>&
+        const std::shared_ptr<XFEM::DiscretizationXFEM>&
             xdiscret,  //!< xfluid background discretization
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
         Teuchos::ParameterList& solver_params,  //!< solver parameters
         const int step                          //!< current time step
@@ -128,7 +129,7 @@ namespace FLD
 
 
     //! condition manager which handles all coupling objects and the coupling/boundary conditions
-    Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
+    std::shared_ptr<XFEM::ConditionManager> condition_manager_;
 
     //! strategy for nodal dofset management
     const Cut::NodalDofSetStrategy nodal_dofset_strategy_;

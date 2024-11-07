@@ -27,7 +27,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingPar
       rotational_coupling_triad_construction_(
           Inpar::BeamToSolid::BeamToSolidRotationCoupling::none),
       rotational_coupling_penalty_parameter_(0.0),
-      output_params_ptr_(Teuchos::null),
+      output_params_ptr_(nullptr),
       couple_restart_state_(false)
 {
   // Empty Constructor.
@@ -86,7 +86,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::init()
 
   // Setup the output parameter object.
   {
-    output_params_ptr_ = Teuchos::make_rcp<BeamToSolidVolumeMeshtyingVisualizationOutputParams>();
+    output_params_ptr_ = std::make_shared<BeamToSolidVolumeMeshtyingVisualizationOutputParams>();
     output_params_ptr_->init();
     output_params_ptr_->setup();
   }
@@ -102,7 +102,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::init()
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
+std::shared_ptr<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::get_visualization_output_params_ptr()
 {
   return output_params_ptr_;

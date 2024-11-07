@@ -89,7 +89,7 @@ namespace Coupling::VolMortar
     */
     void integrate_cells_3d_direct_diveregence(Core::Elements::Element& Aele,
         Core::Elements::Element& Bele, Cut::VolumeCell& vc,
-        Teuchos::RCP<Core::FE::GaussPoints> intpoints, bool switched_conf,
+        std::shared_ptr<Core::FE::GaussPoints> intpoints, bool switched_conf,
         Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
         Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
         const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int sdofset_A,

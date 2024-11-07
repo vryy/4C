@@ -22,9 +22,9 @@ Solid::Predict::Generic::Generic()
     : isinit_(false),
       issetup_(false),
       type_(Inpar::Solid::pred_vague),
-      implint_ptr_(Teuchos::null),
-      dbc_ptr_(Teuchos::null),
-      noxparams_ptr_(Teuchos::null)
+      implint_ptr_(nullptr),
+      dbc_ptr_(nullptr),
+      noxparams_ptr_(nullptr)
 {
   // empty
 }
@@ -32,11 +32,11 @@ Solid::Predict::Generic::Generic()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::Predict::Generic::init(const enum Inpar::Solid::PredEnum& type,
-    const Teuchos::RCP<Solid::IMPLICIT::Generic>& implint_ptr,
-    const Teuchos::RCP<Solid::Dbc>& dbc_ptr,
-    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& iodata_ptr,
-    const Teuchos::RCP<Teuchos::ParameterList>& noxparams_ptr)
+    const std::shared_ptr<Solid::IMPLICIT::Generic>& implint_ptr,
+    const std::shared_ptr<Solid::Dbc>& dbc_ptr,
+    const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+    const std::shared_ptr<Solid::TimeInt::BaseDataIO>& iodata_ptr,
+    const std::shared_ptr<Teuchos::ParameterList>& noxparams_ptr)
 {
   issetup_ = false;
 
@@ -90,7 +90,7 @@ void Solid::Predict::Generic::post_predict(::NOX::Abstract::Group& grp)
       global_state().get_vel_np(), global_state().get_acc_np(), false);
 
   // Create the new solution vector
-  Teuchos::RCP<::NOX::Epetra::Vector> x_vec = global_state().create_global_vector(
+  std::shared_ptr<::NOX::Epetra::Vector> x_vec = global_state().create_global_vector(
       TimeInt::BaseDataGlobalState::VecInitType::init_current_state, impl_int().model_eval_ptr());
   // resets all isValid flags
   grp.setX(*x_vec);
@@ -124,7 +124,7 @@ void Solid::Predict::Generic::check_init_setup() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::IMPLICIT::Generic>& Solid::Predict::Generic::impl_int_ptr()
+std::shared_ptr<Solid::IMPLICIT::Generic>& Solid::Predict::Generic::impl_int_ptr()
 {
   check_init();
   return implint_ptr_;
@@ -140,7 +140,7 @@ Solid::IMPLICIT::Generic& Solid::Predict::Generic::impl_int()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::Dbc>& Solid::Predict::Generic::dbc_ptr()
+std::shared_ptr<Solid::Dbc>& Solid::Predict::Generic::dbc_ptr()
 {
   check_init();
   return dbc_ptr_;
@@ -156,7 +156,7 @@ Solid::Dbc& Solid::Predict::Generic::dbc()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& Solid::Predict::Generic::global_state_ptr()
+std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& Solid::Predict::Generic::global_state_ptr()
 {
   check_init();
   return gstate_ptr_;
@@ -172,7 +172,7 @@ Solid::TimeInt::BaseDataGlobalState& Solid::Predict::Generic::global_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::TimeInt::BaseDataIO>& Solid::Predict::Generic::io_data_ptr()
+std::shared_ptr<Solid::TimeInt::BaseDataIO>& Solid::Predict::Generic::io_data_ptr()
 {
   check_init();
   return iodata_ptr_;
@@ -196,7 +196,7 @@ const Solid::TimeInt::BaseDataGlobalState& Solid::Predict::Generic::global_state
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList>& Solid::Predict::Generic::nox_params_ptr()
+std::shared_ptr<Teuchos::ParameterList>& Solid::Predict::Generic::nox_params_ptr()
 {
   check_init();
   return noxparams_ptr_;

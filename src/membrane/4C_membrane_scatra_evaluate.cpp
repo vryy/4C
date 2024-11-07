@@ -35,11 +35,10 @@ void Discret::Elements::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
     if (discretization.has_state(1, scalarfield))
     {
       // get the scalar state
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarnp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> scalarnp =
           discretization.get_state(1, scalarfield);
 
-      if (scalarnp == Teuchos::null)
-        FOUR_C_THROW("can not get state vector %s", scalarfield.c_str());
+      if (scalarnp == nullptr) FOUR_C_THROW("can not get state vector %s", scalarfield.c_str());
 
       // extract local values of the global vectors
       std::vector<double> myscalar(la[1].lm_.size(), 0.0);
@@ -60,8 +59,9 @@ void Discret::Elements::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
       const int numgp = (Membrane<distype>::intpoints_).nquad;
 
       // create vector of gauss point values to be set in params list
-      Teuchos::RCP<std::vector<std::vector<double>>> gpscalar = Teuchos::RCP(
-          new std::vector<std::vector<double>>(numgp, std::vector<double>(numscal, 0.0)));
+      std::shared_ptr<std::vector<std::vector<double>>> gpscalar =
+          std::make_shared<std::vector<std::vector<double>>>(
+              numgp, std::vector<double>(numscal, 0.0));
 
       // allocate vector for shape functions and matrix for derivatives at gp
       Core::LinAlg::Matrix<Membrane<distype>::numnod_, 1> shapefcts(true);
@@ -90,7 +90,7 @@ void Discret::Elements::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
       }
 
       // set scalar states at gp to params list
-      params.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_scalar", gpscalar);
+      params.set<std::shared_ptr<std::vector<std::vector<double>>>>("gp_scalar", gpscalar);
     }
   }
 

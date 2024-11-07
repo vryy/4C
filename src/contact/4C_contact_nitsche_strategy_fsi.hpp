@@ -33,8 +33,8 @@ namespace CONTACT
    public:
     //! Standard constructor
     NitscheStrategyFsi(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::Interface>> interface,
-        int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
+        Teuchos::ParameterList params, std::vector<std::shared_ptr<CONTACT::Interface>> interface,
+        int dim, std::shared_ptr<Epetra_Comm> comm, double alphaf, int maxdof)
         : NitscheStrategy(
               dof_row_map, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
@@ -47,10 +47,10 @@ namespace CONTACT
     }
 
     //! Shared data constructor
-    NitscheStrategyFsi(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategyFsi(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
-        Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
+        std::shared_ptr<const Epetra_Comm> comm, double alphaf, int maxdof)
         : NitscheStrategy(data_ptr, dof_row_map, NodeRowMap, params, std::move(interface), dim,
               comm, alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
@@ -62,9 +62,9 @@ namespace CONTACT
         FOUR_C_THROW("NitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
     }
     //! Evaluate and apply RHS and Stiffness Matrix for Contact
-    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+    void apply_force_stiff_cmt(std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& kt,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
         bool predictor) override;
 
     //! Set Contact State and update search tree and normals

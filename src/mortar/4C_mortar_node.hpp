@@ -533,12 +533,12 @@ namespace Mortar
      */
     inline Mortar::NodeDataContainer& mo_data()
     {
-      if (modata_ == Teuchos::null) FOUR_C_THROW("No mortar data attached. (node-id = %d)", id());
+      if (modata_ == nullptr) FOUR_C_THROW("No mortar data attached. (node-id = %d)", id());
       return *modata_;
     }
     inline const Mortar::NodeDataContainer& mo_data() const
     {
-      if (modata_ == Teuchos::null) FOUR_C_THROW("No mortar data attached. (node-id = %d)", id());
+      if (modata_ == nullptr) FOUR_C_THROW("No mortar data attached. (node-id = %d)", id());
       return *modata_;
     }
 
@@ -607,8 +607,8 @@ namespace Mortar
      \param mindist (out):       Distance to closest node
 
      */
-    virtual Mortar::Node* find_closest_node(const Teuchos::RCP<Core::FE::Discretization> intdis,
-        const Teuchos::RCP<Epetra_Map> nodesearchmap, double& mindist);
+    virtual Mortar::Node* find_closest_node(const std::shared_ptr<Core::FE::Discretization> intdis,
+        const std::shared_ptr<Epetra_Map> nodesearchmap, double& mindist);
 
     /*!
      \brief Check if mesh re-initialization for this node was feasible
@@ -650,7 +650,7 @@ namespace Mortar
      \brief Resets the data container of the node
 
      With this function, the container with contact specific quantities/information
-     is deleted / reset to Teuchos::null pointer
+     is deleted / reset to nullptr pointer
 
      */
     virtual void reset_data_container();
@@ -711,7 +711,7 @@ namespace Mortar
     int dentries_;
 
     //! additional information of proc's mortar nodes
-    Teuchos::RCP<Mortar::NodeDataContainer> modata_;
+    std::shared_ptr<Mortar::NodeDataContainer> modata_;
 
     //! @name Nurbs specifics
     //! @{

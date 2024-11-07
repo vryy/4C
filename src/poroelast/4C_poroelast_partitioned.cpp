@@ -17,10 +17,10 @@ FOUR_C_NAMESPACE_OPEN
 
 PoroElast::Partitioned::Partitioned(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
-    Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
+    std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter)
     : PoroBase(comm, timeparams, porosity_splitter),
-      fluidincnp_(Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(fluid_field()->velnp()))),
-      structincnp_(Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(structure_field()->dispnp())))
+      fluidincnp_(std::make_shared<Core::LinAlg::Vector<double>>(*(fluid_field()->velnp()))),
+      structincnp_(std::make_shared<Core::LinAlg::Vector<double>>(*(structure_field()->dispnp())))
 {
   const Teuchos::ParameterList& porodyn = Global::Problem::instance()->poroelast_dynamic_params();
   // Get the parameters for the convergence_check
@@ -221,12 +221,12 @@ bool PoroElast::Partitioned::convergence_check(int itnum)
   return stopnonliniter;
 }
 
-Teuchos::RCP<const Epetra_Map> PoroElast::Partitioned::dof_row_map_structure()
+std::shared_ptr<const Epetra_Map> PoroElast::Partitioned::dof_row_map_structure()
 {
   return structure_field()->dof_row_map();
 }
 
-Teuchos::RCP<const Epetra_Map> PoroElast::Partitioned::dof_row_map_fluid()
+std::shared_ptr<const Epetra_Map> PoroElast::Partitioned::dof_row_map_fluid()
 {
   return fluid_field()->dof_row_map();
 }

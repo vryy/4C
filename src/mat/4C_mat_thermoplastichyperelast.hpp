@@ -64,7 +64,7 @@ namespace Mat
       //@}
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class ThermoPlasticHyperElast
 
@@ -153,9 +153,9 @@ namespace Mat
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ThermoPlasticHyperElast>(*this);
+      return std::make_shared<ThermoPlasticHyperElast>(*this);
     }
 
     //! Young's modulus
@@ -247,7 +247,7 @@ namespace Mat
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> c_mat_kd_t(int gp) const { return (cmat_kd_t_->at(gp)); }
 
     //! check if history variables are already initialised
-    bool initialized() const { return (isinit_ and (defgrdcurr_ != Teuchos::null)); }
+    bool initialized() const { return (isinit_ and (defgrdcurr_ != nullptr)); }
 
     //! return names of visualization data
     void vis_names(std::map<std::string, int>& names) const override;
@@ -380,7 +380,7 @@ namespace Mat
     Mat::PAR::ThermoPlasticHyperElast* params_;
 
     //! pointer to the internal thermal material
-    Teuchos::RCP<Mat::Trait::Thermo> thermo_;
+    std::shared_ptr<Mat::Trait::Thermo> thermo_;
 
     //! current temperature (set by Reinit())
     double current_temperature_{};
@@ -389,43 +389,43 @@ namespace Mat
 
     //! plastic history variables
     //! old (i.e. at t_n)  deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 3>>> defgrdlast_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 3>>> defgrdlast_;
     //! current (i.e. at t_n+1) deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 3>>> defgrdcurr_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 3>>> defgrdcurr_;
 
     //! old (i.e. at t_n) elastic, isochoric right Cauchy-Green tensor
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 3>>> bebarlast_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 3>>> bebarlast_;
     //! current (i.e. at t_n+1) elastic, isochoric right Cauchy-Green tensor
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 3>>> bebarcurr_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 3>>> bebarcurr_;
 
     //! old (i.e. at t_n) accumulated plastic strain
-    Teuchos::RCP<std::vector<double>> accplstrainlast_;
+    std::shared_ptr<std::vector<double>> accplstrainlast_;
     //! current (i.e. at t_n+1) accumulated plastic strain
-    Teuchos::RCP<std::vector<double>> accplstraincurr_;
+    std::shared_ptr<std::vector<double>> accplstraincurr_;
 
     //@}
 
     //! @name Linearisation terms for thermal equation
 
     //! current (i.e. at t_n+1) mechanical dissipation
-    Teuchos::RCP<std::vector<double>> mechdiss_;
+    std::shared_ptr<std::vector<double>> mechdiss_;
     //! current (i.e. at t_n+1) linearised mechanical dissipation w.r.t. T_{n+1}
-    Teuchos::RCP<std::vector<double>> mechdiss_k_tt_;
+    std::shared_ptr<std::vector<double>> mechdiss_k_tt_;
     //! current (i.e. at t_n+1) linearised mechanical dissipation w.r.t. d_{n+1}
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<6, 1>>> mechdiss_k_td_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<6, 1>>> mechdiss_k_td_;
     //! current (i.e. at t_n+1) thermoplastic heating term
-    Teuchos::RCP<std::vector<double>> thrplheat_;
+    std::shared_ptr<std::vector<double>> thrplheat_;
     //! current (i.e. at t_n+1) thermoplastic heating term
-    Teuchos::RCP<std::vector<double>> thrplheat_k_tt_;
+    std::shared_ptr<std::vector<double>> thrplheat_k_tt_;
     //! current (i.e. at t_n+1) thermoplastic heating term w.r.t. d_{n+1}
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<6, 1>>> thrplheat_k_td_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<6, 1>>> thrplheat_k_td_;
 
     //@}
 
     //! @name Linearisation terms for structural equation
 
     //! current (i.e. at t_n+1) linearised material tangent w.r.t. T_{n+1}
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<6, 1>>> cmat_kd_t_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<6, 1>>> cmat_kd_t_;
 
     //@}
 

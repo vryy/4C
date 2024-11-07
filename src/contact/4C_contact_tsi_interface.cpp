@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                            seitz 08/15|
  *----------------------------------------------------------------------*/
 CONTACT::TSIInterface::TSIInterface(
-    const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData_ptr, const int id,
+    const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData_ptr, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
     bool selfcontact)
     : CONTACT::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact)
@@ -47,8 +47,8 @@ void CONTACT::TSIInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linst
 
 
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::split_map(*activenodes_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::split_map(*activet_, *slipt_);
+  std::shared_ptr<Epetra_Map> sticknodes = Core::LinAlg::split_map(*activenodes_, *slipnodes_);
+  std::shared_ptr<Epetra_Map> stickt = Core::LinAlg::split_map(*activet_, *slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements() == 0) return;
@@ -168,8 +168,8 @@ void CONTACT::TSIInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linsli
 #endif
 
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> slipnodes = slipnodes_;
-  Teuchos::RCP<Epetra_Map> slipt = slipt_;
+  std::shared_ptr<Epetra_Map> slipnodes = slipnodes_;
+  std::shared_ptr<Epetra_Map> slipt = slipt_;
 
   // nothing to do if no stick nodes
   if (slipnodes->NumMyElements() == 0) return;
@@ -384,7 +384,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
 
 void CONTACT::TSIInterface::assemble_lin_dm_x(Core::LinAlg::SparseMatrix* linD_X,
     Core::LinAlg::SparseMatrix* linM_X, const double fac, const LinDmXMode mode,
-    const Teuchos::RCP<Epetra_Map> node_rowmap)
+    const std::shared_ptr<Epetra_Map> node_rowmap)
 {
   // get out if there's nothing to do
   if (linD_X == nullptr && linM_X == nullptr) return;
@@ -802,7 +802,7 @@ void CONTACT::TSIInterface::assemble_inactive(Core::LinAlg::SparseMatrix* linCon
     FOUR_C_THROW("called to assemble something but didn't provide a matrix");
 
   // inactive nodes
-  Teuchos::RCP<Epetra_Map> inactivenodes = Core::LinAlg::split_map(*snoderowmap_, *activenodes_);
+  std::shared_ptr<Epetra_Map> inactivenodes = Core::LinAlg::split_map(*snoderowmap_, *activenodes_);
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < inactivenodes->NumMyElements(); ++j)

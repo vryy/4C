@@ -103,15 +103,15 @@ void Inpar::Immersed::set_valid_parameters(Teuchos::ParameterList& list)
 
 
 void Inpar::Immersed::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 
   /*--------------------------------------------------------------------*/
   // IMMERSED FSI
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> immersedsearchbox =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN VOLUME IMMERSED SEARCHBOX",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> immersedsearchbox =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN VOLUME IMMERSED SEARCHBOX",
           "ImmersedSearchbox", "Immersed Searchbox", Core::Conditions::ImmersedSearchbox, true,
           Core::Conditions::geometry_type_volume);
 
@@ -120,17 +120,17 @@ void Inpar::Immersed::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // IMMERSED COUPLING
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineimmersed =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> lineimmersed =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN IMMERSED COUPLING LINE CONDITIONS", "IMMERSEDCoupling", "IMMERSED Coupling",
           Core::Conditions::IMMERSEDCoupling, true, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfimmersed =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfimmersed =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN IMMERSED COUPLING SURF CONDITIONS", "IMMERSEDCoupling", "IMMERSED Coupling",
           Core::Conditions::IMMERSEDCoupling, true, Core::Conditions::geometry_type_surface);
 
-  lineimmersed->add_component(Teuchos::make_rcp<Input::IntComponent>("coupling id"));
-  surfimmersed->add_component(Teuchos::make_rcp<Input::IntComponent>("coupling id"));
+  lineimmersed->add_component(std::make_shared<Input::IntComponent>("coupling id"));
+  surfimmersed->add_component(std::make_shared<Input::IntComponent>("coupling id"));
 
   condlist.push_back(lineimmersed);
   condlist.push_back(surfimmersed);

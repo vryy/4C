@@ -14,7 +14,7 @@
 #include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -87,7 +87,7 @@ namespace Core::Mat::PAR
      *
      * @note This method must be implemented by derived classes.
      */
-    virtual Teuchos::RCP<Core::Mat::Material> create_material() = 0;
+    virtual std::shared_ptr<Core::Mat::Material> create_material() = 0;
 
     /**
      * Access to the raw input parameters. Derived classes usually store the parameters in a more

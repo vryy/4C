@@ -63,7 +63,7 @@ namespace Mat
       //@}
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class ThermoThermoPlasticLinElast
 
@@ -142,9 +142,9 @@ namespace Mat
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ThermoPlasticLinElast>(*this);
+      return std::make_shared<ThermoPlasticLinElast>(*this);
     }
 
     //! initialise internal stress variables
@@ -242,7 +242,7 @@ namespace Mat
     }
 
     //! check if history variables are already initialised
-    bool initialized() const { return (isinit_ and (strainplcurr_ != Teuchos::null)); }
+    bool initialized() const { return (isinit_ and (strainplcurr_ != nullptr)); }
 
     void reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp) override;
@@ -382,41 +382,41 @@ namespace Mat
     Mat::PAR::ThermoPlasticLinElast* params_;
 
     //! pointer to the internal thermal material
-    Teuchos::RCP<Mat::Trait::Thermo> thermo_;
+    std::shared_ptr<Mat::Trait::Thermo> thermo_;
 
     //! current temperature (set by Reinit())
     double current_temperature_{};
 
     //! plastic history vector
     //! old plastic strain at t_n
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         strainpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     //! current plastic strain at t_n+1
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     //! old back stress at t_n
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         backstresslast_;  //!< \f${\beta}_{n}\f$
     //! current back stress at t_n+1
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         backstresscurr_;  //!< \f${\beta}_{n+1}\f$
     //! old accumulated plastic strain at t_n
-    Teuchos::RCP<std::vector<double>> strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
+    std::shared_ptr<std::vector<double>> strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     //! current accumulated plastic strain at t_n+1
-    Teuchos::RCP<std::vector<double>> strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
+    std::shared_ptr<std::vector<double>> strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
 
     //! @name specific methods for the combination TSI and plastic material
     //@{
 
     //! mechanical dissipation term due to kinematic and isotropic hardening at t_n+1
-    Teuchos::RCP<std::vector<double>> dmech_;
+    std::shared_ptr<std::vector<double>> dmech_;
     //! linearisation of mechanical dissipation term w.r.t. to d_{n+1}
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>> dmech_d_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>> dmech_d_;
     //! save plastic strain increment: Incstrainpl = strain^p_{n+1} - strain^p_n
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>> incstrainpl_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>> incstrainpl_;
     //! elastic strain rate required for thermoelastic heating term
     //! use additive split: strain^e' = strain' - strain^p'
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>> strainelrate_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>> strainelrate_;
 
     //@}
 

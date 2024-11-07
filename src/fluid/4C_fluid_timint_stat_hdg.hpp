@@ -25,10 +25,10 @@ namespace FLD
   {
    public:
     /// Standard Constructor
-    TimIntStationaryHDG(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
+    TimIntStationaryHDG(const std::shared_ptr<Core::FE::Discretization>& actdis,
+        const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Teuchos::ParameterList>& params,
+        const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /*!
     \brief initialization
@@ -93,7 +93,7 @@ namespace FLD
    protected:
     //! @name velocity gradient, velocity and pressure at time n+1, n, n-1
     //!  and n+alpha_F for element interior in HDG
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intvelnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> intvelnp_;
 
    private:
     ///< Keep track of whether we do the first assembly because we reconstruct the local HDG

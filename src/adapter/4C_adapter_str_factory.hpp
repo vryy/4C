@@ -12,7 +12,7 @@
 
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -29,12 +29,12 @@ namespace Adapter
     virtual ~StructureFactory() = default;
 
     //! Build the structural adapter object
-    Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> build_structure_algorithm(
+    std::shared_ptr<Adapter::StructureBaseAlgorithmNew> build_structure_algorithm(
         const Teuchos::ParameterList& sdyn) const;
   };  // class Factory
 
   // non-member function
-  Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> build_structure_algorithm(
+  std::shared_ptr<Adapter::StructureBaseAlgorithmNew> build_structure_algorithm(
       const Teuchos::ParameterList& sdyn);
 }  // namespace Adapter
 

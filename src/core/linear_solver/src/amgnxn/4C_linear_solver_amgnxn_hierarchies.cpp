@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 Core::LinearSolver::AMGNxN::Hierarchies::Hierarchies(Teuchos::RCP<AMGNxN::BlockedMatrix> A,
     std::vector<Teuchos::ParameterList> muelu_params, std::vector<int> num_pdes,
     std::vector<int> null_spaces_dim,
-    std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data, int NumLevelAMG,
+    std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data, int NumLevelAMG,
     std::string verbosity)
     : a_(A),
       muelu_params_(muelu_params),
@@ -124,7 +124,7 @@ int Core::LinearSolver::AMGNxN::Hierarchies::get_null_space_dim(int block)
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<std::vector<double>> Core::LinearSolver::AMGNxN::Hierarchies::get_null_space_data(
+std::shared_ptr<std::vector<double>> Core::LinearSolver::AMGNxN::Hierarchies::get_null_space_data(
     int block)
 {
   return null_spaces_data_[block];
@@ -148,7 +148,8 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
   for (int block = 0; block < num_blocks_; block++)
   {
     int offsetFineLevel = a_->get_matrix(block, block)->row_map().MinAllGID();
-    Teuchos::RCP<Epetra_Operator> A_eop = a_->get_matrix(block, block)->epetra_operator();
+    Teuchos::RCP<Epetra_Operator> A_eop =
+        Teuchos::rcpFromRef(*a_->get_matrix(block, block)->epetra_operator());
     h_block_[block] =
         build_mue_lu_hierarchy(muelu_params_[block], num_pdes_[block], null_spaces_dim_[block],
             null_spaces_data_[block], A_eop, block, num_blocks_, offsets, offsetFineLevel);
@@ -190,9 +191,12 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Abb = a_->get_matrix(block, block);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Peye =
-          Core::LinAlg::create_identity_matrix(Abb->domain_map());
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(Abb->domain_map(), 1);
+      Core::LinAlg::fill_identity_matrix(*Peye);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Reye =
-          Core::LinAlg::create_identity_matrix(Abb->range_map());
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(Abb->range_map(), 1);
+      Core::LinAlg::fill_identity_matrix(*Reye);
+
 
       for (int level = 0; level < num_level_max_; level++) A_level[level] = Abb;
 
@@ -243,7 +247,8 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
           myA = this_level->Get<Teuchos::RCP<Matrix>>("A");
           myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
           myAspa = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-              myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph);
+              Core::Utils::shared_ptr_from_ref(*myAcrs), Core::LinAlg::Copy, explicitdirichlet,
+              savegraph);
           A_level[level] = myAspa;
         }
         else
@@ -277,7 +282,8 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
             myA = this_level->Get<Teuchos::RCP<Matrix>>("P");
             myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
             myAspa = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-                myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph);
+                Core::Utils::shared_ptr_from_ref(*myAcrs), Core::LinAlg::Copy, explicitdirichlet,
+                savegraph);
             P_level[level - 1] = myAspa;
           }
           else
@@ -288,7 +294,8 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
             myA = this_level->Get<Teuchos::RCP<Matrix>>("R");
             myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
             myAspa = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-                myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph);
+                Core::Utils::shared_ptr_from_ref(*myAcrs), Core::LinAlg::Copy, explicitdirichlet,
+                savegraph);
             R_level[level - 1] = myAspa;
           }
           else
@@ -317,7 +324,7 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
 Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
 Core::LinearSolver::AMGNxN::Hierarchies::build_mue_lu_hierarchy(
     Teuchos::ParameterList paramListFromXml, int numdf, int dimns,
-    Teuchos::RCP<std::vector<double>> nsdata, Teuchos::RCP<Epetra_Operator> A_eop, int block,
+    std::shared_ptr<std::vector<double>> nsdata, Teuchos::RCP<Epetra_Operator> A_eop, int block,
     int NumBlocks, std::vector<int>& offsets, int offsetFineLevel)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::Hierarchies::build_mue_lu_hierarchy");
@@ -338,7 +345,7 @@ Core::LinearSolver::AMGNxN::Hierarchies::build_mue_lu_hierarchy(
   {
     // Some cheks
     if (numdf < 1 or dimns < 1) FOUR_C_THROW("Error: PDE equations or null space dimension wrong.");
-    if (nsdata == Teuchos::null) FOUR_C_THROW("Error: null space data is empty");
+    if (nsdata == nullptr) FOUR_C_THROW("Error: null space data is empty");
 
     // Hack making TSI work with the trilinos Q1_2015. The Q1_2014 version worked without this
     if (numdf == 1) offsetFineLevel = 0;
@@ -687,13 +694,15 @@ void Core::LinearSolver::AMGNxN::MonolithicHierarchy::setup()
             Teuchos::RCP<Core::LinAlg::SparseMatrix> R_spa = r_[level - 1]->get_matrix(row, row);
 
             Teuchos::RCP<Core::LinAlg::SparseMatrix> AP_spa = Teuchos::null;
-            AP_spa =
-                Core::LinAlg::matrix_multiply(*A_spa, false, *P_spa, false, false, false, true);
+            AP_spa = Teuchos::RCP(
+                Core::LinAlg::matrix_multiply(*A_spa, false, *P_spa, false, false, false, true)
+                    .release());
             if (AP_spa == Teuchos::null) FOUR_C_THROW("Error in AP");
 
             Teuchos::RCP<Core::LinAlg::SparseMatrix> RAP_spa = Teuchos::null;
-            RAP_spa =
-                Core::LinAlg::matrix_multiply(*R_spa, false, *AP_spa, false, false, false, true);
+            RAP_spa = Teuchos::RCP(
+                Core::LinAlg::matrix_multiply(*R_spa, false, *AP_spa, false, false, false, true)
+                    .release());
             if (RAP_spa == Teuchos::null) FOUR_C_THROW("Error in RAP");
 
             a_[level]->set_matrix(RAP_spa, row, col);

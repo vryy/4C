@@ -31,24 +31,24 @@ Core::Communication::ParObject* Discret::Elements::SoSh8Type::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh8Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoSh8Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::SoSh8>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::SoSh8>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh8Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoSh8Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::SoSh8>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::SoSh8>(id, owner);
   return ele;
 }
 
@@ -102,9 +102,9 @@ Discret::Elements::SoSh8::SoSh8(int id, int owner)
       nodes_rearranged_(false),
       thickvec_(3, 0.0)
 {
-  Teuchos::RCP<const Teuchos::ParameterList> params =
+  std::shared_ptr<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
-  if (params != Teuchos::null)
+  if (params != nullptr)
   {
     Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());

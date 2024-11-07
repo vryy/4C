@@ -15,7 +15,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -31,8 +31,8 @@ namespace PoroMultiPhaseScaTra
   {
    public:
     //! constructor
-    PoroMultiPhaseScaTraArtCouplBase(Teuchos::RCP<Core::FE::Discretization> arterydis,
-        Teuchos::RCP<Core::FE::Discretization> contdis,
+    PoroMultiPhaseScaTraArtCouplBase(std::shared_ptr<Core::FE::Discretization> arterydis,
+        std::shared_ptr<Core::FE::Discretization> contdis,
         const Teuchos::ParameterList& couplingparams, const std::string& condname,
         const std::string& artcoupleddofname, const std::string& contcoupleddofname);
 
@@ -40,46 +40,47 @@ namespace PoroMultiPhaseScaTra
     virtual ~PoroMultiPhaseScaTraArtCouplBase() = default;
 
     //! access to full DOF map
-    const Teuchos::RCP<const Epetra_Map>& full_map() const;
+    const std::shared_ptr<const Epetra_Map>& full_map() const;
 
     //! Recompute the CouplingDOFs for each CouplingNode if ntp-coupling active
     void recompute_coupled_do_fs_for_ntp(
         std::vector<Core::Conditions::Condition*> coupcond, unsigned int couplingnode);
 
     //! get global extractor
-    const Teuchos::RCP<Core::LinAlg::MultiMapExtractor>& global_extractor() const;
+    const std::shared_ptr<Core::LinAlg::MultiMapExtractor>& global_extractor() const;
 
     //! check if initial fields on coupled DOFs are equal
-    virtual void check_initial_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_art) = 0;
+    virtual void check_initial_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> vec_cont,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vec_art) = 0;
 
     //! access artery (1D) dof row map
-    virtual Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> artery_dof_row_map() const = 0;
 
     //! access full dof row map
-    virtual Teuchos::RCP<const Epetra_Map> dof_row_map() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> dof_row_map() const = 0;
 
     //! print out the coupling method
     virtual void print_out_coupling_method() const = 0;
 
     //! Evaluate the 1D-3D coupling
-    virtual void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs) = 0;
+    virtual void evaluate(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs) = 0;
 
     //! set-up of global system of equations of coupled problem
-    virtual void setup_system(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_art,
-        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
-        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art) = 0;
+    virtual void setup_system(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_cont,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_art,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_cont,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_art,
+        std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmap_cont,
+        std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmap_art) = 0;
 
     //! set solution vectors of single fields
-    virtual void set_solution_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> phin_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp_art);
+    virtual void set_solution_vectors(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> phinp_cont,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> phin_cont,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> phinp_art);
 
     //! set the element pairs that are close as found by search algorithm
     virtual void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs);
@@ -91,9 +92,9 @@ namespace PoroMultiPhaseScaTra
      * @param[in]   vec_cont vector containing quantities from continuous field
      * @param[in]   vec_art vector containing quantities from artery field
      */
-    virtual void setup_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_art) = 0;
+    virtual void setup_vector(std::shared_ptr<Core::LinAlg::Vector<double>> vec,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vec_cont,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vec_art) = 0;
 
     /*!
      * @brief extract single field vectors
@@ -103,9 +104,9 @@ namespace PoroMultiPhaseScaTra
      * @param[in]   vec_art vector containing quantities from artery field
      */
     virtual void extract_single_field_vectors(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> globalvec,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_art) = 0;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> globalvec,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& vec_cont,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& vec_art) = 0;
 
     //! init the strategy
     virtual void init() = 0;
@@ -117,17 +118,17 @@ namespace PoroMultiPhaseScaTra
     virtual void apply_mesh_movement() = 0;
 
     //! return blood vessel volume fraction inside each 2D/3D element
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> blood_vessel_volume_fraction() = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> blood_vessel_volume_fraction() = 0;
 
    protected:
     //! communicator
     const Epetra_Comm& get_comm() const { return comm_; }
 
     //! artery (1D) discretization
-    Teuchos::RCP<Core::FE::Discretization> arterydis_;
+    std::shared_ptr<Core::FE::Discretization> arterydis_;
 
     //! continous field (2D, 3D) discretization
-    Teuchos::RCP<Core::FE::Discretization> contdis_;
+    std::shared_ptr<Core::FE::Discretization> contdis_;
 
     //! coupled dofs of artery field
     std::vector<int> coupleddofs_art_;
@@ -139,10 +140,10 @@ namespace PoroMultiPhaseScaTra
     int num_coupled_dofs_;
 
     //! dof row map (not splitted)
-    Teuchos::RCP<Epetra_Map> fullmap_;
+    std::shared_ptr<Epetra_Map> fullmap_;
 
     //! global extractor
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> globalex_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> globalex_;
 
     //! myrank
     const int myrank_;

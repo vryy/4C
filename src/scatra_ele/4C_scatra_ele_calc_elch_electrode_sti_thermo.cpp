@@ -62,7 +62,7 @@ void Discret::Elements::ScaTraEleCalcElchElectrodeSTIThermo<distype>::get_materi
       ele->material(), var_manager()->phinp(0), var_manager()->temp(), myelectrode::diff_manager());
 
   // get parameters of secondary, thermodynamic electrolyte material
-  Teuchos::RCP<const Core::Mat::Material> material = ele->material(1);
+  std::shared_ptr<const Core::Mat::Material> material = ele->material(1);
   materialtype_ = material->material_type();
   if (materialtype_ == Core::Materials::m_soret) mythermo::mat_soret(material);
 }  // Discret::Elements::ScaTraEleCalcElchElectrodeSTIThermo<distype>::get_material_params
@@ -213,7 +213,7 @@ Discret::Elements::ScaTraEleCalcElchElectrodeSTIThermo<
   // replace internal variable manager for isothermal electrodes by internal variable manager for
   // thermodynamic electrodes
   my::scatravarmanager_ =
-      Teuchos::make_rcp<ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<nsd_, nen_>>(
+      std::make_shared<ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<nsd_, nen_>>(
           my::numscal_, myelch::elchparams_);
 }
 

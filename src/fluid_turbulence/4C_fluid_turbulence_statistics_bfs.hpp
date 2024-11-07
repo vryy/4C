@@ -17,7 +17,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -35,7 +36,7 @@ namespace FLD
     o Allocate distributed vector for squares
 
     */
-    TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Discretization> actdis,
+    TurbulenceStatisticsBfs(std::shared_ptr<Core::FE::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename,
         const std::string& geotype);
 
@@ -148,7 +149,7 @@ namespace FLD
     double x3max_;
 
     //! The discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! parameter list
     Teuchos::ParameterList& params_;
@@ -166,23 +167,23 @@ namespace FLD
     const std::string statistics_outfilename_;
 
     //! pointer to vel/pres^2 field (space allocated in constructor)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> squaredvelnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> squaredvelnp_;
     //! pointer to T^2 field (space allocated in constructor)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> squaredscanp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> squaredscanp_;
     //! pointer to 1/T field (space allocated in constructor)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> invscanp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> invscanp_;
     //! pointer to (1/T)^2 field (space allocated in constructor)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> squaredinvscanp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> squaredinvscanp_;
 
     //! toogle vectors: sums are computed by scalarproducts
-    Teuchos::RCP<Core::LinAlg::Vector<double>> toggleu_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglev_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglew_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglep_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> toggleu_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglev_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglew_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglep_;
 
     //! available x1- and x2-coordinates
-    Teuchos::RCP<std::vector<double>> x1coordinates_;
-    Teuchos::RCP<std::vector<double>> x2coordinates_;
+    std::shared_ptr<std::vector<double>> x1coordinates_;
+    std::shared_ptr<std::vector<double>> x2coordinates_;
 
     //! coordinates of locations in x1- and x2-direction for statistical evaluation
     Core::LinAlg::Matrix<21, 1> x1statlocations_;
@@ -196,38 +197,38 @@ namespace FLD
     Core::LinAlg::Matrix<10, 1> x1supplocations_;
 
     //! matrices containing values
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x1sumu_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x1sump_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x1sumu_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x1sump_;
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x1sumrho_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x1sum_t_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x1sumrho_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x1sum_t_;
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x1sumtauw_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x1sumtauw_;
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumu_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumv_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumw_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sump_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumu_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumv_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumw_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sump_;
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumrho_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sum_t_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumrho_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sum_t_;
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsqu_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsqv_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsqw_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsqp_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumsqu_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumsqv_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumsqw_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumsqp_;
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsqrho_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsq_t_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumsqrho_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumsq_t_;
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumuv_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumuw_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumvw_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumuv_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumuw_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumvw_;
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumrhou_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumu_t_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumrhov_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumv_t_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumrhou_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumu_t_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumrhov_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumv_t_;
 
     void convert_string_to_geo_type(const std::string& geotype);
   };

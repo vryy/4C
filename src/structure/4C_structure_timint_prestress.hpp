@@ -39,15 +39,15 @@ namespace Solid
     //! @name Construction
     //@{
     //! Constructor
-    TimIntPrestress(const Teuchos::ParameterList& timeparams,  //!< ioflags
-        const Teuchos::ParameterList& ioparams,                //!< ioflags
-        const Teuchos::ParameterList& sdynparams,              //!< input parameters
-        const Teuchos::ParameterList& xparams,                 //!< extra flags
-        const Teuchos::RCP<Core::FE::Discretization>& actdis,  //!< current discretisation
-        const Teuchos::RCP<Core::LinAlg::Solver>& solver,      //!< the solver
-        const Teuchos::RCP<Core::LinAlg::Solver>&
+    TimIntPrestress(const Teuchos::ParameterList& timeparams,     //!< ioflags
+        const Teuchos::ParameterList& ioparams,                   //!< ioflags
+        const Teuchos::ParameterList& sdynparams,                 //!< input parameters
+        const Teuchos::ParameterList& xparams,                    //!< extra flags
+        const std::shared_ptr<Core::FE::Discretization>& actdis,  //!< current discretisation
+        const std::shared_ptr<Core::LinAlg::Solver>& solver,      //!< the solver
+        const std::shared_ptr<Core::LinAlg::Solver>&
             contactsolver,  //!< the solver for contact meshtying
-        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output  //!< the output
+        const std::shared_ptr<Core::IO::DiscretizationWriter>& output  //!< the output
     );
 
     void setup() override;

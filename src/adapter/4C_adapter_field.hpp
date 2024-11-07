@@ -14,7 +14,8 @@
 #include "4C_linalg_vector.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -50,7 +51,7 @@ namespace Adapter
     //! @name Vector access
 
     /// Return the already evaluated RHS of Newton's method
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() = 0;
 
     //@}
 
@@ -58,13 +59,13 @@ namespace Adapter
     //@{
 
     /// dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> dof_row_map() = 0;
+    virtual std::shared_ptr<const Epetra_Map> dof_row_map() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() = 0;
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() = 0;
+    virtual std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() = 0;
 
     //@}
 
@@ -91,7 +92,7 @@ namespace Adapter
     which is then transformed into an iteration increment
     */
     virtual void update_state_incrementally(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disi  ///< iterative solution increment
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disi  ///< iterative solution increment
         ) = 0;
 
     /*!
@@ -109,14 +110,14 @@ namespace Adapter
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    virtual void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
             iterinc  ///< dof increment between Newton iteration i and
                      ///< i+1 or between timestep n and n+1
         ) = 0;
 
     /// Evaluate with different eval. for first iteration, has to be overload by relevant fields
     /// (coupled fields)
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    virtual void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
                               iterinc,  ///< dof increment between Newton iteration i
                                         ///< and i+1 or between timestep n and n+1
         bool firstiter)

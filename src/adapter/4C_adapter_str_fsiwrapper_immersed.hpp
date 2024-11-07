@@ -33,24 +33,24 @@ namespace Adapter
   {
    public:
     /// constructor
-    explicit FSIStructureWrapperImmersed(Teuchos::RCP<Structure> structure);
+    explicit FSIStructureWrapperImmersed(std::shared_ptr<Structure> structure);
 
     /// extract interface displacements at \f$t_{n+1}\f$ of immersed interface
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_immersed_interface_dispnp();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_immersed_interface_dispnp();
 
     /// Get mutable reference to DBC object
     Solid::Dbc& get_dbc();
 
     /// expand dirichlet bc map
     /// old struct. time integration version
-    void add_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoadd) override;
+    void add_dirich_dofs(const std::shared_ptr<const Epetra_Map> maptoadd) override;
 
     /// contract dirichlet bc map
     /// old struct. time integration version
-    void remove_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoremove) override;
+    void remove_dirich_dofs(const std::shared_ptr<const Epetra_Map> maptoremove) override;
 
     /// set the state of the nox group and the global state data container
-    void set_state(const Teuchos::RCP<Core::LinAlg::Vector<double>>& x) override;
+    void set_state(const std::shared_ptr<Core::LinAlg::Vector<double>>& x) override;
 
     /// @name Apply interface forces
 
@@ -59,8 +59,8 @@ namespace Adapter
     /// This prepares a new solve of the structural field within one time
     /// step. The middle values are newly created.
     ///
-    void apply_immersed_interface_forces(Teuchos::RCP<Core::LinAlg::Vector<double>> iforce_fsi,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce_immersed);
+    void apply_immersed_interface_forces(std::shared_ptr<Core::LinAlg::Vector<double>> iforce_fsi,
+        std::shared_ptr<Core::LinAlg::Vector<double>> iforce_immersed);
 
     /*!
       \brief Write extra output for specified step and time.
@@ -81,10 +81,10 @@ namespace Adapter
 
    protected:
     /// the interface map setup for immersed interface <-> fsi interface distinction
-    Teuchos::RCP<Core::LinAlg::MapExtractor> combinedinterface_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> combinedinterface_;
 
     /// combined matching FSI - IMMERSED interface map
-    Teuchos::RCP<Epetra_Map> combinedmap_;
+    std::shared_ptr<Epetra_Map> combinedmap_;
   };
 }  // namespace Adapter
 

@@ -95,29 +95,29 @@ namespace Mat
     /// variable degradation of collagen?
     bool expvar_;
     /// stretch of first collagen fiber family
-    Teuchos::RCP<std::vector<double>> collagenstretch1_;
+    std::shared_ptr<std::vector<double>> collagenstretch1_;
     /// stretch of second collagen fiber family
-    Teuchos::RCP<std::vector<double>> collagenstretch2_;
+    std::shared_ptr<std::vector<double>> collagenstretch2_;
     /// stretch of third collagen fiber family
-    Teuchos::RCP<std::vector<double>> collagenstretch3_;
+    std::shared_ptr<std::vector<double>> collagenstretch3_;
     /// stretch of fourth collagen fiber family
-    Teuchos::RCP<std::vector<double>> collagenstretch4_;
+    std::shared_ptr<std::vector<double>> collagenstretch4_;
     /// mass production rate of first fiber family
-    Teuchos::RCP<std::vector<double>> massprod1_;
+    std::shared_ptr<std::vector<double>> massprod1_;
     /// mass production rate of second fiber family
-    Teuchos::RCP<std::vector<double>> massprod2_;
+    std::shared_ptr<std::vector<double>> massprod2_;
     /// mass production rate of third fiber family
-    Teuchos::RCP<std::vector<double>> massprod3_;
+    std::shared_ptr<std::vector<double>> massprod3_;
     /// mass production rate of fourth fiber family
-    Teuchos::RCP<std::vector<double>> massprod4_;
+    std::shared_ptr<std::vector<double>> massprod4_;
     /// variable degradation of first fiber family
-    Teuchos::RCP<std::vector<double>> vardegrad1_;
+    std::shared_ptr<std::vector<double>> vardegrad1_;
     /// variable degradation of second fiber family
-    Teuchos::RCP<std::vector<double>> vardegrad2_;
+    std::shared_ptr<std::vector<double>> vardegrad2_;
     /// variable degradation of third fiber family
-    Teuchos::RCP<std::vector<double>> vardegrad3_;
+    std::shared_ptr<std::vector<double>> vardegrad3_;
     /// variable degradation of fourth fiber family
-    Teuchos::RCP<std::vector<double>> vardegrad4_;
+    std::shared_ptr<std::vector<double>> vardegrad4_;
   };
 
 }  // namespace Mat

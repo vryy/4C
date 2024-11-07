@@ -44,7 +44,7 @@ void Solid::ModelEvaluator::Contact::setup()
   factory.check_dimension();
 
   // create some local variables (later to be stored in strategy)
-  std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces;
+  std::vector<std::shared_ptr<CONTACT::Interface>> interfaces;
   Teuchos::ParameterList cparams;
 
   // read and check contact input parameters
@@ -136,9 +136,9 @@ void Solid::ModelEvaluator::Contact::set_time_integration_info(
 void Solid::ModelEvaluator::Contact::reset(const Core::LinAlg::Vector<double>& x)
 {
   check_init_setup();
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> eval_vec(2, Teuchos::null);
+  std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> eval_vec(2, nullptr);
   eval_vec[0] = global_state().get_dis_np();
-  eval_vec[1] = Teuchos::rcpFromRef(x);
+  eval_vec[1] = Core::Utils::shared_ptr_from_ref(x);
   eval_contact().set_action_type(Mortar::eval_reset);
 
   // reset displacement state and lagrange multiplier values
@@ -209,7 +209,7 @@ void Solid::ModelEvaluator::Contact::post_evaluate()
 bool Solid::ModelEvaluator::Contact::assemble_force(
     Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> block_vec_ptr = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> block_vec_ptr = nullptr;
 
   if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts ||
@@ -218,7 +218,7 @@ bool Solid::ModelEvaluator::Contact::assemble_force(
     block_vec_ptr = strategy().get_rhs_block_ptr(CONTACT::VecBlockType::displ);
 
     // if there are no active contact contributions, we can skip this...
-    if (block_vec_ptr.is_null()) return true;
+    if (!block_vec_ptr) return true;
 
     Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *block_vec_ptr);
   }
@@ -227,12 +227,12 @@ bool Solid::ModelEvaluator::Contact::assemble_force(
     // --- displ. - block ---------------------------------------------------
     block_vec_ptr = strategy().get_rhs_block_ptr(CONTACT::VecBlockType::displ);
     // if there are no active contact contributions, we can skip this...
-    if (block_vec_ptr.is_null()) return true;
+    if (!block_vec_ptr) return true;
     Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *block_vec_ptr);
 
     // --- constr. - block --------------------------------------------------
     block_vec_ptr = strategy().get_rhs_block_ptr(CONTACT::VecBlockType::constraint);
-    if (block_vec_ptr.is_null()) return true;
+    if (!block_vec_ptr) return true;
     Core::LinAlg::Vector<double> tmp(f.Map());
     Core::LinAlg::export_to(*block_vec_ptr, tmp);
     f.Update(1., tmp, 1.);
@@ -246,7 +246,7 @@ bool Solid::ModelEvaluator::Contact::assemble_force(
 bool Solid::ModelEvaluator::Contact::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> block_ptr = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> block_ptr = nullptr;
   int err = 0;
   // ---------------------------------------------------------------------
   // Penalty / gpts / Nitsche system: no additional/condensed dofs
@@ -257,8 +257,8 @@ bool Solid::ModelEvaluator::Contact::assemble_jacobian(
   {
     block_ptr =
         strategy().get_matrix_block_ptr(CONTACT::MatBlockType::displ_displ, &eval_contact());
-    if (strategy().is_penalty() && block_ptr.is_null()) return true;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd = global_state().extract_displ_block(jac);
+    if (strategy().is_penalty() && block_ptr == nullptr) return true;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> jac_dd = global_state().extract_displ_block(jac);
     jac_dd->add(*block_ptr, false, timefac_np, 1.0);
   }
   // ---------------------------------------------------------------------
@@ -269,12 +269,13 @@ bool Solid::ModelEvaluator::Contact::assemble_jacobian(
     // --- Kdd - block ---------------------------------------------------
     block_ptr =
         strategy().get_matrix_block_ptr(CONTACT::MatBlockType::displ_displ, &eval_contact());
-    if (not block_ptr.is_null())
+    if (block_ptr)
     {
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
+      std::shared_ptr<Core::LinAlg::SparseMatrix> jac_dd_ptr =
+          global_state().extract_displ_block(jac);
       jac_dd_ptr->add(*block_ptr, false, timefac_np, 1.0);
       // reset the block pointers, just to be on the safe side
-      block_ptr = Teuchos::null;
+      block_ptr = nullptr;
     }
   }
   // ---------------------------------------------------------------------
@@ -285,36 +286,37 @@ bool Solid::ModelEvaluator::Contact::assemble_jacobian(
     // --- Kdd - block ---------------------------------------------------
     block_ptr =
         strategy().get_matrix_block_ptr(CONTACT::MatBlockType::displ_displ, &eval_contact());
-    if (not block_ptr.is_null())
+    if (block_ptr)
     {
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
+      std::shared_ptr<Core::LinAlg::SparseMatrix> jac_dd_ptr =
+          global_state().extract_displ_block(jac);
       jac_dd_ptr->add(*block_ptr, false, timefac_np, 1.0);
       // reset the block pointers, just to be on the safe side
-      block_ptr = Teuchos::null;
+      block_ptr = nullptr;
     }
 
     // --- Kdz - block ---------------------------------------------------
     block_ptr = strategy().get_matrix_block_ptr(CONTACT::MatBlockType::displ_lm, &eval_contact());
-    if (not block_ptr.is_null())
+    if (block_ptr)
     {
       block_ptr->scale(timefac_np);
       global_state().assign_model_block(jac, *block_ptr, type(), Solid::MatBlockType::displ_lm);
       // reset the block pointer, just to be on the safe side
-      block_ptr = Teuchos::null;
+      block_ptr = nullptr;
     }
 
     // --- Kzd - block ---------------------------------------------------
     block_ptr = strategy().get_matrix_block_ptr(CONTACT::MatBlockType::lm_displ, &eval_contact());
-    if (not block_ptr.is_null())
+    if (block_ptr)
     {
       global_state().assign_model_block(jac, *block_ptr, type(), Solid::MatBlockType::lm_displ);
       // reset the block pointer, just to be on the safe side
-      block_ptr = Teuchos::null;
+      block_ptr = nullptr;
     }
 
     // --- Kzz - block ---------------------------------------------------
     block_ptr = strategy().get_matrix_block_ptr(CONTACT::MatBlockType::lm_lm, &eval_contact());
-    if (not block_ptr.is_null())
+    if (block_ptr)
     {
       global_state().assign_model_block(jac, *block_ptr, type(), Solid::MatBlockType::lm_lm);
     }
@@ -324,11 +326,11 @@ bool Solid::ModelEvaluator::Contact::assemble_jacobian(
     {
       Core::LinAlg::Vector<double> ones(global_state().block_map(type()), false);
       err = ones.PutScalar(1.0);
-      block_ptr = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(ones);
+      block_ptr = std::make_shared<Core::LinAlg::SparseMatrix>(ones);
       global_state().assign_model_block(jac, *block_ptr, type(), Solid::MatBlockType::lm_lm);
     }
     // reset the block pointer, just to be on the safe side
-    block_ptr = Teuchos::null;
+    block_ptr = nullptr;
   }
 
   return (err == 0);
@@ -343,19 +345,19 @@ void Solid::ModelEvaluator::Contact::write_restart(
   iowriter.clear_map_cache();
 
   // quantities to be written for restart
-  std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> restart_vectors;
+  std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>> restart_vectors;
 
   strategy().do_write_restart(restart_vectors, forced_writerestart);
 
   // write all vectors specified by used strategy
-  std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>::const_iterator p;
+  std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>::const_iterator p;
   for (p = restart_vectors.begin(); p != restart_vectors.end(); ++p)
     iowriter.write_vector(p->first, p->second);
 
   /* ToDo Move this stuff into the DoWriteRestart() routine of the
    * AbstractStrategy as soon as the old structural time integration
    * is gone! */
-  if (strategy().lagrange_multiplier_n(true) != Teuchos::null)
+  if (strategy().lagrange_multiplier_n(true) != nullptr)
     iowriter.write_vector("lagrmultold", strategy().lagrange_multiplier_n(true));
 
   // since the global output_step_state() routine is not called, if the
@@ -377,11 +379,11 @@ void Solid::ModelEvaluator::Contact::read_restart(Core::IO::DiscretizationReader
 void Solid::ModelEvaluator::Contact::update_step_state(const double& timefac_n)
 {
   // add the contact forces to the old structural residual state vector
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> strcontactrhs_ptr =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> strcontactrhs_ptr =
       strategy().get_rhs_block_ptr(CONTACT::VecBlockType::displ);
-  if (not strcontactrhs_ptr.is_null())
+  if (strcontactrhs_ptr)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& fstructold_ptr =
+    std::shared_ptr<Core::LinAlg::Vector<double>>& fstructold_ptr =
         global_state().get_fstructure_old();
     fstructold_ptr->Update(timefac_n, *strcontactrhs_ptr, 1.0);
   }
@@ -423,10 +425,10 @@ void Solid::ModelEvaluator::Contact::run_post_compute_x(const Core::LinAlg::Vect
 {
   check_init_setup();
 
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> eval_vec(3, Teuchos::null);
-  eval_vec[0] = Teuchos::rcpFromRef(xold);
-  eval_vec[1] = Teuchos::rcpFromRef(dir);
-  eval_vec[2] = Teuchos::rcpFromRef(xnew);
+  std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> eval_vec(3, nullptr);
+  eval_vec[0] = Core::Utils::shared_ptr_from_ref(xold);
+  eval_vec[1] = Core::Utils::shared_ptr_from_ref(dir);
+  eval_vec[2] = Core::Utils::shared_ptr_from_ref(xnew);
 
   eval_contact().set_action_type(Mortar::eval_run_post_compute_x);
 
@@ -493,9 +495,9 @@ void Solid::ModelEvaluator::Contact::output_step_state(
   }
 
   // export to problem node row map
-  Teuchos::RCP<const Epetra_Map> problemnodes = strategy().problem_nodes();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> activesetexp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemnodes);
+  std::shared_ptr<const Epetra_Map> problemnodes = strategy().problem_nodes();
+  std::shared_ptr<Core::LinAlg::Vector<double>> activesetexp =
+      std::make_shared<Core::LinAlg::Vector<double>>(*problemnodes);
   Core::LinAlg::export_to(activeset, *activesetexp);
 
   if (strategy().wear_both_discrete())
@@ -520,20 +522,20 @@ void Solid::ModelEvaluator::Contact::output_step_state(
   // *********************************************************************
 
   // export to problem dof row map
-  Teuchos::RCP<const Epetra_Map> problemdofs = strategy().problem_dofs();
+  std::shared_ptr<const Epetra_Map> problemdofs = strategy().problem_dofs();
 
   // normal direction
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> normalstresses =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> normalstresses =
       strategy().contact_normal_stress();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> normalstressesexp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
+  std::shared_ptr<Core::LinAlg::Vector<double>> normalstressesexp =
+      std::make_shared<Core::LinAlg::Vector<double>>(*problemdofs);
   Core::LinAlg::export_to(*normalstresses, *normalstressesexp);
 
   // tangential plane
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> tangentialstresses =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> tangentialstresses =
       strategy().contact_tangential_stress();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tangentialstressesexp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
+  std::shared_ptr<Core::LinAlg::Vector<double>> tangentialstressesexp =
+      std::make_shared<Core::LinAlg::Vector<double>>(*problemdofs);
   Core::LinAlg::export_to(*tangentialstresses, *tangentialstressesexp);
 
   // write to output
@@ -547,9 +549,9 @@ void Solid::ModelEvaluator::Contact::output_step_state(
   if (strategy().weighted_wear())
   {
     // write output
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> wearoutput = strategy().contact_wear();
-    Teuchos::RCP<Core::LinAlg::Vector<double>> wearoutputexp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
+    std::shared_ptr<const Core::LinAlg::Vector<double>> wearoutput = strategy().contact_wear();
+    std::shared_ptr<Core::LinAlg::Vector<double>> wearoutputexp =
+        std::make_shared<Core::LinAlg::Vector<double>>(*problemdofs);
     Core::LinAlg::export_to(*wearoutput, *wearoutputexp);
     iowriter.write_vector("wear", wearoutputexp);
   }
@@ -562,9 +564,9 @@ void Solid::ModelEvaluator::Contact::output_step_state(
     // output of poro no penetration lagrange multiplier!
     const CONTACT::LagrangeStrategyPoro& poro_strategy =
         dynamic_cast<const CONTACT::LagrangeStrategyPoro&>(strategy());
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> lambdaout = poro_strategy.lambda_no_pen();
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdaoutexp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
+    std::shared_ptr<const Core::LinAlg::Vector<double>> lambdaout = poro_strategy.lambda_no_pen();
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambdaoutexp =
+        std::make_shared<Core::LinAlg::Vector<double>>(*problemdofs);
     Core::LinAlg::export_to(*lambdaout, *lambdaoutexp);
     iowriter.write_vector("poronopen_lambda", lambdaoutexp);
   }
@@ -600,7 +602,7 @@ const Solid::ModelEvaluator::ContactData& Solid::ModelEvaluator::Contact::eval_c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<CONTACT::AbstractStrategy>& Solid::ModelEvaluator::Contact::strategy_ptr()
+const std::shared_ptr<CONTACT::AbstractStrategy>& Solid::ModelEvaluator::Contact::strategy_ptr()
 {
   check_init_setup();
   return strategy_ptr_;
@@ -625,12 +627,12 @@ const CONTACT::AbstractStrategy& Solid::ModelEvaluator::Contact::strategy() cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Contact::get_block_dof_row_map_ptr() const
+std::shared_ptr<const Epetra_Map> Solid::ModelEvaluator::Contact::get_block_dof_row_map_ptr() const
 {
   Global::Problem* problem = Global::Problem::instance();
 
   check_init_setup();
-  if (strategy().lm_dof_row_map_ptr(false) == Teuchos::null)
+  if (strategy().lm_dof_row_map_ptr(false) == nullptr)
     return global_state().dof_row_map();
   else
   {
@@ -646,44 +648,44 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Contact::get_block_dof_row
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Contact::get_current_solution_ptr() const
 {
   // TODO: this should be removed!
   Global::Problem* problem = Global::Problem::instance();
   auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
       problem->contact_dynamic_params(), "SYSTEM");
-  if (systype == Inpar::CONTACT::system_condensed) return Teuchos::null;
+  if (systype == Inpar::CONTACT::system_condensed) return nullptr;
 
-  if (strategy().lagrange_multiplier_np(false) != Teuchos::null)
+  if (strategy().lagrange_multiplier_np(false) != nullptr)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> curr_lm_ptr =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().lagrange_multiplier_np(false));
-    if (not curr_lm_ptr.is_null()) curr_lm_ptr->ReplaceMap(strategy().lm_dof_row_map(false));
+    std::shared_ptr<Core::LinAlg::Vector<double>> curr_lm_ptr =
+        std::make_shared<Core::LinAlg::Vector<double>>(*strategy().lagrange_multiplier_np(false));
+    if (curr_lm_ptr) curr_lm_ptr->ReplaceMap(strategy().lm_dof_row_map(false));
 
     extend_lagrange_multiplier_domain(curr_lm_ptr);
 
     return curr_lm_ptr;
   }
   else
-    return Teuchos::null;
+    return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Contact::get_last_time_step_solution_ptr() const
 {
   Global::Problem* problem = Global::Problem::instance();
   auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
       problem->contact_dynamic_params(), "SYSTEM");
-  if (systype == Inpar::CONTACT::system_condensed) return Teuchos::null;
+  if (systype == Inpar::CONTACT::system_condensed) return nullptr;
 
-  if (strategy().lagrange_multiplier_n(false).is_null()) return Teuchos::null;
+  if (strategy().lagrange_multiplier_n(false) == nullptr) return nullptr;
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> old_lm_ptr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().lagrange_multiplier_n(false));
-  if (not old_lm_ptr.is_null()) old_lm_ptr->ReplaceMap(strategy().lm_dof_row_map(false));
+  std::shared_ptr<Core::LinAlg::Vector<double>> old_lm_ptr =
+      std::make_shared<Core::LinAlg::Vector<double>>(*strategy().lagrange_multiplier_n(false));
+  if (old_lm_ptr) old_lm_ptr->ReplaceMap(strategy().lm_dof_row_map(false));
 
   extend_lagrange_multiplier_domain(old_lm_ptr);
 
@@ -693,7 +695,7 @@ Solid::ModelEvaluator::Contact::get_last_time_step_solution_ptr() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Contact::extend_lagrange_multiplier_domain(
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& lm_vec) const
+    std::shared_ptr<Core::LinAlg::Vector<double>>& lm_vec) const
 {
   // default case: do nothing
   if (strategy().lm_dof_row_map(false).NumGlobalElements() ==
@@ -703,8 +705,8 @@ void Solid::ModelEvaluator::Contact::extend_lagrange_multiplier_domain(
   if (strategy().lm_dof_row_map(false).NumGlobalElements() <
       get_block_dof_row_map_ptr()->NumGlobalElements())
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tmp_ptr =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_block_dof_row_map_ptr());
+    std::shared_ptr<Core::LinAlg::Vector<double>> tmp_ptr =
+        std::make_shared<Core::LinAlg::Vector<double>>(*get_block_dof_row_map_ptr());
     Core::LinAlg::export_to(*lm_vec, *tmp_ptr);
     lm_vec = tmp_ptr;
   }
@@ -727,11 +729,11 @@ void Solid::ModelEvaluator::Contact::run_pre_compute_x(const Core::LinAlg::Vecto
 {
   check_init_setup();
 
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> eval_vec(1, Teuchos::null);
-  eval_vec[0] = Teuchos::rcpFromRef(xold);
+  std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> eval_vec(1, nullptr);
+  eval_vec[0] = Core::Utils::shared_ptr_from_ref(xold);
 
-  std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> eval_vec_mutable(1, Teuchos::null);
-  eval_vec_mutable[0] = Teuchos::rcpFromRef(dir_mutable);
+  std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> eval_vec_mutable(1, nullptr);
+  eval_vec_mutable[0] = Core::Utils::shared_ptr_from_ref(dir_mutable);
 
   eval_contact().set_action_type(Mortar::eval_run_pre_compute_x);
   eval_data().set_model_evaluator(this);
@@ -750,9 +752,9 @@ void Solid::ModelEvaluator::Contact::run_post_iterate(const ::NOX::Solver::Gener
       dynamic_cast<const ::NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
 
   // displacement vector after the predictor call
-  Teuchos::RCP<Core::LinAlg::Vector<double>> curr_disp =
+  std::shared_ptr<Core::LinAlg::Vector<double>> curr_disp =
       global_state().extract_displ_entries(Core::LinAlg::Vector<double>(nox_x.getEpetraVector()));
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> curr_vel = global_state().get_vel_np();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> curr_vel = global_state().get_vel_np();
 
   if (strategy().dyn_redistribute_contact(curr_disp, curr_vel, solver.getNumIterations()))
     evaluate_force();
@@ -767,7 +769,7 @@ void Solid::ModelEvaluator::Contact::run_pre_apply_jacobian_inverse(
     const Core::LinAlg::Vector<double>& rhs, Core::LinAlg::Vector<double>& result,
     const Core::LinAlg::Vector<double>& xold, const NOX::Nln::Group& grp)
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd = global_state().jacobian_displ_block();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> jac_dd = global_state().jacobian_displ_block();
   const_cast<CONTACT::AbstractStrategy&>(strategy())
       .run_pre_apply_jacobian_inverse(jac_dd, const_cast<Core::LinAlg::Vector<double>&>(rhs));
 }
@@ -781,10 +783,10 @@ void Solid::ModelEvaluator::Contact::run_pre_solve(const ::NOX::Solver::Generic&
       dynamic_cast<const ::NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
 
   // displacement vector after the predictor call
-  Teuchos::RCP<Core::LinAlg::Vector<double>> curr_disp =
+  std::shared_ptr<Core::LinAlg::Vector<double>> curr_disp =
       global_state().extract_displ_entries(Core::LinAlg::Vector<double>(nox_x.getEpetraVector()));
 
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> eval_vec(1, Teuchos::null);
+  std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> eval_vec(1, nullptr);
   eval_vec[0] = curr_disp;
 
   eval_contact().set_action_type(Mortar::eval_run_pre_solve);
@@ -816,18 +818,19 @@ void Solid::ModelEvaluator::Contact::run_post_apply_jacobian_inverse(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::SparseMatrix> Solid::ModelEvaluator::Contact::get_jacobian_block(
-    const MatBlockType bt) const
+std::shared_ptr<const Core::LinAlg::SparseMatrix>
+Solid::ModelEvaluator::Contact::get_jacobian_block(const MatBlockType bt) const
 {
   return global_state().get_jacobian_block(type(), bt);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Contact::assemble_force_of_models(
+std::shared_ptr<Core::LinAlg::Vector<double>>
+Solid::ModelEvaluator::Contact::assemble_force_of_models(
     const std::vector<Inpar::Solid::ModelType>* without_these_models, const bool apply_dbc) const
 {
-  Teuchos::RCP<::NOX::Epetra::Vector> force_nox = global_state().create_global_vector();
+  std::shared_ptr<::NOX::Epetra::Vector> force_nox = global_state().create_global_vector();
   {
     Core::LinAlg::VectorView force_view(force_nox->getEpetraVector());
     integrator().assemble_force(force_view, without_these_models);
@@ -835,8 +838,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Contact::assem
 
   // copy the vector, otherwise the storage will be freed at the end of this
   // function, resulting in a segmentation fault
-  Teuchos::RCP<Core::LinAlg::Vector<double>> force =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(force_nox->getEpetraVector());
+  std::shared_ptr<Core::LinAlg::Vector<double>> force =
+      std::make_shared<Core::LinAlg::Vector<double>>(force_nox->getEpetraVector());
 
   if (apply_dbc) tim_int().get_dbc().apply_dirichlet_to_rhs(*force);
 
@@ -845,13 +848,13 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Contact::assem
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseOperator> Solid::ModelEvaluator::Contact::get_aux_displ_jacobian()
-    const
+std::shared_ptr<Core::LinAlg::SparseOperator>
+Solid::ModelEvaluator::Contact::get_aux_displ_jacobian() const
 {
   std::vector<Inpar::Solid::ModelType> g;
   g.push_back(Inpar::Solid::ModelType::model_contact);
 
-  Teuchos::RCP<Core::LinAlg::SparseOperator> jacaux = global_state().create_aux_jacobian();
+  std::shared_ptr<Core::LinAlg::SparseOperator> jacaux = global_state().create_aux_jacobian();
   bool ok = integrator().assemble_jac(*jacaux, &g);
 
   if (!ok) FOUR_C_THROW("ERROR: create_aux_jacobian went wrong!");
@@ -916,7 +919,8 @@ void Solid::ModelEvaluator::Contact::remove_condensed_contributions_from_rhs(
   check_init_setup();
   eval_contact().set_action_type(Mortar::remove_condensed_contributions_from_str_rhs);
 
-  std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> mutable_vec(1, Teuchos::rcpFromRef(rhs));
+  std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> mutable_vec(
+      1, Core::Utils::shared_ptr_from_ref(rhs));
   strategy().evaluate(eval_contact(), nullptr, &mutable_vec);
 }
 

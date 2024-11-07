@@ -28,8 +28,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Cut::CutWizard::BackMesh::init(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& back_disp_col,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& back_levelset_col)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& back_disp_col,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& back_levelset_col)
 {
   back_disp_col_ = back_disp_col;
   back_levelset_col_ = back_levelset_col;
@@ -52,13 +52,13 @@ const Core::Elements::Element* Cut::CutWizard::BackMesh::l_col_element(int lid) 
 /*-------------------------------------------------------------*
  * constructor
  *-------------------------------------------------------------*/
-Cut::CutWizard::CutWizard(const Teuchos::RCP<Core::FE::Discretization>& backdis,
+Cut::CutWizard::CutWizard(const std::shared_ptr<Core::FE::Discretization>& backdis,
     std::function<void(const Core::Nodes::Node& node, std::vector<int>& lm)> global_dof_indices)
-    : back_mesh_(Teuchos::make_rcp<CutWizard::BackMesh>(backdis, this)),
+    : back_mesh_(std::make_shared<CutWizard::BackMesh>(backdis, this)),
       global_dof_indices_(std::move(global_dof_indices)),
       comm_(backdis->get_comm()),
       myrank_(backdis->get_comm().MyPID()),
-      intersection_(Teuchos::make_rcp<Cut::CombIntersection>(myrank_)),
+      intersection_(std::make_shared<Cut::CombIntersection>(myrank_)),
       do_mesh_intersection_(false),
       do_levelset_intersection_(false),
       level_set_sid_(-1),
@@ -76,10 +76,10 @@ Cut::CutWizard::CutWizard(const Teuchos::RCP<Core::FE::Discretization>& backdis,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Cut::CutWizard::CutWizard(const Epetra_Comm& comm)
-    : back_mesh_(Teuchos::null),
+    : back_mesh_(nullptr),
       comm_(comm),
       myrank_(comm.MyPID()),
-      intersection_(Teuchos::make_rcp<Cut::CombIntersection>(myrank_)),
+      intersection_(std::make_shared<Cut::CombIntersection>(myrank_)),
       do_mesh_intersection_(false),
       do_levelset_intersection_(false),
       level_set_sid_(-1),
@@ -135,9 +135,9 @@ void Cut::CutWizard::set_options(
  * set displacement and level-set vectors used during the cut
  *--------------------------------------------------------------*/
 void Cut::CutWizard::set_background_state(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    std::shared_ptr<const Core::LinAlg::Vector<double>>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    std::shared_ptr<const Core::LinAlg::Vector<double>>
         back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
     int level_set_sid       //!< global id for level-set side
 )
@@ -154,8 +154,8 @@ void Cut::CutWizard::set_background_state(
  * set displacement and level-set vectors used during the cut
  *--------------------------------------------------------------*/
 void Cut::CutWizard::add_cutter_state(const int mc_idx,
-    Teuchos::RCP<Core::FE::Discretization> cutter_dis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> cutter_disp_col)
+    std::shared_ptr<Core::FE::Discretization> cutter_dis,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> cutter_disp_col)
 {
   add_cutter_state(0, cutter_dis, cutter_disp_col, 0);
 }
@@ -164,16 +164,15 @@ void Cut::CutWizard::add_cutter_state(const int mc_idx,
  * set displacement and level-set vectors used during the cut
  *--------------------------------------------------------------*/
 void Cut::CutWizard::add_cutter_state(const int mc_idx,
-    Teuchos::RCP<Core::FE::Discretization> cutter_dis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> cutter_disp_col, const int start_ele_gid)
+    std::shared_ptr<Core::FE::Discretization> cutter_dis,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> cutter_disp_col, const int start_ele_gid)
 {
-  std::map<int, Teuchos::RCP<CutterMesh>>::iterator cm = cutter_meshes_.find(mc_idx);
+  std::map<int, std::shared_ptr<CutterMesh>>::iterator cm = cutter_meshes_.find(mc_idx);
 
   if (cm != cutter_meshes_.end())
     FOUR_C_THROW("cutter mesh with mesh coupling index %i already set", mc_idx);
 
-  cutter_meshes_[mc_idx] =
-      Teuchos::make_rcp<CutterMesh>(cutter_dis, cutter_disp_col, start_ele_gid);
+  cutter_meshes_[mc_idx] = std::make_shared<CutterMesh>(cutter_dis, cutter_disp_col, start_ele_gid);
 
   do_mesh_intersection_ = true;
 }
@@ -184,7 +183,7 @@ void Cut::CutWizard::add_cutter_state(const int mc_idx,
 void Cut::CutWizard::set_marked_condition_sides(
     // const int mc_idx,                                       //Not needed (for now?)
     Core::FE::Discretization& cutter_dis,
-    // Teuchos::RCP<const Core::LinAlg::Vector<double>> cutter_disp_col,      //Not needed (for
+    // std::shared_ptr<const Core::LinAlg::Vector<double>> cutter_disp_col,      //Not needed (for
     // now?)
     const int start_ele_gid)
 {
@@ -349,10 +348,10 @@ void Cut::CutWizard::add_ls_cutting_side()
 void Cut::CutWizard::add_mesh_cutting_side()
 {
   // loop all mesh coupling objects
-  for (std::map<int, Teuchos::RCP<CutterMesh>>::iterator it = cutter_meshes_.begin();
+  for (std::map<int, std::shared_ptr<CutterMesh>>::iterator it = cutter_meshes_.begin();
        it != cutter_meshes_.end(); it++)
   {
-    Teuchos::RCP<CutterMesh> cutter_mesh = it->second;
+    std::shared_ptr<CutterMesh> cutter_mesh = it->second;
 
     add_mesh_cutting_side(
         cutter_mesh->cutterdis_, cutter_mesh->cutter_disp_col_, cutter_mesh->start_ele_gid_);
@@ -365,7 +364,7 @@ void Cut::CutWizard::add_mesh_cutting_side()
  */
 void evaluate_position_on_nurbs9(Core::Elements::Element* element,
     Core::LinAlg::SerialDenseMatrix& element_current_position,
-    Teuchos::RCP<Core::FE::Discretization>& cutterdis,
+    std::shared_ptr<Core::FE::Discretization>& cutterdis,
     const Core::LinAlg::Vector<double>& cutter_disp_col)
 {
   // Initialize the information needed for NURBS elements
@@ -448,7 +447,7 @@ void evaluate_position_on_nurbs9(Core::Elements::Element* element,
  */
 void evaluate_position_on_lagrange_element(Core::Elements::Element* element,
     Core::LinAlg::SerialDenseMatrix& element_current_position, Core::FE::Discretization& cutterdis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& cutter_disp_col)
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& cutter_disp_col)
 {
   std::vector<int> lm;
   std::vector<double> mydisp;
@@ -466,7 +465,7 @@ void evaluate_position_on_lagrange_element(Core::Elements::Element* element,
     // Initialize the current nodal position with its reference position
     Core::LinAlg::Matrix<3, 1> current_nodal_position(node.x().data());
 
-    if (cutter_disp_col != Teuchos::null)
+    if (cutter_disp_col != nullptr)
     {
       if (lm.size() == 3)  // case for BELE3 boundary elements
       {
@@ -500,12 +499,12 @@ void evaluate_position_on_lagrange_element(Core::Elements::Element* element,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Cut::CutWizard::add_mesh_cutting_side(Teuchos::RCP<Core::FE::Discretization> cutterdis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> cutter_disp_col,
+void Cut::CutWizard::add_mesh_cutting_side(std::shared_ptr<Core::FE::Discretization> cutterdis,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> cutter_disp_col,
     const int start_ele_gid  ///< mesh coupling index
 )
 {
-  if (cutterdis == Teuchos::null)
+  if (cutterdis == nullptr)
     FOUR_C_THROW("cannot add mesh cutting sides for invalid cutter discretization!");
 
   std::vector<int> lm;
@@ -847,11 +846,11 @@ void Cut::CutWizard::find_position_dof_sets(bool include_inner)
     bool communicate = (comm_.NumProc() > 1);
 
     // create a parallel Cut object for the current background mesh to communicate missing data
-    Teuchos::RCP<Cut::Parallel> cut_parallel = Teuchos::null;
+    std::shared_ptr<Cut::Parallel> cut_parallel = nullptr;
 
     if (communicate)
     {
-      cut_parallel = Teuchos::make_rcp<Cut::Parallel>(back_mesh_->get_ptr(), m, *intersection_);
+      cut_parallel = std::make_shared<Cut::Parallel>(back_mesh_->get_ptr(), m, *intersection_);
     }
 
     // find inside and outside positions of nodes
@@ -981,10 +980,10 @@ Cut::SideHandle* Cut::CutWizard::get_side(int sid) { return intersection_->get_s
 
 Cut::SideHandle* Cut::CutWizard::get_cut_side(int sid)
 {
-  if (intersection_ == Teuchos::null) FOUR_C_THROW("No intersection object available!");
-  Teuchos::RCP<Cut::MeshIntersection> meshintersection =
-      Teuchos::rcp_dynamic_cast<Cut::MeshIntersection>(intersection_);
-  if (meshintersection == Teuchos::null) FOUR_C_THROW("Cast to MeshIntersection failed!");
+  if (intersection_ == nullptr) FOUR_C_THROW("No intersection object available!");
+  std::shared_ptr<Cut::MeshIntersection> meshintersection =
+      std::dynamic_pointer_cast<Cut::MeshIntersection>(intersection_);
+  if (meshintersection == nullptr) FOUR_C_THROW("Cast to MeshIntersection failed!");
   return meshintersection->get_cut_side(sid);
 }
 
@@ -1010,10 +1009,11 @@ bool Cut::CutWizard::has_ls_cutting_side(int sid)
   return intersection_->has_ls_cutting_side(sid);
 }
 
-void Cut::CutWizard::update_boundary_cell_coords(Teuchos::RCP<Core::FE::Discretization> cutterdis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> cutter_disp_col, const int start_ele_gid)
+void Cut::CutWizard::update_boundary_cell_coords(
+    std::shared_ptr<Core::FE::Discretization> cutterdis,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> cutter_disp_col, const int start_ele_gid)
 {
-  if (cutterdis == Teuchos::null)
+  if (cutterdis == nullptr)
     FOUR_C_THROW("cannot add mesh cutting sides for invalid cutter discretization!");
 
   std::vector<int> lm;
@@ -1047,7 +1047,7 @@ void Cut::CutWizard::update_boundary_cell_coords(Teuchos::RCP<Core::FE::Discreti
       dofs.push_back(lm[1]);
       dofs.push_back(lm[2]);
 
-      if (cutter_disp_col != Teuchos::null)
+      if (cutter_disp_col != nullptr)
       {
         if (lm.size() == 3)  // case for BELE3 boundary elements
         {
@@ -1132,9 +1132,9 @@ bool Cut::CutWizard::do_inside_cells_have_physical_meaning()
   return intersection_->get_options().do_inside_cells_have_physical_meaning();
 }
 
-Teuchos::RCP<Cut::CombIntersection> Cut::CutWizard::get_intersection()
+std::shared_ptr<Cut::CombIntersection> Cut::CutWizard::get_intersection()
 {
-  if (intersection_.is_null()) FOUR_C_THROW("nullptr pointer!");
+  if (!intersection_) FOUR_C_THROW("nullptr pointer!");
 
   return intersection_;
 }

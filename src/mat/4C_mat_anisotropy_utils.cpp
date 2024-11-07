@@ -45,10 +45,10 @@ template <typename T, unsigned int numfib>
 void Mat::compute_structural_tensors(
     std::vector<std::array<Core::LinAlg::Matrix<3, 1>, numfib>>& fibers,
     std::vector<std::array<T, numfib>>& structural_tensor,
-    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& strategy)
+    const std::shared_ptr<Elastic::StructuralTensorStrategyBase>& strategy)
 {
   // Need to compute the stuctural tensors
-  if (Teuchos::is_null(strategy))
+  if (!strategy)
   {
     FOUR_C_THROW("Structural tensor strategy is null!");
   }
@@ -130,19 +130,19 @@ void Mat::unpack_fiber_array(
 template void Mat::compute_structural_tensors<Core::LinAlg::Matrix<6, 1>, 1u>(
     std::vector<std::array<Core::LinAlg::Matrix<3, 1>, 1>>& fibers,
     std::vector<std::array<Core::LinAlg::Matrix<6, 1>, 1>>& structural_tensor,
-    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& strategy);
+    const std::shared_ptr<Elastic::StructuralTensorStrategyBase>& strategy);
 template void Mat::compute_structural_tensors<Core::LinAlg::Matrix<3, 3>, 1u>(
     std::vector<std::array<Core::LinAlg::Matrix<3, 1>, 1>>& fibers,
     std::vector<std::array<Core::LinAlg::Matrix<3, 3>, 1>>& structural_tensor,
-    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& strategy);
+    const std::shared_ptr<Elastic::StructuralTensorStrategyBase>& strategy);
 template void Mat::compute_structural_tensors<Core::LinAlg::Matrix<6, 1>, 2u>(
     std::vector<std::array<Core::LinAlg::Matrix<3, 1>, 2>>& fibers,
     std::vector<std::array<Core::LinAlg::Matrix<6, 1>, 2>>& structural_tensor,
-    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& strategy);
+    const std::shared_ptr<Elastic::StructuralTensorStrategyBase>& strategy);
 template void Mat::compute_structural_tensors<Core::LinAlg::Matrix<3, 3>, 2u>(
     std::vector<std::array<Core::LinAlg::Matrix<3, 1>, 2>>& fibers,
     std::vector<std::array<Core::LinAlg::Matrix<3, 3>, 2>>& structural_tensor,
-    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& strategy);
+    const std::shared_ptr<Elastic::StructuralTensorStrategyBase>& strategy);
 
 template void Mat::pack_fiber_vector(Core::Communication::PackBuffer& buffer,
     const std::vector<std::vector<Core::LinAlg::Matrix<3, 3>>>& vct);

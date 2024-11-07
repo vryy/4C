@@ -480,7 +480,7 @@ unsigned int Cut::TriangulateFacet::find_second_best_ear(
       if (reflInd == ind0 || reflInd == ind2) continue;
 
       Core::LinAlg::Matrix<3, 1> point_cord(ptlist_[reflInd]);
-      Teuchos::RCP<Cut::Position> pos =
+      std::shared_ptr<Cut::Position> pos =
           Cut::Position::create(tri_coord, point_cord, Core::FE::CellType::tri3);
       // precice computation if it is inside
       bool is_inside = pos->compute(0.0);
@@ -755,7 +755,7 @@ void Cut::TriangulateFacet::ear_clipping(std::vector<int> ptConcavity,  // list 
         }
       }
 
-      Teuchos::RCP<BoundingBox> bb = Teuchos::RCP(BoundingBox::create());
+      std::shared_ptr<BoundingBox> bb = std::shared_ptr<BoundingBox>(BoundingBox::create());
       std::cout << "The facet points are as follows\n";
       for (std::vector<Point*>::iterator it = ptlist_.begin(); it != ptlist_.end(); it++)
       {
@@ -1003,7 +1003,7 @@ void Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
         int reflexmaincyclepointid = *i;
         Core::LinAlg::Matrix<3, 1> reflexmaincyclepoint =
             localmaincyclepoints[reflexmaincyclepointid];
-        Teuchos::RCP<Position> pos =
+        std::shared_ptr<Position> pos =
             Cut::Position::create(triangle, reflexmaincyclepoint, Core::FE::CellType::tri3);
         bool within = pos->is_given_point_within_element();
         if (within)

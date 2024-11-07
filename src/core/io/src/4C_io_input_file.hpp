@@ -17,7 +17,6 @@
 #include "4C_utils_string.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
 
 #include <algorithm>
 #include <filesystem>
@@ -336,7 +335,7 @@ namespace Core::IO
    *
    */
   void read_knots(InputFile& input, const std::string& name,
-      Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots);
+      std::shared_ptr<Core::FE::Nurbs::Knotvector>& disknots);
 
 
   /// -- template and inline functions --- //

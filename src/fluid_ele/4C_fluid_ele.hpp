@@ -15,7 +15,7 @@
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -50,10 +50,10 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -67,11 +67,11 @@ namespace Discret
 
       /// pre-evaluation
       void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
-          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3) override;
+          std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+          std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3) override;
 
      private:
       static FluidType instance_;
@@ -154,20 +154,20 @@ namespace Discret
       int num_volume() const override { return Core::FE::get_number_of_element_volumes(distype_); }
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
+      \brief Get vector of std::shared_ptrs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       /*!
-      \brief Get Teuchos::RCP to the internal face adjacent to this element as master element and
+      \brief Get std::shared_ptr to the internal face adjacent to this element as master element and
       the parent_slave element
       */
-      Teuchos::RCP<Core::Elements::Element> create_face_element(
+      std::shared_ptr<Core::Elements::Element> create_face_element(
           Core::Elements::Element* parent_slave,  //!< parent slave fluid3 element
           int nnode,                              //!< number of surface nodes
           const int* nodeids,                     //!< node ids of surface element
@@ -326,7 +326,7 @@ namespace Discret
       /*!
       \brief Access to element-specific subgrid-scale arrays
       */
-      Teuchos::RCP<FLD::TDSEleData>& tds() { return tds_; }
+      std::shared_ptr<FLD::TDSEleData>& tds() { return tds_; }
 
       //@}
 
@@ -354,7 +354,7 @@ namespace Discret
       bool is_ale_;
 
       //! time-dependent subgrid-scales (only allocated if needed)
-      Teuchos::RCP<FLD::TDSEleData> tds_;
+      std::shared_ptr<FLD::TDSEleData> tds_;
 
       // internal calculation methods
 
@@ -412,7 +412,7 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
@@ -490,10 +490,10 @@ namespace Discret
       int num_surface() const override { return Core::FE::get_number_of_element_surfaces(shape()); }
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -502,7 +502,7 @@ namespace Discret
       top of the parobject.H file.
       */
 
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -711,7 +711,7 @@ namespace Discret
 
       static FluidIntFaceType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
@@ -728,11 +728,11 @@ namespace Discret
 
       /// pre-evaluation
       void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
-          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3) override;
+          std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+          std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3) override;
 
      private:
       static FluidIntFaceType instance_;
@@ -800,9 +800,9 @@ namespace Discret
       int num_surface() const override { return Core::FE::get_number_of_element_surfaces(shape()); }
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -810,7 +810,7 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -889,7 +889,7 @@ namespace Discret
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-          Teuchos::RCP<std::map<int, int>>
+          std::shared_ptr<std::map<int, int>>
               pbcconnectivity  ///< connectivity between slave and PBC's master nodes
       );
 
@@ -913,7 +913,7 @@ namespace Discret
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-          Teuchos::RCP<std::map<int, int>>
+          std::shared_ptr<std::map<int, int>>
               pbcconnectivity  ///< connectivity between slave and PBC's master nodes
       );
 

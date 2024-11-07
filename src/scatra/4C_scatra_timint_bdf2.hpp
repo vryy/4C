@@ -23,10 +23,11 @@ namespace ScaTra
   {
    public:
     /// Standard Constructor
-    TimIntBDF2(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    TimIntBDF2(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     /// Setup time integration scheme
     void setup() override;
@@ -50,29 +51,29 @@ namespace ScaTra
 
     /// read restart data
     void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr) override;
 
     /// routine to return scalar field phi at time step n+alpha_F
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phiaf() override { return Teuchos::null; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> phiaf() override { return nullptr; }
 
     /// routine to return scalar field phi at time step n+alpha_M
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phiam() override { return Teuchos::null; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> phiam() override { return nullptr; }
 
     /// routine to return time derivative of scalar field phi at time step n+alpha_M
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtam() override { return Teuchos::null; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> phidtam() override { return nullptr; }
 
     /// routine to return fine-scale scalar field fsphi at time step n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fs_phi() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> fs_phi() override
     {
-      if (Sep_ != Teuchos::null) Sep_->multiply(false, *phinp_, *fsphinp_);
+      if (Sep_ != nullptr) Sep_->multiply(false, *phinp_, *fsphinp_);
       return fsphinp_;
     };
 
     /// routine to return time integration specific parameters
-    Teuchos::RCP<Teuchos::ParameterList> scatra_time_parameter_list() override
+    std::shared_ptr<Teuchos::ParameterList> scatra_time_parameter_list() override
     {
-      Teuchos::RCP<Teuchos::ParameterList> timeparams;
-      timeparams = Teuchos::make_rcp<Teuchos::ParameterList>();
+      std::shared_ptr<Teuchos::ParameterList> timeparams;
+      timeparams = std::make_shared<Teuchos::ParameterList>();
       timeparams->set("using stationary formulation", false);
       timeparams->set("using generalized-alpha time integration", false);
       timeparams->set("total time", time_);
@@ -128,10 +129,10 @@ namespace ScaTra
     double theta_;
 
     /// solution vector phi at time n-1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinm_;
 
     /// fine-scale solution vector at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fsphinp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fsphinp_;
   };  // class TimIntBDF2
 }  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE

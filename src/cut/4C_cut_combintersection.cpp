@@ -40,7 +40,7 @@ void Cut::CombIntersection::cut(bool screenoutput)
   // Remark: we assume that there is no overlap between levelset-isocontour and mesh
 
   // find cut points with levelset-side
-  if (side_ != Teuchos::null)
+  if (side_ != nullptr)
   {
     m.cut(*side_);
   }

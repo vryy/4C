@@ -15,8 +15,8 @@
 #include "4C_linalg_vector.hpp"
 
 #include <Epetra_CrsGraph.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -40,13 +40,13 @@ namespace Core::FE
   class AssembleStrategy
   {
    public:
-    /// Construct with allocated global objects or Teuchos::null.
+    /// Construct with allocated global objects or nullptr.
     AssembleStrategy(int firstdofset, int seconddofset,
-        Teuchos::RCP<LinAlg::SparseOperator> systemmatrix1,
-        Teuchos::RCP<LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3);
+        std::shared_ptr<LinAlg::SparseOperator> systemmatrix1,
+        std::shared_ptr<LinAlg::SparseOperator> systemmatrix2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3);
 
     /// Destruct
     virtual ~AssembleStrategy() = default;
@@ -58,19 +58,19 @@ namespace Core::FE
     //! @name Assembly Flags
     /// Tell which matrix and vector is available to be assembled.
 
-    bool assemblemat1() { return systemmatrix1_ != Teuchos::null; }
-    bool assemblemat2() { return systemmatrix2_ != Teuchos::null; }
-    bool assemblevec1() { return systemvector1_ != Teuchos::null; }
-    bool assemblevec2() { return systemvector2_ != Teuchos::null; }
-    bool assemblevec3() { return systemvector3_ != Teuchos::null; }
+    bool assemblemat1() { return systemmatrix1_ != nullptr; }
+    bool assemblemat2() { return systemmatrix2_ != nullptr; }
+    bool assemblevec1() { return systemvector1_ != nullptr; }
+    bool assemblevec2() { return systemvector2_ != nullptr; }
+    bool assemblevec3() { return systemvector3_ != nullptr; }
     //@}
 
     //! @name Access Methods to Global Object
-    Teuchos::RCP<LinAlg::SparseOperator> systemmatrix1() { return systemmatrix1_; }
-    Teuchos::RCP<LinAlg::SparseOperator> systemmatrix2() { return systemmatrix2_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1() { return systemvector1_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2() { return systemvector2_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3() { return systemvector3_; }
+    std::shared_ptr<LinAlg::SparseOperator> systemmatrix1() { return systemmatrix1_; }
+    std::shared_ptr<LinAlg::SparseOperator> systemmatrix2() { return systemmatrix2_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1() { return systemvector1_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2() { return systemvector2_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3() { return systemvector3_; }
     //@}
 
     //! @name Access Methods to Element Local Object
@@ -173,11 +173,11 @@ namespace Core::FE
 
     //! @name Global Objects
 
-    Teuchos::RCP<LinAlg::SparseOperator> systemmatrix1_;
-    Teuchos::RCP<LinAlg::SparseOperator> systemmatrix2_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3_;
+    std::shared_ptr<LinAlg::SparseOperator> systemmatrix1_;
+    std::shared_ptr<LinAlg::SparseOperator> systemmatrix2_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3_;
 
     //@}
 

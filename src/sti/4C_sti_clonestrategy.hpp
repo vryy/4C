@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <map>
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -63,7 +63,7 @@ namespace STI
     );
 
     //! provide cloned element with element specific data
-    void set_element_data(Teuchos::RCP<Core::Elements::Element>
+    void set_element_data(std::shared_ptr<Core::Elements::Element>
                               newele,     //! current cloned element on target discretization
         Core::Elements::Element* oldele,  //! current element on source discretization
         const int matid,                  //! material of cloned element

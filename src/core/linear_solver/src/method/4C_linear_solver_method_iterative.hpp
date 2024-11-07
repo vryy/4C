@@ -15,7 +15,7 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -38,9 +38,9 @@ namespace Core::LinearSolver
      * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
-    void setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
-        const bool refactor, const bool reset,
-        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector) override;
+    void setup(std::shared_ptr<MatrixType> A, std::shared_ptr<VectorType> x,
+        std::shared_ptr<VectorType> b, const bool refactor, const bool reset,
+        std::shared_ptr<Core::LinAlg::KrylovProjector> projector) override;
 
     //! Actual call to the underlying Belos solver
     int solve() override;
@@ -74,8 +74,9 @@ namespace Core::LinearSolver
      * @param solverlist liner solver parameter list
      * @param projector Krylov projector
      */
-    Teuchos::RCP<Core::LinearSolver::PreconditionerTypeBase> create_preconditioner(
-        Teuchos::ParameterList& solverlist, Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
+    std::shared_ptr<Core::LinearSolver::PreconditionerTypeBase> create_preconditioner(
+        Teuchos::ParameterList& solverlist,
+        std::shared_ptr<Core::LinAlg::KrylovProjector> projector);
 
     //! a communicator
     const Epetra_Comm& comm_;
@@ -84,13 +85,13 @@ namespace Core::LinearSolver
     Teuchos::ParameterList& params_;
 
     //! initial guess and solution
-    Teuchos::RCP<VectorType> x_;
+    std::shared_ptr<VectorType> x_;
 
     //! right hand side vector
-    Teuchos::RCP<VectorType> b_;
+    std::shared_ptr<VectorType> b_;
 
     //! system of equations
-    Teuchos::RCP<MatrixType> a_;
+    std::shared_ptr<MatrixType> a_;
 
     //! counting how many times matrix was solved between resets
     int ncall_{0};
@@ -99,7 +100,7 @@ namespace Core::LinearSolver
     int numiters_{-1};
 
     //! preconditioner object
-    Teuchos::RCP<Core::LinearSolver::PreconditionerTypeBase> preconditioner_;
+    std::shared_ptr<Core::LinearSolver::PreconditionerTypeBase> preconditioner_;
 
     /*! \brief Map of active DOFs in structural contact simulations.
      *
@@ -112,7 +113,7 @@ namespace Core::LinearSolver
      *
      * \sa check_reuse_status_of_active_set()
      */
-    Teuchos::RCP<Epetra_Map> active_dof_map_;
+    std::shared_ptr<Epetra_Map> active_dof_map_;
 
     //!@}
   };

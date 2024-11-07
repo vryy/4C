@@ -11,6 +11,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -28,24 +29,24 @@ Core::Communication::ParObject* Discret::Elements::ArteryType::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ArteryType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ArteryType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ART")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Artery>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Artery>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ArteryType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ArteryType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Artery>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Artery>(id, owner);
   return ele;
 }
 
@@ -157,9 +158,9 @@ void Discret::Elements::Artery::unpack(Core::Communication::UnpackBuffer& buffer
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       kremheller 10/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Artery::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Artery::lines()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 

@@ -87,13 +87,13 @@ void SSI::SSIPart1WC::do_scatra_step()
           Global::Problem::instance()->input_control_file(), scatra_field()->step());
 
       // check if this is a cardiac monodomain problem
-      Teuchos::RCP<ScaTra::TimIntCardiacMonodomain> cardmono =
-          Teuchos::rcp_dynamic_cast<ScaTra::TimIntCardiacMonodomain>(scatra_field());
+      std::shared_ptr<ScaTra::TimIntCardiacMonodomain> cardmono =
+          std::dynamic_pointer_cast<ScaTra::TimIntCardiacMonodomain>(scatra_field());
 
-      if (cardmono == Teuchos::null)
+      if (cardmono == nullptr)
       {
         // read phinp from restart file
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> phinptemp = reader.read_vector("phinp");
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> phinptemp = reader.read_vector("phinp");
 
         // replace old scatra map with new map since ssi map has more dofs
         int err = phinptemp->ReplaceMap(*scatra_field()->dof_row_map());
@@ -105,7 +105,7 @@ void SSI::SSIPart1WC::do_scatra_step()
       else
       {
         // create vector with noderowmap from previously performed scatra calculation
-        Teuchos::RCP<Core::LinAlg::Vector<double>> phinptemp =
+        std::shared_ptr<Core::LinAlg::Vector<double>> phinptemp =
             Core::LinAlg::create_vector(*cardmono->discretization()->node_row_map());
 
         // read phinp from restart file

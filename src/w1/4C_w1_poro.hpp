@@ -131,11 +131,11 @@ namespace Discret
       */
       void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
-      //! Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      //! Get vector of std::shared_ptrs to the lines of this element
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
-      //! Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      //! Get vector of std::shared_ptrs to the surfaces of this element
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       //! @name Access methods
 
@@ -633,13 +633,13 @@ namespace Discret
       bool scatra_coupling_;
 
       //! corresponding fluid material
-      Teuchos::RCP<Mat::FluidPoro> fluid_mat_;
+      std::shared_ptr<Mat::FluidPoro> fluid_mat_;
 
       //! corresponding multiphase fluid material
-      Teuchos::RCP<Mat::FluidPoroMultiPhase> fluidmulti_mat_;
+      std::shared_ptr<Mat::FluidPoroMultiPhase> fluidmulti_mat_;
 
       //! own poro structure material
-      Teuchos::RCP<Mat::StructPoro> struct_mat_;
+      std::shared_ptr<Mat::StructPoro> struct_mat_;
 
       //! weights for nurbs elements
       Core::LinAlg::Matrix<numnod_, 1> weights_;

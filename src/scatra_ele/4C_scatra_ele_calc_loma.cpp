@@ -56,7 +56,7 @@ Discret::Elements::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
       shc_(1.0)
 {
   // set appropriate reaction manager
-  my::reamanager_ = Teuchos::make_rcp<ScaTraEleReaManagerLoma>(my::numscal_);
+  my::reamanager_ = std::make_shared<ScaTraEleReaManagerLoma>(my::numscal_);
 
   // safety check
   if (my::turbparams_->mfs_conservative())
@@ -71,9 +71,9 @@ Discret::Elements::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcLoma<distype>::materials(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity
@@ -96,16 +96,16 @@ void Discret::Elements::ScaTraEleCalcLoma<distype>::materials(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcLoma<distype>::mat_sutherland(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc     //!< fluid viscosity
 )
 {
-  const Teuchos::RCP<const Mat::Sutherland>& actmat =
-      Teuchos::rcp_dynamic_cast<const Mat::Sutherland>(material);
+  const std::shared_ptr<const Mat::Sutherland>& actmat =
+      std::dynamic_pointer_cast<const Mat::Sutherland>(material);
 
   // get specific heat capacity at constant pressure
   shc_ = actmat->shc();
@@ -157,16 +157,16 @@ void Discret::Elements::ScaTraEleCalcLoma<distype>::mat_sutherland(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcLoma<distype>::mat_thermo_st_venant_kirchhoff(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc     //!< fluid viscosity
 )
 {
-  const Teuchos::RCP<const Mat::ThermoStVenantKirchhoff>& actmat =
-      Teuchos::rcp_dynamic_cast<const Mat::ThermoStVenantKirchhoff>(material);
+  const std::shared_ptr<const Mat::ThermoStVenantKirchhoff>& actmat =
+      std::dynamic_pointer_cast<const Mat::ThermoStVenantKirchhoff>(material);
 
   // get constant density
   densnp = actmat->density();
@@ -223,7 +223,7 @@ void Discret::Elements::ScaTraEleCalcLoma<distype>::get_rhs_int(
 {
   // get reatemprhs of species k from the reaction manager
   const double reatemprhs =
-      Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerLoma>(my::reamanager_)->get_rea_temp_rhs(k);
+      std::dynamic_pointer_cast<ScaTraEleReaManagerLoma>(my::reamanager_)->get_rea_temp_rhs(k);
 
   // Three cases have to be distinguished for computing the rhs:
   // 1) reactive temperature equation: reaction-rate term

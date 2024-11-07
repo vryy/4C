@@ -234,7 +234,7 @@ namespace Cut
     /*!
     \brief Set a pointer to the background element of this boundary cell
      */
-    void set_background_ele_ptr(Teuchos::RCP<Cut::Element> background_ele_ptr)
+    void set_background_ele_ptr(std::shared_ptr<Cut::Element> background_ele_ptr)
     {
       background_ele_ptr_ = background_ele_ptr;
     }
@@ -288,10 +288,10 @@ namespace Cut
     /// Reference position of the boundary cell
     Core::LinAlg::SerialDenseMatrix xyz_ref_;
     Facet* facet_;
-    Teuchos::RCP<Cycle> points_;
+    std::shared_ptr<Cycle> points_;
 
     /// Pointer to the background element of this boundary cell
-    Teuchos::RCP<Cut::Element> background_ele_ptr_;
+    std::shared_ptr<Cut::Element> background_ele_ptr_;
 
     /// Cubature degree
     int cubature_degree_;

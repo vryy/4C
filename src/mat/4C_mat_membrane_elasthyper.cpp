@@ -25,9 +25,9 @@ Mat::PAR::MembraneElastHyper::MembraneElastHyper(const Core::Mat::PAR::Parameter
 /*----------------------------------------------------------------------*
  |                                                       sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::MembraneElastHyper::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::MembraneElastHyper::create_material()
 {
-  return Teuchos::make_rcp<Mat::MembraneElastHyper>(this);
+  return std::make_shared<Mat::MembraneElastHyper>(this);
 }  // Mat::PAR::MembraneElastHyper::create_material
 
 

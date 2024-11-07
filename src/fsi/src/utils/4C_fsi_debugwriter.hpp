@@ -13,7 +13,7 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -39,7 +39,7 @@ namespace FSI
     {
      public:
       /// create FSI debug writer on given field discretization
-      explicit DebugWriter(Teuchos::RCP<Core::FE::Discretization> dis);
+      explicit DebugWriter(std::shared_ptr<Core::FE::Discretization> dis);
 
       /// announce new time step
       /*!
@@ -59,16 +59,16 @@ namespace FSI
 
      private:
       /// internal interface discretization
-      Teuchos::RCP<Core::FE::Discretization> dis_;
+      std::shared_ptr<Core::FE::Discretization> dis_;
 
       /// coupling of field discretization and interface discretization
-      Teuchos::RCP<Coupling::Adapter::Coupling> coup_;
+      std::shared_ptr<Coupling::Adapter::Coupling> coup_;
 
       /// current control file
-      Teuchos::RCP<Core::IO::OutputControl> control_;
+      std::shared_ptr<Core::IO::OutputControl> control_;
 
       /// writer to control file
-      Teuchos::RCP<Core::IO::DiscretizationWriter> writer_;
+      std::shared_ptr<Core::IO::DiscretizationWriter> writer_;
 
       /// internal FSI iteration count
       int itnum_;
@@ -80,7 +80,7 @@ namespace FSI
     class SimpleDebugWriter
     {
      public:
-      SimpleDebugWriter(Teuchos::RCP<Core::FE::Discretization> dis, const std::string& name);
+      SimpleDebugWriter(std::shared_ptr<Core::FE::Discretization> dis, const std::string& name);
 
       virtual ~SimpleDebugWriter() = default;
       /// announce new time step
@@ -101,16 +101,16 @@ namespace FSI
 
      private:
       /// discretization
-      Teuchos::RCP<Core::FE::Discretization> dis_;
+      std::shared_ptr<Core::FE::Discretization> dis_;
 
       /// name of output file
       std::string name_;
 
       /// current control file
-      Teuchos::RCP<Core::IO::OutputControl> control_;
+      std::shared_ptr<Core::IO::OutputControl> control_;
 
       /// writer to control file
-      Teuchos::RCP<Core::IO::DiscretizationWriter> writer_;
+      std::shared_ptr<Core::IO::DiscretizationWriter> writer_;
 
       /// internal FSI iteration count
       int itnum_;
@@ -139,14 +139,14 @@ namespace FSI
         interface discretization.
        */
       virtual void write_vector(
-          const std::string& name, const Teuchos::RCP<Core::LinAlg::Vector<double>>& v);
+          const std::string& name, const std::shared_ptr<Core::LinAlg::Vector<double>>& v);
 
      private:
       FSI::Monolithic& algorithm_;
 
-      Teuchos::RCP<SimpleDebugWriter> struct_writer_;
-      Teuchos::RCP<SimpleDebugWriter> fluid_writer_;
-      Teuchos::RCP<SimpleDebugWriter> ale_writer_;
+      std::shared_ptr<SimpleDebugWriter> struct_writer_;
+      std::shared_ptr<SimpleDebugWriter> fluid_writer_;
+      std::shared_ptr<SimpleDebugWriter> ale_writer_;
 
       int counter_;
     };

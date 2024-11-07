@@ -87,7 +87,7 @@ namespace Mat
       const double k3_;
       //@}
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
     };
   }  // namespace PAR
 
@@ -129,7 +129,7 @@ namespace Mat
             "kinematics version is planned.");
     }
 
-    Teuchos::RCP<Material> clone() const override { return Teuchos::make_rcp<PlasticGTN>(*this); }
+    std::shared_ptr<Material> clone() const override { return std::make_shared<PlasticGTN>(*this); }
 
     void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
     void update() override;

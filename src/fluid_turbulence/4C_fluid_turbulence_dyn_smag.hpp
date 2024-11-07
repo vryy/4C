@@ -18,8 +18,9 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -36,7 +37,7 @@ namespace FLD
     \brief Standard Constructor (public)
 
     */
-    DynSmagFilter(Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params);
+    DynSmagFilter(std::shared_ptr<Core::FE::Discretization> actdis, Teuchos::ParameterList& params);
 
     /*!
     \brief Destructor
@@ -44,7 +45,7 @@ namespace FLD
     */
     virtual ~DynSmagFilter() = default;
 
-    void add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
+    void add_scatra(std::shared_ptr<Core::FE::Discretization> scatradis);
 
     /*!
     \brief Perform box filter operation, compare filtered quantities
@@ -63,13 +64,13 @@ namespace FLD
 
     */
     void apply_filter_for_dynamic_computation_of_cs(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> velocity,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle);
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> velocity,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle);
 
     void apply_filter_for_dynamic_computation_of_prt(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle,
         Teuchos::ParameterList& extraparams, const int ndsvel);
 
 
@@ -107,7 +108,7 @@ namespace FLD
     */
 
     /// provide access to the box filter
-    Teuchos::RCP<FLD::Boxfilter> boxfilter();
+    std::shared_ptr<FLD::Boxfilter> boxfilter();
     /*!
     \brief Compute Cs using the filtered quantities.
     This is an element call!
@@ -131,11 +132,11 @@ namespace FLD
     //
 
     // Boxfilter
-    Teuchos::RCP<FLD::Boxfilter> boxf_;
-    Teuchos::RCP<FLD::Boxfilter> boxfsc_;
+    std::shared_ptr<FLD::Boxfilter> boxf_;
+    std::shared_ptr<FLD::Boxfilter> boxfsc_;
 
     //! the discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
     //! parameterlist including time params, stabilization params and turbulence sublist
     Teuchos::ParameterList& params_;
     //! flag for physical type of fluid flow
@@ -151,45 +152,45 @@ namespace FLD
 
     //! @name special scatra variables
     //! the discretization
-    Teuchos::RCP<Core::FE::Discretization> scatradiscret_;
+    std::shared_ptr<Core::FE::Discretization> scatradiscret_;
     //@}
 
     //! @name vectors used for filtering (for dynamic Smagorinsky model)
     //        --------------------------
 
     //! the filtered vel exported to column map
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_vel_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_vel_;
     //! the filtered reystress exported to column map
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_reynoldsstress_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_reynoldsstress_;
     //! the modeled subgrid stresses exported to column map
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_modeled_subgrid_stress_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_modeled_subgrid_stress_;
     //! the filtered velocities times rho exported to column map
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel_;
     //! the filtered density exported to column map
-    Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_dens_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_dens_;
     //! the filtered strainrate times rho exported to column map
-    Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_dens_strainrate_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_dens_strainrate_;
     //! the modeled fine scale velocities exported to column map
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_fs_vel_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> col_fs_vel_;
     //! the filtered density times temperature times velocity exported to column map (scalar)
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel_temp_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel_temp_;
     //! the filtered density times temperature gradient times rate of strain exported to column map
     //! (scalar)
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_dens_rateofstrain_temp_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_dens_rateofstrain_temp_;
     //  //! the filtered temperature gradient exported to column map (scalar)
-    //  Teuchos::RCP<Core::LinAlg::MultiVector<double>>      col_filtered_gradtemp_;
+    //  std::shared_ptr<Core::LinAlg::MultiVector<double>>      col_filtered_gradtemp_;
     //! the filtered temperature exported to column map (scalar)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_temp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_temp_;
     //! the filtered density times temperature exported to column map (scalar)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_dens_temp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_dens_temp_;
     //@}
 
     //! @name homogeneous flow specials
     //        -------------------------------
 
     //! the direction coordinates for the above mentioned averaging procedure
-    Teuchos::RCP<std::vector<double>> dir1coords_;
-    Teuchos::RCP<std::vector<double>> dir2coords_;
+    std::shared_ptr<std::vector<double>> dir1coords_;
+    std::shared_ptr<std::vector<double>> dir2coords_;
     //@}
 
   };  // end class DynSmagFilter

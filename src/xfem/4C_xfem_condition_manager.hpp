@@ -74,10 +74,10 @@ namespace XFEM
    public:
     //! constructor
     explicit ConditionManager(const std::map<std::string, int>& dofset_coupling_map,  ///< ???
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
-        std::vector<Teuchos::RCP<Core::FE::Discretization>>&
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::vector<std::shared_ptr<Core::FE::Discretization>>&
             meshcoupl_dis,  ///< mesh coupling discretizations
-        std::vector<Teuchos::RCP<Core::FE::Discretization>>&
+        std::vector<std::shared_ptr<Core::FE::Discretization>>&
             levelsetcoupl_dis,  ///< levelset coupling discretizations
         const double time,      ///< time
         const int step          ///< time step
@@ -99,11 +99,11 @@ namespace XFEM
     void increment_time_and_step(const double dt);
 
     void create_new_level_set_coupling(const std::string& cond_name,
-        Teuchos::RCP<Core::FE::Discretization>
+        std::shared_ptr<Core::FE::Discretization>
             cond_dis,  ///< discretization from which the cutter discretization can be derived
         const int coupling_id);
 
-    void create_couplings(std::vector<Teuchos::RCP<Core::FE::Discretization>>&
+    void create_couplings(std::vector<std::shared_ptr<Core::FE::Discretization>>&
                               coupl_dis,  ///< coupling discretizations
         const std::vector<std::string>&
             conditions_to_check,   ///< conditions for which coupling objects shall be created
@@ -111,61 +111,61 @@ namespace XFEM
     );
 
     void create_new_mesh_coupling(const std::string& cond_name,
-        Teuchos::RCP<Core::FE::Discretization>
+        std::shared_ptr<Core::FE::Discretization>
             cond_dis,  ///< discretization from which the cutter discretization can be derived
         const int coupling_id);
 
     /// create a new mesh-coupling object based on the given coupling discretization
     void add_mesh_coupling(const std::string& cond_name,
-        Teuchos::RCP<Core::FE::Discretization> cond_dis, const int coupling_id)
+        std::shared_ptr<Core::FE::Discretization> cond_dis, const int coupling_id)
     {
       if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FSI_PART or
           cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FSI_MONO)
       {
-        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingFSI>(
+        mesh_coupl_.push_back(std::make_shared<MeshCouplingFSI>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FPI_MONO)
       {
-        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingFPI>(
+        mesh_coupl_.push_back(std::make_shared<MeshCouplingFPI>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::ps_ps));
-        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingFPI>(
+        mesh_coupl_.push_back(std::make_shared<MeshCouplingFPI>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::ps_pf));
-        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingFPI>(
+        mesh_coupl_.push_back(std::make_shared<MeshCouplingFPI>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::pf_ps));
-        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingFPI>(
+        mesh_coupl_.push_back(std::make_shared<MeshCouplingFPI>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::pf_pf));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)
       {
-        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingWeakDirichlet>(
+        mesh_coupl_.push_back(std::make_shared<MeshCouplingWeakDirichlet>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis)));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_NEUMANN)
       {
-        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingNeumann>(
+        mesh_coupl_.push_back(std::make_shared<MeshCouplingNeumann>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis)));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP)
       {
-        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingNavierSlip>(
+        mesh_coupl_.push_back(std::make_shared<MeshCouplingNavierSlip>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis)));
       }
       else if (cond_type_string_to_enum(cond_name) ==
                Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
       {
-        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingNavierSlipTwoPhase>(
+        mesh_coupl_.push_back(std::make_shared<MeshCouplingNavierSlipTwoPhase>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis)));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
       {
-        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingFluidFluid>(
+        mesh_coupl_.push_back(std::make_shared<MeshCouplingFluidFluid>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_));
       }
       else if (cond_type_string_to_enum(cond_name) ==
                Inpar::XFEM::CouplingCond_EMBEDDEDMESH_SOLID_SURF)
       {
-        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCoupling>(
+        mesh_coupl_.push_back(std::make_shared<MeshCoupling>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, "", false));
       }
       else if (cond_type_string_to_enum(cond_name) ==
@@ -175,36 +175,36 @@ namespace XFEM
       }
       else
       {
-        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCoupling>(
+        mesh_coupl_.push_back(std::make_shared<MeshCoupling>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, "", (bg_dis_ == cond_dis)));
       }
     }
 
     /// add a new level-set-coupling object based on the given coupling discretization
     void add_level_set_coupling(const std::string& cond_name,
-        Teuchos::RCP<Core::FE::Discretization>
+        std::shared_ptr<Core::FE::Discretization>
             cond_dis,  ///< discretization from which the cutter discretization can be derived
         const int coupling_id)
     {
       if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)
       {
-        levelset_coupl_.push_back(Teuchos::make_rcp<LevelSetCouplingWeakDirichlet>(
+        levelset_coupl_.push_back(std::make_shared<LevelSetCouplingWeakDirichlet>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN)
       {
-        levelset_coupl_.push_back(Teuchos::make_rcp<LevelSetCouplingNeumann>(
+        levelset_coupl_.push_back(std::make_shared<LevelSetCouplingNeumann>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_));
       }
       else if (cond_type_string_to_enum(cond_name) ==
                Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
       {
-        levelset_coupl_.push_back(Teuchos::make_rcp<LevelSetCouplingNavierSlip>(
+        levelset_coupl_.push_back(std::make_shared<LevelSetCouplingNavierSlip>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_));
       }
       else
       {
-        levelset_coupl_.push_back(Teuchos::make_rcp<LevelSetCoupling>(
+        levelset_coupl_.push_back(std::make_shared<LevelSetCoupling>(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_));
       }
     }
@@ -214,11 +214,11 @@ namespace XFEM
     /// Getters
 
     /// get cutter discretization the coupling side belongs to
-    Teuchos::RCP<Core::FE::Discretization> get_cutter_dis(
+    std::shared_ptr<Core::FE::Discretization> get_cutter_dis(
         const int coup_sid  ///< the global id of the coupling side
     )
     {
-      if (is_level_set_coupling(coup_sid)) return Teuchos::null;
+      if (is_level_set_coupling(coup_sid)) return nullptr;
 
       // get the mesh coupling object index
       int mc_idx = get_mesh_coupling_index(coup_sid);
@@ -227,7 +227,7 @@ namespace XFEM
     }
 
     /// get cutter discretization the coupling side belongs to
-    Teuchos::RCP<Core::FE::Discretization> get_coupling_dis(
+    std::shared_ptr<Core::FE::Discretization> get_coupling_dis(
         const int coup_sid  ///< the global id of the coupling side
     )
     {
@@ -239,43 +239,43 @@ namespace XFEM
       return mesh_coupl_[mc_idx]->get_coupling_dis();
     }
 
-    Teuchos::RCP<MeshCoupling> get_mesh_coupling(const int mc_idx)
+    std::shared_ptr<MeshCoupling> get_mesh_coupling(const int mc_idx)
     {
       if (mc_idx < (int)mesh_coupl_.size() and mc_idx >= 0) return mesh_coupl_[mc_idx];
 
-      return Teuchos::null;
+      return nullptr;
     }
 
-    Teuchos::RCP<LevelSetCoupling> get_level_set_coupling(const int ls_idx)
+    std::shared_ptr<LevelSetCoupling> get_level_set_coupling(const int ls_idx)
     {
       if (ls_idx < (int)levelset_coupl_.size() and ls_idx >= 0) return levelset_coupl_[ls_idx];
 
-      return Teuchos::null;
+      return nullptr;
     }
 
-    Teuchos::RCP<CouplingBase> get_coupling(const std::string& name)
+    std::shared_ptr<CouplingBase> get_coupling(const std::string& name)
     {
-      Teuchos::RCP<CouplingBase> coupling = Teuchos::null;
+      std::shared_ptr<CouplingBase> coupling = nullptr;
 
       coupling = get_mesh_coupling(name);
 
-      if (coupling != Teuchos::null) return coupling;
+      if (coupling != nullptr) return coupling;
 
       coupling = get_level_set_coupling(name);
 
-      if (coupling != Teuchos::null) return coupling;
+      if (coupling != nullptr) return coupling;
 
-      return Teuchos::null;
+      return nullptr;
     }
 
 
-    Teuchos::RCP<MeshCoupling> get_mesh_coupling(const std::string& name)
+    std::shared_ptr<MeshCoupling> get_mesh_coupling(const std::string& name)
     {
       for (int m = 0; m < num_mesh_coupling(); m++)
       {
         if (mesh_coupl_[m]->get_name() == name) return mesh_coupl_[m];
       }
-      return Teuchos::null;
+      return nullptr;
     }
 
     int get_coupling_index(const std::string& name)
@@ -305,13 +305,13 @@ namespace XFEM
       return -1;
     }
 
-    Teuchos::RCP<LevelSetCoupling> get_level_set_coupling(const std::string& name)
+    std::shared_ptr<LevelSetCoupling> get_level_set_coupling(const std::string& name)
     {
       for (int l = 0; l < num_level_set_coupling(); l++)
       {
         if (levelset_coupl_[l]->get_name() == name) return levelset_coupl_[l];
       }
-      return Teuchos::null;
+      return nullptr;
     }
 
 
@@ -428,16 +428,16 @@ namespace XFEM
 
     int num_coupling() { return (num_mesh_coupling() + num_level_set_coupling()); }
 
-    Teuchos::RCP<CouplingBase> get_coupling_by_idx(const int coup_idx)
+    std::shared_ptr<CouplingBase> get_coupling_by_idx(const int coup_idx)
     {
       if (coup_idx >= num_mesh_coupling())
         return get_level_set_coupling(coup_idx - num_mesh_coupling());
       else if (coup_idx >= 0)
         return get_mesh_coupling(coup_idx);
       else
-        return Teuchos::null;
+        return nullptr;
 
-      return Teuchos::null;
+      return nullptr;
     }
 
 
@@ -495,9 +495,9 @@ namespace XFEM
 
       // a map between cond. elements and side ids of the cutter dis is only available
       // for fluidfluid conditions; otherwise this is a bad request
-      Teuchos::RCP<MeshCouplingFluidFluid> mc_xff =
-          Teuchos::rcp_dynamic_cast<MeshCouplingFluidFluid>(mesh_coupl_[mc_idx]);
-      if (mc_xff == Teuchos::null)
+      std::shared_ptr<MeshCouplingFluidFluid> mc_xff =
+          std::dynamic_pointer_cast<MeshCouplingFluidFluid>(mesh_coupl_[mc_idx]);
+      if (mc_xff == nullptr)
         FOUR_C_THROW("Can't access cond dis elements for a given side id in non-xff cases!");
       const int cutterdis_sid = get_cutter_dis_ele_id(coup_sid, mc_idx);
       return mc_xff->get_cond_element(cutterdis_sid);
@@ -611,7 +611,7 @@ namespace XFEM
 
     void export_geometric_quantities();
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& get_level_set_field()
+    std::shared_ptr<Core::LinAlg::Vector<double>>& get_level_set_field()
     {
       if (!is_levelset_uptodate_)
         update_level_set_field();  // update the unique level-set field based on the background
@@ -620,7 +620,7 @@ namespace XFEM
       return bg_phinp_;
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> get_level_set_field_col();
+    std::shared_ptr<const Core::LinAlg::Vector<double>> get_level_set_field_col();
 
     void clear_state();
 
@@ -683,21 +683,21 @@ namespace XFEM
 
     /// set material pointer for volume
     void get_volume_cell_material(Core::Elements::Element* actele,
-        Teuchos::RCP<Core::Mat::Material>& mat, const Cut::VolumeCell* vc);
+        std::shared_ptr<Core::Mat::Material>& mat, const Cut::VolumeCell* vc);
 
     /// set material pointer for volume cell for (coupling) master side
     void get_interface_master_material(Core::Elements::Element* actele,
-        Teuchos::RCP<Core::Mat::Material>& mat, const Cut::VolumeCell* vc);
+        std::shared_ptr<Core::Mat::Material>& mat, const Cut::VolumeCell* vc);
 
     /// set material pointer for coupling slave side
     void get_interface_slave_material(
-        Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat, int coup_sid);
+        Core::Elements::Element* actele, std::shared_ptr<Core::Mat::Material>& mat, int coup_sid);
 
     /// Initialize Fluid intersection/Cut State
-    bool initialize_fluid_state(Teuchos::RCP<Cut::CutWizard> cutwizard,
-        Teuchos::RCP<Core::FE::Discretization> fluiddis,
-        Teuchos::RCP<XFEM::ConditionManager> condition_manager,
-        Teuchos::RCP<Teuchos::ParameterList> fluidparams);
+    bool initialize_fluid_state(std::shared_ptr<Cut::CutWizard> cutwizard,
+        std::shared_ptr<Core::FE::Discretization> fluiddis,
+        std::shared_ptr<XFEM::ConditionManager> condition_manager,
+        std::shared_ptr<Teuchos::ParameterList> fluidparams);
 
    public:
     //! initialized the coupling object
@@ -767,13 +767,13 @@ namespace XFEM
     std::map<std::string, int> dofset_coupling_map_;
 
     ///< background discretiaztion w.r.t for which the couling manager is constructed
-    Teuchos::RCP<Core::FE::Discretization> bg_dis_;
+    std::shared_ptr<Core::FE::Discretization> bg_dis_;
 
     /// mesh coupling objects
-    std::vector<Teuchos::RCP<MeshCoupling>> mesh_coupl_;
+    std::vector<std::shared_ptr<MeshCoupling>> mesh_coupl_;
 
     /// level-set coupling objects
-    std::vector<Teuchos::RCP<LevelSetCoupling>> levelset_coupl_;
+    std::vector<std::shared_ptr<LevelSetCoupling>> levelset_coupl_;
 
     /// starting index for element side global id
     std::vector<int> mesh_coupl_start_gid_;
@@ -794,8 +794,8 @@ namespace XFEM
 
     //! background-dis state vectors for levelset applications
     bool is_levelset_uptodate_;
-    Teuchos::RCP<Core::LinAlg::Vector<int>> ele_lsc_coup_idx_col_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> bg_phinp_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> ele_lsc_coup_idx_col_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> bg_phinp_;
     //@}
 
     bool isinit_;  //! is conditionmanager initialized

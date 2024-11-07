@@ -21,15 +21,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       vg 11/08 |
  *----------------------------------------------------------------------*/
-ScaTra::TimIntGenAlpha::TimIntGenAlpha(Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+ScaTra::TimIntGenAlpha::TimIntGenAlpha(std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver, std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output),
-      phiaf_(Teuchos::null),
-      phiam_(Teuchos::null),
-      phidtam_(Teuchos::null),
-      fsphiaf_(Teuchos::null),
+      phiaf_(nullptr),
+      phiam_(nullptr),
+      phidtam_(nullptr),
+      fsphiaf_(nullptr),
       alphaM_(params_->get<double>("ALPHA_M")),
       alphaF_(params_->get<double>("ALPHA_F")),
       gamma_(params_->get<double>("GAMMA")),
@@ -104,7 +104,7 @@ void ScaTra::TimIntGenAlpha::setup()
   {
     if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") == "isotropic")
     {
-      homisoturb_forcing_ = Teuchos::make_rcp<ScaTra::HomIsoTurbScalarForcing>(this);
+      homisoturb_forcing_ = std::make_shared<ScaTra::HomIsoTurbScalarForcing>(this);
       // initialize forcing algorithm
       homisoturb_forcing_->set_initial_spectrum(
           Teuchos::getIntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
@@ -135,8 +135,7 @@ void ScaTra::TimIntGenAlpha::set_element_time_parameter(bool forcedincrementalso
   eleparams.set<double>("alpha_F", alphaF_);
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 
@@ -160,8 +159,7 @@ void ScaTra::TimIntGenAlpha::set_element_time_parameter_backward_euler() const
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 
@@ -263,15 +261,15 @@ void ScaTra::TimIntGenAlpha::dynamic_computation_of_cs()
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
-    if (DynSmag_ != Teuchos::null)
+    if (DynSmag_ != nullptr)
     {
-      const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
+      const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
       DynSmag_->apply_filter_for_dynamic_computation_of_prt(
           phiaf_, 0.0, dirichtoggle, *extraparams_, nds_vel());
     }
     else
     {
-      FOUR_C_THROW("Teuchos::RCP<FLD::DynSmagFilter> DynSmag_ = Teuchos::null");
+      FOUR_C_THROW("std::shared_ptr<FLD::DynSmagFilter> DynSmag_ = nullptr");
     }
   }
 }
@@ -283,7 +281,7 @@ void ScaTra::TimIntGenAlpha::dynamic_computation_of_cv()
 {
   if (turbmodel_ == Inpar::FLUID::dynamic_vreman)
   {
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
         phiaf_, 0.0, dirichtoggle, *extraparams_, nds_vel());
   }
@@ -333,7 +331,7 @@ void ScaTra::TimIntGenAlpha::compute_time_derivative()
   // Such an inconsistency can cause different results for
   // our different Gen. Alpha formulations (linear_full <-> linear_incremental).
   // We don't want this to happen.
-  // apply_dirichlet_bc(time_,Teuchos::null,phidtnp_);
+  // apply_dirichlet_bc(time_,nullptr,phidtnp_);
 }
 
 
@@ -368,7 +366,7 @@ void ScaTra::TimIntGenAlpha::update()
   phidtn_->Update(1.0, *phidtnp_, 0.0);
 
   // call time update of forcing routine
-  if (homisoturb_forcing_ != Teuchos::null) homisoturb_forcing_->time_update_forcing();
+  if (homisoturb_forcing_ != nullptr) homisoturb_forcing_->time_update_forcing();
 }
 
 
@@ -391,19 +389,19 @@ void ScaTra::TimIntGenAlpha::write_restart() const
  |                                                             vg 11/08 |
  -----------------------------------------------------------------------*/
 void ScaTra::TimIntGenAlpha::read_restart(
-    const int step, Teuchos::RCP<Core::IO::InputControl> input)
+    const int step, std::shared_ptr<Core::IO::InputControl> input)
 {
   // call base class routine
   ScaTraTimIntImpl::read_restart(step, input);
 
-  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
-  if (input == Teuchos::null)
+  std::shared_ptr<Core::IO::DiscretizationReader> reader(nullptr);
+  if (input == nullptr)
   {
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+    reader = std::make_shared<Core::IO::DiscretizationReader>(
         discret_, Global::Problem::instance()->input_control_file(), step);
   }
   else
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(discret_, input, step);
+    reader = std::make_shared<Core::IO::DiscretizationReader>(discret_, input, step);
 
   time_ = reader->read_double("time");
   step_ = reader->read_int("step");

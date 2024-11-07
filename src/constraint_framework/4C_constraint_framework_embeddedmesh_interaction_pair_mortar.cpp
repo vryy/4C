@@ -50,10 +50,11 @@ namespace
 
 template <typename Interface, typename Background, typename Mortar>
 CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface, Background,
-    Mortar>::SurfaceToBackgroundCouplingPairMortar(Teuchos::RCP<Core::Elements::Element> element1,
+    Mortar>::SurfaceToBackgroundCouplingPairMortar(std::shared_ptr<Core::Elements::Element>
+                                                       element1,
     Core::Elements::Element* element2, CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr,
-    Teuchos::RCP<Cut::CutWizard>& cutwizard_ptr,
-    std::vector<Teuchos::RCP<Cut::BoundaryCell>>& boundary_cells)
+    std::shared_ptr<Cut::CutWizard>& cutwizard_ptr,
+    std::vector<std::shared_ptr<Cut::BoundaryCell>>& boundary_cells)
     : SolidInteractionPair(element1, element2, params_ptr, cutwizard_ptr, boundary_cells)
 {
   // Define the mortar shape functions in the parameters
@@ -99,9 +100,9 @@ template <typename Interface, typename Background, typename Mortar>
 void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface, Background,
     Mortar>::get_pair_visualization(const Core::IO::VisualizationData&
                                         lagrange_multipliers_visualization_data,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda,
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambda,
     const CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager* mortar_manager,
-    Teuchos::RCP<std::unordered_set<int>> interface_tracker)
+    std::shared_ptr<std::unordered_set<int>> interface_tracker)
 {
   // Get the visualization vectors.
   std::vector<double>& point_coordinates = const_cast<std::vector<double>&>(
@@ -191,7 +192,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
 }
 
 template <typename Surface, Core::FE::CellType boundarycell_distype>
-Teuchos::RCP<Core::FE::GaussPoints> project_boundary_cell_gauss_rule_on_interface(
+std::shared_ptr<Core::FE::GaussPoints> project_boundary_cell_gauss_rule_on_interface(
     Cut::BoundaryCell* boundary_cell, GEOMETRYPAIR::ElementData<Surface, double>& ele1pos)
 {
   // Get the coordinates of the vertices of the boundary cell
@@ -240,7 +241,7 @@ Teuchos::RCP<Core::FE::GaussPoints> project_boundary_cell_gauss_rule_on_interfac
     projected_vertices_xi = temp_xie;
   }
 
-  Teuchos::RCP<Core::FE::GaussPoints> gp =
+  std::shared_ptr<Core::FE::GaussPoints> gp =
       Core::FE::GaussIntegration::create_projected<boundarycell_distype>(
           projected_vertices_xi, boundary_cell->get_cubature_degree());
 
@@ -270,7 +271,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
        ++it_boundarycell)
   {
     // Project the gauss points of the boundary cell segment to the interface
-    const Teuchos::RCP<Core::FE::GaussPoints> gps_boundarycell =
+    const std::shared_ptr<Core::FE::GaussPoints> gps_boundarycell =
         project_boundary_cell_gauss_rule_on_interface<Interface, Core::FE::CellType::tri3>(
             it_boundarycell->get(), ele1pos_);
 

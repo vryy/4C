@@ -155,7 +155,7 @@ Cut::Element::Element(
   // shadow elements are initialized separately
   is_shadow_ = false;
 
-  boundingvolume_ = Teuchos::RCP(BoundingBox::create(*this));
+  boundingvolume_ = std::shared_ptr<BoundingBox>(BoundingBox::create(*this));
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -1020,7 +1020,7 @@ void Cut::Element::remove_empty_volume_cells()
  *----------------------------------------------------------------------------*/
 void Cut::Element::make_volume_cells(Mesh& mesh)
 {
-  Teuchos::RCP<FacetGraph> fg = FacetGraph::create(sides_, facets_);
+  std::shared_ptr<FacetGraph> fg = FacetGraph::create(sides_, facets_);
   fg->create_volume_cells(mesh, this, cells_);
 }
 
@@ -1030,7 +1030,7 @@ template <unsigned probdim, Core::FE::CellType elementtype, unsigned num_nodes_e
     unsigned dim>
 bool Cut::ConcreteElement<probdim, elementtype, num_nodes_element, dim>::point_inside(Point* p)
 {
-  Teuchos::RCP<Position> pos = Position::create(*this, *p);
+  std::shared_ptr<Position> pos = Position::create(*this, *p);
   return pos->compute();
 }
 
@@ -1041,7 +1041,7 @@ template <unsigned probdim, Core::FE::CellType elementtype, unsigned num_nodes_e
 bool Cut::ConcreteElement<probdim, elementtype, num_nodes_element, dim>::local_coordinates(
     const Core::LinAlg::Matrix<probdim, 1>& xyz, Core::LinAlg::Matrix<dim, 1>& rst)
 {
-  Teuchos::RCP<Position> pos = PositionFactory::build_position<probdim, elementtype>(*this, xyz);
+  std::shared_ptr<Position> pos = PositionFactory::build_position<probdim, elementtype>(*this, xyz);
   bool success = pos->compute();
   pos->local_coordinates(rst);
   return success;
@@ -1057,7 +1057,7 @@ void Cut::Element::local_coordinates_quad(
 {
   if (not is_shadow_) FOUR_C_THROW("This is not a shadow elemenet\n");
 
-  Teuchos::RCP<Position> pos = Position::create(quad_corners_, xyz, get_quad_shape());
+  std::shared_ptr<Position> pos = Position::create(quad_corners_, xyz, get_quad_shape());
 
   bool success = pos->compute();
   if (success)
@@ -1299,39 +1299,39 @@ bool Cut::Element::has_level_set_side()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Element> Cut::ElementFactory::create_element(Core::FE::CellType elementtype,
+std::shared_ptr<Cut::Element> Cut::ElementFactory::create_element(Core::FE::CellType elementtype,
     int eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes, bool active) const
 {
-  Teuchos::RCP<Element> e = Teuchos::null;
+  std::shared_ptr<Element> e = nullptr;
   const int probdim = Global::Problem::instance()->n_dim();
   switch (elementtype)
   {
     case Core::FE::CellType::line2:
-      e = Teuchos::RCP<Element>(
+      e = std::shared_ptr<Element>(
           create_concrete_element<Core::FE::CellType::line2>(eid, sides, nodes, active, probdim));
       break;
     case Core::FE::CellType::tri3:
-      e = Teuchos::RCP<Element>(
+      e = std::shared_ptr<Element>(
           create_concrete_element<Core::FE::CellType::tri3>(eid, sides, nodes, active, probdim));
       break;
     case Core::FE::CellType::quad4:
-      e = Teuchos::RCP<Element>(
+      e = std::shared_ptr<Element>(
           create_concrete_element<Core::FE::CellType::quad4>(eid, sides, nodes, active, probdim));
       break;
     case Core::FE::CellType::tet4:
-      e = Teuchos::RCP<Element>(
+      e = std::shared_ptr<Element>(
           create_concrete_element<Core::FE::CellType::tet4>(eid, sides, nodes, active, probdim));
       break;
     case Core::FE::CellType::hex8:
-      e = Teuchos::RCP<Element>(
+      e = std::shared_ptr<Element>(
           create_concrete_element<Core::FE::CellType::hex8>(eid, sides, nodes, active, probdim));
       break;
     case Core::FE::CellType::pyramid5:
-      e = Teuchos::RCP<Element>(create_concrete_element<Core::FE::CellType::pyramid5>(
+      e = std::shared_ptr<Element>(create_concrete_element<Core::FE::CellType::pyramid5>(
           eid, sides, nodes, active, probdim));
       break;
     case Core::FE::CellType::wedge6:
-      e = Teuchos::RCP<Element>(
+      e = std::shared_ptr<Element>(
           create_concrete_element<Core::FE::CellType::wedge6>(eid, sides, nodes, active, probdim));
       break;
     default:
@@ -1346,7 +1346,7 @@ Teuchos::RCP<Cut::Element> Cut::ElementFactory::create_element(Core::FE::CellTyp
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Element> Cut::Element::create(const Core::FE::CellType& elementtype,
+std::shared_ptr<Cut::Element> Cut::Element::create(const Core::FE::CellType& elementtype,
     const int& eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes,
     const bool& active)
 {
@@ -1356,7 +1356,7 @@ Teuchos::RCP<Cut::Element> Cut::Element::create(const Core::FE::CellType& elemen
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Element> Cut::Element::create(const unsigned& shardskey, const int& eid,
+std::shared_ptr<Cut::Element> Cut::Element::create(const unsigned& shardskey, const int& eid,
     const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active)
 {
   return create(Core::Elements::shards_key_to_dis_type(shardskey), eid, sides, nodes, active);

@@ -25,11 +25,11 @@ FOUR_C_NAMESPACE_OPEN
 POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::PoroMultiPhasePartitionedTwoWay(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhasePartitioned(comm, globaltimeparams),
-      phiincnp_(Teuchos::null),
-      dispincnp_(Teuchos::null),
-      fluidphinp_(Teuchos::null),
-      fluidphioldnp_(Teuchos::null),
-      fluidphiincnp_(Teuchos::null),
+      phiincnp_(nullptr),
+      dispincnp_(nullptr),
+      fluidphinp_(nullptr),
+      fluidphioldnp_(nullptr),
+      fluidphiincnp_(nullptr),
       ittol_(0.0),
       omega_(1.0),
       startomega_(1.0),
@@ -325,7 +325,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::set_relaxed_fluid_solution
  | Calculate relaxation parameter omega                kremheller 09/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::perform_relaxation(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, const int itnum)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phi, const int itnum)
 {
   // get the increment vector
   fluidphiincnp_->Update(1.0, *phi, -1.0, *fluidphioldnp_, 0.0);
@@ -382,7 +382,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::aitken_relaxation(
     double& omega, const int itnum)
 {
   // fluidphiincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fluidphiincnpdiff =
+  std::shared_ptr<Core::LinAlg::Vector<double>> fluidphiincnpdiff =
       Core::LinAlg::create_vector(*fluid_field()->discretization()->dof_row_map(), true);
   fluidphiincnpdiff->Update(1.0, *fluidphiincnp_, (-1.0), *fluidphiincnpold_, 0.0);
 

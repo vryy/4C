@@ -24,7 +24,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
   using namespace FourC;
 
   Global::Problem* problem = Global::Problem::instance();
-  Teuchos::RCP<Epetra_Comm> lcomm = problem->get_communicators()->local_comm();
+  std::shared_ptr<Epetra_Comm> lcomm = problem->get_communicators()->local_comm();
   int group = problem->get_communicators()->group_id();
   int ngroups = problem->get_communicators()->num_groups();
   Core::Communication::NestedParallelismType npType = problem->get_communicators()->np_type();

@@ -10,8 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -52,7 +51,7 @@ namespace FBI
      *
      * \return Beam contact pair
      */
-    static Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_pair(
+    static std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_pair(
         std::vector<Core::Elements::Element const*> const& ele_ptrs,
         FBI::BeamToFluidMeshtyingParams& params_ptr);
   };

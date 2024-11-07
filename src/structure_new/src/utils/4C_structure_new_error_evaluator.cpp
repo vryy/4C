@@ -36,13 +36,13 @@ void Solid::ErrorEvaluator::evaluate_error(const Parameters& error_evaluator_par
     Core::FE::Discretization& discretization)
 {
   // Set action type
-  auto evaluation_data = Teuchos::rcp_dynamic_cast<Solid::ModelEvaluator::Data>(
-      discretization_evaluation_parameters.get<Teuchos::RCP<Core::Elements::ParamsInterface>>(
+  auto evaluation_data = std::dynamic_pointer_cast<Solid::ModelEvaluator::Data>(
+      discretization_evaluation_parameters.get<std::shared_ptr<Core::Elements::ParamsInterface>>(
           "interface"));
   evaluation_data->set_action_type(Core::Elements::struct_calc_analytical_error);
 
   // Create a vector that will be filled with the sum of the square of the error at each Gauss-Point
-  auto error_squared = Teuchos::rcp(new Core::LinAlg::SerialDenseVector());
+  auto error_squared = std::make_shared<Core::LinAlg::SerialDenseVector>();
   error_squared->size(3);
 
   // Set the function ID

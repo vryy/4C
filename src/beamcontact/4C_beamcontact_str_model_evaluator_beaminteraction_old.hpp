@@ -12,7 +12,7 @@
 
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -120,27 +120,27 @@ namespace Solid
       void post_output() override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
      private:
       //! structural displacement at \f$t_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp_ptr_;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disnp_ptr_;
 
       //! stiffness contributions from beam interactions
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_beaminteract_ptr_;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_beaminteract_ptr_;
 
       //! force contributions from beam interaction at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> f_beaminteract_np_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> f_beaminteract_np_ptr_;
 
       //! beam contact manager
-      Teuchos::RCP<CONTACT::Beam3cmanager> beamcman_;
+      std::shared_ptr<CONTACT::Beam3cmanager> beamcman_;
     };
 
   }  // namespace ModelEvaluator

@@ -33,19 +33,19 @@ FOUR_C_NAMESPACE_OPEN
  * basic XFEM time-integration constructor                                           schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 XFEM::XfluidTimeintBase::XfluidTimeintBase(
-    const Teuchos::RCP<Core::FE::Discretization> discret,      /// background discretization
-    const Teuchos::RCP<Core::FE::Discretization> boundarydis,  /// cut discretization
-    Teuchos::RCP<Cut::CutWizard> wizard_old,    /// cut wizard w.r.t. old interface position
-    Teuchos::RCP<Cut::CutWizard> wizard_new,    /// cut wizard w.r.t. new interface position
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_old,  /// XFEM dofset w.r.t. old interface position
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_new,  /// XFEM dofset w.r.t. new interface position
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>
+    const std::shared_ptr<Core::FE::Discretization> discret,      /// background discretization
+    const std::shared_ptr<Core::FE::Discretization> boundarydis,  /// cut discretization
+    std::shared_ptr<Cut::CutWizard> wizard_old,    /// cut wizard w.r.t. old interface position
+    std::shared_ptr<Cut::CutWizard> wizard_new,    /// cut wizard w.r.t. new interface position
+    std::shared_ptr<XFEM::XFEMDofSet> dofset_old,  /// XFEM dofset w.r.t. old interface position
+    std::shared_ptr<XFEM::XFEMDofSet> dofset_new,  /// XFEM dofset w.r.t. new interface position
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>
         oldVectors,  /// vector of col-vectors w.r.t. old interface position
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispn,   /// old col displacement vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp,  /// col displacment n +1
-    const Epetra_Map& olddofcolmap,                     /// dofcolmap w.r.t. old interface position
-    const Epetra_Map& newdofrowmap,                     /// dofcolmap w.r.t. new interface position
-    const Teuchos::RCP<std::map<int, std::vector<int>>>
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispn,   /// old col displacement vector
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispnp,  /// col displacment n +1
+    const Epetra_Map& olddofcolmap,  /// dofcolmap w.r.t. old interface position
+    const Epetra_Map& newdofrowmap,  /// dofcolmap w.r.t. new interface position
+    const std::shared_ptr<std::map<int, std::vector<int>>>
         pbcmap  /// map of periodic boundary conditions
     )
     : discret_(discret),
@@ -59,7 +59,7 @@ XFEM::XfluidTimeintBase::XfluidTimeintBase(
       oldVectors_(oldVectors),
       dispn_(dispn),
       dispnp_(dispnp),
-      timeIntData_(Teuchos::null),
+      timeIntData_(nullptr),
       pbcmap_(pbcmap),
       myrank_(discret_->get_comm().MyPID()),
       numproc_(discret_->get_comm().NumProc()),
@@ -95,7 +95,7 @@ void XFEM::XfluidTimeintBase::type(int iter, int iterMax)
  * algorithms data structure                                                         schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidTimeintBase::handle_vectors(
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& newRowVectorsn)
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>& newRowVectorsn)
 {
   newVectors_ = newRowVectorsn;
 
@@ -134,7 +134,7 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
   //-----------------------------------------------------------------------
   // standard case of a real line between x1 and x2
 
-  Teuchos::RCP<Cut::CutWizard> wizard = newTimeStep ? wizard_new_ : wizard_old_;
+  std::shared_ptr<Cut::CutWizard> wizard = newTimeStep ? wizard_new_ : wizard_old_;
 
   // REMARK:
   // changing the side of a point at two times (newton steps) with coordinates x1 and x2 is done
@@ -445,12 +445,12 @@ bool XFEM::XfluidTimeintBase::call_side_edge_intersection_t(Cut::SideHandle* sh,
   Core::LinAlg::Matrix<3, 1> xsi(true);
 
 
-  Teuchos::RCP<Cut::IntersectionBase> intersect =
+  std::shared_ptr<Cut::IntersectionBase> intersect =
       Cut::IntersectionBase::create(Core::FE::CellType::line2, sidetype);
-  Teuchos::RCP<Cut::Options> options =
-      Teuchos::make_rcp<Cut::Options>();  // Create cut options for intersection
-                                          // (specify to use double prec.)
-  intersect->init(xyze_lineElement, xyze_surfaceElement, false, false, false, options.getRawPtr());
+  std::shared_ptr<Cut::Options> options =
+      std::make_shared<Cut::Options>();  // Create cut options for intersection
+                                         // (specify to use double prec.)
+  intersect->init(xyze_lineElement, xyze_surfaceElement, false, false, false, options.get());
 
   // check also limits during the newton scheme and when converged
   double itol;
@@ -473,8 +473,8 @@ void XFEM::XfluidTimeintBase::call_x_to_xi_coords(
   Core::Geo::fill_initial_position_array(ele, xyz);
 
   // add ale displacements to initial position
-  if (state != "reference" && dispnp_ != Teuchos::null &&
-      dispn_ != Teuchos::null)  // add no displacements in case of state == "reference" or //is ale?
+  if (state != "reference" && dispnp_ != nullptr &&
+      dispn_ != nullptr)  // add no displacements in case of state == "reference" or //is ale?
   {
     int nen = ele->num_node();
     int numdof = ele->num_dof_per_node(*(ele->nodes()[0]));
@@ -557,7 +557,7 @@ void XFEM::XfluidTimeintBase::x_to_xi_coords(
 
   Core::LinAlg::Matrix<nsd, numnode> xyze(xyz);
 
-  Teuchos::RCP<Cut::Position> pos = Cut::PositionFactory::build_position<3, distype>(xyze, x);
+  std::shared_ptr<Cut::Position> pos = Cut::PositionFactory::build_position<3, distype>(xyze, x);
   pos->compute();
   pos->local_coordinates(xi);  // local coordinates
 
@@ -598,7 +598,7 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
     }
 
     // add ale displacements to initial position for state np
-    if (dispnp_ != Teuchos::null)  // is ale?
+    if (dispnp_ != nullptr)  // is ale?
     {
       int nen = element->num_node();
       int numdof = element->num_dof_per_node(*(element->nodes()[0]));
@@ -868,9 +868,9 @@ XFEM::XfluidStd::XfluidStd(
     const std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>>&
         reconstr_method,                      ///< reconstruction map for nodes and its dofsets
     Inpar::XFEM::XFluidTimeInt& timeIntType,  ///< type of time integration
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> veln,  ///< velocity at time t^n in col map
-    const double& dt,                                       ///< time step size
-    const bool initialize                                   ///< is initialization?
+    const std::shared_ptr<Core::LinAlg::Vector<double>> veln,  ///< velocity at time t^n in col map
+    const double& dt,                                          ///< time step size
+    const bool initialize                                      ///< is initialization?
     )
     : XFEM::XfluidTimeintBase::XfluidTimeintBase(timeInt),
       timeIntType_(timeIntType),
@@ -879,9 +879,9 @@ XFEM::XfluidStd::XfluidStd(
 {
   if (initialize)
   {
-    const int nsd = 3;                                             // dimension
-    timeIntData_ = Teuchos::make_rcp<std::vector<TimeIntData>>();  // vector containing all data
-                                                                   // used for computation
+    const int nsd = 3;                                            // dimension
+    timeIntData_ = std::make_shared<std::vector<TimeIntData>>();  // vector containing all data
+                                                                  // used for computation
 
     Core::LinAlg::Matrix<nsd, 1> dummyStartpoint;  // dummy startpoint for comparison
     for (int i = 0; i < nsd; i++) dummyStartpoint(i) = 777.777;
@@ -918,7 +918,7 @@ XFEM::XfluidStd::XfluidStd(
 #endif
 
             Core::LinAlg::Matrix<3, 1> nodedispnp(true);
-            if (dispnp_ != Teuchos::null)  // is alefluid
+            if (dispnp_ != nullptr)  // is alefluid
             {
               //------------------------------------------------------- add ale disp
               // get node location vector, dirichlet flags and ownerships (discret, nds, la,
@@ -981,7 +981,7 @@ XFEM::XfluidStd::XfluidStd(
  * out of order!                                                                     schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidStd::compute(
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& newRowVectorsn)
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>& newRowVectorsn)
 {
   FOUR_C_THROW("Unused function! Use a function of the derived classes");
 }
@@ -993,9 +993,9 @@ void XFEM::XfluidStd::compute(
 // *
 // *------------------------------------------------------------------------------------------------*/
 // void XFEM::XFLUID_STD::importNewFGIData(
-//    const Teuchos::RCP<Core::FE::Discretization> discret,
-//    const Teuchos::RCP<XFEM::DofManager> newdofman,
-//    const Teuchos::RCP<COMBUST::FlameFront> flamefront,
+//    const std::shared_ptr<Core::FE::Discretization> discret,
+//    const std::shared_ptr<XFEM::DofManager> newdofman,
+//    const std::shared_ptr<COMBUST::FlameFront> flamefront,
 //    const Epetra_Map& newdofrowmap,
 //    const std::map<DofKey, DofGID>& newNodalDofRowDistrib)
 //{
@@ -1071,7 +1071,7 @@ void XFEM::XfluidStd::get_gp_values(Core::Elements::Element* ele,  ///< pointer 
     Core::LinAlg::Matrix<3, 3>& vel_deriv,   ///< determine velocity derivatives at point
     double& pres,                            ///< pressure
     Core::LinAlg::Matrix<1, 3>& pres_deriv,  ///< pressure gradient
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    std::shared_ptr<const Core::LinAlg::Vector<double>>
         vel_vec,        ///< vector used for interpolating at gp
     bool compute_deriv  ///< shall derivatives be computed?
 ) const
@@ -1109,12 +1109,12 @@ void XFEM::XfluidStd::get_gp_values_t(Core::Elements::Element* ele,  ///< pointe
     Core::LinAlg::Matrix<3, 3>& vel_deriv,   ///< determine velocity derivatives at point
     double& pres,                            ///< pressure
     Core::LinAlg::Matrix<1, 3>& pres_deriv,  ///< pressure gradient
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    std::shared_ptr<const Core::LinAlg::Vector<double>>
         vel_vec,        ///< vector used for interpolating at gp
     bool compute_deriv  ///< shall derivatives be computed?
 ) const
 {
-  if (vel_vec == Teuchos::null) FOUR_C_THROW("vector is not filled");
+  if (vel_vec == nullptr) FOUR_C_THROW("vector is not filled");
 
   const int nsd = 3;  // dimension
 
@@ -1378,11 +1378,11 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     //------------------------------------
 
     // loop all edges of current side
-    std::vector<Teuchos::RCP<Core::Elements::Element>> lines = side->lines();
+    std::vector<std::shared_ptr<Core::Elements::Element>> lines = side->lines();
 
     int line_count = 0;
 
-    for (std::vector<Teuchos::RCP<Core::Elements::Element>>::iterator line_it = lines.begin();
+    for (std::vector<std::shared_ptr<Core::Elements::Element>>::iterator line_it = lines.begin();
          line_it != lines.end(); line_it++)
     {
       call_project_on_line(side, &(**line_it),
@@ -1509,9 +1509,9 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
         {
           Core::Elements::Element* side_tmp = boundarydis_->g_element(*s);
 
-          std::vector<Teuchos::RCP<Core::Elements::Element>> lines_tmp = side_tmp->lines();
+          std::vector<std::shared_ptr<Core::Elements::Element>> lines_tmp = side_tmp->lines();
 
-          for (std::vector<Teuchos::RCP<Core::Elements::Element>>::iterator line_it =
+          for (std::vector<std::shared_ptr<Core::Elements::Element>>::iterator line_it =
                    lines_tmp.begin();
                line_it != lines_tmp.end(); line_it++)
           {
@@ -1600,9 +1600,9 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
       }
       //---------------------------------------------------------
       // line geometry at initial state t^0
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines = side_1->lines();
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines = side_1->lines();
 
-      Teuchos::RCP<Core::Elements::Element> line_ele = lines[local_lineIds[0]];
+      std::shared_ptr<Core::Elements::Element> line_ele = lines[local_lineIds[0]];
 
       call_get_projxn_line(side_1, &*line_ele, proj_x_n, local_xi_line[0]);
 
@@ -1666,8 +1666,9 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     // get the coordinates of the projection point at time tn
     const std::string state = "idispn";
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state = boundarydis_->get_state(state);
-    if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
+    std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
+        boundarydis_->get_state(state);
+    if (matrix_state == nullptr) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
     // extract local values of the global vectors
     std::vector<double> mymatrix(lm.size());
@@ -1826,11 +1827,11 @@ bool XFEM::XfluidStd::project_to_surface(
     //------------------------------------
 
     // loop all edges of current side
-    std::vector<Teuchos::RCP<Core::Elements::Element>> lines = side->lines();
+    std::vector<std::shared_ptr<Core::Elements::Element>> lines = side->lines();
 
     int line_count = 0;
 
-    for (std::vector<Teuchos::RCP<Core::Elements::Element>>::iterator line_it = lines.begin();
+    for (std::vector<std::shared_ptr<Core::Elements::Element>>::iterator line_it = lines.begin();
          line_it != lines.end(); line_it++)
     {
       call_project_on_line(side, &(**line_it),
@@ -2281,8 +2282,8 @@ void XFEM::XfluidStd::addeidisp(
 
 
   // get state of the global vector
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state = cutdis.get_state(state);
-  if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state = cutdis.get_state(state);
+  if (matrix_state == nullptr) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
@@ -3071,8 +3072,8 @@ void XFEM::XfluidStd::project_on_point(
     double& dist                          ///< distance from point to its projection
 )
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state = boundarydis_->get_state(state);
-  if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state = boundarydis_->get_state(state);
+  if (matrix_state == nullptr) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
@@ -3363,7 +3364,7 @@ void XFEM::XfluidStd::export_final_data()
       extract_from_pack(buffer, newtype);
 
       Core::LinAlg::Matrix<3, 1> nodedispnp(true);
-      if (dispnp_ != Teuchos::null)  // is alefluid
+      if (dispnp_ != nullptr)  // is alefluid
       {
         //------------------------------------------------------- add ale disp
         // get node location vector, dirichlet flags and ownerships (discret, nds, la,

@@ -25,11 +25,11 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 Solid::IMPLICIT::OneStepTheta::OneStepTheta()
     : theta_(-1.0),
-      fvisconp_ptr_(Teuchos::null),
-      fviscon_ptr_(Teuchos::null),
-      const_vel_acc_update_ptr_(Teuchos::null),
-      finertian_ptr_(Teuchos::null),
-      finertianp_ptr_(Teuchos::null)
+      fvisconp_ptr_(nullptr),
+      fviscon_ptr_(nullptr),
+      const_vel_acc_update_ptr_(nullptr),
+      finertian_ptr_(nullptr),
+      finertianp_ptr_(nullptr)
 {
   // empty constructor
 }
@@ -60,7 +60,7 @@ void Solid::IMPLICIT::OneStepTheta::setup()
   // ---------------------------------------------------------------------------
   // setup mid-point vectors
   // ---------------------------------------------------------------------------
-  const_vel_acc_update_ptr_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+  const_vel_acc_update_ptr_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
       *global_state().dof_row_map_view(), 2, true);
 
   // ---------------------------------------------------------------------------
@@ -94,7 +94,7 @@ void Solid::IMPLICIT::OneStepTheta::post_setup()
     if (tim_int().is_restarting()) return;
 
     // so far, we are restricted to vanishing initial accelerations
-    Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();
+    std::shared_ptr<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();
     accnp_ptr->PutScalar(0.0);
 
     // sanity check whether assumption is fulfilled
@@ -145,7 +145,7 @@ void Solid::IMPLICIT::OneStepTheta::set_state(const Core::LinAlg::Vector<double>
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_ptr = global_state().extract_displ_entries(x);
+  std::shared_ptr<Core::LinAlg::Vector<double>> disnp_ptr = global_state().extract_displ_entries(x);
   global_state().get_dis_np()->Scale(1.0, *disnp_ptr);
 
   // ---------------------------------------------------------------------------
@@ -273,7 +273,7 @@ void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
 void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
     Core::LinAlg::SparseOperator& jac) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
   const double& dt = (*global_state().get_delta_time())[0];
   // add inertial contributions and scale the structural stiffness block
   stiff_ptr->add(*global_state().get_mass_matrix(), false, 1.0 / (theta_ * dt * dt), 1.0);
@@ -360,9 +360,9 @@ void Solid::IMPLICIT::OneStepTheta::predict_const_dis_consist_vel_acc(
     Core::LinAlg::Vector<double>& accnp) const
 {
   check_init_setup();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   // constant predictor: displacement in domain
@@ -389,9 +389,9 @@ bool Solid::IMPLICIT::OneStepTheta::predict_const_vel_consist_acc(
 {
   check_init_setup();
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   /* extrapolated displacements based upon constant velocities
@@ -417,9 +417,9 @@ bool Solid::IMPLICIT::OneStepTheta::predict_const_acc(Core::LinAlg::Vector<doubl
 {
   check_init_setup();
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   /* extrapolated displacements based upon constant accelerations

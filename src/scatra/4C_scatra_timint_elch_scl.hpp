@@ -42,17 +42,18 @@ namespace ScaTra
     /*========================================================================*/
 
     //! Standard Constructor
-    ScaTraTimIntElchSCL(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    ScaTraTimIntElchSCL(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     //! create result test for micro field
-    Teuchos::RCP<Core::Utils::ResultTest> create_micro_field_test();
+    std::shared_ptr<Core::Utils::ResultTest> create_micro_field_test();
 
     //! get time integration of micro problem
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> micro_scatra_field();
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> micro_scatra_field();
 
     void nonlinear_solve() override;
 
@@ -110,46 +111,46 @@ namespace ScaTra
     std::map<int, int> coupled_micro_nodes_;
 
     //! DBC maps for coupled problem
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_elch_scl_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_elch_scl_;
 
     //! block map of coupled ELCH-SCL problem
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> full_block_map_elch_scl_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> full_block_map_elch_scl_;
 
     //! map of coupled ELCH-SCL problem
-    Teuchos::RCP<const Epetra_Map> full_map_elch_scl_;
+    std::shared_ptr<const Epetra_Map> full_map_elch_scl_;
 
     //! increment of coupled ELCH-SCL problem
-    Teuchos::RCP<Core::LinAlg::Vector<double>> increment_elch_scl_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> increment_elch_scl_;
 
     //! map extractor to get the coupled dofs from macro discretization (cond_map) out of all macro
     //! dofs
-    Teuchos::RCP<Core::LinAlg::MapExtractor> macro_coupling_dofs_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> macro_coupling_dofs_;
 
     //! coupling adapter between micro (slave) and macro discretization (master).
-    Teuchos::RCP<Coupling::Adapter::Coupling> macro_micro_coupling_adapter_;
+    std::shared_ptr<Coupling::Adapter::Coupling> macro_micro_coupling_adapter_;
 
     //! map extractor to get micro and macro dofs from global vector
     //! cond. map: micro, other map: macro
-    Teuchos::RCP<Core::LinAlg::MapExtractor> macro_micro_dofs_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> macro_micro_dofs_;
 
     //! type of system matrix of coupled ELCH-SCL problem
     const Core::LinAlg::MatrixType matrixtype_elch_scl_;
 
     //! map extractor to get the coupled dofs from micro discretization (cond_map) out of all micro
     //! dofs
-    Teuchos::RCP<Core::LinAlg::MapExtractor> micro_coupling_dofs_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> micro_coupling_dofs_;
 
     //! time integrator for micro problem
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> micro_timint_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> micro_timint_;
 
     //! residual of coupled ELCH-SCL problem
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_elch_scl_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual_elch_scl_;
 
     //! solver for coupled ELCH-SCL problem
-    Teuchos::RCP<Core::LinAlg::Solver> solver_elch_scl_;
+    std::shared_ptr<Core::LinAlg::Solver> solver_elch_scl_;
 
     //! system matrix of coupled ELCH-SCL problem
-    Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix_elch_scl_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> system_matrix_elch_scl_;
   };
 }  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE

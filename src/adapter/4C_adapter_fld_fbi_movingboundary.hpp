@@ -38,13 +38,13 @@ namespace Adapter
     /*========================================================================*/
 
     /// fluid field
-    const Teuchos::RCP<Adapter::Fluid>& fluid_field() override { return fluidadapter_; }
+    const std::shared_ptr<Adapter::Fluid>& fluid_field() override { return fluidadapter_; }
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<Core::FE::Discretization> discretization() override;
+    std::shared_ptr<Core::FE::Discretization> discretization() override;
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override;
+    std::shared_ptr<FLD::Utils::MapExtractor> const& interface() const override;
 
     //@}
 
@@ -69,12 +69,12 @@ namespace Adapter
     /*========================================================================*/
 
     /// nonlinear solve
-    void nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override;
+    void nonlinear_solve(std::shared_ptr<Core::LinAlg::Vector<double>> idisp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel) override;
 
     /// relaxation solve
-    Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt) override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> relaxation_solve(
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp, double dt) override;
     //@}
 
     /*========================================================================*/
@@ -82,7 +82,7 @@ namespace Adapter
     /*========================================================================*/
 
     /// After the fluid solve we need the forces at the FSI interface.
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_forces() override;
     //@}
 
     /*========================================================================*/
@@ -90,10 +90,10 @@ namespace Adapter
     /*========================================================================*/
 
     /// extract the interface velocity at time t^(n+1)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
 
     /// extract the interface velocity at time t^n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_veln() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_veln() override;
     //@}
 
     /*========================================================================*/
@@ -113,15 +113,15 @@ namespace Adapter
     /*========================================================================*/
 
     /// integrate the interface shape functions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
 
     /// create the testing of fields
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test() override;
 
     /// Get velocity at timestep n+1
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp();
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> velnp();
 
-    virtual Teuchos::RCP<const FLD::Meshtying> get_meshtying();
+    virtual std::shared_ptr<const FLD::Meshtying> get_meshtying();
 
     /** \brief Pass in additional contributions from coupling terms for the system matrix
      *
@@ -133,7 +133,7 @@ namespace Adapter
      * need to be assembled into the overall fluid system matrix
      */
     virtual void set_coupling_contributions(
-        Teuchos::RCP<const Core::LinAlg::SparseOperator> matrix);
+        std::shared_ptr<const Core::LinAlg::SparseOperator> matrix);
 
     /**
      * \brief Pass additional contributions to the fluid residual to the fluid class
@@ -143,8 +143,8 @@ namespace Adapter
      * \param[in] ivel unused in this implementation     *
      *
      */
-    void apply_interface_values(Teuchos::RCP<Core::LinAlg::Vector<double>> iforce,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = Teuchos::null) override;
+    void apply_interface_values(std::shared_ptr<Core::LinAlg::Vector<double>> iforce,
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel = nullptr) override;
 
     /**
      * \brief Resets the external forces acting on the fluid to zero
@@ -153,7 +153,7 @@ namespace Adapter
 
    private:
     /// fluid base algorithm object
-    Teuchos::RCP<Adapter::Fluid> fluidadapter_;
+    std::shared_ptr<Adapter::Fluid> fluidadapter_;
   };
 
 }  // namespace Adapter

@@ -28,7 +28,7 @@ void fs3i_dyn()
 {
   const Epetra_Comm& comm = Global::Problem::instance()->get_dis("structure")->get_comm();
 
-  Teuchos::RCP<FS3I::FS3IBase> fs3i;
+  std::shared_ptr<FS3I::FS3IBase> fs3i;
 
   // what's the current problem type?
   Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
@@ -37,22 +37,22 @@ void fs3i_dyn()
   {
     case Core::ProblemType::gas_fsi:
     {
-      fs3i = Teuchos::make_rcp<FS3I::PartFS3I1Wc>(comm);
+      fs3i = std::make_shared<FS3I::PartFS3I1Wc>(comm);
     }
     break;
     case Core::ProblemType::thermo_fsi:
     {
-      fs3i = Teuchos::make_rcp<FS3I::PartFS3I2Wc>(comm);
+      fs3i = std::make_shared<FS3I::PartFS3I2Wc>(comm);
     }
     break;
     case Core::ProblemType::biofilm_fsi:
     {
-      fs3i = Teuchos::make_rcp<FS3I::BiofilmFSI>(comm);
+      fs3i = std::make_shared<FS3I::BiofilmFSI>(comm);
     }
     break;
     case Core::ProblemType::fps3i:
     {
-      fs3i = Teuchos::make_rcp<FS3I::PartFpS3I1Wc>(comm);
+      fs3i = std::make_shared<FS3I::PartFpS3I1Wc>(comm);
     }
     break;
     default:
@@ -77,9 +77,9 @@ void fs3i_dyn()
 
   fs3i->test_results(comm);
 
-  Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
+  std::shared_ptr<const Teuchos::Comm<int>> TeuchosComm =
       Core::Communication::to_teuchos_comm<int>(comm);
-  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+  Teuchos::TimeMonitor::summarize(Teuchos::Ptr(TeuchosComm.get()), std::cout, false, true, false);
 }
 
 FOUR_C_NAMESPACE_CLOSE

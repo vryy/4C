@@ -107,7 +107,7 @@ void Discret::Elements::Vele3Surface::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Vele3Surface::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Vele3Surface::lines()
 {
   return Core::Communication::element_boundary_factory<Vele3Line, Vele3Surface>(
       Core::Communication::buildLines, *this);
@@ -117,9 +117,9 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Vele3Surfa
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)               gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Vele3Surface::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Vele3Surface::surfaces()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 

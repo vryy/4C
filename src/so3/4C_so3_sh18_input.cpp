@@ -24,7 +24,7 @@ bool Discret::Elements::SoSh18::read_element(const std::string& eletype, const s
 
   // set up of materials with GP data (e.g., history variables)
 
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   solid_material()->setup(NUMGPT_SOH18, container);
 

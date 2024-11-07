@@ -28,8 +28,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                         pfaller Apr15|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::SpringDashpot::SpringDashpot(
-    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::Conditions::Condition> cond)
+CONSTRAINTS::SpringDashpot::SpringDashpot(std::shared_ptr<Core::FE::Discretization> dis,
+    std::shared_ptr<Core::Conditions::Condition> cond)
     : actdisc_(std::move(dis)),
       spring_(std::move(cond)),
       stiff_tens_((spring_->parameters().get<std::vector<double>>("STIFF"))[0]),
@@ -46,9 +46,9 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
       normals_(),
       dnormals_(),
       offset_prestr_(),
-      offset_prestr_new_(Teuchos::null)
+      offset_prestr_new_(nullptr)
 {
-  offset_prestr_new_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*actdisc_->dof_row_map());
+  offset_prestr_new_ = std::make_shared<Core::LinAlg::Vector<double>>(*actdisc_->dof_row_map());
   offset_prestr_new_->PutScalar(0.0);
 
   // set type of this spring
@@ -81,7 +81,7 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
   if (springtype_ == cursurfnormal)
   {
     // get geometry
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = spring_->geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = spring_->geometry();
     // calculate nodal area
     if (!actdisc_->get_comm().MyPID())
       Core::IO::cout << "Computing area for spring dashpot condition...\n";
@@ -98,16 +98,16 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
 /*----------------------------------------------------------------------*
  * Integrate a Surface Robin boundary condition (public)       mhv 08/16|
  * ---------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::evaluate_robin(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fint,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velo, Teuchos::ParameterList p)
+void CONSTRAINTS::SpringDashpot::evaluate_robin(std::shared_ptr<Core::LinAlg::SparseMatrix> stiff,
+    std::shared_ptr<Core::LinAlg::Vector<double>> fint,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> velo, Teuchos::ParameterList p)
 {
   // reset last Newton step
   springstress_.clear();
 
-  const bool assvec = fint != Teuchos::null;
-  const bool assmat = stiff != Teuchos::null;
+  const bool assvec = fint != nullptr;
+  const bool assmat = stiff != nullptr;
 
   actdisc_->clear_state();
   actdisc_->set_state("displacement", disp);
@@ -148,7 +148,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_robin(Teuchos::RCP<Core::LinAlg::Spars
   {
     case Core::Conditions::geometry_type_surface:
     {
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = spring_->geometry();
+      std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = spring_->geometry();
 
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
@@ -292,7 +292,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_robin(Teuchos::RCP<Core::LinAlg::Spars
 
           // assemble contributions into force vector and stiffness matrix
           (*fint)[dof_lid] += force * cross_section;
-          if (stiff != Teuchos::null) stiff->assemble(-stiffness * cross_section, dof_gid, dof_gid);
+          if (stiff != nullptr) stiff->assemble(-stiffness * cross_section, dof_gid, dof_gid);
         }
       }
       else
@@ -314,10 +314,10 @@ void CONSTRAINTS::SpringDashpot::evaluate_robin(Teuchos::RCP<Core::LinAlg::Spars
  |                                                         pfaller Mar16|
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::evaluate_force(Core::LinAlg::Vector<double>& fint,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
     const Core::LinAlg::Vector<double>& vel, const Teuchos::ParameterList& p)
 {
-  if (disp == Teuchos::null) FOUR_C_THROW("Cannot find displacement state in discretization");
+  if (disp == nullptr) FOUR_C_THROW("Cannot find displacement state in discretization");
 
   if (springtype_ == cursurfnormal) get_cur_normals(disp, p);
 
@@ -429,10 +429,11 @@ void CONSTRAINTS::SpringDashpot::evaluate_force(Core::LinAlg::Vector<double>& fi
  |                                                         pfaller mar16|
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::evaluate_force_stiff(Core::LinAlg::SparseMatrix& stiff,
-    Core::LinAlg::Vector<double>& fint, const Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
+    Core::LinAlg::Vector<double>& fint,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
     const Core::LinAlg::Vector<double>& vel, Teuchos::ParameterList p)
 {
-  if (disp == Teuchos::null) FOUR_C_THROW("Cannot find displacement state in discretization");
+  if (disp == nullptr) FOUR_C_THROW("Cannot find displacement state in discretization");
 
   if (springtype_ == cursurfnormal)
   {
@@ -755,7 +756,7 @@ void CONSTRAINTS::SpringDashpot::output_prestr_offset_old(
 void CONSTRAINTS::SpringDashpot::initialize_cur_surf_normal()
 {
   // create MORTAR interface
-  mortar_ = Teuchos::make_rcp<Adapter::CouplingNonLinMortar>(Global::Problem::instance()->n_dim(),
+  mortar_ = std::make_shared<Adapter::CouplingNonLinMortar>(Global::Problem::instance()->n_dim(),
       Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
       Global::Problem::instance()->spatial_approximation_type());
@@ -769,7 +770,7 @@ void CONSTRAINTS::SpringDashpot::initialize_cur_surf_normal()
   std::map<int, std::vector<Core::Gen::Pairedvector<int, double>>> tmpdnormals_;
 
   // empty displacement vector
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> disp;
   disp = Core::LinAlg::create_vector(*(actdisc_->dof_row_map()), true);
 
   // initialize gap in reference configuration
@@ -782,7 +783,7 @@ void CONSTRAINTS::SpringDashpot::initialize_cur_surf_normal()
 |(private) adapted from mhv 01/14                           pfaller Apr15|
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::get_area(
-    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom)
+    const std::map<int, std::shared_ptr<Core::Elements::Element>>& geom)
 {
   for (const auto& ele : geom)
   {
@@ -938,7 +939,7 @@ void CONSTRAINTS::SpringDashpot::initialize_prestr_offset()
 |(private)                                                  pfaller Apr15|
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::get_cur_normals(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& disp, Teuchos::ParameterList p)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& disp, Teuchos::ParameterList p)
 {
   // get current time step size
   const double dt = p.get("dt", 1.0);

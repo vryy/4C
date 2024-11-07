@@ -18,8 +18,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------
                   Standard Constructor (public)
   ---------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::ParameterList& params, const std::string& statistics_outfilename)
+FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(
+    std::shared_ptr<Core::FE::Discretization> actdis, Teuchos::ParameterList& params,
+    const std::string& statistics_outfilename)
     : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
 {
   //----------------------------------------------------------------------
@@ -36,7 +37,7 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<Core::FE::Dis
   // compute all planes for sampling
 
   // available planes: everything is written into one variable
-  nodeplanes_ = Teuchos::make_rcp<std::vector<double>>();
+  nodeplanes_ = std::make_shared<std::vector<double>>();
   // -10 and -10 chosen such that planes lie outside of 2Pi-box
   nodeplanes_->resize(2);
   (*nodeplanes_)[0] = -10.0;
@@ -56,200 +57,202 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<Core::FE::Dis
   // local_incrresC(_sq)       (in plane) averaged values of resC (^2)
   // local_incrspressnp(_sq)   (in plane) averaged values of spressnp (^2)
   //--------------------------------------------------
-  Teuchos::RCP<std::vector<double>> local_incrvol =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incrhk =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incrhbazilevs =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incrstrle =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incrgradle =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrvol =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrhk =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrhbazilevs =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrstrle =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrgradle =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
 
-  Teuchos::RCP<std::vector<double>> local_incrtauC =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incrtauM =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrtauC =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrtauM =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
 
-  Teuchos::RCP<std::vector<double>> local_incrmk =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrmk =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
 
-  Teuchos::RCP<std::vector<double>> local_incrres =
-      Teuchos::make_rcp<std::vector<double>>(3 * (nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incrres_sq =
-      Teuchos::make_rcp<std::vector<double>>(3 * (nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incrabsres =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrres =
+      std::make_shared<std::vector<double>>(3 * (nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrres_sq =
+      std::make_shared<std::vector<double>>(3 * (nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrabsres =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
 
-  Teuchos::RCP<std::vector<double>> local_incrtauinvsvel =
-      Teuchos::make_rcp<std::vector<double>>(3 * (nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrtauinvsvel =
+      std::make_shared<std::vector<double>>(3 * (nodeplanes_->size() - 1), 0.0);
 
-  Teuchos::RCP<std::vector<double>> local_incrsvelaf =
-      Teuchos::make_rcp<std::vector<double>>(3 * (nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incrsvelaf_sq =
-      Teuchos::make_rcp<std::vector<double>>(3 * (nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incrabssvelaf =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrsvelaf =
+      std::make_shared<std::vector<double>>(3 * (nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrsvelaf_sq =
+      std::make_shared<std::vector<double>>(3 * (nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrabssvelaf =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
 
-  Teuchos::RCP<std::vector<double>> local_incrresC =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incrresC_sq =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incrspressnp =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incrspressnp_sq =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrresC =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrresC_sq =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrspressnp =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrspressnp_sq =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
 
-  Teuchos::RCP<std::vector<double>> local_incr_eps_pspg =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incr_eps_supg =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incr_eps_cross =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incr_eps_rey =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incr_eps_graddiv =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incr_eps_eddyvisc =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incr_eps_visc =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incr_eps_conv =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incr_eps_mfs =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incr_eps_mfscross =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incr_eps_mfsrey =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incr_eps_avm3 =
-      Teuchos::make_rcp<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incr_eps_pspg =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incr_eps_supg =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incr_eps_cross =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incr_eps_rey =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incr_eps_graddiv =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incr_eps_eddyvisc =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incr_eps_visc =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incr_eps_conv =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incr_eps_mfs =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incr_eps_mfscross =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incr_eps_mfsrey =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incr_eps_avm3 =
+      std::make_shared<std::vector<double>>((nodeplanes_->size() - 1), 0.0);
 
-  Teuchos::RCP<std::vector<double>> local_incrcrossstress =
-      Teuchos::make_rcp<std::vector<double>>(6 * (nodeplanes_->size() - 1), 0.0);
-  Teuchos::RCP<std::vector<double>> local_incrreystress =
-      Teuchos::make_rcp<std::vector<double>>(6 * (nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrcrossstress =
+      std::make_shared<std::vector<double>>(6 * (nodeplanes_->size() - 1), 0.0);
+  std::shared_ptr<std::vector<double>> local_incrreystress =
+      std::make_shared<std::vector<double>>(6 * (nodeplanes_->size() - 1), 0.0);
 
   // pass pointers to local sum vectors to the element
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrvol", local_incrvol);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrhk", local_incrhk);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrhbazilevs", local_incrhbazilevs);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrstrle", local_incrstrle);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrgradle", local_incrgradle);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrvol", local_incrvol);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrhk", local_incrhk);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrhbazilevs", local_incrhbazilevs);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrstrle", local_incrstrle);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrgradle", local_incrgradle);
 
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrmk", local_incrmk);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrmk", local_incrmk);
 
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("planecoords_", nodeplanes_);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrtauC", local_incrtauC);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrtauM", local_incrtauM);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrres", local_incrres);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrres_sq", local_incrres_sq);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrabsres", local_incrabsres);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrtauinvsvel", local_incrtauinvsvel);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrsvelaf", local_incrsvelaf);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrsvelaf_sq", local_incrsvelaf_sq);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrabssvelaf", local_incrabssvelaf);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrresC", local_incrresC);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrresC_sq", local_incrresC_sq);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrspressnp", local_incrspressnp);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrspressnp_sq", local_incrspressnp_sq);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("planecoords_", nodeplanes_);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrtauC", local_incrtauC);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrtauM", local_incrtauM);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrres", local_incrres);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrres_sq", local_incrres_sq);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrabsres", local_incrabsres);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrtauinvsvel", local_incrtauinvsvel);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrsvelaf", local_incrsvelaf);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrsvelaf_sq", local_incrsvelaf_sq);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrabssvelaf", local_incrabssvelaf);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrresC", local_incrresC);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrresC_sq", local_incrresC_sq);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrspressnp", local_incrspressnp);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrspressnp_sq", local_incrspressnp_sq);
 
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_pspg", local_incr_eps_pspg);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_supg", local_incr_eps_supg);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_cross", local_incr_eps_cross);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_rey", local_incr_eps_rey);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_graddiv", local_incr_eps_graddiv);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_eddyvisc", local_incr_eps_eddyvisc);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_visc", local_incr_eps_visc);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_conv", local_incr_eps_conv);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_mfs", local_incr_eps_mfs);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_mfscross", local_incr_eps_mfscross);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_mfsrey", local_incr_eps_mfsrey);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_avm3", local_incr_eps_avm3);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_pspg", local_incr_eps_pspg);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_supg", local_incr_eps_supg);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_cross", local_incr_eps_cross);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_rey", local_incr_eps_rey);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_graddiv", local_incr_eps_graddiv);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>(
+      "incr_eps_eddyvisc", local_incr_eps_eddyvisc);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_visc", local_incr_eps_visc);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_conv", local_incr_eps_conv);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_mfs", local_incr_eps_mfs);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>(
+      "incr_eps_mfscross", local_incr_eps_mfscross);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_mfsrey", local_incr_eps_mfsrey);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_avm3", local_incr_eps_avm3);
 
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrcrossstress", local_incrcrossstress);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrreystress", local_incrreystress);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrcrossstress", local_incrcrossstress);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrreystress", local_incrreystress);
 
   // means for comparison of of residual and subscale acceleration
 
-  sumres_ = Teuchos::make_rcp<std::vector<double>>();
+  sumres_ = std::make_shared<std::vector<double>>();
   sumres_->resize(3 * (nodeplanes_->size() - 1), 0.0);
-  sumres_sq_ = Teuchos::make_rcp<std::vector<double>>();
+  sumres_sq_ = std::make_shared<std::vector<double>>();
   sumres_sq_->resize(3 * (nodeplanes_->size() - 1), 0.0);
-  sumabsres_ = Teuchos::make_rcp<std::vector<double>>();
+  sumabsres_ = std::make_shared<std::vector<double>>();
   sumabsres_->resize((nodeplanes_->size() - 1), 0.0);
-  sumtauinvsvel_ = Teuchos::make_rcp<std::vector<double>>();
+  sumtauinvsvel_ = std::make_shared<std::vector<double>>();
   sumtauinvsvel_->resize(3 * (nodeplanes_->size() - 1), 0.0);
 
-  sumsvelaf_ = Teuchos::make_rcp<std::vector<double>>();
+  sumsvelaf_ = std::make_shared<std::vector<double>>();
   sumsvelaf_->resize(3 * (nodeplanes_->size() - 1), 0.0);
-  sumsvelaf_sq_ = Teuchos::make_rcp<std::vector<double>>();
+  sumsvelaf_sq_ = std::make_shared<std::vector<double>>();
   sumsvelaf_sq_->resize(3 * (nodeplanes_->size() - 1), 0.0);
-  sumabssvelaf_ = Teuchos::make_rcp<std::vector<double>>();
+  sumabssvelaf_ = std::make_shared<std::vector<double>>();
   sumabssvelaf_->resize((nodeplanes_->size() - 1), 0.0);
 
-  sumres_c_ = Teuchos::make_rcp<std::vector<double>>();
+  sumres_c_ = std::make_shared<std::vector<double>>();
   sumres_c_->resize(nodeplanes_->size() - 1, 0.0);
-  sumres_c_sq_ = Teuchos::make_rcp<std::vector<double>>();
+  sumres_c_sq_ = std::make_shared<std::vector<double>>();
   sumres_c_sq_->resize(nodeplanes_->size() - 1, 0.0);
 
-  sumspressnp_ = Teuchos::make_rcp<std::vector<double>>();
+  sumspressnp_ = std::make_shared<std::vector<double>>();
   sumspressnp_->resize(nodeplanes_->size() - 1, 0.0);
-  sumspressnp_sq_ = Teuchos::make_rcp<std::vector<double>>();
+  sumspressnp_sq_ = std::make_shared<std::vector<double>>();
   sumspressnp_sq_->resize(nodeplanes_->size() - 1, 0.0);
 
-  sumhk_ = Teuchos::make_rcp<std::vector<double>>();
+  sumhk_ = std::make_shared<std::vector<double>>();
   sumhk_->resize(nodeplanes_->size() - 1, 0.0);
-  sumhbazilevs_ = Teuchos::make_rcp<std::vector<double>>();
+  sumhbazilevs_ = std::make_shared<std::vector<double>>();
   sumhbazilevs_->resize(nodeplanes_->size() - 1, 0.0);
-  sumstrle_ = Teuchos::make_rcp<std::vector<double>>();
+  sumstrle_ = std::make_shared<std::vector<double>>();
   sumstrle_->resize(nodeplanes_->size() - 1, 0.0);
-  sumgradle_ = Teuchos::make_rcp<std::vector<double>>();
+  sumgradle_ = std::make_shared<std::vector<double>>();
   sumgradle_->resize(nodeplanes_->size() - 1, 0.0);
-  sumtau_m_ = Teuchos::make_rcp<std::vector<double>>();
+  sumtau_m_ = std::make_shared<std::vector<double>>();
   sumtau_m_->resize(nodeplanes_->size() - 1, 0.0);
-  sumtau_c_ = Teuchos::make_rcp<std::vector<double>>();
+  sumtau_c_ = std::make_shared<std::vector<double>>();
   sumtau_c_->resize(nodeplanes_->size() - 1, 0.0);
 
-  summk_ = Teuchos::make_rcp<std::vector<double>>();
+  summk_ = std::make_shared<std::vector<double>>();
   summk_->resize(nodeplanes_->size() - 1, 0.0);
 
-  sum_eps_pspg_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_eps_pspg_ = std::make_shared<std::vector<double>>();
   sum_eps_pspg_->resize(nodeplanes_->size() - 1, 0.0);
-  sum_eps_supg_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_eps_supg_ = std::make_shared<std::vector<double>>();
   sum_eps_supg_->resize(nodeplanes_->size() - 1, 0.0);
-  sum_eps_cross_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_eps_cross_ = std::make_shared<std::vector<double>>();
   sum_eps_cross_->resize(nodeplanes_->size() - 1, 0.0);
-  sum_eps_rey_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_eps_rey_ = std::make_shared<std::vector<double>>();
   sum_eps_rey_->resize(nodeplanes_->size() - 1, 0.0);
-  sum_eps_graddiv_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_eps_graddiv_ = std::make_shared<std::vector<double>>();
   sum_eps_graddiv_->resize(nodeplanes_->size() - 1, 0.0);
-  sum_eps_eddyvisc_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_eps_eddyvisc_ = std::make_shared<std::vector<double>>();
   sum_eps_eddyvisc_->resize(nodeplanes_->size() - 1, 0.0);
-  sum_eps_visc_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_eps_visc_ = std::make_shared<std::vector<double>>();
   sum_eps_visc_->resize(nodeplanes_->size() - 1, 0.0);
-  sum_eps_conv_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_eps_conv_ = std::make_shared<std::vector<double>>();
   sum_eps_conv_->resize(nodeplanes_->size() - 1, 0.0);
-  sum_eps_mfs_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_eps_mfs_ = std::make_shared<std::vector<double>>();
   sum_eps_mfs_->resize(nodeplanes_->size() - 1, 0.0);
-  sum_eps_mfscross_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_eps_mfscross_ = std::make_shared<std::vector<double>>();
   sum_eps_mfscross_->resize(nodeplanes_->size() - 1, 0.0);
-  sum_eps_mfsrey_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_eps_mfsrey_ = std::make_shared<std::vector<double>>();
   sum_eps_mfsrey_->resize(nodeplanes_->size() - 1, 0.0);
-  sum_eps_avm3_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_eps_avm3_ = std::make_shared<std::vector<double>>();
   sum_eps_avm3_->resize(nodeplanes_->size() - 1, 0.0);
 
-  sum_crossstress_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_crossstress_ = std::make_shared<std::vector<double>>();
   sum_crossstress_->resize(6 * (nodeplanes_->size() - 1), 0.0);
-  sum_reystress_ = Teuchos::make_rcp<std::vector<double>>();
+  sum_reystress_ = std::make_shared<std::vector<double>>();
   sum_reystress_->resize(6 * (nodeplanes_->size() - 1), 0.0);
 
   // output of residuals and subscale quantities
   std::string s_res(statistics_outfilename_);
   s_res.append(".dissipation");
-  Teuchos::RCP<std::ofstream> log_res;
-  log_res = Teuchos::make_rcp<std::ofstream>(s_res.c_str(), std::ios::out);
+  std::shared_ptr<std::ofstream> log_res;
+  log_res = std::make_shared<std::ofstream>(s_res.c_str(), std::ios::out);
   (*log_res) << "# Statistics for Taylor-Green vortex (residuals and subscale quantities)\n";
   (*log_res) << "# All values are first averaged over the integration points in an element \n";
   (*log_res) << "# and after that averaged over the whole box\n\n";
@@ -265,8 +268,8 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<Core::FE::Dis
 /*----------------------------------------------------------------------*
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
-    std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs,
-    std::map<std::string, Teuchos::RCP<Core::LinAlg::MultiVector<double>>> statetenss,
+    std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>> statevecs,
+    std::map<std::string, std::shared_ptr<Core::LinAlg::MultiVector<double>>> statetenss,
     const double thermpressaf, const double thermpressam, const double thermpressdtaf,
     const double thermpressdtam)
 {
@@ -284,7 +287,7 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
     Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
     if (stabparams->get<bool>("Reconstruct_Sec_Der"))
     {
-      for (std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>::iterator state =
+      for (std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>::iterator state =
                statevecs.begin();
            state != statevecs.end(); ++state)
       {
@@ -304,7 +307,7 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
   eleparams_.set<double>("thermpressderiv at n+alpha_M/n+1", thermpressdtam);
 
   // set state vectors for element call
-  for (std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>::iterator state =
+  for (std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>::iterator state =
            statevecs.begin();
        state != statevecs.end(); ++state)
   {
@@ -312,85 +315,84 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
   }
 
   // call loop over elements to compute means
-  discret_->evaluate(
-      eleparams_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams_, nullptr, nullptr, nullptr, nullptr, nullptr);
 
   discret_->clear_state();
 
   // ------------------------------------------------
   // get results from element call via parameter list
-  Teuchos::RCP<std::vector<double>> local_vol =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrvol");
+  std::shared_ptr<std::vector<double>> local_vol =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrvol");
 
-  Teuchos::RCP<std::vector<double>> local_incrhk =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrhk");
-  Teuchos::RCP<std::vector<double>> local_incrhbazilevs =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrhbazilevs");
-  Teuchos::RCP<std::vector<double>> local_incrstrle =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrstrle");
-  Teuchos::RCP<std::vector<double>> local_incrgradle =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrgradle");
+  std::shared_ptr<std::vector<double>> local_incrhk =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrhk");
+  std::shared_ptr<std::vector<double>> local_incrhbazilevs =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrhbazilevs");
+  std::shared_ptr<std::vector<double>> local_incrstrle =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrstrle");
+  std::shared_ptr<std::vector<double>> local_incrgradle =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrgradle");
 
-  Teuchos::RCP<std::vector<double>> local_incrtauC =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrtauC");
-  Teuchos::RCP<std::vector<double>> local_incrtauM =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrtauM");
+  std::shared_ptr<std::vector<double>> local_incrtauC =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrtauC");
+  std::shared_ptr<std::vector<double>> local_incrtauM =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrtauM");
 
-  Teuchos::RCP<std::vector<double>> local_incrmk =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrmk");
+  std::shared_ptr<std::vector<double>> local_incrmk =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrmk");
 
-  Teuchos::RCP<std::vector<double>> local_incrres =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrres");
-  Teuchos::RCP<std::vector<double>> local_incrres_sq =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrres_sq");
-  Teuchos::RCP<std::vector<double>> local_incrabsres =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrabsres");
-  Teuchos::RCP<std::vector<double>> local_incrtauinvsvel =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrtauinvsvel");
-  Teuchos::RCP<std::vector<double>> local_incrsvelaf =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrsvelaf");
-  Teuchos::RCP<std::vector<double>> local_incrsvelaf_sq =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrsvelaf_sq");
-  Teuchos::RCP<std::vector<double>> local_incrabssvelaf =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrabssvelaf");
-  Teuchos::RCP<std::vector<double>> local_incrresC =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrresC");
-  Teuchos::RCP<std::vector<double>> local_incrresC_sq =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrresC_sq");
-  Teuchos::RCP<std::vector<double>> local_incrspressnp =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrspressnp");
-  Teuchos::RCP<std::vector<double>> local_incrspressnp_sq =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrspressnp_sq");
+  std::shared_ptr<std::vector<double>> local_incrres =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrres");
+  std::shared_ptr<std::vector<double>> local_incrres_sq =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrres_sq");
+  std::shared_ptr<std::vector<double>> local_incrabsres =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrabsres");
+  std::shared_ptr<std::vector<double>> local_incrtauinvsvel =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrtauinvsvel");
+  std::shared_ptr<std::vector<double>> local_incrsvelaf =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrsvelaf");
+  std::shared_ptr<std::vector<double>> local_incrsvelaf_sq =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrsvelaf_sq");
+  std::shared_ptr<std::vector<double>> local_incrabssvelaf =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrabssvelaf");
+  std::shared_ptr<std::vector<double>> local_incrresC =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrresC");
+  std::shared_ptr<std::vector<double>> local_incrresC_sq =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrresC_sq");
+  std::shared_ptr<std::vector<double>> local_incrspressnp =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrspressnp");
+  std::shared_ptr<std::vector<double>> local_incrspressnp_sq =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrspressnp_sq");
 
-  Teuchos::RCP<std::vector<double>> local_incr_eps_visc =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incr_eps_visc");
-  Teuchos::RCP<std::vector<double>> local_incr_eps_conv =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incr_eps_conv");
-  Teuchos::RCP<std::vector<double>> local_incr_eps_eddyvisc =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incr_eps_eddyvisc");
-  Teuchos::RCP<std::vector<double>> local_incr_eps_avm3 =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incr_eps_avm3");
-  Teuchos::RCP<std::vector<double>> local_incr_eps_mfs =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incr_eps_mfs");
-  Teuchos::RCP<std::vector<double>> local_incr_eps_mfscross =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incr_eps_mfscross");
-  Teuchos::RCP<std::vector<double>> local_incr_eps_mfsrey =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incr_eps_mfsrey");
-  Teuchos::RCP<std::vector<double>> local_incr_eps_supg =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incr_eps_supg");
-  Teuchos::RCP<std::vector<double>> local_incr_eps_cross =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incr_eps_cross");
-  Teuchos::RCP<std::vector<double>> local_incr_eps_rey =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incr_eps_rey");
-  Teuchos::RCP<std::vector<double>> local_incr_eps_graddiv =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incr_eps_graddiv");
-  Teuchos::RCP<std::vector<double>> local_incr_eps_pspg =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incr_eps_pspg");
+  std::shared_ptr<std::vector<double>> local_incr_eps_visc =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incr_eps_visc");
+  std::shared_ptr<std::vector<double>> local_incr_eps_conv =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incr_eps_conv");
+  std::shared_ptr<std::vector<double>> local_incr_eps_eddyvisc =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incr_eps_eddyvisc");
+  std::shared_ptr<std::vector<double>> local_incr_eps_avm3 =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incr_eps_avm3");
+  std::shared_ptr<std::vector<double>> local_incr_eps_mfs =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incr_eps_mfs");
+  std::shared_ptr<std::vector<double>> local_incr_eps_mfscross =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incr_eps_mfscross");
+  std::shared_ptr<std::vector<double>> local_incr_eps_mfsrey =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incr_eps_mfsrey");
+  std::shared_ptr<std::vector<double>> local_incr_eps_supg =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incr_eps_supg");
+  std::shared_ptr<std::vector<double>> local_incr_eps_cross =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incr_eps_cross");
+  std::shared_ptr<std::vector<double>> local_incr_eps_rey =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incr_eps_rey");
+  std::shared_ptr<std::vector<double>> local_incr_eps_graddiv =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incr_eps_graddiv");
+  std::shared_ptr<std::vector<double>> local_incr_eps_pspg =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incr_eps_pspg");
 
-  Teuchos::RCP<std::vector<double>> local_incrcrossstress =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrcrossstress");
-  Teuchos::RCP<std::vector<double>> local_incrreystress =
-      eleparams_.get<Teuchos::RCP<std::vector<double>>>("incrreystress");
+  std::shared_ptr<std::vector<double>> local_incrcrossstress =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrcrossstress");
+  std::shared_ptr<std::vector<double>> local_incrreystress =
+      eleparams_.get<std::shared_ptr<std::vector<double>>>("incrreystress");
 
   int presize = local_incrresC->size();
   int velsize = local_incrres->size();
@@ -400,136 +402,136 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
   // vectors to sum over all procs
 
   // volume of element layers
-  Teuchos::RCP<std::vector<double>> global_vol;
-  global_vol = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_vol;
+  global_vol = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // element sizes of element layers
-  Teuchos::RCP<std::vector<double>> global_incrhk;
-  global_incrhk = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrhk;
+  global_incrhk = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // element sizes in Bazilevs parameter, viscous regime in element layers
-  Teuchos::RCP<std::vector<double>> global_incrhbazilevs;
-  global_incrhbazilevs = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrhbazilevs;
+  global_incrhbazilevs = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // element sizes of element stream length
-  Teuchos::RCP<std::vector<double>> global_incrstrle;
-  global_incrstrle = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrstrle;
+  global_incrstrle = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // element sizes based on gradient length
-  Teuchos::RCP<std::vector<double>> global_incrgradle;
-  global_incrgradle = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrgradle;
+  global_incrgradle = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of tauM/tauC
 
-  Teuchos::RCP<std::vector<double>> global_incrtauM;
-  global_incrtauM = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrtauM;
+  global_incrtauM = std::make_shared<std::vector<double>>(presize, 0.0);
 
-  Teuchos::RCP<std::vector<double>> global_incrtauC;
-  global_incrtauC = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrtauC;
+  global_incrtauC = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // mk of element layers
-  Teuchos::RCP<std::vector<double>> global_incrmk;
-  global_incrmk = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrmk;
+  global_incrmk = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of resM (^2) (abs)
 
-  Teuchos::RCP<std::vector<double>> global_incrres;
-  global_incrres = Teuchos::make_rcp<std::vector<double>>(velsize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrres;
+  global_incrres = std::make_shared<std::vector<double>>(velsize, 0.0);
 
-  Teuchos::RCP<std::vector<double>> global_incrres_sq;
-  global_incrres_sq = Teuchos::make_rcp<std::vector<double>>(velsize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrres_sq;
+  global_incrres_sq = std::make_shared<std::vector<double>>(velsize, 0.0);
 
-  Teuchos::RCP<std::vector<double>> global_incrtauinvsvel;
-  global_incrtauinvsvel = Teuchos::make_rcp<std::vector<double>>(velsize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrtauinvsvel;
+  global_incrtauinvsvel = std::make_shared<std::vector<double>>(velsize, 0.0);
 
-  Teuchos::RCP<std::vector<double>> global_incrabsres;
-  global_incrabsres = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrabsres;
+  global_incrabsres = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of svelaf (^2) (abs)
 
-  Teuchos::RCP<std::vector<double>> global_incrsvelaf;
-  global_incrsvelaf = Teuchos::make_rcp<std::vector<double>>(velsize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrsvelaf;
+  global_incrsvelaf = std::make_shared<std::vector<double>>(velsize, 0.0);
 
-  Teuchos::RCP<std::vector<double>> global_incrsvelaf_sq;
-  global_incrsvelaf_sq = Teuchos::make_rcp<std::vector<double>>(velsize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrsvelaf_sq;
+  global_incrsvelaf_sq = std::make_shared<std::vector<double>>(velsize, 0.0);
 
-  Teuchos::RCP<std::vector<double>> global_incrabssvelaf;
-  global_incrabssvelaf = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrabssvelaf;
+  global_incrabssvelaf = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of resC (^2)
 
-  Teuchos::RCP<std::vector<double>> global_incrresC;
-  global_incrresC = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrresC;
+  global_incrresC = std::make_shared<std::vector<double>>(presize, 0.0);
 
-  Teuchos::RCP<std::vector<double>> global_incrresC_sq;
-  global_incrresC_sq = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrresC_sq;
+  global_incrresC_sq = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of spressnp (^2)
 
-  Teuchos::RCP<std::vector<double>> global_incrspressnp;
-  global_incrspressnp = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrspressnp;
+  global_incrspressnp = std::make_shared<std::vector<double>>(presize, 0.0);
 
-  Teuchos::RCP<std::vector<double>> global_incrspressnp_sq;
-  global_incrspressnp_sq = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrspressnp_sq;
+  global_incrspressnp_sq = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of dissipation by pspg term
 
-  Teuchos::RCP<std::vector<double>> global_incr_eps_pspg;
-  global_incr_eps_pspg = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incr_eps_pspg;
+  global_incr_eps_pspg = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of dissipation by supg term
 
-  Teuchos::RCP<std::vector<double>> global_incr_eps_supg;
-  global_incr_eps_supg = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incr_eps_supg;
+  global_incr_eps_supg = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of dissipation by cross term
 
-  Teuchos::RCP<std::vector<double>> global_incr_eps_cross;
-  global_incr_eps_cross = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incr_eps_cross;
+  global_incr_eps_cross = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of dissipation by reynolds term
 
-  Teuchos::RCP<std::vector<double>> global_incr_eps_rey;
-  global_incr_eps_rey = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incr_eps_rey;
+  global_incr_eps_rey = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of dissipation by continuity stabilisation
 
-  Teuchos::RCP<std::vector<double>> global_incr_eps_graddiv;
-  global_incr_eps_graddiv = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incr_eps_graddiv;
+  global_incr_eps_graddiv = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of dissipation by eddy viscosity
 
-  Teuchos::RCP<std::vector<double>> global_incr_eps_eddyvisc;
-  global_incr_eps_eddyvisc = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incr_eps_eddyvisc;
+  global_incr_eps_eddyvisc = std::make_shared<std::vector<double>>(presize, 0.0);
 
-  Teuchos::RCP<std::vector<double>> global_incr_eps_avm3;
-  global_incr_eps_avm3 = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incr_eps_avm3;
+  global_incr_eps_avm3 = std::make_shared<std::vector<double>>(presize, 0.0);
   // (in plane) averaged values of dissipation by mfs model
-  Teuchos::RCP<std::vector<double>> global_incr_eps_mfs;
-  global_incr_eps_mfs = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  Teuchos::RCP<std::vector<double>> global_incr_eps_mfscross;
-  global_incr_eps_mfscross = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  Teuchos::RCP<std::vector<double>> global_incr_eps_mfsrey;
-  global_incr_eps_mfsrey = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incr_eps_mfs;
+  global_incr_eps_mfs = std::make_shared<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incr_eps_mfscross;
+  global_incr_eps_mfscross = std::make_shared<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incr_eps_mfsrey;
+  global_incr_eps_mfsrey = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of dissipation by viscous forces
 
-  Teuchos::RCP<std::vector<double>> global_incr_eps_visc;
-  global_incr_eps_visc = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incr_eps_visc;
+  global_incr_eps_visc = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of dissipation/production by convection
 
-  Teuchos::RCP<std::vector<double>> global_incr_eps_conv;
-  global_incr_eps_conv = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incr_eps_conv;
+  global_incr_eps_conv = std::make_shared<std::vector<double>>(presize, 0.0);
 
   // (in plane) averaged values of subgrid stresses resulting from supg and cross term
 
-  Teuchos::RCP<std::vector<double>> global_incrcrossstress;
-  global_incrcrossstress = Teuchos::make_rcp<std::vector<double>>(stresssize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrcrossstress;
+  global_incrcrossstress = std::make_shared<std::vector<double>>(stresssize, 0.0);
 
   // (in plane) averaged values of subgrid stresses resulting from reynolds stresses
-  Teuchos::RCP<std::vector<double>> global_incrreystress;
-  global_incrreystress = Teuchos::make_rcp<std::vector<double>>(stresssize, 0.0);
+  std::shared_ptr<std::vector<double>> global_incrreystress;
+  global_incrreystress = std::make_shared<std::vector<double>>(stresssize, 0.0);
 
 
   //--------------------------------------------------
@@ -651,87 +653,89 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
   }
 
   // reset working arrays
-  local_vol = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  local_vol = std::make_shared<std::vector<double>>(presize, 0.0);
 
-  local_incrhk = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incrhbazilevs = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incrstrle = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incrgradle = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  local_incrhk = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incrhbazilevs = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incrstrle = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incrgradle = std::make_shared<std::vector<double>>(presize, 0.0);
 
-  local_incrtauC = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incrtauM = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  local_incrtauC = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incrtauM = std::make_shared<std::vector<double>>(presize, 0.0);
 
-  local_incrmk = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  local_incrmk = std::make_shared<std::vector<double>>(presize, 0.0);
 
-  local_incrres = Teuchos::make_rcp<std::vector<double>>(velsize, 0.0);
-  local_incrres_sq = Teuchos::make_rcp<std::vector<double>>(velsize, 0.0);
-  local_incrsvelaf = Teuchos::make_rcp<std::vector<double>>(velsize, 0.0);
-  local_incrsvelaf_sq = Teuchos::make_rcp<std::vector<double>>(velsize, 0.0);
-  local_incrtauinvsvel = Teuchos::make_rcp<std::vector<double>>(velsize, 0.0);
+  local_incrres = std::make_shared<std::vector<double>>(velsize, 0.0);
+  local_incrres_sq = std::make_shared<std::vector<double>>(velsize, 0.0);
+  local_incrsvelaf = std::make_shared<std::vector<double>>(velsize, 0.0);
+  local_incrsvelaf_sq = std::make_shared<std::vector<double>>(velsize, 0.0);
+  local_incrtauinvsvel = std::make_shared<std::vector<double>>(velsize, 0.0);
 
-  local_incrabsres = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incrabssvelaf = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  local_incrabsres = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incrabssvelaf = std::make_shared<std::vector<double>>(presize, 0.0);
 
-  local_incrresC = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incrresC_sq = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incrspressnp = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incrspressnp_sq = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  local_incrresC = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incrresC_sq = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incrspressnp = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incrspressnp_sq = std::make_shared<std::vector<double>>(presize, 0.0);
 
-  local_incr_eps_pspg = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incr_eps_supg = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incr_eps_cross = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incr_eps_rey = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incr_eps_graddiv = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incr_eps_eddyvisc = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incr_eps_visc = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incr_eps_conv = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incr_eps_avm3 = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incr_eps_mfs = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incr_eps_mfscross = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
-  local_incr_eps_mfsrey = Teuchos::make_rcp<std::vector<double>>(presize, 0.0);
+  local_incr_eps_pspg = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incr_eps_supg = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incr_eps_cross = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incr_eps_rey = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incr_eps_graddiv = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incr_eps_eddyvisc = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incr_eps_visc = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incr_eps_conv = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incr_eps_avm3 = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incr_eps_mfs = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incr_eps_mfscross = std::make_shared<std::vector<double>>(presize, 0.0);
+  local_incr_eps_mfsrey = std::make_shared<std::vector<double>>(presize, 0.0);
 
-  local_incrcrossstress = Teuchos::make_rcp<std::vector<double>>(stresssize, 0.0);
-  local_incrreystress = Teuchos::make_rcp<std::vector<double>>(stresssize, 0.0);
+  local_incrcrossstress = std::make_shared<std::vector<double>>(stresssize, 0.0);
+  local_incrreystress = std::make_shared<std::vector<double>>(stresssize, 0.0);
 
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrvol", local_vol);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrhk", local_incrhk);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrhbazilevs", local_incrhbazilevs);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrstrle", local_incrstrle);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrgradle", local_incrgradle);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrvol", local_vol);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrhk", local_incrhk);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrhbazilevs", local_incrhbazilevs);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrstrle", local_incrstrle);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrgradle", local_incrgradle);
 
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrtauC", local_incrtauC);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrtauM", local_incrtauM);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrtauC", local_incrtauC);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrtauM", local_incrtauM);
 
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrmk", local_incrmk);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrmk", local_incrmk);
 
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrres", local_incrres);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrres_sq", local_incrres_sq);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrabsres", local_incrabsres);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrtauinvsvel", local_incrtauinvsvel);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrsvelaf", local_incrsvelaf);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrsvelaf_sq", local_incrsvelaf_sq);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrabssvelaf", local_incrabssvelaf);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrres", local_incrres);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrres_sq", local_incrres_sq);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrabsres", local_incrabsres);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrtauinvsvel", local_incrtauinvsvel);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrsvelaf", local_incrsvelaf);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrsvelaf_sq", local_incrsvelaf_sq);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrabssvelaf", local_incrabssvelaf);
 
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrresC", local_incrresC);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrresC_sq", local_incrresC_sq);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrspressnp", local_incrspressnp);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrspressnp_sq", local_incrspressnp_sq);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrresC", local_incrresC);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrresC_sq", local_incrresC_sq);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrspressnp", local_incrspressnp);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrspressnp_sq", local_incrspressnp_sq);
 
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_pspg", local_incr_eps_pspg);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_supg", local_incr_eps_supg);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_cross", local_incr_eps_cross);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_rey", local_incr_eps_rey);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_graddiv", local_incr_eps_graddiv);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_eddyvisc", local_incr_eps_eddyvisc);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_visc", local_incr_eps_visc);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_conv", local_incr_eps_conv);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_avm3", local_incr_eps_avm3);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_mfs", local_incr_eps_mfs);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_mfscross", local_incr_eps_mfscross);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incr_eps_mfsrey", local_incr_eps_mfsrey);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_pspg", local_incr_eps_pspg);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_supg", local_incr_eps_supg);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_cross", local_incr_eps_cross);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_rey", local_incr_eps_rey);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_graddiv", local_incr_eps_graddiv);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>(
+      "incr_eps_eddyvisc", local_incr_eps_eddyvisc);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_visc", local_incr_eps_visc);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_conv", local_incr_eps_conv);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_avm3", local_incr_eps_avm3);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_mfs", local_incr_eps_mfs);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>(
+      "incr_eps_mfscross", local_incr_eps_mfscross);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incr_eps_mfsrey", local_incr_eps_mfsrey);
 
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrcrossstress", local_incrcrossstress);
-  eleparams_.set<Teuchos::RCP<std::vector<double>>>("incrreystress", local_incrreystress);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrcrossstress", local_incrcrossstress);
+  eleparams_.set<std::shared_ptr<std::vector<double>>>("incrreystress", local_incrreystress);
 
   return;
 }  // FLD::TurbulenceStatisticsTgv::EvaluateResiduals
@@ -745,16 +749,16 @@ void FLD::TurbulenceStatisticsTgv::dump_statistics(const int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
-  Teuchos::RCP<std::ofstream> log;
+  std::shared_ptr<std::ofstream> log;
   if (discret_->get_comm().MyPID() == 0)
   {
-    Teuchos::RCP<std::ofstream> log_res;
+    std::shared_ptr<std::ofstream> log_res;
 
     // output of residuals and subscale quantities
     std::string s_res(statistics_outfilename_);
     s_res.append(".dissipation");
 
-    log_res = Teuchos::make_rcp<std::ofstream>(s_res.c_str(), std::ios::app);
+    log_res = std::make_shared<std::ofstream>(s_res.c_str(), std::ios::app);
 
     if (step == 1)
     {

@@ -25,17 +25,18 @@ namespace Adapter
   {
    public:
     /// Constructor
-    FluidFluidXFSI(Teuchos::RCP<Fluid> fluid,
+    FluidFluidXFSI(std::shared_ptr<Fluid> fluid,
         const std::string coupling_name_xfsi,  // name of the FSI coupling condition
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     /// initialize algorithm
     void init() override;
 
    protected:
     /// A casted pointer to a fluid with multiple discretizations
-    Teuchos::RCP<FLD::XFluidFluid> xfluidfluid_;
+    std::shared_ptr<FLD::XFluidFluid> xfluidfluid_;
   };
 }  // namespace Adapter
 

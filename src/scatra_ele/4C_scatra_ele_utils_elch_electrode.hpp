@@ -39,10 +39,11 @@ namespace Discret
 
 
       //! evaluate electrode material
-      void mat_electrode(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrode material
-          double concentration,                                             //!< concentration
-          double temperature,                                               //!< temperature
-          Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> diffmanager       //!< diffusion manager
+      void mat_electrode(
+          std::shared_ptr<const Core::Mat::Material> material,            //!< electrode material
+          double concentration,                                           //!< concentration
+          double temperature,                                             //!< temperature
+          std::shared_ptr<ScaTraEleDiffManagerElchElectrode> diffmanager  //!< diffusion manager
       );
 
      protected:

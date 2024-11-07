@@ -14,8 +14,9 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mortar_defines.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -23,9 +24,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Mortar::StratDataContainer::StratDataContainer()
-    : probdofs_(Teuchos::null),
-      probnodes_(Teuchos::null),
-      comm_(Teuchos::null),
+    : probdofs_(nullptr),
+      probnodes_(nullptr),
+      comm_(nullptr),
       scontact_(),
       dim_(0),
       alphaf_(0.0),
@@ -40,10 +41,10 @@ Mortar::StratDataContainer::StratDataContainer()
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 01/10 |
  *----------------------------------------------------------------------*/
-Mortar::StrategyBase::StrategyBase(const Teuchos::RCP<Mortar::StratDataContainer>& data_ptr,
+Mortar::StrategyBase::StrategyBase(const std::shared_ptr<Mortar::StratDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
     const Teuchos::ParameterList& params, const int spatialDim,
-    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
     : probdofs_(data_ptr->prob_dofs_ptr()),
       probnodes_(data_ptr->prob_nodes_ptr()),
       comm_(data_ptr->comm_ptr()),
@@ -56,8 +57,8 @@ Mortar::StrategyBase::StrategyBase(const Teuchos::RCP<Mortar::StratDataContainer
       data_ptr_(data_ptr)
 {
   // *** set data container variables
-  data().prob_dofs_ptr() = Teuchos::make_rcp<Epetra_Map>(*(dof_row_map));
-  data().prob_nodes_ptr() = Teuchos::make_rcp<Epetra_Map>(*(NodeRowMap));
+  data().prob_dofs_ptr() = std::make_shared<Epetra_Map>(*(dof_row_map));
+  data().prob_nodes_ptr() = std::make_shared<Epetra_Map>(*(NodeRowMap));
   data().comm_ptr() = comm;
   data().s_contact() = params;
   data().n_dim() = spatialDim;

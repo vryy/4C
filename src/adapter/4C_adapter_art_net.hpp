@@ -16,7 +16,8 @@
 #include "4C_utils_result_test.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -50,22 +51,23 @@ namespace Adapter
 
     // time integration
     virtual void integrate(
-        bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) = 0;
+        bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams) = 0;
 
     // test results
     virtual void test_results() = 0;
 
     // create field test
-    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test() = 0;
+    virtual std::shared_ptr<Core::Utils::ResultTest> create_field_test() = 0;
 
     //! get discretization
-    virtual Teuchos::RCP<Core::FE::Discretization> discretization() = 0;
+    virtual std::shared_ptr<Core::FE::Discretization> discretization() = 0;
 
     // get time step size
     virtual double dt() const = 0;
 
     // output
-    virtual void output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) = 0;
+    virtual void output(
+        bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams) = 0;
 
     // update of variables from n --> n+1
     virtual void time_update() = 0;
@@ -83,23 +85,23 @@ namespace Adapter
     virtual void prepare_time_step() = 0;
 
     // solve
-    virtual void solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) = 0;
+    virtual void solve(std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams) = 0;
 
     virtual void assemble_mat_and_rhs() = 0;
 
     virtual void prepare_linear_solve() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() = 0;
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() = 0;
 
     //! right-hand side alias the dynamic force residual
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() const = 0;
 
     //! return pressure field at time n+1
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> pressurenp() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> pressurenp() const = 0;
 
     //! iterative update of primary variable
-    virtual void update_iter(const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) = 0;
+    virtual void update_iter(const std::shared_ptr<const Core::LinAlg::Vector<double>> inc) = 0;
 
     // solve scalar transport in arteries
     virtual void solve_scatra() = 0;
@@ -108,7 +110,7 @@ namespace Adapter
     virtual void set_solve_scatra(const bool solvescatra) = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const = 0;
 
   };  // class ArtNet
 

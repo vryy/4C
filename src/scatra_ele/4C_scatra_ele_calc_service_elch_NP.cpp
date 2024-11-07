@@ -67,14 +67,14 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::evaluate_elch_boundary_kin
     Core::LinAlg::SerialDenseVector& erhs,                     ///< element right-hand side vector
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
-        ehist,                                       ///< history variables at element nodes
-    double timefac,                                  ///< time factor
-    Teuchos::RCP<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
-    const int nume,                                  ///< number of transferred electrons
-    const std::vector<int> stoich,                   ///< stoichiometry of the reaction
-    const int kinetics,                              ///< desired electrode kinetics model
-    const double pot0,                               ///< electrode potential on metal side
-    const double frt,                                ///< factor F/RT
+        ehist,                                          ///< history variables at element nodes
+    double timefac,                                     ///< time factor
+    std::shared_ptr<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
+    const int nume,                                     ///< number of transferred electrons
+    const std::vector<int> stoich,                      ///< stoichiometry of the reaction
+    const int kinetics,                                 ///< desired electrode kinetics model
+    const double pot0,                                  ///< electrode potential on metal side
+    const double frt,                                   ///< factor F/RT
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {

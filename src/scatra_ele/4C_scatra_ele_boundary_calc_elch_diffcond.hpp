@@ -63,8 +63,8 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs,
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist, double timefac,
-          Teuchos::RCP<const Core::Mat::Material> material,
-          Teuchos::RCP<Core::Conditions::Condition> cond, const int nume,
+          std::shared_ptr<const Core::Mat::Material> material,
+          std::shared_ptr<Core::Conditions::Condition> cond, const int nume,
           const std::vector<int> stoich, const int kinetics, const double pot0, const double frt,
           const double scalar) override;
 
@@ -80,10 +80,10 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix& eslavematrix) override;
 
       double get_valence(
-          const Teuchos::RCP<const Core::Mat::Material>& material, const int k) const override;
+          const std::shared_ptr<const Core::Mat::Material>& material, const int k) const override;
 
       //! diffusion manager
-      Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc_;
+      std::shared_ptr<ScaTraEleDiffManagerElchDiffCond> dmedc_;
     };  // class ScaTraEleBoundaryCalcElchDiffCond
   }     // namespace Elements
 }  // namespace Discret

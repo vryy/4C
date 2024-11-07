@@ -16,8 +16,8 @@
 #include "4C_geometry_pair_element_faces.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -101,7 +101,7 @@ namespace BEAMINTERACTION
    */
   [[nodiscard]] std::pair<unsigned int, unsigned int>
   mortar_shape_functions_to_number_of_lagrange_values(
-      const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params,
+      const std::shared_ptr<const BeamToSolidParamsBase>& beam_to_solid_params,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions shape_function,
       const unsigned int n_dim);
 

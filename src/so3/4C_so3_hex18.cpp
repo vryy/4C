@@ -37,23 +37,23 @@ Core::Communication::ParObject* Discret::Elements::SoHex18Type::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex18Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex18Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::SoHex18>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::SoHex18>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex18Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex18Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::SoHex18>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::SoHex18>(id, owner);
   return ele;
 }
 
@@ -100,9 +100,9 @@ Discret::Elements::SoHex18::SoHex18(int id, int owner) : SoBase(id, owner)
   detJ_.resize(NUMGPT_SOH18, 0.0);
   init_gp();
 
-  Teuchos::RCP<const Teuchos::ParameterList> params =
+  std::shared_ptr<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
-  if (params != Teuchos::null)
+  if (params != nullptr)
   {
     Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
@@ -199,7 +199,7 @@ void Discret::Elements::SoHex18::print(std::ostream& os) const
 |  get vector of surfaces (public)                          seitz 11/14 |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex18::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::SoHex18::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -208,7 +208,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex18::s
 /*----------------------------------------------------------------------*
 |  get vector of lines (public)                            seitz 11/14 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex18::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::SoHex18::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -248,7 +248,7 @@ bool Discret::Elements::SoHex18::read_element(const std::string& eletype,
 
   // set up of materials with GP data (e.g., history variables)
 
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   solid_material()->setup(NUMGPT_SOH18, container);
 
@@ -356,11 +356,11 @@ int Discret::Elements::SoHex18::evaluate(Teuchos::ParameterList& params,
     case calc_struct_linstiff:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> res =
           discretization.get_state("residual displacement");
-      if (disp == Teuchos::null || res == Teuchos::null)
+      if (disp == nullptr || res == nullptr)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -380,11 +380,11 @@ int Discret::Elements::SoHex18::evaluate(Teuchos::ParameterList& params,
     case calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> res =
           discretization.get_state("residual displacement");
-      if (disp == Teuchos::null || res == Teuchos::null)
+      if (disp == nullptr || res == nullptr)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -406,12 +406,12 @@ int Discret::Elements::SoHex18::evaluate(Teuchos::ParameterList& params,
     case calc_struct_linstiffmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> res =
           discretization.get_state("residual displacement");
       // need current velocities and accelerations (for non constant mass matrix)
-      if (disp == Teuchos::null || res == Teuchos::null)
+      if (disp == nullptr || res == nullptr)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
 
       std::vector<double> mydisp(lm.size());
@@ -434,17 +434,17 @@ int Discret::Elements::SoHex18::evaluate(Teuchos::ParameterList& params,
       // nothing to do for ghost elements
       if (discretization.get_comm().MyPID() == owner())
       {
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
             discretization.get_state("displacement");
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> res =
             discretization.get_state("residual displacement");
-        Teuchos::RCP<std::vector<char>> stressdata =
-            params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-        Teuchos::RCP<std::vector<char>> straindata =
-            params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
-        if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
-        if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
+        std::shared_ptr<std::vector<char>> stressdata =
+            params.get<std::shared_ptr<std::vector<char>>>("stress", nullptr);
+        std::shared_ptr<std::vector<char>> straindata =
+            params.get<std::shared_ptr<std::vector<char>>>("strain", nullptr);
+        if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+        if (stressdata == nullptr) FOUR_C_THROW("Cannot get 'stress' data");
+        if (straindata == nullptr) FOUR_C_THROW("Cannot get 'strain' data");
         std::vector<double> mydisp(lm.size());
         Core::FE::extract_my_values(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
@@ -497,7 +497,7 @@ int Discret::Elements::SoHex18::evaluate(Teuchos::ParameterList& params,
 
     case calc_recover:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> res =
           discretization.get_state("residual displacement");
       std::vector<double> myres(lm.size());
       Core::FE::extract_my_values(*res, myres, lm);

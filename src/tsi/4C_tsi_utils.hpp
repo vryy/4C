@@ -14,7 +14,9 @@
 #include "4C_coupling_volmortar_utils.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <map>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -51,7 +53,7 @@ namespace TSI
           Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
       //! set element-specific data (material etc.)
-      void set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+      void set_element_data(std::shared_ptr<Core::Elements::Element> newele,
           Core::Elements::Element* oldele, const int matid, const bool isnurbs);
 
       //! returns conditions names to be copied (source and target name)
@@ -97,14 +99,14 @@ namespace TSI
       //! assignment of thermo material to structure material
       void assign_material2_to1(const Coupling::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele1, const std::vector<int>& ids_2,
-          Teuchos::RCP<Core::FE::Discretization> dis1,
-          Teuchos::RCP<Core::FE::Discretization> dis2) override;
+          std::shared_ptr<Core::FE::Discretization> dis1,
+          std::shared_ptr<Core::FE::Discretization> dis2) override;
 
       //! assignment of structure material to thermo material
       void assign_material1_to2(const Coupling::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele2, const std::vector<int>& ids_1,
-          Teuchos::RCP<Core::FE::Discretization> dis1,
-          Teuchos::RCP<Core::FE::Discretization> dis2) override;
+          std::shared_ptr<Core::FE::Discretization> dis1,
+          std::shared_ptr<Core::FE::Discretization> dis2) override;
     };
 
   }  // namespace Utils

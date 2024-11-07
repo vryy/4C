@@ -176,7 +176,7 @@ void Inpar::BEAMCONTACT::set_valid_parameters(Teuchos::ParameterList& list)
  *
  */
 void Inpar::BEAMCONTACT::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 
@@ -184,8 +184,8 @@ void Inpar::BEAMCONTACT::set_valid_conditions(
   {
     std::string condition_name = "BeamToBeamContact";
 
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> beam_to_beam_contact_condition =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+    std::shared_ptr<Core::Conditions::ConditionDefinition> beam_to_beam_contact_condition =
+        std::make_shared<Core::Conditions::ConditionDefinition>(
             "BEAM INTERACTION/BEAM TO BEAM CONTACT CONDITIONS", condition_name,
             "Beam-to-beam contact conditions", Core::Conditions::BeamToBeamContact, true,
             Core::Conditions::geometry_type_line);

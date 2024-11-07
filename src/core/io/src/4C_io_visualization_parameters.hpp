@@ -13,6 +13,9 @@
 
 #include "4C_utils_parameter_list.fwd.hpp"
 
+#include <string>
+#include <tuple>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO

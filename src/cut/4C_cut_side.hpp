@@ -641,7 +641,7 @@ namespace Cut
     Point::PointPosition selfcutposition_;
 
     /// the bounding volume of the side
-    Teuchos::RCP<BoundingBox> boundingvolume_;
+    std::shared_ptr<BoundingBox> boundingvolume_;
 
   };  // class side
 

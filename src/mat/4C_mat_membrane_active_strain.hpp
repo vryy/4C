@@ -67,7 +67,7 @@ namespace Mat
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
     };
     // class MembraneActiveStrain
 
@@ -152,9 +152,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<MembraneActiveStrain>(*this);
+      return std::make_shared<MembraneActiveStrain>(*this);
     }
 
     /// material mass density
@@ -207,13 +207,13 @@ namespace Mat
     Mat::PAR::MembraneActiveStrain* params_;
 
     /// passive material
-    Teuchos::RCP<Mat::So3Material> matpassive_;
+    std::shared_ptr<Mat::So3Material> matpassive_;
 
     /// (tansmembrane) voltage at every gp
-    Teuchos::RCP<std::vector<double>> voltage_;
+    std::shared_ptr<std::vector<double>> voltage_;
 
     /// activation parameter at every gp
-    Teuchos::RCP<std::vector<double>> activation_;
+    std::shared_ptr<std::vector<double>> activation_;
 
     /// indicates if material is initialized
     bool isinit_;

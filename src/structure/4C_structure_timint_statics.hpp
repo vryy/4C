@@ -41,14 +41,14 @@ namespace Solid
     //@{
 
     //! Constructor
-    TimIntStatics(const Teuchos::ParameterList& timeparams,  //!< ioflags
-        const Teuchos::ParameterList& ioparams,              //!< ioflags
-        const Teuchos::ParameterList& sdynparams,            //!< input parameters
-        const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<Core::FE::Discretization> actdis,       //!< current discretisation
-        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
-        Teuchos::RCP<Core::LinAlg::Solver> contactsolver,    //!< the solver for contact meshtying
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
+    TimIntStatics(const Teuchos::ParameterList& timeparams,   //!< ioflags
+        const Teuchos::ParameterList& ioparams,               //!< ioflags
+        const Teuchos::ParameterList& sdynparams,             //!< input parameters
+        const Teuchos::ParameterList& xparams,                //!< extra flags
+        std::shared_ptr<Core::FE::Discretization> actdis,     //!< current discretisation
+        std::shared_ptr<Core::LinAlg::Solver> solver,         //!< the solver
+        std::shared_ptr<Core::LinAlg::Solver> contactsolver,  //!< the solver for contact meshtying
+        std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
@@ -76,8 +76,8 @@ namespace Solid
     \date 08/16
     \author rauch  */
     void init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver) override;
+        const Teuchos::ParameterList& xparams, std::shared_ptr<Core::FE::Discretization> actdis,
+        std::shared_ptr<Core::LinAlg::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -206,19 +206,19 @@ namespace Solid
     void read_restart_force() override;
 
     //! Write internal and external forces for restart
-    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
+    void write_restart_force(std::shared_ptr<Core::IO::DiscretizationWriter> output) override;
     //@}
 
-    void apply_dirichlet_bc(const double time,           //!< at time
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dis,  //!< displacements
-                                                         //!< (may be Teuchos::null)
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vel,  //!< velocities
-                                                         //!< (may be Teuchos::null)
-        Teuchos::RCP<Core::LinAlg::Vector<double>> acc,  //!< accelerations
-                                                         //!< (may be Teuchos::null)
-        bool recreatemap                                 //!< recreate mapextractor/toggle-vector
-                                                         //!< which stores the DOF IDs subjected
-                                                         //!< to Dirichlet BCs
+    void apply_dirichlet_bc(const double time,              //!< at time
+        std::shared_ptr<Core::LinAlg::Vector<double>> dis,  //!< displacements
+                                                            //!< (may be nullptr)
+        std::shared_ptr<Core::LinAlg::Vector<double>> vel,  //!< velocities
+                                                            //!< (may be nullptr)
+        std::shared_ptr<Core::LinAlg::Vector<double>> acc,  //!< accelerations
+                                                            //!< (may be nullptr)
+        bool recreatemap                                    //!< recreate mapextractor/toggle-vector
+                                                            //!< which stores the DOF IDs subjected
+                                                            //!< to Dirichlet BCs
         //!< This needs to be true if the bounded DOFs
         //!< have been changed.
         ) override;
@@ -227,14 +227,14 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext() override
     {
       FOUR_C_THROW("Statics: no external forces at t_n available");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext_new() override { return fextn_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext_new() override { return fextn_; }
 
     //@}
 
@@ -248,13 +248,13 @@ namespace Solid
     //! @name Global force vectors
     //! Residual \c fres_ exists already in base class
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fint_;  //!< internal force at \f$t_n\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fint_;  //!< internal force at \f$t_n\f$
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fintn_;  //!< internal force at \f$t_{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext_;  //!< internal force at \f$t_n\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext_;  //!< internal force at \f$t_n\f$
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fextn_;  //!< external force at \f$t_{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fextn_;  //!< external force at \f$t_{n+1}\f$
     //@}
 
   };  // class TimIntStatics

@@ -50,10 +50,10 @@ namespace ALE
 
    private:
     /// pointer to ALE discretization
-    Teuchos::RCP<const Core::FE::Discretization> aledis_;
+    std::shared_ptr<const Core::FE::Discretization> aledis_;
 
     /// pointer to ALE displacement result vector
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp_;
   };
 
 }  // namespace ALE

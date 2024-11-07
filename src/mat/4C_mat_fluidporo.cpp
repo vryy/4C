@@ -621,24 +621,24 @@ namespace Mat::FLUIDPORO
     }
   };
 
-  Teuchos::RCP<Mat::FLUIDPORO::PoroAnisotropyStrategyBase> create_anisotropy_strategy(
+  std::shared_ptr<Mat::FLUIDPORO::PoroAnisotropyStrategyBase> create_anisotropy_strategy(
       const Mat::PAR::FluidPoro* params)
   {
     switch (params->permeability_func_)
     {
       case Mat::PAR::constant:
       case Mat::PAR::kozeny_carman:
-        return Teuchos::make_rcp<Mat::FLUIDPORO::PoroIsotropyStrategy>(params);
+        return std::make_shared<Mat::FLUIDPORO::PoroIsotropyStrategy>(params);
       case Mat::PAR::const_material_transverse:
-        return Teuchos::make_rcp<Mat::FLUIDPORO::PoroConstantMaterialTransverseIsotropyStrategy>(
+        return std::make_shared<Mat::FLUIDPORO::PoroConstantMaterialTransverseIsotropyStrategy>(
             params);
       case Mat::PAR::const_material_orthotropic:
-        return Teuchos::make_rcp<Mat::FLUIDPORO::PoroConstantMaterialOrthotropyStrategy>(params);
+        return std::make_shared<Mat::FLUIDPORO::PoroConstantMaterialOrthotropyStrategy>(params);
       case Mat::PAR::const_material_nodal_orthotropic:
-        return Teuchos::make_rcp<Mat::FLUIDPORO::PoroConstantMaterialNodalOrthotropyStrategy>(
+        return std::make_shared<Mat::FLUIDPORO::PoroConstantMaterialNodalOrthotropyStrategy>(
             params);
       default:
-        return Teuchos::null;
+        return nullptr;
     }
   }
 
@@ -687,9 +687,9 @@ Mat::PAR::FluidPoro::FluidPoro(const Core::Mat::PAR::Parameter::Data& matdata)
   }
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoro::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::FluidPoro::create_material()
 {
-  return Teuchos::make_rcp<Mat::FluidPoro>(this);
+  return std::make_shared<Mat::FluidPoro>(this);
 }
 
 void Mat::PAR::FluidPoro::set_initial_porosity(double initial_porosity)
@@ -718,7 +718,7 @@ Core::Communication::ParObject* Mat::FluidPoroType::create(
   return fluid_poro;
 }
 
-Mat::FluidPoro::FluidPoro() : params_(nullptr), anisotropy_strategy_(Teuchos::null) {}
+Mat::FluidPoro::FluidPoro() : params_(nullptr), anisotropy_strategy_(nullptr) {}
 
 Mat::FluidPoro::FluidPoro(Mat::PAR::FluidPoro* params) : params_(params)
 {
@@ -747,7 +747,7 @@ void Mat::FluidPoro::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {

@@ -57,23 +57,23 @@ namespace ScaTra
 
     bool system_matrix_initialization_needed() const override { return true; }
 
-    Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const override;
+    std::shared_ptr<Core::LinAlg::SparseOperator> init_system_matrix() const override;
 
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> interface_maps() const override
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> interface_maps() const override
     {
       FOUR_C_THROW("InterfaceMaps() is not implemented in MeshtyingStrategyFluid.");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! setup meshtying objects
     void setup_meshtying() override;
 
     //! solve resulting linear system of equations
-    void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,         //!< solver
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp,  //!< state vector at time n+1
+    void solve(const std::shared_ptr<Core::LinAlg::Solver>& solver,         //!< solver
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& phinp,  //!< state vector at time n+1
         const int iteration,  //!< number of current Newton-Raphson iteration
         Core::LinAlg::SolverParams& solver_params) const override;
 
@@ -85,7 +85,7 @@ namespace ScaTra
     void init_conv_check_strategy() override;
 
     //! fluid-fluid meshtying algorithm for internal interface
-    Teuchos::RCP<FLD::Meshtying> meshtying_;
+    std::shared_ptr<FLD::Meshtying> meshtying_;
 
     //! type of fluid-fluid meshtying
     enum Inpar::FLUID::MeshTying type_;

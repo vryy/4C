@@ -18,19 +18,20 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::DOFSets::DofSetMergedWrapper::DofSetMergedWrapper(Teuchos::RCP<DofSetInterface> sourcedofset,
-    Teuchos::RCP<const Core::FE::Discretization> sourcedis, const std::string& couplingcond_master,
-    const std::string& couplingcond_slave)
+Core::DOFSets::DofSetMergedWrapper::DofSetMergedWrapper(
+    std::shared_ptr<DofSetInterface> sourcedofset,
+    std::shared_ptr<const Core::FE::Discretization> sourcedis,
+    const std::string& couplingcond_master, const std::string& couplingcond_slave)
     : DofSetBase(),
-      master_nodegids_col_layout_(Teuchos::null),
+      master_nodegids_col_layout_(nullptr),
       sourcedofset_(sourcedofset),
       sourcedis_(sourcedis),
       couplingcond_master_(couplingcond_master),
       couplingcond_slave_(couplingcond_slave),
       filled_(false)
 {
-  if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("Source dof set is null pointer.");
-  if (sourcedis_ == Teuchos::null) FOUR_C_THROW("Source discretization is null pointer.");
+  if (sourcedofset_ == nullptr) FOUR_C_THROW("Source dof set is null pointer.");
+  if (sourcedis_ == nullptr) FOUR_C_THROW("Source discretization is null pointer.");
 
   sourcedofset_->register_proxy(this);
 }
@@ -39,7 +40,7 @@ Core::DOFSets::DofSetMergedWrapper::DofSetMergedWrapper(Teuchos::RCP<DofSetInter
  *----------------------------------------------------------------------*/
 Core::DOFSets::DofSetMergedWrapper::~DofSetMergedWrapper()
 {
-  if (sourcedofset_ != Teuchos::null) sourcedofset_->unregister(this);
+  if (sourcedofset_ != nullptr) sourcedofset_->unregister(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -65,9 +66,8 @@ const Epetra_Map* Core::DOFSets::DofSetMergedWrapper::dof_col_map() const
 int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
     const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
-  if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("No source dof set assigned to merged dof set!");
-  if (sourcedis_ == Teuchos::null)
-    FOUR_C_THROW("No source discretization assigned to mapping dof set!");
+  if (sourcedofset_ == nullptr) FOUR_C_THROW("No source dof set assigned to merged dof set!");
+  if (sourcedis_ == nullptr) FOUR_C_THROW("No source discretization assigned to mapping dof set!");
 
   // get nodes to be coupled
   std::vector<int> masternodes;
@@ -117,7 +117,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   }
 
   // initialize final mapping
-  master_nodegids_col_layout_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
+  master_nodegids_col_layout_ = std::make_shared<Core::LinAlg::Vector<int>>(*dis.node_col_map());
 
   // export to column map
   Core::LinAlg::export_to(my_master_nodegids_row_layout, *master_nodegids_col_layout_);
@@ -174,7 +174,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   }
 
   // initialize final mapping
-  slave_nodegids_col_layout_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
+  slave_nodegids_col_layout_ = std::make_shared<Core::LinAlg::Vector<int>>(*dis.node_col_map());
 
   // export to column map
   Core::LinAlg::export_to(my_slave_nodegids_row_layout, *slave_nodegids_col_layout_);
@@ -192,8 +192,8 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
  *----------------------------------------------------------------------*/
 void Core::DOFSets::DofSetMergedWrapper::reset()
 {
-  master_nodegids_col_layout_ = Teuchos::null;
-  slave_nodegids_col_layout_ = Teuchos::null;
+  master_nodegids_col_layout_ = nullptr;
+  slave_nodegids_col_layout_ = nullptr;
 
   // set filled flag
   filled_ = false;
@@ -207,8 +207,8 @@ void Core::DOFSets::DofSetMergedWrapper::disconnect(DofSetInterface* dofset)
 {
   if (dofset == sourcedofset_.get())
   {
-    sourcedofset_ = Teuchos::null;
-    sourcedis_ = Teuchos::null;
+    sourcedofset_ = nullptr;
+    sourcedis_ = nullptr;
   }
   else
     FOUR_C_THROW("cannot disconnect from non-connected DofSet");

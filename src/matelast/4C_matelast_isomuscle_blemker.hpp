@@ -17,7 +17,7 @@
 #include "4C_matelast_summand.hpp"
 #include "4C_material_parameter_base.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -56,7 +56,7 @@ namespace Mat
         //! @}
 
         /// Create material instance of matching type with my parameters
-        Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
+        std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };
       };  // class IsoMuscleBlemker
     }     // namespace PAR
 

@@ -32,12 +32,12 @@ FOUR_C_NAMESPACE_OPEN
  |  and calls evaluate routine                             schott 03/12 |
  *----------------------------------------------------------------------*/
 void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
-    Teuchos::ParameterList& eleparams,                        ///< element parameter list
-    Teuchos::RCP<Core::FE::Discretization> discret,           ///< discretization
-    Discret::Elements::FluidIntFace* faceele,                 ///< face element
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,    ///< systemmatrix
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,  ///< systemvector
-    Cut::CutWizard& wizard,                                   ///< cut wizard
+    Teuchos::ParameterList& eleparams,                           ///< element parameter list
+    std::shared_ptr<Core::FE::Discretization> discret,           ///< discretization
+    Discret::Elements::FluidIntFace* faceele,                    ///< face element
+    std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix,    ///< systemmatrix
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector,  ///< systemvector
+    Cut::CutWizard& wizard,                                      ///< cut wizard
     bool include_inner,        ///< stabilize also facets with inside position
     bool include_inner_faces,  ///< stabilize also faces with inside position if possible
     bool gmsh_eos_out          ///< stabilization gmsh output
@@ -84,9 +84,9 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
   //                                                                         elements are uncut)
 
 
-  Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discret);
-  if (xdiscret == Teuchos::null)
+  std::shared_ptr<Core::FE::DiscretizationFaces> xdiscret =
+      std::dynamic_pointer_cast<Core::FE::DiscretizationFaces>(discret);
+  if (xdiscret == nullptr)
     FOUR_C_THROW(
         "Failed to cast Core::FE::Discretization to "
         "Core::FE::DiscretizationFaces.");
@@ -119,8 +119,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
 
 
   // Provide material at both sides:
-  Teuchos::RCP<Core::Mat::Material> matptr_m;
-  Teuchos::RCP<Core::Mat::Material> matptr_s;
+  std::shared_ptr<Core::Mat::Material> matptr_m;
+  std::shared_ptr<Core::Mat::Material> matptr_s;
   matptr_m = p_master->material();
   matptr_s = p_slave->material();
 
@@ -591,13 +591,13 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
     Teuchos::ParameterList& eleparams,         ///< element parameter list
     const Inpar::XFEM::FaceType& face_type,    ///< which type of face std, ghost, ghost-penalty
     Discret::Elements::FluidIntFace* intface,  ///< internal face element
-    Teuchos::RCP<Core::Mat::Material>& material_m,  ///< material of the master side
-    Teuchos::RCP<Core::Mat::Material>& material_s,  ///< material of the slave side
-    std::vector<int>& nds_master,                   ///< nodal dofset vector w.r.t. master element
-    std::vector<int>& nds_slave,                    ///< nodal dofset vector w.r.t. slave element
-    Core::FE::DiscretizationFaces& xdiscret,        ///< XFEM discretization
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
+    std::shared_ptr<Core::Mat::Material>& material_m,  ///< material of the master side
+    std::shared_ptr<Core::Mat::Material>& material_s,  ///< material of the slave side
+    std::vector<int>& nds_master,             ///< nodal dofset vector w.r.t. master element
+    std::vector<int>& nds_slave,              ///< nodal dofset vector w.r.t. slave element
+    Core::FE::DiscretizationFaces& xdiscret,  ///< XFEM discretization
+    std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
 )
 {
   // If Saftey check is passed, both elements contain the same material and with the same settings
@@ -660,16 +660,16 @@ void XFEM::XfemEdgeStab::reset()
  |  prepares edge based stabilization for standard fluid   schott 05/12 |
  *----------------------------------------------------------------------*/
 void XFEM::XfemEdgeStab::evaluate_edge_stab_std(
-    Teuchos::ParameterList& eleparams,                       ///< element parameter list
-    Teuchos::RCP<Core::FE::Discretization> discret,          ///< discretization
-    Discret::Elements::FluidIntFace* faceele,                ///< face element
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
+    Teuchos::ParameterList& eleparams,                          ///< element parameter list
+    std::shared_ptr<Core::FE::Discretization> discret,          ///< discretization
+    Discret::Elements::FluidIntFace* faceele,                   ///< face element
+    std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
 )
 {
-  Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discret);
-  if (xdiscret == Teuchos::null)
+  std::shared_ptr<Core::FE::DiscretizationFaces> xdiscret =
+      std::dynamic_pointer_cast<Core::FE::DiscretizationFaces>(discret);
+  if (xdiscret == nullptr)
     FOUR_C_THROW(
         "Failed to cast Core::FE::Discretization to "
         "Core::FE::DiscretizationFaces.");
@@ -691,8 +691,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_std(
   std::vector<int> nds_slave(p_slave_numnode, 0);
 
   // Provide material at both sides:
-  Teuchos::RCP<Core::Mat::Material> matptr_m;
-  Teuchos::RCP<Core::Mat::Material> matptr_s;
+  std::shared_ptr<Core::Mat::Material> matptr_m;
+  std::shared_ptr<Core::Mat::Material> matptr_s;
   matptr_m = p_master->material();
   matptr_s = p_slave->material();
 
@@ -713,18 +713,18 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_std(
  |  embedded fluid elements                               (kruse 10/14) |
  *----------------------------------------------------------------------*/
 void XFEM::XfemEdgeStab::evaluate_edge_stab_boundary_gp(
-    Teuchos::ParameterList& eleparams,               ///< element parameter list
-    Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
+    Teuchos::ParameterList& eleparams,                  ///< element parameter list
+    std::shared_ptr<Core::FE::Discretization> discret,  ///< discretization
     Core::FE::Discretization&
         boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
-    Discret::Elements::FluidIntFace* faceele,                ///< face element
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
+    Discret::Elements::FluidIntFace* faceele,                   ///< face element
+    std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
 )
 {
-  Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discret);
-  if (xdiscret == Teuchos::null)
+  std::shared_ptr<Core::FE::DiscretizationFaces> xdiscret =
+      std::dynamic_pointer_cast<Core::FE::DiscretizationFaces>(discret);
+  if (xdiscret == nullptr)
     FOUR_C_THROW(
         "Failed to cast Core::FE::Discretization to "
         "Core::FE::DiscretizationFaces.");
@@ -765,8 +765,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_boundary_gp(
     return;
 
   // Provide material at both sides:
-  Teuchos::RCP<Core::Mat::Material> matptr_m;
-  Teuchos::RCP<Core::Mat::Material> matptr_s;
+  std::shared_ptr<Core::Mat::Material> matptr_m;
+  std::shared_ptr<Core::Mat::Material> matptr_s;
   matptr_m = p_master->material();
   matptr_s = p_slave->material();
 

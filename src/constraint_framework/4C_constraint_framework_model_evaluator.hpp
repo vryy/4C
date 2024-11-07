@@ -41,7 +41,7 @@ namespace Solid
     {
      public:
       using SubmodelevaluatorVector =
-          std::vector<Teuchos::RCP<CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase>>;
+          std::vector<std::shared_ptr<CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase>>;
 
       Constraints() = default;
 
@@ -109,11 +109,11 @@ namespace Solid
 
       void runtime_output_step_state() const override;
 
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
       void post_output() override;
@@ -121,7 +121,7 @@ namespace Solid
       void evaluate_jacobian_contributions_from_element_level_for_ptc() override;
 
       void assemble_jacobian_contributions_from_element_level_for_ptc(
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n) override;
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n) override;
 
       void create_backup_state(const Core::LinAlg::Vector<double>& dir) override;
 
@@ -150,10 +150,10 @@ namespace Solid
       SubmodelevaluatorVector sub_model_vec_ptr_;
 
       //! constraint stiffness matrix
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> constraint_stiff_ptr_;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> constraint_stiff_ptr_;
 
       //! constraint force vector
-      Teuchos::RCP<Core::LinAlg::Vector<double>> constraint_force_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> constraint_force_ptr_;
 
       //! visualization parameters
       Core::IO::VisualizationParameters visualization_params_;

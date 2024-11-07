@@ -30,14 +30,14 @@ FOUR_C_NAMESPACE_OPEN
  */
 BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOutputWriter(
     const Core::IO::VisualizationParameters& visualization_params,
-    Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr)
+    std::shared_ptr<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr)
     : output_params_ptr_(output_params_ptr),
-      output_writer_base_ptr_(Teuchos::null),
+      output_writer_base_ptr_(nullptr),
       visualization_params_(visualization_params)
 {
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ =
-      Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
+      std::make_shared<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
 
           "beam-to-fluid", visualization_params);
 
@@ -47,7 +47,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOut
   {
     if (output_params_ptr_->get_nodal_force_output_flag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("nodal-forces");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("velocity", 3);
@@ -67,7 +67,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOut
 
     if (output_params_ptr_->get_integration_points_output_flag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("integration-points");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
@@ -94,15 +94,16 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
 {
   // Parameter list that will be passed to all contact pairs when they create their visualization.
   Teuchos::ParameterList visualization_params;
-  visualization_params.set<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
-      "output_params_ptr", output_params_ptr_);
+  visualization_params
+      .set<std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+          "output_params_ptr", output_params_ptr_);
 
 
   // Add the nodal forces resulting from beam contact. The forces are split up into beam and solid
   // nodes.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
       output_writer_base_ptr_->get_visualization_writer("nodal-forces");
-  if (visualization != Teuchos::null)
+  if (visualization != nullptr)
   {
     // Add the reference geometry and displacement to the visualization.
     visualization->add_discretization_nodal_reference_position(
@@ -130,8 +131,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
         couplingenforcer.get_structure()->get_discretization()->get_comm());
 
     // Extract the forces and add them to the discretization.
-    Teuchos::RCP<Core::LinAlg::Vector<double>> force_beam =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(beam_dof_map, true);
+    std::shared_ptr<Core::LinAlg::Vector<double>> force_beam =
+        std::make_shared<Core::LinAlg::Vector<double>>(beam_dof_map, true);
     Core::LinAlg::export_to(*couplingenforcer.assemble_structure_coupling_residual(), *force_beam);
 
 

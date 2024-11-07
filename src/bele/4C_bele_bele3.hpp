@@ -19,7 +19,7 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -41,10 +41,10 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -111,8 +111,8 @@ namespace Discret
       }
       int num_surface() const override { return 1; }
       int num_volume() const override { return -1; }
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
       int unique_par_object_id() const override
       {
         return Bele3Type::instance().unique_par_object_id();
@@ -230,16 +230,16 @@ namespace Discret
       //! displacements
       void compute_vol_deriv(const Core::LinAlg::SerialDenseMatrix& x,  ///< spatial configuration
           const int numnode,                                            ///< number of nodes
-          const int ndof,                                        ///< number of degrees of freedom
-          double& V,                                             ///< volume
-          Core::LinAlg::SerialDenseVector& Vdiff,                ///< first derivative
-          Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Vdiff2,  ///< second derivative
+          const int ndof,                          ///< number of degrees of freedom
+          double& V,                               ///< volume
+          Core::LinAlg::SerialDenseVector& Vdiff,  ///< first derivative
+          std::shared_ptr<Core::LinAlg::SerialDenseMatrix> Vdiff2,  ///< second derivative
           const int minind = 0,  ///< minimal index to compute enclosed volume with
           const int maxind = 2   ///< maximal index to compute enclosed volume with
       );
 
       //! vector with line elements
-      //  std::vector<Teuchos::RCP<Core::Elements::Element> >                      lines_;
+      //  std::vector<std::shared_ptr<Core::Elements::Element> >                      lines_;
 
       //! flag for fixed or moving boundary
       //  const bool                                      is_moving_;
@@ -266,7 +266,7 @@ namespace Discret
 
       static Bele3LineType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override

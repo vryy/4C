@@ -55,7 +55,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<Core::Mat::Material> mat) = 0;
+          std::shared_ptr<Core::Mat::Material> mat) = 0;
 
       //! evaluate service (other quantities apart from rhs and matrix)
       virtual int evaluate_service(Artery* ele, const Arteries::Action action,
@@ -65,7 +65,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<Core::Mat::Material> mat) = 0;
+          std::shared_ptr<Core::Mat::Material> mat) = 0;
 
       //! evaluate scalar transport (only lin-exp formulation uses this)
       virtual int scatra_evaluate(Artery* ele, Teuchos::ParameterList& params,
@@ -75,7 +75,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<Core::Mat::Material> mat) = 0;
+          std::shared_ptr<Core::Mat::Material> mat) = 0;
     };
   }  // namespace Elements
 }  // namespace Discret

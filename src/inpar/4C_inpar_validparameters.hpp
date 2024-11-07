@@ -12,10 +12,10 @@
 
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <iostream>
+#include <memory>
 #include <string>
 
 FOUR_C_NAMESPACE_OPEN
@@ -31,10 +31,10 @@ namespace Input
   /**
    * Construct a `Teuchos::ParameterList` with all parameters and their documentation.
    *
-   * @return A `Teuchos::RCP` to a constant `Teuchos::ParameterList` containing all valid
+   * @return A `std::shared_ptr` to a constant `Teuchos::ParameterList` containing all valid
    * parameters.
    */
-  Teuchos::RCP<const Teuchos::ParameterList> valid_parameters();
+  std::shared_ptr<const Teuchos::ParameterList> valid_parameters();
 
   /**
    * Print the values of parameter entries from a dat file based on the provided parameter list.

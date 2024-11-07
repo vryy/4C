@@ -44,9 +44,9 @@ namespace BEAMINTERACTION
        * the global one
        */
       PartitionedBeamInteractionAssemblyManagerDirect(
-          const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>
+          const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>
               assembly_contact_elepairs,
-          Teuchos::RCP<FBI::Utils::FBIAssemblyStrategy> assemblystrategy);
+          std::shared_ptr<FBI::Utils::FBIAssemblyStrategy> assemblystrategy);
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.
@@ -60,17 +60,17 @@ namespace BEAMINTERACTION
        * \params[inout] cbf  Global stiffness matrix coupling fluid to beam DOFs
        */
       void evaluate_force_stiff(const Core::FE::Discretization& discretization1,
-          const Core::FE::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
-          Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<Core::LinAlg::SparseOperator> cff,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbf,
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vel,
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> beam_vel) override;
+          const Core::FE::Discretization& discretization2, std::shared_ptr<Epetra_FEVector>& ff,
+          std::shared_ptr<Epetra_FEVector>& fb, std::shared_ptr<Core::LinAlg::SparseOperator> cff,
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& cbb,
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& cfb,
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& cbf,
+          std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_vel,
+          std::shared_ptr<const Core::LinAlg::Vector<double>> beam_vel) override;
 
      protected:
       /// Object determining how the local matrices are assembled into the global one
-      Teuchos::RCP<FBI::Utils::FBIAssemblyStrategy> assemblystrategy_;
+      std::shared_ptr<FBI::Utils::FBIAssemblyStrategy> assemblystrategy_;
     };
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION

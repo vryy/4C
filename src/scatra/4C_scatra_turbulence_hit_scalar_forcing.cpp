@@ -36,7 +36,7 @@ namespace ScaTra
         discret_(timeint->discret_),
         forcing_(timeint->forcing_),
         phinp_(timeint->phinp_),
-        phiaf_(Teuchos::null),
+        phiaf_(nullptr),
         threshold_wavenumber_(timeint->extraparams_->sublist("TURBULENCE MODEL")
                                   .get<double>("THRESHOLD_WAVENUMBER", 0)),
         is_genalpha_(false),
@@ -182,7 +182,7 @@ namespace ScaTra
     }
     // push coordinates in vectors
     {
-      coordinates_ = Teuchos::make_rcp<std::vector<double>>();
+      coordinates_ = std::make_shared<std::vector<double>>();
 
       for (std::set<double, LineSortCriterion>::iterator coord1 = coords.begin();
            coord1 != coords.end(); ++coord1)
@@ -197,16 +197,16 @@ namespace ScaTra
 
     // push wave numbers in vector
     {
-      wavenumbers_ = Teuchos::make_rcp<std::vector<double>>();
+      wavenumbers_ = std::make_shared<std::vector<double>>();
 
       wavenumbers_->resize((std::size_t)nummodes_);
       for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++) (*wavenumbers_)[rr] = rr;
     }
 
     // set size of energy-spectrum vector
-    scalarvariancespectrum_n_ = Teuchos::make_rcp<std::vector<double>>();
+    scalarvariancespectrum_n_ = std::make_shared<std::vector<double>>();
     scalarvariancespectrum_n_->resize(wavenumbers_->size());
-    scalarvariancespectrum_np_ = Teuchos::make_rcp<std::vector<double>>();
+    scalarvariancespectrum_np_ = std::make_shared<std::vector<double>>();
     scalarvariancespectrum_np_->resize(wavenumbers_->size());
     // and initialize with zeros, just to be sure
     for (std::size_t rr = 0; rr < scalarvariancespectrum_n_->size(); rr++)
@@ -216,7 +216,7 @@ namespace ScaTra
     }
 
     // linear compensation factor for isotropic forcing
-    force_fac_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+    force_fac_ = std::make_shared<Core::LinAlg::SerialDenseVector>(
         nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
     return;

@@ -18,7 +18,8 @@
 
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -53,39 +54,39 @@ namespace Adapter
   {
    public:
     /// Constructor
-    StructureConstrMerged(Teuchos::RCP<Structure> stru);
+    StructureConstrMerged(std::shared_ptr<Structure> stru);
 
     /// setup this object
     void setup() override;
 
     /// initial guess of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() override;
 
     /// right-hand-side of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override;
 
     /// unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp() const override;
 
     /// known displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispn() const override;
 
     /*! \brief known velocity at \f$t_{n}\f$
      *
      *  Lagrange multiplier does not have a time derivative. Though we need a map
      *  including the Lagrange multiplier, thus, we include it and set it to zero.
      */
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> veln() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> veln() const override;
 
     /*! known acceleration at \f$t_{n}\f$
      *
      *  Lagrange multiplier does not have a time derivative. Though we need a map
      *  including the Lagrange multiplier, thus, we include it and set it to zero.
      */
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> accn() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> accn() const override;
 
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> dof_row_map() override;
+    std::shared_ptr<const Epetra_Map> dof_row_map() override;
 
     /// apply interface forces to structural solver
     ///
@@ -94,21 +95,21 @@ namespace Adapter
     ///
     /// \note This is not yet the most efficient implementation.
     void apply_interface_forces_temporary_deprecated(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce) override;
+        std::shared_ptr<Core::LinAlg::Vector<double>> iforce) override;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
 
     /// update displacement and evaluate elements
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
             dispstepinc  ///< solution increment between time step n and n+1
         ) override;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
+    std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
     {
       return structure_->get_dbc_map_extractor();
     };
@@ -120,14 +121,14 @@ namespace Adapter
     bool have_constraint() override { return structure_->have_constraint(); };
 
     /// Return bool indicating if constraints are defined
-    Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override
+    std::shared_ptr<CONSTRAINTS::ConstrManager> get_constraint_manager() override
     {
       return structure_->get_constraint_manager();
     };
 
     Inpar::Solid::StcScale get_stc_algo() override { return structure_->get_stc_algo(); };
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_stc_mat() override
     {
       FOUR_C_THROW("FSI with merged structural constraints does not work in combination with STC!");
       return structure_->get_stc_mat();
@@ -136,7 +137,7 @@ namespace Adapter
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
     void update_iter_incr_constr(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> lagrincr  ///< Lagrange multiplier increment
+        std::shared_ptr<Core::LinAlg::Vector<double>> lagrincr  ///< Lagrange multiplier increment
         ) override
     {
       structure_->update_iter_incr_constr(lagrincr);
@@ -151,20 +152,20 @@ namespace Adapter
 
    private:
     /// the constraint map setup for full <-> stuct+constr transition
-    Teuchos::RCP<Core::LinAlg::MapExtractor> conmerger_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> conmerger_;
 
     /// the complete non-overlapping degree of freedom row map for structure and lagrange
     /// multipliers
-    Teuchos::RCP<Epetra_Map> dofrowmap_;
+    std::shared_ptr<Epetra_Map> dofrowmap_;
 
     /// @name local copies of input parameters
     //{@
-    Teuchos::RCP<Core::FE::Discretization> discret_;  ///< the discretization
-    Teuchos::RCP<Teuchos::ParameterList>
+    std::shared_ptr<Core::FE::Discretization> discret_;  ///< the discretization
+    std::shared_ptr<Teuchos::ParameterList>
         sdynparams_;  ///< dynamic control flags ... used, but could/should be circumvented
-    Teuchos::RCP<Teuchos::ParameterList> xparams_;         ///< eXtra input parameters
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;            ///< the linear solver
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;  ///< the output writer
+    std::shared_ptr<Teuchos::ParameterList> xparams_;         ///< eXtra input parameters
+    std::shared_ptr<Core::LinAlg::Solver> solver_;            ///< the linear solver
+    std::shared_ptr<Core::IO::DiscretizationWriter> output_;  ///< the output writer
 
     //@}
 

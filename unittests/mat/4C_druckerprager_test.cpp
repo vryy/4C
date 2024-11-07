@@ -47,8 +47,7 @@ namespace
       Global::Problem& problem = (*Global::Problem::instance());
       problem.materials()->set_read_from_problem(0);
       problem.materials()->insert(1, param_druckprag_);
-      problem.materials().assert_not_null();
-      druckprag_ = Teuchos::make_rcp<Mat::PlasticDruckerPrager>(
+      druckprag_ = std::make_shared<Mat::PlasticDruckerPrager>(
           dynamic_cast<Mat::PAR::PlasticDruckerPrager*>(param_druckprag_.get()));
     }
 
@@ -61,7 +60,7 @@ namespace
     };
     std::shared_ptr<Core::Mat::PAR::Parameter> param_druckprag_;
     Core::Communication::PackBuffer data;
-    Teuchos::RCP<Mat::PlasticDruckerPrager> druckprag_;
+    std::shared_ptr<Mat::PlasticDruckerPrager> druckprag_;
   };
 
   //! test member function Pack and unpack

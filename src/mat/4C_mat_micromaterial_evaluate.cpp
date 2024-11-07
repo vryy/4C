@@ -91,7 +91,8 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
       Global::Problem::instance(0)->get_dis("structure")->element_row_map()->MyGID(eleGID);
 
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  std::shared_ptr<Epetra_Comm> subcomm =
+      Global::Problem::instance(0)->get_communicators()->sub_comm();
 
   // tell the supporting procs that the micro material will be evaluated
   int task[2] = {
@@ -99,8 +100,8 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   subcomm->Broadcast(task, 2, 0);
 
   // container is filled with data for supporting procs
-  std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;
-  condnamemap[0] = Teuchos::make_rcp<MultiScale::MicroStaticParObject>();
+  std::map<int, std::shared_ptr<MultiScale::MicroStaticParObject>> condnamemap;
+  condnamemap[0] = std::make_shared<MultiScale::MicroStaticParObject>();
 
   const auto convert_to_serial_dense_matrix = [](const auto& matrix)
   {
@@ -133,19 +134,19 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // standard evaluation of the micro material
   if (matgp_.find(gp) == matgp_.end())
   {
-    matgp_[gp] = Teuchos::make_rcp<MicroMaterialGP>(gp, eleGID, eleowner, microdisnum, V0);
+    matgp_[gp] = std::make_shared<MicroMaterialGP>(gp, eleGID, eleowner, microdisnum, V0);
 
     /// save density of this micromaterial
     /// -> since we can assign only one material per element, all Gauss points have
     /// the same density -> arbitrarily ask micromaterialgp at gp=0
     if (gp == 0)
     {
-      Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];
+      std::shared_ptr<MicroMaterialGP> actmicromatgp = matgp_[gp];
       density_ = actmicromatgp->density();
     }
   }
 
-  Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];
+  std::shared_ptr<MicroMaterialGP> actmicromatgp = matgp_[gp];
 
   // perform microscale simulation and homogenization (if fint and stiff/mass or stress calculation
   // is required)
@@ -160,7 +161,8 @@ double Mat::MicroMaterial::density() const { return density_; }
 void Mat::MicroMaterial::post_setup()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  std::shared_ptr<Epetra_Comm> subcomm =
+      Global::Problem::instance(0)->get_communicators()->sub_comm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will call post_setup
@@ -172,7 +174,7 @@ void Mat::MicroMaterial::post_setup()
 
   for (const auto& micromatgp : matgp_)
   {
-    Teuchos::RCP<MicroMaterialGP> actmicromatgp = micromatgp.second;
+    std::shared_ptr<MicroMaterialGP> actmicromatgp = micromatgp.second;
     actmicromatgp->post_setup();
   }
 }
@@ -186,10 +188,10 @@ void Mat::MicroMaterial::evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
 
   if (matgp_.find(gp) == matgp_.end())
   {
-    matgp_[gp] = Teuchos::make_rcp<MicroMaterialGP>(gp, ele_ID, eleowner, microdisnum, V0);
+    matgp_[gp] = std::make_shared<MicroMaterialGP>(gp, ele_ID, eleowner, microdisnum, V0);
   }
 
-  Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];
+  std::shared_ptr<MicroMaterialGP> actmicromatgp = matgp_[gp];
 
   // perform microscale simulation and homogenization (if fint and stiff/mass or stress calculation
   // is required)
@@ -203,7 +205,8 @@ void Mat::MicroMaterial::evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
 void Mat::MicroMaterial::update()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  std::shared_ptr<Epetra_Comm> subcomm =
+      Global::Problem::instance(0)->get_communicators()->sub_comm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be evaluated for the element with id
@@ -216,7 +219,7 @@ void Mat::MicroMaterial::update()
 
   for (const auto& micromatgp : matgp_)
   {
-    Teuchos::RCP<MicroMaterialGP> actmicromatgp = micromatgp.second;
+    std::shared_ptr<MicroMaterialGP> actmicromatgp = micromatgp.second;
     actmicromatgp->update();
   }
 }
@@ -225,7 +228,8 @@ void Mat::MicroMaterial::update()
 void Mat::MicroMaterial::prepare_output()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  std::shared_ptr<Epetra_Comm> subcomm =
+      Global::Problem::instance(0)->get_communicators()->sub_comm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be prepared for output
@@ -237,7 +241,7 @@ void Mat::MicroMaterial::prepare_output()
 
   for (const auto& micromatgp : matgp_)
   {
-    Teuchos::RCP<MicroMaterialGP> actmicromatgp = micromatgp.second;
+    std::shared_ptr<MicroMaterialGP> actmicromatgp = micromatgp.second;
     actmicromatgp->prepare_output();
   }
 }
@@ -246,7 +250,8 @@ void Mat::MicroMaterial::prepare_output()
 void Mat::MicroMaterial::output_step_state()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  std::shared_ptr<Epetra_Comm> subcomm =
+      Global::Problem::instance(0)->get_communicators()->sub_comm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be output
@@ -259,7 +264,7 @@ void Mat::MicroMaterial::output_step_state()
 
   for (const auto& micromatgp : matgp_)
   {
-    Teuchos::RCP<MicroMaterialGP> actmicromatgp = micromatgp.second;
+    std::shared_ptr<MicroMaterialGP> actmicromatgp = micromatgp.second;
     actmicromatgp->output_step_state_microscale();
   }
 }
@@ -268,7 +273,8 @@ void Mat::MicroMaterial::output_step_state()
 void Mat::MicroMaterial::write_restart()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  std::shared_ptr<Epetra_Comm> subcomm =
+      Global::Problem::instance(0)->get_communicators()->sub_comm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be output
@@ -280,7 +286,7 @@ void Mat::MicroMaterial::write_restart()
 
   for (const auto& micromatgp : matgp_)
   {
-    Teuchos::RCP<MicroMaterialGP> actmicromatgp = micromatgp.second;
+    std::shared_ptr<MicroMaterialGP> actmicromatgp = micromatgp.second;
     actmicromatgp->write_restart();
   }
 }
@@ -292,7 +298,8 @@ void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
   double V0 = init_vol();
 
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  std::shared_ptr<Epetra_Comm> subcomm =
+      Global::Problem::instance(0)->get_communicators()->sub_comm();
 
   // tell the supporting procs that the micro material will restart
   int task[2] = {
@@ -300,8 +307,8 @@ void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
   subcomm->Broadcast(task, 2, 0);
 
   // container is filled with data for supporting procs
-  std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;
-  condnamemap[0] = Teuchos::make_rcp<MultiScale::MicroStaticParObject>();
+  std::map<int, std::shared_ptr<MultiScale::MicroStaticParObject>> condnamemap;
+  condnamemap[0] = std::make_shared<MultiScale::MicroStaticParObject>();
 
   MultiScale::MicroStaticParObject::MicroStaticData microdata{};
   microdata.gp_ = gp;
@@ -319,10 +326,10 @@ void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
 
   if (matgp_.find(gp) == matgp_.end())
   {
-    matgp_[gp] = Teuchos::make_rcp<MicroMaterialGP>(gp, eleID, eleowner, microdisnum, V0);
+    matgp_[gp] = std::make_shared<MicroMaterialGP>(gp, eleID, eleowner, microdisnum, V0);
   }
 
-  Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];
+  std::shared_ptr<MicroMaterialGP> actmicromatgp = matgp_[gp];
   actmicromatgp->read_restart();
 }
 
@@ -333,10 +340,10 @@ void Mat::MicroMaterial::read_restart(
 {
   if (matgp_.find(gp) == matgp_.end())
   {
-    matgp_[gp] = Teuchos::make_rcp<MicroMaterialGP>(gp, eleID, eleowner, microdisnum, V0);
+    matgp_[gp] = std::make_shared<MicroMaterialGP>(gp, eleID, eleowner, microdisnum, V0);
   }
 
-  Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];
+  std::shared_ptr<MicroMaterialGP> actmicromatgp = matgp_[gp];
   actmicromatgp->read_restart();
 }
 

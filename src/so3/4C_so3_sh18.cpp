@@ -35,25 +35,25 @@ Core::Communication::ParObject* Discret::Elements::SoSh18Type::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh18Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoSh18Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::SoSh18>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::SoSh18>(id, owner);
     return ele;
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh18Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoSh18Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::SoSh18>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::SoSh18>(id, owner);
   return ele;
 }
 
@@ -86,9 +86,9 @@ void Discret::Elements::SoSh18Type::setup_element_definition(
  *----------------------------------------------------------------------*/
 Discret::Elements::SoSh18::SoSh18(int id, int owner) : SoBase(id, owner), SoHex18(id, owner)
 {
-  Teuchos::RCP<const Teuchos::ParameterList> params =
+  std::shared_ptr<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
-  if (params != Teuchos::null)
+  if (params != nullptr)
   {
     Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());

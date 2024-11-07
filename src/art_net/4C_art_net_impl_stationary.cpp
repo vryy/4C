@@ -42,9 +42,10 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-Arteries::ArtNetImplStationary::ArtNetImplStationary(Teuchos::RCP<Core::FE::Discretization> actdis,
-    const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& artparams, Core::IO::DiscretizationWriter& output)
+Arteries::ArtNetImplStationary::ArtNetImplStationary(
+    std::shared_ptr<Core::FE::Discretization> actdis, const int linsolvernumber,
+    const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
+    Core::IO::DiscretizationWriter& output)
     : TimInt(actdis, linsolvernumber, probparams, artparams, output)
 {
   //  exit(1);
@@ -85,7 +86,7 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
   // create empty system matrix (6 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
   sysmat_ =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 3, false, true);
+      std::make_shared<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 3, false, true);
 
   // right hand side vector
   rhs_ = Core::LinAlg::create_vector(*dofrowmap, true);
@@ -97,15 +98,14 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
   zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+  dbcmaps_ = std::make_shared<Core::LinAlg::MapExtractor>();
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
     eleparams.set<const Core::Utils::FunctionManager*>(
         "function_manager", &Global::Problem::instance()->function_manager());
-    discret_->evaluate_dirichlet(
-        eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
+    discret_->evaluate_dirichlet(eleparams, zeros_, nullptr, nullptr, nullptr, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
 
@@ -141,7 +141,7 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
         Inpar::ScaTra::velocity_zero)
       FOUR_C_THROW("set your velocity field to zero!");
     // construct the scatra problem
-    scatra_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(globaltimeparams, myscatraparams,
+    scatra_ = std::make_shared<Adapter::ScaTraBaseAlgorithm>(globaltimeparams, myscatraparams,
         Global::Problem::instance()->solver_params(linsolvernumber_), scatra_disname, false);
 
     // initialize the base algo.
@@ -165,7 +165,8 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::ArtNetImplStationary::solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
+void Arteries::ArtNetImplStationary::solve(
+    std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // time measurement: initialization
   TEUCHOS_FUNC_TIME_MONITOR(" + solve");
@@ -354,8 +355,7 @@ void Arteries::ArtNetImplStationary::apply_dirichlet_bc()
   // Dirichlet values
   // \c  pressurenp_ then also holds prescribed new Dirichlet values
   discret_->clear_state();
-  discret_->evaluate_dirichlet(
-      p, pressurenp_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
+  discret_->evaluate_dirichlet(p, pressurenp_, nullptr, nullptr, nullptr, dbcmaps_);
   discret_->clear_state();
 }
 
@@ -371,9 +371,9 @@ void Arteries::ArtNetImplStationary::reset_artery_diam_previous_time_step()
     Core::Elements::Element* actele = discret_->l_col_element(i);
 
     // get the artery-material
-    Teuchos::RCP<Mat::Cnst1dArt> arterymat =
-        Teuchos::rcp_dynamic_cast<Mat::Cnst1dArt>(actele->material());
-    if (arterymat == Teuchos::null) FOUR_C_THROW("cast to artery material failed");
+    std::shared_ptr<Mat::Cnst1dArt> arterymat =
+        std::dynamic_pointer_cast<Mat::Cnst1dArt>(actele->material());
+    if (arterymat == nullptr) FOUR_C_THROW("cast to artery material failed");
 
     const double diam = arterymat->diam();
     arterymat->set_diam_previous_time_step(diam);
@@ -454,7 +454,7 @@ void Arteries::ArtNetImplStationary::prepare_time_loop()
     // set artery diameter of previous time step to intial artery diameter
     reset_artery_diam_previous_time_step();
     // write out initial state
-    output(false, Teuchos::null);
+    output(false, nullptr);
   }
 
   return;
@@ -470,7 +470,7 @@ void Arteries::ArtNetImplStationary::prepare_time_loop()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void Arteries::ArtNetImplStationary::output(
-    bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
+    bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams)
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("             + output of solution");
@@ -519,9 +519,9 @@ void Arteries::ArtNetImplStationary::output_radius()
   {
     Core::Elements::Element* actele = discret_->l_row_element(i);
     // cast the material to artery material material
-    const Teuchos::RCP<const Mat::Cnst1dArt>& arterymat =
-        Teuchos::rcp_dynamic_cast<const Mat::Cnst1dArt>(actele->material());
-    if (arterymat == Teuchos::null)
+    const std::shared_ptr<const Mat::Cnst1dArt>& arterymat =
+        std::dynamic_pointer_cast<const Mat::Cnst1dArt>(actele->material());
+    if (arterymat == nullptr)
       FOUR_C_THROW("cast to Mat::Cnst1dArt failed during output of radius!");
     const double radius = arterymat->diam() / 2.0;
     ele_radius_->ReplaceGlobalValue(actele->id(), 0, radius);
@@ -588,7 +588,7 @@ void Arteries::ArtNetImplStationary::output_flow()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void Arteries::ArtNetImplStationary::test_results()
 {
-  Teuchos::RCP<Core::Utils::ResultTest> resulttest = create_field_test();
+  std::shared_ptr<Core::Utils::ResultTest> resulttest = create_field_test();
   Global::Problem::instance()->add_field_test(resulttest);
   if (solvescatra_)
   {
@@ -600,9 +600,9 @@ void Arteries::ArtNetImplStationary::test_results()
 /*----------------------------------------------------------------------*
  | create result test for this field                   kremheller 03/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest> Arteries::ArtNetImplStationary::create_field_test()
+std::shared_ptr<Core::Utils::ResultTest> Arteries::ArtNetImplStationary::create_field_test()
 {
-  return Teuchos::make_rcp<Arteries::ArteryResultTest>(*(this));
+  return std::make_shared<Arteries::ArteryResultTest>(*(this));
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -629,7 +629,7 @@ void Arteries::ArtNetImplStationary::read_restart(int step, bool coupledTo3D)
 
   // read restart for diameter of previous time step
   reader.read_vector(ele_radius_, "ele_radius");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> ele_radius_col =
+  std::shared_ptr<Core::LinAlg::Vector<double>> ele_radius_col =
       Core::LinAlg::create_vector(*discret_->element_col_map(), true);
   Core::LinAlg::export_to(*ele_radius_, *ele_radius_col);
 
@@ -640,9 +640,9 @@ void Arteries::ArtNetImplStationary::read_restart(int step, bool coupledTo3D)
     Core::Elements::Element* actele = discret_->l_col_element(i);
 
     // get the artery-material
-    Teuchos::RCP<Mat::Cnst1dArt> arterymat =
-        Teuchos::rcp_dynamic_cast<Mat::Cnst1dArt>(actele->material());
-    if (arterymat == Teuchos::null) FOUR_C_THROW("cast to artery material failed");
+    std::shared_ptr<Mat::Cnst1dArt> arterymat =
+        std::dynamic_pointer_cast<Mat::Cnst1dArt>(actele->material());
+    if (arterymat == nullptr) FOUR_C_THROW("cast to artery material failed");
 
     const double diam = 2.0 * (*ele_radius_col)[i];
 

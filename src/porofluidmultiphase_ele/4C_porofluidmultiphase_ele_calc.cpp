@@ -45,7 +45,7 @@ Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::PoroFluidMultiPhaseEleCa
       xij_(true),
       det_(0.0),
       j_(0.0),
-      phasemanager_(Teuchos::null)
+      phasemanager_(nullptr)
 {
   return;
 }
@@ -494,15 +494,15 @@ int Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(Core::Ele
   // set element
   ele_ = ele;
 
-  Teuchos::RCP<Core::Mat::Material> mat = ele->material();
+  std::shared_ptr<Core::Mat::Material> mat = ele->material();
   if (mat->material_type() != Core::Materials::m_fluidporo_multiphase and
       mat->material_type() != Core::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW(
         "PoroFluidMultiPhase element got unsupported material type %d", mat->material_type());
 
-  Teuchos::RCP<Mat::FluidPoroMultiPhase> actmat =
-      Teuchos::rcp_static_cast<Mat::FluidPoroMultiPhase>(mat);
-  if (actmat == Teuchos::null) FOUR_C_THROW("cast failed");
+  std::shared_ptr<Mat::FluidPoroMultiPhase> actmat =
+      std::static_pointer_cast<Mat::FluidPoroMultiPhase>(mat);
+  if (actmat == nullptr) FOUR_C_THROW("cast failed");
   numfluidphases_ = actmat->num_fluid_phases();
 
   // Note:

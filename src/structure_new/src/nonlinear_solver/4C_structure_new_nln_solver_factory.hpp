@@ -34,13 +34,13 @@ namespace Solid
         virtual ~Factory() = default;
 
         //! build the specific nonlinear solver
-        Teuchos::RCP<Solid::Nln::SOLVER::Generic> build_nln_solver(
+        std::shared_ptr<Solid::Nln::SOLVER::Generic> build_nln_solver(
             const enum Inpar::Solid::NonlinSolTech& nlnSolType) const;
       };
 
       /*! Non-member function, which relates to the Solid::Nln::SOLVER::Factory class
        *  Please call this method from outside! */
-      Teuchos::RCP<Solid::Nln::SOLVER::Generic> build_nln_solver(
+      std::shared_ptr<Solid::Nln::SOLVER::Generic> build_nln_solver(
           const enum Inpar::Solid::NonlinSolTech& nlnSolType);
     }  // namespace SOLVER
   }    // namespace Nln

@@ -11,6 +11,7 @@
 #include "4C_comm_parobject.hpp"
 #include "4C_mat_anisotropy.hpp"
 #include "4C_mat_anisotropy_coordinate_system_provider.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -73,14 +74,14 @@ Mat::CylinderCoordinateSystemAnisotropyExtension::get_cylinder_coordinate_system
   return get_anisotropy()->get_gp_cylinder_coordinate_system(gp);
 }
 
-Teuchos::RCP<Mat::CoordinateSystemProvider>
+std::shared_ptr<Mat::CoordinateSystemProvider>
 Mat::CylinderCoordinateSystemAnisotropyExtension::get_coordinate_system_provider(int gp) const
 {
-  auto cosy = Teuchos::make_rcp<CoordinateSystemHolder>();
+  auto cosy = std::make_shared<CoordinateSystemHolder>();
 
   if (cosy_location_ != CosyLocation::None)
     cosy->set_cylinder_coordinate_system_provider(
-        Teuchos::rcpFromRef(get_cylinder_coordinate_system(gp)));
+        Core::Utils::shared_ptr_from_ref(get_cylinder_coordinate_system(gp)));
 
   return cosy;
 }

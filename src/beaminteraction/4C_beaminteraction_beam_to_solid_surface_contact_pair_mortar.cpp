@@ -57,7 +57,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
     Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
     Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair
   this->cast_geometry_pair()->evaluate(
@@ -228,8 +228,8 @@ template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
     Mortar>::evaluate_and_assemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Core::LinAlg::Vector<double>& global_lambda,
     const Core::LinAlg::Vector<double>& displacement_vector)
 {
@@ -242,7 +242,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   if (n_segments == 0) return;
 
   // This pair only gives contributions to the stiffness matrix
-  if (stiffness_matrix == Teuchos::null) return;
+  if (stiffness_matrix == nullptr) return;
 
   // Get the Lagrange multipliers DOF vector for this pair
   const auto& [lambda_gid_pos, _] = mortar_manager->location_vector(*this);
@@ -296,23 +296,23 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
-    Mortar>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+    Mortar>::get_pair_visualization(std::shared_ptr<BeamToSolidVisualizationOutputWriterBase>
                                         visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
       visualization_writer->get_visualization_writer("btss-contact-mortar-continuous");
-  if (visualization_continuous == Teuchos::null) return;
+  if (visualization_continuous == nullptr) return;
 
-  const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
-      visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
+  const std::shared_ptr<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
+      visualization_params.get<std::shared_ptr<const BeamToSolidSurfaceVisualizationOutputParams>>(
           "btss-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->get_write_unique_ids_flag();
 
-  if (visualization_continuous != Teuchos::null)
+  if (visualization_continuous != nullptr)
   {
     // Get beam cross-section diameter
     const auto beam_ptr = dynamic_cast<const Discret::Elements::Beam3Base*>(this->element1());
@@ -326,11 +326,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
-    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
-        visualization_params.get<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+    std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
+        visualization_params.get<std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager>>(
             "mortar_manager");
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
-        visualization_params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("lambda");
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambda =
+        visualization_params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("lambda");
 
     // Get the lambda GIDs of this pair.
     auto q_lambda = GEOMETRYPAIR::InitializeElementData<Mortar, double>::initialize(nullptr);
@@ -341,7 +341,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
       q_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 
     // Add the continuous values for the Lagrange multipliers.
-    if (visualization_continuous != Teuchos::null and this->line_to_3D_segments_.size() > 0)
+    if (visualization_continuous != nullptr and this->line_to_3D_segments_.size() > 0)
     {
       unsigned int n_points = 0;
       for (const auto& segment : this->line_to_3D_segments_)
@@ -453,7 +453,7 @@ ScalarType BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam
  * @brief Factory function templated on the type of beam element and the surface shape
  */
 template <typename Beam, typename Surface, typename ScalarType>
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BEAMINTERACTION::BeamContactPair>
 beam_to_solid_surface_contact_pair_mortar_factory_template_beam_surface(
     const BEAMINTERACTION::BeamToSolidSurfaceContactParams& beam_to_surface_contact_params)
 {
@@ -462,8 +462,8 @@ beam_to_solid_surface_contact_pair_mortar_factory_template_beam_surface(
   switch (beam_to_surface_contact_params.get_mortar_shape_function_type())
   {
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line2:
-      return Teuchos::RCP(new BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam,
-          Surface, t_line2_scalar>);
+      return std::make_shared<BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam,
+          Surface, t_line2_scalar>>();
     default:
       FOUR_C_THROW("Got unexpected mortar shape function");
   }
@@ -473,7 +473,7 @@ beam_to_solid_surface_contact_pair_mortar_factory_template_beam_surface(
  * @brief Factory function templated on the type of beam element
  */
 template <typename Beam>
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BEAMINTERACTION::BeamContactPair>
 beam_to_solid_surface_contact_pair_mortar_factory_template_beam(
     const BEAMINTERACTION::BeamToSolidSurfaceContactParams& beam_to_surface_contact_params,
     const Core::FE::CellType& surface_type)
@@ -493,7 +493,7 @@ beam_to_solid_surface_contact_pair_mortar_factory_template_beam(
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::beam_to_solid_surface_contact_pair_mortar_factory(
     const BeamToSolidSurfaceContactParams& beam_to_surface_contact_params,
     const Core::FE::CellType& surface_type, const bool beam_is_hermite)

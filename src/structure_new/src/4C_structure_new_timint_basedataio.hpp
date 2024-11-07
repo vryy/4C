@@ -61,7 +61,7 @@ namespace Solid
       /// initialize the class variables
       void init(const Teuchos::ParameterList& IOParams, const Teuchos::ParameterList& sDynParams,
           const Teuchos::ParameterList& xParams,
-          Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+          std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
       /// setup new class variables
       void setup();
@@ -78,35 +78,35 @@ namespace Solid
 
      public:
       /// get the binary output writer
-      Teuchos::RCP<Core::IO::DiscretizationWriter> get_output_ptr()
+      std::shared_ptr<Core::IO::DiscretizationWriter> get_output_ptr()
       {
         check_init_setup();
         return output_;
       };
 
       /// get the binary output writer
-      Teuchos::RCP<const Core::IO::DiscretizationWriter> get_output_ptr() const
+      std::shared_ptr<const Core::IO::DiscretizationWriter> get_output_ptr() const
       {
         check_init_setup();
         return output_;
       }
 
       /// get the data container for parameters regarding output at runtime
-      Teuchos::RCP<const ParamsRuntimeOutput> get_runtime_output_params() const
+      std::shared_ptr<const ParamsRuntimeOutput> get_runtime_output_params() const
       {
         check_init_setup();
         return params_runtime_vtk_output_;
       };
 
       /// get the data container for parameters regarding output at runtime
-      Teuchos::RCP<const ParamsRuntimeVtpOutput> get_runtime_vtp_output_params() const
+      std::shared_ptr<const ParamsRuntimeVtpOutput> get_runtime_vtp_output_params() const
       {
         check_init_setup();
         return params_runtime_vtp_output_;
       };
 
       /// get the data container for parameters regarding output at runtime
-      Teuchos::RCP<const ParamsMonitorDBC> get_monitor_dbc_params() const
+      std::shared_ptr<const ParamsMonitorDBC> get_monitor_dbc_params() const
       {
         check_init_setup();
         return params_monitor_dbc_;
@@ -150,7 +150,7 @@ namespace Solid
       {
         check_init_setup();
 
-        FOUR_C_ASSERT(!energyfile_.is_null(), "energy file stream uninitialized");
+        FOUR_C_ASSERT(energyfile_, "energy file stream uninitialized");
 
         return *energyfile_;
       };
@@ -338,21 +338,21 @@ namespace Solid
       ///@{
 
       /// binary output
-      Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
+      std::shared_ptr<Core::IO::DiscretizationWriter> output_;
 
       /// additional output writer for the Newton steps
-      Teuchos::RCP<Core::IO::EveryIterationWriter> writer_every_iter_;
+      std::shared_ptr<Core::IO::EveryIterationWriter> writer_every_iter_;
 
       /// data container for input parameters related to VTK output at runtime
-      Teuchos::RCP<ParamsRuntimeOutput> params_runtime_vtk_output_;
+      std::shared_ptr<ParamsRuntimeOutput> params_runtime_vtk_output_;
 
       /// data container for input parameters related to VTP output at runtime
-      Teuchos::RCP<ParamsRuntimeVtpOutput> params_runtime_vtp_output_;
+      std::shared_ptr<ParamsRuntimeVtpOutput> params_runtime_vtp_output_;
 
       /// data container for input parameters related to monitoring of reaction forces
-      Teuchos::RCP<ParamsMonitorDBC> params_monitor_dbc_;
+      std::shared_ptr<ParamsMonitorDBC> params_monitor_dbc_;
       /// outputfile for energy
-      Teuchos::RCP<std::ofstream> energyfile_;
+      std::shared_ptr<std::ofstream> energyfile_;
 
       /// Is GMSH output of displacements required?
       bool gmsh_out_;
@@ -422,7 +422,7 @@ namespace Solid
 
       Inpar::Solid::ConditionNumber conditionnumbertype_;
 
-      Teuchos::RCP<Teuchos::ParameterList> p_io_every_iteration_;
+      std::shared_ptr<Teuchos::ParameterList> p_io_every_iteration_;
 
       ///@}
     };  // class BaseDataIO

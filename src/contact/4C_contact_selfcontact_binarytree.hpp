@@ -64,11 +64,11 @@ namespace CONTACT
 
     */
     SelfBinaryTreeNode(SelfBinaryTreeNodeType type, Core::FE::Discretization& discret,
-        Teuchos::RCP<SelfBinaryTreeNode> parent, std::vector<int> elelist,
+        std::shared_ptr<SelfBinaryTreeNode> parent, std::vector<int> elelist,
         const Core::LinAlg::SerialDenseMatrix& dopnormals,
         const Core::LinAlg::SerialDenseMatrix& samplevectors, const int& kdop, const int& dim,
         const int& nvectors, const int layer, const bool nonsmoothsurf,
-        std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& treenodes);
+        std::vector<std::vector<std::shared_ptr<SelfBinaryTreeNode>>>& treenodes);
 
 
     //! @name Evaluation methods
@@ -128,7 +128,7 @@ namespace CONTACT
     \brief Return pointer to adjacent tree nodes
 
     */
-    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjacent_treenodes()
+    std::vector<std::shared_ptr<SelfBinaryTreeNode>> adjacent_treenodes()
     {
       return adjacent_treenodes_;
     }
@@ -137,7 +137,7 @@ namespace CONTACT
     \brief set adjacent tree nodes
 
     */
-    void set_adjacent_tnodes(std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjTnodes)
+    void set_adjacent_tnodes(std::vector<std::shared_ptr<SelfBinaryTreeNode>> adjTnodes)
     {
       adjacent_treenodes_ = adjTnodes;
     }
@@ -164,32 +164,32 @@ namespace CONTACT
     \brief Return pointer to right child
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> rightchild() const { return rightchild_; }
+    std::shared_ptr<SelfBinaryTreeNode> rightchild() const { return rightchild_; }
 
     /*!
     \brief Return pointer to left child
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> leftchild() const { return leftchild_; }
+    std::shared_ptr<SelfBinaryTreeNode> leftchild() const { return leftchild_; }
 
     /*!
     \brief set children of a Binary Tree Node
 
     */
-    void set_children(
-        Teuchos::RCP<SelfBinaryTreeNode> leftchild, Teuchos::RCP<SelfBinaryTreeNode> rightchild);
+    void set_children(std::shared_ptr<SelfBinaryTreeNode> leftchild,
+        std::shared_ptr<SelfBinaryTreeNode> rightchild);
 
     /*!
     \brief Return pointer to parent
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> parent() const { return parent_; }
+    std::shared_ptr<SelfBinaryTreeNode> parent() const { return parent_; }
 
     /*!
     \brief set parent of tree node
 
     */
-    void set_parent(Teuchos::RCP<SelfBinaryTreeNode> parent) { parent_ = parent; }
+    void set_parent(std::shared_ptr<SelfBinaryTreeNode> parent) { parent_ = parent; }
 
     /*!
     \brief Return owner of current tree node
@@ -222,13 +222,13 @@ namespace CONTACT
     // BaseBinaryTreeNode as this would require a lot of dynamic casting and thereby complicating
     // the readability of the code
     //! pointer to the parent SelfBinaryTreeNode
-    Teuchos::RCP<SelfBinaryTreeNode> parent_;
+    std::shared_ptr<SelfBinaryTreeNode> parent_;
 
     //! pointer to the left child TreeNode
-    Teuchos::RCP<SelfBinaryTreeNode> leftchild_;
+    std::shared_ptr<SelfBinaryTreeNode> leftchild_;
 
     //! pointer to the right child TreeNode
-    Teuchos::RCP<SelfBinaryTreeNode> rightchild_;
+    std::shared_ptr<SelfBinaryTreeNode> rightchild_;
 
     //! logical array of qualified sample vectors of current tree node
     std::vector<bool> qualifiedvectors_;
@@ -237,7 +237,7 @@ namespace CONTACT
     std::vector<int> endnodes_;
 
     //! vector pointers to adjacent treenodes on the same layer
-    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjacent_treenodes_;
+    std::vector<std::shared_ptr<SelfBinaryTreeNode>> adjacent_treenodes_;
 
     //! reference to sample vectors
     const Core::LinAlg::SerialDenseMatrix& samplevectors_;
@@ -252,7 +252,7 @@ namespace CONTACT
     const bool nonsmoothsurf_;
 
     //! reference to storage scheme of all tree nodes, sorted by layer
-    std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& treenodes_;
+    std::vector<std::vector<std::shared_ptr<SelfBinaryTreeNode>>>& treenodes_;
 
     // relational operators for binary tree nodes
 
@@ -336,7 +336,7 @@ namespace CONTACT
 
     //! operator <
     friend bool operator<(
-        const Teuchos::RCP<SelfDualEdge> edge1, const Teuchos::RCP<SelfDualEdge> edge2)
+        const std::shared_ptr<SelfDualEdge> edge1, const std::shared_ptr<SelfDualEdge> edge2)
     {
       // Use the RCPs to avoid auto-removing them. Since this function is used for sorting a vector
       // of RCPs, the signature needs to stay like this.
@@ -367,21 +367,21 @@ namespace CONTACT
 
     //! operator >
     friend bool operator>(
-        const Teuchos::RCP<SelfDualEdge> edge1, const Teuchos::RCP<SelfDualEdge> edge2)
+        const std::shared_ptr<SelfDualEdge> edge1, const std::shared_ptr<SelfDualEdge> edge2)
     {
       return operator<(edge2, edge1);
     }
 
     //! operator <=
     friend bool operator<=(
-        const Teuchos::RCP<SelfDualEdge> edge1, const Teuchos::RCP<SelfDualEdge> edge2)
+        const std::shared_ptr<SelfDualEdge> edge1, const std::shared_ptr<SelfDualEdge> edge2)
     {
       return !operator>(edge1, edge2);
     }
 
     //! operator >=
     friend bool operator>=(
-        const Teuchos::RCP<SelfDualEdge> edge1, const Teuchos::RCP<SelfDualEdge> edge2)
+        const std::shared_ptr<SelfDualEdge> edge1, const std::shared_ptr<SelfDualEdge> edge2)
     {
       return !operator<(edge1, edge2);
     }
@@ -390,8 +390,8 @@ namespace CONTACT
     \brief Constructor of a dual edge
 
     */
-    SelfDualEdge(Teuchos::RCP<SelfBinaryTreeNode> node1_, Teuchos::RCP<SelfBinaryTreeNode> node2_,
-        const int& dim);
+    SelfDualEdge(std::shared_ptr<SelfBinaryTreeNode> node1_,
+        std::shared_ptr<SelfBinaryTreeNode> node2_, const int& dim);
 
     /*!
     \brief Destructor
@@ -409,29 +409,29 @@ namespace CONTACT
     \brief Return first node of dual edge
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> get_node1() const { return node1_; }
+    std::shared_ptr<SelfBinaryTreeNode> get_node1() const { return node1_; }
 
     /*!
     \brief Return second node of dual edge
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> get_node2() const { return node2_; }
+    std::shared_ptr<SelfBinaryTreeNode> get_node2() const { return node2_; }
 
     /*!
     \brief Return common tree node of two dual edges
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> common_node(SelfDualEdge& treenode)
+    std::shared_ptr<SelfBinaryTreeNode> common_node(SelfDualEdge& treenode)
     {
-      Teuchos::RCP<SelfBinaryTreeNode> node1 = treenode.get_node1();
-      Teuchos::RCP<SelfBinaryTreeNode> node2 = treenode.get_node2();
+      std::shared_ptr<SelfBinaryTreeNode> node1 = treenode.get_node1();
+      std::shared_ptr<SelfBinaryTreeNode> node2 = treenode.get_node2();
 
       if (*get_node1() == *node1 or *get_node2() == *node1)
         return node1;
       else if (*get_node1() == *node2 or *get_node2() == *node2)
         return node2;
       else
-        return Teuchos::null;
+        return nullptr;
     }
 
    private:
@@ -445,7 +445,7 @@ namespace CONTACT
     \brief return greater node of dual edge
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> greater_node()
+    std::shared_ptr<SelfBinaryTreeNode> greater_node()
     {
       if (*node1_ > *node2_)
         return node1_;
@@ -455,7 +455,7 @@ namespace CONTACT
         return node1_;
     }
 
-    Teuchos::RCP<SelfBinaryTreeNode> lesser_node()
+    std::shared_ptr<SelfBinaryTreeNode> lesser_node()
     {
       if (*node1_ > *node2_)
         return node2_;
@@ -470,10 +470,10 @@ namespace CONTACT
     SelfDualEdge(const SelfDualEdge& old) = delete;
 
     //! first node of dual edge
-    Teuchos::RCP<SelfBinaryTreeNode> node1_;
+    std::shared_ptr<SelfBinaryTreeNode> node1_;
 
     //! second node of dual edge
-    Teuchos::RCP<SelfBinaryTreeNode> node2_;
+    std::shared_ptr<SelfBinaryTreeNode> node2_;
 
     //! cost function value fo dual edge
     double costs_;
@@ -508,7 +508,7 @@ namespace CONTACT
 
     */
     SelfBinaryTree(Core::FE::Discretization& discret, const Teuchos::ParameterList& iparams,
-        Teuchos::RCP<Epetra_Map> elements, int dim, double eps);
+        std::shared_ptr<Epetra_Map> elements, int dim, double eps);
 
 
     //! @name Evaluation methods
@@ -541,7 +541,7 @@ namespace CONTACT
     \brief Get write access to the adjacency matrix
 
     */
-    std::map<int, std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& set_adjacencymatrix()
+    std::map<int, std::vector<std::shared_ptr<SelfBinaryTreeNode>>>& set_adjacencymatrix()
     {
       return adjacencymatrix_;
     }
@@ -568,13 +568,13 @@ namespace CONTACT
     \brief Get map of leaf nodes
 
     */
-    std::map<int, Teuchos::RCP<SelfBinaryTreeNode>> leafsmap() const { return leafsmap_; }
+    std::map<int, std::shared_ptr<SelfBinaryTreeNode>> leafsmap() const { return leafsmap_; }
 
     /*!
     \brief Get write access to map of leaf nodes
 
     */
-    std::map<int, Teuchos::RCP<SelfBinaryTreeNode>>& set_leafsmap() { return leafsmap_; }
+    std::map<int, std::shared_ptr<SelfBinaryTreeNode>>& set_leafsmap() { return leafsmap_; }
 
     /*!
     \brief Return no. of sample vectors
@@ -586,13 +586,13 @@ namespace CONTACT
     \brief Get root nodes
 
     */
-    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> roots() const { return roots_; }
+    std::vector<std::shared_ptr<SelfBinaryTreeNode>> roots() const { return roots_; }
 
     /*!
     \brief Get write access to root nodes
 
     */
-    std::vector<Teuchos::RCP<SelfBinaryTreeNode>>& set_roots() { return roots_; }
+    std::vector<std::shared_ptr<SelfBinaryTreeNode>>& set_roots() { return roots_; }
 
     /*!
     \brief Get matrix of sample vectors
@@ -604,7 +604,7 @@ namespace CONTACT
     \brief Return reference to storage scheme of all tree nodes
 
     */
-    std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>> treenodes() const
+    std::vector<std::vector<std::shared_ptr<SelfBinaryTreeNode>>> treenodes() const
     {
       return treenodes_;
     }
@@ -619,8 +619,8 @@ namespace CONTACT
     \param [in]  treenode2:       second tree node
 
     */
-    virtual void add_tree_nodes_to_contact_pairs(
-        Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
+    virtual void add_tree_nodes_to_contact_pairs(std::shared_ptr<SelfBinaryTreeNode> treenode1,
+        std::shared_ptr<SelfBinaryTreeNode> treenode2);
     /*!
     \brief Set the vector of adjacent tree nodes for leaf-nodes in the lowest layer
 
@@ -645,9 +645,9 @@ namespace CONTACT
 
      */
     void calculate_adjacent_tree_nodes_and_dual_edges(std::vector<int>& possadjids, const int gid,
-        Core::Elements::Element* adjElementk, Teuchos::RCP<SelfBinaryTreeNode>& node1,
-        std::vector<Teuchos::RCP<SelfBinaryTreeNode>>& adjtreenodes,
-        std::vector<Teuchos::RCP<SelfDualEdge>>& adjdualedges);
+        Core::Elements::Element* adjElementk, std::shared_ptr<SelfBinaryTreeNode>& node1,
+        std::vector<std::shared_ptr<SelfBinaryTreeNode>>& adjtreenodes,
+        std::vector<std::shared_ptr<SelfDualEdge>>& adjdualedges);
 
     /*!
     \brief Get the mortar element specific number of first order nodes
@@ -664,8 +664,8 @@ namespace CONTACT
     \param [in,out]  contractedNode:  node that consists of both nodes of contracted edge
 
     */
-    virtual void get_contracted_node(Teuchos::RCP<SelfDualEdge>& contractedEdge,
-        Teuchos::RCP<SelfBinaryTreeNode>& contractedNode);
+    virtual void get_contracted_node(std::shared_ptr<SelfDualEdge>& contractedEdge,
+        std::shared_ptr<SelfBinaryTreeNode>& contractedNode);
 
     /*!
     \brief Initialize internal variables
@@ -690,8 +690,8 @@ namespace CONTACT
            (this is more or less identical to two-body contact search)
 
     */
-    void search_root_contact(
-        Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
+    void search_root_contact(std::shared_ptr<SelfBinaryTreeNode> treenode1,
+        std::shared_ptr<SelfBinaryTreeNode> treenode2);
 
     /*!
     \brief Calculate minimal element length / inflation factor "enlarge"
@@ -708,10 +708,11 @@ namespace CONTACT
     \param [in/out] dualgraph:  construction of binary tree is based on this data
 
     */
-    void update_dual_graph(Teuchos::RCP<SelfDualEdge>& contractedEdge,
-        std::vector<Teuchos::RCP<SelfDualEdge>>& adjEdges,
-        Teuchos::RCP<SelfBinaryTreeNode>& newNode,
-        std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualgraph);
+    void update_dual_graph(std::shared_ptr<SelfDualEdge>& contractedEdge,
+        std::vector<std::shared_ptr<SelfDualEdge>>& adjEdges,
+        std::shared_ptr<SelfBinaryTreeNode>& newNode,
+        std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>>*
+            dualgraph);
 
     /*!
     \brief Update normals and qualified sample vectors of the whole tree
@@ -728,7 +729,8 @@ namespace CONTACT
 
      */
     void calculate_dual_graph(
-        std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualGraph,
+        std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>>*
+            dualGraph,
         const std::vector<int>& elelist);
 
     /*!
@@ -747,7 +749,8 @@ namespace CONTACT
 
     */
     void initialize_tree_bottom_up(
-        std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualGraph);
+        std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>>*
+            dualGraph);
 
     /*!
     \brief Evaluate binary search tree
@@ -763,8 +766,8 @@ namespace CONTACT
     \brief Find contact of adjacent surfaces
 
     */
-    void evaluate_contact_and_adjacency(Teuchos::RCP<SelfBinaryTreeNode> treenode1,
-        Teuchos::RCP<SelfBinaryTreeNode> treenode2, bool isadjacent);
+    void evaluate_contact_and_adjacency(std::shared_ptr<SelfBinaryTreeNode> treenode1,
+        std::shared_ptr<SelfBinaryTreeNode> treenode2, bool isadjacent);
 
     /*!
     \brief Test for adjacency (2D)
@@ -776,8 +779,8 @@ namespace CONTACT
     \brief Test for adjacency (2D)
 
     */
-    bool test_adjacent_3d(
-        Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
+    bool test_adjacent_3d(std::shared_ptr<SelfBinaryTreeNode> treenode1,
+        std::shared_ptr<SelfBinaryTreeNode> treenode2);
     //@}
 
     //! @name Print methods for debug and development purposes
@@ -793,7 +796,7 @@ namespace CONTACT
 
      */
     void plot_dual_graph(
-        const std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>&
+        const std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>>&
             dualgraph) const;
 
     /*!
@@ -808,7 +811,7 @@ namespace CONTACT
     SelfBinaryTree(const SelfBinaryTree& old) = delete;
 
     //! All contact elements on surface (full map)
-    Teuchos::RCP<Epetra_Map> elements_;
+    std::shared_ptr<Epetra_Map> elements_;
 
     //! Interface-specific parameter list
     const Teuchos::ParameterList& iparams_;
@@ -828,19 +831,19 @@ namespace CONTACT
     Core::LinAlg::SerialDenseMatrix samplevectors_;
 
     //! root treenodes
-    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> roots_;
+    std::vector<std::shared_ptr<SelfBinaryTreeNode>> roots_;
 
     //! storage of all treenodes, sorted by layers
-    std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>> treenodes_;
+    std::vector<std::vector<std::shared_ptr<SelfBinaryTreeNode>>> treenodes_;
 
     //! storage of all treenodes, sorted by layers
     std::map<int, std::vector<int>> contactpairs_;
 
     //! map of adjacent elements, sorted by global id (only needed in 3D)
-    std::map<int, std::vector<Teuchos::RCP<SelfBinaryTreeNode>>> adjacencymatrix_;
+    std::map<int, std::vector<std::shared_ptr<SelfBinaryTreeNode>>> adjacencymatrix_;
 
     //! map of all leaf nodes, sorted by global id
-    std::map<int, Teuchos::RCP<SelfBinaryTreeNode>> leafsmap_;
+    std::map<int, std::shared_ptr<SelfBinaryTreeNode>> leafsmap_;
 
   };  // class SelfBinaryTree
 }  // namespace CONTACT

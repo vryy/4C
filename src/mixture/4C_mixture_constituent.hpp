@@ -51,7 +51,7 @@ namespace Mixture
       virtual std::unique_ptr<Mixture::MixtureConstituent> create_constituent(int id) = 0;
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() final;
+      std::shared_ptr<Core::Mat::Material> create_material() final;
 
       static Mixture::PAR::MixtureConstituent* factory(int matnum);
     };

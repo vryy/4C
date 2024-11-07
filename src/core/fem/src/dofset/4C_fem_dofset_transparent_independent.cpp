@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 Core::DOFSets::TransparentIndependentDofSet::TransparentIndependentDofSet(
-    Teuchos::RCP<Core::FE::Discretization> sourcedis, bool parallel)
+    std::shared_ptr<Core::FE::Discretization> sourcedis, bool parallel)
     : TransparentDofSet(sourcedis, parallel)
 {
   return;

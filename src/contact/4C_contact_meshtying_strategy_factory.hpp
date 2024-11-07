@@ -70,7 +70,7 @@ namespace Mortar
        * \author Popp
        */
       void build_interfaces(const Teuchos::ParameterList& params,
-          std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces, bool& poroslave,
+          std::vector<std::shared_ptr<Mortar::Interface>>& interfaces, bool& poroslave,
           bool& poromaster) const;
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
@@ -84,9 +84,9 @@ namespace Mortar
        * \todo ToDo Get rid of poroslave and poromaster parameters.
        *
        * \author Popp */
-      Teuchos::RCP<CONTACT::MtAbstractStrategy> build_strategy(const Teuchos::ParameterList& params,
-          const bool& poroslave, const bool& poromaster, const int& dof_offset,
-          std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces) const;
+      std::shared_ptr<CONTACT::MtAbstractStrategy> build_strategy(
+          const Teuchos::ParameterList& params, const bool& poroslave, const bool& poromaster,
+          const int& dof_offset, std::vector<std::shared_ptr<Mortar::Interface>>& interfaces) const;
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
        *
@@ -107,12 +107,12 @@ namespace Mortar
        * access to the class members, use the alternative call.
        *
        * \author hiermeier \date 03/17 */
-      static Teuchos::RCP<CONTACT::MtAbstractStrategy> build_strategy(
+      static std::shared_ptr<CONTACT::MtAbstractStrategy> build_strategy(
           const Inpar::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
-          std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces, const Epetra_Map* dof_row_map,
-          const Epetra_Map* node_row_map, const int dim,
-          const Teuchos::RCP<const Epetra_Comm>& comm_ptr, Mortar::StratDataContainer& data_ptr);
+          std::vector<std::shared_ptr<Mortar::Interface>>& interfaces,
+          const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map, const int dim,
+          const std::shared_ptr<const Epetra_Comm>& comm_ptr, Mortar::StratDataContainer& data_ptr);
 
      protected:
      private:

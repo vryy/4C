@@ -159,19 +159,19 @@ namespace Cut
       /// access the graph of the most derived class
       virtual inline PointGraph::Graph &get_graph() { return *graph_; }
 
-      virtual inline const Teuchos::RCP<PointGraph::Graph> &graph_ptr() { return graph_; }
+      virtual inline const std::shared_ptr<PointGraph::Graph> &graph_ptr() { return graph_; }
 
      private:
-      Teuchos::RCP<Cut::Impl::PointGraph::Graph> create_graph(unsigned dim);
+      std::shared_ptr<Cut::Impl::PointGraph::Graph> create_graph(unsigned dim);
 
-      Teuchos::RCP<Graph> graph_;
+      std::shared_ptr<Graph> graph_;
     };  // class PointGraph
 
     // non-member function
     bool find_cycles(graph_t &g, Cycle &cycle,
         std::map<vertex_t, Core::LinAlg::Matrix<3, 1>> &local, std::vector<Cycle> &cycles);
 
-    Teuchos::RCP<PointGraph> create_point_graph(Mesh &mesh, Element *element, Side *side,
+    std::shared_ptr<PointGraph> create_point_graph(Mesh &mesh, Element *element, Side *side,
         const PointGraph::Location &location, const PointGraph::Strategy &strategy);
   }  // namespace Impl
 }  // namespace Cut

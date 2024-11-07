@@ -27,9 +27,9 @@ ElCh::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(const Epetra_Comm& comm,
     : ScaTraFluidAleCouplingAlgorithm(comm, scatradyn, "FSICoupling", solverparams),
       pseudotransient_(false),
       molarvolume_(elchcontrol.get<double>("MOLARVOLUME")),
-      idispn_(Teuchos::null),
-      idispnp_(Teuchos::null),
-      iveln_(Teuchos::null),
+      idispn_(nullptr),
+      idispnp_(nullptr),
+      iveln_(nullptr),
       itmax_(elchcontrol.get<int>("MOVBOUNDARYITEMAX")),
       ittol_(elchcontrol.get<double>("MOVBOUNDARYCONVTOL")),
       theta_(elchcontrol.get<double>("MOVBOUNDARYTHETA")),
@@ -112,7 +112,7 @@ void ElCh::MovingBoundaryAlgorithm::time_loop()
   {
     // transfer convective velocity = fluid velocity - grid velocity
     scatra_field()->set_velocity_field(fluid_field()->convective_vel(),  // = velnp - grid velocity
-        fluid_field()->hist(), Teuchos::null, Teuchos::null);
+        fluid_field()->hist(), nullptr, nullptr);
   }
 
   // transfer moving mesh data
@@ -267,7 +267,7 @@ void ElCh::MovingBoundaryAlgorithm::solve_scatra()
         // transfer convective velocity = fluid velocity - grid velocity
         scatra_field()->set_velocity_field(
             fluid_field()->convective_vel(),  // = velnp - grid velocity
-            fluid_field()->hist(), Teuchos::null, Teuchos::null);
+            fluid_field()->hist(), nullptr, nullptr);
       }
     }
     break;
@@ -327,8 +327,8 @@ void ElCh::MovingBoundaryAlgorithm::compute_interface_vectors(
   fluxnp_ = scatra_field()->calc_flux_at_boundary(false);
 
   // access discretizations
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = fluid_field()->discretization();
-  Teuchos::RCP<Core::FE::Discretization> scatradis = scatra_field()->discretization();
+  std::shared_ptr<Core::FE::Discretization> fluiddis = fluid_field()->discretization();
+  std::shared_ptr<Core::FE::Discretization> scatradis = scatra_field()->discretization();
 
   // no support for multiple reactions at the interface !
   // id of the reacting species

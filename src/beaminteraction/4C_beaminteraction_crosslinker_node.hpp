@@ -240,9 +240,9 @@ namespace CrossLinking
     This method returns the material associated with this crosslinker node
 
     */
-    inline Teuchos::RCP<Mat::CrosslinkerMat> get_material() const
+    inline std::shared_ptr<Mat::CrosslinkerMat> get_material() const
     {
-      if (mat_ == Teuchos::null) FOUR_C_THROW("No crosslinker material attached.");
+      if (mat_ == nullptr) FOUR_C_THROW("No crosslinker material attached.");
       return mat_;
     }
 
@@ -267,13 +267,13 @@ namespace CrossLinking
     /*!
      \brief Set material for crosslinker node
      */
-    virtual void set_material(Teuchos::RCP<Core::Mat::Material> material);
+    virtual void set_material(std::shared_ptr<Core::Mat::Material> material);
 
     //  /*!
     //   \brief Resets the data container of the node
     //
     //   With this function, the container with crosslinker binding specific quantities/information
-    //   is deleted / reset to Teuchos::null pointer
+    //   is deleted / reset to nullptr pointer
     //
     //   */
     //  virtual void ResetDataContainer();
@@ -284,11 +284,11 @@ namespace CrossLinking
    protected:
     //  /// information of crosslinker binding status, this is different for each crosslinker
     //  //  and may change each time step
-    //  Teuchos::RCP<CrossLinking::CrosslinkerNodeDataContainer> cldata_;
+    //  std::shared_ptr<CrossLinking::CrosslinkerNodeDataContainer> cldata_;
 
     /// this contains information that does not change during the simulation time and is
     //  the same for a subset of crosslinker, we only need one object for each subset
-    Teuchos::RCP<Mat::CrosslinkerMat> mat_;
+    std::shared_ptr<Mat::CrosslinkerMat> mat_;
 
 
   };  // class CrosslinkerNode

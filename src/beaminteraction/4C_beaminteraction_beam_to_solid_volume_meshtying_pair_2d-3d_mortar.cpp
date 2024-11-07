@@ -32,9 +32,9 @@
 
 #include <Epetra_FEVector.h>
 #include <math.h>
-#include <Teuchos_RCPDecl.hpp>
 
 #include <cmath>
+#include <memory>
 #include <unordered_set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -67,7 +67,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
     Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
     Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
   if (!this->meshtying_is_evaluated_)
@@ -335,8 +335,8 @@ template <typename Beam, typename Solid, typename Mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
     Mortar>::evaluate_and_assemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Core::LinAlg::Vector<double>& global_lambda,
     const Core::LinAlg::Vector<double>& displacement_vector)
 {
@@ -349,7 +349,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
   if (n_segments == 0) return;
 
   // This pair only gives contributions to the stiffness matrix
-  if (stiffness_matrix == Teuchos::null) return;
+  if (stiffness_matrix == nullptr) return;
 
   // Get the Lagrange multipliers DOF vector for this pair
   const auto& [lambda_gid_pos, _] = mortar_manager->location_vector(*this);
@@ -384,7 +384,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
 template <typename Beam, typename Solid, typename Mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
     Mortar>::reset_rotation_state(const Core::FE::Discretization& discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& ia_discolnp)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& ia_discolnp)
 {
   get_beam_triad_interpolation_scheme(discret, *ia_discolnp, this->element1(),
       triad_interpolation_scheme_, this->triad_interpolation_scheme_ref_);
@@ -395,27 +395,28 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
  */
 template <typename Beam, typename Solid, typename Mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
-    Mortar>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+    Mortar>::get_pair_visualization(std::shared_ptr<BeamToSolidVisualizationOutputWriterBase>
                                         visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
       visualization_writer->get_visualization_writer("btsv-mortar-continuous");
 
-  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>& output_params_ptr =
-      visualization_params
-          .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
-              "btsv-output_params_ptr");
+  const std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>&
+      output_params_ptr =
+          visualization_params
+              .get<std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+                  "btsv-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->get_write_unique_ids_flag();
 
-  if (visualization_continuous != Teuchos::null)
+  if (visualization_continuous != nullptr)
   {
     // Check if data for this beam was already written.
-    Teuchos::RCP<std::unordered_set<int>> beam_tracker_2d_3d_continuous =
-        visualization_params.get<Teuchos::RCP<std::unordered_set<int>>>(
+    std::shared_ptr<std::unordered_set<int>> beam_tracker_2d_3d_continuous =
+        visualization_params.get<std::shared_ptr<std::unordered_set<int>>>(
             "beam_tracker_2d_3d_continuous");
 
     auto it = beam_tracker_2d_3d_continuous->find(this->element1()->id());
@@ -447,11 +448,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
 
       // Get the mortar manager and the global lambda vector, those objects will be used to get the
       // discrete Lagrange multiplier values for this pair.
-      Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
-          visualization_params.get<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
-              "mortar_manager");
-      Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
-          visualization_params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("lambda");
+      std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
+          visualization_params
+              .get<std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+                  "mortar_manager");
+      std::shared_ptr<Core::LinAlg::Vector<double>> lambda =
+          visualization_params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("lambda");
 
       // Get the lambda GIDs of this pair.
       const auto& [lambda_row_pos, _] = mortar_manager->location_vector(*this);
@@ -464,12 +466,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
       // Get parameters for visualization
       const unsigned int mortar_segments =
           visualization_params
-              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+              .get<std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
                   "btsv-output_params_ptr")
               ->get_mortar_lambda_continuous_segments();
       const unsigned int mortar_segments_circumference =
           visualization_params
-              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+              .get<std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
                   "btsv-output_params_ptr")
               ->get_mortar_lambda_continuous_segments_circumference();
 
@@ -585,7 +587,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::create_beam_to_solid_volume_pair_mortar_cross_section(
     const Core::FE::CellType shape,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
@@ -598,17 +600,17 @@ BEAMINTERACTION::create_beam_to_solid_volume_pair_mortar_cross_section(
       switch (n_fourier_modes)
       {
         case 0:
-          return Teuchos::rcp(new BeamToSolidVolumeMeshtyingPair2D3DMortar<GEOMETRYPAIR::t_hermite,
-              GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2_fourier_0>());
+          return std::make_shared<BeamToSolidVolumeMeshtyingPair2D3DMortar<GEOMETRYPAIR::t_hermite,
+              GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2_fourier_0>>();
         case 1:
-          return Teuchos::rcp(new BeamToSolidVolumeMeshtyingPair2D3DMortar<GEOMETRYPAIR::t_hermite,
-              GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2_fourier_1>());
+          return std::make_shared<BeamToSolidVolumeMeshtyingPair2D3DMortar<GEOMETRYPAIR::t_hermite,
+              GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2_fourier_1>>();
         case 2:
-          return Teuchos::rcp(new BeamToSolidVolumeMeshtyingPair2D3DMortar<GEOMETRYPAIR::t_hermite,
-              GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2_fourier_2>());
+          return std::make_shared<BeamToSolidVolumeMeshtyingPair2D3DMortar<GEOMETRYPAIR::t_hermite,
+              GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2_fourier_2>>();
         case 3:
-          return Teuchos::rcp(new BeamToSolidVolumeMeshtyingPair2D3DMortar<GEOMETRYPAIR::t_hermite,
-              GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2_fourier_3>());
+          return std::make_shared<BeamToSolidVolumeMeshtyingPair2D3DMortar<GEOMETRYPAIR::t_hermite,
+              GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2_fourier_3>>();
         default:
           FOUR_C_THROW("Got wrong number of fourier mortar modes %i.", n_fourier_modes);
       }

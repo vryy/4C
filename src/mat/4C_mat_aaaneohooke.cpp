@@ -26,7 +26,7 @@ Mat::PAR::AAAneohooke::AAAneohooke(const Core::Mat::PAR::Parameter::Data& matdat
   Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::instance()->get_communicators()->local_comm()));
   for (int i = first; i <= last; i++)
   {
-    matparams_.push_back(Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dummy_map, true));
+    matparams_.push_back(std::make_shared<Core::LinAlg::Vector<double>>(dummy_map, true));
   }
   matparams_.at(young)->PutScalar(matdata.parameters.get<double>("YOUNG"));
   matparams_.at(nue)->PutScalar(matdata.parameters.get<double>("NUE"));
@@ -35,9 +35,9 @@ Mat::PAR::AAAneohooke::AAAneohooke(const Core::Mat::PAR::Parameter::Data& matdat
 }
 
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::AAAneohooke::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::AAAneohooke::create_material()
 {
-  return Teuchos::make_rcp<Mat::AAAneohooke>(this);
+  return std::make_shared<Mat::AAAneohooke>(this);
 }
 
 Mat::AAAneohookeType Mat::AAAneohookeType::instance_;
@@ -91,7 +91,7 @@ void Mat::AAAneohooke::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

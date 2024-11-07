@@ -61,22 +61,22 @@ class StruResultTest : public Core::Utils::ResultTest
   double get_special_result_for_testing(const std::string& quantity);
 
   //! Structure time integrator
-  Teuchos::RCP<Solid::TimInt> timeintegrator_;
+  std::shared_ptr<Solid::TimInt> timeintegrator_;
 
   //! Structure discretisation
-  Teuchos::RCP<Core::FE::Discretization> strudisc_;
+  std::shared_ptr<Core::FE::Discretization> strudisc_;
 
   //! @name Solution
   //!@{
 
   //! global displacement DOFs
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dis_;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dis_;
 
   //! global velocity DOFs
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> vel_;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> vel_;
 
   //! global acceleration DOFs
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> acc_;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> acc_;
 
   //!@}
 };

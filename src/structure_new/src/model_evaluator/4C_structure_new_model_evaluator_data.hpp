@@ -88,7 +88,7 @@ namespace Solid
 
 
       //! initialize the stuff coming from outside
-      void init(const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr);
+      void init(const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr);
 
       //! setup member variables
       void setup();
@@ -174,19 +174,19 @@ namespace Solid
       bool is_predictor_state() const;
 
       //! mutable access to the stress data vector
-      Teuchos::RCP<std::vector<char>>& stress_data_ptr() override;
+      std::shared_ptr<std::vector<char>>& stress_data_ptr() override;
 
       //! mutable access to the strain data vector
-      Teuchos::RCP<std::vector<char>>& strain_data_ptr() override;
+      std::shared_ptr<std::vector<char>>& strain_data_ptr() override;
 
       //! mutable access to the plastic strain data vector
-      Teuchos::RCP<std::vector<char>>& plastic_strain_data_ptr() override;
+      std::shared_ptr<std::vector<char>>& plastic_strain_data_ptr() override;
 
       //! mutable access to the stress data vector
-      Teuchos::RCP<std::vector<char>>& coupling_stress_data_ptr() override;
+      std::shared_ptr<std::vector<char>>& coupling_stress_data_ptr() override;
 
       //! mutable access to the optional quantity data vector
-      Teuchos::RCP<std::vector<char>>& opt_quantity_data_ptr() override;
+      std::shared_ptr<std::vector<char>>& opt_quantity_data_ptr() override;
 
       //! get the current stress type [derived]
       [[nodiscard]] enum Inpar::Solid::StressType get_stress_output_type() const override;
@@ -204,7 +204,7 @@ namespace Solid
       virtual enum Inpar::Solid::OptQuantityType get_opt_quantity_output_type() const;
 
       //< get the manager of Gauss point data output
-      Teuchos::RCP<GaussPointDataOutputManager>& gauss_point_data_output_manager_ptr() override;
+      std::shared_ptr<GaussPointDataOutputManager>& gauss_point_data_output_manager_ptr() override;
 
       //! register energy type to be computed and written to file
       void insert_energy_type_to_be_considered(enum Solid::EnergyType type);
@@ -239,19 +239,19 @@ namespace Solid
           const double value, const enum Solid::EnergyType type) override;
 
       //! get Interface to brownian dyn data [derived]
-      [[nodiscard]] inline Teuchos::RCP<BrownianDynamics::ParamsInterface>
+      [[nodiscard]] inline std::shared_ptr<BrownianDynamics::ParamsInterface>
       get_brownian_dyn_param_interface() const override
       {
         check_init_setup();
-        return browniandyn_data_ptr_;
+        return std::dynamic_pointer_cast<BrownianDynamics::ParamsInterface>(browniandyn_data_ptr_);
       }
 
       //! get special parameter interface for beam elements [derived]
-      [[nodiscard]] inline Teuchos::RCP<Solid::Elements::BeamParamsInterface>
+      [[nodiscard]] inline std::shared_ptr<Solid::Elements::BeamParamsInterface>
       get_beam_params_interface_ptr() const override
       {
-        FOUR_C_ASSERT(!beam_data_ptr_.is_null(), "pointer to beam data container not set!");
-        return beam_data_ptr_;
+        FOUR_C_ASSERT(beam_data_ptr_, "pointer to beam data container not set!");
+        return std::dynamic_pointer_cast<Solid::Elements::BeamParamsInterface>(beam_data_ptr_);
       }
 
       /** \brief get reference to the set model evaluator
@@ -517,7 +517,7 @@ namespace Solid
       }
 
       //! set stress data vector
-      inline void set_stress_data(const Teuchos::RCP<std::vector<char>>& stressdata)
+      inline void set_stress_data(const std::shared_ptr<std::vector<char>>& stressdata)
       {
         stressdata_ptr_ = stressdata;
       }
@@ -528,13 +528,13 @@ namespace Solid
        * \param data_manager Manager of gauss point data output
        */
       inline void set_gauss_point_data_output_manager_ptr(
-          const Teuchos::RCP<GaussPointDataOutputManager> data_manager)
+          const std::shared_ptr<GaussPointDataOutputManager> data_manager)
       {
         gauss_point_data_manager_ptr_ = data_manager;
       }
 
       /// Return constant manager of gauss point data output
-      inline const Teuchos::RCP<GaussPointDataOutputManager>&
+      inline const std::shared_ptr<GaussPointDataOutputManager>&
       get_gauss_point_data_output_manager_ptr() const
       {
         check_init_setup();
@@ -542,33 +542,34 @@ namespace Solid
       }
 
       //! get stress data vector
-      inline const Teuchos::RCP<std::vector<char>>& get_stress_data() const
+      inline const std::shared_ptr<std::vector<char>>& get_stress_data() const
       {
         return stressdata_ptr_;
       }
 
       //! get nodal postprocessed stress data vector
-      inline const Teuchos::RCP<Core::LinAlg::MultiVector<double>>&
+      inline const std::shared_ptr<Core::LinAlg::MultiVector<double>>&
       get_stress_data_node_postprocessed() const
       {
         return stressdata_postprocessed_nodal_ptr_;
       }
 
       //! get nodal postprocessed stress data vector
-      inline Teuchos::RCP<Core::LinAlg::MultiVector<double>>& get_stress_data_node_postprocessed()
+      inline std::shared_ptr<Core::LinAlg::MultiVector<double>>&
+      get_stress_data_node_postprocessed()
       {
         return stressdata_postprocessed_nodal_ptr_;
       }
 
       //! get element postprocessed stress data vector
-      inline const Teuchos::RCP<Core::LinAlg::MultiVector<double>>&
+      inline const std::shared_ptr<Core::LinAlg::MultiVector<double>>&
       get_stress_data_element_postprocessed() const
       {
         return stressdata_postprocessed_element_ptr_;
       }
 
       //! get element postprocessed stress data vector
-      inline Teuchos::RCP<Core::LinAlg::MultiVector<double>>&
+      inline std::shared_ptr<Core::LinAlg::MultiVector<double>>&
       get_stress_data_element_postprocessed()
       {
         return stressdata_postprocessed_element_ptr_;
@@ -576,64 +577,67 @@ namespace Solid
 
       //! set element volume data vector
       inline void set_element_volume_data(
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>& ele_volumes)
+          const std::shared_ptr<Core::LinAlg::Vector<double>>& ele_volumes)
       {
         elevolumes_ptr_ = ele_volumes;
       }
 
       //! set stress data vector
-      inline void set_coupling_stress_data(const Teuchos::RCP<std::vector<char>>& couplstressdata)
+      inline void set_coupling_stress_data(
+          const std::shared_ptr<std::vector<char>>& couplstressdata)
       {
         couplstressdata_ptr_ = couplstressdata;
       }
 
       //! set strain data vector
-      inline void set_strain_data(const Teuchos::RCP<std::vector<char>>& straindata)
+      inline void set_strain_data(const std::shared_ptr<std::vector<char>>& straindata)
       {
         straindata_ptr_ = straindata;
       }
 
       //! get strain data vector
-      inline const Teuchos::RCP<std::vector<char>>& get_strain_data() const
+      inline const std::shared_ptr<std::vector<char>>& get_strain_data() const
       {
         return straindata_ptr_;
       }
 
       //! get nodal postprocessed strain data vector
-      inline const Teuchos::RCP<Core::LinAlg::MultiVector<double>>&
+      inline const std::shared_ptr<Core::LinAlg::MultiVector<double>>&
       get_strain_data_node_postprocessed() const
       {
         return straindata_postprocessed_nodal_ptr_;
       }
 
       //! get nodal postprocessed strain data vector
-      inline Teuchos::RCP<Core::LinAlg::MultiVector<double>>& get_strain_data_node_postprocessed()
+      inline std::shared_ptr<Core::LinAlg::MultiVector<double>>&
+      get_strain_data_node_postprocessed()
       {
         return straindata_postprocessed_nodal_ptr_;
       }
 
       //! get element postprocessed strain data vector
-      inline const Teuchos::RCP<Core::LinAlg::MultiVector<double>>&
+      inline const std::shared_ptr<Core::LinAlg::MultiVector<double>>&
       get_strain_data_element_postprocessed() const
       {
         return straindata_postprocessed_element_ptr_;
       }
 
       //! get element postprocessed strain data vector
-      inline Teuchos::RCP<Core::LinAlg::MultiVector<double>>&
+      inline std::shared_ptr<Core::LinAlg::MultiVector<double>>&
       get_strain_data_element_postprocessed()
       {
         return straindata_postprocessed_element_ptr_;
       }
 
       //! set plastic strain data vector
-      inline void set_plastic_strain_data(const Teuchos::RCP<std::vector<char>>& plastic_straindata)
+      inline void set_plastic_strain_data(
+          const std::shared_ptr<std::vector<char>>& plastic_straindata)
       {
         plastic_straindata_ptr_ = plastic_straindata;
       }
 
       //! set optional quantity data vector
-      inline void set_opt_quantity_data(const Teuchos::RCP<std::vector<char>>& optquantitydata)
+      inline void set_opt_quantity_data(const std::shared_ptr<std::vector<char>>& optquantitydata)
       {
         optquantitydata_ptr_ = optquantitydata;
       }
@@ -673,38 +677,36 @@ namespace Solid
       //! access the beam data container, if applicable
       inline BeamData& get_beam_data()
       {
-        FOUR_C_ASSERT(!beam_data_ptr_.is_null(), "pointer to beam data container not set!");
+        FOUR_C_ASSERT(beam_data_ptr_, "pointer to beam data container not set!");
         return *beam_data_ptr_;
       }
-      inline const Teuchos::RCP<BeamData>& get_beam_data_ptr()
+      inline const std::shared_ptr<BeamData>& get_beam_data_ptr()
       {
-        FOUR_C_ASSERT(!beam_data_ptr_.is_null(), "pointer to beam data container not set!");
+        FOUR_C_ASSERT(beam_data_ptr_, "pointer to beam data container not set!");
         return beam_data_ptr_;
       }
 
       //! access the contact data container, if the contact model is active
       inline ContactData& contact()
       {
-        FOUR_C_ASSERT(!contact_data_ptr_.is_null(), "The contact model is not active!");
+        FOUR_C_ASSERT(contact_data_ptr_, "The contact model is not active!");
         return *contact_data_ptr_;
       }
-      inline const Teuchos::RCP<ContactData>& contact_ptr() const
+      inline const std::shared_ptr<ContactData>& contact_ptr() const
       {
-        FOUR_C_ASSERT(!contact_data_ptr_.is_null(), "The contact model is not active!");
+        FOUR_C_ASSERT(contact_data_ptr_, "The contact model is not active!");
         return contact_data_ptr_;
       }
 
       //! access the brownian dynamic data container
       inline BrownianDynData& brownian_dyn()
       {
-        FOUR_C_ASSERT(
-            !browniandyn_data_ptr_.is_null(), "The brownian dynamic model is not active!");
+        FOUR_C_ASSERT(browniandyn_data_ptr_, "The brownian dynamic model is not active!");
         return *browniandyn_data_ptr_;
       }
-      inline const Teuchos::RCP<BrownianDynData>& brownian_dyn_ptr()
+      inline const std::shared_ptr<BrownianDynData>& brownian_dyn_ptr()
       {
-        FOUR_C_ASSERT(
-            !browniandyn_data_ptr_.is_null(), "The brownian dynamic model is not active!");
+        FOUR_C_ASSERT(browniandyn_data_ptr_, "The brownian dynamic model is not active!");
         return browniandyn_data_ptr_;
       }
       //!@}
@@ -903,41 +905,41 @@ namespace Solid
       //!@{
 
       //! element volume data vector
-      Teuchos::RCP<Core::LinAlg::Vector<double>> elevolumes_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> elevolumes_ptr_;
 
       //! stress data vector
-      Teuchos::RCP<std::vector<char>> stressdata_ptr_;
+      std::shared_ptr<std::vector<char>> stressdata_ptr_;
 
       //! postprocessed nodal stress data vector
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> stressdata_postprocessed_nodal_ptr_;
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> stressdata_postprocessed_nodal_ptr_;
 
       //! postprocessed element stress data vector
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> stressdata_postprocessed_element_ptr_;
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> stressdata_postprocessed_element_ptr_;
 
       //! strain data vector
-      Teuchos::RCP<std::vector<char>> straindata_ptr_;
+      std::shared_ptr<std::vector<char>> straindata_ptr_;
 
       //! postprocessed nodal strain data vector
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> straindata_postprocessed_nodal_ptr_;
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> straindata_postprocessed_nodal_ptr_;
 
       //! postprocessed element strain data vector
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> straindata_postprocessed_element_ptr_;
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> straindata_postprocessed_element_ptr_;
 
       //! strain data vector
-      Teuchos::RCP<std::vector<char>> plastic_straindata_ptr_;
+      std::shared_ptr<std::vector<char>> plastic_straindata_ptr_;
 
       //! coupling stress data vector
       //! e.g. in TSI: couplstress corresponds to thermal stresses
-      Teuchos::RCP<std::vector<char>> couplstressdata_ptr_;
+      std::shared_ptr<std::vector<char>> couplstressdata_ptr_;
 
       //! optional quantity data vector
-      Teuchos::RCP<std::vector<char>> optquantitydata_ptr_;
+      std::shared_ptr<std::vector<char>> optquantitydata_ptr_;
 
       //! system energy, stored separately by type
       std::map<enum Solid::EnergyType, double> energy_data_;
 
       //! Manager of gauss point data output
-      Teuchos::RCP<GaussPointDataOutputManager> gauss_point_data_manager_ptr_;
+      std::shared_ptr<GaussPointDataOutputManager> gauss_point_data_manager_ptr_;
 
       //!@}
 
@@ -968,28 +970,28 @@ namespace Solid
       std::map<enum NOX::Nln::StatusTest::QuantityType, double> my_prev_sol_norm_;
 
       //! read-only access to the structural dynamic parameters
-      Teuchos::RCP<const Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;
+      std::shared_ptr<const Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;
 
       //! read-only access to the input/output parameters
-      Teuchos::RCP<const Solid::TimeInt::BaseDataIO> io_ptr_;
+      std::shared_ptr<const Solid::TimeInt::BaseDataIO> io_ptr_;
 
       //! read-only access to the global state data container
-      Teuchos::RCP<const Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
+      std::shared_ptr<const Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
       //! read-only access to the timint object
-      Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
+      std::shared_ptr<const Solid::TimeInt::Base> timint_ptr_;
 
       //! read-only access to the epetra communicator
-      Teuchos::RCP<const Epetra_Comm> comm_ptr_;
+      std::shared_ptr<const Epetra_Comm> comm_ptr_;
 
       //! beam data container pointer
-      Teuchos::RCP<BeamData> beam_data_ptr_;
+      std::shared_ptr<BeamData> beam_data_ptr_;
 
       //! contact data container
-      Teuchos::RCP<ContactData> contact_data_ptr_;
+      std::shared_ptr<ContactData> contact_data_ptr_;
 
       //! brownian dynamic data container
-      Teuchos::RCP<BrownianDynData> browniandyn_data_ptr_;
+      std::shared_ptr<BrownianDynData> browniandyn_data_ptr_;
 
       //! pointer to a model evaluator object
       const Generic* model_ptr_;
@@ -1113,7 +1115,7 @@ namespace Solid
       ContactData();
 
       //! initialize the stuff coming from outside
-      void init(const Teuchos::RCP<const Solid::ModelEvaluator::Data>& str_data_ptr);
+      void init(const std::shared_ptr<const Solid::ModelEvaluator::Data>& str_data_ptr);
 
       //! setup member variables
       void setup();
@@ -1317,7 +1319,7 @@ namespace Solid
 
       enum Inpar::CONTACT::CouplingScheme coupling_scheme_;
 
-      Teuchos::RCP<const Solid::ModelEvaluator::Data> str_data_ptr_;
+      std::shared_ptr<const Solid::ModelEvaluator::Data> str_data_ptr_;
 
     };  // class ContactData
 
@@ -1332,7 +1334,7 @@ namespace Solid
       BrownianDynData();
 
       //! initialize the stuff coming from outside
-      void init(Teuchos::RCP<const Solid::ModelEvaluator::Data> const& str_data_ptr);
+      void init(std::shared_ptr<const Solid::ModelEvaluator::Data> const& str_data_ptr);
 
       //! setup member variables
       void setup();
@@ -1353,10 +1355,10 @@ namespace Solid
 
       //! get specified time curve number of imposed Dirichlet BCs
       void resize_random_force_m_vector(
-          Teuchos::RCP<Core::FE::Discretization> discret_ptr, int maxrandnumelement);
+          std::shared_ptr<Core::FE::Discretization> discret_ptr, int maxrandnumelement);
 
       //! get mutable random force vector
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>>& get_random_forces()
+      std::shared_ptr<Core::LinAlg::MultiVector<double>>& get_random_forces()
       {
         check_init_setup();
         return randomforces_;
@@ -1380,7 +1382,7 @@ namespace Solid
       /*! @name set routines which are allowed to be called by the elements
        */
       //! @{
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> const& get_random_forces() const override
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> const& get_random_forces() const override
       {
         check_init_setup();
         return randomforces_;
@@ -1410,7 +1412,7 @@ namespace Solid
       };
 
       //! get vector holding periodic bounding box object
-      [[nodiscard]] Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&
+      [[nodiscard]] std::shared_ptr<Core::Geo::MeshFree::BoundingBox> const&
       get_periodic_bounding_box() const override
       {
         check_init_setup();
@@ -1442,7 +1444,7 @@ namespace Solid
 
       bool issetup_;
 
-      Teuchos::RCP<const Solid::ModelEvaluator::Data> str_data_ptr_;
+      std::shared_ptr<const Solid::ModelEvaluator::Data> str_data_ptr_;
 
       /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
       double viscosity_;
@@ -1464,7 +1466,7 @@ namespace Solid
       std::array<double, 3> beams_damping_coefficient_prefactors_perunitlength_;
 
       /// multiVector holding random forces
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> randomforces_;
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> randomforces_;
     };
 
   }  // namespace ModelEvaluator

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 template <typename ScalarType, typename Line, typename Volume>
 GEOMETRYPAIR::GeometryPairLineToVolume<ScalarType, Line, Volume>::GeometryPairLineToVolume(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
-    const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data)
+    const std::shared_ptr<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data)
     : GeometryPair(element1, element2), line_to_3d_evaluation_data_(line_to_3d_evaluation_data)
 {
   // For the current implementation, the line element has to be on the same processor as the pair

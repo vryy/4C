@@ -602,7 +602,7 @@ namespace CONTACT
      \brief Resets the data container of the node
 
      With this function, the container with contact specific quantities/information
-     is deleted / reset to Teuchos::null pointer
+     is deleted / reset to nullptr pointer
 
      */
     void reset_data_container() override;
@@ -611,10 +611,10 @@ namespace CONTACT
 
    protected:
     //! Additional information of proc's friction nodes
-    Teuchos::RCP<CONTACT::FriNodeDataContainer> fridata_;
+    std::shared_ptr<CONTACT::FriNodeDataContainer> fridata_;
 
     //! Additional information to proc's data container
-    Teuchos::RCP<CONTACT::FriNodeWearDataContainer> weardata_;
+    std::shared_ptr<CONTACT::FriNodeWearDataContainer> weardata_;
 
     //! bool for wear
     bool wear_;

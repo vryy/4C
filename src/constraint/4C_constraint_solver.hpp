@@ -16,7 +16,8 @@
 
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -45,9 +46,9 @@ namespace CONSTRAINTS
     /*!
     \brief Constructor
     */
-    ConstraintSolver(Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization
+    ConstraintSolver(std::shared_ptr<Core::FE::Discretization> discr,  ///< discretization
         Core::LinAlg::Solver& solver,  ///< Solver to solve linear subproblem in iteration
-        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,  ///< Map extractor for Dirichlet DOFs
+        std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps,  ///< Map extractor for Dirichlet DOFs
         Teuchos::ParameterList param  ///< parameterlist containing solver parameters
     );
 
@@ -65,7 +66,8 @@ namespace CONSTRAINTS
         Core::LinAlg::SparseMatrix& constr,        ///< constraint matrix with Dirichlet zeros
         Core::LinAlg::SparseMatrix&
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,  ///< displacement increment to compute
+        std::shared_ptr<Core::LinAlg::Vector<double>>
+            dispinc,                                ///< displacement increment to compute
         Core::LinAlg::Vector<double>& lagrinc,      ///< lagrange multiplier increment to compute
         Core::LinAlg::Vector<double>& rhsstandard,  ///< standard right hand side
         Core::LinAlg::Vector<double>& rhsconstr     ///< constraint errors
@@ -88,7 +90,7 @@ namespace CONSTRAINTS
     }
 
     void set_stc_prop(
-        Inpar::Solid::StcScale stcalgo, Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat)
+        Inpar::Solid::StcScale stcalgo, std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat)
     {
       stcalgo_ = stcalgo;
       stcmat_ = stcmat;
@@ -106,7 +108,8 @@ namespace CONSTRAINTS
         Core::LinAlg::SparseMatrix& constr,              ///< constraint matrix with Dirichlet zeros
         Core::LinAlg::SparseMatrix&
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,  ///< displacement increment to compute
+        std::shared_ptr<Core::LinAlg::Vector<double>>
+            dispinc,                                ///< displacement increment to compute
         Core::LinAlg::Vector<double>& lagrinc,      ///< lagrange multiplier increment to compute
         Core::LinAlg::Vector<double>& rhsstandard,  ///< standard right hand side
         Core::LinAlg::Vector<double>& rhsconstr     ///< constraint errors
@@ -138,28 +141,28 @@ namespace CONSTRAINTS
         Core::LinAlg::Vector<double>& rhsconstr     ///< constraint errors
     );
 
-    Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization
-    int max_iter_;                                    ///< number of maximal iterations
-    double iterationparam_;                           ///< parameter for Uzawa algorithm
+    std::shared_ptr<Core::FE::Discretization> actdisc_;  ///< standard discretization
+    int max_iter_;                                       ///< number of maximal iterations
+    double iterationparam_;                              ///< parameter for Uzawa algorithm
     double minparam_;      ///< minimal possible parameter for Uzawa algorithm
     double iterationtol_;  ///< tolerance
     double tolres_;        ///< tolerance for residual
     double tolconstr_;     ///< tolerance for constraint
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
-        dirichtoggle_;                                  ///< \b only for compatability: dirichlet
-                                                        ///< toggle -- monitor its target change!
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
+        dirichtoggle_;                                     ///< \b only for compatability: dirichlet
+                                                           ///< toggle -- monitor its target change!
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         firstdispinc_;  ///< history variable holding displacement increment for first NRI
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         firstlagrinc_;    ///< history variable holding multiplier increment for first NRI
     bool isadapttol_;     ///< adaptive tolerance for solver?
     bool adaptolbetter_;  ///< adaptive tolerance for solver useful?
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;  ///< solver for linear standard linear system
-    int counter_;                                ///< counts how often #Solve is called
+    std::shared_ptr<Core::LinAlg::Solver> solver_;  ///< solver for linear standard linear system
+    int counter_;                                   ///< counts how often #Solve is called
     Inpar::Solid::ConSolveAlgo algochoice_;
     Inpar::Solid::StcScale stcalgo_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat_;
 
   };  // class
 }  // namespace CONSTRAINTS

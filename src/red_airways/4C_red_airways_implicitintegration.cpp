@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                    ismail 01/10|
  *----------------------------------------------------------------------*/
 Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
-    Teuchos::RCP<Core::FE::Discretization> actdis, std::unique_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Core::FE::Discretization> actdis, std::unique_ptr<Core::LinAlg::Solver> solver,
     Teuchos::ParameterList& params,
     Core::IO::DiscretizationWriter& output)
     :  // Call constructor for "nontrivial" objects
@@ -110,7 +110,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
 
     // Get elements and nodes that need to be ghosted to have correct neighbor search
     // independent of number of procs
-    compute_nearest_acinus(*discret_, &elecolset, &nodecolset, Teuchos::null);
+    compute_nearest_acinus(*discret_, &elecolset, &nodecolset, nullptr);
 
     // extended ghosting for elements (also revert fully overlapping here)
     std::vector<int> coleles(elecolset.begin(), elecolset.end());
@@ -158,7 +158,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   // a 'good' estimate
 
   // initialize standard (stabilized) system matrix
-  sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 3, false, true);
+  sysmat_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 3, false, true);
 
   // Vectors passed to the element
   // Pressures at time n+1, n and n-1
@@ -256,12 +256,12 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   evaluation_data.elemArea0 = elemArea0_;
   eleparams.set("action", "get_initial_state");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> radii_in =
+  std::shared_ptr<Core::LinAlg::Vector<double>> radii_in =
       Core::LinAlg::create_vector(*dofrowmap, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> radii_out =
+  std::shared_ptr<Core::LinAlg::Vector<double>> radii_out =
       Core::LinAlg::create_vector(*dofrowmap, true);
 
-  discret_->evaluate(eleparams, Teuchos::null, Teuchos::null, radii_in, radii_out, n_intr_ac_ln_);
+  discret_->evaluate(eleparams, nullptr, nullptr, radii_in, radii_out, n_intr_ac_ln_);
 
   for (int i = 0; i < radii_->MyLength(); i++)
   {
@@ -356,7 +356,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::integrate()
 {
-  Teuchos::RCP<Teuchos::ParameterList> param;
+  std::shared_ptr<Teuchos::ParameterList> param;
   integrate(false, param);
 }  // RedAirwayImplicitTimeInt::Integrate()
 
@@ -366,7 +366,7 @@ void Airway::RedAirwayImplicitTimeInt::integrate()
  |                                                          ismail 01/10|
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::integrate(
-    bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
+    bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams)
 {
   // Do prestressing if required
   if (calcV0PreStress_)
@@ -418,8 +418,8 @@ void Airway::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
           Core::Materials::m_0d_maxwell_acinus_ogden)
       {
         // get material parameters kappa and beta
-        Teuchos::RCP<Mat::Maxwell0dAcinusOgden> mymat =
-            Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinusOgden>(
+        std::shared_ptr<Mat::Maxwell0dAcinusOgden> mymat =
+            std::dynamic_pointer_cast<Mat::Maxwell0dAcinusOgden>(
                 discret_->g_element(GID)->material(0));
         double kappa = mymat->get_params("kappa");
         double beta = mymat->get_params("beta");
@@ -478,7 +478,7 @@ void Airway::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
  *-----------------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
     const Core::FE::Discretization& search_discret, std::set<int>* elecolset,
-    std::set<int>* nodecolset, Teuchos::RCP<Core::LinAlg::Vector<double>> airway_acinus_dep)
+    std::set<int>* nodecolset, std::shared_ptr<Core::LinAlg::Vector<double>> airway_acinus_dep)
 {
   // Loop over all airways contained on this proc
   for (int j = 0; j < (search_discret.num_my_col_elements()); j++)
@@ -561,8 +561,7 @@ void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
           nodecolset->insert(nodeids[inode]);
       }
 
-      if (airway_acinus_dep != Teuchos::null)
-        (*airway_acinus_dep)[j] = (ele_acinus->nodes()[1])->lid();
+      if (airway_acinus_dep != nullptr) (*airway_acinus_dep)[j] = (ele_acinus->nodes()[1])->lid();
     }
   }
 }
@@ -572,7 +571,7 @@ void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
  |                                                          ismail 01/10|
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::time_loop(
-    bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
+    bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
 
@@ -604,7 +603,7 @@ void Airway::RedAirwayImplicitTimeInt::time_loop(
  |                                                          ismail 09/12|
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::time_step(
-    bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
+    bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
 
@@ -677,7 +676,7 @@ void Airway::RedAirwayImplicitTimeInt::time_step(
  |                                                          ismail 09/12|
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::integrate_step(
-    Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
+    std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // Output to screen
   if (myrank_ == 0)
@@ -728,7 +727,7 @@ void Airway::RedAirwayImplicitTimeInt::prepare_time_step()
  |                                                         ismail 01/11 |
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::non_lin_solve(
-    Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
+    std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams)
 {
   double error_norm1 = 1.e7;
   double error_norm2 = 1.e7;
@@ -822,7 +821,7 @@ void Airway::RedAirwayImplicitTimeInt::non_lin_solve(
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::solve(
-    Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
+    std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // Time measurement:  solving reduced dimensional airways
   if (!coupledTo3D_)
@@ -990,9 +989,9 @@ void Airway::RedAirwayImplicitTimeInt::solve(
   }  // end of solving terminal BCs
 
   /*std::cout<<"----------------------- My SYSMAT IS
-  ("<<myrank_<<"-----------------------"<<std::endl; Teuchos::RCP<Core::LinAlg::SparseMatrix>
-  A_debug = Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_); if (A_debug !=
-  Teuchos::null)
+  ("<<myrank_<<"-----------------------"<<std::endl; std::shared_ptr<Core::LinAlg::SparseMatrix>
+  A_debug = std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(sysmat_); if (A_debug !=
+  nullptr)
   {
      (A_debug->EpetraMatrix())->print(std::cout);
   }
@@ -1091,8 +1090,7 @@ void Airway::RedAirwayImplicitTimeInt::solve(
     evaluation_data.time = time_;
 
     // Call standard loop over all elements
-    discret_->evaluate(
-        eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
     discret_->clear_state();
   }
 
@@ -1126,8 +1124,7 @@ void Airway::RedAirwayImplicitTimeInt::solve(
     evaluation_data.elemRadiusnp = elemRadiusnp_;
 
     // call standard loop over all elements
-    discret_->evaluate(
-        eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
     discret_->clear_state();
   }
 
@@ -1367,7 +1364,7 @@ void Airway::RedAirwayImplicitTimeInt::load_state()
  | Output of solution vector to binio                       ismail 07/09|
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::output(
-    bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
+    bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams)
 {
   int step = 0;
   int upres = 0;
@@ -1640,9 +1637,9 @@ void Airway::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
 /*----------------------------------------------------------------------*
  | Create the field test for redairway field                 roth 10/13 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest> Airway::RedAirwayImplicitTimeInt::create_field_test()
+std::shared_ptr<Core::Utils::ResultTest> Airway::RedAirwayImplicitTimeInt::create_field_test()
 {
-  return Teuchos::make_rcp<RedAirwayResultTest>(*this);
+  return std::make_shared<RedAirwayResultTest>(*this);
 }
 
 
@@ -1650,7 +1647,7 @@ Teuchos::RCP<Core::Utils::ResultTest> Airway::RedAirwayImplicitTimeInt::create_f
  |                                                                      |
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::eval_residual(
-    Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
+    std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams)
 {
   residual_->PutScalar(0.0);
 
@@ -1855,7 +1852,7 @@ void Airway::RedAirwayImplicitTimeInt::setup_for_coupling()
   unsigned int numcond = tmp.size();
   if (numcond == 0) FOUR_C_THROW("no coupling conditions found");
   coupmap_ =
-      Teuchos::make_rcp<Epetra_Map>(tmp.size(), tmp.size(), tmp.data(), 0, discret_->get_comm());
+      std::make_shared<Epetra_Map>(tmp.size(), tmp.size(), tmp.data(), 0, discret_->get_comm());
 }
 
 

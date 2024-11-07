@@ -80,9 +80,9 @@ namespace FS3I
     void redistribute_interface() override { return; };
 
     /// create a volmortar object
-    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> create_vol_mortar_object(
-        Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<Core::FE::Discretization> slavedis);
+    std::shared_ptr<Coupling::Adapter::MortarVolCoupl> create_vol_mortar_object(
+        std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<Core::FE::Discretization> slavedis);
 
     //! set-up of FSI and ScaTra systems
     void setup_system() override;
@@ -104,8 +104,8 @@ namespace FS3I
     const Epetra_Comm& get_comm() const { return comm_; }
 
     /// extract fluid convective and structure convective velocities
-    void extract_vel(std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& vel,
-        std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& convel) const;
+    void extract_vel(std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>& vel,
+        std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>& convel) const;
 
     void set_velocity_fields() const;
 
@@ -119,40 +119,40 @@ namespace FS3I
     virtual void set_wall_shear_stresses() const;
 
     /// extract Wall Shear Stresses at the interface
-    void extract_wss(std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& wss) const;
+    void extract_wss(std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>& wss) const;
 
     Teuchos::ParameterList& manipulate_fsi_time_params(const Teuchos::ParameterList& fs3idyn) const;
 
     //@}
 
     /// transport quantity from fluid to fluid-scalar
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_to_fluid_scalar(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidvector) const;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_to_fluid_scalar(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> fluidvector) const;
 
     /// transport quantity from fluid-scalar to fluid
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_scalar_to_fluid(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidscalarvector) const;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_scalar_to_fluid(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> fluidscalarvector) const;
 
     /// transport quantity from structure to structure-scalar
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_to_structure_scalar(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> structurevector) const;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> structure_to_structure_scalar(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> structurevector) const;
 
     /// transport quantity from structure-scalar to structure
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_scalar_to_structure(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> structurescalavector) const;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> structure_scalar_to_structure(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> structurescalavector) const;
 
    private:
     /// transport quantity from i-th volmortar master to i-th volmortar slave
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vol_mortar_master_to_slavei(
-        const int i, const Teuchos::RCP<const Core::LinAlg::Vector<double>> mastervector) const;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vol_mortar_master_to_slavei(
+        const int i, const std::shared_ptr<const Core::LinAlg::Vector<double>> mastervector) const;
 
     /// transport quantity from i-th volmortar slave to i-th volmortar master
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vol_mortar_slave_to_masteri(
-        const int i, const Teuchos::RCP<const Core::LinAlg::Vector<double>> slavevector) const;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vol_mortar_slave_to_masteri(
+        const int i, const std::shared_ptr<const Core::LinAlg::Vector<double>> slavevector) const;
 
    protected:
     /// fsi algorithm
-    Teuchos::RCP<FSI::Monolithic> fsi_;
+    std::shared_ptr<FSI::Monolithic> fsi_;
 
     /// vector of scatra volume couplings (i.e. fluid to fluid-scalar and structure to
     /// structure-scalar)
@@ -160,14 +160,14 @@ namespace FS3I
 
    private:
     //! volume coupling (using mortar) adapter
-    std::vector<Teuchos::RCP<Coupling::Adapter::MortarVolCoupl>> volume_coupling_objects_;
+    std::vector<std::shared_ptr<Coupling::Adapter::MortarVolCoupl>> volume_coupling_objects_;
 
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;
 
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> fluidscatra_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> fluidscatra_;
 
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> structscatra_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> structscatra_;
   };
 }  // namespace FS3I
 

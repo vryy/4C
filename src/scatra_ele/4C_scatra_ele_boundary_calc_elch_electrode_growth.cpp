@@ -58,9 +58,9 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     Core::Elements::LocationArray& la)
 {
   // access material of parent element
-  Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
-  if (matelectrode == Teuchos::null)
+  std::shared_ptr<const Mat::Electrode> matelectrode =
+      std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
+  if (matelectrode == nullptr)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
@@ -161,9 +161,9 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // access material of parent element
-  Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
-  if (matelectrode == Teuchos::null)
+  std::shared_ptr<const Mat::Electrode> matelectrode =
+      std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
+  if (matelectrode == nullptr)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
@@ -413,9 +413,9 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix)
 {
   // access material of parent element
-  Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
-  if (matelectrode == Teuchos::null)
+  std::shared_ptr<const Mat::Electrode> matelectrode =
+      std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
+  if (matelectrode == nullptr)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
@@ -597,9 +597,9 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     Core::LinAlg::SerialDenseMatrix& emastermatrix)
 {
   // access material of parent element
-  Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
-  if (matelectrode == Teuchos::null)
+  std::shared_ptr<const Mat::Electrode> matelectrode =
+      std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
+  if (matelectrode == nullptr)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
@@ -710,9 +710,9 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     Core::LinAlg::SerialDenseVector& eslaveresidual)
 {
   // access material of parent element
-  Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
-  if (matelectrode == Teuchos::null)
+  std::shared_ptr<const Mat::Electrode> matelectrode =
+      std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
+  if (matelectrode == nullptr)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface

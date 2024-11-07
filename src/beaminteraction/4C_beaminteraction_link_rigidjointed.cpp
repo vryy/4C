@@ -15,7 +15,7 @@
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -277,10 +277,11 @@ void BEAMINTERACTION::BeamLinkRigidJointed::reset_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> BEAMINTERACTION::BeamLinkRigidJointed::create()
+std::shared_ptr<BEAMINTERACTION::BeamLinkRigidJointed>
+BEAMINTERACTION::BeamLinkRigidJointed::create()
 {
   // for now, we always use a 2-noded linear Reissner element
-  return Teuchos::make_rcp<BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed>();
+  return std::make_shared<BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed>();
 }
 
 /*----------------------------------------------------------------------------*

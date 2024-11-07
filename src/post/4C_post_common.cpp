@@ -215,7 +215,7 @@ int PostProblem::field_pos(const PostField* field) const
 /*----------------------------------------------------------------------*
  * returns the Epetra Communicator object
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Comm> PostProblem::get_comm() { return comm_; }
+std::shared_ptr<Epetra_Comm> PostProblem::get_comm() { return comm_; }
 
 
 /*----------------------------------------------------------------------*
@@ -226,7 +226,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
 {
   MAP temp_table;
 
-  comm_ = Teuchos::make_rcp<Epetra_MpiComm>(MPI_COMM_WORLD);
+  comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
 
   /* The warning system is not set up. It's rather stupid anyway. */
 
@@ -475,20 +475,20 @@ void PostProblem::read_meshes()
 
       if (currfield.num_nodes() != 0)
       {
-        Teuchos::RCP<std::vector<char>> node_data =
+        std::shared_ptr<std::vector<char>> node_data =
             reader.read_node_data(step, comm_->NumProc(), comm_->MyPID());
         currfield.discretization()->unpack_my_nodes(*node_data);
       }
 
       if (currfield.num_elements() != 0)
       {
-        Teuchos::RCP<std::vector<char>> element_data =
+        std::shared_ptr<std::vector<char>> element_data =
             reader.read_element_data(step, comm_->NumProc(), comm_->MyPID());
         currfield.discretization()->unpack_my_elements(*element_data);
       }
 
-      Teuchos::RCP<std::vector<char>> cond_pbcsline;
-      Teuchos::RCP<std::vector<char>> cond_pbcssurf;
+      std::shared_ptr<std::vector<char>> cond_pbcsline;
+      std::shared_ptr<std::vector<char>> cond_pbcssurf;
 
       // read knot vectors for nurbs discretisations
       switch (spatial_approx_)
@@ -503,11 +503,11 @@ void PostProblem::read_meshes()
             FOUR_C_THROW("discretization %s is not a NurbsDiscretization",
                 currfield.discretization()->name().c_str());
 
-          Teuchos::RCP<std::vector<char>> packed_knots;
+          std::shared_ptr<std::vector<char>> packed_knots;
           if (comm_->MyPID() == 0)
             packed_knots = reader.read_knotvector(step);
           else
-            packed_knots = Teuchos::make_rcp<std::vector<char>>();
+            packed_knots = std::make_shared<std::vector<char>>();
 
           // distribute knots to all procs
           if (comm_->NumProc() > 1)
@@ -544,8 +544,8 @@ void PostProblem::read_meshes()
             }
           }
 
-          Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots =
-              Teuchos::make_rcp<Core::FE::Nurbs::Knotvector>();
+          std::shared_ptr<Core::FE::Nurbs::Knotvector> knots =
+              std::make_shared<Core::FE::Nurbs::Knotvector>();
 
           Core::Communication::UnpackBuffer knot_buffer(*packed_knots);
           knots->unpack(knot_buffer);
@@ -593,8 +593,8 @@ void PostProblem::read_meshes()
       // connect degrees of freedom for periodic boundary conditions
       // -------------------------------------------------------------------
       // parallel execution?!
-      if ((cond_pbcssurf != Teuchos::null and not cond_pbcssurf->empty()) or
-          (cond_pbcsline != Teuchos::null and not cond_pbcsline->empty()))
+      if ((cond_pbcssurf != nullptr and not cond_pbcssurf->empty()) or
+          (cond_pbcsline != nullptr and not cond_pbcsline->empty()))
       {
         Core::Conditions::PeriodicBoundaryConditions pbc(currfield.discretization());
         pbc.update_dofs_for_periodic_boundary_conditions();
@@ -617,19 +617,19 @@ PostField PostProblem::getfield(MAP* field_info)
   const int numele = map_read_int(field_info, "num_ele");
   const int ndim = map_read_int(field_info, "num_dim");
 
-  Teuchos::RCP<Core::FE::Discretization> dis;
+  std::shared_ptr<Core::FE::Discretization> dis;
 
   switch (spatial_approx_)
   {
     case Core::FE::ShapeFunctionType::polynomial:
     case Core::FE::ShapeFunctionType::hdg:
     {
-      dis = Teuchos::make_rcp<Core::FE::Discretization>(field_name, comm_, ndim);
+      dis = std::make_shared<Core::FE::Discretization>(field_name, comm_, ndim);
       break;
     }
     case Core::FE::ShapeFunctionType::nurbs:
     {
-      dis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(field_name, comm_, ndim);
+      dis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(field_name, comm_, ndim);
       break;
     }
     default:
@@ -673,7 +673,7 @@ int PostProblem::get_max_nodeid(const std::string& fieldname)
 /*----------------------------------------------------------------------*
  * Constructor of PostField.
  *----------------------------------------------------------------------*/
-PostField::PostField(Teuchos::RCP<Core::FE::Discretization> dis, PostProblem* problem,
+PostField::PostField(std::shared_ptr<Core::FE::Discretization> dis, PostProblem* problem,
     std::string field_name, const int numnd, const int numele)
     : dis_(dis), problem_(problem), field_name_(field_name), numnd_(numnd), numele_(numele)
 {
@@ -870,7 +870,7 @@ void PostResult::open_result_files(MAP* field_info)
  * reads the data of the result vector 'name' from the current result
  * block and returns it as an Epetra Vector.
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> PostResult::read_result(const std::string name)
+std::shared_ptr<Core::LinAlg::Vector<double>> PostResult::read_result(const std::string name)
 {
   MAP* result = map_read_map(group_, name.c_str());
   int columns;
@@ -879,7 +879,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> PostResult::read_result(const std::st
     if (columns != 1) FOUR_C_THROW("got multivector with name '%s', vector expected", name.c_str());
   }
   auto test = read_multi_result(name);
-  return Teuchos::make_rcp<Core::LinAlg::Vector<double>>((*test)(0));
+  return std::make_shared<Core::LinAlg::Vector<double>>((*test)(0));
 }
 
 /*----------------------------------------------------------------------*
@@ -887,12 +887,12 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> PostResult::read_result(const std::st
  * block and returns it as an std::vector<char>. the corresponding
  * elemap is returned, too.
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>
+std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>
 PostResult::read_result_serialdensematrix(const std::string name)
 {
   using namespace FourC;
 
-  Teuchos::RCP<Epetra_Comm> comm = field_->problem()->get_comm();
+  std::shared_ptr<Epetra_Comm> comm = field_->problem()->get_comm();
   MAP* result = map_read_map(group_, name.c_str());
   std::string id_path = map_read_string(result, "ids");
   std::string value_path = map_read_string(result, "values");
@@ -904,18 +904,18 @@ PostResult::read_result_serialdensematrix(const std::string name)
   if (columns != 1)
     FOUR_C_THROW("got multivector with name '%s', std::vector<char> expected", name.c_str());
 
-  Teuchos::RCP<Epetra_Map> elemap;
-  Teuchos::RCP<std::vector<char>> data =
+  std::shared_ptr<Epetra_Map> elemap;
+  std::shared_ptr<std::vector<char>> data =
       file_.read_result_data_vec_char(id_path, value_path, columns, *comm, elemap);
 
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> mapdata =
-      Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>();
+  std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> mapdata =
+      std::make_shared<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>();
 
   Core::Communication::UnpackBuffer data_buffer(*data);
   for (int i = 0; i < elemap->NumMyElements(); ++i)
   {
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstress =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> gpstress =
+        std::make_shared<Core::LinAlg::SerialDenseMatrix>();
     extract_from_pack(data_buffer, *gpstress);
     (*mapdata)[elemap->GID(i)] = gpstress;
   }
@@ -931,10 +931,10 @@ PostResult::read_result_serialdensematrix(const std::string name)
  * reads the data of the result vector 'name' from the current result
  * block and returns it as an Epetra Vector.
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> PostResult::read_multi_result(
+std::shared_ptr<Core::LinAlg::MultiVector<double>> PostResult::read_multi_result(
     const std::string name)
 {
-  const Teuchos::RCP<Epetra_Comm> comm = field_->problem()->get_comm();
+  const std::shared_ptr<Epetra_Comm> comm = field_->problem()->get_comm();
   MAP* result = map_read_map(group_, name.c_str());
   const std::string id_path = map_read_string(result, "ids");
   const std::string value_path = map_read_string(result, "values");

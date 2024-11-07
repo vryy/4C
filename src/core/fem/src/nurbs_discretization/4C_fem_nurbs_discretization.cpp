@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                            gammi 05/08|
  *----------------------------------------------------------------------*/
 Core::FE::Nurbs::NurbsDiscretization::NurbsDiscretization(
-    const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
-    : Core::FE::Discretization::Discretization(name, comm, n_dim), knots_(Teuchos::null)
+    const std::string name, std::shared_ptr<Epetra_Comm> comm, const unsigned int n_dim)
+    : Core::FE::Discretization::Discretization(name, comm, n_dim), knots_(nullptr)
 {
   return;
 }
@@ -41,9 +41,9 @@ Core::FE::Nurbs::NurbsDiscretization::NurbsDiscretization(
  |  add a knotvector to the discretization (public)          gammi 05/08|
  *----------------------------------------------------------------------*/
 void Core::FE::Nurbs::NurbsDiscretization::set_knot_vector(
-    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots)
+    std::shared_ptr<Core::FE::Nurbs::Knotvector> knots)
 {
-  if (knots == Teuchos::null)
+  if (knots == nullptr)
   {
     FOUR_C_THROW(
         "You're trying to set an invalid knotvector in the "
@@ -60,9 +60,9 @@ void Core::FE::Nurbs::NurbsDiscretization::set_knot_vector(
  |  get a pointer to knotvector from the discretization         (public)|
  |                                                           gammi 05/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Nurbs::Knotvector> Core::FE::Nurbs::NurbsDiscretization::get_knot_vector()
+std::shared_ptr<Core::FE::Nurbs::Knotvector> Core::FE::Nurbs::NurbsDiscretization::get_knot_vector()
 {
-  if (knots_ == Teuchos::null)
+  if (knots_ == nullptr)
   {
     FOUR_C_THROW(
         "You're trying to access the NURBS knot vector in the "
@@ -78,10 +78,10 @@ Teuchos::RCP<Core::FE::Nurbs::Knotvector> Core::FE::Nurbs::NurbsDiscretization::
  |  get a pointer to knotvector from the discretization         (public)|
  |  (const version, read-only)                               gammi 05/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::FE::Nurbs::Knotvector>
+std::shared_ptr<const Core::FE::Nurbs::Knotvector>
 Core::FE::Nurbs::NurbsDiscretization::get_knot_vector() const
 {
-  if (knots_ == Teuchos::null)
+  if (knots_ == nullptr)
   {
     FOUR_C_THROW(
         "You're trying to access the NURBS knot vector in the "
@@ -96,8 +96,8 @@ Core::FE::Nurbs::NurbsDiscretization::get_knot_vector() const
  *----------------------------------------------------------------------------*/
 void Core::FE::Utils::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, double time,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-    Core::FE::Utils::Dbc::DbcInfo& info, Teuchos::RCP<std::set<int>>* dbcgids) const
+    const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
+    Core::FE::Utils::Dbc::DbcInfo& info, std::shared_ptr<std::set<int>>* dbcgids) const
 {
   // --------------------------- Step 1 ---------------------------------------
   Core::FE::Utils::Dbc::evaluate(params, discret, time, systemvectors, info, dbcgids);
@@ -107,8 +107,8 @@ void Core::FE::Utils::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
   dbc_cond_names[0] = "Dirichlet";
   dbc_cond_names[1] = "NurbsLSDirichlet";
 
-  std::vector<Teuchos::RCP<Core::Conditions::Condition>> conds(0);
-  std::vector<Teuchos::RCP<Core::Conditions::Condition>> curr_conds(0);
+  std::vector<std::shared_ptr<Core::Conditions::Condition>> conds(0);
+  std::vector<std::shared_ptr<Core::Conditions::Condition>> curr_conds(0);
   for (std::vector<std::string>::const_iterator cit_name = dbc_cond_names.begin();
        cit_name != dbc_cond_names.end(); ++cit_name)
   {
@@ -125,9 +125,9 @@ void Core::FE::Utils::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
   conds.clear();
   discret.get_condition("NurbsLSDirichlet", conds);
 
-  Teuchos::RCP<std::set<int>> dbcgids_nurbs[2] = {Teuchos::null, Teuchos::null};
-  dbcgids_nurbs[set_row] = Teuchos::make_rcp<std::set<int>>();
-  dbcgids_nurbs[set_col] = Teuchos::make_rcp<std::set<int>>();
+  std::shared_ptr<std::set<int>> dbcgids_nurbs[2] = {nullptr, nullptr};
+  dbcgids_nurbs[set_row] = std::make_shared<std::set<int>>();
+  dbcgids_nurbs[set_col] = std::make_shared<std::set<int>>();
 
   // create a new toggle vector with column layout
   const Core::FE::Nurbs::NurbsDiscretization* discret_nurbs =
@@ -147,11 +147,11 @@ void Core::FE::Utils::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
  *----------------------------------------------------------------------------*/
 void Core::FE::Utils::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-    const Core::LinAlg::Vector<int>& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
+    const Core::LinAlg::Vector<int>& toggle, const std::shared_ptr<std::set<int>>* dbcgids) const
 {
   // default call
-  if (dbcgids[set_col].is_null())
+  if (dbcgids[set_col] == nullptr)
   {
     Core::FE::Utils::Dbc::do_dirichlet_condition(
         params, discret, cond, time, systemvectors, toggle, dbcgids);
@@ -181,14 +181,14 @@ void Core::FE::Utils::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
       nummyelements = dbcgidsv.size();
       myglobalelements = dbcgidsv.data();
     }
-    Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::make_rcp<Epetra_Map>(-1, nummyelements,
+    std::shared_ptr<Epetra_Map> dbcmap = std::make_shared<Epetra_Map>(-1, nummyelements,
         myglobalelements, discret.dof_row_map()->IndexBase(), discret.dof_row_map()->Comm());
     // build the map extractor of Dirichlet-conditioned and free DOFs
     auxdbcmapextractor = Core::LinAlg::MapExtractor(*(discret.dof_row_map()), dbcmap);
   }
 
   // column map of all DOFs subjected to a least squares Dirichlet condition
-  Teuchos::RCP<Epetra_Map> dbccolmap = Teuchos::null;
+  std::shared_ptr<Epetra_Map> dbccolmap = nullptr;
   {
     // build map of Dirichlet DOFs
     int nummyelements = 0;
@@ -201,7 +201,7 @@ void Core::FE::Utils::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
       nummyelements = dbcgidsv.size();
       myglobalelements = dbcgidsv.data();
     }
-    dbccolmap = Teuchos::make_rcp<Epetra_Map>(-1, nummyelements, myglobalelements,
+    dbccolmap = std::make_shared<Epetra_Map>(-1, nummyelements, myglobalelements,
         nurbs_dis.dof_col_map()->IndexBase(), discret.dof_row_map()->Comm());
   }
 
@@ -210,7 +210,7 @@ void Core::FE::Utils::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Teuchos::RCP<const Epetra_Map> dofrowmap = auxdbcmapextractor.cond_map();
+  const std::shared_ptr<const Epetra_Map> dofrowmap = auxdbcmapextractor.cond_map();
 
   if (dofrowmap->NumGlobalElements() == 0) return;  // no dbc gids ->leave
 
@@ -225,57 +225,57 @@ void Core::FE::Utils::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to
   unsigned deg = 0;  // highest degree of requested time derivative
-  Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectoraux =
-      Teuchos::null;  // auxiliar system vector
-  if (systemvectors[0] != Teuchos::null)
+  std::shared_ptr<Core::LinAlg::Vector<double>> systemvectoraux =
+      nullptr;  // auxiliar system vector
+  if (systemvectors[0] != nullptr)
   {
     deg = 0;
     systemvectoraux = systemvectors[0];
   }
-  if (systemvectors[1] != Teuchos::null)
+  if (systemvectors[1] != nullptr)
   {
     deg = 1;
-    if (systemvectoraux == Teuchos::null) systemvectoraux = systemvectors[1];
+    if (systemvectoraux == nullptr) systemvectoraux = systemvectors[1];
   }
-  if (systemvectors[2] != Teuchos::null)
+  if (systemvectors[2] != nullptr)
   {
     deg = 2;
-    if (systemvectoraux == Teuchos::null) systemvectoraux = systemvectors[2];
+    if (systemvectoraux == nullptr) systemvectoraux = systemvectors[2];
   }
-  FOUR_C_ASSERT(systemvectoraux != Teuchos::null, "At least one vector must be unequal to null");
+  FOUR_C_ASSERT(systemvectoraux != nullptr, "At least one vector must be unequal to null");
 
 
   // -------------------------------------------------------------------
   // create empty mass matrix
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 108, false, true);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> massmatrix =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 108, false, true);
 
   // -------------------------------------------------------------------
   // create empty right hand side vector
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs = Core::LinAlg::create_vector(*dofrowmap, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dbcvector =
+  std::shared_ptr<Core::LinAlg::Vector<double>> rhs = Core::LinAlg::create_vector(*dofrowmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> dbcvector =
       Core::LinAlg::create_vector(*dofrowmap, true);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhsd = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dbcvectord = Teuchos::null;
-  if (systemvectors[1] != Teuchos::null)
+  std::shared_ptr<Core::LinAlg::Vector<double>> rhsd = nullptr;
+  std::shared_ptr<Core::LinAlg::Vector<double>> dbcvectord = nullptr;
+  if (systemvectors[1] != nullptr)
   {
     rhsd = Core::LinAlg::create_vector(*dofrowmap, true);
     dbcvectord = Core::LinAlg::create_vector(*dofrowmap, true);
   }
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhsdd = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dbcvectordd = Teuchos::null;
-  if (systemvectors[2] != Teuchos::null)
+  std::shared_ptr<Core::LinAlg::Vector<double>> rhsdd = nullptr;
+  std::shared_ptr<Core::LinAlg::Vector<double>> dbcvectordd = nullptr;
+  if (systemvectors[2] != nullptr)
   {
     rhsdd = Core::LinAlg::create_vector(*dofrowmap, true);
     dbcvectordd = Core::LinAlg::create_vector(*dofrowmap, true);
   }
 
-  const bool assemblevecd = rhsd != Teuchos::null;
-  const bool assemblevecdd = rhsdd != Teuchos::null;
+  const bool assemblevecd = rhsd != nullptr;
+  const bool assemblevecdd = rhsdd != nullptr;
 
   // -------------------------------------------------------------------
   // call elements to calculate massmatrix and righthandside
@@ -286,8 +286,8 @@ void Core::FE::Utils::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
     if (!discret.have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
     // see what we have for input
-    bool assemblemat = massmatrix != Teuchos::null;
-    bool assemblevec = rhs != Teuchos::null;
+    bool assemblemat = massmatrix != nullptr;
+    bool assemblevec = rhs != nullptr;
 
     // define element matrices and vectors
     Core::LinAlg::SerialDenseMatrix elemass;
@@ -300,11 +300,11 @@ void Core::FE::Utils::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
     std::vector<int> lmowner_full;
     std::vector<int> lmstride_full;
 
-    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond.geometry();
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator curr;
+    const std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = cond.geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
-      Teuchos::RCP<Core::Elements::Element> actele = curr->second;
+      std::shared_ptr<Core::Elements::Element> actele = curr->second;
 
       static const int probdim = discret.n_dim();
       const Core::FE::CellType distype = actele->shape();
@@ -319,8 +319,8 @@ void Core::FE::Utils::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
       bool zero_size = false;
       if (isboundary)
       {
-        Teuchos::RCP<Core::Elements::FaceElement> faceele =
-            Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(actele, true);
+        std::shared_ptr<Core::Elements::FaceElement> faceele =
+            std::dynamic_pointer_cast<Core::Elements::FaceElement>(actele);
         double normalfac = 0.0;
         std::vector<Core::LinAlg::SerialDenseVector> pknots(probdim);
         zero_size = Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary(actele.get(),

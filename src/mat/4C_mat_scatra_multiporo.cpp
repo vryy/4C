@@ -29,9 +29,9 @@ Mat::PAR::ScatraMatMultiPoroFluid::ScatraMatMultiPoroFluid(
 {
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroFluid::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroFluid::create_material()
 {
-  return Teuchos::make_rcp<Mat::ScatraMatMultiPoroFluid>(this);
+  return std::make_shared<Mat::ScatraMatMultiPoroFluid>(this);
 }
 
 
@@ -87,7 +87,7 @@ void Mat::ScatraMatMultiPoroFluid::unpack(Core::Communication::UnpackBuffer& buf
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -118,9 +118,9 @@ Mat::PAR::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac(
 {
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroVolFrac::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroVolFrac::create_material()
 {
-  return Teuchos::make_rcp<Mat::ScatraMatMultiPoroVolFrac>(this);
+  return std::make_shared<Mat::ScatraMatMultiPoroVolFrac>(this);
 }
 
 
@@ -177,7 +177,7 @@ void Mat::ScatraMatMultiPoroVolFrac::unpack(Core::Communication::UnpackBuffer& b
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -206,9 +206,9 @@ Mat::PAR::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid(
 {
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroSolid::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroSolid::create_material()
 {
-  return Teuchos::make_rcp<Mat::ScatraMatMultiPoroSolid>(this);
+  return std::make_shared<Mat::ScatraMatMultiPoroSolid>(this);
 }
 
 Mat::ScatraMatMultiPoroSolidType Mat::ScatraMatMultiPoroSolidType::instance_;
@@ -261,7 +261,7 @@ void Mat::ScatraMatMultiPoroSolid::unpack(Core::Communication::UnpackBuffer& buf
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -298,9 +298,9 @@ Mat::PAR::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature(
 {
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroTemperature::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroTemperature::create_material()
 {
-  return Teuchos::make_rcp<Mat::ScatraMatMultiPoroTemperature>(this);
+  return std::make_shared<Mat::ScatraMatMultiPoroTemperature>(this);
 }
 
 Mat::ScatraMatMultiPoroTemperatureType Mat::ScatraMatMultiPoroTemperatureType::instance_;
@@ -354,7 +354,7 @@ void Mat::ScatraMatMultiPoroTemperature::unpack(Core::Communication::UnpackBuffe
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

@@ -53,7 +53,7 @@ namespace CONTACT
     integration includes the Mortar matrices D/M and the gap g.
 
     */
-    bool integrate_overlap(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
+    bool integrate_overlap(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr) override;
 
     /*!
     \brief Return type of wear surface definition
@@ -131,9 +131,9 @@ namespace CONTACT
     \brief Evaluate mortar coupling
 
     */
-    void integrate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
+    void integrate_coupling(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr) override;
 
-    bool evaluate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
+    bool evaluate_coupling(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr) override;
     //@}
    private:
     /*!

@@ -12,7 +12,7 @@
 
 #include "4C_inpar_structure.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 // forward declaration ...
 
@@ -56,11 +56,11 @@ namespace Solid
 
       //! initialize the base class variables
       virtual void init(const enum Inpar::Solid::PredEnum& type,
-          const Teuchos::RCP<Solid::IMPLICIT::Generic>& implint_ptr,
-          const Teuchos::RCP<Solid::Dbc>& dbc_ptr,
-          const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& iodata_ptr,
-          const Teuchos::RCP<Teuchos::ParameterList>& noxparams_ptr);
+          const std::shared_ptr<Solid::IMPLICIT::Generic>& implint_ptr,
+          const std::shared_ptr<Solid::Dbc>& dbc_ptr,
+          const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+          const std::shared_ptr<Solid::TimeInt::BaseDataIO>& iodata_ptr,
+          const std::shared_ptr<Teuchos::ParameterList>& noxparams_ptr);
 
       //! setup of the specific predictor
       virtual void setup() = 0;
@@ -103,19 +103,19 @@ namespace Solid
 
       void check_init_setup() const;
 
-      Teuchos::RCP<Solid::IMPLICIT::Generic>& impl_int_ptr();
+      std::shared_ptr<Solid::IMPLICIT::Generic>& impl_int_ptr();
       Solid::IMPLICIT::Generic& impl_int();
 
-      Teuchos::RCP<Solid::Dbc>& dbc_ptr();
+      std::shared_ptr<Solid::Dbc>& dbc_ptr();
       Solid::Dbc& dbc();
 
-      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr();
+      std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr();
       Solid::TimeInt::BaseDataGlobalState& global_state();
 
-      Teuchos::RCP<Solid::TimeInt::BaseDataIO>& io_data_ptr();
+      std::shared_ptr<Solid::TimeInt::BaseDataIO>& io_data_ptr();
       Solid::TimeInt::BaseDataIO& io_data();
 
-      Teuchos::RCP<Teuchos::ParameterList>& nox_params_ptr();
+      std::shared_ptr<Teuchos::ParameterList>& nox_params_ptr();
       Teuchos::ParameterList& nox_params();
 
      protected:
@@ -130,18 +130,18 @@ namespace Solid
       enum Inpar::Solid::PredEnum type_;
 
       //! pointer to the implicit integrator
-      Teuchos::RCP<Solid::IMPLICIT::Generic> implint_ptr_;
+      std::shared_ptr<Solid::IMPLICIT::Generic> implint_ptr_;
 
       //! pointer to the dirichlet boundary condition object
-      Teuchos::RCP<Solid::Dbc> dbc_ptr_;
+      std::shared_ptr<Solid::Dbc> dbc_ptr_;
 
       //! global state pointer
-      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
+      std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
       //! input/output data pointer
-      Teuchos::RCP<Solid::TimeInt::BaseDataIO> iodata_ptr_;
+      std::shared_ptr<Solid::TimeInt::BaseDataIO> iodata_ptr_;
 
-      Teuchos::RCP<Teuchos::ParameterList> noxparams_ptr_;
+      std::shared_ptr<Teuchos::ParameterList> noxparams_ptr_;
     };  // class  Generic
   }     // namespace Predict
 }  // namespace Solid

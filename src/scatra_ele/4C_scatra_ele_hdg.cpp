@@ -64,24 +64,24 @@ Core::Communication::ParObject* Discret::Elements::ScaTraHDGType::create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ScaTraHDGType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ScaTraHDGType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRANSPHDG")
   {
-    return Teuchos::make_rcp<Discret::Elements::ScaTraHDG>(id, owner);
+    return std::make_shared<Discret::Elements::ScaTraHDG>(id, owner);
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ScaTraHDGType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ScaTraHDGType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::ScaTraHDG>(id, owner);
+  return std::make_shared<Discret::Elements::ScaTraHDG>(id, owner);
 }
 
 
@@ -248,7 +248,7 @@ void Discret::Elements::ScaTraHDG::unpack(Core::Communication::UnpackBuffer& buf
 void Discret::Elements::ScaTraHDG::pack_material(Core::Communication::PackBuffer& data) const
 {
   // add material
-  if (material() != Teuchos::null)
+  if (material() != nullptr)
   {
     // pack only first material
     material()->pack(data);
@@ -262,11 +262,11 @@ void Discret::Elements::ScaTraHDG::pack_material(Core::Communication::PackBuffer
  *----------------------------------------------------------------------*/
 void Discret::Elements::ScaTraHDG::unpack_material(Core::Communication::UnpackBuffer& buffer) const
 {
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
   if (mat->material_type() == Core::Materials::m_myocard)
   {
     // Note: We need to do a dynamic_cast here
-    Teuchos::RCP<Mat::Myocard> actmat = Teuchos::rcp_dynamic_cast<Mat::Myocard>(mat);
+    std::shared_ptr<Mat::Myocard> actmat = std::dynamic_pointer_cast<Mat::Myocard>(mat);
     actmat->unpack_material(buffer);
   }
   else
@@ -278,14 +278,14 @@ void Discret::Elements::ScaTraHDG::unpack_material(Core::Communication::UnpackBu
  *----------------------------------------------------------------------*/
 int Discret::Elements::ScaTraHDG::initialize()
 {
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
   // for now, we only need to do something in case of reactions (for the initialization of functions
   // in case of reactions by function)
   if (mat->material_type() == Core::Materials::m_myocard)
   {
     int gp;
     // Note: We need to do a dynamic_cast here
-    Teuchos::RCP<Mat::Myocard> actmat = Teuchos::rcp_dynamic_cast<Mat::Myocard>(mat);
+    std::shared_ptr<Mat::Myocard> actmat = std::dynamic_pointer_cast<Mat::Myocard>(mat);
     int deg = 0;
     if (degree_old_ == 1)
       deg = 4 * degree_old_;
@@ -327,7 +327,7 @@ int Discret::Elements::ScaTraHDG::initialize()
     }
     else
     {
-      Teuchos::RCP<Core::FE::GaussPoints> quadrature_(
+      std::shared_ptr<Core::FE::GaussPoints> quadrature_(
           Core::FE::GaussPointCache::instance().create(this->shape(), deg));
       gp = quadrature_->num_points();
     }
@@ -361,7 +361,7 @@ bool Discret::Elements::ScaTraHDG::read_element(const std::string& eletype,
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)             hoermann 09/15|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ScaTraHDG::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::ScaTraHDG::lines()
 {
   return Core::Communication::get_element_lines<ScaTraHDGBoundary, ScaTraHDG>(*this);
 }
@@ -370,7 +370,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ScaTraHDG:
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                       hoermann 09/15|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ScaTraHDG::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::ScaTraHDG::surfaces()
 {
   return Core::Communication::get_element_surfaces<ScaTraHDGBoundary>(*this);
 }
@@ -379,7 +379,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ScaTraHDG:
 /*----------------------------------------------------------------------*
  |  get face element (public)                             hoermann 09/15|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ScaTraHDG::create_face_element(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ScaTraHDG::create_face_element(
     Core::Elements::Element* parent_slave,  //!< parent slave fluid3 element
     int nnode,                              //!< number of surface nodes
     const int* nodeids,                     //!< node ids of surface element
@@ -443,7 +443,7 @@ int Discret::Elements::ScaTraHDG::evaluate(Teuchos::ParameterList& params,
   }
 
   // get material
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   // switch between different physical types as used below
   switch (act)
@@ -513,10 +513,10 @@ void Discret::Elements::ScaTraHDG::print(std::ostream& os) const
 
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ScaTraHDGBoundaryType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ScaTraHDGBoundaryType::create(
     const int id, const int owner)
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -628,7 +628,7 @@ void Discret::Elements::ScaTraHDGBoundary::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                         hoermann 09/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ScaTraHDGBoundary::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::ScaTraHDGBoundary::lines()
 {
   FOUR_C_THROW("Lines of ScaTraHDGBoundary not implemented");
 }
@@ -637,7 +637,8 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ScaTraHDGB
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                         hoermann 09/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ScaTraHDGBoundary::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>>
+Discret::Elements::ScaTraHDGBoundary::surfaces()
 {
   FOUR_C_THROW("Surfaces of ScaTraHDGBoundary not implemented");
 }
@@ -705,10 +706,10 @@ void Discret::Elements::ScaTraHDGBoundary::location_vector(const Core::FE::Discr
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ScaTraHDGIntFaceType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ScaTraHDGIntFaceType::create(
     const int id, const int owner)
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -1016,7 +1017,7 @@ void Discret::Elements::ScaTraHDGIntFace::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                         hoermann 09/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ScaTraHDGIntFace::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::ScaTraHDGIntFace::lines()
 {
   FOUR_C_THROW("Lines of ScaTraHDGIntFace not implemented");
 }
@@ -1024,7 +1025,8 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ScaTraHDGI
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                         hoermann 09/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ScaTraHDGIntFace::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>>
+Discret::Elements::ScaTraHDGIntFace::surfaces()
 {
   FOUR_C_THROW("Surfaces of ScaTraHDGIntFace not implemented");
 }

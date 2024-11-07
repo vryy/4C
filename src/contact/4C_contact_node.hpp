@@ -955,7 +955,7 @@ namespace CONTACT
      \brief Resets the data container of the node
 
      With this function, the container with contact specific quantities/information
-     is deleted / reset to Teuchos::null pointer
+     is deleted / reset to nullptr pointer
 
      */
     void reset_data_container() override;
@@ -980,7 +980,7 @@ namespace CONTACT
 
     //! @}
 
-    virtual bool has_tsi_data() { return (cTSIdata_ != Teuchos::null); }
+    virtual bool has_tsi_data() { return (cTSIdata_ != nullptr); }
 
     /*!
      \brief Write nodal normals to old ones
@@ -1020,16 +1020,16 @@ namespace CONTACT
     int linsize_;
 
     //! Additional information of proc's contact nodes
-    Teuchos::RCP<CONTACT::NodeDataContainer> codata_;
+    std::shared_ptr<CONTACT::NodeDataContainer> codata_;
 
     //! Additional information of proc's poro contact nodes
-    Teuchos::RCP<CONTACT::NodePoroDataContainer> coporodata_;
+    std::shared_ptr<CONTACT::NodePoroDataContainer> coporodata_;
 
     //! Additional information of TSI contact nodes
-    Teuchos::RCP<CONTACT::NodeTSIDataContainer> cTSIdata_;
+    std::shared_ptr<CONTACT::NodeTSIDataContainer> cTSIdata_;
 
     //! Additional information of EHL contact nodes
-    Teuchos::RCP<CONTACT::NodeEhlDataContainer> cEHLdata_;
+    std::shared_ptr<CONTACT::NodeEhlDataContainer> cEHLdata_;
   };
   // class Node
 }  // namespace CONTACT

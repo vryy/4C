@@ -152,10 +152,10 @@ namespace BEAMINTERACTION
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele2pos_;
 
     //! neighbor elements of element 1
-    Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> neighbors1_;
+    std::shared_ptr<BEAMINTERACTION::B3CNeighbor> neighbors1_;
 
     //! neighbor elements of element 2
-    Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> neighbors2_;
+    std::shared_ptr<BEAMINTERACTION::B3CNeighbor> neighbors2_;
 
     //! cross section radius of first beam
     double r1_;
@@ -193,13 +193,13 @@ namespace BEAMINTERACTION
     std::pair<bool, bool> boundarynode2_;
 
     //! Variables stored at the closest points of the large-angle-contact algorithm
-    std::vector<Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>>> cpvariables_;
+    std::vector<std::shared_ptr<BeamToBeamContactVariables<numnodes, numnodalvalues>>> cpvariables_;
 
     //! Variables stored at the Gauss points of the small-angle-contact algorithm
-    std::vector<Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>>> gpvariables_;
+    std::vector<std::shared_ptr<BeamToBeamContactVariables<numnodes, numnodalvalues>>> gpvariables_;
 
     //! Variables stored at the end points of the endpoint-contact algorithm
-    std::vector<Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>>> epvariables_;
+    std::vector<std::shared_ptr<BeamToBeamContactVariables<numnodes, numnodalvalues>>> epvariables_;
 
     //@}
 
@@ -377,7 +377,7 @@ namespace BEAMINTERACTION
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
-        Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>> cpvariables,
+        std::shared_ptr<BeamToBeamContactVariables<numnodes, numnodalvalues>> cpvariables,
         const double& intfac, const double& d_xi_ele_d_xi_bound, TYPE signed_jacobi_interval);
 #endif
 
@@ -565,7 +565,7 @@ namespace BEAMINTERACTION
     */
     void compute_normal(Core::LinAlg::Matrix<3, 1, TYPE>& r1, Core::LinAlg::Matrix<3, 1, TYPE>& r2,
         Core::LinAlg::Matrix<3, 1, TYPE>& r1_xi, Core::LinAlg::Matrix<3, 1, TYPE>& r2_xi,
-        Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>> variables,
+        std::shared_ptr<BeamToBeamContactVariables<numnodes, numnodalvalues>> variables,
         int contacttype);
 
     /*!
@@ -624,9 +624,8 @@ namespace BEAMINTERACTION
     //  void fd_check( Core::LinAlg::SparseMatrix& stiffmatrix,
     //                Core::LinAlg::Vector<double>& fint,
     //                const double& pp,
-    //                std::map<std::pair<int,int>, Teuchos::RCP<BeamContactPair> >& contactpairmap,
-    //                Teuchos::ParameterList& timeintparams,
-    //                bool fdcheck);
+    //                std::map<std::pair<int,int>, std::shared_ptr<BeamContactPair> >&
+    //                contactpairmap, Teuchos::ParameterList& timeintparams, bool fdcheck);
 
     //@}
   };

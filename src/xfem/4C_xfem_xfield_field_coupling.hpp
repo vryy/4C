@@ -67,75 +67,80 @@ namespace XFEM
        *
        *  \param mv       (in) : master vector (to be transferred)
        *  \param map_type (in) : map type of the master vector */
-      inline Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>& mv,
+      inline std::shared_ptr<Core::LinAlg::Vector<double>> master_to_slave(
+          const std::shared_ptr<Core::LinAlg::Vector<double>>& mv,
           const enum XFEM::MapType& map_type) const
       {
-        return master_to_slave(mv.getConst(), map_type);
+        return master_to_slave(
+            std::const_pointer_cast<const Core::LinAlg::Vector<double>>(mv), map_type);
       }
 
       /** \brief transfer a nodal/dof vector from slave to master
        *
        *  \param sv       (in) : slave vector (to be transferred)
        *  \param map_type (in) : map type of the slave vector */
-      inline Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
-          Teuchos::RCP<Core::LinAlg::Vector<double>> sv, const enum XFEM::MapType& map_type) const
+      inline std::shared_ptr<Core::LinAlg::Vector<double>> slave_to_master(
+          std::shared_ptr<Core::LinAlg::Vector<double>> sv,
+          const enum XFEM::MapType& map_type) const
       {
-        return slave_to_master(sv.getConst(), map_type);
+        return slave_to_master(
+            std::const_pointer_cast<const Core::LinAlg::Vector<double>>(sv), map_type);
       }
 
       /** \brief transfer a nodal/dof multi vector from master to slave
        *
        *  \param mv       (in) : master multi vector (to be transferred)
        *  \param map_type (in) : map type of the master vector */
-      inline Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
-          Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv,
+      inline std::shared_ptr<Core::LinAlg::MultiVector<double>> master_to_slave(
+          std::shared_ptr<Core::LinAlg::MultiVector<double>> mv,
           const enum XFEM::MapType& map_type) const
       {
-        return master_to_slave(mv.getConst(), map_type);
+        return master_to_slave(
+            std::const_pointer_cast<const Core::LinAlg::MultiVector<double>>(mv), map_type);
       }
 
       /** \brief transfer a nodal/dof multi vector from slave to master
        *
        *  \param sv       (in) : slave multi vector (to be transferred)
        *  \param map_type (in) : map type of the slave vector */
-      inline Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
-          Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv,
+      inline std::shared_ptr<Core::LinAlg::MultiVector<double>> slave_to_master(
+          std::shared_ptr<Core::LinAlg::MultiVector<double>> sv,
           const enum XFEM::MapType& map_type) const
       {
-        return slave_to_master(sv.getConst(), map_type);
+        return slave_to_master(
+            std::const_pointer_cast<const Core::LinAlg::MultiVector<double>>(sv), map_type);
       }
 
       /** \brief transfer a nodel/dof vector from master to slave
        *
        *  \param mv       (in) : master vector (to be transferred)
        *  \param map_type (in) : map type of the master vector */
-      Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
-          const Teuchos::RCP<const Core::LinAlg::Vector<double>>& mv,
+      std::shared_ptr<Core::LinAlg::Vector<double>> master_to_slave(
+          const std::shared_ptr<const Core::LinAlg::Vector<double>>& mv,
           const enum XFEM::MapType& map_type) const;
 
       /** \brief transfer a nodal/dof vector from slave to master
        *
        *  \param sv       (in) : slave vector (to be transferred)
        *  \param map_type (in) : map type of the slave vector */
-      Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
-          const Teuchos::RCP<const Core::LinAlg::Vector<double>>& sv,
+      std::shared_ptr<Core::LinAlg::Vector<double>> slave_to_master(
+          const std::shared_ptr<const Core::LinAlg::Vector<double>>& sv,
           const enum XFEM::MapType& map_type) const;
 
       /** \brief transfer a nodel/dof vector from master to slave
        *
        *  \param mv       (in) : master vector (to be transferred)
        *  \param map_type (in) : map type of the master vector */
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
-          const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& mv,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> master_to_slave(
+          const std::shared_ptr<const Core::LinAlg::MultiVector<double>>& mv,
           const enum XFEM::MapType& map_type) const;
 
       /** \brief transfer a nodal/dof multi vector from slave to master
        *
        *  \param sv       (in) : slave multi vector (to be transferred)
        *  \param map_type (in) : map type of the slave vector */
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
-          const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& sv,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> slave_to_master(
+          const std::shared_ptr<const Core::LinAlg::MultiVector<double>>& sv,
           const enum XFEM::MapType& map_type) const;
 
       /** \brief transfer a nodel/dof multi vector from master to slave
@@ -176,10 +181,10 @@ namespace XFEM
        *  \date 09/16  */
       void build_dof_maps(const Core::FE::Discretization& masterdis,
           const Core::FE::Discretization& slavedis,
-          const Teuchos::RCP<const Epetra_Map>& masternodemap,
-          const Teuchos::RCP<const Epetra_Map>& slavenodemap,
-          const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
-          const Teuchos::RCP<const Epetra_Map>& permslavenodemap,
+          const std::shared_ptr<const Epetra_Map>& masternodemap,
+          const std::shared_ptr<const Epetra_Map>& slavenodemap,
+          const std::shared_ptr<const Epetra_Map>& permmasternodemap,
+          const std::shared_ptr<const Epetra_Map>& permslavenodemap,
           const std::vector<int>& masterdofs, const std::vector<int>& slavedofs,
           const int nds_master = 0, const int nds_slave = 0) override;
 
@@ -191,10 +196,10 @@ namespace XFEM
        *
        *  \author hiermeier
        *  \date 10/16 */
-      void save_node_maps(const Teuchos::RCP<const Epetra_Map>& masternodemap,
-          const Teuchos::RCP<const Epetra_Map>& slavenodemap,
-          const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
-          const Teuchos::RCP<const Epetra_Map>& permslavenodemap);
+      void save_node_maps(const std::shared_ptr<const Epetra_Map>& masternodemap,
+          const std::shared_ptr<const Epetra_Map>& slavenodemap,
+          const std::shared_ptr<const Epetra_Map>& permmasternodemap,
+          const std::shared_ptr<const Epetra_Map>& permslavenodemap);
 
       /** \brief Identify the number of DoF's of the min-dof discretization as well
        *  as the actual dof GID's
@@ -204,14 +209,16 @@ namespace XFEM
        */
       void build_min_dof_maps(const Core::FE::Discretization& min_dis,
           const Epetra_Map& min_nodemap, const Epetra_Map& min_permnodemap,
-          Teuchos::RCP<const Epetra_Map>& min_dofmap,
-          Teuchos::RCP<const Epetra_Map>& min_permdofmap, Teuchos::RCP<Epetra_Export>& min_exporter,
-          const Epetra_Map& max_nodemap, std::map<int, unsigned>& my_mindofpernode) const;
+          std::shared_ptr<const Epetra_Map>& min_dofmap,
+          std::shared_ptr<const Epetra_Map>& min_permdofmap,
+          std::shared_ptr<Epetra_Export>& min_exporter, const Epetra_Map& max_nodemap,
+          std::map<int, unsigned>& my_mindofpernode) const;
 
       void build_max_dof_maps(const Core::FE::Discretization& max_dis,
           const Epetra_Map& max_nodemap, const Epetra_Map& max_permnodemap,
-          Teuchos::RCP<const Epetra_Map>& max_dofmap,
-          Teuchos::RCP<const Epetra_Map>& max_permdofmap, Teuchos::RCP<Epetra_Export>& max_exporter,
+          std::shared_ptr<const Epetra_Map>& max_dofmap,
+          std::shared_ptr<const Epetra_Map>& max_permdofmap,
+          std::shared_ptr<Epetra_Export>& max_exporter,
           const std::map<int, unsigned>& my_mindofpernode) const;
 
       inline const enum MinDofDiscretization& min_dof_dis() const { return min_dof_dis_; }
@@ -221,22 +228,22 @@ namespace XFEM
 
       enum MinDofDiscretization min_dof_dis_;
 
-      Teuchos::RCP<const Epetra_Map> masternodemap_;
+      std::shared_ptr<const Epetra_Map> masternodemap_;
 
-      Teuchos::RCP<const Epetra_Map> slavenodemap_;
+      std::shared_ptr<const Epetra_Map> slavenodemap_;
 
-      Teuchos::RCP<const Epetra_Map> permmasternodemap_;
+      std::shared_ptr<const Epetra_Map> permmasternodemap_;
 
-      Teuchos::RCP<const Epetra_Map> permslavenodemap_;
+      std::shared_ptr<const Epetra_Map> permslavenodemap_;
 
       //! @name Nodal communication objects
       //@{
 
       //! permuted master dof map to master dof map exporter
-      Teuchos::RCP<Epetra_Export> nodal_masterexport_;
+      std::shared_ptr<Epetra_Export> nodal_masterexport_;
 
       //! permuted slave dof map to slave dof map exporter
-      Teuchos::RCP<Epetra_Export> nodal_slaveexport_;
+      std::shared_ptr<Epetra_Export> nodal_slaveexport_;
 
       //@}
     };  // class Coupling

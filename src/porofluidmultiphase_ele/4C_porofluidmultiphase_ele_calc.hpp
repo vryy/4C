@@ -279,13 +279,13 @@ namespace Discret
       //! @name scalar degrees of freedom and related
       /*========================================================================*/
       //! manager class for variables
-      Teuchos::RCP<PoroFluidManager::VariableManagerInterface<nsd_, nen_>> variablemanager_;
+      std::shared_ptr<PoroFluidManager::VariableManagerInterface<nsd_, nen_>> variablemanager_;
 
       //! manager class for handling phases and corresponding DOFs
-      Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager_;
+      std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager_;
 
       //! manager class for evaluation
-      Teuchos::RCP<PoroFluidEvaluator::EvaluatorInterface<nsd_, nen_>> evaluator_;
+      std::shared_ptr<PoroFluidEvaluator::EvaluatorInterface<nsd_, nen_>> evaluator_;
     };
 
   }  // namespace Elements

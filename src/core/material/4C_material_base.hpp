@@ -14,7 +14,7 @@
 #include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -55,7 +55,7 @@ namespace Core::Mat
     virtual Core::Materials::MaterialType material_type() const = 0;
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Core::Mat::Material> clone() const = 0;
+    virtual std::shared_ptr<Core::Mat::Material> clone() const = 0;
 
     /// return quick accessible material parameter data
     virtual Core::Mat::PAR::Parameter* parameter() const = 0;

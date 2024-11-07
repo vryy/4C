@@ -95,10 +95,10 @@ namespace Discret
       ) const;
 
       //! evaluate ion material
-      void mat_ion(const Teuchos::RCP<const Core::Mat::Material> material,  //!< ion material
-          const int k,                                                      //!< ID of ion material
+      void mat_ion(const std::shared_ptr<const Core::Mat::Material> material,  //!< ion material
+          const int k,                       //!< ID of ion material
           const Inpar::ElCh::EquPot equpot,  //!< type of closing equation for electric potential
-          const Teuchos::RCP<ScaTraEleDiffManagerElch>& diffmanager  //!< diffusion manager
+          const std::shared_ptr<ScaTraEleDiffManagerElch>& diffmanager  //!< diffusion manager
       );
 
      protected:

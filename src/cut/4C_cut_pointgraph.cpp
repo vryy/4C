@@ -1141,16 +1141,16 @@ Cut::Impl::PointGraph *Cut::Impl::PointGraph::create(Mesh &mesh, Element *elemen
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Impl::PointGraph::Graph> Cut::Impl::PointGraph::create_graph(unsigned dim)
+std::shared_ptr<Cut::Impl::PointGraph::Graph> Cut::Impl::PointGraph::create_graph(unsigned dim)
 {
   switch (dim)
   {
     case 1:
-      return Teuchos::make_rcp<SimplePointGraph1D::Graph>();
+      return std::make_shared<SimplePointGraph1D::Graph>();
     case 2:
-      return Teuchos::make_rcp<SimplePointGraph2D::Graph>();
+      return std::make_shared<SimplePointGraph2D::Graph>();
     case 3:
-      return Teuchos::make_rcp<PointGraph::Graph>();
+      return std::make_shared<PointGraph::Graph>();
     default:
       FOUR_C_THROW("Unsupported element dimension!");
       exit(EXIT_FAILURE);

@@ -25,7 +25,7 @@ namespace PoroElast
    public:
     //! create using a Epetra_Comm
     explicit MonolithicSplit(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
+        std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! Setup the monolithic system (depends on which field is splitted)
     void setup_system() override = 0;
@@ -50,11 +50,11 @@ namespace PoroElast
     //! @name transfer helpers
 
     //! field transform (interface only)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> structure_to_fluid_at_interface(
+    std::shared_ptr<Core::LinAlg::Vector<double>> structure_to_fluid_at_interface(
         const Core::LinAlg::Vector<double>& iv) const;
 
     //! field transform (interface only)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_structure_at_interface(
+    std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_structure_at_interface(
         const Core::LinAlg::Vector<double>& iv) const;
 
     //!@}
@@ -64,66 +64,66 @@ namespace PoroElast
     void build_combined_dbc_map() override;
 
     //! map containing the dofs with Dirichlet BC and FSI Coupling Condition on structure side
-    Teuchos::RCP<Epetra_Map> fsidbc_map();
+    std::shared_ptr<Epetra_Map> fsidbc_map();
 
     //! setup of coupling object and systemmatrixes
     virtual void setup_coupling_and_matrices();
 
     //! coupling of fluid and structure (interface only), only needed by algorithms, who perform a
     //! split, i.e. structure or fluid split.
-    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfs_;
+    std::shared_ptr<Coupling::Adapter::Coupling> icoupfs_;
 
     //! flag indicating whether there are no slip conditions to be evaluated at the interface
     bool evaluateinterface_;
 
     //! map containing DOFs with both fsi- and DBC conditions
-    Teuchos::RCP<Epetra_Map> fsibcmap_;
+    std::shared_ptr<Epetra_Map> fsibcmap_;
 
     //! map extractor DOFs with both fsi- and DBC conditions
-    Teuchos::RCP<Core::LinAlg::MapExtractor> fsibcextractor_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> fsibcextractor_;
 
     //! @name Some quantities to recover the Langrange multiplier at the end of each time step
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
     //! structure) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambda_;
 
     //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current iteration
     //! \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fgcur_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fgcur_;
 
     //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current
     //! iteration \f$i+1\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ddiinc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ddiinc_;
 
     //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current iteration
     //! \f$i+1\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> duiinc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> duiinc_;
 
     //! inner displacement solution of the structure at previous iteration
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> solipre_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> solipre_;
 
     //! inner velocity/pressure solution of the fluid at previous iteration
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> solivelpre_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> solivelpre_;
 
     //! structural interface displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at
     //! current iteration \f$i+1\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ddginc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ddginc_;
 
     //! fluid interface velocity increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current
     //! iteration \f$i+1\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> duginc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> duginc_;
 
     //! interface displacement solution of the structure at previous iteration
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> solgpre_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> solgpre_;
 
     //! interface displacement solution of the fluid at previous iteration
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> solgvelpre_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> solgvelpre_;
 
     //!@}
 
     //! interface increment for dof with dirichlet condition on fsi-interface
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ddi_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ddi_;
   };
 }  // namespace PoroElast
 

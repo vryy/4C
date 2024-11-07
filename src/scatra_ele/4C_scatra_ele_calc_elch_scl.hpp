@@ -149,15 +149,15 @@ namespace Discret
       /*========================================================================*/
 
       //! get diffusion manager for diffusion-conduction formulation
-      Teuchos::RCP<ScaTraEleDiffManagerElchScl> diff_manager()
+      std::shared_ptr<ScaTraEleDiffManagerElchScl> diff_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchScl>(my::diffmanager_);
+        return std::static_pointer_cast<ScaTraEleDiffManagerElchScl>(my::diffmanager_);
       }
 
       //! get internal variable manager for diffusion-conduction formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchScl<my::nsd_, my::nen_>> var_manager()
+      std::shared_ptr<ScaTraEleInternalVariableManagerElchScl<my::nsd_, my::nen_>> var_manager()
       {
-        return Teuchos::rcp_static_cast<
+        return std::static_pointer_cast<
             ScaTraEleInternalVariableManagerElchScl<my::nsd_, my::nen_>>(my::scatravarmanager_);
       }
 

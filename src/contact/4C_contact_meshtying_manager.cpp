@@ -32,13 +32,13 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
     : Mortar::ManagerBase()
 {
   // overwrite base class communicator
-  comm_ = Teuchos::RCP(discret.get_comm().Clone());
+  comm_ = std::shared_ptr<Epetra_Comm>(discret.get_comm().Clone());
 
   // create some local variables (later to be stored in strategy)
   const int spatialDim = Global::Problem::instance()->n_dim();
   if (spatialDim != 2 && spatialDim != 3) FOUR_C_THROW("Meshtying problem must be 2D or 3D.");
 
-  std::vector<Teuchos::RCP<Mortar::Interface>> interfaces;
+  std::vector<std::shared_ptr<Mortar::Interface>> interfaces;
   Teuchos::ParameterList mtparams;
 
   // read and check meshtying input parameters
@@ -187,7 +187,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
         Global::Problem::instance()->spatial_approximation_type()));
 
     // get it again
-    Teuchos::RCP<Mortar::Interface> interface = interfaces.back();
+    std::shared_ptr<Mortar::Interface> interface = interfaces.back();
 
     // note that the nodal IDs are unique because they come from
     // one global problem discretization containing all nodes of the
@@ -210,7 +210,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // create Node object
-        Teuchos::RCP<Mortar::Node> mtnode = Teuchos::make_rcp<Mortar::Node>(
+        std::shared_ptr<Mortar::Node> mtnode = std::make_shared<Mortar::Node>(
             node->id(), node->x(), node->owner(), discret.dof(0, node), isslave[j]);
         //-------------------
         // get nurbs weight!
@@ -260,7 +260,8 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
     for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele = currentgroup[j]->geometry();
+      std::map<int, std::shared_ptr<Core::Elements::Element>>& currele =
+          currentgroup[j]->geometry();
 
       // elements in a boundary condition have a unique id
       // but ids are not unique among 2 distinct conditions
@@ -277,9 +278,10 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
 
       for (const auto& element : currele)
       {
-        Teuchos::RCP<Core::Elements::Element> ele = element.second;
-        Teuchos::RCP<Mortar::Element> mtele = Teuchos::make_rcp<Mortar::Element>(ele->id() + ggsize,
-            ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), isslave[j], nurbs);
+        std::shared_ptr<Core::Elements::Element> ele = element.second;
+        std::shared_ptr<Mortar::Element> mtele =
+            std::make_shared<Mortar::Element>(ele->id() + ggsize, ele->owner(), ele->shape(),
+                ele->num_node(), ele->node_ids(), isslave[j], nurbs);
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs) Mortar::Utils::prepare_nurbs_element(discret, ele, *mtele, spatialDim);
@@ -328,17 +330,17 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
     if (problemtype != Core::ProblemType::poroelast && problemtype != Core::ProblemType::fpsi &&
         problemtype != Core::ProblemType::fpsi_xfem && problemtype != Core::ProblemType::fps3i)
     {
-      strategy_ = Teuchos::make_rcp<MtLagrangeStrategy>(discret.dof_row_map(),
+      strategy_ = std::make_shared<MtLagrangeStrategy>(discret.dof_row_map(),
           discret.node_row_map(), mtparams, interfaces, spatialDim, comm_, alphaf, maxdof);
     }
     else
     {
-      strategy_ = Teuchos::make_rcp<PoroMtLagrangeStrategy>(discret.dof_row_map(),
+      strategy_ = std::make_shared<PoroMtLagrangeStrategy>(discret.dof_row_map(),
           discret.node_row_map(), mtparams, interfaces, spatialDim, comm_, alphaf, maxdof);
     }
   }
   else if (stype == Inpar::CONTACT::solution_penalty or stype == Inpar::CONTACT::solution_uzawa)
-    strategy_ = Teuchos::make_rcp<MtPenaltyStrategy>(discret.dof_row_map(), discret.node_row_map(),
+    strategy_ = std::make_shared<MtPenaltyStrategy>(discret.dof_row_map(), discret.node_row_map(),
         mtparams, interfaces, spatialDim, comm_, alphaf, maxdof);
   else
     FOUR_C_THROW("Unrecognized strategy");
@@ -638,7 +640,8 @@ void CONTACT::MtManager::write_restart(Core::IO::DiscretizationWriter& output, b
  |  read restart information for meshtying (public)           popp 03/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtManager::read_restart(Core::IO::DiscretizationReader& reader,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dis, Teuchos::RCP<Core::LinAlg::Vector<double>> zero)
+    std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+    std::shared_ptr<Core::LinAlg::Vector<double>> zero)
 {
   // this is meshtying, thus we need zeros for restart
   // let strategy object do all the work
@@ -653,22 +656,22 @@ void CONTACT::MtManager::read_restart(Core::IO::DiscretizationReader& reader,
 void CONTACT::MtManager::postprocess_quantities(Core::IO::DiscretizationWriter& output)
 {
   // evaluate interface tractions
-  Teuchos::RCP<Epetra_Map> problem = get_strategy().problem_dofs();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> traction =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(get_strategy().lagrange_multiplier_old()));
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tractionexp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem);
+  std::shared_ptr<Epetra_Map> problem = get_strategy().problem_dofs();
+  std::shared_ptr<Core::LinAlg::Vector<double>> traction =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(get_strategy().lagrange_multiplier_old()));
+  std::shared_ptr<Core::LinAlg::Vector<double>> tractionexp =
+      std::make_shared<Core::LinAlg::Vector<double>>(*problem);
   Core::LinAlg::export_to(*traction, *tractionexp);
 
   // evaluate slave and master forces
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcslave =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(get_strategy().d_matrix()->row_map());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmaster =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(get_strategy().m_matrix()->domain_map());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcslaveexp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmasterexp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fcslave =
+      std::make_shared<Core::LinAlg::Vector<double>>(get_strategy().d_matrix()->row_map());
+  std::shared_ptr<Core::LinAlg::Vector<double>> fcmaster =
+      std::make_shared<Core::LinAlg::Vector<double>>(get_strategy().m_matrix()->domain_map());
+  std::shared_ptr<Core::LinAlg::Vector<double>> fcslaveexp =
+      std::make_shared<Core::LinAlg::Vector<double>>(*problem);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fcmasterexp =
+      std::make_shared<Core::LinAlg::Vector<double>>(*problem);
   get_strategy().d_matrix()->multiply(true, *traction, *fcslave);
   get_strategy().m_matrix()->multiply(true, *traction, *fcmaster);
   Core::LinAlg::export_to(*fcslave, *fcslaveexp);
@@ -685,7 +688,7 @@ void CONTACT::MtManager::postprocess_quantities(Core::IO::DiscretizationWriter& 
 /*-----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::MtManager::postprocess_quantities_per_interface(
-    Teuchos::RCP<Teuchos::ParameterList> outputParams)
+    std::shared_ptr<Teuchos::ParameterList> outputParams)
 {
   get_strategy().postprocess_quantities_per_interface(outputParams);
 }

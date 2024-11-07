@@ -44,14 +44,14 @@ namespace Solid
     //@{
 
     //! constructor
-    TimIntExpl(const Teuchos::ParameterList& timeparams,     //!< time parameters
-        const Teuchos::ParameterList& ioparams,              //!< ioflags
-        const Teuchos::ParameterList& sdynparams,            //!< input parameters
-        const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<Core::FE::Discretization> actdis,       //!< current discretisation
-        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
-        Teuchos::RCP<Core::LinAlg::Solver> contactsolver,    //!< the solver for contact meshtying
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
+    TimIntExpl(const Teuchos::ParameterList& timeparams,      //!< time parameters
+        const Teuchos::ParameterList& ioparams,               //!< ioflags
+        const Teuchos::ParameterList& sdynparams,             //!< input parameters
+        const Teuchos::ParameterList& xparams,                //!< extra flags
+        std::shared_ptr<Core::FE::Discretization> actdis,     //!< current discretisation
+        std::shared_ptr<Core::LinAlg::Solver> solver,         //!< the solver
+        std::shared_ptr<Core::LinAlg::Solver> contactsolver,  //!< the solver for contact meshtying
+        std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
 
@@ -80,8 +80,8 @@ namespace Solid
     \date 08/16
     \author rauch  */
     void init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver) override;
+        const Teuchos::ParameterList& xparams, std::shared_ptr<Core::FE::Discretization> actdis,
+        std::shared_ptr<Core::LinAlg::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -186,33 +186,33 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext() override = 0;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext() override = 0;
 
     //! Return reaction forces
-    Teuchos::RCP<Core::LinAlg::Vector<double>> freact() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> freact() override
     {
       FOUR_C_THROW("Not impl.");
-      return Teuchos::null;
+      return nullptr;
     };
 
     //! Read and set external forces from file
     void read_restart_force() override = 0;
 
     //! Write internal and external forces for restart
-    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
+    void write_restart_force(std::shared_ptr<Core::IO::DiscretizationWriter> output) override = 0;
 
     //! initial_guess is not available for explicit time integrators
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() override
     {
       FOUR_C_THROW("initial_guess() is not available for explicit time integrators");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! RHS() is not available for explicit time integrators
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override
     {
       FOUR_C_THROW("RHS() is not available for explicit time integrators");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! Prepare time step
@@ -236,7 +236,7 @@ namespace Solid
 
     //!  Update displacement state in case of coupled problems
     void update_state_incrementally(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc) override
     {
       FOUR_C_THROW(
           "All monolithically coupled problems work with implicit time "
@@ -245,7 +245,7 @@ namespace Solid
     }
 
     //!  Evaluate routine for coupled problems with monolithic approach
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
             disiterinc  ///< iterative solution increment
         ) override
     {
@@ -256,10 +256,10 @@ namespace Solid
     }
 
     //! Apply external force
-    void apply_force_external(const double time,               //!< evaluation time
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,  //!< displacement state
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> vel,  // velocity state
-        Core::LinAlg::Vector<double>& fext                     //!< external force
+    void apply_force_external(const double time,                  //!< evaluation time
+        const std::shared_ptr<Core::LinAlg::Vector<double>> dis,  //!< displacement state
+        const std::shared_ptr<Core::LinAlg::Vector<double>> vel,  // velocity state
+        Core::LinAlg::Vector<double>& fext                        //!< external force
     );
 
     /// has to be renamed either here or print_step()
@@ -290,10 +290,10 @@ namespace Solid
 
 
     /* Linear structure solve with just an interface load */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> solve_relaxation_linear() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> solve_relaxation_linear() override
     {
       FOUR_C_THROW("solve_relaxation_linear() not implemented");
-      return Teuchos::null;
+      return nullptr;
     }
 
     /// are there any algebraic constraints?
@@ -318,26 +318,26 @@ namespace Solid
     };
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override
+    std::shared_ptr<CONSTRAINTS::ConstrManager> get_constraint_manager() override
     {
       FOUR_C_THROW("get_constraint_manager() has not been tested for explicit time integrators");
-      return Teuchos::null;
+      return nullptr;
     };
 
     //! Return Teuchos::rcp to Cardiovascular0DManager windkman_
-    virtual Teuchos::RCP<Utils::Cardiovascular0DManager> get_cardiovascular0_d_manager()
+    virtual std::shared_ptr<Utils::Cardiovascular0DManager> get_cardiovascular0_d_manager()
     {
       FOUR_C_THROW(
           "get_cardiovascular0_d_manager() has not been tested for explicit time integrators");
-      return Teuchos::null;
+      return nullptr;
     };
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
-    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override
+    std::shared_ptr<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override
     {
       FOUR_C_THROW(
           "get_spring_dashpot_manager() has not been tested for explicit time integrators");
-      return Teuchos::null;
+      return nullptr;
     };
 
     //! Get type of thickness scaling for thin shell structures
@@ -348,14 +348,14 @@ namespace Solid
     };
 
     //! Access to scaling matrix for STC
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_stc_mat() override
     {
       FOUR_C_THROW("get_stc_mat() has not been tested for explicit time integrators");
-      return Teuchos::null;
+      return nullptr;
     };
 
     void update_iter_incr_constr(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> lagrincr  ///< Lagrange multiplier increment
+        std::shared_ptr<Core::LinAlg::Vector<double>> lagrincr  ///< Lagrange multiplier increment
         ) override
     {
       FOUR_C_THROW("update_iter_incr_constr() has not been tested for explicit time integrators");
@@ -363,7 +363,7 @@ namespace Solid
     }
 
     void update_iter_incr_cardiovascular0_d(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> presincr  ///< pressure increment
+        std::shared_ptr<Core::LinAlg::Vector<double>> presincr  ///< pressure increment
         ) override
     {
       FOUR_C_THROW(
@@ -387,8 +387,8 @@ namespace Solid
       return;
     }
 
-    void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override
+    void use_block_matrix(std::shared_ptr<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> rangemaps) override
     {
       FOUR_C_THROW("use_block_matrix() not implemented");
     }

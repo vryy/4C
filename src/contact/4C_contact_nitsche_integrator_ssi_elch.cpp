@@ -333,8 +333,8 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_ssi_interface_condition(
     case Inpar::S2I::kinetics_butlervolmerreduced:
     {
       // access material of parent element for ELCH simulations
-      Teuchos::RCP<const Mat::Electrode> electrode_material =
-          Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
+      std::shared_ptr<const Mat::Electrode> electrode_material =
+          std::dynamic_pointer_cast<const Mat::Electrode>(
               electrode_quantities.element->parent_element()->material(1));
 
       // get the relevant parameter
@@ -652,26 +652,26 @@ void CONTACT::IntegratorNitscheSsiElch::assign_electrode_and_electrolyte_quantit
     bool& slave_is_electrode, ElementDataBundle<dim>& electrode_quantitites,
     ElementDataBundle<dim>& electrolyte_quantities)
 {
-  Teuchos::RCP<const Mat::Electrode> electrode_material =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(slave_ele.parent_element()->material(1));
-  if (electrode_material == Teuchos::null)
+  std::shared_ptr<const Mat::Electrode> electrode_material =
+      std::dynamic_pointer_cast<const Mat::Electrode>(slave_ele.parent_element()->material(1));
+  if (electrode_material == nullptr)
   {
     slave_is_electrode = false;
 
     electrode_material =
-        Teuchos::rcp_dynamic_cast<const Mat::Electrode>(master_ele.parent_element()->material(1));
+        std::dynamic_pointer_cast<const Mat::Electrode>(master_ele.parent_element()->material(1));
 
     // safety check
-    FOUR_C_THROW_UNLESS(electrode_material != Teuchos::null,
+    FOUR_C_THROW_UNLESS(electrode_material != nullptr,
         "Something went wrong, neither slave nor master side is electrode material. This is a "
         "fatal error!");
   }
   else
   {
     auto master_also_electrode =
-        Teuchos::rcp_dynamic_cast<const Mat::Electrode>(master_ele.parent_element()->material(1));
+        std::dynamic_pointer_cast<const Mat::Electrode>(master_ele.parent_element()->material(1));
 
-    FOUR_C_THROW_UNLESS(master_also_electrode == Teuchos::null,
+    FOUR_C_THROW_UNLESS(master_also_electrode == nullptr,
         "Both, slave and master side are electrode materials, this should not be the case!");
   }
 

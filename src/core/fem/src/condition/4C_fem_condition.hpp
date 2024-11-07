@@ -14,8 +14,8 @@
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_legacy_enum_definitions_conditions.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <algorithm>
+#include <memory>
 #include <tuple>
 
 FOUR_C_NAMESPACE_OPEN
@@ -150,9 +150,9 @@ namespace Core::Conditions
     \brief Get a reference to the geometry description of the condition
 
     */
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geometry() { return *geometry_; }
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& geometry() { return *geometry_; }
 
-    [[nodiscard]] const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geometry() const
+    [[nodiscard]] const std::map<int, std::shared_ptr<Core::Elements::Element>>& geometry() const
     {
       return *geometry_;
     }
@@ -172,7 +172,7 @@ namespace Core::Conditions
     /**
      * Create a copy of this object but do not copy the geometry.
      */
-    [[nodiscard]] Teuchos::RCP<Core::Conditions::Condition> copy_without_geometry() const;
+    [[nodiscard]] std::shared_ptr<Core::Conditions::Condition> copy_without_geometry() const;
 
     //! Comparison operator.
     friend bool operator<(const Condition& lhs, const Condition& rhs);
@@ -200,10 +200,10 @@ namespace Core::Conditions
                       A deep copy of the map is made and stored.
                       Normally though, these elements are a line, surface or
                       volume elements produced by and shared with the discretization.
-                      Do not mess with their Teuchos::RCP!
+                      Do not mess with their std::shared_ptr!
 
     */
-    void add_geometry(Teuchos::RCP<std::map<int, Teuchos::RCP<Core::Elements::Element>>> geom)
+    void add_geometry(std::shared_ptr<std::map<int, std::shared_ptr<Core::Elements::Element>>> geom)
     {
       geometry_ = geom;
     }
@@ -211,7 +211,7 @@ namespace Core::Conditions
     /*!
     \brief Delete a geometry description of the condition
     */
-    void clear_geometry() { geometry_ = Teuchos::null; }
+    void clear_geometry() { geometry_ = nullptr; }
 
     //@}
 
@@ -235,7 +235,7 @@ namespace Core::Conditions
     Core::Conditions::GeometryType gtype_{};
 
     //! Geometry description of this condition
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::Elements::Element>>> geometry_{};
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::Elements::Element>>> geometry_{};
 
     Core::IO::InputParameterContainer container_;
   };  // class Condition

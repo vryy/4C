@@ -127,7 +127,7 @@ ScalarType BEAMINTERACTION::penalty_potential(
  */
 std::pair<unsigned int, unsigned int>
 BEAMINTERACTION::mortar_shape_functions_to_number_of_lagrange_values(
-    const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params,
+    const std::shared_ptr<const BeamToSolidParamsBase>& beam_to_solid_params,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions shape_function,
     const unsigned int n_dim)
 {
@@ -137,8 +137,7 @@ BEAMINTERACTION::mortar_shape_functions_to_number_of_lagrange_values(
         beam_to_solid_params->get_contact_discretization())
     {
       const auto beam_to_volume_parameters =
-          Teuchos::rcp_dynamic_cast<const BeamToSolidVolumeMeshtyingParams>(
-              beam_to_solid_params, true);
+          std::dynamic_pointer_cast<const BeamToSolidVolumeMeshtyingParams>(beam_to_solid_params);
       const int n_fourier_modes = beam_to_volume_parameters->get_number_of_fourier_modes();
       return (n_fourier_modes * 2 + 1);
     }

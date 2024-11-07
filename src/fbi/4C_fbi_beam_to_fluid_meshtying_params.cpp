@@ -72,7 +72,7 @@ void FBI::BeamToFluidMeshtyingParams::init()
   isinit_ = true;
 
   // Create and get visualization output parameter
-  output_params_ = Teuchos::make_rcp<FBI::BeamToFluidMeshtyingVtkOutputParams>();
+  output_params_ = std::make_shared<FBI::BeamToFluidMeshtyingVtkOutputParams>();
   output_params_->init();
   output_params_->setup();
 }

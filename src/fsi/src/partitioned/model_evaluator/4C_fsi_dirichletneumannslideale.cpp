@@ -46,10 +46,10 @@ void FSI::DirichletNeumannSlideale::setup()
   auto aletype = Teuchos::getIntegralValue<Inpar::FSI::SlideALEProj>(
       Global::Problem::instance()->fsi_dynamic_params(), "SLIDEALEPROJ");
 
-  slideale_ = Teuchos::make_rcp<FSI::Utils::SlideAleUtils>(structure_field()->discretization(),
+  slideale_ = std::make_shared<FSI::Utils::SlideAleUtils>(structure_field()->discretization(),
       mb_fluid_field()->discretization(), structure_fluid_coupling_mortar(), true, aletype);
 
-  islave_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+  islave_ = std::make_shared<Core::LinAlg::Vector<double>>(
       *structure_fluid_coupling_mortar().slave_dof_map(), true);
 }
 
@@ -60,7 +60,7 @@ void FSI::DirichletNeumannSlideale::remeshing()
 {
   // dispn and dispnp of structure, used for surface integral and velocity of the fluid in the
   // interface
-  Teuchos::RCP<Core::LinAlg::Vector<double>> idisptotal =
+  std::shared_ptr<Core::LinAlg::Vector<double>> idisptotal =
       structure_field()->extract_interface_dispnp();
 
   slideale_->remeshing(*structure_field(), *mb_fluid_field()->discretization(), *idisptotal,
@@ -72,7 +72,7 @@ void FSI::DirichletNeumannSlideale::remeshing()
   // Evaluate solid/ale Mortar coupling
   slideale_->evaluate_fluid_mortar(idisptotal, islave_);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> unew =
+  std::shared_ptr<Core::LinAlg::Vector<double>> unew =
       slideale_->interpolate_fluid(*mb_fluid_field()->extract_interface_velnp());
   mb_fluid_field()->apply_interface_values(islave_, unew);
 }
@@ -80,8 +80,8 @@ void FSI::DirichletNeumannSlideale::remeshing()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannSlideale::fluid_op(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispcurr, const FillType fillFlag)
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannSlideale::fluid_op(
+    std::shared_ptr<Core::LinAlg::Vector<double>> idispcurr, const FillType fillFlag)
 {
   FSI::Partitioned::fluid_op(idispcurr, fillFlag);
 
@@ -96,18 +96,18 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannSlideale::fluid_
     // normal fluid solve
 
     // the displacement -> velocity conversion at the interface
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = interface_velocity(*idispcurr);
+    const std::shared_ptr<Core::LinAlg::Vector<double>> ivel = interface_velocity(*idispcurr);
 
     // A rather simple hack. We need something better!
     const int itemax = mb_fluid_field()->itemax();
     if (fillFlag == MF_Res and mfresitemax_ > 0) mb_fluid_field()->set_itemax(mfresitemax_ + 1);
 
     // new Core::LinAlg::Vector<double> for aledisp in interface
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iale =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+    std::shared_ptr<Core::LinAlg::Vector<double>> iale =
+        std::make_shared<Core::LinAlg::Vector<double>>(
             *(structure_fluid_coupling_mortar().master_dof_map()), true);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispn =
+    std::shared_ptr<Core::LinAlg::Vector<double>> idispn =
         structure_field()->extract_interface_dispn();
 
     iale->Update(1.0, *idispcurr, 0.0);
@@ -124,8 +124,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannSlideale::fluid_
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannSlideale::struct_op(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag)
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannSlideale::struct_op(
+    std::shared_ptr<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag)
 {
   FSI::Partitioned::struct_op(iforce, fillFlag);
 
@@ -144,7 +144,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannSlideale::struct
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannSlideale::initial_guess()
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannSlideale::initial_guess()
 {
   if (get_kinematic_coupling())
   {

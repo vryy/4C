@@ -74,8 +74,8 @@ namespace CONTACT
     \param[in] maxdof Highest DOF number in global problem
     */
     MtAbstractStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<Mortar::Interface>> interface,
-        const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
+        Teuchos::ParameterList params, std::vector<std::shared_ptr<Mortar::Interface>> interface,
+        const int spatialDim, const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
 
 
@@ -86,7 +86,7 @@ namespace CONTACT
     \brief Return Lagrange multiplier vector (t_n+1)
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> lagrange_multiplier() const override
     {
       return z_;
     }
@@ -95,7 +95,7 @@ namespace CONTACT
     \brief Return old Lagrange multiplier vector (t_n)
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier_old() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> lagrange_multiplier_old() const override
     {
       return zold_;
     }
@@ -104,13 +104,13 @@ namespace CONTACT
     \brief Return Lagrange multiplier vector from last Uzawa step
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> lagr_mult_uzawa() const { return zuzawa_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> lagr_mult_uzawa() const { return zuzawa_; }
 
     /*!
     \brief Return constraint rhs vector (only in saddle-point formulation
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> constraint_rhs() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> constraint_rhs() const override
     {
       return constrrhs_;
     }
@@ -119,7 +119,8 @@ namespace CONTACT
     \brief Returns increment of LagrangeMultiplier solution vector in SaddlePointSolve routine
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier_increment() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> lagrange_multiplier_increment()
+        const override
     {
       return zincr_;
     }
@@ -132,21 +133,21 @@ namespace CONTACT
     @param InnerDofMap Dof row map of interior volume
     @param ActiveDofMap Dof row map of active slave contact interface
     */
-    void collect_maps_for_preconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
-        Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap,
-        Teuchos::RCP<Epetra_Map>& ActiveDofMap) const override;
+    void collect_maps_for_preconditioner(std::shared_ptr<Epetra_Map>& MasterDofMap,
+        std::shared_ptr<Epetra_Map>& SlaveDofMap, std::shared_ptr<Epetra_Map>& InnerDofMap,
+        std::shared_ptr<Epetra_Map>& ActiveDofMap) const override;
 
     /*!
     \brief Return mortar matrix D
 
     */
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> d_matrix() const override { return dmatrix_; }
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> d_matrix() const override { return dmatrix_; }
 
     /*!
     \brief Return mortar matrix M
 
     */
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> m_matrix() const override { return mmatrix_; }
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> m_matrix() const override { return mmatrix_; }
 
     /*!
     \brief Get dual quadratic 3d slave element flag
@@ -199,9 +200,9 @@ namespace CONTACT
     \brief Global evaluation method called from time integrator
 
     */
-    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+    void apply_force_stiff_cmt(std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& kt,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
         bool predictor = false) override;
 
     /*! \brief Reset call at the beginning of the apply_force(), apply_stiff() and
@@ -274,7 +275,7 @@ namespace CONTACT
     use the overloaded function call in the derived class and refer back to this function.
 
     */
-    void mortar_coupling(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dis) override;
+    void mortar_coupling(const std::shared_ptr<const Core::LinAlg::Vector<double>>& dis) override;
 
     //@}
 
@@ -307,7 +308,7 @@ namespace CONTACT
     \param dbcmaps (in): MapExtractor carrying global dbc map
 
     */
-    void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps) override;
+    void store_dirichlet_status(std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmaps) override;
 
     /*!
     \brief Update meshtying at end of time step
@@ -315,7 +316,7 @@ namespace CONTACT
     \param dis (in):  current displacements (-> old displacements)
 
     */
-    void update(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) override;
+    void update(std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override;
 
     /*!
     \brief Perform a write restart
@@ -327,7 +328,7 @@ namespace CONTACT
 
     */
     void do_read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) override;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override;
 
     //@}
 
@@ -368,7 +369,7 @@ namespace CONTACT
     \param[in] outputParams Parameter list with stuff required by interfaces to write output
     */
     void postprocess_quantities_per_interface(
-        Teuchos::RCP<Teuchos::ParameterList> outputParams) const final;
+        std::shared_ptr<Teuchos::ParameterList> outputParams) const final;
 
     //! @}
 
@@ -425,23 +426,24 @@ namespace CONTACT
      */
 
     double constraint_norm() const override = 0;
-    void evaluate_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dis) override = 0;
-    void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff) override = 0;
+    void evaluate_meshtying(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& feff,
+        std::shared_ptr<Core::LinAlg::Vector<double>> dis) override = 0;
+    void initialize_uzawa(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& feff) override = 0;
     double initial_penalty() const override = 0;
-    void recover(Teuchos::RCP<Core::LinAlg::Vector<double>> disi) override = 0;
+    void recover(std::shared_ptr<Core::LinAlg::Vector<double>> disi) override = 0;
     void reset_penalty() override = 0;
     void modify_penalty() override = 0;
-    void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fd,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& blocksol,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& blockrhs) override = 0;
-    void update_displacements_and_l_mincrements(Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> blocksol) override = 0;
+    void build_saddle_point_system(std::shared_ptr<Core::LinAlg::SparseOperator> kdd,
+        std::shared_ptr<Core::LinAlg::Vector<double>> fd,
+        std::shared_ptr<Core::LinAlg::Vector<double>> sold,
+        std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps,
+        std::shared_ptr<Epetra_Operator>& blockMat,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& blocksol,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& blockrhs) override = 0;
+    void update_displacements_and_l_mincrements(std::shared_ptr<Core::LinAlg::Vector<double>> sold,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> blocksol) override = 0;
     void update_uzawa_augmented_lagrange() override = 0;
     void update_constraint_norm(int uzawaiter = 0) override = 0;
 
@@ -460,25 +462,25 @@ namespace CONTACT
     bool is_in_contact() const override { return true; }
     bool was_in_contact() const override { return true; }
     bool was_in_contact_last_time_step() const override { return true; }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_normal_stress() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> contact_normal_stress() const override
     {
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_tangential_stress() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> contact_tangential_stress() const override
     {
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_normal_force() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> contact_normal_force() const override
     {
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_tangential_force() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> contact_tangential_force() const override
     {
-      return Teuchos::null;
+      return nullptr;
     }
     void assemble_mortar() override {}
     void do_write_restart(
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>& restart_vectors,
+        std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>& restart_vectors,
         bool forcedrestart = false) const override
     {
     }
@@ -492,37 +494,37 @@ namespace CONTACT
     void compute_contact_stresses() final{};
     void aug_forces(Core::LinAlg::Vector<double>& augfs_lm, Core::LinAlg::Vector<double>& augfs_g,
         Core::LinAlg::Vector<double>& augfm_lm, Core::LinAlg::Vector<double>& augfm_g){};
-    bool redistribute_contact(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) final
+    bool redistribute_contact(std::shared_ptr<const Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel) final
     {
       return false;
     }
     void reset_active_set() override {}
-    void save_reference_state(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) override {}
+    void save_reference_state(std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override {}
     void update_active_set() override {}
     void update_active_set_semi_smooth(const bool firstStepPredictor = false) override {}
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> evaluate_normals(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dis) override
+    std::shared_ptr<Core::LinAlg::SparseMatrix> evaluate_normals(
+        std::shared_ptr<Core::LinAlg::Vector<double>> dis) override
     {
-      return Teuchos::null;
+      return nullptr;
     }
     void evaluate_reference_state() override {}
     void evaluate_relative_movement() override {}
     void predict_relative_movement() override {}
-    Teuchos::RCP<const Epetra_Map> slave_row_nodes_ptr() const override { return gsnoderowmap_; }
-    Teuchos::RCP<const Epetra_Map> active_row_nodes() const override { return Teuchos::null; }
-    Teuchos::RCP<const Epetra_Map> active_row_dofs() const override { return Teuchos::null; }
-    Teuchos::RCP<const Epetra_Map> non_redist_slave_row_dofs() const override
+    std::shared_ptr<const Epetra_Map> slave_row_nodes_ptr() const override { return gsnoderowmap_; }
+    std::shared_ptr<const Epetra_Map> active_row_nodes() const override { return nullptr; }
+    std::shared_ptr<const Epetra_Map> active_row_dofs() const override { return nullptr; }
+    std::shared_ptr<const Epetra_Map> non_redist_slave_row_dofs() const override
     {
       return non_redist_gsdofrowmap_;
     }
-    Teuchos::RCP<const Epetra_Map> non_redist_master_row_dofs() const override
+    std::shared_ptr<const Epetra_Map> non_redist_master_row_dofs() const override
     {
       return non_redist_gmdofrowmap_;
     }
-    Teuchos::RCP<const Epetra_Map> slip_row_nodes() const override { return Teuchos::null; }
-    Teuchos::RCP<const Epetra_Map> slave_dof_row_map_ptr() const { return gsdofrowmap_; }
-    Teuchos::RCP<const Epetra_Map> master_dof_row_map_ptr() const { return gmdofrowmap_; }
+    std::shared_ptr<const Epetra_Map> slip_row_nodes() const override { return nullptr; }
+    std::shared_ptr<const Epetra_Map> slave_dof_row_map_ptr() const { return gsdofrowmap_; }
+    std::shared_ptr<const Epetra_Map> master_dof_row_map_ptr() const { return gmdofrowmap_; }
 
     //! @}
 
@@ -530,48 +532,51 @@ namespace CONTACT
     //! @{
 
     //! Return the NOX::Nln::CONSTRAINT::Interface::Required member object
-    const Teuchos::RCP<CONTACT::MtNoxInterface>& nox_interface_ptr() { return noxinterface_ptr_; };
+    const std::shared_ptr<CONTACT::MtNoxInterface>& nox_interface_ptr()
+    {
+      return noxinterface_ptr_;
+    };
 
     /*! \brief Return the desired right-hand-side block pointer (read-only)
      *
-     *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
+     *  \remark Please note, that a nullptr pointer is returned, if no active contact
      *  contributions are present.
      *
      *  \param bt (in): Desired vector block type, e.g. displ, constraint, ...
      *
      *  \date 05/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const = 0;
 
     /*! \brief Return the desired matrix block pointer (read-only)
      *
-     *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
+     *  \remark Please note, that a nullptr pointer is returned, if no active contact
      *  contributions are present.
      *
      *  \param bt (in): Desired matrix block type, e.g. displ_displ, displ_lm, ...
      *
      *  \date 05/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt) const = 0;
 
     /*! \brief Return the current (maybe redistributed) Lagrange multiplier dof row map
      *
      */
-    virtual Teuchos::RCP<const Epetra_Map> lm_dof_row_map_ptr() const { return glmdofrowmap_; };
+    virtual std::shared_ptr<const Epetra_Map> lm_dof_row_map_ptr() const { return glmdofrowmap_; };
 
     /*! \brief Return the non-redistributed Lagrange multiplier dof row map
      *
      */
-    virtual Teuchos::RCP<const Epetra_Map> non_redist_lm_dof_row_map_ptr() const
+    virtual std::shared_ptr<const Epetra_Map> non_redist_lm_dof_row_map_ptr() const
     {
       return non_redist_glmdofrowmap_;
     };
 
     //! Modify system before linear solve
     virtual void run_pre_apply_jacobian_inverse(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Core::LinAlg::Vector<double>& rhs)
+        std::shared_ptr<Core::LinAlg::SparseMatrix> kteff, Core::LinAlg::Vector<double>& rhs)
     { /* do nothing */
     }
 
@@ -581,14 +586,14 @@ namespace CONTACT
     }
 
     //! evaluate force terms
-    virtual bool evaluate_force(const Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) = 0;
+    virtual bool evaluate_force(const std::shared_ptr<const Core::LinAlg::Vector<double>> dis) = 0;
 
     //! evaluate stiffness terms
-    virtual bool evaluate_stiff(const Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) = 0;
+    virtual bool evaluate_stiff(const std::shared_ptr<const Core::LinAlg::Vector<double>> dis) = 0;
 
     //! evaluate force and stiffness terms
     virtual bool evaluate_force_stiff(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) = 0;
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> dis) = 0;
 
     //! after applying Newton increment
     virtual void run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
@@ -633,7 +638,7 @@ namespace CONTACT
 
     \param Xslavemod (in): modified slave reference configuration
     */
-    virtual void mesh_initialization(Teuchos::RCP<Core::LinAlg::Vector<double>> Xslavemod);
+    virtual void mesh_initialization(std::shared_ptr<Core::LinAlg::Vector<double>> Xslavemod);
 
    private:
     /*!
@@ -645,15 +650,15 @@ namespace CONTACT
     on the effective stiffness matrix is handed in. This way, after building the
     new effective stiffness matrix with contact, we can simply let the pointer
     kteff point onto the new object. The same is true for the effective force
-    vector feff. Be careful: kteff is of type Teuchos::RCP<Core::LinAlg::SparseOperator>&.
+    vector feff. Be careful: kteff is of type std::shared_ptr<Core::LinAlg::SparseOperator>&.
 
     \param kteff (in/out): effective stiffness matrix (without -> with contact)
     \param feff (in/out): effective residual / force vector (without -> with contact)
 
     */
-    void evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dis) override;
+    void evaluate(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& feff,
+        std::shared_ptr<Core::LinAlg::Vector<double>> dis) override;
 
     /*!
     \brief Restrict slave boundary to actual meshtying zone
@@ -688,49 +693,49 @@ namespace CONTACT
     MtAbstractStrategy(const MtAbstractStrategy& old) = delete;
 
     //! Vector with all meshtying interfaces
-    std::vector<Teuchos::RCP<Mortar::Interface>> interface_;
+    std::vector<std::shared_ptr<Mortar::Interface>> interface_;
 
     //! Global Lagrange multiplier dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> glmdofrowmap_;
+    std::shared_ptr<Epetra_Map> glmdofrowmap_;
 
     //! Global slave dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gsdofrowmap_;
+    std::shared_ptr<Epetra_Map> gsdofrowmap_;
 
     //! Global master dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gmdofrowmap_;
+    std::shared_ptr<Epetra_Map> gmdofrowmap_;
 
     //! Global internal dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gndofrowmap_;
+    std::shared_ptr<Epetra_Map> gndofrowmap_;
 
     //! Global slave and master dof row map (slave+master map)
-    Teuchos::RCP<Epetra_Map> gsmdofrowmap_;
+    std::shared_ptr<Epetra_Map> gsmdofrowmap_;
 
     //! Global displacement dof row map (s+m+n map)
-    Teuchos::RCP<Epetra_Map> gdisprowmap_;
+    std::shared_ptr<Epetra_Map> gdisprowmap_;
 
     //! Global slave node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gsnoderowmap_;
+    std::shared_ptr<Epetra_Map> gsnoderowmap_;
 
     //! Global master node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gmnoderowmap_;
+    std::shared_ptr<Epetra_Map> gmnoderowmap_;
 
     //! @name Parallel redistribution
     //!@{
 
     //! Global Lagrange multiplier dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> non_redist_glmdofrowmap_;
+    std::shared_ptr<Epetra_Map> non_redist_glmdofrowmap_;
 
     //! Global slave dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> non_redist_gsdofrowmap_;
+    std::shared_ptr<Epetra_Map> non_redist_gsdofrowmap_;
 
     //! Global master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> non_redist_gmdofrowmap_;
+    std::shared_ptr<Epetra_Map> non_redist_gmdofrowmap_;
 
     //! Global slave and master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> non_redist_gsmdofrowmap_;
+    std::shared_ptr<Epetra_Map> non_redist_gsmdofrowmap_;
 
     //! Global dirichlet toggle of all slave dofs (before parallel redistribution)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> non_redist_gsdirichtoggle_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> non_redist_gsdirichtoggle_;
 
     //!@}
 
@@ -738,34 +743,34 @@ namespace CONTACT
     //!@{
 
     //! Initial element column map for binning strategy (slave and master)
-    std::vector<Teuchos::RCP<Epetra_Map>> initial_elecolmap_;
+    std::vector<std::shared_ptr<Epetra_Map>> initial_elecolmap_;
 
     //! Global Mortar matrix \f$D\f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> dmatrix_;
 
     //! Global Mortar matrix \f$M\f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> mmatrix_;
 
     //! Global weighted gap vector \f$g\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> g_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> g_;
 
     //! Global constraint right-hand side vector (only for saddlepoint problems)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> constrrhs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> constrrhs_;
 
     //! Current vector of Lagrange multipliers at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> z_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> z_;
 
     //! Old vector of Lagrange multipliers at \f$t_n\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zold_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> zold_;
 
     /*! \brief Lagrange multiplier vector increment within SaddlePointSolve
      *
      *  \remark This is \em not the increment of #z_ between \f$t_{n+1}\f$ and \f$t_{n}\f$!)
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zincr_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> zincr_;
 
     //! Vector of Lagrange multipliers from last Uzawa step
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zuzawa_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> zuzawa_;
 
     //! @name Status flags
     //!@{
@@ -785,7 +790,7 @@ namespace CONTACT
      * \todo What is quad? Quadratic shape functions or quadrilateral elements?
      * \todo What is the difference to #systrafo_?
      */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> trafo_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> trafo_;
 
     /*! \brief Transformation matrix \f$T\f$ for dual quad 3D case
      *
@@ -793,14 +798,14 @@ namespace CONTACT
      * \todo What is quad? Quadratic shape functions or quadrilateral elements?
      * \todo What is the difference to #trafo_?
      */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> systrafo_;
 
     /*! \brief Inverse trafo matrix \f$T^{-1}\f$ for dual quad 3D case
      *
      * \todo What is matrix \f$T\f$?
      * \todo What is quad? Quadratic shape functions or quadrilateral elements?
      */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> invtrafo_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> invtrafo_;
 
     /*! \brief Integration time
      *
@@ -809,26 +814,26 @@ namespace CONTACT
     double inttime_;
 
     //! Structural force
-    Teuchos::RCP<Core::LinAlg::Vector<double>> f_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> f_;
 
     //! Structural force (slave)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fs_;
 
     //! Matrix containing \f$D\f$ and \f$-M\f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> dm_matrix_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> dm_matrix_;
 
     /*! \brief Matrix containing D and -M. transposed
      *
      * \todo Is it \f$D\f$ and \f$-M^T\f$ or (D and -M)^T? In latter case, why store it explicitly?
      */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> dm_matrix_t_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> dm_matrix_t_;
 
     //! Lagrange multiplier diagonal block
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> lm_diag_matrix_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> lm_diag_matrix_;
 
    private:
     ///< pointer to the NOX::Nln::CONSTRAINT::Interface::Required object
-    Teuchos::RCP<CONTACT::MtNoxInterface> noxinterface_ptr_;
+    std::shared_ptr<CONTACT::MtNoxInterface> noxinterface_ptr_;
 
   };  // class MtAbstractStrategy
 }  // namespace CONTACT

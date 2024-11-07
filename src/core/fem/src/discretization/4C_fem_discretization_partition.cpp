@@ -25,7 +25,7 @@ void Core::FE::Discretization::export_row_nodes(
 
   // destroy all ghosted nodes
   const int myrank = get_comm().MyPID();
-  std::map<int, Teuchos::RCP<Core::Nodes::Node>>::iterator curr;
+  std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end();)
   {
     if (curr->second->owner() != myrank)
@@ -35,7 +35,7 @@ void Core::FE::Discretization::export_row_nodes(
   }
 
   // build rowmap of nodes noderowmap_ if it does not exist
-  if (noderowmap_ == Teuchos::null) build_node_row_map();
+  if (noderowmap_ == nullptr) build_node_row_map();
   const Epetra_Map& oldmap = *noderowmap_;
 
   // create an exporter object that will figure out the communication pattern
@@ -58,7 +58,7 @@ void Core::FE::Discretization::export_column_nodes(
 {
   // destroy all ghosted nodes
   const int myrank = get_comm().MyPID();
-  std::map<int, Teuchos::RCP<Core::Nodes::Node>>::iterator curr;
+  std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end();)
   {
     if (curr->second->owner() != myrank)
@@ -68,7 +68,7 @@ void Core::FE::Discretization::export_column_nodes(
   }
 
   // build rowmap of nodes noderowmap_ if it does not exist
-  if (noderowmap_ == Teuchos::null) build_node_row_map();
+  if (noderowmap_ == nullptr) build_node_row_map();
   const Epetra_Map& oldmap = *noderowmap_;
 
   // test whether all nodes in oldmap are also in newmap, otherwise
@@ -179,7 +179,7 @@ void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
       Core::Elements::Element* ele = dynamic_cast<Core::Elements::Element*>(object);
       if (!ele) FOUR_C_THROW("Received object is not an element");
       ele->set_owner(myrank);
-      Teuchos::RCP<Core::Elements::Element> rcpele = Teuchos::RCP(ele);
+      std::shared_ptr<Core::Elements::Element> rcpele(ele);
       add_element(rcpele);
       // printf("proc %d index %d\n",myrank,index); fflush(stdout);
     }
@@ -285,7 +285,7 @@ void Core::FE::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& tar
       Core::Nodes::Node* node = dynamic_cast<Core::Nodes::Node*>(object);
       if (!node) FOUR_C_THROW("Received object is not a node");
       node->set_owner(myrank);
-      Teuchos::RCP<Core::Nodes::Node> rcpnode = Teuchos::RCP(node);
+      std::shared_ptr<Core::Nodes::Node> rcpnode(node);
       add_node(rcpnode);
     }
   }
@@ -309,7 +309,7 @@ void Core::FE::Discretization::export_row_elements(
 
   // destroy all ghosted elements
   const int myrank = get_comm().MyPID();
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
   for (curr = element_.begin(); curr != element_.end();)
   {
     if (curr->second->owner() != myrank)
@@ -319,7 +319,7 @@ void Core::FE::Discretization::export_row_elements(
   }
 
   // build map of elements elerowmap_ if it does not exist
-  if (elerowmap_ == Teuchos::null) build_element_row_map();
+  if (elerowmap_ == nullptr) build_element_row_map();
   const Epetra_Map& oldmap = *elerowmap_;
 
   // create an exporter object that will figure out the communication pattern
@@ -341,7 +341,7 @@ void Core::FE::Discretization::export_column_elements(
 {
   // destroy all ghosted elements
   const int myrank = get_comm().MyPID();
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
   for (curr = element_.begin(); curr != element_.end();)
   {
     if (curr->second->owner() != myrank)
@@ -351,7 +351,7 @@ void Core::FE::Discretization::export_column_elements(
   }
 
   // build map of elements elerowmap_ if it does not exist
-  if (elerowmap_ == Teuchos::null) build_element_row_map();
+  if (elerowmap_ == nullptr) build_element_row_map();
   const Epetra_Map& oldmap = *elerowmap_;
 
   // test whether all elements in oldmap are also in newmap
@@ -373,7 +373,7 @@ void Core::FE::Discretization::export_column_elements(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> Core::FE::Discretization::build_node_graph() const
+std::shared_ptr<Epetra_CrsGraph> Core::FE::Discretization::build_node_graph() const
 {
   if (!filled()) FOUR_C_THROW("fill_complete() was not called on this discretization");
 
@@ -381,15 +381,15 @@ Teuchos::RCP<Epetra_CrsGraph> Core::FE::Discretization::build_node_graph() const
   const Epetra_Map* noderowmap = node_row_map();
 
   // allocate graph
-  Teuchos::RCP<Epetra_CrsGraph> graph =
-      Teuchos::make_rcp<Epetra_CrsGraph>(Copy, *noderowmap, 108, false);
+  std::shared_ptr<Epetra_CrsGraph> graph =
+      std::make_shared<Epetra_CrsGraph>(Copy, *noderowmap, 108, false);
 
   // iterate all elements on this proc including ghosted ones
   // Note:
   // if a proc stores the appropiate ghosted elements, the resulting
   // graph will be the correct and complete graph of the distributed
   // discretization even if nodes are not ghosted.
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator curr;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator curr;
   for (curr = element_.begin(); curr != element_.end(); ++curr)
   {
     const int nnode = curr->second->num_node();
@@ -416,15 +416,15 @@ Teuchos::RCP<Epetra_CrsGraph> Core::FE::Discretization::build_node_graph() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::Discretization::build_node_coordinates(
-    Teuchos::RCP<const Epetra_Map> noderowmap) const
+std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::Discretization::build_node_coordinates(
+    std::shared_ptr<const Epetra_Map> noderowmap) const
 {
   // get nodal row map if not given
-  if (noderowmap == Teuchos::null)
-    noderowmap = Teuchos::rcpFromRef<const Epetra_Map>(*node_row_map());
+  if (noderowmap == nullptr)
+    noderowmap = Core::Utils::shared_ptr_from_ref<const Epetra_Map>(*node_row_map());
 
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> coordinates =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, 3, true);
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> coordinates =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, 3, true);
 
   for (int lid = 0; lid < noderowmap->NumMyElements(); ++lid)
   {
@@ -438,7 +438,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::Discretization::build_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>>
+std::pair<std::shared_ptr<Epetra_Map>, std::shared_ptr<Epetra_Map>>
 Core::FE::Discretization::build_element_row_column(
     const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap) const
 {
@@ -465,7 +465,7 @@ Core::FE::Discretization::build_element_row_column(
   int stoposize = 2000;
   int count = 0;
   std::vector<int> stopo(stoposize);
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator ecurr;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator ecurr;
   for (ecurr = element_.begin(); ecurr != element_.end(); ++ecurr)
   {
     const Core::Elements::Element& actele = *(ecurr->second);
@@ -593,16 +593,16 @@ Core::FE::Discretization::build_element_row_column(
   // allreduced nummyele must match the total no. of elements in this
   // discretization, otherwise we lost some
   // build the rowmap of elements
-  Teuchos::RCP<Epetra_Map> elerowmap =
-      Teuchos::make_rcp<Epetra_Map>(-1, nummyele, myele.data(), 0, get_comm());
+  std::shared_ptr<Epetra_Map> elerowmap =
+      std::make_shared<Epetra_Map>(-1, nummyele, myele.data(), 0, get_comm());
   if (!elerowmap->UniqueGIDs()) FOUR_C_THROW("Element row map is not unique");
 
   // build elecolmap
   std::vector<int> elecol(nummyele + nummyghostele);
   for (int i = 0; i < nummyele; ++i) elecol[i] = myele[i];
   for (int i = 0; i < nummyghostele; ++i) elecol[nummyele + i] = myghostele[i];
-  Teuchos::RCP<Epetra_Map> elecolmap =
-      Teuchos::make_rcp<Epetra_Map>(-1, nummyghostele + nummyele, elecol.data(), 0, get_comm());
+  std::shared_ptr<Epetra_Map> elecolmap =
+      std::make_shared<Epetra_Map>(-1, nummyghostele + nummyele, elecol.data(), 0, get_comm());
 
   return {elerowmap, elecolmap};
 }
@@ -681,7 +681,7 @@ void Core::FE::Discretization::extended_ghosting(const Epetra_Map& elecolmap,
   // if node of pbc set is contained in list of owned and ghosted elements
   // in case of pbcs, this has to be restored
   bool have_pbc = false;
-  Teuchos::RCP<Core::DOFSets::PBCDofSet> pbcdofset = Teuchos::null;
+  std::shared_ptr<Core::DOFSets::PBCDofSet> pbcdofset = nullptr;
   // map of master nodes and corresponding slave nodes
   std::map<int, std::set<int>> pbcmap;
   // create the inverse map --- slavenode -> masternode
@@ -692,9 +692,9 @@ void Core::FE::Discretization::extended_ghosting(const Epetra_Map& elecolmap,
   // check for pbcs
   for (int nds = 0; nds < num_dof_sets(); nds++)
   {
-    pbcdofset = Teuchos::rcp_dynamic_cast<Core::DOFSets::PBCDofSet>(dofsets_[nds]);
+    pbcdofset = std::dynamic_pointer_cast<Core::DOFSets::PBCDofSet>(dofsets_[nds]);
 
-    if (pbcdofset != Teuchos::null)
+    if (pbcdofset != nullptr)
     {
       have_pbc = true;
       // fill content of pbcmap int std::map<int, std::set<int> > in preparation for gather_all
@@ -769,8 +769,8 @@ void Core::FE::Discretization::extended_ghosting(const Epetra_Map& elecolmap,
   }
 
   // copy data from std::set<int> to std::vector<int>
-  Teuchos::RCP<std::map<int, std::vector<int>>> pbcmapvec =
-      Teuchos::make_rcp<std::map<int, std::vector<int>>>();
+  std::shared_ptr<std::map<int, std::vector<int>>> pbcmapvec =
+      std::make_shared<std::map<int, std::vector<int>>>();
   for (std::map<int, std::set<int>>::const_iterator it = pbcmapnew.begin(); it != pbcmapnew.end();
        ++it)
     std::copy(it->second.begin(), it->second.end(), std::back_inserter((*pbcmapvec)[it->first]));
@@ -800,7 +800,7 @@ void Core::FE::Discretization::setup_ghosting(
 
   // build the graph ourselves
   std::map<int, std::set<int>> localgraph;
-  for (std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator i = element_.begin();
+  for (std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator i = element_.begin();
        i != element_.end(); ++i)
   {
     int numnodes = i->second->num_node();
@@ -822,8 +822,8 @@ void Core::FE::Discretization::setup_ghosting(
   gids.reserve(localgraph.size());
   entriesperrow.reserve(localgraph.size());
 
-  for (std::map<int, Teuchos::RCP<Core::Nodes::Node>>::iterator i = node_.begin(); i != node_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator i = node_.begin();
+       i != node_.end(); ++i)
   {
     gids.push_back(i->first);
     entriesperrow.push_back(localgraph[i->first].size());
@@ -834,8 +834,8 @@ void Core::FE::Discretization::setup_ghosting(
   // Construct FE graph. This graph allows processor off-rows to be inserted
   // as well. The communication issue is solved.
 
-  Teuchos::RCP<Epetra_FECrsGraph> graph =
-      Teuchos::make_rcp<Epetra_FECrsGraph>(Copy, rownodes, entriesperrow.data(), false);
+  std::shared_ptr<Epetra_FECrsGraph> graph =
+      std::make_shared<Epetra_FECrsGraph>(Copy, rownodes, entriesperrow.data(), false);
 
   gids.clear();
   entriesperrow.clear();
@@ -871,7 +871,7 @@ void Core::FE::Discretization::setup_ghosting(
   Epetra_Map nodecolmap(
       bcol.NumGlobalElements(), bcol.NumMyElements(), bcol.MyGlobalElements(), 0, *comm_);
 
-  graph = Teuchos::null;
+  graph = nullptr;
 
   // Redistribute discretization to match the new maps.
 

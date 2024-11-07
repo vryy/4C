@@ -62,34 +62,34 @@ namespace XFEM
     };
 
     //! constructor
-    explicit CouplingCommManager(std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis,
+    explicit CouplingCommManager(std::map<int, std::shared_ptr<const Core::FE::Discretization>> dis,
         std::string cond_name, int startdim = 0, int enddim = 3);
 
     //! constructor
-    explicit CouplingCommManager(Teuchos::RCP<const Core::FE::Discretization> dis0,
+    explicit CouplingCommManager(std::shared_ptr<const Core::FE::Discretization> dis0,
         std::string cond_name, int startdim = 0, int enddim = 3);
 
     //! constructor
-    explicit CouplingCommManager(Teuchos::RCP<const Core::FE::Discretization> dis0,
-        Teuchos::RCP<const Core::FE::Discretization> dis1, std::string cond_name, int startdim = 0,
-        int enddim = 3);
+    explicit CouplingCommManager(std::shared_ptr<const Core::FE::Discretization> dis0,
+        std::shared_ptr<const Core::FE::Discretization> dis1, std::string cond_name,
+        int startdim = 0, int enddim = 3);
 
     //! virtual destructor to support polymorph destruction
     virtual ~CouplingCommManager() = default;
 
     //! Insert a Vector A into vector B (choose type of transfer, add or scaling) - Version vor
     //! RCP<const Core::LinAlg::Vector<double>> vecA
-    void insert_vector(const int idxA, Teuchos::RCP<const Core::LinAlg::Vector<double>> vecA,
-        const int idxB, Teuchos::RCP<Core::LinAlg::Vector<double>> vecB,
+    void insert_vector(const int idxA, std::shared_ptr<const Core::LinAlg::Vector<double>> vecA,
+        const int idxB, std::shared_ptr<Core::LinAlg::Vector<double>> vecB,
         const CouplingCommManager::TransferType ttype, bool add = false, double scale = 1.0);
 
     //! Insert a Vector A into vector B (choose type of transfer, add or scaling) - Version vor
     //! RCP<Core::LinAlg::Vector<double>> vecA
-    void insert_vector(const int idxA, Teuchos::RCP<Core::LinAlg::Vector<double>> vecA,
-        const int idxB, Teuchos::RCP<Core::LinAlg::Vector<double>> vecB,
+    void insert_vector(const int idxA, std::shared_ptr<Core::LinAlg::Vector<double>> vecA,
+        const int idxB, std::shared_ptr<Core::LinAlg::Vector<double>> vecB,
         const CouplingCommManager::TransferType ttype, bool add = false, double scale = 1.0)
     {
-      insert_vector(idxA, Teuchos::rcp_static_cast<const Core::LinAlg::Vector<double>>(vecA), idxB,
+      insert_vector(idxA, std::static_pointer_cast<const Core::LinAlg::Vector<double>>(vecA), idxB,
           vecB, ttype, add, scale);
     }
 
@@ -102,51 +102,54 @@ namespace XFEM
         Core::LinAlg::SparseMatrix& matB, const CouplingCommManager::MatrixTransferType mttype,
         double scale = 1.0, bool exactmatch = true, bool addmatrix = false);
 
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> get_map_extractor(int idx);
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> get_map_extractor(int idx);
 
    protected:
-    Teuchos::RCP<Coupling::Adapter::CouplingConverter> get_coupling_converter(int idxA, int idxB);
+    std::shared_ptr<Coupling::Adapter::CouplingConverter> get_coupling_converter(
+        int idxA, int idxB);
 
-    Teuchos::RCP<Coupling::Adapter::Coupling> get_coupling(int idxA, int idxB);
+    std::shared_ptr<Coupling::Adapter::Coupling> get_coupling(int idxA, int idxB);
 
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> get_full_map_extractor()
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> get_full_map_extractor()
     {
       return fullextractor_;
     }
 
-    Teuchos::RCP<Coupling::Adapter::MatrixLogicalSplitAndTransform> get_transform(int transform_id);
+    std::shared_ptr<Coupling::Adapter::MatrixLogicalSplitAndTransform> get_transform(
+        int transform_id);
 
     void debug_out(
         std::string str1, std::string str2 = "", std::string str3 = "", std::string str4 = "");
 
    private:
-    void setup(std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis);
+    void setup(std::map<int, std::shared_ptr<const Core::FE::Discretization>> dis);
 
     void setup_multi_map_extractors(
-        std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis);
+        std::map<int, std::shared_ptr<const Core::FE::Discretization>> dis);
 
-    void setup_full_map_extractors(std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis);
+    void setup_full_map_extractors(
+        std::map<int, std::shared_ptr<const Core::FE::Discretization>> dis);
 
-    void setup_couplings(std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis);
+    void setup_couplings(std::map<int, std::shared_ptr<const Core::FE::Discretization>> dis);
 
-    void setup_full_couplings(std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis);
+    void setup_full_couplings(std::map<int, std::shared_ptr<const Core::FE::Discretization>> dis);
 
-    void setup_full_extractor(std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis);
+    void setup_full_extractor(std::map<int, std::shared_ptr<const Core::FE::Discretization>> dis);
 
     std::string cond_name_;
     int startdim_;
     int enddim_;
 
     // All MultiMapExtractors
-    std::map<int, Teuchos::RCP<Core::LinAlg::MultiMapExtractor>> mme_;
+    std::map<int, std::shared_ptr<Core::LinAlg::MultiMapExtractor>> mme_;
 
     // Couling Objects will just be initizalized in case we have more discretizations!
-    std::map<std::pair<int, int>, Teuchos::RCP<Coupling::Adapter::Coupling>> coup_;
+    std::map<std::pair<int, int>, std::shared_ptr<Coupling::Adapter::Coupling>> coup_;
 
     // Transformation Objects will just be initizalized in case we use matrix transformations!
-    std::map<int, Teuchos::RCP<Coupling::Adapter::MatrixLogicalSplitAndTransform>> transform_;
+    std::map<int, std::shared_ptr<Coupling::Adapter::MatrixLogicalSplitAndTransform>> transform_;
 
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> fullextractor_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> fullextractor_;
   };
 }  // namespace XFEM
 

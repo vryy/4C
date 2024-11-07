@@ -24,17 +24,17 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::Utils::DebugWriter::DebugWriter(Teuchos::RCP<Core::FE::Discretization> dis) : itnum_(-1)
+FSI::Utils::DebugWriter::DebugWriter(std::shared_ptr<Core::FE::Discretization> dis) : itnum_(-1)
 {
   std::vector<std::string> conditions_to_copy = {"FSICoupling"};
-  Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discreator =
-      Teuchos::make_rcp<Core::FE::DiscretizationCreatorBase>();
+  std::shared_ptr<Core::FE::DiscretizationCreatorBase> discreator =
+      std::make_shared<Core::FE::DiscretizationCreatorBase>();
   dis_ = discreator->create_matching_discretization_from_condition(
       *dis, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
 
   dis_->fill_complete(true, true, true);
 
-  coup_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+  coup_ = std::make_shared<Coupling::Adapter::Coupling>();
   const int ndim = Global::Problem::instance()->n_dim();
   coup_->setup_coupling(*dis, *dis_, *Core::Conditions::condition_node_row_map(*dis, "FSICoupling"),
       *dis_->node_row_map(), ndim);
@@ -50,7 +50,7 @@ void FSI::Utils::DebugWriter::new_time_step(int step, std::string name)
   if (name != "") s << "-" << name;
   s << "-step" << step;
 
-  control_ = Teuchos::make_rcp<Core::IO::OutputControl>(dis_->get_comm(),
+  control_ = std::make_shared<Core::IO::OutputControl>(dis_->get_comm(),
       "none",                                   // we do not have a problem type
       Core::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
       "debug-output",                           // no input file either
@@ -88,7 +88,7 @@ void FSI::Utils::DebugWriter::write_vector(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::Utils::SimpleDebugWriter::SimpleDebugWriter(
-    Teuchos::RCP<Core::FE::Discretization> dis, const std::string& name)
+    std::shared_ptr<Core::FE::Discretization> dis, const std::string& name)
     : dis_(dis), name_(name), itnum_(-1)
 {
 }
@@ -103,7 +103,7 @@ void FSI::Utils::SimpleDebugWriter::new_linear_system(int step, std::string name
   if (name != "") s << "-" << name;
   s << "-step" << step;
 
-  control_ = Teuchos::make_rcp<Core::IO::OutputControl>(dis_->get_comm(),
+  control_ = std::make_shared<Core::IO::OutputControl>(dis_->get_comm(),
       "none",                                   // we do not have a problem type
       Core::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
       "debug-output",                           // no input file either
@@ -134,7 +134,7 @@ void FSI::Utils::SimpleDebugWriter::new_iteration()
 void FSI::Utils::SimpleDebugWriter::write_vector(
     const std::string& name, Core::LinAlg::Vector<double>& v)
 {
-  writer_->write_vector(name, Teuchos::rcpFromRef(v));
+  writer_->write_vector(name, Core::Utils::shared_ptr_from_ref(v));
 }
 
 
@@ -143,11 +143,11 @@ void FSI::Utils::SimpleDebugWriter::write_vector(
 FSI::Utils::MonolithicDebugWriter::MonolithicDebugWriter(Monolithic& algorithm)
     : algorithm_(algorithm), counter_(0)
 {
-  struct_writer_ = Teuchos::make_rcp<SimpleDebugWriter>(
+  struct_writer_ = std::make_shared<SimpleDebugWriter>(
       algorithm_.structure_field()->discretization(), "structure");
   fluid_writer_ =
-      Teuchos::make_rcp<SimpleDebugWriter>(algorithm_.fluid_field()->discretization(), "fluid");
-  ale_writer_ = Teuchos::make_rcp<SimpleDebugWriter>(
+      std::make_shared<SimpleDebugWriter>(algorithm_.fluid_field()->discretization(), "fluid");
+  ale_writer_ = std::make_shared<SimpleDebugWriter>(
       algorithm_.ale_field()->write_access_discretization(), "ale");
 }
 
@@ -176,11 +176,11 @@ void FSI::Utils::MonolithicDebugWriter::new_iteration()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::Utils::MonolithicDebugWriter::write_vector(
-    const std::string& name, const Teuchos::RCP<Core::LinAlg::Vector<double>>& v)
+    const std::string& name, const std::shared_ptr<Core::LinAlg::Vector<double>>& v)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> sx;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> fx;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> ax;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> sx;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> fx;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> ax;
 
   algorithm_.extract_field_vectors(v, sx, fx, ax);
 

@@ -13,8 +13,8 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <map>
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -91,15 +91,15 @@ namespace Adapter
      *\param[in] structure wrapper for the structure solver
      *\param[in] fluid moving boundary wrapper for the fluid solver
      */
-    virtual void setup(Teuchos::RCP<Adapter::FSIStructureWrapper> structure,
-        Teuchos::RCP<Adapter::FluidMovingBoundary> fluid);
+    virtual void setup(std::shared_ptr<Adapter::FSIStructureWrapper> structure,
+        std::shared_ptr<Adapter::FluidMovingBoundary> fluid);
 
     /** \brief Hand the binning strategy used for the distribution of the fluid mesh
      *  to the object responsible for the element pair search in the FBI framework
      *
      *  \param[in] binning binning strategy object
      */
-    void set_binning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning);
+    void set_binning(std::shared_ptr<Core::Binstrategy::BinningStrategy> binning);
 
     /**
      * \brief Computes the coupling matrices
@@ -128,7 +128,7 @@ namespace Adapter
      * \returns structure force vector
      */
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_structure();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_structure();
 
     /**
      * \brief Abstractly, we do everything we have to, to introduce the coupling condition into the
@@ -143,16 +143,19 @@ namespace Adapter
      * \returns fluid velocity on the whole domain
      */
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> structure_to_fluid(int step);
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> structure_to_fluid(int step);
 
     /// Interface to do preparations to solve the fluid
     virtual void prepare_fluid_solve() = 0;
 
     /// Get function for the structure field #structure_
-    Teuchos::RCP<const Adapter::FSIStructureWrapper> get_structure() const { return structure_; };
+    std::shared_ptr<const Adapter::FSIStructureWrapper> get_structure() const
+    {
+      return structure_;
+    };
 
     /// Get function for the bridge object #bridge_
-    Teuchos::RCP<const Adapter::FBIConstraintBridge> get_bridge() const { return bridge_; };
+    std::shared_ptr<const Adapter::FBIConstraintBridge> get_bridge() const { return bridge_; };
 
     /// Handle fbi specific output
     virtual void output(double time, int step) = 0;
@@ -163,8 +166,8 @@ namespace Adapter
      * \param[in] bridge an object managing the pair contributins
      * \param[in] geometrycoupler an object managing the search, parallel communication, ect.
      */
-    FBIConstraintenforcer(Teuchos::RCP<Adapter::FBIConstraintBridge> bridge,
-        Teuchos::RCP<FBI::FBIGeometryCoupler> geometrycoupler);
+    FBIConstraintenforcer(std::shared_ptr<Adapter::FBIConstraintBridge> bridge,
+        std::shared_ptr<FBI::FBIGeometryCoupler> geometrycoupler);
 
     /**
      * \brief Creates all possible interaction pairs
@@ -172,7 +175,7 @@ namespace Adapter
      * \param[in] pairids a map relating all beam element ids to a set of fluid
      * elements ids which they potentially cut
      */
-    void create_pairs(Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
+    void create_pairs(std::shared_ptr<std::map<int, std::vector<int>>> pairids);
 
     /**
      * \brief Resets the state, i.e. the velocity of all interaction pairs
@@ -197,10 +200,11 @@ namespace Adapter
      *
      * \returns coupling contributions to the fluid system matrix
      */
-    virtual Teuchos::RCP<const Core::LinAlg::SparseOperator> assemble_fluid_coupling_matrix() const
+    virtual std::shared_ptr<const Core::LinAlg::SparseOperator> assemble_fluid_coupling_matrix()
+        const
     {
       FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
-      return Teuchos::null;
+      return nullptr;
     };
 
     /**
@@ -211,11 +215,11 @@ namespace Adapter
      *
      * \returns coupling contributions to the structure system matrix
      */
-    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> assemble_structure_coupling_matrix()
+    virtual std::shared_ptr<const Core::LinAlg::SparseMatrix> assemble_structure_coupling_matrix()
         const
     {
       FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
-      return Teuchos::null;
+      return nullptr;
     };
 
     /**
@@ -226,10 +230,11 @@ namespace Adapter
      *
      * \returns coupling contributions to the structure residual
      */
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> assemble_structure_coupling_residual() const
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> assemble_structure_coupling_residual()
+        const
     {
       FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
-      return Teuchos::null;
+      return nullptr;
     };
 
     /**
@@ -240,26 +245,26 @@ namespace Adapter
      *
      * \returns coupling contributions to the fluid residual
      */
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> assemble_fluid_coupling_residual() const
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> assemble_fluid_coupling_residual() const
     {
       FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
-      return Teuchos::null;
+      return nullptr;
     };
 
     /// Get function for the fluid field #fluid_
-    Teuchos::RCP<Adapter::FluidMovingBoundary> get_fluid() const { return fluid_; };
+    std::shared_ptr<Adapter::FluidMovingBoundary> get_fluid() const { return fluid_; };
 
     /// Get function for the structure and the fluid discretization in the vector #discretizations_
-    std::vector<Teuchos::RCP<Core::FE::Discretization>> get_discretizations() const
+    std::vector<std::shared_ptr<Core::FE::Discretization>> get_discretizations() const
     {
       return discretizations_;
     }
 
     /// Get function for the bridge object #bridge_
-    Teuchos::RCP<Adapter::FBIConstraintBridge> bridge() const { return bridge_; };
+    std::shared_ptr<Adapter::FBIConstraintBridge> bridge() const { return bridge_; };
 
     /// Get map extractor to split fluid velocity and pressure values
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_velocity_pressure_splitter() const
+    std::shared_ptr<const Core::LinAlg::MapExtractor> get_velocity_pressure_splitter() const
     {
       return velocity_pressure_splitter_;
     }
@@ -268,40 +273,40 @@ namespace Adapter
     FBIConstraintenforcer() = delete;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP<Adapter::FluidMovingBoundary> fluid_;
+    std::shared_ptr<Adapter::FluidMovingBoundary> fluid_;
 
     /// underlying structure of the FSI problem
-    Teuchos::RCP<Adapter::FSIStructureWrapper> structure_;
+    std::shared_ptr<Adapter::FSIStructureWrapper> structure_;
 
     /// Vector containing both (fluid and structure) field discretizations
-    std::vector<Teuchos::RCP<Core::FE::Discretization>> discretizations_;
+    std::vector<std::shared_ptr<Core::FE::Discretization>> discretizations_;
 
     /**
      * \brief Object bridging the gap between the specific implementation of the constraint
      * enforcement technique and the specific implementation of the meshtying discretization
      * approach
      */
-    Teuchos::RCP<Adapter::FBIConstraintBridge> bridge_;
+    std::shared_ptr<Adapter::FBIConstraintBridge> bridge_;
 
     /**
      * \brief Object handling geometric operations like the search of embedded pairs as well as the
      * parallel communication
      */
-    Teuchos::RCP<FBI::FBIGeometryCoupler> geometrycoupler_;
+    std::shared_ptr<FBI::FBIGeometryCoupler> geometrycoupler_;
 
     /// Displacement of the structural column nodes on the current proc
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> column_structure_displacement_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> column_structure_displacement_;
     /// Velocity of the structural column nodes on the current proc
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> column_structure_velocity_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> column_structure_velocity_;
     /// Velocity of the fluid column nodes on the current proc
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> column_fluid_velocity_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> column_fluid_velocity_;
     /**
      * \brief Extractor to split fluid values into velocities and pressure DOFs
      *
      * velocities  = OtherVector
      * pressure    = CondVector
      */
-    Teuchos::RCP<Core::LinAlg::MapExtractor> velocity_pressure_splitter_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> velocity_pressure_splitter_;
   };
 }  // namespace Adapter
 FOUR_C_NAMESPACE_CLOSE

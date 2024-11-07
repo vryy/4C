@@ -28,12 +28,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_structure,
-    Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying,
-    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2i,
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
-    Teuchos::RCP<Adapter::SSIStructureWrapper> structure)
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> block_map_structure,
+    std::shared_ptr<const Epetra_Map> full_map_structure,
+    std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying,
+    std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2i,
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> scatra,
+    std::shared_ptr<Adapter::SSIStructureWrapper> structure)
     : block_map_structure_(std::move(block_map_structure)),
       full_map_structure_(std::move(full_map_structure)),
       meshtying_strategy_s2i_(std::move(meshtying_strategy_s2i)),
@@ -46,13 +46,13 @@ SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::ScatraManifoldStructureOffDiagCoupling::ScatraManifoldStructureOffDiagCoupling(
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_structure,
-    Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying,
-    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2i,
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
-    Teuchos::RCP<Adapter::SSIStructureWrapper> structure)
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> block_map_structure,
+    std::shared_ptr<const Epetra_Map> full_map_structure,
+    std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying,
+    std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2i,
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> scatra,
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> scatra_manifold,
+    std::shared_ptr<Adapter::SSIStructureWrapper> structure)
     : ScatraStructureOffDiagCoupling(std::move(block_map_structure), std::move(full_map_structure),
           std::move(ssi_structure_meshtying), std::move(meshtying_strategy_s2i), std::move(scatra),
           std::move(structure)),
@@ -64,7 +64,7 @@ SSI::ScatraManifoldStructureOffDiagCoupling::ScatraManifoldStructureOffDiagCoupl
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structure_domain(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> scatrastructureblock)
+    std::shared_ptr<Core::LinAlg::SparseOperator> scatrastructureblock)
 {
   // create parameter list for element evaluation
   Teuchos::ParameterList eleparams;
@@ -83,8 +83,8 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
       1,  // column assembly based on number of dofset associated with structural dofs on scalar
       // transport discretization
       scatrastructureblock,  // scatra-structure matrix block
-      Teuchos::null,         // no additional matrices or vectors
-      Teuchos::null, Teuchos::null, Teuchos::null);
+      nullptr,               // no additional matrices or vectors
+      nullptr, nullptr, nullptr);
 
   // assemble scatra-structure matrix block
   scatra_field()->discretization()->evaluate(eleparams, strategyscatrastructure);
@@ -93,7 +93,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_manifold_structure_domain(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> scatramanifoldstructureblock)
+    std::shared_ptr<Core::LinAlg::SparseOperator> scatramanifoldstructureblock)
 {
   FOUR_C_THROW("not implemented");
 }
@@ -102,7 +102,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_manifol
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraManifoldStructureOffDiagCoupling::
     evaluate_off_diag_block_scatra_manifold_structure_domain(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> scatramanifoldstructureblock)
+        std::shared_ptr<Core::LinAlg::SparseOperator> scatramanifoldstructureblock)
 {
   // create parameter list for element evaluation
   Teuchos::ParameterList eleparams;
@@ -121,8 +121,8 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::
       1,  // column assembly based on number of dofset associated with structural dofs on scalar
       // transport discretization
       scatramanifoldstructureblock,  // scatra-structure matrix block
-      Teuchos::null,                 // no additional matrices or vectors
-      Teuchos::null, Teuchos::null, Teuchos::null);
+      nullptr,                       // no additional matrices or vectors
+      nullptr, nullptr, nullptr);
 
   // assemble scatra-structure matrix block
   scatra_manifold_->discretization()->evaluate(eleparams, strategyscatrastructure);
@@ -134,18 +134,18 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
     Core::LinAlg::SparseOperator& scatrastructureinterface)
 {
   // slave and master matrix for evaluation of conditions
-  Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix(Teuchos::null);
-  Teuchos::RCP<Core::LinAlg::SparseOperator> mastermatrix(Teuchos::null);
+  std::shared_ptr<Core::LinAlg::SparseOperator> slavematrix(nullptr);
+  std::shared_ptr<Core::LinAlg::SparseOperator> mastermatrix(nullptr);
   switch (scatra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
-      slavematrix = Teuchos::make_rcp<
+      slavematrix = std::make_shared<
           Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
 
           *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true);
-      mastermatrix = Teuchos::make_rcp<
+      mastermatrix = std::make_shared<
           Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
 
           *block_map_structure_, meshtying_strategy_s2i_->block_maps_master(), 81, false, true);
@@ -153,9 +153,9 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      slavematrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      slavematrix = std::make_shared<Core::LinAlg::SparseMatrix>(
           *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true);
-      mastermatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      mastermatrix = std::make_shared<Core::LinAlg::SparseMatrix>(
           *meshtying_strategy_s2i_->coupling_adapter()->master_dof_map(), 27, false, true);
       break;
     }
@@ -185,7 +185,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_structure_scatra_domain(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> structurescatradomain) const
+    std::shared_ptr<Core::LinAlg::SparseOperator> structurescatradomain) const
 {
   // create parameter list for element evaluation and fill it
   Teuchos::ParameterList eleparams;
@@ -213,8 +213,8 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_structure_scat
       1,  // column assembly based on number of dofset associated with scalar transport dofs on
       // structural discretization
       structurescatradomain,  // structure-scatra matrix block
-      Teuchos::null,          // no additional matrices or vectors needed
-      Teuchos::null, Teuchos::null, Teuchos::null);
+      nullptr,                // no additional matrices or vectors needed
+      nullptr, nullptr, nullptr);
 
   // assemble structure-scatra matrix block
   structure_->discretization()->evaluate(eleparams, strategystructurescatra);
@@ -230,8 +230,8 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_structure_scat
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::
     copy_slave_to_master_scatra_structure_symmetric_interface_contributions(
-        Teuchos::RCP<const Core::LinAlg::SparseOperator> slavematrix,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& mastermatrix)
+        std::shared_ptr<const Core::LinAlg::SparseOperator> slavematrix,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& mastermatrix)
 {
   mastermatrix->zero();
   switch (scatra_field()->matrix_type())
@@ -325,8 +325,8 @@ void SSI::ScatraStructureOffDiagCoupling::
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::
     evaluate_scatra_structure_non_symmetric_interface_contributions_slave_side(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> mastermatrix)
+        std::shared_ptr<Core::LinAlg::SparseOperator> slavematrix,
+        std::shared_ptr<Core::LinAlg::SparseOperator> mastermatrix)
 {
   // create parameter list for element evaluation
   Teuchos::ParameterList condparams;
@@ -343,37 +343,36 @@ void SSI::ScatraStructureOffDiagCoupling::
   scatra_field()->add_time_integration_specific_vectors();
 
   // set up necessary matrices
-  Teuchos::RCP<Core::LinAlg::SparseOperator>
+  std::shared_ptr<Core::LinAlg::SparseOperator>
       scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix;
-  Teuchos::RCP<Core::LinAlg::SparseOperator>
+  std::shared_ptr<Core::LinAlg::SparseOperator>
       scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix;
-  Teuchos::RCP<Core::LinAlg::SparseOperator>
+  std::shared_ptr<Core::LinAlg::SparseOperator>
       scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix;
 
   if (scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
   {
     scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+        std::make_shared<Core::LinAlg::SparseMatrix>(
             *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true);
     scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+        std::make_shared<Core::LinAlg::SparseMatrix>(
             *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true);
     scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+        std::make_shared<Core::LinAlg::SparseMatrix>(
             *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true);
   }
   else
   {
-    scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix = Teuchos::make_rcp<
-        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
-        *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true);
-    scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix =
-        Teuchos::make_rcp<
-            Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+    scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix =
+        std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
             *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true);
-    scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix = Teuchos::make_rcp<
-        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
-        *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true);
+    scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix =
+        std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+            *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true);
+    scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix =
+        std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+            *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true);
   }
 
   // create strategy for assembly of auxiliary system matrix
@@ -385,7 +384,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix,
       scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix,
       // no additional vectors
-      Teuchos::null, Teuchos::null, Teuchos::null);
+      nullptr, nullptr, nullptr);
 
   // evaluate scatra-scatra interface coupling
   for (auto kinetics_slave_cond :
@@ -583,7 +582,7 @@ void SSI::ScatraStructureOffDiagCoupling::
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::
     evaluate_scatra_structure_symmetric_interface_contributions_slave_side(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix)
+        std::shared_ptr<Core::LinAlg::SparseOperator> slavematrix)
 {
   // create parameter list for element evaluation
   Teuchos::ParameterList condparams;
@@ -599,17 +598,17 @@ void SSI::ScatraStructureOffDiagCoupling::
   // add state vectors to scalar transport discretization
   scatra_field()->add_time_integration_specific_vectors();
 
-  Teuchos::RCP<Core::LinAlg::SparseOperator> evaluate_matrix;
+  std::shared_ptr<Core::LinAlg::SparseOperator> evaluate_matrix;
   if (scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
   {
-    evaluate_matrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+    evaluate_matrix = std::make_shared<Core::LinAlg::SparseMatrix>(
         *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true);
   }
   else
   {
-    evaluate_matrix = Teuchos::make_rcp<
-        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
-        *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true);
+    evaluate_matrix =
+        std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+            *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true);
   }
 
   // create strategy for assembly of auxiliary system matrix
@@ -619,8 +618,8 @@ void SSI::ScatraStructureOffDiagCoupling::
       1,  // column assembly based on number of dofset associated with structural dofs on
           // structural discretization
       evaluate_matrix,  // auxiliary system matrix
-      Teuchos::null,    // no additional matrices of vectors
-      Teuchos::null, Teuchos::null, Teuchos::null);
+      nullptr,          // no additional matrices of vectors
+      nullptr, nullptr, nullptr);
 
   // evaluate scatra-scatra interface coupling
   for (auto kinetics_slave_cond :
@@ -725,13 +724,13 @@ void SSI::ScatraStructureOffDiagCoupling::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::ScatraStructureOffDiagCouplingSSTI::ScatraStructureOffDiagCouplingSSTI(
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_structure,
-    Teuchos::RCP<const Epetra_Map> full_map_scatra,
-    Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying,
-    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2i,
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
-    Teuchos::RCP<Adapter::SSIStructureWrapper> structure)
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> block_map_structure,
+    std::shared_ptr<const Epetra_Map> full_map_scatra,
+    std::shared_ptr<const Epetra_Map> full_map_structure,
+    std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying,
+    std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2i,
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> scatra,
+    std::shared_ptr<Adapter::SSIStructureWrapper> structure)
     : ScatraStructureOffDiagCoupling(std::move(block_map_structure), std::move(full_map_structure),
           std::move(ssi_structure_meshtying), std::move(meshtying_strategy_s2i), std::move(scatra),
           std::move(structure)),
@@ -742,7 +741,7 @@ SSI::ScatraStructureOffDiagCouplingSSTI::ScatraStructureOffDiagCouplingSSTI(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCouplingSSTI::evaluate_off_diag_block_structure_scatra_domain(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> structurescatradomain) const
+    std::shared_ptr<Core::LinAlg::SparseOperator> structurescatradomain) const
 {
   ScatraStructureOffDiagCoupling::evaluate_off_diag_block_structure_scatra_domain(
       structurescatradomain);

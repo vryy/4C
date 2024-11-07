@@ -30,24 +30,24 @@ Core::Communication::ParObject* Discret::Elements::ConstraintElement2Type::creat
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ConstraintElement2Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ConstraintElement2Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "CONSTRELE2")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::ConstraintElement2>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::ConstraintElement2>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ConstraintElement2Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ConstraintElement2Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::ConstraintElement2>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::ConstraintElement2>(id, owner);
   return ele;
 }
 

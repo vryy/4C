@@ -16,7 +16,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -48,7 +48,7 @@ namespace BEAMINTERACTION
   namespace Beam3TangentSmoothing
   {
     //! \brief Determine the neighbour elements of an element
-    Teuchos::RCP<B3CNeighbor> determine_neigbors(const Core::Elements::Element* element1);
+    std::shared_ptr<B3CNeighbor> determine_neigbors(const Core::Elements::Element* element1);
 
     //! \brief Get boundary node
     int get_boundary_node(const int nnode);

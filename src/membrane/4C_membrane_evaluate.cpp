@@ -22,7 +22,7 @@
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_function_of_time.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -135,9 +135,9 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_nlnstiff:
     {
       // need current displacement
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       Core::LinAlg::Matrix<numdof_, numdof_>* matptr = nullptr;
@@ -154,9 +154,9 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_nlnstiffmass:  // do mass, stiffness and internal forces
     {
       // need current displacement
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       Core::LinAlg::Matrix<numdof_, numdof_>* matptr = nullptr;
@@ -173,9 +173,9 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_internalforce:
     {
       // need current displacement
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
@@ -190,9 +190,9 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_update_istep:
     {
       // Update materials
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       update_element(mydisp, params, *material());
@@ -215,14 +215,14 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_stress:
     {
       // need current displacement
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
-      Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
-      Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
+      std::shared_ptr<std::vector<char>> stressdata = nullptr;
+      std::shared_ptr<std::vector<char>> straindata = nullptr;
 
       Inpar::Solid::StressType iostress = Inpar::Solid::stress_none;
       Inpar::Solid::StrainType iostrain = Inpar::Solid::strain_none;
@@ -237,15 +237,15 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       }
       else  // old structural time integration
       {
-        stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-        straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
+        stressdata = params.get<std::shared_ptr<std::vector<char>>>("stress", nullptr);
+        straindata = params.get<std::shared_ptr<std::vector<char>>>("strain", nullptr);
 
         iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
         iostrain = params.get<Inpar::Solid::StrainType>("iostrain", Inpar::Solid::strain_none);
       }
 
-      if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
-      if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
+      if (stressdata == nullptr) FOUR_C_THROW("Cannot get 'stress' data");
+      if (straindata == nullptr) FOUR_C_THROW("Cannot get 'strain' data");
 
       Core::LinAlg::Matrix<numgpt_post_, 6> stress;
       Core::LinAlg::Matrix<numgpt_post_, 6> strain;
@@ -277,14 +277,14 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       // nothing to do for ghost elements
       if (discretization.get_comm().MyPID() == owner())
       {
-        Teuchos::RCP<std::vector<char>> thickdata = Teuchos::null;
+        std::shared_ptr<std::vector<char>> thickdata = nullptr;
 
         if (is_params_interface())  // new structural time integration
           thickdata = str_params_interface().opt_quantity_data_ptr();
         else  // old structural time integration
-          thickdata = params.get<Teuchos::RCP<std::vector<char>>>("optquantity", Teuchos::null);
+          thickdata = params.get<std::shared_ptr<std::vector<char>>>("optquantity", nullptr);
 
-        if (thickdata == Teuchos::null) FOUR_C_THROW("Cannot get 'thickness' data");
+        if (thickdata == nullptr) FOUR_C_THROW("Cannot get 'thickness' data");
 
         Core::LinAlg::Matrix<numgpt_post_, 1> thickness;
         for (int i = 0; i < numgpt_post_; ++i) thickness(i) = cur_thickness_[i];
@@ -308,9 +308,9 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       double intenergy = 0.0;
 
       // need current displacement
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
@@ -403,8 +403,7 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
         // standard evaluation (incompressible, plane stress)
         if (material()->material_type() == Core::Materials::m_membrane_elasthyper)
         {
-          Teuchos::rcp_dynamic_cast<Mat::MembraneElastHyper>(
-              Core::Elements::Element::material(), true)
+          std::dynamic_pointer_cast<Mat::MembraneElastHyper>(Core::Elements::Element::material())
               ->strain_energy(cauchygreen_loc, psi, gp, id());
         }
         else
@@ -439,20 +438,20 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
      *===============================================================================*/
     case Core::Elements::struct_postprocess_thickness:
     {
-      const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> gpthickmap =
-          params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
-              "gpthickmap", Teuchos::null);
-      if (gpthickmap == Teuchos::null)
-        FOUR_C_THROW("no gp thickness map available for postprocessing");
+      const std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>
+          gpthickmap = params.get<
+              std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>>(
+              "gpthickmap", nullptr);
+      if (gpthickmap == nullptr) FOUR_C_THROW("no gp thickness map available for postprocessing");
 
       std::string optquantitytype = params.get<std::string>("optquantitytype", "ndxyz");
 
       int gid = id();
       Core::LinAlg::Matrix<numgpt_post_, 1> gpthick(((*gpthickmap)[gid])->values(), true);
 
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> postthick =
-          params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("postthick", Teuchos::null);
-      if (postthick == Teuchos::null) FOUR_C_THROW("No element thickness vector available");
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> postthick =
+          params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("postthick", nullptr);
+      if (postthick == nullptr) FOUR_C_THROW("No element thickness vector available");
 
       if (optquantitytype == "ndxyz")
       {
@@ -564,9 +563,9 @@ int Discret::Elements::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
     pressure = 0.0;
 
   // need displacement new
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
       discretization.get_state("displacement new");
-  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
+  if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
   Core::FE::extract_my_values(*disp, mydisp, lm);
 
@@ -687,13 +686,13 @@ void Discret::Elements::Membrane<distype>::mem_nlnstiffmass(
   Core::LinAlg::Matrix<numnod_, noddof_> xcurr(true);
 
   auto material_local_coordinates =
-      Teuchos::rcp_dynamic_cast<Mat::MembraneMaterialLocalCoordinates>(
+      std::dynamic_pointer_cast<Mat::MembraneMaterialLocalCoordinates>(
           Core::Elements::Element::material());
   auto material_global_coordinates =
-      Teuchos::rcp_dynamic_cast<Mat::MembraneMaterialGlobalCoordinates>(
+      std::dynamic_pointer_cast<Mat::MembraneMaterialGlobalCoordinates>(
           Core::Elements::Element::material());
   auto material_inelastic_thickness =
-      Teuchos::rcp_dynamic_cast<Mat::MembraneMaterialInelasticThickness>(
+      std::dynamic_pointer_cast<Mat::MembraneMaterialInelasticThickness>(
           Core::Elements::Element::material());
 
   mem_configuration(disp, xrefe, xcurr);
@@ -747,7 +746,7 @@ void Discret::Elements::Membrane<distype>::mem_nlnstiffmass(
     // principle stretch in thickness direction
     double lambda3 = 1.0;
 
-    if (material_inelastic_thickness != Teuchos::null)
+    if (material_inelastic_thickness != nullptr)
     {
       // incompressibility is just valid for the elastic quantities, therefore
       // use thickness from previous iteration step to get principle stretch in thickness
@@ -803,7 +802,7 @@ void Discret::Elements::Membrane<distype>::mem_nlnstiffmass(
       params.set("elecenter_coords_ref", midpoint);
     }
 
-    if (material_inelastic_thickness != Teuchos::null)
+    if (material_inelastic_thickness != nullptr)
     {
       // Let material decide the total stretch in thickness direction
       lambda3 = material_inelastic_thickness->evaluate_membrane_thickness_stretch(
@@ -820,12 +819,12 @@ void Discret::Elements::Membrane<distype>::mem_nlnstiffmass(
     }
 
     // standard evaluation (incompressible, plane stress)
-    if (material_local_coordinates != Teuchos::null)
+    if (material_local_coordinates != nullptr)
     {
       material_local_coordinates->evaluate_membrane(
           defgrd_loc, cauchygreen_loc, params, Q_localToGlobal, pk2red_loc, cmatred_loc, gp, id());
     }
-    else if (material_global_coordinates != Teuchos::null)
+    else if (material_global_coordinates != nullptr)
     {
       Core::LinAlg::Matrix<3, 3> pk2M_glob(true);
       Core::LinAlg::Matrix<6, 6> cmat_glob(true);
@@ -1587,16 +1586,16 @@ void Discret::Elements::Membrane<distype>::update_element(
       Core::LinAlg::Tensor::inverse_tensor_rotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
       auto material_local_coordinates =
-          Teuchos::rcp_dynamic_cast<Mat::MembraneMaterialLocalCoordinates>(
+          std::dynamic_pointer_cast<Mat::MembraneMaterialLocalCoordinates>(
               Core::Elements::Element::material());
       auto material_global_coordinates =
-          Teuchos::rcp_dynamic_cast<Mat::MembraneMaterialGlobalCoordinates>(
+          std::dynamic_pointer_cast<Mat::MembraneMaterialGlobalCoordinates>(
               Core::Elements::Element::material());
-      if (material_local_coordinates != Teuchos::null)
+      if (material_local_coordinates != nullptr)
       {
         material_local_coordinates->update_membrane(defgrd_loc, params, Q_localToGlobal, gp, id());
       }
-      else if (material_global_coordinates != Teuchos::null)
+      else if (material_global_coordinates != nullptr)
       {
         solid_material()->update(defgrd_glob, gp, params, id());
       }

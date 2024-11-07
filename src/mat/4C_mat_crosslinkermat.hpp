@@ -68,7 +68,7 @@ namespace Mat
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class CrosslinkerMat
 
@@ -148,9 +148,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<CrosslinkerMat>(*this);
+      return std::make_shared<CrosslinkerMat>(*this);
     }
 
     /// number of beam elasthyper material

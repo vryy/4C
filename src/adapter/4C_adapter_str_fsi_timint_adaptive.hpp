@@ -55,7 +55,7 @@ namespace Adapter
   {
    public:
     //! Constructor
-    StructureFSITimIntAda(Teuchos::RCP<Solid::TimAda> sta, Teuchos::RCP<Structure> sti);
+    StructureFSITimIntAda(std::shared_ptr<Solid::TimAda> sta, std::shared_ptr<Structure> sti);
 
     //! Do one time step with auxiliary time integration scheme
     virtual void time_step_auxiliar();
@@ -90,7 +90,7 @@ namespace Adapter
     void reset_step() override;
 
     //! return pointer to structure time integration
-    Teuchos::RCP<Structure> get_str_tim_int_ptr() { return str_time_integrator_; };
+    std::shared_ptr<Structure> get_str_tim_int_ptr() { return str_time_integrator_; };
 
    private:
     //! Indicate local discretization error
@@ -110,7 +110,7 @@ namespace Adapter
     int numdbcfsidofs_;    ///< number of interface DOFs with Dirichlet boundary condition
     int numdbcinnerdofs_;  ///< number of inner DOFs with Dirichlet boundary condition
 
-    Teuchos::RCP<Structure> str_time_integrator_;  ///< pointer to the structural time integrator
+    std::shared_ptr<Structure> str_time_integrator_;  ///< pointer to the structural time integrator
 
   };  // class StructureFSITimIntAda
 

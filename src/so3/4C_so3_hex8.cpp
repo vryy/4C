@@ -49,25 +49,25 @@ Core::Communication::ParObject* Discret::Elements::SoHex8Type::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex8Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::SoHex8>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::SoHex8>(id, owner);
     return ele;
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex8Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::SoHex8>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::SoHex8>(id, owner);
   return ele;
 }
 
@@ -130,9 +130,9 @@ Discret::Elements::SoHex8::SoHex8(int id, int owner)
   invJ_.resize(NUMGPT_SOH8, Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>(true));
   detJ_.resize(NUMGPT_SOH8, 0.0);
 
-  Teuchos::RCP<const Teuchos::ParameterList> params =
+  std::shared_ptr<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
-  if (params != Teuchos::null)
+  if (params != nullptr)
   {
     const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
 
@@ -142,7 +142,7 @@ Discret::Elements::SoHex8::SoHex8(int id, int owner)
       analyticalmaterialtangent_ = false;
   }
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOH8, NUMGPT_SOH8);
+    prestress_ = std::make_shared<Discret::Elements::PreStress>(NUMNOD_SOH8, NUMGPT_SOH8);
 
 
   return;
@@ -173,7 +173,7 @@ Discret::Elements::SoHex8::SoHex8(const Discret::Elements::SoHex8& old)
   }
 
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(*(old.prestress_));
+    prestress_ = std::make_shared<Discret::Elements::PreStress>(*(old.prestress_));
 
   return;
 }
@@ -269,13 +269,13 @@ void Discret::Elements::SoHex8::unpack(Core::Communication::UnpackBuffer& buffer
   {
     std::vector<char> tmpprestress(0);
     extract_from_pack(buffer, tmpprestress);
-    if (prestress_ == Teuchos::null)
+    if (prestress_ == nullptr)
     {
       int numgpt = NUMGPT_SOH8;
       // see whether I am actually a So_hex8fbar element
       auto* me = dynamic_cast<Discret::Elements::SoHex8fbar*>(this);
       if (me) numgpt += 1;  // one more history entry for centroid data in hex8fbar
-      prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOH8, numgpt);
+      prestress_ = std::make_shared<Discret::Elements::PreStress>(NUMNOD_SOH8, numgpt);
     }
     Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);
     prestress_->unpack(tmpprestress_buffer);
@@ -341,7 +341,7 @@ void Discret::Elements::SoHex8::print(std::ostream& os) const
 |  get vector of surfaces (public)                             maf 04/07|
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex8::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::SoHex8::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -350,7 +350,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex8::su
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex8::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::SoHex8::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);

@@ -52,7 +52,7 @@ void Mixture::IsotropicCylinderPrestressStrategy::setup(
 }
 
 void Mixture::IsotropicCylinderPrestressStrategy::evaluate_prestress(const MixtureRule& mixtureRule,
-    const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
+    const std::shared_ptr<const Mat::CoordinateSystemProvider> cosy,
     Mixture::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
@@ -76,17 +76,17 @@ void Mixture::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
 
   // Let's assume that for simplicity, the first index is the IsoNeoHooke material and the second
   // index is the Sussman-Bathe penalty parameter
-  auto matiso = Teuchos::rcp_dynamic_cast<Mat::Elastic::IsoNeoHooke>(elhyper.summands()[0]);
-  auto matvol = Teuchos::rcp_dynamic_cast<Mat::Elastic::VolSussmanBathe>(elhyper.summands()[1]);
+  auto matiso = std::dynamic_pointer_cast<Mat::Elastic::IsoNeoHooke>(elhyper.summands()[0]);
+  auto matvol = std::dynamic_pointer_cast<Mat::Elastic::VolSussmanBathe>(elhyper.summands()[1]);
 
-  if (Teuchos::is_null(matiso))
+  if (!(matiso))
   {
     FOUR_C_THROW(
         "The first summand of the constituent needs to be an IsoNeoHooke material law. This is a "
         "requirement from the prestressing technique.");
   }
 
-  if (Teuchos::is_null(matvol))
+  if (!(matvol))
   {
     FOUR_C_THROW(
         "The second summand of the constituent needs to be a Sussman-Bathe penalty term. This is a "
@@ -98,10 +98,10 @@ void Mixture::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
       dynamic_cast<const Mixture::GrowthRemodelMixtureRule&>(mixtureRule);
 
 
-  Teuchos::RCP<const Mat::CylinderCoordinateSystemProvider> cylinderCosy =
+  std::shared_ptr<const Mat::CylinderCoordinateSystemProvider> cylinderCosy =
       cosy->get_cylinder_coordinate_system();
 
-  if (Teuchos::is_null(cylinderCosy))
+  if (!(cylinderCosy))
   {
     FOUR_C_THROW(
         "No cylinder coordinate system is defined but required by the cylinder prestress "
@@ -175,14 +175,14 @@ void Mixture::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
 }
 
 double Mixture::IsotropicCylinderPrestressStrategy::evaluate_mue_frac(MixtureRule& mixtureRule,
-    const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
+    const std::shared_ptr<const Mat::CoordinateSystemProvider> cosy,
     Mixture::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
     Teuchos::ParameterList& params, int gp, int eleGID) const
 {
-  Teuchos::RCP<const Mat::CylinderCoordinateSystemProvider> cylinderCosy =
+  std::shared_ptr<const Mat::CylinderCoordinateSystemProvider> cylinderCosy =
       cosy->get_cylinder_coordinate_system();
 
-  if (Teuchos::is_null(cylinderCosy))
+  if (!(cylinderCosy))
   {
     FOUR_C_THROW(
         "No cylinder coordinate system is defined but required by the cylinder prestress "
@@ -226,7 +226,7 @@ double Mixture::IsotropicCylinderPrestressStrategy::evaluate_mue_frac(MixtureRul
 }
 
 void Mixture::IsotropicCylinderPrestressStrategy::update(
-    const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+    const std::shared_ptr<const Mat::CoordinateSystemProvider> anisotropy,
     Mixture::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
     Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {

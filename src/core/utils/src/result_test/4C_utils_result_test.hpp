@@ -14,8 +14,8 @@
 #include "4C_io_input_parameter_container.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -124,7 +124,7 @@ namespace Core::Utils
   {
    public:
     /// add field specific result test object
-    void add_field_test(Teuchos::RCP<ResultTest> test);
+    void add_field_test(std::shared_ptr<ResultTest> test);
 
     /// do all tests of all fields including appropiate output
     void test_all(const Epetra_Comm& comm);
@@ -143,7 +143,7 @@ namespace Core::Utils
 
    private:
     /// set of field specific result test objects
-    std::vector<Teuchos::RCP<ResultTest>> fieldtest_;
+    std::vector<std::shared_ptr<ResultTest>> fieldtest_;
 
     /// expected results
     std::vector<Input::LineDefinition> results_;

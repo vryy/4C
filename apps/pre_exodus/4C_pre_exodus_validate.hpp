@@ -13,8 +13,7 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <string>
 
 FOUR_C_NAMESPACE_OPEN
@@ -26,7 +25,7 @@ namespace EXODUS
   class ElementBlock;
 
   //! validate a given datfile
-  void validate_input_file(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile);
+  void validate_input_file(const std::shared_ptr<Epetra_Comm> comm, const std::string datfile);
 
   //! Check Elements for positive Jacobian and otherwise 'rewind' them
   void validate_mesh_element_jacobians(EXODUS::Mesh& mymesh);

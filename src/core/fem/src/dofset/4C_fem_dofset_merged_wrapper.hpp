@@ -41,8 +41,8 @@ namespace Core::DOFSets
   {
    public:
     //! Standard Constructor
-    DofSetMergedWrapper(Teuchos::RCP<DofSetInterface> dofset,
-        Teuchos::RCP<const Core::FE::Discretization> sourcedis,
+    DofSetMergedWrapper(std::shared_ptr<DofSetInterface> dofset,
+        std::shared_ptr<const Core::FE::Discretization> sourcedis,
         const std::string& couplingcond_master, const std::string& couplingcond_slave);
 
     //! Destructor
@@ -250,16 +250,16 @@ namespace Core::DOFSets
     }
 
     //! master node gids in col layout matching conditioned slave nodes
-    Teuchos::RCP<Core::LinAlg::Vector<int>> master_nodegids_col_layout_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> master_nodegids_col_layout_;
 
     //! slave node gids in col layout matching conditioned master nodes
-    Teuchos::RCP<Core::LinAlg::Vector<int>> slave_nodegids_col_layout_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> slave_nodegids_col_layout_;
 
     //! underlying actual dofset
-    Teuchos::RCP<DofSetInterface> sourcedofset_;
+    std::shared_ptr<DofSetInterface> sourcedofset_;
 
     //! source discretization
-    Teuchos::RCP<const Core::FE::Discretization> sourcedis_;
+    std::shared_ptr<const Core::FE::Discretization> sourcedis_;
 
     //! condition strings defining the coupling
     const std::string couplingcond_master_;

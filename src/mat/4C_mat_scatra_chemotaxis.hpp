@@ -30,7 +30,7 @@ namespace Mat
       ScatraChemotaxisMat(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// number of scalars in this pair
       const int numscal_;
@@ -117,9 +117,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ScatraChemotaxisMat>(*this);
+      return std::make_shared<ScatraChemotaxisMat>(*this);
     }
 
     /// return number of scalars for this reaction

@@ -28,19 +28,20 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* create marching time integrator */
-Teuchos::RCP<Solid::TimInt> Solid::tim_int_create(const Teuchos::ParameterList& timeparams,
+std::shared_ptr<Solid::TimInt> Solid::tim_int_create(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization>& actdis,
-    Teuchos::RCP<Core::LinAlg::Solver>& solver, Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
-    Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
+    const Teuchos::ParameterList& xparams, std::shared_ptr<Core::FE::Discretization>& actdis,
+    std::shared_ptr<Core::LinAlg::Solver>& solver,
+    std::shared_ptr<Core::LinAlg::Solver>& contactsolver,
+    std::shared_ptr<Core::IO::DiscretizationWriter>& output)
 {
   // set default output
-  Teuchos::RCP<Solid::TimInt> sti = Teuchos::null;
+  std::shared_ptr<Solid::TimInt> sti = nullptr;
   // try implicit integrators
   sti = tim_int_impl_create(
       timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
   // if nothing found try explicit integrators
-  if (sti == Teuchos::null)
+  if (sti == nullptr)
   {
     sti = tim_int_expl_create(
         timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
@@ -52,13 +53,15 @@ Teuchos::RCP<Solid::TimInt> Solid::tim_int_create(const Teuchos::ParameterList& 
 
 /*======================================================================*/
 /* create implicit marching time integrator */
-Teuchos::RCP<Solid::TimIntImpl> Solid::tim_int_impl_create(const Teuchos::ParameterList& timeparams,
-    const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization>& actdis,
-    Teuchos::RCP<Core::LinAlg::Solver>& solver, Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
-    Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
+std::shared_ptr<Solid::TimIntImpl> Solid::tim_int_impl_create(
+    const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& ioflags,
+    const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
+    std::shared_ptr<Core::FE::Discretization>& actdis,
+    std::shared_ptr<Core::LinAlg::Solver>& solver,
+    std::shared_ptr<Core::LinAlg::Solver>& contactsolver,
+    std::shared_ptr<Core::IO::DiscretizationWriter>& output)
 {
-  Teuchos::RCP<Solid::TimIntImpl> sti = Teuchos::null;
+  std::shared_ptr<Solid::TimIntImpl> sti = nullptr;
 
   // TODO: add contact solver...
 
@@ -67,7 +70,7 @@ Teuchos::RCP<Solid::TimIntImpl> Solid::tim_int_impl_create(const Teuchos::Parame
           Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS") !=
       Inpar::Solid::PreStress::none)
   {
-    sti = Teuchos::make_rcp<Solid::TimIntPrestress>(
+    sti = std::make_shared<Solid::TimIntPrestress>(
         timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
     return sti;
   }
@@ -78,7 +81,7 @@ Teuchos::RCP<Solid::TimIntImpl> Solid::tim_int_impl_create(const Teuchos::Parame
     // Static analysis
     case Inpar::Solid::dyna_statics:
     {
-      sti = Teuchos::make_rcp<Solid::TimIntStatics>(
+      sti = std::make_shared<Solid::TimIntStatics>(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
       break;
     }
@@ -86,7 +89,7 @@ Teuchos::RCP<Solid::TimIntImpl> Solid::tim_int_impl_create(const Teuchos::Parame
     // Generalised-alpha time integration
     case Inpar::Solid::dyna_genalpha:
     {
-      sti = Teuchos::make_rcp<Solid::TimIntGenAlpha>(
+      sti = std::make_shared<Solid::TimIntGenAlpha>(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
       break;
     }
@@ -94,7 +97,7 @@ Teuchos::RCP<Solid::TimIntImpl> Solid::tim_int_impl_create(const Teuchos::Parame
     // One-step-theta (OST) time integration
     case Inpar::Solid::dyna_onesteptheta:
     {
-      sti = Teuchos::make_rcp<Solid::TimIntOneStepTheta>(
+      sti = std::make_shared<Solid::TimIntOneStepTheta>(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
       break;
     }
@@ -113,13 +116,15 @@ Teuchos::RCP<Solid::TimIntImpl> Solid::tim_int_impl_create(const Teuchos::Parame
 
 /*======================================================================*/
 /* create explicit marching time integrator */
-Teuchos::RCP<Solid::TimIntExpl> Solid::tim_int_expl_create(const Teuchos::ParameterList& timeparams,
-    const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization>& actdis,
-    Teuchos::RCP<Core::LinAlg::Solver>& solver, Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
-    Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
+std::shared_ptr<Solid::TimIntExpl> Solid::tim_int_expl_create(
+    const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& ioflags,
+    const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
+    std::shared_ptr<Core::FE::Discretization>& actdis,
+    std::shared_ptr<Core::LinAlg::Solver>& solver,
+    std::shared_ptr<Core::LinAlg::Solver>& contactsolver,
+    std::shared_ptr<Core::IO::DiscretizationWriter>& output)
 {
-  Teuchos::RCP<Solid::TimIntExpl> sti = Teuchos::null;
+  std::shared_ptr<Solid::TimIntExpl> sti = nullptr;
 
   // what's the current problem type?
   Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
@@ -137,21 +142,21 @@ Teuchos::RCP<Solid::TimIntExpl> Solid::tim_int_expl_create(const Teuchos::Parame
     // forward Euler time integration
     case Inpar::Solid::dyna_expleuler:
     {
-      sti = Teuchos::make_rcp<Solid::TimIntExplEuler>(
+      sti = std::make_shared<Solid::TimIntExplEuler>(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
       break;
     }
     // central differences time integration
     case Inpar::Solid::dyna_centrdiff:
     {
-      sti = Teuchos::make_rcp<Solid::TimIntCentrDiff>(
+      sti = std::make_shared<Solid::TimIntCentrDiff>(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
       break;
     }
     // Adams-Bashforth 2nd order (AB2) time integration
     case Inpar::Solid::dyna_ab2:
     {
-      sti = Teuchos::make_rcp<Solid::TimIntAB2>(
+      sti = std::make_shared<Solid::TimIntAB2>(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
       break;
     }

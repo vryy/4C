@@ -37,7 +37,7 @@ Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::ScaTraEleCalcMultiPoroRe
 {
   // replace internal variable manager by internal variable manager for muliporo
   my::scatravarmanager_ =
-      Teuchos::make_rcp<ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>>(my::numscal_);
+      std::make_shared<ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>>(my::numscal_);
 
   return;
 }
@@ -71,7 +71,7 @@ int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
   pororeac::setup_calc(ele, discretization);
 
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   // set the fluid material in the element
   var_manager()->set_fluid_poromultiphase_material(ele);
@@ -79,21 +79,21 @@ int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
   if (material->material_type() == Core::Materials::m_matlist or
       material->material_type() == Core::Materials::m_matlist_reactions)
   {
-    const Teuchos::RCP<const Mat::MatList>& actmat =
-        Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
+    const std::shared_ptr<const Mat::MatList>& actmat =
+        std::dynamic_pointer_cast<const Mat::MatList>(material);
     if (actmat->num_mat() < my::numdofpernode_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numdofpernode_; ++k)
     {
       int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       switch (singlemat->material_type())
       {
         case Core::Materials::m_scatra_multiporo_fluid:
         {
-          const Teuchos::RCP<const Mat::ScatraMatMultiPoroFluid>& poromat =
-              Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroFluid>(singlemat);
+          const std::shared_ptr<const Mat::ScatraMatMultiPoroFluid>& poromat =
+              std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroFluid>(singlemat);
 
           // smaller zero or greater equal numfluidphases
           if (poromat->phase_id() < 0 or
@@ -103,7 +103,7 @@ int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
                 poromat->phase_id(), k);
 
           const int singlephasematid = var_manager()->multiphase_mat()->mat_id(poromat->phase_id());
-          Teuchos::RCP<Core::Mat::Material> singlemat =
+          std::shared_ptr<Core::Mat::Material> singlemat =
               var_manager()->multiphase_mat()->material_by_id(singlephasematid);
 
           if (singlemat->material_type() != Core::Materials::m_fluidporo_singlephase)
@@ -126,8 +126,8 @@ int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
         }
         case Core::Materials::m_scatra_multiporo_volfrac:
         {
-          const Teuchos::RCP<const Mat::ScatraMatMultiPoroVolFrac>& poromat =
-              Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroVolFrac>(singlemat);
+          const std::shared_ptr<const Mat::ScatraMatMultiPoroVolFrac>& poromat =
+              std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroVolFrac>(singlemat);
 
           // smaller zero or greater equal numfluidphases
           if (poromat->phase_id() < var_manager()->multiphase_mat()->num_fluid_phases() or
@@ -139,7 +139,7 @@ int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
                 poromat->phase_id(), k);
 
           const int singlephasematid = var_manager()->multiphase_mat()->mat_id(poromat->phase_id());
-          Teuchos::RCP<Core::Mat::Material> singlemat =
+          std::shared_ptr<Core::Mat::Material> singlemat =
               var_manager()->multiphase_mat()->material_by_id(singlephasematid);
 
           if (singlemat->material_type() != Core::Materials::m_fluidporo_singlevolfrac)
@@ -162,8 +162,8 @@ int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
         }
         case Core::Materials::m_scatra_multiporo_solid:
         {
-          const Teuchos::RCP<const Mat::ScatraMatMultiPoroSolid>& poromat =
-              Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroSolid>(singlemat);
+          const std::shared_ptr<const Mat::ScatraMatMultiPoroSolid>& poromat =
+              std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroSolid>(singlemat);
 
           // set delta in the variablemanager
           var_manager()->set_delta(poromat->delta(), k);
@@ -176,8 +176,8 @@ int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
         }
         case Core::Materials::m_scatra_multiporo_temperature:
         {
-          const Teuchos::RCP<const Mat::ScatraMatMultiPoroTemperature>& poromat =
-              Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroTemperature>(singlemat);
+          const std::shared_ptr<const Mat::ScatraMatMultiPoroTemperature>& poromat =
+              std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroTemperature>(singlemat);
 
           // assemble heat capacities of fluid phases, volfracs and solid phase
           // cp order [ <fluid>  <volfrac>  <solid> ]
@@ -226,8 +226,8 @@ int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
     {
       case Core::Materials::m_scatra_multiporo_fluid:
       {
-        const Teuchos::RCP<const Mat::ScatraMatMultiPoroFluid>& poromat =
-            Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroFluid>(material);
+        const std::shared_ptr<const Mat::ScatraMatMultiPoroFluid>& poromat =
+            std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroFluid>(material);
 
         // smaller zero or greater equal numfluidphases
         if (poromat->phase_id() < 0 or
@@ -237,7 +237,7 @@ int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
               poromat->phase_id(), 0);
 
         const int singlephasematid = var_manager()->multiphase_mat()->mat_id(poromat->phase_id());
-        Teuchos::RCP<Core::Mat::Material> singlemat =
+        std::shared_ptr<Core::Mat::Material> singlemat =
             var_manager()->multiphase_mat()->material_by_id(singlephasematid);
 
         if (singlemat->material_type() != Core::Materials::m_fluidporo_singlephase)
@@ -258,8 +258,8 @@ int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
       }
       case Core::Materials::m_scatra_multiporo_volfrac:
       {
-        const Teuchos::RCP<const Mat::ScatraMatMultiPoroVolFrac>& poromat =
-            Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroVolFrac>(material);
+        const std::shared_ptr<const Mat::ScatraMatMultiPoroVolFrac>& poromat =
+            std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroVolFrac>(material);
 
         // smaller zero or greater equal numfluidphases
         if (poromat->phase_id() < 0 or
@@ -271,7 +271,7 @@ int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
               poromat->phase_id(), 0);
 
         const int singlephasematid = var_manager()->multiphase_mat()->mat_id(poromat->phase_id());
-        Teuchos::RCP<Core::Mat::Material> singlemat =
+        std::shared_ptr<Core::Mat::Material> singlemat =
             var_manager()->multiphase_mat()->material_by_id(singlephasematid);
 
         if (singlemat->material_type() != Core::Materials::m_fluidporo_singlevolfrac)
@@ -293,8 +293,8 @@ int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
       }
       case Core::Materials::m_scatra_multiporo_solid:
       {
-        const Teuchos::RCP<const Mat::ScatraMatMultiPoroSolid>& poromat =
-            Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroSolid>(material);
+        const std::shared_ptr<const Mat::ScatraMatMultiPoroSolid>& poromat =
+            std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroSolid>(material);
 
         // set delta in the variablemanager
         var_manager()->set_delta(poromat->delta(), 0);
@@ -307,8 +307,8 @@ int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
       }
       case Core::Materials::m_scatra_multiporo_temperature:
       {
-        const Teuchos::RCP<const Mat::ScatraMatMultiPoroTemperature>& poromat =
-            Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroTemperature>(material);
+        const std::shared_ptr<const Mat::ScatraMatMultiPoroTemperature>& poromat =
+            std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroTemperature>(material);
 
         // assemble heat capacities of fluid phases, volfracs and solid phase
         std::vector<double> cp;
@@ -373,9 +373,9 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = my::scatrapara_->nds_disp();
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
         discretization.get_state(ndsdisp, "dispnp");
-    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
+    if (dispnp == nullptr) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
     const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
@@ -402,9 +402,9 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and
   //---------------------------------------------------------------------------------------------
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (hist == Teuchos::null || phinp == Teuchos::null)
+  std::shared_ptr<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+  if (hist == nullptr || phinp == nullptr)
     FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phinp'");
 
   // values of scatra field are always in first dofset
@@ -415,8 +415,8 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and
   if (my::scatraparatimint_->is_gen_alpha() and not my::scatraparatimint_->is_incremental())
   {
     // extract additional local values from global vector
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
-    if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
+    if (phin == nullptr) FOUR_C_THROW("Cannot get state vector 'phin'");
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
   }
 
@@ -503,10 +503,9 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::extract_nodal_flux(
     statename << stateprefix << curphase;
 
     // get convective (velocity - mesh displacement) velocity at nodes
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
         discretization.get_state(ndsvel, statename.str());
-    if (convel == Teuchos::null)
-      FOUR_C_THROW("Cannot get state vector %s", statename.str().c_str());
+    if (convel == nullptr) FOUR_C_THROW("Cannot get state vector %s", statename.str().c_str());
 
     // extract local values of convective velocity field from global state vector
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(
@@ -530,9 +529,9 @@ double Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::compute_pore_pres
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::materials(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity
@@ -581,9 +580,9 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::materials(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_fluid(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity
@@ -594,8 +593,8 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_flui
     FOUR_C_THROW(
         "no gauss point given for evaluation of MatMultiPoro material. Check your input file.");
 
-  const Teuchos::RCP<const Mat::ScatraMatMultiPoroFluid>& actmat =
-      Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroFluid>(material);
+  const std::shared_ptr<const Mat::ScatraMatMultiPoroFluid>& actmat =
+      std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroFluid>(material);
 
   // volume fraction of fluid phase: volfrac_fluid = porosity * saturation_fluid
   double volfrac_fluid = 0.0;
@@ -627,9 +626,9 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_flui
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_vol_frac(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity
@@ -640,8 +639,8 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_vol_
     FOUR_C_THROW(
         "no gauss point given for evaluation of MatMultiPoro material. Check your input file.");
 
-  const Teuchos::RCP<const Mat::ScatraMatMultiPoroVolFrac>& actmat =
-      Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroVolFrac>(material);
+  const std::shared_ptr<const Mat::ScatraMatMultiPoroVolFrac>& actmat =
+      std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroVolFrac>(material);
 
   // volume fraction
   double volfrac = 0.0;
@@ -670,9 +669,9 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_vol_
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_solid(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity
@@ -684,8 +683,8 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_soli
         "no gauss point given for evaluation of MatMultiPoro material. "
         "Check your input file.");
 
-  const Teuchos::RCP<const Mat::ScatraMatMultiPoroSolid>& actmat =
-      Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroSolid>(material);
+  const std::shared_ptr<const Mat::ScatraMatMultiPoroSolid>& actmat =
+      std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroSolid>(material);
 
   // volume fraction of solid phase: volfrac_solid_phase = (1 - porosity - sumaddvolfrac)
   double volfrac_solid_phase = 0.0;
@@ -717,9 +716,9 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_soli
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_temperature(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity
@@ -731,8 +730,8 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_temp
         "no gauss point given for evaluation of MatMultiPoro material. "
         "Check your input file.");
 
-  const Teuchos::RCP<const Mat::ScatraMatMultiPoroTemperature>& actmat =
-      Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroTemperature>(material);
+  const std::shared_ptr<const Mat::ScatraMatMultiPoroTemperature>& actmat =
+      std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroTemperature>(material);
 
   // read the heat capacity
   double cp_eff = 0.0;
@@ -808,12 +807,12 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<
  *-------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::set_advanced_reaction_terms(
-    const int k,                                            //!< index of current scalar
-    const Teuchos::RCP<Mat::MatListReactions> matreaclist,  //!< index of current scalar
-    const double* gpcoord                                   //!< current Gauss-point coordinates
+    const int k,                                               //!< index of current scalar
+    const std::shared_ptr<Mat::MatListReactions> matreaclist,  //!< index of current scalar
+    const double* gpcoord                                      //!< current Gauss-point coordinates
 )
 {
-  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::rea_manager();
+  const std::shared_ptr<ScaTraEleReaManagerAdvReac> remanager = advreac::rea_manager();
 
   fill_coupling_vector_and_add_variables(k, *matreaclist, *remanager);
 
@@ -1208,7 +1207,7 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_sourc
     my::calc_hist_and_source_od_mesh(emat, k, ndofpernodemesh, myfac, 1.0, J, dJ_dmesh, densnp);
 
     // 2) linearization of advanced reaction terms
-    const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::rea_manager();
+    const std::shared_ptr<ScaTraEleReaManagerAdvReac> remanager = advreac::rea_manager();
     if (remanager->active() && var_manager()->fluid_phase_manager()->porosity_depends_on_struct())
     {
       const std::vector<double> myderivs =
@@ -1535,7 +1534,7 @@ void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_sourc
         emat, k, &prefaclinmassodfluid, totalnummultiphasedofpernode, vrhs);
 
     // 2) linearization of advanced reaction terms
-    const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::rea_manager();
+    const std::shared_ptr<ScaTraEleReaManagerAdvReac> remanager = advreac::rea_manager();
     if (remanager->active())
     {
       const std::vector<double> myderivs =

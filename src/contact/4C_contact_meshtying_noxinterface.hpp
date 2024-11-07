@@ -27,7 +27,7 @@ namespace CONTACT
     MtNoxInterface();
 
     /// initialize important member variables
-    void init(const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr);
+    void init(const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr);
 
     /** \brief Setup important new member variables
      *
@@ -87,7 +87,7 @@ namespace CONTACT
 
    private:
     //! global state data container
-    Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
+    std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
   };
 
 }  // namespace CONTACT

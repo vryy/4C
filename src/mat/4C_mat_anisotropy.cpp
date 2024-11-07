@@ -12,9 +12,11 @@
 #include "4C_fem_general_fiber_node_holder.hpp"
 #include "4C_mat_anisotropy_extension.hpp"
 #include "4C_mat_anisotropy_utils.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -238,7 +240,7 @@ const Core::LinAlg::Matrix<3, 1>& Mat::Anisotropy::get_gauss_point_fiber(
 
 void Mat::Anisotropy::register_anisotropy_extension(BaseAnisotropyExtension& extension)
 {
-  extensions_.emplace_back(Teuchos::rcpFromRef(extension));
+  extensions_.emplace_back(Core::Utils::shared_ptr_from_ref(extension));
   extension.set_anisotropy(*this);
 }
 

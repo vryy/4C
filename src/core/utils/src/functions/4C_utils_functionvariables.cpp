@@ -22,7 +22,7 @@ Core::Utils::FunctionVariable::FunctionVariable(std::string name) : name_(std::m
 Core::Utils::ParsedFunctionVariable::ParsedFunctionVariable(
     std::string name, const std::string& buf)
     : FunctionVariable(std::move(name)),
-      timefunction_(Teuchos::make_rcp<Core::Utils::SymbolicExpression<double>>(buf))
+      timefunction_(std::make_shared<Core::Utils::SymbolicExpression<double>>(buf))
 
 {
 }
@@ -214,7 +214,7 @@ Core::Utils::MultiFunctionVariable::MultiFunctionVariable(std::string name,
   for (unsigned int n = 0; n < times_.size() - 1; ++n)
   {
     timefunction_[n] =
-        Teuchos::make_rcp<Core::Utils::SymbolicExpression<double>>(description_vec[n]);
+        std::make_shared<Core::Utils::SymbolicExpression<double>>(description_vec[n]);
   }
 }
 
@@ -488,7 +488,7 @@ bool Core::Utils::FourierInterpolationVariable::contain_time(const double t)
 
 
 Core::Utils::PiecewiseVariable::PiecewiseVariable(
-    const std::string& name, std::vector<Teuchos::RCP<FunctionVariable>> pieces)
+    const std::string& name, std::vector<std::shared_ptr<FunctionVariable>> pieces)
     : FunctionVariable(name), pieces_(std::move(pieces))
 {
   if (pieces_.empty())

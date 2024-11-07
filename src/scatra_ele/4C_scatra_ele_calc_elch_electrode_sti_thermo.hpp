@@ -105,9 +105,10 @@ namespace Discret
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! get internal variable manager for thermodynamic electrodes
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<nsd_, nen_>> var_manager()
+      std::shared_ptr<ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<nsd_, nen_>>
+      var_manager()
       {
-        return Teuchos::rcp_static_cast<
+        return std::static_pointer_cast<
             ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<nsd_, nen_>>(
             my::scatravarmanager_);
       };

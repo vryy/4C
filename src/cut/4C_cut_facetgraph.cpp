@@ -274,10 +274,10 @@ void Cut::FacetGraph::collect_volume_lines(plain_facet_set &collected_facets,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::FacetGraph> Cut::FacetGraph::create(
+std::shared_ptr<Cut::FacetGraph> Cut::FacetGraph::create(
     const std::vector<Side *> &sides, const plain_facet_set &facets)
 {
-  Teuchos::RCP<FacetGraph> fg = Teuchos::null;
+  std::shared_ptr<FacetGraph> fg = nullptr;
 
 
   // get current underlying element dimension
@@ -285,7 +285,7 @@ Teuchos::RCP<Cut::FacetGraph> Cut::FacetGraph::create(
   switch (dim)
   {
     case 3:
-      fg = Teuchos::make_rcp<FacetGraph>(sides, facets);
+      fg = std::make_shared<FacetGraph>(sides, facets);
       break;
     default:
       FOUR_C_THROW("Unsupported element dimension!");

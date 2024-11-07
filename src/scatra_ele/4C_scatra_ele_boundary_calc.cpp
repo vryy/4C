@@ -50,8 +50,8 @@ Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCal
       normal_(true),
       velint_(true),
       metrictensor_(true),
-      rotsymmpbc_(Teuchos::RCP(new FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1,
-          Discret::Elements::Fluid::none>()))
+      rotsymmpbc_(std::make_shared<FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1,
+              Discret::Elements::Fluid::none>>())
 {
 }
 
@@ -177,9 +177,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::extract_displac
     // get number of dof-set associated with displacement related dofs
     const int ndsdisp = scatraparams_->nds_disp();
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
         discretization.get_state(ndsdisp, "dispnp");
-    FOUR_C_ASSERT(dispnp != Teuchos::null, "Cannot get state vector 'dispnp'");
+    FOUR_C_ASSERT(dispnp != nullptr, "Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
     const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
@@ -292,11 +292,11 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
     {
       // get the parent element including its material
       Core::Elements::Element* parentele = ele->parent_element();
-      Teuchos::RCP<Core::Mat::Material> mat = parentele->material();
+      std::shared_ptr<Core::Mat::Material> mat = parentele->material();
 
       // get values of scalar
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+      if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
       // extract local values from global vector
       std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
@@ -304,10 +304,9 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
       // get condition
-      Teuchos::RCP<Core::Conditions::Condition> cond =
-          params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-      if (cond == Teuchos::null)
-        FOUR_C_THROW("Cannot access condition 'TransportThermoConvections'!");
+      std::shared_ptr<Core::Conditions::Condition> cond =
+          params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
+      if (cond == nullptr) FOUR_C_THROW("Cannot access condition 'TransportThermoConvections'!");
 
       // get heat transfer coefficient and surrounding temperature
       const auto heatranscoeff = cond->parameters().get<double>("coeff");
@@ -323,7 +322,7 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
     {
       // get the parent element including its material
       Core::Elements::Element* parentele = ele->parent_element();
-      Teuchos::RCP<Core::Mat::Material> mat = parentele->material();
+      std::shared_ptr<Core::Mat::Material> mat = parentele->material();
 
       if (numscal_ > 1) FOUR_C_THROW("not yet implemented for more than one scalar\n");
 
@@ -390,8 +389,8 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
       //       it would be wrong to suppress results for a ghosted boundary!
 
       // get actual values of transported scalars
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+      if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
       // extract local values from the global vector
       std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
@@ -402,9 +401,9 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
       const int ndsvel = scatraparams_->nds_vel();
 
       // get convective (velocity - mesh displacement) velocity at nodes
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
           discretization.get_state(ndsvel, "convective velocity field");
-      if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
+      if (convel == nullptr) FOUR_C_THROW("Cannot get state vector convective velocity");
 
       // determine number of velocity related dofs per node
       const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -571,8 +570,8 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::calc_normal_vec
 {
   // access the global vector
   const auto normals =
-      params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("normal vectors", Teuchos::null);
-  if (normals == Teuchos::null) FOUR_C_THROW("Could not access vector 'normal vectors'");
+      params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("normal vectors", nullptr);
+  if (normals == nullptr) FOUR_C_THROW("Could not access vector 'normal vectors'");
 
   // determine constant outer normal to this element
   if constexpr (nsd_ == 3 and nsd_ele_ == 1)
@@ -628,7 +627,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
   Core::Elements::Element* parentele = ele->parent_element();
 
   // get material of parent element
-  Teuchos::RCP<Core::Mat::Material> material = parentele->material();
+  std::shared_ptr<Core::Mat::Material> material = parentele->material();
 
   // we don't know the parent element's lm vector; so we have to build it here
   const int nenparent = parentele->num_node();
@@ -638,8 +637,8 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
   parentele->location_vector(discretization, lmparent, lmparentowner, lmparentstride);
 
   // get values of scalar
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
@@ -650,9 +649,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
   const int ndsvel = scatraparams_->nds_vel();
 
   // get convective (velocity - mesh displacement) velocity at nodes
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
       discretization.get_state(ndsvel, "convective velocity field");
-  if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
+  if (convel == nullptr) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -742,7 +741,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 double Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::get_density(
-    Teuchos::RCP<const Core::Mat::Material> material,
+    std::shared_ptr<const Core::Mat::Material> material,
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp, const int k)
 {
   // initialization
@@ -840,7 +839,7 @@ Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::calc_convective_flux
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::convective_heat_transfer(
-    const Core::Elements::FaceElement* ele, Teuchos::RCP<const Core::Mat::Material> material,
+    const Core::Elements::FaceElement* ele, std::shared_ptr<const Core::Mat::Material> material,
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp, Core::LinAlg::SerialDenseMatrix& emat,
     Core::LinAlg::SerialDenseVector& erhs, const double heatranscoeff, const double surtemp)
 {
@@ -1410,9 +1409,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
         scatraparams_->nds_two_tensor_quantity());
 
   // get current scatra-scatra interface coupling condition
-  Teuchos::RCP<Core::Conditions::Condition> s2icondition =
-      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-  if (s2icondition == Teuchos::null)
+  std::shared_ptr<Core::Conditions::Condition> s2icondition =
+      params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
+  if (s2icondition == nullptr)
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // get primary variable to derive the linearization
@@ -1549,9 +1548,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::extract_node_va
     const std::string& statename, const int& nds) const
 {
   // extract global state vector from discretization
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> state =
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> state =
       discretization.get_state(nds, statename);
-  if (state == Teuchos::null)
+  if (state == nullptr)
     FOUR_C_THROW("Cannot extract state vector \"" + statename + "\" from discretization!");
 
   // extract nodal state variables associated with boundary element
@@ -1635,9 +1634,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
   //////////////////////////////////////////////////////////////////////
 
   // get current condition
-  Teuchos::RCP<Core::Conditions::Condition> cond =
-      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-  if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'TransportRobin'");
+  std::shared_ptr<Core::Conditions::Condition> cond =
+      params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
+  if (cond == nullptr) FOUR_C_THROW("Cannot access condition 'TransportRobin'");
 
   // get on/off flags
   const auto* onoff = &cond->parameters().get<std::vector<int>>("ONOFF");
@@ -1663,9 +1662,8 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
 
   // ------------get values of scalar transport------------------
   // extract global state vector from discretization
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == Teuchos::null)
-    FOUR_C_THROW("Cannot read state vector \"phinp\" from discretization!");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot read state vector \"phinp\" from discretization!");
 
   // extract local nodal state variables from global state vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
@@ -1758,8 +1756,8 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
   std::vector<int>& lm = la[0].lm_;
 
   // ------------get values of scalar transport------------------
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
       numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
@@ -1767,9 +1765,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
 
   //------------get membrane concentration at the interface (i.e. within the
   // membrane)------------------
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phibar =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phibar =
       discretization.get_state("MembraneConcentration");
-  if (phibar == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'MembraneConcentration'");
+  if (phibar == nullptr) FOUR_C_THROW("Cannot get state vector 'MembraneConcentration'");
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephibar(
       numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
@@ -1779,9 +1777,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
   // get number of dofset associated with pressure related dofs
   const int ndswss = scatraparams_->nds_wss();
   if (ndswss == -1) FOUR_C_THROW("Cannot get number of dofset of wss vector");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> wss =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> wss =
       discretization.get_state(ndswss, "WallShearStress");
-  if (wss == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'WallShearStress'");
+  if (wss == nullptr) FOUR_C_THROW("Cannot get state vector 'WallShearStress'");
 
   // determine number of velocity (and pressure) related dofs per node
   const int numwssdofpernode = la[ndswss].lm_.size() / nen_;
@@ -1801,9 +1799,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
   //                  get current condition
   //////////////////////////////////////////////////////////////////////
 
-  Teuchos::RCP<Core::Conditions::Condition> cond =
-      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-  if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'SurfacePermeability'");
+  std::shared_ptr<Core::Conditions::Condition> cond =
+      params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
+  if (cond == nullptr) FOUR_C_THROW("Cannot access condition 'SurfacePermeability'");
 
   const auto* onoff = &cond->parameters().get<std::vector<int>>("ONOFF");
 
@@ -1895,8 +1893,8 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
   std::vector<int>& lm = la[0].lm_;
 
   // ------------get values of scalar transport------------------
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
       numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
@@ -1905,9 +1903,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
 
   //------------get membrane concentration at the interface (i.e. within the
   // membrane)------------------
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phibar =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phibar =
       discretization.get_state("MembraneConcentration");
-  if (phibar == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'MembraneConcentration'");
+  if (phibar == nullptr) FOUR_C_THROW("Cannot get state vector 'MembraneConcentration'");
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephibar(
       numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
@@ -1918,9 +1916,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
   // get number of dofset associated with pressure related dofs
   const int ndspres = scatraparams_->nds_pres();
   if (ndspres == -1) FOUR_C_THROW("Cannot get number of dofset of pressure vector");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pressure =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pressure =
       discretization.get_state(ndspres, "Pressure");
-  if (pressure == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'Pressure'");
+  if (pressure == nullptr) FOUR_C_THROW("Cannot get state vector 'Pressure'");
 
   // determine number of velocity (and pressure) related dofs per node
   const int numveldofpernode = la[ndspres].lm_.size() / nen_;
@@ -1940,9 +1938,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
   // get number of dofset associated with pressure related dofs
   const int ndswss = scatraparams_->nds_wss();
   if (ndswss == -1) FOUR_C_THROW("Cannot get number of dofset of wss vector");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> wss =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> wss =
       discretization.get_state(ndswss, "WallShearStress");
-  if (wss == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'WallShearStress'");
+  if (wss == nullptr) FOUR_C_THROW("Cannot get state vector 'WallShearStress'");
 
   // determine number of velocity (and pressure) related dofs per node
   const int numwssdofpernode = la[ndswss].lm_.size() / nen_;
@@ -1956,9 +1954,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*wss, ewss, lmwss);
 
   // ------------get current condition----------------------------------
-  Teuchos::RCP<Core::Conditions::Condition> cond =
-      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-  if (cond == Teuchos::null)
+  std::shared_ptr<Core::Conditions::Condition> cond =
+      params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
+  if (cond == nullptr)
     FOUR_C_THROW("Cannot access condition 'DESIGN SCATRA COUPLING SURF CONDITIONS'");
 
   const auto* onoff = &cond->parameters().get<std::vector<int>>("ONOFF");
@@ -2118,14 +2116,14 @@ template <Core::FE::CellType distype, int probdim>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Teuchos::RCP<const Core::Mat::Material> material,
+    Core::FE::Discretization& discretization, std::shared_ptr<const Core::Mat::Material> material,
     Core::LinAlg::SerialDenseMatrix& elemat_epetra, Core::LinAlg::SerialDenseVector& elevec_epetra)
 {
   //------------------------------------------------------------------------
   // Dirichlet boundary condition
   //------------------------------------------------------------------------
-  Teuchos::RCP<Core::Conditions::Condition> dbc =
-      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
+  std::shared_ptr<Core::Conditions::Condition> dbc =
+      params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
 
   // check of total time
   const double time = scatraparamstimint_->time();
@@ -2169,9 +2167,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
   const int ndsvel = scatraparams_->nds_vel();
 
   // get convective (velocity - mesh displacement) velocity at nodes
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
       discretization.get_state(ndsvel, "convective velocity field");
-  if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
+  if (convel == nullptr) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = pla[ndsvel].lm_.size() / pnen;
@@ -2192,8 +2190,8 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
   rotsymmpbc_->template rotate_my_values_if_necessary<pnsd, pnen>(econvel);
 
   // get scalar values at parent element nodes
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // extract local values from global vectors for parent element
   std::vector<Core::LinAlg::Matrix<pnen, 1>> ephinp(numscal_);
@@ -2871,10 +2869,10 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype,
   pele->location_vector(discretization, plm, plmowner, plmstride);
 
   // get scalar values at parent element nodes
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
-  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phin'");
 
   // extract local values from global vectors for parent element
   std::vector<Core::LinAlg::Matrix<pnen, 1>> ephinp(numscal_);

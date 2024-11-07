@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::SSIResultTest::SSIResultTest(const Teuchos::RCP<const SSI::SSIBase> ssi_base)
+SSI::SSIResultTest::SSIResultTest(const std::shared_ptr<const SSI::SSIBase> ssi_base)
     : Core::Utils::ResultTest("SSI"), ssi_base_(ssi_base)
 {
 }

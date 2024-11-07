@@ -143,7 +143,7 @@ int Discret::Elements::ElemagBoundaryImpl<distype>::evaluate(Discret::Elements::
       const int* nodeids = ele->node_ids();
 
       Core::Elements::Element* parent = ele->parent_element();
-      Teuchos::RCP<Core::Elements::FaceElement>* faces = parent->faces();
+      std::shared_ptr<Core::Elements::FaceElement>* faces = parent->faces();
       bool same = false;
       for (int i = 0; i < parent->num_face(); ++i)
       {
@@ -200,13 +200,13 @@ int Discret::Elements::ElemagBoundaryImpl<distype>::evaluate(Discret::Elements::
             params.set<int>("face", i);
 
             const int* nodeidsface = faces[face]->node_ids();
-            Teuchos::RCP<std::vector<int>> indices = Teuchos::make_rcp<std::vector<int>>(elenode);
+            std::shared_ptr<std::vector<int>> indices = std::make_shared<std::vector<int>>(elenode);
             for (int j = 0; j < faces[face]->num_node(); ++j)
             {
               for (int n = 0; n < elenode; ++n)
                 if (nodeids[n] == nodeidsface[j]) (*indices)[n] = j;
             }
-            params.set<Teuchos::RCP<std::vector<int>>>("nodeindices", indices);
+            params.set<std::shared_ptr<std::vector<int>>>("nodeindices", indices);
             ele->parent_element()->evaluate(params, discretization, lm, elemat1_epetra,
                 elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
           }
@@ -227,7 +227,7 @@ int Discret::Elements::ElemagBoundaryImpl<distype>::evaluate(Discret::Elements::
       const int* nodeids = ele->node_ids();
 
       Core::Elements::Element* parent = ele->parent_element();
-      Teuchos::RCP<Core::Elements::FaceElement>* faces = parent->faces();
+      std::shared_ptr<Core::Elements::FaceElement>* faces = parent->faces();
       bool same = false;
       for (int i = 0; i < parent->num_face(); ++i)
       {

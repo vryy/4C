@@ -87,7 +87,7 @@ namespace BEAMINTERACTION
      * \brief Returns a pointer to the visualization output parameters.
      * @return Pointer to visualization output parameters.
      */
-    Teuchos::RCP<BeamToSolidVolumeMeshtyingVisualizationOutputParams>
+    std::shared_ptr<BeamToSolidVolumeMeshtyingVisualizationOutputParams>
     get_visualization_output_params_ptr();
 
     /**
@@ -113,7 +113,7 @@ namespace BEAMINTERACTION
     double rotational_coupling_penalty_parameter_;
 
     //! Pointer to the visualization output parameters for beam to solid volume meshtying.
-    Teuchos::RCP<BeamToSolidVolumeMeshtyingVisualizationOutputParams> output_params_ptr_;
+    std::shared_ptr<BeamToSolidVolumeMeshtyingVisualizationOutputParams> output_params_ptr_;
 
     //! If the coupling terms should be evaluated with the restart configuration.
     bool couple_restart_state_;

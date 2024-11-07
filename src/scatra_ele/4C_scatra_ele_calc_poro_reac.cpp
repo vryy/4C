@@ -82,9 +82,9 @@ void Discret::Elements::ScaTraEleCalcPoroReac<distype>::get_material_params(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcPoroReac<distype>::materials(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity
@@ -108,9 +108,9 @@ void Discret::Elements::ScaTraEleCalcPoroReac<distype>::materials(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcPoroReac<distype>::mat_scatra(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity

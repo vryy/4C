@@ -94,9 +94,9 @@ Mat::PAR::GrowthRemodelElastHyper::GrowthRemodelElastHyper(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::GrowthRemodelElastHyper::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::GrowthRemodelElastHyper::create_material()
 {
-  return Teuchos::make_rcp<Mat::GrowthRemodelElastHyper>(this);
+  return std::make_shared<Mat::GrowthRemodelElastHyper>(this);
 }
 
 
@@ -147,9 +147,9 @@ Mat::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Mat::PAR::GrowthRemodelEla
   for (m = params_->matids_remodelfiber_.begin(); m != params_->matids_remodelfiber_.end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<Mat::Elastic::RemodelFiber> sum =
-        Teuchos::rcp_static_cast<Mat::Elastic::RemodelFiber>(Mat::Elastic::Summand::factory(matid));
-    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+    std::shared_ptr<Mat::Elastic::RemodelFiber> sum =
+        std::static_pointer_cast<Mat::Elastic::RemodelFiber>(Mat::Elastic::Summand::factory(matid));
+    if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
     potsumrf_.push_back(sum);
     sum->register_anisotropy_extensions(anisotropy_);
   }
@@ -158,8 +158,8 @@ Mat::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Mat::PAR::GrowthRemodelEla
   for (m = params_->matids_elastinmem_.begin(); m != params_->matids_elastinmem_.end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+    std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
+    if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
     if (sum->material_type() != Core::Materials::mes_isoneohooke)
       FOUR_C_THROW(
           "2D Elastin Material: So far, you have to use a IsoNeoHooke material as the "
@@ -175,8 +175,8 @@ Mat::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Mat::PAR::GrowthRemodelEla
     for (m = params_->matids_elastiniso_.begin(); m != params_->matids_elastiniso_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+      std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
+      if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
       if (sum->material_type() != Core::Materials::mes_isoneohooke)
         FOUR_C_THROW(
             "3D Elastin Material: So far, you have to use an IsoNeoHooke material as the "
@@ -187,9 +187,9 @@ Mat::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Mat::PAR::GrowthRemodelEla
     }
 
     // VolPenalty
-    Teuchos::RCP<Mat::Elastic::Summand> sum =
+    std::shared_ptr<Mat::Elastic::Summand> sum =
         Mat::Elastic::Summand::factory(params_->matid_penalty_);
-    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+    if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
     if (sum->material_type() != Core::Materials::mes_volsussmanbathe)
       FOUR_C_THROW(
           "Volumetric Penalty Material: So far, you have to use a CoupNeoHooke material as the "
@@ -276,7 +276,7 @@ void Mat::GrowthRemodelElastHyper::unpack(Core::Communication::UnpackBuffer& buf
   // matid and recover params_
   int matid;
   extract_from_pack(buffer, matid);
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -322,10 +322,10 @@ void Mat::GrowthRemodelElastHyper::unpack(Core::Communication::UnpackBuffer& buf
     for (m = params_->matids_remodelfiber_.begin(); m != params_->matids_remodelfiber_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<Mat::Elastic::RemodelFiber> sum =
-          Teuchos::rcp_static_cast<Mat::Elastic::RemodelFiber>(
+      std::shared_ptr<Mat::Elastic::RemodelFiber> sum =
+          std::static_pointer_cast<Mat::Elastic::RemodelFiber>(
               Mat::Elastic::Summand::factory(matid));
-      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+      if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
       potsumrf_.push_back(sum);
     }
     // loop map of associated potential summands
@@ -339,8 +339,8 @@ void Mat::GrowthRemodelElastHyper::unpack(Core::Communication::UnpackBuffer& buf
     for (m = params_->matids_elastinmem_.begin(); m != params_->matids_elastinmem_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+      std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
+      if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
       if (sum->material_type() != Core::Materials::mes_isoneohooke)
         FOUR_C_THROW(
             "2D Elastin Material: So far, you have to use a IsoNeoHooke material as the "
@@ -361,8 +361,8 @@ void Mat::GrowthRemodelElastHyper::unpack(Core::Communication::UnpackBuffer& buf
       for (m = params_->matids_elastiniso_.begin(); m != params_->matids_elastiniso_.end(); ++m)
       {
         const int matid = *m;
-        Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-        if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+        std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
+        if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
         if (sum->material_type() != Core::Materials::mes_isoneohooke)
           FOUR_C_THROW(
               "3D Elastin Material: So far, you have to use an IsoNeoHooke material as the "
@@ -378,9 +378,9 @@ void Mat::GrowthRemodelElastHyper::unpack(Core::Communication::UnpackBuffer& buf
       }
 
       // VolPenalty
-      Teuchos::RCP<Mat::Elastic::Summand> sum =
+      std::shared_ptr<Mat::Elastic::Summand> sum =
           Mat::Elastic::Summand::factory(params_->matid_penalty_);
-      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+      if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
       if (sum->material_type() != Core::Materials::mes_volsussmanbathe)
         FOUR_C_THROW(
             "Volumetric Penalty Material: So far, you have to use a CoupNeoHooke material as the "
@@ -637,10 +637,10 @@ void Mat::GrowthRemodelElastHyper::evaluate_prestretch(
     FOUR_C_THROW(
         "So far, the prestretching routine does only work with ONE 3D isochoric elastin material");
 
-  Teuchos::RCP<Mat::Elastic::IsoNeoHooke> matiso;
-  Teuchos::RCP<Mat::Elastic::VolSussmanBathe> matvol;
-  matiso = Teuchos::rcp_dynamic_cast<Mat::Elastic::IsoNeoHooke>(potsumeliso_[0]);
-  matvol = Teuchos::rcp_dynamic_cast<Mat::Elastic::VolSussmanBathe>(potsumelpenalty_);
+  std::shared_ptr<Mat::Elastic::IsoNeoHooke> matiso;
+  std::shared_ptr<Mat::Elastic::VolSussmanBathe> matvol;
+  matiso = std::dynamic_pointer_cast<Mat::Elastic::IsoNeoHooke>(potsumeliso_[0]);
+  matvol = std::dynamic_pointer_cast<Mat::Elastic::VolSussmanBathe>(potsumelpenalty_);
   double R = 1.0;
   double dRdlamb_pre = 0.0;
   double lamb_pre = 1. / (params_->lamb_prestretch_cir_ * params_->lamb_prestretch_ax_);
@@ -1435,10 +1435,10 @@ void Mat::GrowthRemodelElastHyper::evaluate_stress_cmat_membrane(
   iFinAorthgriFinTM_fad.multiply_nt(1.0, tmp_fad, iFinM_fad, 0.0);
 
   double mue_el_mem = 0.0;
-  Teuchos::RCP<Mat::Elastic::IsoNeoHooke> matmem;
+  std::shared_ptr<Mat::Elastic::IsoNeoHooke> matmem;
   for (const auto& k : potsumelmem_)
   {
-    matmem = Teuchos::rcp_dynamic_cast<Mat::Elastic::IsoNeoHooke>(k);
+    matmem = std::dynamic_pointer_cast<Mat::Elastic::IsoNeoHooke>(k);
     mue_el_mem += matmem->mue();
   }
 

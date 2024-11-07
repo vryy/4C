@@ -20,7 +20,7 @@ void Adapter::FieldWrapper::prepare_time_step()
 
 
 void Adapter::FieldWrapper::update_state_incrementally(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc)
 {
   if (nox_correction_) get_iterinc(disiterinc);
   field_->update_state_incrementally(disiterinc);
@@ -29,7 +29,7 @@ void Adapter::FieldWrapper::update_state_incrementally(
 /*-----------------------------------------------------------------------/
 | update dofs and evaluate elements                                      |
 /-----------------------------------------------------------------------*/
-void Adapter::FieldWrapper::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc)
+void Adapter::FieldWrapper::evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc)
 {
   if (nox_correction_) get_iterinc(disiterinc);
   field_->evaluate(disiterinc);
@@ -39,7 +39,7 @@ void Adapter::FieldWrapper::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<dou
 | update dofs and evaluate elements                                      |
 /-----------------------------------------------------------------------*/
 void Adapter::FieldWrapper::evaluate(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc, bool firstiter)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc, bool firstiter)
 {
   if (nox_correction_) get_iterinc(disiterinc);
   field_->evaluate(disiterinc, firstiter);
@@ -50,13 +50,14 @@ void Adapter::FieldWrapper::evaluate(
 /-----------------------------------------------------------------------*/
 void Adapter::FieldWrapper::reset_stepinc()
 {
-  if (stepinc_ != Teuchos::null) stepinc_->PutScalar(0.);
+  if (stepinc_ != nullptr) stepinc_->PutScalar(0.);
 }
 
 /*-----------------------------------------------------------------------/
 | Get Iteration Increment from Step Increment                            |
 /-----------------------------------------------------------------------*/
-void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector<double>>& stepinc)
+void Adapter::FieldWrapper::get_iterinc(
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& stepinc)
 {
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
@@ -67,11 +68,11 @@ void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector<
   // x^n+1_i+1 = x^n+1_i + iterinc  (sometimes referred to as residual increment), and
   //
   // x^n+1_i+1 = x^n     + stepinc
-  if (stepinc != Teuchos::null)
+  if (stepinc != nullptr)
   {
     // iteration increments
     Core::LinAlg::Vector<double> iterinc(*stepinc);
-    if (stepinc_ != Teuchos::null)
+    if (stepinc_ != nullptr)
     {
       iterinc.Update(-1.0, *stepinc_, 1.0);
 
@@ -81,10 +82,10 @@ void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector<
     }
     else
     {
-      stepinc_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*stepinc);
+      stepinc_ = std::make_shared<Core::LinAlg::Vector<double>>(*stepinc);
     }
     // output is iterinc!
-    stepinc = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(iterinc);
+    stepinc = std::make_shared<Core::LinAlg::Vector<double>>(iterinc);
   }
 }
 

@@ -19,10 +19,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::PoroMultiPhaseScaTraArtCouplNodeBased(
-    Teuchos::RCP<Core::FE::Discretization> arterydis,
-    Teuchos::RCP<Core::FE::Discretization> contdis, const Teuchos::ParameterList& meshtyingparams,
-    const std::string& condname, const std::string& artcoupleddofname,
-    const std::string& contcoupleddofname)
+    std::shared_ptr<Core::FE::Discretization> arterydis,
+    std::shared_ptr<Core::FE::Discretization> contdis,
+    const Teuchos::ParameterList& meshtyingparams, const std::string& condname,
+    const std::string& artcoupleddofname, const std::string& contcoupleddofname)
     : PoroMultiPhaseScaTraArtCouplBase(
           arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname),
       condname_(condname)
@@ -77,38 +77,38 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::init()
 
   // -----------------------------------------------------------------------------------------------------------------
   // create map extractors needed for artery condition coupling --> continuous field part
-  contfieldex_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
+  contfieldex_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();
   setup_map_extractor(*contfieldex_, *contdis_, coupleddofs_cont_);
   check_dbc_on_coupled_dofs(*contdis_, contfieldex_->Map(1));
 
   // -----------------------------------------------------------------------------------------------------------------
   // create map extractors needed for artery condition coupling --> artery part
-  artex_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
+  artex_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();
   setup_map_extractor(*artex_, *arterydis_, coupleddofs_art_);
   check_dbc_on_coupled_dofs(*arterydis_, artex_->Map(1));
 
   // setup coupling adapter
-  artcontfieldcoup_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+  artcontfieldcoup_ = std::make_shared<Coupling::Adapter::Coupling>();
   artcontfieldcoup_->setup_condition_coupling(*contdis_, contfieldex_->Map(1), *arterydis_,
       artex_->Map(1), condname_, coupleddofs_cont_, coupleddofs_art_);
 
   // full map of continous field and uncoupled dofs of artery
-  std::vector<Teuchos::RCP<const Epetra_Map>> maps;
+  std::vector<std::shared_ptr<const Epetra_Map>> maps;
   maps.push_back(contfieldex_->full_map());
   maps.push_back(artex_->Map(0));
 
   fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   /// dof row map of coupled problem splitted in (field) blocks
-  globalex_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
+  globalex_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();
   globalex_->setup(*fullmap_, maps);
 
   // check global map extractor
   globalex_->check_for_valid_map_extractor();
 
   // needed for matrix transformations
-  sbbtransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowColTransform>();
-  sbitransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
-  sibtransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
+  sbbtransform_ = std::make_shared<Coupling::Adapter::MatrixRowColTransform>();
+  sbitransform_ = std::make_shared<Coupling::Adapter::MatrixRowTransform>();
+  sibtransform_ = std::make_shared<Coupling::Adapter::MatrixColTransform>();
 }
 
 /*----------------------------------------------------------------------*
@@ -124,7 +124,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_map_extr
     Core::LinAlg::MultiMapExtractor& mapextractor, Core::FE::Discretization& dis,
     const std::vector<int>& coupleddofs)
 {
-  std::vector<Teuchos::RCP<const Epetra_Map>> partialmaps_coupled;
+  std::vector<std::shared_ptr<const Epetra_Map>> partialmaps_coupled;
 
   // build coupled maps for all coupled dofs
   for (int idof = 0; idof < num_coupled_dofs_; idof++)
@@ -132,22 +132,22 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_map_extr
     Core::Conditions::MultiConditionSelector mcs;
     Core::LinAlg::MultiMapExtractor dummy;
     // selector for coupleddofs[idof]
-    mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+    mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
         dis, condname_, coupleddofs[idof], coupleddofs[idof] + 1));
     mcs.setup_extractor(dis, *dis.dof_row_map(), dummy);
 
     partialmaps_coupled.push_back(dummy.Map(1));
   }
   // fullmap coupled -> all coupled dofs
-  Teuchos::RCP<Epetra_Map> fullmap_coupled =
+  std::shared_ptr<Epetra_Map> fullmap_coupled =
       Core::LinAlg::MultiMapExtractor::merge_maps(partialmaps_coupled);
 
   // fullmap uncoupled -> all uncoupled dofs
   Core::LinAlg::MapExtractor temp(*dis.dof_row_map(), fullmap_coupled, false);
-  Teuchos::RCP<Epetra_Map> fullmap_uncoupled = Teuchos::make_rcp<Epetra_Map>(*temp.cond_map());
+  std::shared_ptr<Epetra_Map> fullmap_uncoupled = std::make_shared<Epetra_Map>(*temp.cond_map());
 
   // vector for setup of extractor
-  std::vector<Teuchos::RCP<const Epetra_Map>> fullmap_vector;
+  std::vector<std::shared_ptr<const Epetra_Map>> fullmap_vector;
   fullmap_vector.push_back(fullmap_uncoupled);
   fullmap_vector.push_back(fullmap_coupled);
 
@@ -157,14 +157,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_map_extr
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_system(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_cont,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_art,
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art)
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_cont,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_art,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_cont,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_art,
+    std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmap_cont,
+    std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmap_art)
 {
   setup_rhs(rhs, rhs_cont, rhs_art);
   setup_matrix(sysmat, sysmat_cont, *sysmat_art);
@@ -173,9 +173,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_system(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_rhs(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_cont,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_art)
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_cont,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_art)
 {
   setup_vector(rhs, rhs_cont, rhs_art);
 }
@@ -183,21 +183,22 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_rhs(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_vector(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_cont,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_art)
+    std::shared_ptr<Core::LinAlg::Vector<double>> vec,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vec_cont,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vec_art)
 {
   // zero out
   vec->PutScalar(0.0);
 
   // inner (uncoupled) DOFs of artery
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vec2_uncoupled = artex_->extract_vector(*vec_art, 0);
+  std::shared_ptr<Core::LinAlg::Vector<double>> vec2_uncoupled =
+      artex_->extract_vector(*vec_art, 0);
 
   // boundary (coupled) DOFs of artery
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vec2_coupled = artex_->extract_vector(*vec_art, 1);
+  std::shared_ptr<Core::LinAlg::Vector<double>> vec2_coupled = artex_->extract_vector(*vec_art, 1);
 
   // transform boundary DOFs to continuous dis
-  Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
+  std::shared_ptr<Core::LinAlg::Vector<double>> temp =
       contfieldex_->insert_vector(*artcontfieldcoup_->slave_to_master(*vec2_coupled), 1);
 
   // add to continous vec
@@ -211,15 +212,15 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_vector(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_matrix(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont, Core::LinAlg::SparseMatrix& sysmat_art)
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_cont, Core::LinAlg::SparseMatrix& sysmat_art)
 {
   // uncomplete
   sysmat_cont->un_complete();
 
   // artery
   // first split the matrix into 2x2 blocks (boundary vs. inner dofs)
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockartery =
+  std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> blockartery =
       Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           sysmat_art, *(artex_), *(artex_));
   blockartery->complete();
@@ -247,25 +248,27 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_matrix(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::extract_single_field_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> globalvec,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_cont,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_art)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> globalvec,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& vec_cont,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& vec_art)
 {
   // process second field (continuous)
   vec_cont = globalex_->extract_vector(*globalvec, 0);
 
   // process coupled (boundary) DOFs of the second field
-  Teuchos::RCP<Core::LinAlg::Vector<double>> boundary = contfieldex_->extract_vector(*vec_cont, 1);
+  std::shared_ptr<Core::LinAlg::Vector<double>> boundary =
+      contfieldex_->extract_vector(*vec_cont, 1);
 
   // process inner (uncoupled) and boundary (coupled) DOFs of artery
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> artery_inner =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> artery_inner =
       globalex_->extract_vector(*globalvec, 1);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> artery_boundary =
+  std::shared_ptr<Core::LinAlg::Vector<double>> artery_boundary =
       artcontfieldcoup_->master_to_slave(*boundary);
 
   // build vector for artery
   // 1) inner DOFs
-  Teuchos::RCP<Core::LinAlg::Vector<double>> artery_temp = artex_->insert_vector(*artery_inner, 0);
+  std::shared_ptr<Core::LinAlg::Vector<double>> artery_temp =
+      artex_->insert_vector(*artery_inner, 0);
   // 2) boundary DOFs
   artex_->insert_vector(*artery_boundary, 1, *artery_temp);
 
@@ -275,26 +278,26 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::extract_single
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::check_dbc_on_coupled_dofs(
-    Core::FE::Discretization& dis, const Teuchos::RCP<const Epetra_Map>& coupleddofmap)
+    Core::FE::Discretization& dis, const std::shared_ptr<const Epetra_Map>& coupleddofmap)
 {
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps =
-      Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+  std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps =
+      std::make_shared<Core::LinAlg::MapExtractor>();
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros =
         Core::LinAlg::create_vector(*dis.dof_row_map(), true);
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", 0.0);
     eleparams.set<const Core::Utils::FunctionManager*>(
         "function_manager", &Global::Problem::instance()->function_manager());
-    dis.evaluate_dirichlet(eleparams, zeros, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps);
+    dis.evaluate_dirichlet(eleparams, zeros, nullptr, nullptr, nullptr, dbcmaps);
   }
   // intersect DBC maps and coupled dof map to check if coupling and DBC are applied on same dofs
-  std::vector<Teuchos::RCP<const Epetra_Map>> dummy;
+  std::vector<std::shared_ptr<const Epetra_Map>> dummy;
   dummy.push_back(dbcmaps->cond_map());
   dummy.push_back(coupleddofmap);
-  Teuchos::RCP<Epetra_Map> intersect_dbc_coupled =
+  std::shared_ptr<Epetra_Map> intersect_dbc_coupled =
       Core::LinAlg::MultiMapExtractor::intersect_maps(dummy);
 
   if (intersect_dbc_coupled->NumGlobalElements() > 0)
@@ -317,18 +320,19 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::check_dbc_on_c
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::check_initial_fields(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_cont,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_art)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vec_cont,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vec_art)
 {
   // boundary (coupled) DOFs of artery
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vec2_coupled = artex_->extract_vector(*vec_art, 1);
+  std::shared_ptr<Core::LinAlg::Vector<double>> vec2_coupled = artex_->extract_vector(*vec_art, 1);
 
   // transform boundary DOFs to continuous dis
-  Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
+  std::shared_ptr<Core::LinAlg::Vector<double>> temp =
       artcontfieldcoup_->slave_to_master(*vec2_coupled);
 
   // process coupled (boundary) DOFs of the second field
-  Teuchos::RCP<Core::LinAlg::Vector<double>> boundary = contfieldex_->extract_vector(*vec_cont, 1);
+  std::shared_ptr<Core::LinAlg::Vector<double>> boundary =
+      contfieldex_->extract_vector(*vec_cont, 1);
 
   // subtract artery DOF values from continuous DOF values
   boundary->Update(-1.0, *temp, 1.0);
@@ -345,7 +349,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::check_initial_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map>
+std::shared_ptr<const Epetra_Map>
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::artery_dof_row_map() const
 {
   return artex_->Map(0);
@@ -353,7 +357,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::artery_dof_row_map(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map>
+std::shared_ptr<const Epetra_Map>
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::dof_row_map() const
 {
   return fullmap_;
@@ -369,12 +373,12 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::apply_mesh_mov
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::blood_vessel_volume_fraction()
 {
   FOUR_C_THROW("Output of vessel volume fraction not possible for node-based coupling");
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*

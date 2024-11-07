@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void FLD::Utils::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
-    Core::FE::Utils::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+    Core::FE::Utils::Dbc::DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
     int hierarchical_order) const
 {
   // no need to check the cast, because it has been done during
@@ -36,7 +36,7 @@ void FLD::Utils::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
  *----------------------------------------------------------------------*/
 void FLD::Utils::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
-    double time, Core::FE::Utils::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+    double time, Core::FE::Utils::Dbc::DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
     int hierarchical_order) const
 
 {
@@ -80,7 +80,7 @@ void FLD::Utils::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
           // set toggle vector
           info.toggle[lid] = 1;
           // amend vector of DOF-IDs which are Dirichlet BCs
-          if (dbcgids[set_row] != Teuchos::null) (*dbcgids[set_row]).insert(gid);
+          if (dbcgids[set_row] != nullptr) (*dbcgids[set_row]).insert(gid);
           pressureDone = true;
         }
       }
@@ -118,7 +118,7 @@ void FLD::Utils::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
           // no DBC on this dof, set toggle zero
           info.toggle[lid] = 0;
           // get rid of entry in DBC map - if it exists
-          if (dbcgids[set_row] != Teuchos::null) (*dbcgids[set_row]).erase(gid);
+          if (dbcgids[set_row] != nullptr) (*dbcgids[set_row]).erase(gid);
           continue;
         }
         else  // if ((*onoff)[onesetj]==1)
@@ -126,7 +126,7 @@ void FLD::Utils::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
           // dof has DBC, set toggle vector one
           info.toggle[lid] = 1;
           // amend vector of DOF-IDs which are dirichlet BCs
-          if (dbcgids[set_row] != Teuchos::null) (*dbcgids[set_row]).insert(gid);
+          if (dbcgids[set_row] != nullptr) (*dbcgids[set_row]).insert(gid);
         }
 
       }  // loop over DOFs of face
@@ -140,8 +140,8 @@ void FLD::Utils::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
  *----------------------------------------------------------------------*/
 void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-    const Core::LinAlg::Vector<int>& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
+    const Core::LinAlg::Vector<int>& toggle, const std::shared_ptr<std::set<int>>* dbcgids) const
 {
   // no need to check the cast, because it has been done during
   // the build process (see build_dbc())
@@ -155,7 +155,7 @@ void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
  *----------------------------------------------------------------------*/
 void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
-    double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+    double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
     const Core::LinAlg::Vector<int>& toggle) const
 {
   // call corresponding method from base class; safety checks inside
@@ -177,22 +177,22 @@ void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to
   unsigned deg = 0;  // highest degree of requested time derivative
-  Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectoraux =
-      Teuchos::null;  // auxiliar system vector
-  if (systemvectors[0] != Teuchos::null)
+  std::shared_ptr<Core::LinAlg::Vector<double>> systemvectoraux =
+      nullptr;  // auxiliar system vector
+  if (systemvectors[0] != nullptr)
   {
     deg = 0;
     systemvectoraux = systemvectors[0];
   }
-  if (systemvectors[1] != Teuchos::null)
+  if (systemvectors[1] != nullptr)
   {
     deg = 1;
-    if (systemvectoraux == Teuchos::null) systemvectoraux = systemvectors[1];
+    if (systemvectoraux == nullptr) systemvectoraux = systemvectors[1];
   }
-  if (systemvectors[2] != Teuchos::null)
+  if (systemvectors[2] != nullptr)
   {
     deg = 2;
-    if (systemvectoraux == Teuchos::null) systemvectoraux = systemvectors[2];
+    if (systemvectoraux == nullptr) systemvectoraux = systemvectors[2];
   }
 
   // do we have faces?
@@ -244,9 +244,9 @@ void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
           const int lid = discret.dof_row_map(0)->LID(gid);
 
           // amend vector of DOF-IDs which are Dirichlet BCs
-          if (systemvectors[0] != Teuchos::null) (*systemvectors[0])[lid] = 0.0;
-          if (systemvectors[1] != Teuchos::null) (*systemvectors[1])[lid] = 0.0;
-          if (systemvectors[2] != Teuchos::null) (*systemvectors[2])[lid] = 0.0;
+          if (systemvectors[0] != nullptr) (*systemvectors[0])[lid] = 0.0;
+          if (systemvectors[1] != nullptr) (*systemvectors[1])[lid] = 0.0;
+          if (systemvectors[2] != nullptr) (*systemvectors[2])[lid] = 0.0;
 
           // --------------------------------------------------------------------------------------
           // get parameters
@@ -265,7 +265,7 @@ void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
             Discret::Elements::Fluid* fluidele = dynamic_cast<Discret::Elements::Fluid*>(ele);
 
             // get material
-            Teuchos::RCP<Core::Mat::Material> mat = ele->material();
+            std::shared_ptr<Core::Mat::Material> mat = ele->material();
 
             // get discretization type
             const Core::FE::CellType distype = ele->shape();
@@ -360,9 +360,9 @@ void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
         std::vector<double> value(deg + 1, (*val)[onesetj]);
 
         // assign value
-        if (systemvectors[0] != Teuchos::null) (*systemvectors[0])[lid] = value[0] * elevec1(j);
-        if (systemvectors[1] != Teuchos::null) (*systemvectors[1])[lid] = value[1] * elevec1(j);
-        if (systemvectors[2] != Teuchos::null) (*systemvectors[2])[lid] = value[2] * elevec1(j);
+        if (systemvectors[0] != nullptr) (*systemvectors[0])[lid] = value[0] * elevec1(j);
+        if (systemvectors[1] != nullptr) (*systemvectors[1])[lid] = value[1] * elevec1(j);
+        if (systemvectors[2] != nullptr) (*systemvectors[2])[lid] = value[2] * elevec1(j);
 
       }  // loop over all DOFs
     }    // loop over all faces

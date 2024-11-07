@@ -50,7 +50,7 @@ namespace Solid
 
       /// set the state of the nox group and the global state data container
       /// see class \ref Adapter::StructureNew for a detailed documentation.
-      void set_state(const Teuchos::RCP<Core::LinAlg::Vector<double>>& x) override;
+      void set_state(const std::shared_ptr<Core::LinAlg::Vector<double>>& x) override;
 
       /*! \brief nonlinear solve
        *
@@ -81,7 +81,7 @@ namespace Solid
       }
 
       //! @}
-      [[nodiscard]] Teuchos::RCP<const Solid::Nln::SOLVER::Generic> get_nln_solver_ptr() const
+      [[nodiscard]] std::shared_ptr<const Solid::Nln::SOLVER::Generic> get_nln_solver_ptr() const
       {
         return nlnsolver_ptr_;
       };
@@ -94,7 +94,7 @@ namespace Solid
       void check_for_time_step_increase(Inpar::Solid::ConvergenceStatus& status);
 
       //! returns pointer to generic implicit object
-      Teuchos::RCP<Solid::IMPLICIT::Generic> impl_int_ptr()
+      std::shared_ptr<Solid::IMPLICIT::Generic> impl_int_ptr()
       {
         check_init_setup();
         return implint_ptr_;
@@ -102,12 +102,12 @@ namespace Solid
 
       /// Update State Incrementally for coupled problems with monolithic approach
       void update_state_incrementally(
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override;
+          std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc) override;
 
       void determine_stress_strain() override;
 
       ///  Evaluate routine for coupled problems with monolithic approach
-      void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override;
+      void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc) override;
       void evaluate() override;
 
       /** \brief Print structural jacobian matrix into a text file for later use
@@ -130,7 +130,7 @@ namespace Solid
       [[nodiscard]] const ::NOX::Abstract::Group& get_solution_group() const override;
 
       //! returns the current solution group ptr
-      Teuchos::RCP<::NOX::Abstract::Group> solution_group_ptr() override;
+      std::shared_ptr<::NOX::Abstract::Group> solution_group_ptr() override;
 
       Solid::IMPLICIT::Generic& impl_int()
       {
@@ -144,7 +144,7 @@ namespace Solid
         return *predictor_ptr_;
       };
 
-      Teuchos::RCP<Solid::Predict::Generic> predictor_ptr()
+      std::shared_ptr<Solid::Predict::Generic> predictor_ptr()
       {
         check_init_setup();
         return predictor_ptr_;
@@ -162,7 +162,7 @@ namespace Solid
         return *nlnsolver_ptr_;
       };
 
-      Teuchos::RCP<Solid::Nln::SOLVER::Generic> nln_solver_ptr()
+      std::shared_ptr<Solid::Nln::SOLVER::Generic> nln_solver_ptr()
       {
         check_init_setup();
         return nlnsolver_ptr_;
@@ -194,16 +194,16 @@ namespace Solid
 
      private:
       //! ptr to the implicit time integrator object
-      Teuchos::RCP<Solid::IMPLICIT::Generic> implint_ptr_;
+      std::shared_ptr<Solid::IMPLICIT::Generic> implint_ptr_;
 
       //! ptr to the predictor object
-      Teuchos::RCP<Solid::Predict::Generic> predictor_ptr_;
+      std::shared_ptr<Solid::Predict::Generic> predictor_ptr_;
 
       //! ptr to the non-linear solver object
-      Teuchos::RCP<Solid::Nln::SOLVER::Generic> nlnsolver_ptr_;
+      std::shared_ptr<Solid::Nln::SOLVER::Generic> nlnsolver_ptr_;
 
       //! ptr to the nox group object
-      Teuchos::RCP<::NOX::Abstract::Group> grp_ptr_;
+      std::shared_ptr<::NOX::Abstract::Group> grp_ptr_;
     };
   }  // namespace TimeInt
 }  // namespace Solid

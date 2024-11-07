@@ -14,7 +14,7 @@
 #include "4C_io_visualization_manager.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 
 FOUR_C_NAMESPACE_OPEN
@@ -64,7 +64,7 @@ namespace BEAMINTERACTION
      * @param discret (in) Pointer to the discretization.
      */
     void add_discretization_nodal_reference_position(
-        const Teuchos::RCP<const Core::FE::Discretization>& discret);
+        const std::shared_ptr<const Core::FE::Discretization>& discret);
 
     /**
      * \brief Add global DOF based data to the writer.
@@ -89,10 +89,10 @@ namespace BEAMINTERACTION
 
    private:
     //! discretization based on which global dof data can be written.
-    Teuchos::RCP<const Core::FE::Discretization> discret_;
+    std::shared_ptr<const Core::FE::Discretization> discret_;
 
     //! Map for nodal GID of discretization.
-    Teuchos::RCP<Epetra_Map> node_gid_map_;
+    std::shared_ptr<Epetra_Map> node_gid_map_;
   };
 
 }  // namespace BEAMINTERACTION

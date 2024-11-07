@@ -31,8 +31,9 @@ namespace XFEM
     /// constructor
     // in idx ... idx[0] fluid discretization index , idx[1] fluid discretization index in the
     // blockmatrix
-    explicit XffCouplingManager(Teuchos::RCP<ConditionManager> condmanager,
-        Teuchos::RCP<FLD::XFluid> xfluid, Teuchos::RCP<FLD::XFluid> fluid, std::vector<int> idx);
+    explicit XffCouplingManager(std::shared_ptr<ConditionManager> condmanager,
+        std::shared_ptr<FLD::XFluid> xfluid, std::shared_ptr<FLD::XFluid> fluid,
+        std::vector<int> idx);
     //! @name Destruction
     //@{
 
@@ -55,20 +56,21 @@ namespace XFEM
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
-    void add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
+    void add_coupling_rhs(std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
         const Core::LinAlg::MultiMapExtractor& me, double scaling) override;
 
     //! we need to think if inserting the ale matrixes are modifications (might conflict with other
     //! modifications)
     virtual bool modify_sysmatand_rhs(Core::LinAlg::BlockSparseMatrixBase& systemmatrix,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs, const Core::LinAlg::MultiMapExtractor& me)
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
+        const Core::LinAlg::MultiMapExtractor& me)
     {
       return false;
     }
 
     //! nothing to do
-    virtual void post_linear_solve(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> inc, const Core::LinAlg::MultiMapExtractor& me)
+    virtual void post_linear_solve(std::shared_ptr<Core::LinAlg::Vector<double>> inc,
+        const Core::LinAlg::MultiMapExtractor& me)
     {
       return;
     }
@@ -84,12 +86,12 @@ namespace XFEM
 
    private:
     //! FFI Mesh Coupling Object
-    Teuchos::RCP<MeshCouplingFluidFluid> mcffi_;
+    std::shared_ptr<MeshCouplingFluidFluid> mcffi_;
 
     //! embeddedFluid Object
-    Teuchos::RCP<FLD::XFluid> fluid_;
+    std::shared_ptr<FLD::XFluid> fluid_;
     //! eXtendedFluid
-    Teuchos::RCP<FLD::XFluid> xfluid_;
+    std::shared_ptr<FLD::XFluid> xfluid_;
 
     //"XFEMSurfFluidFluid"
     const std::string cond_name_;

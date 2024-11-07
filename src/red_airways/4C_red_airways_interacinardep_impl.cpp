@@ -69,10 +69,11 @@ int Discret::Elements::InterAcinarDepImpl<distype>::evaluate(RedInterAcinarDep* 
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
-    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, std::shared_ptr<Core::Mat::Material> mat)
 {
   // Get the vector with inter-acinar linkers
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> ial = discretization.get_state("intr_ac_link");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> ial =
+      discretization.get_state("intr_ac_link");
 
   // Extract local values from the global vectors
   std::vector<double> myial(lm.size());
@@ -95,7 +96,8 @@ int Discret::Elements::InterAcinarDepImpl<distype>::evaluate(RedInterAcinarDep* 
 template <Core::FE::CellType distype>
 void Discret::Elements::InterAcinarDepImpl<distype>::initial(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Core::LinAlg::SerialDenseVector& n_intr_acn_l, Teuchos::RCP<const Core::Mat::Material> material)
+    Core::LinAlg::SerialDenseVector& n_intr_acn_l,
+    std::shared_ptr<const Core::Mat::Material> material)
 {
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
@@ -149,7 +151,7 @@ void Discret::Elements::InterAcinarDepImpl<distype>::sysmat(std::vector<double>&
 template <Core::FE::CellType distype>
 void Discret::Elements::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
+    Core::LinAlg::SerialDenseVector& rhs, std::shared_ptr<Core::Mat::Material> material)
 {
   const int myrank = discretization.get_comm().MyPID();
 
@@ -163,8 +165,8 @@ void Discret::Elements::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
   const int numnode = lm.size();
 
   // Get state for pressure
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
-  if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
+  if (pnp == nullptr) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());

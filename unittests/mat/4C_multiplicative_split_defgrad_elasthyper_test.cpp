@@ -103,7 +103,7 @@ namespace
               1, Core::Materials::MaterialType::mfi_lin_scalar_iso, mat_inelastic_data));
 
       // set parameter list
-      auto parameter_list_pointer = Teuchos::make_rcp<Teuchos::ParameterList>();
+      auto parameter_list_pointer = std::make_shared<Teuchos::ParameterList>();
       auto structural_dynamic_params = parameter_list_pointer->sublist("STRUCTURAL DYNAMIC", false);
 
       structural_dynamic_params.set("MASSLIN", "No");
@@ -125,11 +125,11 @@ namespace
 
       // get pointer to parameter class
       parameters_multiplicative_split_defgrad_ =
-          Teuchos::make_rcp<Mat::PAR::MultiplicativeSplitDefgradElastHyper>(
+          std::make_shared<Mat::PAR::MultiplicativeSplitDefgradElastHyper>(
               Core::Mat::PAR::Parameter::Data{.parameters = multiplicativeSplitDefgradData});
 
       // setup pointer to MultiplicativeSplitDefgrad_ElastHyper object
-      multiplicative_split_defgrad_ = Teuchos::make_rcp<Mat::MultiplicativeSplitDefgradElastHyper>(
+      multiplicative_split_defgrad_ = std::make_shared<Mat::MultiplicativeSplitDefgradElastHyper>(
           parameters_multiplicative_split_defgrad_.get());
     }
 
@@ -226,8 +226,9 @@ namespace
       Teuchos::ParameterList params;
 
       // set up a concentration vector and store it to the parameter list
-      auto gpconc_lin = Teuchos::RCP<std::vector<double>>(new std::vector<double>({concentration}));
-      params.set<Teuchos::RCP<std::vector<double>>>("scalars", gpconc_lin);
+      auto gpconc_lin =
+          std::shared_ptr<std::vector<double>>(new std::vector<double>({concentration}));
+      params.set<std::shared_ptr<std::vector<double>>>("scalars", gpconc_lin);
 
 
 
@@ -314,11 +315,11 @@ namespace
     Core::LinAlg::Matrix<8, 1> delta_ref_;
 
     // pointer to material parameters
-    Teuchos::RCP<Mat::PAR::MultiplicativeSplitDefgradElastHyper>
+    std::shared_ptr<Mat::PAR::MultiplicativeSplitDefgradElastHyper>
         parameters_multiplicative_split_defgrad_;
 
     // pointer to material
-    Teuchos::RCP<Mat::MultiplicativeSplitDefgradElastHyper> multiplicative_split_defgrad_;
+    std::shared_ptr<Mat::MultiplicativeSplitDefgradElastHyper> multiplicative_split_defgrad_;
   };
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateAdditionalCmat)

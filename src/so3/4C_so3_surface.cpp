@@ -30,11 +30,11 @@ Core::Communication::ParObject* Discret::Elements::StructuralSurfaceType::create
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::StructuralSurfaceType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::StructuralSurfaceType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new StructuralSurface( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
@@ -169,7 +169,7 @@ void Discret::Elements::StructuralSurface::print(std::ostream& os) const
   return;
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::StructuralSurface::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::StructuralSurface::lines()
 {
   return Core::Communication::element_boundary_factory<Discret::Elements::StructuralLine,
       Discret::Elements::StructuralSurface>(Core::Communication::buildLines, *this);

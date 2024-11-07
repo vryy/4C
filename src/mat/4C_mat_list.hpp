@@ -32,7 +32,7 @@ namespace Mat
       MatList(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -41,9 +41,9 @@ namespace Mat
       const std::vector<int>* mat_ids() const { return &matids_; }
 
       /// provide access to material by its ID
-      Teuchos::RCP<Core::Mat::Material> material_by_id(const int id) const;
+      std::shared_ptr<Core::Mat::Material> material_by_id(const int id) const;
 
-      std::map<int, Teuchos::RCP<Core::Mat::Material>>* material_map_write() { return &mat_; }
+      std::map<int, std::shared_ptr<Core::Mat::Material>>* material_map_write() { return &mat_; }
 
       /// length of material list
       const int nummat_;
@@ -56,7 +56,7 @@ namespace Mat
 
      private:
       /// map to materials (only used for local_==true)
-      std::map<int, Teuchos::RCP<Core::Mat::Material>> mat_;
+      std::map<int, std::shared_ptr<Core::Mat::Material>> mat_;
 
       //@}
 
@@ -136,9 +136,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<MatList>(*this);
+      return std::make_shared<MatList>(*this);
     }
 
     /// number of materials
@@ -148,20 +148,20 @@ namespace Mat
     int mat_id(const unsigned index) const;
 
     /// provide access to material by its ID
-    virtual Teuchos::RCP<Core::Mat::Material> material_by_id(const int id) const;
+    virtual std::shared_ptr<Core::Mat::Material> material_by_id(const int id) const;
 
     /// Return quick accessible material parameter data
     Mat::PAR::MatList* parameter() const override { return params_; }
 
    protected:
     /// return pointer to the materials map, which has read-only access.
-    const std::map<int, Teuchos::RCP<Core::Mat::Material>>* material_map_read() const
+    const std::map<int, std::shared_ptr<Core::Mat::Material>>* material_map_read() const
     {
       return &mat_;
     }
 
     /// return pointer to the materials map, which has read and write access.
-    std::map<int, Teuchos::RCP<Core::Mat::Material>>* material_map_write() { return &mat_; }
+    std::map<int, std::shared_ptr<Core::Mat::Material>>* material_map_write() { return &mat_; }
 
    private:
     /// setup of material map
@@ -174,7 +174,7 @@ namespace Mat
     Mat::PAR::MatList* params_;
 
     /// map to materials
-    std::map<int, Teuchos::RCP<Core::Mat::Material>> mat_;
+    std::map<int, std::shared_ptr<Core::Mat::Material>> mat_;
   };
 
 }  // namespace Mat

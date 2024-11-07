@@ -36,7 +36,7 @@ namespace Cut
   {
    public:
     /// create the FacetGraph object for the given element dimension
-    static Teuchos::RCP<Cut::FacetGraph> create(
+    static std::shared_ptr<Cut::FacetGraph> create(
         const std::vector<Side*>& sides, const plain_facet_set& facets);
 
    public:

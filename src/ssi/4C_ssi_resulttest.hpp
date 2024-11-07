@@ -40,7 +40,7 @@ namespace SSI
      *
      * @param[in] ssi_base  time integrator for scalar-structure interaction
      */
-    explicit SSIResultTest(const Teuchos::RCP<const SSI::SSIBase> ssi_base);
+    explicit SSIResultTest(const std::shared_ptr<const SSI::SSIBase> ssi_base);
 
     void test_special(
         const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
@@ -58,7 +58,7 @@ namespace SSI
     const SSI::SsiMono& ssi_mono() const;
 
     //! time integrator for scalar-structure interaction
-    const Teuchos::RCP<const SSI::SSIBase> ssi_base_;
+    const std::shared_ptr<const SSI::SSIBase> ssi_base_;
   };
 }  // namespace SSI
 FOUR_C_NAMESPACE_CLOSE

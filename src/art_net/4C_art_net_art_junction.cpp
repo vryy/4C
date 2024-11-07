@@ -74,7 +74,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 Arteries::Utils::ArtJunctionWrapper::ArtJunctionWrapper(
-    Teuchos::RCP<Core::FE::Discretization> actdis, Core::IO::DiscretizationWriter &output,
+    std::shared_ptr<Core::FE::Discretization> actdis, Core::IO::DiscretizationWriter &output,
     Teuchos::ParameterList &params, double dta)
     : discret_(actdis), output_(output)
 {
@@ -184,9 +184,10 @@ Arteries::Utils::ArtJunctionWrapper::ArtJunctionWrapper(
       // (4) Create junction boundary conditions
       // ---------------------------------------------------------------------
       int condid;
-      Teuchos::RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams>>> nodalParams;
-      nodalParams = params.get<Teuchos::RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams>>>>(
-          "Junctions Parameters");
+      std::shared_ptr<std::map<const int, std::shared_ptr<JunctionNodeParams>>> nodalParams;
+      nodalParams =
+          params.get<std::shared_ptr<std::map<const int, std::shared_ptr<JunctionNodeParams>>>>(
+              "Junctions Parameters");
 
       for (unsigned int i = 0; i < SortedConds.size(); i++)
       {
@@ -198,7 +199,7 @@ Arteries::Utils::ArtJunctionWrapper::ArtJunctionWrapper(
         // -------------------------------------------------------------------
         // sort junction BCs in map
         // -------------------------------------------------------------------
-        Teuchos::RCP<ArtJunctionBc> junbc = Teuchos::make_rcp<ArtJunctionBc>(
+        std::shared_ptr<ArtJunctionBc> junbc = std::make_shared<ArtJunctionBc>(
             discret_, output_, SortedConds[i], SortedIOarts[i], dta, condid, i);
         ajunmap_.insert(std::make_pair(condid, junbc));
 
@@ -209,14 +210,15 @@ Arteries::Utils::ArtJunctionWrapper::ArtJunctionWrapper(
         // Finally check wheather a node has multiple BC, which is not allowed
         // -------------------------------------------------------------------
         bool inserted;
-        // create an empty map associated to the Teuchos::RCP nodalParams_
-        //      nodalParams = Teuchos::rcp(new std::map<const int, Teuchos::RCP<JunctionNodeParams>
+        // create an empty map associated to the std::shared_ptr nodalParams_
+        //      nodalParams = Teuchos::rcp(new std::map<const int,
+        //      std::shared_ptr<JunctionNodeParams>
         //      >());
 
         for (unsigned int j = 0; j < SortedConds[i].size(); j++)
         {
           const std::vector<int> *nodes = SortedConds[i][j]->get_nodes();
-          Teuchos::RCP<JunctionNodeParams> nodeparams = Teuchos::make_rcp<JunctionNodeParams>();
+          std::shared_ptr<JunctionNodeParams> nodeparams = std::make_shared<JunctionNodeParams>();
 
           int local_id = discret_->node_row_map()->LID((*nodes)[0]);
           inserted = nodalParams->insert(std::make_pair(local_id, nodeparams)).second;
@@ -246,7 +248,7 @@ int Arteries::Utils::ArtJunctionWrapper::solve(Teuchos::ParameterList &params)
 
   if (discret_->get_comm().MyPID() != 0) return 0;
 
-  std::map<const int, Teuchos::RCP<class ArtJunctionBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class ArtJunctionBc>>::iterator mapiter;
 
   for (mapiter = ajunmap_.begin(); mapiter != ajunmap_.end(); mapiter++)
   {
@@ -264,7 +266,7 @@ int Arteries::Utils::ArtJunctionWrapper::solve(Teuchos::ParameterList &params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-Arteries::Utils::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<Core::FE::Discretization> actdis,
+Arteries::Utils::ArtJunctionBc::ArtJunctionBc(std::shared_ptr<Core::FE::Discretization> actdis,
     Core::IO::DiscretizationWriter &output, std::vector<Core::Conditions::Condition *> conds,
     std::vector<int> IOart_flag, double dta, int condid, int numcond)
     : condid_(condid), discret_(actdis), output_(output), io_art_flag_(IOart_flag)
@@ -427,8 +429,8 @@ int Arteries::Utils::ArtJunctionBc::solve(Teuchos::ParameterList &params)
   std::vector<double> Pext(prob_size_ / 2, 0.0);
 
   // get the map having the junction nodal information from the elements
-  Teuchos::RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams>>> nodalMap =
-      params.get<Teuchos::RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams>>>>(
+  std::shared_ptr<std::map<const int, std::shared_ptr<JunctionNodeParams>>> nodalMap =
+      params.get<std::shared_ptr<std::map<const int, std::shared_ptr<JunctionNodeParams>>>>(
           "Junctions Parameters");
 
   // loop over all the nodes and read in the required parameters

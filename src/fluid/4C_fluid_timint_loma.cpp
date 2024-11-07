@@ -21,10 +21,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntLoma::TimIntLoma(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+FLD::TimIntLoma::TimIntLoma(const std::shared_ptr<Core::FE::Discretization>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       thermpressaf_(1.0),
       thermpressam_(1.0),
@@ -81,12 +81,12 @@ void FLD::TimIntLoma::init()
  | set fields for low-Mach-number flow within iteration loop   vg 09/09 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntLoma::set_loma_iter_scalar_fields(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaraf,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaram,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> scalardtam,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fsscalaraf, const double thermpressaf,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> scalaraf,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> scalaram,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> scalardtam,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fsscalaraf, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    Teuchos::RCP<Core::FE::Discretization> scatradis)
+    std::shared_ptr<Core::FE::Discretization> scatradis)
 {
   // initializations
   int err(0);
@@ -135,7 +135,7 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(
     err = scaam_->ReplaceMyValue(localdofid, 0, value);
     if (err != 0) FOUR_C_THROW("error while inserting value into scaam_");
 
-    if (scalardtam != Teuchos::null)
+    if (scalardtam != nullptr)
     {
       value = (*scalardtam)[localscatradofid];
     }
@@ -148,7 +148,7 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(
 
     if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
     {
-      if (fsscalaraf != Teuchos::null)
+      if (fsscalaraf != nullptr)
         value = (*fsscalaraf)[localscatradofid];
       else
         FOUR_C_THROW("Expected fine-scale scalar!");
@@ -174,9 +174,10 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(
 /*----------------------------------------------------------------------*
  | set scalar fields     vg 09/09 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::set_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarnp,
-    const double thermpressnp, Teuchos::RCP<const Core::LinAlg::Vector<double>> scatraresidual,
-    Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar)
+void FLD::TimIntLoma::set_scalar_fields(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> scalarnp, const double thermpressnp,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> scatraresidual,
+    std::shared_ptr<Core::FE::Discretization> scatradis, const int whichscalar)
 {
   FluidImplicitTimeInt::set_scalar_fields(
       scalarnp, thermpressnp, scatraresidual, scatradis, whichscalar);
@@ -208,8 +209,7 @@ void FLD::TimIntLoma::set_element_custom_parameter()
       params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
   return;
 }
 

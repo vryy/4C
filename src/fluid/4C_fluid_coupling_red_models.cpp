@@ -24,8 +24,9 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::Utils::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
-    Teuchos::RCP<Core::FE::Discretization> dis_3D, Teuchos::RCP<Core::FE::Discretization> dis_redD,
-    //                                                         Teuchos::RCP<red_D_time_int>
+    std::shared_ptr<Core::FE::Discretization> dis_3D,
+    std::shared_ptr<Core::FE::Discretization> dis_redD,
+    //                                                         std::shared_ptr<red_D_time_int>
     //                                                         RedD_Time_integ,
     Core::IO::DiscretizationWriter& output, double dt_3D, double dt_redD)
     :  // call constructor for "nontrivial" objects
@@ -77,10 +78,10 @@ FLD::Utils::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
 
   if (numcondlines > 0)  // if there is at least one coupling bc
   {
-    map3_dnp_ = Teuchos::make_rcp<std::map<std::string, double>>();
-    map3_dn_ = Teuchos::make_rcp<std::map<std::string, double>>();
-    map_red_dnp_ = Teuchos::make_rcp<std::map<std::string, double>>();
-    map_red_dn_ = Teuchos::make_rcp<std::map<std::string, double>>();
+    map3_dnp_ = std::make_shared<std::map<std::string, double>>();
+    map3_dn_ = std::make_shared<std::map<std::string, double>>();
+    map_red_dnp_ = std::make_shared<std::map<std::string, double>>();
+    map_red_dn_ = std::make_shared<std::map<std::string, double>>();
     // -------------------------------------------------------------------
     // get the maximum allowable number of iterations at the boundary
     // which should be the same!
@@ -141,7 +142,7 @@ FLD::Utils::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
       // ------------------------------------------------------------------
       // allocate the coupling bc class members for every case
       // ------------------------------------------------------------------
-      Teuchos::RCP<FluidCouplingBc> couplingbc = Teuchos::make_rcp<FluidCouplingBc>(
+      std::shared_ptr<FluidCouplingBc> couplingbc = std::make_shared<FluidCouplingBc>(
           discret_3d_, discret_red_d_, output_, dt_f3_, dt_rm_, condid, i, j);
 
       // -----------------------------------------------------------------
@@ -228,7 +229,7 @@ FLD::Utils::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
 void FLD::Utils::FluidCouplingWrapperBase ::flow_rate_calculation(double time, double dta)
 {
   // get an iterator to my map
-  std::map<const int, Teuchos::RCP<class FluidCouplingBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class FluidCouplingBc>>::iterator mapiter;
 
   for (mapiter = coup_map_3d_.begin(); mapiter != coup_map_3d_.end(); mapiter++)
   {
@@ -250,7 +251,7 @@ void FLD::Utils::FluidCouplingWrapperBase ::flow_rate_calculation(double time, d
 void FLD::Utils::FluidCouplingWrapperBase::pressure_calculation(double time, double dta)
 {
   // get an iterator to my map
-  std::map<const int, Teuchos::RCP<class FluidCouplingBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class FluidCouplingBc>>::iterator mapiter;
 
   for (mapiter = coup_map_3d_.begin(); mapiter != coup_map_3d_.end(); mapiter++)
   {
@@ -274,7 +275,7 @@ void FLD::Utils::FluidCouplingWrapperBase::apply_boundary_conditions(
     double time, double dta, double theta)
 {
   // get an iterator to my map
-  std::map<const int, Teuchos::RCP<class FluidCouplingBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class FluidCouplingBc>>::iterator mapiter;
 
   // ---------------------------------------------------------------------
   // Read in all conditions
@@ -417,8 +418,8 @@ void FLD::Utils::FluidCouplingWrapperBase::apply_boundary_conditions(
     // Define a map that will have the interpolated values at the
     // reduced-D time subscale
     // -----------------------------------------------------------------
-    Teuchos::RCP<std::map<std::string, double>> map3D_inter_to_Red =
-        Teuchos::make_rcp<std::map<std::string, double>>();
+    std::shared_ptr<std::map<std::string, double>> map3D_inter_to_Red =
+        std::make_shared<std::map<std::string, double>>();
     double dstep = 1.0 / double(NumOfSteps);
 
     // -----------------------------------------------------------------
@@ -463,7 +464,7 @@ void FLD::Utils::FluidCouplingWrapperBase::apply_boundary_conditions(
       (*map3D_inter_to_Red)[var_str] = var;
     }
 
-    Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::make_rcp<Teuchos::ParameterList>();
+    std::shared_ptr<Teuchos::ParameterList> params = std::make_shared<Teuchos::ParameterList>();
     //    params->set("3D map of values", map3_Dnp_);
     params->set("3D map of values", map3D_inter_to_Red);
     params->set("reducedD map of values", map_red_dnp_);
@@ -471,9 +472,9 @@ void FLD::Utils::FluidCouplingWrapperBase::apply_boundary_conditions(
     params->set("time", subscale_time);
     // #endif
 
-    //    Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp( new Teuchos::ParameterList);
-    //    params->set("3D map of values", map3_Dnp_);
-    //    params->set("reducedD map of values", mapRed_Dnp_);
+    //    std::shared_ptr<Teuchos::ParameterList> params = Teuchos::rcp( new
+    //    Teuchos::ParameterList); params->set("3D map of values", map3_Dnp_); params->set("reducedD
+    //    map of values", mapRed_Dnp_);
 
 
     this->integrate(true, params);
@@ -536,7 +537,7 @@ void FLD::Utils::FluidCouplingWrapperBase::apply_boundary_conditions(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::Utils::FluidCouplingWrapperBase::update_residual(Core::LinAlg::Vector<double>& residual)
 {
-  std::map<const int, Teuchos::RCP<class FluidCouplingBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class FluidCouplingBc>>::iterator mapiter;
 
   (*map_red_dn_) = (*map_red_dnp_);
   (*map3_dn_) = (*map3_dnp_);
@@ -562,7 +563,7 @@ void FLD::Utils::FluidCouplingWrapperBase::update_residual(Core::LinAlg::Vector<
 void FLD::Utils::FluidCouplingWrapperBase::evaluate_dirichlet(
     Core::LinAlg::Vector<double>& velnp, const Epetra_Map& condmap, double time)
 {
-  std::map<const int, Teuchos::RCP<class FluidCouplingBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class FluidCouplingBc>>::iterator mapiter;
 
   (*map_red_dn_) = (*map_red_dnp_);
   (*map3_dn_) = (*map3_dnp_);
@@ -616,7 +617,7 @@ void FLD::Utils::FluidCouplingWrapperBase::write_restart(Core::IO::Discretizatio
     output.write_double(stream.str(), it->second);
   }
 
-  std::map<const int, Teuchos::RCP<class FluidCouplingBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class FluidCouplingBc>>::iterator mapiter;
 
   for (mapiter = coup_map_3d_.begin(); mapiter != coup_map_3d_.end(); mapiter++)
   {
@@ -675,7 +676,7 @@ void FLD::Utils::FluidCouplingWrapperBase::read_restart(Core::IO::Discretization
     it->second = val;
   }
 
-  std::map<const int, Teuchos::RCP<class FluidCouplingBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class FluidCouplingBc>>::iterator mapiter;
 
   for (mapiter = coup_map_3d_.begin(); mapiter != coup_map_3d_.end(); mapiter++)
     mapiter->second->FluidCouplingBc::read_restart(reader, mapiter->first);
@@ -692,8 +693,8 @@ void FLD::Utils::FluidCouplingWrapperBase::read_restart(Core::IO::Discretization
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::Utils::FluidCouplingBc::FluidCouplingBc(Teuchos::RCP<Core::FE::Discretization> dis_3D,
-    Teuchos::RCP<Core::FE::Discretization> dis_redD, Core::IO::DiscretizationWriter& output,
+FLD::Utils::FluidCouplingBc::FluidCouplingBc(std::shared_ptr<Core::FE::Discretization> dis_3D,
+    std::shared_ptr<Core::FE::Discretization> dis_redD, Core::IO::DiscretizationWriter& output,
     double dt_3d, double dt_rm, int condid, int numcond,
     int numcond2)
     :  // call constructor for "nontrivial" objects
@@ -940,7 +941,7 @@ double FLD::Utils::FluidCouplingBc::flow_rate_calculation(double time, double dt
   const Epetra_Map* dofrowmap = discret_3d_->dof_row_map();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Core::LinAlg::Vector<double>> flowrates =
+  std::shared_ptr<Core::LinAlg::Vector<double>> flowrates =
       Core::LinAlg::create_vector(*dofrowmap, true);
   const std::string condstring("Art_3D_redD_CouplingCond");
   discret_3d_->evaluate_condition(eleparams, flowrates, condstring, condid);
@@ -996,8 +997,8 @@ double FLD::Utils::FluidCouplingBc::pressure_calculation(double time, double dta
   const Epetra_Map* dofrowmap = discret_3d_->dof_row_map();
 
   // get elemental flowrates ...
-  Teuchos::RCP<Core::LinAlg::Vector<double>> myStoredPressures =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap, 100);
+  std::shared_ptr<Core::LinAlg::Vector<double>> myStoredPressures =
+      std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, 100);
   const std::string condstring("Art_3D_redD_CouplingCond");
   discret_3d_->evaluate_condition(eleparams, myStoredPressures, condstring, condid);
 

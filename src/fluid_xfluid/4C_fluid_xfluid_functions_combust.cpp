@@ -10,26 +10,28 @@
 #include "4C_io_linedefinition.hpp"
 #include "4C_utils_function_manager.hpp"
 
+#include <cmath>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> create_combust_function(
+  std::shared_ptr<Core::Utils::FunctionOfSpaceTime> create_combust_function(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
-    if (function_line_defs.size() != 1) return Teuchos::null;
+    if (function_line_defs.size() != 1) return nullptr;
 
     if (function_line_defs.front().container().get_or("ZALESAKSDISK", false))
     {
-      return Teuchos::make_rcp<Discret::Utils::ZalesaksDiskFunction>();
+      return std::make_shared<Discret::Utils::ZalesaksDiskFunction>();
     }
     else if (function_line_defs.front().container().get_or("COLLAPSINGWATERCOLUMN", false))
     {
-      return Teuchos::make_rcp<Discret::Utils::CollapsingWaterColumnFunction>();
+      return std::make_shared<Discret::Utils::CollapsingWaterColumnFunction>();
     }
     else
     {
-      return Teuchos::null;
+      return nullptr;
     }
   }
 }  // namespace

@@ -24,10 +24,10 @@ Discret::Elements::FluidXWallBoundaryType& Discret::Elements::FluidXWallBoundary
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidXWallBoundaryType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidXWallBoundaryType::create(
     const int id, const int owner)
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*

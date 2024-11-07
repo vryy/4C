@@ -14,7 +14,8 @@
 #include "4C_inpar_beaminteraction.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -91,9 +92,9 @@ namespace BEAMINTERACTION
      * @param[in] params Parameters for the beam contact.
      * @param[in] start_value_lambda_gid Start value for the Lagrange multiplier global IDs.
      */
-    BeamToFluidMortarManager(Teuchos::RCP<const Core::FE::Discretization> discretization1,
-        Teuchos::RCP<const Core::FE::Discretization> discretization2,
-        Teuchos::RCP<const FBI::BeamToFluidMeshtyingParams> params, int start_value_lambda_gid);
+    BeamToFluidMortarManager(std::shared_ptr<const Core::FE::Discretization> discretization1,
+        std::shared_ptr<const Core::FE::Discretization> discretization2,
+        std::shared_ptr<const FBI::BeamToFluidMeshtyingParams> params, int start_value_lambda_gid);
 
     /**
      * \brief This method builds the global maps for the global node / element IDs to the Lagrange
@@ -129,7 +130,7 @@ namespace BEAMINTERACTION
      * @param contact_pairs All contact pairs on this processor.
      */
     void set_local_maps(
-        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
+        const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
 
     /**
      * \brief Get the global IDs of all Lagrange multipliers for the contact pair.
@@ -145,7 +146,7 @@ namespace BEAMINTERACTION
      * @param[in] contact_pairs Vector with all beam contact pairs in the model evaluator.
      */
     void evaluate_global_dm(
-        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
+        const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
 
     /**
      * \brief Add the mortar penalty contributions to the global force vector and stiffness matrix.
@@ -158,19 +159,20 @@ namespace BEAMINTERACTION
      * @param[out] fluid_force Global force vector acting on the fluid
      * @param[out] beam_force Global force vector acting on the beam
      */
-    void add_global_force_stiffness_contributions(Teuchos::RCP<Epetra_FEVector> fluid_force,
-        Epetra_FEVector& beam_force, Teuchos::RCP<Core::LinAlg::SparseMatrix> kbb,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> kbf, Teuchos::RCP<Core::LinAlg::SparseMatrix> kff,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> kfb,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> beam_vel,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vel) const;
+    void add_global_force_stiffness_contributions(std::shared_ptr<Epetra_FEVector> fluid_force,
+        Epetra_FEVector& beam_force, std::shared_ptr<Core::LinAlg::SparseMatrix> kbb,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> kbf,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> kff,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> kfb,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> beam_vel,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_vel) const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers.
      * @param[in] vel Global velocity vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_global_lambda(
+    std::shared_ptr<Core::LinAlg::Vector<double>> get_global_lambda(
         const Core::LinAlg::Vector<double>& vel) const;
 
     /**
@@ -179,8 +181,8 @@ namespace BEAMINTERACTION
      * @param vel (in) Global velocity vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_global_lambda_col(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) const;
+    std::shared_ptr<Core::LinAlg::Vector<double>> get_global_lambda_col(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel) const;
 
    protected:
     /**
@@ -215,7 +217,7 @@ namespace BEAMINTERACTION
      *
      * @return Inverted global_kappa_ vector.
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> invert_kappa() const;
+    std::shared_ptr<Core::LinAlg::Vector<double>> invert_kappa() const;
 
    private:
     //! Flag if setup was called.
@@ -237,37 +239,37 @@ namespace BEAMINTERACTION
     unsigned int n_lambda_element_;
 
     //! structure discretization
-    Teuchos::RCP<const Core::FE::Discretization> discretization_structure_;
+    std::shared_ptr<const Core::FE::Discretization> discretization_structure_;
 
     //! fluid discretization
-    Teuchos::RCP<const Core::FE::Discretization> discretization_fluid_;
+    std::shared_ptr<const Core::FE::Discretization> discretization_fluid_;
 
     //! Pointer to the beam contact parameters.
-    Teuchos::RCP<const FBI::BeamToFluidMeshtyingParams> beam_contact_parameters_ptr_;
+    std::shared_ptr<const FBI::BeamToFluidMeshtyingParams> beam_contact_parameters_ptr_;
 
     //! Row map of the additional Lagrange multiplier DOFs.
-    Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_;
+    std::shared_ptr<Epetra_Map> lambda_dof_rowmap_;
 
     //! Column map of the additional Lagrange multiplier DOFs.
-    Teuchos::RCP<Epetra_Map> lambda_dof_colmap_;
+    std::shared_ptr<Epetra_Map> lambda_dof_colmap_;
 
     //! Row map of the beam DOFs.
-    Teuchos::RCP<Epetra_Map> beam_dof_rowmap_;
+    std::shared_ptr<Epetra_Map> beam_dof_rowmap_;
 
     //! Row map of the fluid DOFs.
-    Teuchos::RCP<Epetra_Map> fluid_dof_rowmap_;
+    std::shared_ptr<Epetra_Map> fluid_dof_rowmap_;
 
     //! Multivector that connects the global node IDs with the Lagrange multiplier DOF IDs.
     //! The global row ID of the multi vector is the global ID of the node that a Lagrange
     //! multiplier is defined on. The columns hold the corresponding global IDs of the Lagrange
     //! multipliers.
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_;
 
     //! Multivector that connects the global element IDs with the Lagrange multiplier DOF IDs.
     //! The global row ID of the multi vector is the global ID of the element that a Lagrange
     //! multiplier is defined on. The columns hold the corresponding global IDs of the Lagrange
     //! multipliers.
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> element_gid_to_lambda_gid_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> element_gid_to_lambda_gid_;
 
     //! Standard map from global node ids to global Lagrange multiplier ids, for all
     //! nodes used on this rank.
@@ -278,21 +280,21 @@ namespace BEAMINTERACTION
     std::map<int, std::vector<int>> element_gid_to_lambda_gid_map_;
 
     //! Global \f$D\f$ matrix.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_d_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> global_d_;
 
     //! Global \f$M\f$ matrix.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_m_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> global_m_;
 
     //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
     //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.
     //! 37).
     //! With this scaling correct units and pass patch tests are achieved (in the penalty case).
-    Teuchos::RCP<Epetra_FEVector> global_kappa_;
+    std::shared_ptr<Epetra_FEVector> global_kappa_;
 
     //! This vector keeps tack of all Lagrange multipliers that are active. This is needed when the
     //! kappa vector is inverted and some entries are zero, because no active contributions act on
     //! that Lagrange multiplier.
-    Teuchos::RCP<Epetra_FEVector> global_active_lambda_;
+    std::shared_ptr<Epetra_FEVector> global_active_lambda_;
   };
 }  // namespace BEAMINTERACTION
 

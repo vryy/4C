@@ -181,7 +181,7 @@ namespace Discret
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ehist,       ///< history variables at element nodes
           double timefac,  ///< time factor
-          Teuchos::RCP<Core::Conditions::Condition>
+          std::shared_ptr<Core::Conditions::Condition>
               cond,                       ///< electrode kinetics boundary condition
           const int nume,                 ///< number of transferred electrons
           const std::vector<int> stoich,  ///< stoichiometry of the reaction
@@ -262,9 +262,9 @@ namespace Discret
       void set_internal_variables_for_mat_and_rhs() override = 0;
 
       //! get elch diffusion manager
-      Teuchos::RCP<ScaTraEleDiffManagerElch> diff_manager()
+      std::shared_ptr<ScaTraEleDiffManagerElch> diff_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
+        return std::static_pointer_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
       };
 
       //! parameter class for electrochemistry problems

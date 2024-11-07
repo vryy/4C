@@ -13,6 +13,8 @@
 #include "4C_structure_timint_noxgroup.hpp"
 #include "4C_structure_timint_noxlinsys.hpp"
 
+#include <Teuchos_RCPStdSharedPtrConversions.hpp>
+
 #include <sstream>
 
 FOUR_C_NAMESPACE_OPEN
@@ -22,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 void Solid::TimIntImpl::nox_setup()
 {
   // create
-  noxparams_ = Teuchos::make_rcp<Teuchos::ParameterList>();
+  noxparams_ = std::make_shared<Teuchos::ParameterList>();
 
   // solving
   Teuchos::ParameterList& newtonParams = (*noxparams_).sublist("Newton");
@@ -36,7 +38,7 @@ void Solid::TimIntImpl::nox_setup()
   printParams = *(nox_create_print_parameters(false));
 
   // Create printing utilities
-  noxutils_ = Teuchos::make_rcp<::NOX::Utils>(printParams);
+  noxutils_ = std::make_shared<::NOX::Utils>(printParams);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -44,7 +46,7 @@ void Solid::TimIntImpl::nox_setup()
 void Solid::TimIntImpl::nox_setup(const Teuchos::ParameterList& noxparams)
 {
   // copy the input list
-  noxparams_ = Teuchos::make_rcp<Teuchos::ParameterList>(noxparams);
+  noxparams_ = std::make_shared<Teuchos::ParameterList>(noxparams);
   // make all Yes/No integral values to Boolean
   Input::boolify_valid_input_parameters(*noxparams_);
 
@@ -81,7 +83,7 @@ void Solid::TimIntImpl::nox_setup(const Teuchos::ParameterList& noxparams)
   if (printParams.get<bool>("Test Details")) outputinformationlevel += ::NOX::Utils::TestDetails;
   if (printParams.get<bool>("Debug")) outputinformationlevel += ::NOX::Utils::Debug;
   printParams.set("Output Information", outputinformationlevel);
-  noxutils_ = Teuchos::make_rcp<::NOX::Utils>(printParams);
+  noxutils_ = std::make_shared<::NOX::Utils>(printParams);
 }
 
 
@@ -222,11 +224,11 @@ Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::nox_create_status_test
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList> Solid::TimIntImpl::nox_create_solver_parameters()
+std::shared_ptr<Teuchos::ParameterList> Solid::TimIntImpl::nox_create_solver_parameters()
 {
   // Create the list of solver parameters
-  Teuchos::RCP<Teuchos::ParameterList> solverParametersPtr =
-      Teuchos::make_rcp<Teuchos::ParameterList>();
+  std::shared_ptr<Teuchos::ParameterList> solverParametersPtr =
+      std::make_shared<Teuchos::ParameterList>();
 
   // Select the solver (this is the default)
   solverParametersPtr->set("Nonlinear Solver", "Line Search Based");
@@ -243,11 +245,11 @@ Teuchos::RCP<Teuchos::ParameterList> Solid::TimIntImpl::nox_create_solver_parame
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList> Solid::TimIntImpl::nox_create_print_parameters(
+std::shared_ptr<Teuchos::ParameterList> Solid::TimIntImpl::nox_create_print_parameters(
     const bool verbose) const
 {
   // Set the printing parameters in the "Printing" sublist
-  Teuchos::RCP<Teuchos::ParameterList> printParams = Teuchos::make_rcp<Teuchos::ParameterList>();
+  std::shared_ptr<Teuchos::ParameterList> printParams = std::make_shared<Teuchos::ParameterList>();
   (*printParams).set("MyPID", myrank_);
   (*printParams).set("Output Precision", 6);
   (*printParams).set("Output Processor", 0);
@@ -330,10 +332,10 @@ bool Solid::TimIntImpl::computePreconditioner(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::LinearSystem> Solid::TimIntImpl::nox_create_linear_system(
+std::shared_ptr<::NOX::Epetra::LinearSystem> Solid::TimIntImpl::nox_create_linear_system(
     Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln, ::NOX::Utils& utils)
 {
-  Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys = Teuchos::null;
+  std::shared_ptr<::NOX::Epetra::LinearSystem> linSys = nullptr;
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
@@ -341,10 +343,10 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> Solid::TimIntImpl::nox_create_linear_s
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
   ::NOX::Epetra::Interface::Jacobian* iJac = this;
-  const Teuchos::RCP<Epetra_Operator> J = stiff_;
+  const std::shared_ptr<Epetra_Operator> J = stiff_;
 
-  linSys = Teuchos::make_rcp<NOX::Solid::LinearSystem>(
-      printParams, lsParams, Teuchos::rcpFromRef(*iJac), J, noxSoln, solver_);
+  linSys = std::make_shared<NOX::Solid::LinearSystem>(
+      printParams, lsParams, Core::Utils::shared_ptr_from_ref(*iJac), J, noxSoln, solver_);
 
   return linSys;
 }
@@ -359,11 +361,11 @@ int Solid::TimIntImpl::nox_solve()
 
   // create intial guess vector of predictor result
   ::NOX::Epetra::Vector noxSoln(
-      disn_->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+      Teuchos::rcpFromRef(*disn_->get_ptr_of_Epetra_Vector()), ::NOX::Epetra::Vector::CreateView);
 
   // Linear system
   Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys =
-      nox_create_linear_system(nlParams, noxSoln, *noxutils_);
+      Teuchos::rcp(nox_create_linear_system(nlParams, noxSoln, *noxutils_));
 
   // Create group
   Teuchos::RCP<NOX::Solid::Group> grp = Teuchos::make_rcp<NOX::Solid::Group>(
@@ -373,8 +375,7 @@ int Solid::TimIntImpl::nox_solve()
   noxstatustest_ = nox_create_status_test(*grp);
 
   // Create the solver
-  Teuchos::RCP<::NOX::Solver::Generic> solver =
-      ::NOX::Solver::buildSolver(grp, noxstatustest_, noxparams_);
+  auto solver = ::NOX::Solver::buildSolver(grp, noxstatustest_, Teuchos::rcpFromRef(*noxparams_));
 
   // Solve the nonlinear system
   ::NOX::StatusTest::StatusType status = solver->solve();

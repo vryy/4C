@@ -681,8 +681,7 @@ void ParticleInteraction::SPHMomentum::momentum_equation_particle_wall_contribut
     Core::LinAlg::SerialDenseVector funct(numnodes);
     std::vector<int> lmele;
 
-    if (walldatastate->get_vel_col() != Teuchos::null or
-        walldatastate->get_force_col() != Teuchos::null)
+    if (walldatastate->get_vel_col() != nullptr or walldatastate->get_force_col() != nullptr)
     {
       // evaluate shape functions of element at wall contact point
       Core::FE::shape_function_2d(
@@ -699,7 +698,7 @@ void ParticleInteraction::SPHMomentum::momentum_equation_particle_wall_contribut
     // velocity of wall contact point j
     double vel_j[3] = {0.0, 0.0, 0.0};
 
-    if (walldatastate->get_vel_col() != Teuchos::null)
+    if (walldatastate->get_vel_col() != nullptr)
     {
       // get nodal velocities
       std::vector<double> nodal_vel(numnodes * 3);
@@ -865,7 +864,7 @@ void ParticleInteraction::SPHMomentum::momentum_equation_particle_wall_contribut
 
     // calculation of wall contact force
     double wallcontactforce[3] = {0.0, 0.0, 0.0};
-    if (writeinteractionoutput or walldatastate->get_force_col() != Teuchos::null)
+    if (writeinteractionoutput or walldatastate->get_force_col() != nullptr)
       Utils::vec_set_scale(wallcontactforce, -mass_i[0], sumk_acc_ik);
 
     // write interaction output
@@ -883,7 +882,7 @@ void ParticleInteraction::SPHMomentum::momentum_equation_particle_wall_contribut
     }
 
     // assemble contact force acting on wall element
-    if (walldatastate->get_force_col() != Teuchos::null)
+    if (walldatastate->get_force_col() != nullptr)
     {
       // determine nodal forces
       std::vector<double> nodal_force(numnodes * 3);

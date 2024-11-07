@@ -48,21 +48,21 @@ Core::Communication::ParObject* Discret::Elements::ElemagType::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ElemagType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ElemagType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ELECTROMAGNETIC")
   {
-    return Teuchos::make_rcp<Discret::Elements::Elemag>(id, owner);
+    return std::make_shared<Discret::Elements::Elemag>(id, owner);
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ElemagType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ElemagType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::Elemag>(id, owner);
+  return std::make_shared<Discret::Elements::Elemag>(id, owner);
 }
 
 
@@ -248,7 +248,7 @@ bool Discret::Elements::Elemag::read_element(const std::string& eletype, const s
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)           berardocco 02/18|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Elemag::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Elemag::lines()
 {
   return Core::Communication::get_element_lines<ElemagBoundary, Elemag>(*this);
 }
@@ -257,7 +257,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Elemag::li
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                     berardocco 02/18|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Elemag::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Elemag::surfaces()
 {
   return Core::Communication::get_element_surfaces<ElemagBoundary, Elemag>(*this);
 }
@@ -265,7 +265,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Elemag::su
 /*----------------------------------------------------------------------*
  |  get face element (public)                           berardocco 02/18|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Elemag::create_face_element(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Elemag::create_face_element(
     Core::Elements::Element* parent_slave, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
     const int lsurface_master, const int lsurface_slave, const std::vector<int>& localtrafomap)
 {
@@ -289,10 +289,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::Elemag::create_face_ele
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ElemagBoundaryType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ElemagBoundaryType::create(
     const int id, const int owner)
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -401,7 +401,7 @@ void Discret::Elements::ElemagBoundary::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       berardocco 02/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ElemagBoundary::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::ElemagBoundary::lines()
 {
   FOUR_C_THROW("Lines of ElemagBoundary not implemented");
 }
@@ -410,7 +410,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ElemagBoun
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       berardocco 02/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ElemagBoundary::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::ElemagBoundary::surfaces()
 {
   FOUR_C_THROW("Surfaces of ElemagBoundary not implemented");
 }
@@ -467,10 +467,10 @@ void Discret::Elements::ElemagBoundary::location_vector(const Core::FE::Discreti
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::ElemagIntFaceType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::ElemagIntFaceType::create(
     const int id, const int owner)
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -771,7 +771,7 @@ void Discret::Elements::ElemagIntFace::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       berardocco 02/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ElemagIntFace::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::ElemagIntFace::lines()
 {
   FOUR_C_THROW("Lines of ElemagIntFace not implemented");
 }
@@ -779,7 +779,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ElemagIntF
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       berardocco 02/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::ElemagIntFace::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::ElemagIntFace::surfaces()
 {
   FOUR_C_THROW("Surfaces of ElemagIntFace not implemented");
 }

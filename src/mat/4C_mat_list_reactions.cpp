@@ -41,15 +41,16 @@ Mat::PAR::MatListReactions::MatListReactions(const Core::Mat::PAR::Parameter::Da
     for (m = reacids_.begin(); m != reacids_.end(); ++m)
     {
       const int reacid = *m;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(reacid);
-      material_map_write()->insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(reacid, mat));
+      std::shared_ptr<Core::Mat::Material> mat = Mat::factory(reacid);
+      material_map_write()->insert(
+          std::pair<int, std::shared_ptr<Core::Mat::Material>>(reacid, mat));
     }
   }
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatListReactions::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::MatListReactions::create_material()
 {
-  return Teuchos::make_rcp<Mat::MatListReactions>(this);
+  return std::make_shared<Mat::MatListReactions>(this);
 }
 
 
@@ -94,10 +95,10 @@ void Mat::MatListReactions::initialize()
     for (m = paramsreac_->reac_ids()->begin(); m != paramsreac_->reac_ids()->end(); ++m)
     {
       const int reacid = *m;
-      Teuchos::RCP<Core::Mat::Material> mat = material_by_id(reacid);
-      if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-      Teuchos::RCP<Mat::ScatraReactionMat> reacmat =
-          Teuchos::rcp_dynamic_cast<Mat::ScatraReactionMat>(mat, true);
+      std::shared_ptr<Core::Mat::Material> mat = material_by_id(reacid);
+      if (mat == nullptr) FOUR_C_THROW("Failed to allocate this material");
+      std::shared_ptr<Mat::ScatraReactionMat> reacmat =
+          std::dynamic_pointer_cast<Mat::ScatraReactionMat>(mat);
       reacmat->initialize();
     }
   }
@@ -117,9 +118,9 @@ void Mat::MatListReactions::setup_mat_map()
   for (m = paramsreac_->reac_ids()->begin(); m != paramsreac_->reac_ids()->end(); ++m)
   {
     const int reacid = *m;
-    Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(reacid);
-    if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    material_map_write()->insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(reacid, mat));
+    std::shared_ptr<Core::Mat::Material> mat = Mat::factory(reacid);
+    if (mat == nullptr) FOUR_C_THROW("Failed to allocate this material");
+    material_map_write()->insert(std::pair<int, std::shared_ptr<Core::Mat::Material>>(reacid, mat));
   }
   return;
 }
@@ -182,7 +183,7 @@ void Mat::MatListReactions::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid(-1);
   extract_from_pack(buffer, matid);
   paramsreac_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -212,10 +213,10 @@ void Mat::MatListReactions::unpack(Core::Communication::UnpackBuffer& buffer)
     for (m = paramsreac_->reac_ids()->begin(); m != paramsreac_->reac_ids()->end(); m++)
     {
       const int actmatid = *m;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(actmatid);
-      if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
+      std::shared_ptr<Core::Mat::Material> mat = Mat::factory(actmatid);
+      if (mat == nullptr) FOUR_C_THROW("Failed to allocate this material");
       material_map_write()->insert(
-          std::pair<int, Teuchos::RCP<Core::Mat::Material>>(actmatid, mat));
+          std::pair<int, std::shared_ptr<Core::Mat::Material>>(actmatid, mat));
     }
 
     if (paramsreac_->local_)
@@ -267,8 +268,8 @@ double Mat::MatListReactions::calc_rea_body_force_term(
   for (int condnum = 0; condnum < num_reac(); condnum++)
   {
     const int reacid = reac_id(condnum);
-    const Teuchos::RCP<const Mat::ScatraReactionMat> reacmat =
-        Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(material_by_id(reacid));
+    const std::shared_ptr<const Mat::ScatraReactionMat> reacmat =
+        std::static_pointer_cast<const Mat::ScatraReactionMat>(material_by_id(reacid));
 
     bodyforcetermK += reacmat->calc_rea_body_force_term(k, phinp, constants, scale);
   }
@@ -293,8 +294,8 @@ void Mat::MatListReactions::calc_rea_body_force_deriv_matrix(const int k,
   for (int condnum = 0; condnum < num_reac(); condnum++)
   {
     const int reacid = reac_id(condnum);
-    const Teuchos::RCP<const Mat::ScatraReactionMat> reacmat =
-        Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(material_by_id(reacid));
+    const std::shared_ptr<const Mat::ScatraReactionMat> reacmat =
+        std::static_pointer_cast<const Mat::ScatraReactionMat>(material_by_id(reacid));
 
     reacmat->calc_rea_body_force_deriv_matrix(k, derivs, phinp, constants, scale);
   }
@@ -321,8 +322,8 @@ double Mat::MatListReactions::calc_rea_body_force_term(const int k,
   for (int condnum = 0; condnum < num_reac(); condnum++)
   {
     const int reacid = reac_id(condnum);
-    const Teuchos::RCP<const Mat::ScatraReactionMat> reacmat =
-        Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(material_by_id(reacid));
+    const std::shared_ptr<const Mat::ScatraReactionMat> reacmat =
+        std::static_pointer_cast<const Mat::ScatraReactionMat>(material_by_id(reacid));
 
     bodyforcetermK += reacmat->calc_rea_body_force_term(k, phinp, constants_mod, scale);
   }
@@ -348,8 +349,8 @@ void Mat::MatListReactions::calc_rea_body_force_deriv_matrix(const int k,
   for (int condnum = 0; condnum < num_reac(); condnum++)
   {
     const int reacid = reac_id(condnum);
-    const Teuchos::RCP<const Mat::ScatraReactionMat> reacmat =
-        Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(material_by_id(reacid));
+    const std::shared_ptr<const Mat::ScatraReactionMat> reacmat =
+        std::static_pointer_cast<const Mat::ScatraReactionMat>(material_by_id(reacid));
 
     reacmat->calc_rea_body_force_deriv_matrix(k, derivs, phinp, constants_mod, scale);
   }
@@ -366,8 +367,8 @@ void Mat::MatListReactions::add_additional_variables(
   for (int condnum = 0; condnum < num_reac(); condnum++)
   {
     const int reacid = reac_id(condnum);
-    const Teuchos::RCP<const Mat::ScatraReactionMat> reacmat =
-        Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(material_by_id(reacid));
+    const std::shared_ptr<const Mat::ScatraReactionMat> reacmat =
+        std::static_pointer_cast<const Mat::ScatraReactionMat>(material_by_id(reacid));
 
     reacmat->add_additional_variables(k, variables);
   }
@@ -401,8 +402,8 @@ void Mat::MatListReactions::calc_rea_body_force_deriv_matrix_add_variables(const
   for (int condnum = 0; condnum < num_reac(); condnum++)
   {
     const int reacid = reac_id(condnum);
-    const Teuchos::RCP<const Mat::ScatraReactionMat> reacmat =
-        Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(material_by_id(reacid));
+    const std::shared_ptr<const Mat::ScatraReactionMat> reacmat =
+        std::static_pointer_cast<const Mat::ScatraReactionMat>(material_by_id(reacid));
 
     reacmat->calc_rea_body_force_deriv_matrix_add_variables(
         k, derivs, variables, constants_mod, scale);

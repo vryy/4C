@@ -658,7 +658,7 @@ void Discret::Elements::ScaTraEleCalcSTIDiffCond<distype>::get_material_params(
     std::vector<double>& densam, double& visc, const int iquad)
 {
   // get parameters of primary, thermal material
-  Teuchos::RCP<const Core::Mat::Material> material = ele->material();
+  std::shared_ptr<const Core::Mat::Material> material = ele->material();
   if (material->material_type() == Core::Materials::m_soret)
     mat_soret(material, densn[0], densnp[0], densam[0]);
   else if (material->material_type() == Core::Materials::m_th_fourier_iso)
@@ -691,15 +691,15 @@ void Discret::Elements::ScaTraEleCalcSTIDiffCond<distype>::get_material_params(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcSTIDiffCond<distype>::mat_soret(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< Soret material
-    double& densn,                                           //!< density at time t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< Soret material
+    double& densn,                                              //!< density at time t_(n)
     double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
     double& densam   //!< density at time t_(n+alpha_M)
 )
 {
   // extract material parameters from Soret material
-  const Teuchos::RCP<const Mat::Soret> matsoret =
-      Teuchos::rcp_static_cast<const Mat::Soret>(material);
+  const std::shared_ptr<const Mat::Soret> matsoret =
+      std::static_pointer_cast<const Mat::Soret>(material);
   densn = densnp = densam = matsoret->capacity();
   diff_manager()->set_isotropic_diff(matsoret->conductivity(), 0);
   diff_manager()->set_soret(matsoret->soret_coefficient());
@@ -709,15 +709,15 @@ void Discret::Elements::ScaTraEleCalcSTIDiffCond<distype>::mat_soret(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcSTIDiffCond<distype>::mat_fourier(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< Fourier material
-    double& densn,                                           //!< density at time t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< Fourier material
+    double& densn,                                              //!< density at time t_(n)
     double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
     double& densam   //!< density at time t_(n+alpha_M)
 )
 {
   // extract material parameters from Soret material
-  const Teuchos::RCP<const Mat::FourierIso> matfourier =
-      Teuchos::rcp_static_cast<const Mat::FourierIso>(material);
+  const std::shared_ptr<const Mat::FourierIso> matfourier =
+      std::static_pointer_cast<const Mat::FourierIso>(material);
   densn = densnp = densam = matfourier->capacity();
   diff_manager()->set_isotropic_diff(matfourier->conductivity(), 0);
 }  // Discret::Elements::ScaTraEleCalcSTIDiffCond<distype>::mat_soret
@@ -746,7 +746,7 @@ Discret::Elements::ScaTraEleCalcSTIDiffCond<distype>::ScaTraEleCalcSTIDiffCond(
       ScaTraEleSTIElch<distype>::ScaTraEleSTIElch(numdofpernode, numscal, disname),
 
       // diffusion manager for diffusion-conduction formulation
-      diffmanagerdiffcond_(Teuchos::make_rcp<ScaTraEleDiffManagerElchDiffCond>(my::numscal_)),
+      diffmanagerdiffcond_(std::make_shared<ScaTraEleDiffManagerElchDiffCond>(my::numscal_)),
 
       // utility class supporting element evaluation for diffusion-conduction formulation
       utils_(Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::instance(
@@ -757,12 +757,12 @@ Discret::Elements::ScaTraEleCalcSTIDiffCond<distype>::ScaTraEleCalcSTIDiffCond(
     FOUR_C_THROW("Invalid number of transported scalars or degrees of freedom per node!");
 
   // replace diffusion manager for standard scalar transport by thermo diffusion manager
-  my::diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManagerSTIThermo>(my::numscal_);
+  my::diffmanager_ = std::make_shared<ScaTraEleDiffManagerSTIThermo>(my::numscal_);
 
   // replace internal variable manager for standard scalar transport by internal variable manager
   // for heat transport within electrochemical substances
   my::scatravarmanager_ =
-      Teuchos::make_rcp<ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>>(my::numscal_);
+      std::make_shared<ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>>(my::numscal_);
 }
 
 

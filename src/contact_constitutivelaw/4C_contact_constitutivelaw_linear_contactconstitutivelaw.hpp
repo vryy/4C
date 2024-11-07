@@ -33,11 +33,11 @@ namespace CONTACT
        * \param[in] container containing the law parameter from the input file
        */
       LinearConstitutiveLawParams(
-          const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container);
+          const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container);
 
 
       /// create constitutive law instance of matching type with my parameters
-      Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> create_constitutive_law() override;
+      std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> create_constitutive_law() override;
 
       /// @name get-functions for the Constitutive Law parameters of a broken rational function
       //@{

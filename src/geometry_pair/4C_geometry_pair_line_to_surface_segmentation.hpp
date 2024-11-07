@@ -44,7 +44,7 @@ namespace GEOMETRYPAIR
      */
     GeometryPairLineToSurfaceSegmentation(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
-        const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
+        const std::shared_ptr<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
             line_to_surface_evaluation_data);
 
 

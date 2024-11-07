@@ -152,13 +152,13 @@ void NTS::Interpolator::interpolate_2d(Mortar::Node& snode, std::vector<Mortar::
       meles[nummaster]->get_nodal_coords(mcoord);
 
       // nodal coords from previous time step and lagrange mulitplier
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> scoordold;
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> mcoordold;
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult;
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> scoordold;
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> mcoordold;
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> lagmult;
 
-      scoordold = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, sele->num_node());
-      mcoordold = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, ncol);
-      lagmult = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, sele->num_node());
+      scoordold = std::make_shared<Core::LinAlg::SerialDenseMatrix>(3, sele->num_node());
+      mcoordold = std::make_shared<Core::LinAlg::SerialDenseMatrix>(3, ncol);
+      lagmult = std::make_shared<Core::LinAlg::SerialDenseMatrix>(3, sele->num_node());
       sele->get_nodal_coords_old(*scoordold);
       meles[nummaster]->get_nodal_coords_old(*mcoordold);
       sele->get_nodal_lag_mult(*lagmult);
@@ -407,13 +407,13 @@ bool NTS::Interpolator::interpolate_3d(Mortar::Node& snode, std::vector<Mortar::
       meles[nummaster]->get_nodal_coords(mcoord);
 
       // nodal coords from previous time step and lagrange mulitplier
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> scoordold;
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> mcoordold;
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult;
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> scoordold;
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> mcoordold;
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> lagmult;
 
-      scoordold = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, sele->num_node());
-      mcoordold = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, ncol);
-      lagmult = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, sele->num_node());
+      scoordold = std::make_shared<Core::LinAlg::SerialDenseMatrix>(3, sele->num_node());
+      mcoordold = std::make_shared<Core::LinAlg::SerialDenseMatrix>(3, ncol);
+      lagmult = std::make_shared<Core::LinAlg::SerialDenseMatrix>(3, sele->num_node());
       sele->get_nodal_coords_old(*scoordold);
       meles[nummaster]->get_nodal_coords_old(*mcoordold);
       sele->get_nodal_lag_mult(*lagmult);

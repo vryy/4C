@@ -37,7 +37,7 @@ namespace Core::LinearSolver
         Core::LinAlg::MultiVector<double>* b) override;
 
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> prec_operator() const override { return p_; }
+    std::shared_ptr<Epetra_Operator> prec_operator() const override { return p_; }
 
    private:
     Teuchos::ParameterList& tekolist_;
@@ -46,7 +46,7 @@ namespace Core::LinearSolver
     Teuchos::RCP<const Thyra::LinearOpBase<double>> pmatrix_;
 
     //! preconditioner
-    Teuchos::RCP<Epetra_Operator> p_;
+    std::shared_ptr<Epetra_Operator> p_;
   };
 
 

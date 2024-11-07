@@ -7,6 +7,7 @@
 
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_fluid_ele.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -25,10 +26,10 @@ Core::Communication::ParObject* Discret::Elements::FluidBoundaryType::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidBoundaryType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidBoundaryType::create(
     const int id, const int owner)
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -146,7 +147,7 @@ void Discret::Elements::FluidBoundary::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidBoundary::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::FluidBoundary::lines()
 {
   FOUR_C_THROW("Lines of FluidBoundary not implemented");
 }
@@ -154,9 +155,9 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidBound
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ager 12/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidBoundary::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::FluidBoundary::surfaces()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 FOUR_C_NAMESPACE_CLOSE

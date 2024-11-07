@@ -26,7 +26,7 @@ CONTACT::CONSTITUTIVELAW::LawDefinition::LawDefinition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::LawDefinition::add_component(Teuchos::RCP<Input::LineComponent> c)
+void CONTACT::CONSTITUTIVELAW::LawDefinition::add_component(std::shared_ptr<Input::LineComponent> c)
 {
   inputline_.push_back(c);
 }
@@ -38,7 +38,8 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& proble
 {
   for (const auto& i : input.lines_in_section("CONTACT CONSTITUTIVE LAWS"))
   {
-    Teuchos::RCP<std::stringstream> condline = Teuchos::make_rcp<std::stringstream>(std::string{i});
+    std::shared_ptr<std::stringstream> condline =
+        std::make_shared<std::stringstream>(std::string{i});
 
     // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
     // reading the last entry inside This is required since the material parameters can be
@@ -65,8 +66,8 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& proble
         FOUR_C_THROW("More than one contact constitutivelaw with 'Law %d'", id);
 
       // the read-in contact constitutive law line
-      Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
-          Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::Container>(
+      std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container> container =
+          std::make_shared<CONTACT::CONSTITUTIVELAW::Container>(
               id, coconstlawtype_, coconstlawname_);
       // fill the latter
 
@@ -120,14 +121,14 @@ std::ostream& CONTACT::CONSTITUTIVELAW::LawDefinition::print(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::append_co_const_law_component_definition(
-    std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& list,
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> def)
+    std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>& list,
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition> def)
 {
   // test if material was defined with same name or type
-  std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>::const_iterator m;
+  std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>::const_iterator m;
   for (m = list.begin(); m != list.end(); ++m)
   {
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> mmd = *m;
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition> mmd = *m;
 
     if (mmd->type() == def->type())
       FOUR_C_THROW(

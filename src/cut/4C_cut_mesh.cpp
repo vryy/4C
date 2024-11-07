@@ -17,6 +17,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_geometry_element_volume.hpp"
 #include "4C_fem_geometry_searchtree.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -39,18 +40,19 @@ namespace
 /*-------------------------------------------------------------------------------------*
  * constructor
  *-------------------------------------------------------------------------------------*/
-Cut::Mesh::Mesh(Options& options, double norm, Teuchos::RCP<PointPool> pp, bool cutmesh, int myrank)
+Cut::Mesh::Mesh(
+    Options& options, double norm, std::shared_ptr<PointPool> pp, bool cutmesh, int myrank)
     : options_(options),
       norm_(norm),
       pp_(pp),
-      bb_(Teuchos::RCP(BoundingBox::create())),
+      bb_(std::shared_ptr<BoundingBox>(BoundingBox::create())),
       cutmesh_(cutmesh),
       myrank_(myrank)
 {
-  if (pp_ == Teuchos::null)
+  if (pp_ == nullptr)
   {
     // create a new octTree based pointpool that stores all points
-    pp_ = Teuchos::make_rcp<PointPool>(norm);
+    pp_ = std::make_shared<PointPool>(norm);
   }
 }
 
@@ -284,7 +286,7 @@ Cut::Line* Cut::Mesh::new_line_internal(
   if (not line)
   {
     line = new Line(p1, p2, cut_side1, cut_side2, cut_element);
-    lines_.push_back(Teuchos::RCP(line));
+    lines_.push_back(std::shared_ptr<Line>(line));
   }
   else  // line already exists. just add cut side details to the line
   {
@@ -353,7 +355,7 @@ Cut::Facet* Cut::Mesh::new_facet(const std::vector<Point*>& points, Side* side, 
   }
 
   Facet* f = new Facet(*this, points, side, cutsurface);
-  facets_.push_back(Teuchos::RCP(f));
+  facets_.push_back(std::shared_ptr<Facet>(f));
 
   return f;
 }
@@ -366,7 +368,7 @@ Cut::VolumeCell* Cut::Mesh::new_volume_cell(const plain_facet_set& facets,
     const std::map<std::pair<Point*, Point*>, plain_facet_set>& volume_lines, Element* element)
 {
   VolumeCell* c = new VolumeCell(facets, volume_lines, element);
-  cells_.push_back(Teuchos::RCP(c));  // store the pointer in mesh's cells_
+  cells_.push_back(std::shared_ptr<VolumeCell>(c));  // store the pointer in mesh's cells_
   return c;
 }
 
@@ -383,7 +385,7 @@ Cut::Point1BoundaryCell* Cut::Mesh::new_point1_cell(
   points[0]->coordinates(&xyz(0, 0));
 
   Point1BoundaryCell* bc = new Point1BoundaryCell(xyz, facet, points);
-  boundarycells_.push_back(Teuchos::RCP(bc));
+  boundarycells_.push_back(std::shared_ptr<Point1BoundaryCell>(bc));
 
   return bc;
 }
@@ -403,7 +405,7 @@ Cut::Line2BoundaryCell* Cut::Mesh::new_line2_cell(
   }
 
   Line2BoundaryCell* bc = new Line2BoundaryCell(xyze, facet, points);
-  boundarycells_.push_back(Teuchos::RCP(bc));
+  boundarycells_.push_back(std::shared_ptr<Line2BoundaryCell>(bc));
 
   return bc;
 }
@@ -426,7 +428,7 @@ Cut::Tri3BoundaryCell* Cut::Mesh::new_tri3_cell(
 
   Tri3BoundaryCell* bc = new Tri3BoundaryCell(xyz, facet, points);
   bc->set_new_cubature_degree(options_.bc_cubaturedegree());
-  boundarycells_.push_back(Teuchos::RCP(bc));
+  boundarycells_.push_back(std::shared_ptr<Tri3BoundaryCell>(bc));
 
   return bc;
 }
@@ -450,7 +452,7 @@ Cut::Quad4BoundaryCell* Cut::Mesh::new_quad4_cell(
 
   Quad4BoundaryCell* bc = new Quad4BoundaryCell(xyz, facet, points);
   bc->set_new_cubature_degree(options_.bc_cubaturedegree());
-  boundarycells_.push_back(Teuchos::RCP(bc));
+  boundarycells_.push_back(std::shared_ptr<Quad4BoundaryCell>(bc));
 
   return bc;
 }
@@ -472,7 +474,7 @@ Cut::ArbitraryBoundaryCell* Cut::Mesh::new_arbitrary_cell(VolumeCell* volume, Fa
   }
 
   ArbitraryBoundaryCell* bc = new ArbitraryBoundaryCell(xyz, facet, points, gaussRule, normal);
-  boundarycells_.push_back(Teuchos::RCP(bc));
+  boundarycells_.push_back(std::shared_ptr<ArbitraryBoundaryCell>(bc));
 
   return bc;
 }
@@ -491,7 +493,7 @@ Cut::Line2IntegrationCell* Cut::Mesh::new_line2_cell(
     points[i]->coordinates(&xyze(0, i));
   }
   Line2IntegrationCell* c = new Line2IntegrationCell(position, xyze, points, cell);
-  integrationcells_.push_back(Teuchos::RCP(c));
+  integrationcells_.push_back(std::shared_ptr<Line2IntegrationCell>(c));
 
   return c;
 }
@@ -510,7 +512,7 @@ Cut::Tri3IntegrationCell* Cut::Mesh::new_tri3_cell(
     points[i]->coordinates(&xyze(0, i));
   }
   Tri3IntegrationCell* c = new Tri3IntegrationCell(position, xyze, points, cell);
-  integrationcells_.push_back(Teuchos::RCP(c));
+  integrationcells_.push_back(std::shared_ptr<Tri3IntegrationCell>(c));
 
   return c;
 }
@@ -529,7 +531,7 @@ Cut::Quad4IntegrationCell* Cut::Mesh::new_quad4_cell(
     points[i]->coordinates(&xyze(0, i));
   }
   Quad4IntegrationCell* c = new Quad4IntegrationCell(position, xyze, points, cell);
-  integrationcells_.push_back(Teuchos::RCP(c));
+  integrationcells_.push_back(std::shared_ptr<Quad4IntegrationCell>(c));
 
   return c;
 }
@@ -547,7 +549,7 @@ Cut::Hex8IntegrationCell* Cut::Mesh::new_hex8_cell(
   }
 
   Hex8IntegrationCell* c = new Hex8IntegrationCell(position, xyz, points, cell);
-  integrationcells_.push_back(Teuchos::RCP(c));
+  integrationcells_.push_back(std::shared_ptr<Hex8IntegrationCell>(c));
 
   return c;
 }
@@ -567,7 +569,7 @@ Cut::Tet4IntegrationCell* Cut::Mesh::new_tet4_cell(
   }
 
   Tet4IntegrationCell* c = new Tet4IntegrationCell(position, xyz, points, cell);
-  integrationcells_.push_back(Teuchos::RCP(c));
+  integrationcells_.push_back(std::shared_ptr<Tet4IntegrationCell>(c));
 
   return c;
 }
@@ -581,7 +583,7 @@ Cut::Tet4IntegrationCell* Cut::Mesh::new_tet4_cell(
 {
   std::vector<Point*> points;  // empty list of points
   Tet4IntegrationCell* c = new Tet4IntegrationCell(position, xyz, points, cell);
-  integrationcells_.push_back(Teuchos::RCP(c));
+  integrationcells_.push_back(std::shared_ptr<Tet4IntegrationCell>(c));
   return c;
 }
 
@@ -599,7 +601,7 @@ Cut::Wedge6IntegrationCell* Cut::Mesh::new_wedge6_cell(
   }
 
   Wedge6IntegrationCell* c = new Wedge6IntegrationCell(position, xyz, points, cell);
-  integrationcells_.push_back(Teuchos::RCP(c));
+  integrationcells_.push_back(std::shared_ptr<Wedge6IntegrationCell>(c));
 
   return c;
 }
@@ -618,7 +620,7 @@ Cut::Pyramid5IntegrationCell* Cut::Mesh::new_pyramid5_cell(
   }
 
   Pyramid5IntegrationCell* c = new Pyramid5IntegrationCell(position, xyz, points, cell);
-  integrationcells_.push_back(Teuchos::RCP(c));
+  integrationcells_.push_back(std::shared_ptr<Pyramid5IntegrationCell>(c));
 
   return c;
 }
@@ -630,7 +632,7 @@ void Cut::Mesh::build_self_cut_tree()
 {
   // constructor for the search tree of the background mesh
   selfcuttree_ =
-      Teuchos::make_rcp<Core::Geo::SearchTree>(5);  // tree_depth_ 4 is reasonable, 5 is possible
+      std::make_shared<Core::Geo::SearchTree>(5);  // tree_depth_ 4 is reasonable, 5 is possible
 
   // extent the bounding volume of the root of the search tree to prevent symmetry issues
   Core::LinAlg::Matrix<3, 2> boundingvolume = bb_->get_bounding_volume();
@@ -666,7 +668,7 @@ void Cut::Mesh::build_static_search_tree()
 {
   // constructor for the search tree of the background mesh
   searchtree_ =
-      Teuchos::make_rcp<Core::Geo::SearchTree>(5);  // tree_depth_ 4 is reasonable, 5 is possible
+      std::make_shared<Core::Geo::SearchTree>(5);  // tree_depth_ 4 is reasonable, 5 is possible
 
   // extent the bounding volume of the root of the search tree to prevent symmetry issues
   Core::LinAlg::Matrix<3, 2> boundingvolume = bb_->get_bounding_volume();
@@ -678,8 +680,8 @@ void Cut::Mesh::build_static_search_tree()
   searchtree_->initialize_tree(boundingvolume, Core::Geo::TreeType(Core::Geo::OCTTREE));
 
   // inserts all linear elements into the search tree of the background mesh
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     int eid = i->first;
     Element* e = &*i->second;
@@ -688,7 +690,7 @@ void Cut::Mesh::build_static_search_tree()
   }
 
   // inserts all quadratic elements into the search tree of the background mesh
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     int eid = i->first;
@@ -717,8 +719,8 @@ void Cut::Mesh::cut(Mesh& mesh, plain_element_set& elements_done)
   plain_element_set my_elements_done;
 
   // perform the cut for each side of the cut_mesh_
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = sides_.begin(); i != sides_.end();
-       ++i)
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = sides_.begin();
+       i != sides_.end(); ++i)
   {
     Side& side = *i->second;
     mesh.cut(side, elements_done, my_elements_done);
@@ -737,7 +739,7 @@ void Cut::Mesh::cut(Side& side, const plain_element_set& done, plain_element_set
 {
   // define a bounding box around the maybe twisted side to determine a
   // preselection of cutting sides and elements
-  Teuchos::RCP<BoundingBox> sidebox = Teuchos::RCP(BoundingBox::create(side));
+  std::shared_ptr<BoundingBox> sidebox = std::shared_ptr<BoundingBox>(BoundingBox::create(side));
   plain_element_set elements;
 
   // use a brute force preselection
@@ -755,11 +757,11 @@ void Cut::Mesh::cut(Side& side, const plain_element_set& done, plain_element_set
         "Cut --- 6/6 --- Cut_Finalize --- preselection of possible cut between");
 
     // preselection of possible cut between linear elements and the current side
-    for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-         i++)
+    for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+         i != elements_.end(); i++)
     {
       Element* e = &*(i->second);
-      Teuchos::RCP<BoundingBox> elementbox = Teuchos::RCP(BoundingBox::create());
+      std::shared_ptr<BoundingBox> elementbox = std::shared_ptr<BoundingBox>(BoundingBox::create());
       elementbox->assign(*e);
       if (elementbox->within(1.0, *sidebox))
       {
@@ -771,11 +773,11 @@ void Cut::Mesh::cut(Side& side, const plain_element_set& done, plain_element_set
     }
     // preselection of possible cut between shadow elements of quadratic elements and the current
     // side
-    for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+    for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
          i != shadow_elements_.end(); i++)
     {
       Element* e = &*(i->second);
-      Teuchos::RCP<BoundingBox> elementbox = Teuchos::RCP(BoundingBox::create());
+      std::shared_ptr<BoundingBox> elementbox = std::shared_ptr<BoundingBox>(BoundingBox::create());
       elementbox->assign(*e);
       if (elementbox->within(1.0, *sidebox))
       {
@@ -814,8 +816,8 @@ void Cut::Mesh::cut(Side& side)
 {
   if (not side.is_level_set_side()) FOUR_C_THROW("This function expects a level set side!");
 
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -828,7 +830,7 @@ void Cut::Mesh::cut(Side& side)
       throw;
     }
   }
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
@@ -850,8 +852,8 @@ void Cut::Mesh::cut(Side& side)
  *-------------------------------------------------------------------------------------*/
 void Cut::Mesh::rectify_cut_numerics()
 {
-  for (std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = edges_.begin(); i != edges_.end();
-       ++i)
+  for (std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = edges_.begin();
+       i != edges_.end(); ++i)
   {
     Edge* e = &*i->second;
     e->rectify_cut_numerics();
@@ -864,8 +866,8 @@ void Cut::Mesh::rectify_cut_numerics()
  *------------------------------------------------------------------------------------------------*/
 void Cut::Mesh::search_collisions(Mesh& cutmesh)
 {
-  const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = cutmesh.sides();
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
+  const std::map<plain_int_set, std::shared_ptr<Side>>& cutsides = cutmesh.sides();
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
@@ -881,13 +883,13 @@ void Cut::Mesh::search_collisions(Mesh& cutmesh)
       for (std::set<int>::iterator ic = collisions.begin(); ic != collisions.end(); ++ic)
       {
         int collisionid = *ic;
-        std::map<int, Teuchos::RCP<Element>>::iterator ie = elements_.find(collisionid);
+        std::map<int, std::shared_ptr<Element>>::iterator ie = elements_.find(collisionid);
         if (ie != elements_.end())
         {
           Element& e = *ie->second;
           e.add_cut_face(cutside);
         }
-        std::map<int, Teuchos::RCP<Element>>::iterator ise = shadow_elements_.find(collisionid);
+        std::map<int, std::shared_ptr<Element>>::iterator ise = shadow_elements_.find(collisionid);
         if (ise != shadow_elements_.end())
         {
           Element& e = *ise->second;
@@ -906,8 +908,8 @@ void Cut::Mesh::find_cut_points()
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 4/6 --- cut_mesh_intersection --- find_cut_points");
 
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -920,7 +922,7 @@ void Cut::Mesh::find_cut_points()
       throw;
     }
   }
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
@@ -943,8 +945,8 @@ void Cut::Mesh::make_cut_lines()
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 4/6 --- cut_mesh_intersection --- MakeCutLines");
 
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     Element& e = *i->second;
 
@@ -961,7 +963,7 @@ void Cut::Mesh::make_cut_lines()
       throw;
     }
   }
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
@@ -989,8 +991,8 @@ void Cut::Mesh::make_facets()
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 4/6 --- cut_mesh_intersection --- MakeFacets");
 
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1003,7 +1005,7 @@ void Cut::Mesh::make_facets()
       throw;
     }
   }
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
@@ -1027,8 +1029,8 @@ void Cut::Mesh::make_volume_cells()
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 4/6 --- cut_mesh_intersection --- MakeVolumeCells");
 
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1041,7 +1043,7 @@ void Cut::Mesh::make_volume_cells()
       throw;
     }
   }
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
@@ -1071,8 +1073,8 @@ void Cut::Mesh::find_node_positions()
   pp_->reset_outside_points();
 
   // get nodal positions from elements
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1085,7 +1087,7 @@ void Cut::Mesh::find_node_positions()
       throw;
     }
   }
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
@@ -1112,7 +1114,7 @@ void Cut::Mesh::find_node_positions()
  *-------------------------------------------------------------------------------------*/
 void Cut::Mesh::find_ls_node_positions()
 {
-  for (std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
+  for (std::map<int, std::shared_ptr<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
   {
     Node* n = &*i->second;
     Point* p = n->point();
@@ -1152,7 +1154,7 @@ void Cut::Mesh::find_facet_positions()
 
   plain_volumecell_set undecided;
 
-  for (std::list<Teuchos::RCP<VolumeCell>>::iterator i = cells_.begin(); i != cells_.end(); ++i)
+  for (std::list<std::shared_ptr<VolumeCell>>::iterator i = cells_.begin(); i != cells_.end(); ++i)
   {
     VolumeCell* c = &**i;
     //     if ( c->Empty() )
@@ -1259,7 +1261,8 @@ void Cut::Mesh::find_facet_positions()
 
   // second pass
 
-  //   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+  //   for ( std::list<std::shared_ptr<VolumeCell> >::iterator i=cells_.begin(); i!=cells_.end();
+  //   ++i )
   //   {
   //     VolumeCell * c = &**i;
   //     const plain_facet_set & facets = c->Facets();
@@ -1329,7 +1332,7 @@ bool Cut::Mesh::check_for_undecided_node_positions(
   undecided_nodes.clear();
 
   // find nodes with undecided node positions
-  for (std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
+  for (std::map<int, std::shared_ptr<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
   {
     Node* n = &*i->second;
     Point* p = n->point();
@@ -1393,13 +1396,13 @@ bool Cut::Mesh::check_for_undecided_node_positions(
  *-------------------------------------------------------------------------------------*/
 void Cut::Mesh::find_nodal_dof_sets(bool include_inner)
 {
-  for (std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
+  for (std::map<int, std::shared_ptr<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
   {
     Node* n = &*i->second;
     n->find_dof_sets(include_inner);
   }
 
-  for (std::list<Teuchos::RCP<VolumeCell>>::iterator i = cells_.begin(); i != cells_.end(); ++i)
+  for (std::list<std::shared_ptr<VolumeCell>>::iterator i = cells_.begin(); i != cells_.end(); ++i)
   {
     VolumeCell* cell = &**i;
     cell->connect_nodal_dof_sets(include_inner);
@@ -1412,8 +1415,8 @@ void Cut::Mesh::find_nodal_dof_sets(bool include_inner)
  *-------------------------------------------------------------------------------------*/
 void Cut::Mesh::create_integration_cells(int count, bool tetcellsonly)
 {
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1438,7 +1441,7 @@ void Cut::Mesh::create_integration_cells(int count, bool tetcellsonly)
       throw;
     }
   }
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
@@ -1464,8 +1467,8 @@ void Cut::Mesh::create_integration_cells(int count, bool tetcellsonly)
  *-------------------------------------------------------------------------------------*/
 void Cut::Mesh::moment_fit_gauss_weights(bool include_inner, Cut::BCellGaussPts Bcellgausstype)
 {
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1478,7 +1481,7 @@ void Cut::Mesh::moment_fit_gauss_weights(bool include_inner, Cut::BCellGaussPts 
       throw;
     }
   }
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
@@ -1500,8 +1503,8 @@ void Cut::Mesh::moment_fit_gauss_weights(bool include_inner, Cut::BCellGaussPts 
  *-------------------------------------------------------------------------------------*/
 void Cut::Mesh::direct_divergence_gauss_rule(bool include_inner, Cut::BCellGaussPts Bcellgausstype)
 {
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1514,7 +1517,7 @@ void Cut::Mesh::direct_divergence_gauss_rule(bool include_inner, Cut::BCellGauss
       throw;
     }
   }
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
@@ -1536,8 +1539,8 @@ void Cut::Mesh::direct_divergence_gauss_rule(bool include_inner, Cut::BCellGauss
  *-------------------------------------------------------------------------------------*/
 void Cut::Mesh::remove_empty_volume_cells()
 {
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1550,7 +1553,7 @@ void Cut::Mesh::remove_empty_volume_cells()
       throw;
     }
   }
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
@@ -1572,13 +1575,13 @@ void Cut::Mesh::remove_empty_volume_cells()
  *-------------------------------------------------------------------------------------*/
 void Cut::Mesh::test_element_volume(bool fatal, VCellGaussPts VCellGP)
 {
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     test_element_volume(e.shape(), e, fatal, VCellGP);
   }
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
@@ -1683,8 +1686,8 @@ void Cut::Mesh::print_cell_stats()
   std::map<Core::FE::CellType, std::vector<int>> numcells;
 
   // loop over elements
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     if (e.is_cut())
@@ -1727,7 +1730,7 @@ void Cut::Mesh::print_cell_stats()
   }
 
   // loop over shadow elements
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
@@ -1825,7 +1828,7 @@ void Cut::Mesh::print_cell_stats()
  *-------------------------------------------------------------------------------------*/
 void Cut::Mesh::print_facets()
 {
-  //   for ( std::list<Teuchos::RCP<Point> >::iterator i=points_.begin();
+  //   for ( std::list<std::shared_ptr<Point> >::iterator i=points_.begin();
   //         i!=points_.end();
   //         ++i )
   //   {
@@ -1834,7 +1837,7 @@ void Cut::Mesh::print_facets()
   //     std::cout << "\n";
   //   }
 
-  for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
+  for (std::list<std::shared_ptr<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
     Facet& f = **i;
     f.print();
@@ -1854,11 +1857,11 @@ void Cut::Mesh::dump_gmsh(std::string name)
   if (elements_.size() > 0 || shadow_elements_.size() > 0)
   {
     Cut::Output::gmsh_new_section(file, "Elements");
-    for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-         ++i)
+    for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+         i != elements_.end(); ++i)
       Cut::Output::gmsh_element_dump(file, &(*i->second));
 
-    for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+    for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
          i != shadow_elements_.end(); ++i)
       Cut::Output::gmsh_element_dump(file, &(*i->second));
     Cut::Output::gmsh_end_section(file);
@@ -1868,7 +1871,7 @@ void Cut::Mesh::dump_gmsh(std::string name)
   if (sides_.size() > 0)
   {
     Cut::Output::gmsh_new_section(file, "Sides");
-    for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = sides_.begin();
+    for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = sides_.begin();
          i != sides_.end(); ++i)
       Cut::Output::gmsh_side_dump(file, &(*i->second));
     Cut::Output::gmsh_end_section(file);
@@ -1878,7 +1881,7 @@ void Cut::Mesh::dump_gmsh(std::string name)
   if (sides_.size() > 0)
   {
     Cut::Output::gmsh_new_section(file, "Nodes");
-    for (std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
+    for (std::map<int, std::shared_ptr<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
       Cut::Output::gmsh_node_dump(file, &(*i->second));
     Cut::Output::gmsh_end_section(file);
   }
@@ -1897,7 +1900,7 @@ void Cut::Mesh::dump_gmsh(std::string name)
   if (edges_.size() > 0)
   {
     Cut::Output::gmsh_new_section(file, "Edges");
-    for (std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = edges_.begin();
+    for (std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = edges_.begin();
          i != edges_.end(); ++i)
       Cut::Output::gmsh_edge_dump(file, &(*i->second));
     Cut::Output::gmsh_end_section(file);
@@ -1907,7 +1910,7 @@ void Cut::Mesh::dump_gmsh(std::string name)
   if (lines_.size() > 0)
   {
     Cut::Output::gmsh_new_section(file, "Lines");
-    for (std::list<Teuchos::RCP<Line>>::iterator i = lines_.begin(); i != lines_.end(); ++i)
+    for (std::list<std::shared_ptr<Line>>::iterator i = lines_.begin(); i != lines_.end(); ++i)
       Cut::Output::gmsh_line_dump(file, &(**i));
     Cut::Output::gmsh_end_section(file);
   }
@@ -1917,19 +1920,19 @@ void Cut::Mesh::dump_gmsh(std::string name)
   {
     // ###############write all facets (or basically the facet lines)###############
     Cut::Output::gmsh_new_section(file, "Facet_Lines");
-    for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
+    for (std::list<std::shared_ptr<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
       Cut::Output::gmsh_facet_dump(file, &(**i), "lines");
     Cut::Output::gmsh_end_section(file);
 
     // ###############write all triangulated facets ###############
     Cut::Output::gmsh_new_section(file, "Facets");
-    for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
+    for (std::list<std::shared_ptr<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
       Cut::Output::gmsh_facet_dump(file, &(**i), "sides");
     Cut::Output::gmsh_end_section(file);
 
     // ###############write all cut facets all ###############
     Cut::Output::gmsh_new_section(file, "cut_Facets");
-    for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
+    for (std::list<std::shared_ptr<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
     {
       if ((*i)->parent_side()->is_cut_side())
         Cut::Output::gmsh_facet_dump(file, &(**i), "sides", true);
@@ -1938,7 +1941,7 @@ void Cut::Mesh::dump_gmsh(std::string name)
 
     // ###############write all triangulated facets all ###############
     Cut::Output::gmsh_new_section(file, "ele_Facets");
-    for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
+    for (std::list<std::shared_ptr<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
     {
       if (!(*i)->parent_side()->is_cut_side())
         Cut::Output::gmsh_facet_dump(file, &(**i), "sides", true);
@@ -1949,8 +1952,8 @@ void Cut::Mesh::dump_gmsh(std::string name)
   // #############write level set information from cut if level set side exists ################
   bool haslevelsetside = false;
   // Does one element have a level set side?
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       i++)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); i++)
   {
     Element* ele = &*i->second;
     haslevelsetside = ele->has_level_set_side();
@@ -1960,20 +1963,20 @@ void Cut::Mesh::dump_gmsh(std::string name)
   if (haslevelsetside)
   {
     Cut::Output::gmsh_new_section(file, "LevelSetValues");
-    for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-         i++)
+    for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+         i != elements_.end(); i++)
       Cut::Output::gmsh_level_set_value_dump(file, &(*i->second));
     Cut::Output::gmsh_end_section(file);
 
     Cut::Output::gmsh_new_section(file, "LevelSetGradient");
-    for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-         i++)
+    for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+         i != elements_.end(); i++)
       Cut::Output::gmsh_level_set_gradient_dump(file, &(*i->second));
     Cut::Output::gmsh_end_section(file);
 
     Cut::Output::gmsh_new_section(file, "LevelSetOrientation");
-    for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-         i++)
+    for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+         i != elements_.end(); i++)
       Cut::Output::gmsh_level_set_orientation_dump(file, &(*i->second));
     Cut::Output::gmsh_end_section(file);
   }
@@ -1991,7 +1994,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
   file.precision(16);
 
   file << "View \"VolumeCells\" {\n";
-  for (std::list<Teuchos::RCP<VolumeCell>>::iterator i = cells_.begin(); i != cells_.end(); ++i)
+  for (std::list<std::shared_ptr<VolumeCell>>::iterator i = cells_.begin(); i != cells_.end(); ++i)
   {
     VolumeCell* vc = &**i;
 
@@ -2012,8 +2015,8 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
   file << "};\n";
 
   file << "View \"Elements, NumVcs\" {\n";
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       ++i)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); ++i)
   {
     Element* e = &*i->second;
     const plain_volumecell_set& volumes = e->volume_cells();
@@ -2033,7 +2036,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
       }
     }
   }
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
        i != shadow_elements_.end(); ++i)
   {
     Element* e = &*i->second;
@@ -2057,7 +2060,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
   file << "};\n";
 
   file << "View \"Node-ID\" {\n";
-  for (std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
+  for (std::map<int, std::shared_ptr<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
   {
     Node* n = &*i->second;
     Point* p = n->point();
@@ -2067,7 +2070,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
   file << "};\n";
 
   file << "View \"Node-Positions\" {\n";
-  for (std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
+  for (std::map<int, std::shared_ptr<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
   {
     Node* n = &*i->second;
     Point* p = n->point();
@@ -2079,8 +2082,8 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
 
   // Does there exist a Level Set cut side?
   bool haslevelsetside = false;
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       i++)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); i++)
   {
     Element* ele = &*i->second;
     haslevelsetside = ele->has_level_set_side();
@@ -2091,8 +2094,8 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
   if (haslevelsetside)
   {
     file << "View \"LevelSetValues\" {\n";
-    for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-         i++)
+    for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+         i != elements_.end(); i++)
     {
       Element* ele = &*i->second;
       Cut::Output::gmsh_level_set_value_dump(file, ele);
@@ -2100,8 +2103,8 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
     file << "};\n";
 
     file << "View \"LevelSetGradient\" {\n";
-    for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-         i++)
+    for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+         i != elements_.end(); i++)
     {
       Element* ele = &*i->second;
       Cut::Output::gmsh_level_set_gradient_dump(file, ele);
@@ -2109,8 +2112,8 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
     file << "};\n";
 
     file << "View \"LevelSetOrientation\" {\n";
-    for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-         i++)
+    for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+         i != elements_.end(); i++)
     {
       Element* ele = &*i->second;
       Cut::Output::gmsh_level_set_orientation_dump(file, ele);
@@ -2127,7 +2130,7 @@ void Cut::Mesh::dump_gmsh_integration_cells(std::string name)
 {
   std::ofstream file(name.c_str());
   file << "View \"IntegrationCells\" {\n";
-  for (std::list<Teuchos::RCP<IntegrationCell>>::iterator i = integrationcells_.begin();
+  for (std::list<std::shared_ptr<IntegrationCell>>::iterator i = integrationcells_.begin();
        i != integrationcells_.end(); ++i)
   {
     IntegrationCell* ic = &**i;
@@ -2146,7 +2149,7 @@ void Cut::Mesh::dump_gmsh_boundary_cells(std::ofstream& file, Point::PointPositi
 {
   // Write BCs for "pos" VolumeCell:
   file << "View \"BoundaryCells " << Point::point_position_to_string(pos) << "\" {\n";
-  for (std::list<Teuchos::RCP<VolumeCell>>::iterator i = cells_.begin(); i != cells_.end(); ++i)
+  for (std::list<std::shared_ptr<VolumeCell>>::iterator i = cells_.begin(); i != cells_.end(); ++i)
   {
     VolumeCell* volcell = &**i;
     if (volcell->position() == pos)
@@ -2163,7 +2166,7 @@ void Cut::Mesh::dump_gmsh_boundary_cells(std::ofstream& file, Point::PointPositi
 
   // write normal for boundary cells
   file << "View \"BoundaryCellsNormal " << Point::point_position_to_string(pos) << "\" {\n";
-  for (std::list<Teuchos::RCP<VolumeCell>>::iterator i = cells_.begin(); i != cells_.end(); ++i)
+  for (std::list<std::shared_ptr<VolumeCell>>::iterator i = cells_.begin(); i != cells_.end(); ++i)
   {
     VolumeCell* volcell = &**i;
     if (volcell->position() == pos)
@@ -2186,8 +2189,8 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name)
 {
   std::ofstream file(name.c_str());
   file << "View \"VolumeCells\" {\n";
-  for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-       i++)
+  for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+       i != elements_.end(); i++)
   {
     Element& ele = *i->second;
     const plain_volumecell_set cells = ele.volume_cells();
@@ -2201,7 +2204,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name)
 
   file << "View \"BoundaryCells\" {\n";
   bool haslevelsetside = false;
-  for (std::list<Teuchos::RCP<BoundaryCell>>::iterator i = boundarycells_.begin();
+  for (std::list<std::shared_ptr<BoundaryCell>>::iterator i = boundarycells_.begin();
        i != boundarycells_.end(); ++i)
   {
     BoundaryCell* bc = &**i;
@@ -2215,8 +2218,8 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name)
   if (haslevelsetside)
   {
     file << "View \"LevelSetInfoOnFacet\" {\n";
-    for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-         i++)
+    for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
+         i != elements_.end(); i++)
     {
       Element* ele = &*i->second;
       const plain_facet_set facets = ele->facets();
@@ -2307,7 +2310,7 @@ void Cut::Mesh::new_nodes_from_points(std::map<Point*, Node*>& nodemap)
  *-------------------------------------------------------------------------------------*/
 void Cut::Mesh::get_node_map(std::map<int, Node*>& nodemap)
 {
-  for (std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); i++)
+  for (std::map<int, std::shared_ptr<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); i++)
   {
     int nid = i->first;
 
@@ -2321,7 +2324,7 @@ void Cut::Mesh::get_node_map(std::map<int, Node*>& nodemap)
  *-------------------------------------------------------------------------------------*/
 Cut::Node* Cut::Mesh::get_node(int nid) const
 {
-  std::map<int, Teuchos::RCP<Node>>::const_iterator i = nodes_.find(nid);
+  std::map<int, std::shared_ptr<Node>>::const_iterator i = nodes_.find(nid);
   if (i != nodes_.end())
   {
     return &*i->second;
@@ -2352,7 +2355,7 @@ Cut::Node* Cut::Mesh::get_node(const plain_int_set& nids) const
  *-------------------------------------------------------------------------------------*/
 Cut::Node* Cut::Mesh::get_node(int nid, const double* xyz, double lsv, double tolerance)
 {
-  std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.find(nid);
+  std::map<int, std::shared_ptr<Node>>::iterator i = nodes_.find(nid);
   if (i != nodes_.end())
   {
     return &*i->second;
@@ -2364,11 +2367,11 @@ Cut::Node* Cut::Mesh::get_node(int nid, const double* xyz, double lsv, double to
   //   {
   //     // We already have a point at this location. See if there is a node to
   //     // it. If so, that's the one.
-  //     for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin();
+  //     for ( std::map<int, std::shared_ptr<Node> >::iterator i=nodes_.begin();
   //           i!=nodes_.end();
   //           ++i )
   //     {
-  //       Teuchos::RCP<Node> n = i->second;
+  //       std::shared_ptr<Node> n = i->second;
   //       if ( n->point()==p )
   //       {
   //         nodes_[nid] = n;
@@ -2380,7 +2383,7 @@ Cut::Node* Cut::Mesh::get_node(int nid, const double* xyz, double lsv, double to
   Point* p = new_point(xyz, nullptr, nullptr, tolerance);
   pp_->set_merge_strategy(PointpoolMergeStrategy::NormalCutLoad);
   Node* n = new Node(nid, p, lsv);
-  nodes_[nid] = Teuchos::RCP(n);
+  nodes_[nid] = std::shared_ptr<Node>(n);
 #ifdef CUT_DUMPCREATION
   if (cutmesh_)
     std::cout << "GetCutNode( " << nid << ", ";
@@ -2445,7 +2448,7 @@ Cut::Edge* Cut::Mesh::get_edge(Node* begin, Node* end)
 Cut::Edge* Cut::Mesh::get_edge(const plain_int_set& nids, const std::vector<Node*>& nodes,
     const CellTopologyData& edge_topology)
 {
-  std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = edges_.find(nids);
+  std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = edges_.find(nids);
   if (i != edges_.end())
   {
     return &*i->second;
@@ -2467,12 +2470,12 @@ Cut::Edge* Cut::Mesh::get_edge(const plain_int_set& nids, const std::vector<Node
     Point* ep2 = e->end_node()->point();
     if (p1 == ep1 and p2 == ep2)
     {
-      edges_[nids] = Teuchos::rcpFromRef(*e);
+      edges_[nids] = Core::Utils::shared_ptr_from_ref(*e);
       return e;
     }
     if (p1 == ep2 and p2 == ep1)
     {
-      edges_[nids] = Teuchos::rcpFromRef(*e);
+      edges_[nids] = Core::Utils::shared_ptr_from_ref(*e);
       return e;
     }
   }
@@ -2498,7 +2501,7 @@ Cut::Side* Cut::Mesh::get_side(std::vector<int>& nids) const
     node_ids.insert(nids[i]);
   }
 
-  std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = sides_.find(node_ids);
+  std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = sides_.find(node_ids);
   if (i != sides_.end())
   {
     return &*i->second;
@@ -2568,14 +2571,14 @@ Cut::Side* Cut::Mesh::get_side(
 Cut::Side* Cut::Mesh::get_side(int sid, const plain_int_set& nids, const std::vector<Node*>& nodes,
     const std::vector<Edge*>& edges, const CellTopologyData& side_topology)
 {
-  std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = sides_.find(nids);
+  std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = sides_.find(nids);
   if (i != sides_.end())
   {
     return &*i->second;
   }
   // Facet * f = new Facet;
   // facets_.push_back( Teuchos::rcp( f ) );
-  sides_[nids] = Teuchos::RCP(Cut::Side::create(side_topology.key, sid, nodes, edges));
+  sides_[nids] = std::shared_ptr<Side>(Cut::Side::create(side_topology.key, sid, nodes, edges));
 
   int seid = -shadow_sides_.size() - 1;
   /* Remark: the seid of a shadow node is not unique over processors, consequently
@@ -2590,7 +2593,7 @@ Cut::Side* Cut::Mesh::get_side(int sid, const plain_int_set& nids, const std::ve
  *----------------------------------------------------------------------------*/
 Cut::Element* Cut::Mesh::get_element(int eid)
 {
-  std::map<int, Teuchos::RCP<Element>>::iterator ie = elements_.find(eid);
+  std::map<int, std::shared_ptr<Element>>::iterator ie = elements_.find(eid);
   if (ie != elements_.end())
   {
     return &*ie->second;
@@ -2607,7 +2610,7 @@ Cut::Element* Cut::Mesh::get_element(int eid)
 Cut::Element* Cut::Mesh::get_element(
     int eid, const std::vector<int>& nids, const CellTopologyData& top_data, bool active)
 {
-  std::map<int, Teuchos::RCP<Element>>::iterator ie = elements_.find(eid);
+  std::map<int, std::shared_ptr<Element>>::iterator ie = elements_.find(eid);
   if (ie != elements_.end())
   {
     return &*ie->second;
@@ -2889,8 +2892,8 @@ bool Cut::Mesh::within_bb(Element& element) { return bb_->within(norm_, element)
  *----------------------------------------------------------------------------*/
 void Cut::Mesh::create_side_ids_cut_test(int lastid)
 {
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = sides_.begin(); i != sides_.end();
-       ++i)
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = sides_.begin();
+       i != sides_.end(); ++i)
   {
     Side* s = &*i->second;
     if (!s->is_cut_side())
@@ -2907,8 +2910,8 @@ void Cut::Mesh::create_side_ids_cut_test(int lastid)
 // used just for testing, in order to track down ids of the sides that are failing
 int Cut::Mesh::create_side_ids_all_cut_test(int lastid)
 {
-  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = sides_.begin(); i != sides_.end();
-       ++i)
+  for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = sides_.begin();
+       i != sides_.end(); ++i)
   {
     Side* s = &*i->second;
     if (!s->is_cut_side())
@@ -2925,9 +2928,9 @@ int Cut::Mesh::create_side_ids_all_cut_test(int lastid)
  *----------------------------------------------------------------------------*/
 void Cut::Mesh::assign_other_volume_cells_cut_test(const Mesh& other)
 {
-  const std::list<Teuchos::RCP<VolumeCell>>& other_cells = other.volume_cells();
+  const std::list<std::shared_ptr<VolumeCell>>& other_cells = other.volume_cells();
   plain_volumecell_set cells;
-  for (std::list<Teuchos::RCP<VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<std::shared_ptr<VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     VolumeCell* vc = &**i;
@@ -2976,7 +2979,7 @@ void Cut::Mesh::assign_other_volume_cells_cut_test(const Mesh& other)
  *----------------------------------------------------------------------------*/
 void Cut::Mesh::test_facet_area(bool istetmeshintersection)
 {
-  for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
+  for (std::list<std::shared_ptr<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
     Facet* f = &**i;
 

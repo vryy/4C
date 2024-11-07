@@ -17,7 +17,9 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <map>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -98,13 +100,13 @@ namespace Coupling::Adapter
 
      */
     void setup_condition_coupling(const Core::FE::Discretization& masterdis,
-        Teuchos::RCP<const Epetra_Map> mastercondmap, const Core::FE::Discretization& slavedis,
-        Teuchos::RCP<const Epetra_Map> slavecondmap, const std::string& condname, const int numdof,
-        bool matchall = true, const int nds_master = 0, const int nds_slave = 0);
+        std::shared_ptr<const Epetra_Map> mastercondmap, const Core::FE::Discretization& slavedis,
+        std::shared_ptr<const Epetra_Map> slavecondmap, const std::string& condname,
+        const int numdof, bool matchall = true, const int nds_master = 0, const int nds_slave = 0);
 
     void setup_condition_coupling(const Core::FE::Discretization& masterdis,
-        Teuchos::RCP<const Epetra_Map> mastercondmap, const Core::FE::Discretization& slavedis,
-        Teuchos::RCP<const Epetra_Map> slavecondmap, const std::string& condname,
+        std::shared_ptr<const Epetra_Map> mastercondmap, const Core::FE::Discretization& slavedis,
+        std::shared_ptr<const Epetra_Map> slavecondmap, const std::string& condname,
         const std::vector<int>& masterdofs, const std::vector<int>& slavedofs, bool matchall = true,
         const int nds_master = 0, const int nds_slave = 0);
 
@@ -116,12 +118,13 @@ namespace Coupling::Adapter
 
      */
     void setup_constrained_condition_coupling(
-        const Core::FE::Discretization& masterdis,     ///< discretization of master side
-        Teuchos::RCP<const Epetra_Map> mastercondmap,  ///< map with condition DOFs of master side
-        const Core::FE::Discretization& slavedis,      ///< discretization of slave side
-        Teuchos::RCP<const Epetra_Map> slavecondmap,   ///< map with condition DOFs of slave side
-        const std::string& condname1,                  ///< condition name
-        const std::string& condname2,                  ///< condition name
+        const Core::FE::Discretization& masterdis,  ///< discretization of master side
+        std::shared_ptr<const Epetra_Map>
+            mastercondmap,                               ///< map with condition DOFs of master side
+        const Core::FE::Discretization& slavedis,        ///< discretization of slave side
+        std::shared_ptr<const Epetra_Map> slavecondmap,  ///< map with condition DOFs of slave side
+        const std::string& condname1,                    ///< condition name
+        const std::string& condname2,                    ///< condition name
         const int numdof,     ///< number of DOFs to be coupled at each node
         bool matchall = true  ///< Do all nodes need to match exactly?
     );
@@ -273,9 +276,10 @@ namespace Coupling::Adapter
      * \param masterdofmap      (i) master side dof map
      * \param permmasterdofmap  (i) permuted dofs on master side to match dofs on slave side
      */
-    void setup_coupling(Teuchos::RCP<const Epetra_Map> slavedofmap,
-        Teuchos::RCP<const Epetra_Map> permslavedofmap, Teuchos::RCP<const Epetra_Map> masterdofmap,
-        Teuchos::RCP<const Epetra_Map> permmasterdofmap);
+    void setup_coupling(std::shared_ptr<const Epetra_Map> slavedofmap,
+        std::shared_ptr<const Epetra_Map> permslavedofmap,
+        std::shared_ptr<const Epetra_Map> masterdofmap,
+        std::shared_ptr<const Epetra_Map> permmasterdofmap);
     //@}
 
     /** \name Conversion between master and slave */
@@ -284,48 +288,48 @@ namespace Coupling::Adapter
     /// idea is the same for all of them.
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Epetra_FEVector> master_to_slave(
-        Teuchos::RCP<Epetra_FEVector> mv  ///< master vector (to be transferred)
+    std::shared_ptr<Epetra_FEVector> master_to_slave(
+        std::shared_ptr<Epetra_FEVector> mv  ///< master vector (to be transferred)
     ) const
     {
-      return master_to_slave(*mv.getConst());
+      return master_to_slave(*mv);
     }
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Epetra_FEVector> slave_to_master(
-        Teuchos::RCP<Epetra_FEVector> sv  ///< slave vector (to be transferred)
+    std::shared_ptr<Epetra_FEVector> slave_to_master(
+        std::shared_ptr<Epetra_FEVector> sv  ///< slave vector (to be transferred)
     ) const
     {
-      return slave_to_master(*sv.getConst());
+      return slave_to_master(*sv);
     }
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
+    std::shared_ptr<Core::LinAlg::Vector<double>> master_to_slave(
         const Core::LinAlg::Vector<double>& mv  ///< master vector (to be transferred)
     ) const override;
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
+    std::shared_ptr<Core::LinAlg::Vector<double>> slave_to_master(
         const Core::LinAlg::Vector<double>& sv  ///< slave vector (to be transferred)
     ) const override;
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Epetra_FEVector> master_to_slave(
+    std::shared_ptr<Epetra_FEVector> master_to_slave(
         const Epetra_FEVector& mv  ///< master vector (to be transferred)
     ) const;
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Epetra_FEVector> slave_to_master(
+    std::shared_ptr<Epetra_FEVector> slave_to_master(
         const Epetra_FEVector& sv  ///< slave vector (to be transferred)
     ) const;
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> master_to_slave(
         const Core::LinAlg::MultiVector<double>& mv  ///< master vector (to be transferred)
     ) const override;
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> slave_to_master(
         const Core::LinAlg::MultiVector<double>& sv  ///< slave vector (to be transferred)
     ) const override;
 
@@ -358,16 +362,16 @@ namespace Coupling::Adapter
     //@{
 
     /// the interface dof map of the master side
-    Teuchos::RCP<const Epetra_Map> master_dof_map() const override { return masterdofmap_; }
+    std::shared_ptr<const Epetra_Map> master_dof_map() const override { return masterdofmap_; }
 
     /// the interface dof map of the slave side
-    Teuchos::RCP<const Epetra_Map> slave_dof_map() const override { return slavedofmap_; }
+    std::shared_ptr<const Epetra_Map> slave_dof_map() const override { return slavedofmap_; }
 
     /// the permuted interface dof map of the master side
-    Teuchos::RCP<const Epetra_Map> perm_master_dof_map() const { return permmasterdofmap_; }
+    std::shared_ptr<const Epetra_Map> perm_master_dof_map() const { return permmasterdofmap_; }
 
     /// the permuted interface dof map of the slave side
-    Teuchos::RCP<const Epetra_Map> perm_slave_dof_map() const { return permslavedofmap_; }
+    std::shared_ptr<const Epetra_Map> perm_slave_dof_map() const { return permslavedofmap_; }
 
     //@}
 
@@ -381,17 +385,17 @@ namespace Coupling::Adapter
     void fill_slave_to_master_map(std::map<int, int>& rowmap) const;
 
     /// fill partial mastermap with gid of partial slavemap
-    Teuchos::RCP<Epetra_Map> slave_to_master_map(Epetra_Map& slave);
+    std::shared_ptr<Epetra_Map> slave_to_master_map(Epetra_Map& slave);
 
     /// fill partial slavemap with gid of partial mastermap
-    Teuchos::RCP<Epetra_Map> master_to_slave_map(Epetra_Map& master);
+    std::shared_ptr<Epetra_Map> master_to_slave_map(Epetra_Map& master);
 
     /// redistribute crsmatrix from master row map to permuted master row map
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> master_to_perm_master(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> master_to_perm_master(
         const Core::LinAlg::SparseMatrix& sm) const;
 
     /// redistribute crsmatrix from slave row map to permuted slave row map
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> slave_to_perm_slave(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> slave_to_perm_slave(
         const Core::LinAlg::SparseMatrix& sm) const;
 
     //@}
@@ -402,21 +406,22 @@ namespace Coupling::Adapter
     void setup_coupling_matrices(const Epetra_Map& shiftedmastermap,
         const Epetra_Map& masterdomainmap, const Epetra_Map& slavedomainmap);
 
-    Teuchos::RCP<Epetra_CrsMatrix> master_to_master_mat() const { return matmm_; }
-    Teuchos::RCP<Epetra_CrsMatrix> slave_to_master_mat() const { return matsm_; }
-    Teuchos::RCP<Epetra_CrsMatrix> master_to_master_mat_trans() const { return matmm_trans_; }
-    Teuchos::RCP<Epetra_CrsMatrix> slave_to_master_mat_trans() const { return matsm_trans_; }
+    std::shared_ptr<Epetra_CrsMatrix> master_to_master_mat() const { return matmm_; }
+    std::shared_ptr<Epetra_CrsMatrix> slave_to_master_mat() const { return matsm_; }
+    std::shared_ptr<Epetra_CrsMatrix> master_to_master_mat_trans() const { return matmm_trans_; }
+    std::shared_ptr<Epetra_CrsMatrix> slave_to_master_mat_trans() const { return matsm_trans_; }
 
     //@}
 
    protected:
     virtual void build_dof_maps(const Core::FE::Discretization& masterdis,
         const Core::FE::Discretization& slavedis,
-        const Teuchos::RCP<const Epetra_Map>& masternodemap,
-        const Teuchos::RCP<const Epetra_Map>& slavenodemap,
-        const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
-        const Teuchos::RCP<const Epetra_Map>& permslavenodemap, const std::vector<int>& masterdofs,
-        const std::vector<int>& slavedofs, const int nds_master = 0, const int nds_slave = 0);
+        const std::shared_ptr<const Epetra_Map>& masternodemap,
+        const std::shared_ptr<const Epetra_Map>& slavenodemap,
+        const std::shared_ptr<const Epetra_Map>& permmasternodemap,
+        const std::shared_ptr<const Epetra_Map>& permslavenodemap,
+        const std::vector<int>& masterdofs, const std::vector<int>& slavedofs,
+        const int nds_master = 0, const int nds_slave = 0);
 
     /*! \brief Helper function for creating vector from numdof
      *
@@ -448,8 +453,8 @@ namespace Coupling::Adapter
 
     /// build slave to master permutation and dof all maps
     void finish_coupling(const Core::FE::Discretization& masterdis,
-        const Core::FE::Discretization& slavedis, Teuchos::RCP<Epetra_Map> masternodemap,
-        Teuchos::RCP<Epetra_Map> slavenodemap, Teuchos::RCP<Epetra_Map> permslavenodemap,
+        const Core::FE::Discretization& slavedis, std::shared_ptr<Epetra_Map> masternodemap,
+        std::shared_ptr<Epetra_Map> slavenodemap, std::shared_ptr<Epetra_Map> permslavenodemap,
         const std::vector<int>& masterdofs, const std::vector<int>& slavedofs,
         const int nds_master = 0, const int nds_slave = 0);
 
@@ -459,8 +464,8 @@ namespace Coupling::Adapter
       node as specified in vector coupled_dofs are of interest.
      */
     void build_dof_maps(const Core::FE::Discretization& dis, const Epetra_Map& nodemap,
-        const Epetra_Map& permnodemap, Teuchos::RCP<const Epetra_Map>& dofmap,
-        Teuchos::RCP<const Epetra_Map>& permdofmap, Teuchos::RCP<Epetra_Export>& exporter,
+        const Epetra_Map& permnodemap, std::shared_ptr<const Epetra_Map>& dofmap,
+        std::shared_ptr<const Epetra_Map>& permdofmap, std::shared_ptr<Epetra_Export>& exporter,
         const std::vector<int>& coupled_dofs, const int nds = 0) const;
 
    protected:
@@ -468,27 +473,27 @@ namespace Coupling::Adapter
     /// @{
 
     /// access the interface DoF map of the master side
-    Teuchos::RCP<const Epetra_Map>& ma_dof_map_ptr();
+    std::shared_ptr<const Epetra_Map>& ma_dof_map_ptr();
     const Epetra_Map& ma_dof_map() const;
 
     /// access the permuted interface DoF map of the master side
-    Teuchos::RCP<const Epetra_Map>& permuted_ma_dof_map_ptr();
+    std::shared_ptr<const Epetra_Map>& permuted_ma_dof_map_ptr();
     const Epetra_Map& permuted_ma_dof_map() const;
 
     /// access the interface DoF map of the slave side
-    Teuchos::RCP<const Epetra_Map>& sl_dof_map_ptr();
+    std::shared_ptr<const Epetra_Map>& sl_dof_map_ptr();
     const Epetra_Map& sl_dof_map() const;
 
     /// access the permuted interface DoF map of the slave side
-    Teuchos::RCP<const Epetra_Map>& permuted_sl_dof_map_ptr();
+    std::shared_ptr<const Epetra_Map>& permuted_sl_dof_map_ptr();
     const Epetra_Map& permuted_sl_dof_map() const;
 
     /// access the permuted master dof map to master dof map exporter
-    Teuchos::RCP<Epetra_Export>& ma_exporter_ptr();
+    std::shared_ptr<Epetra_Export>& ma_exporter_ptr();
     const Epetra_Export& ma_exporter() const;
 
     /// access the permuted slave dof map to slave dof map exporter
-    Teuchos::RCP<Epetra_Export>& sl_exporter_ptr();
+    std::shared_ptr<Epetra_Export>& sl_exporter_ptr();
     const Epetra_Export& sl_exporter() const;
 
     /// @}
@@ -503,16 +508,16 @@ namespace Coupling::Adapter
     //@{
 
     //! the interface dof map of the master side
-    Teuchos::RCP<const Epetra_Map> masterdofmap_;
+    std::shared_ptr<const Epetra_Map> masterdofmap_;
 
     //! the permuted interface dof map of the master side
-    Teuchos::RCP<const Epetra_Map> permmasterdofmap_;
+    std::shared_ptr<const Epetra_Map> permmasterdofmap_;
 
     //! the interface dof map of the slave side
-    Teuchos::RCP<const Epetra_Map> slavedofmap_;
+    std::shared_ptr<const Epetra_Map> slavedofmap_;
 
     //! the permuted interface dof map of the slave side
-    Teuchos::RCP<const Epetra_Map> permslavedofmap_;
+    std::shared_ptr<const Epetra_Map> permslavedofmap_;
 
     //@}
 
@@ -520,20 +525,20 @@ namespace Coupling::Adapter
     //@{
 
     //! permuted master dof map to master dof map exporter
-    Teuchos::RCP<Epetra_Export> masterexport_;
+    std::shared_ptr<Epetra_Export> masterexport_;
 
     //! permuted slave dof map to slave dof map exporter
-    Teuchos::RCP<Epetra_Export> slaveexport_;
+    std::shared_ptr<Epetra_Export> slaveexport_;
 
     //@}
 
     //! @name coupling matrices for Lagrangian multiplier coupling
     //@{
 
-    Teuchos::RCP<Epetra_CrsMatrix> matmm_;
-    Teuchos::RCP<Epetra_CrsMatrix> matsm_;
-    Teuchos::RCP<Epetra_CrsMatrix> matmm_trans_;
-    Teuchos::RCP<Epetra_CrsMatrix> matsm_trans_;
+    std::shared_ptr<Epetra_CrsMatrix> matmm_;
+    std::shared_ptr<Epetra_CrsMatrix> matsm_;
+    std::shared_ptr<Epetra_CrsMatrix> matmm_trans_;
+    std::shared_ptr<Epetra_CrsMatrix> matsm_trans_;
 
     //@}
   };

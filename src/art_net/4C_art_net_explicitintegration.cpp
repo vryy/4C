@@ -37,7 +37,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 Arteries::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(
-    Teuchos::RCP<Core::FE::Discretization> actdis, const int linsolvernumber,
+    std::shared_ptr<Core::FE::Discretization> actdis, const int linsolvernumber,
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
     Core::IO::DiscretizationWriter& output)
     : TimInt(actdis, linsolvernumber, probparams, artparams, output)
@@ -110,7 +110,7 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   // a 'good' estimate
 
   // initialize standard (stabilized) system matrix
-  sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 6, false, true);
+  sysmat_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 6, false, true);
 
   // Vectors passed to the element
   // -----------------------------
@@ -150,16 +150,16 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   Teuchos::ParameterList junparams;
 
   junc_nodal_vals_ =
-      Teuchos::make_rcp<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>();
+      std::make_shared<std::map<const int, std::shared_ptr<Arteries::Utils::JunctionNodeParams>>>();
 
-  junparams
-      .set<Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>>(
-          "Junctions Parameters", junc_nodal_vals_);
+  junparams.set<
+      std::shared_ptr<std::map<const int, std::shared_ptr<Arteries::Utils::JunctionNodeParams>>>>(
+      "Junctions Parameters", junc_nodal_vals_);
 
-  artjun_ = Teuchos::make_rcp<Utils::ArtJunctionWrapper>(discret_, output_, junparams, dta_);
+  artjun_ = std::make_shared<Utils::ArtJunctionWrapper>(discret_, output_, junparams, dta_);
 
   // create the gnuplot export conditions
-  artgnu_ = Teuchos::make_rcp<Arteries::Utils::ArtWriteGnuplotWrapper>(discret_, junparams);
+  artgnu_ = std::make_shared<Arteries::Utils::ArtWriteGnuplotWrapper>(discret_, junparams);
 
   // ---------------------------------------------------------------------------------------
   // Initialize all the arteries' cross-sectional areas to the initial crossectional area Ao
@@ -180,7 +180,7 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
     //    std::vector<int> lm;
     //    std::vector<int> lmstride;
     //    std::vector<int> lmowner;
-    //        Teuchos::RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
+    //        std::shared_ptr<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
     //    ele->LocationVector(*discret_,lm,*lmowner,lmstride);
 
     // loop all nodes of this element, add values to the global vectors
@@ -191,8 +191,7 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
     Wbn_->Update(1.0, *Wbo_, 0.0);
     // eleparams.set("lmowner",lmowner);
     eleparams.set<Arteries::Action>("action", Arteries::get_initial_artery_state);
-    discret_->evaluate(
-        eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
   // Fill the NodeId vector
   for (int nele = 0; nele < discret_->num_my_col_elements(); ++nele)
@@ -230,7 +229,7 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   if (solvescatra_)
   {
     // initialize scatra system matrix
-    scatra_sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 6, false, true);
+    scatra_sysmat_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 6, false, true);
     // right hand side vector and right hand side corrector
     scatra_rhs_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
@@ -262,7 +261,8 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
 /*----------------------------------------------------------------------*
  | the solver for artery                                   ismail 06/09 |
  *----------------------------------------------------------------------*/
-void Arteries::ArtNetExplicitTimeInt::solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
+void Arteries::ArtNetExplicitTimeInt::solve(
+    std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // time measurement: Artery
   if (!coupledTo3D_)
@@ -332,9 +332,9 @@ void Arteries::ArtNetExplicitTimeInt::solve(Teuchos::RCP<Teuchos::ParameterList>
     eleparams.set("Wbnp", Wbnp_);
 
     eleparams.set("total time", time_);
-    eleparams
-        .set<Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>>(
-            "Junctions Parameters", junc_nodal_vals_);
+    eleparams.set<
+        std::shared_ptr<std::map<const int, std::shared_ptr<Arteries::Utils::JunctionNodeParams>>>>(
+        "Junctions Parameters", junc_nodal_vals_);
 
     // call standard loop over all elements
     discret_->evaluate(eleparams, sysmat_, rhs_);
@@ -362,9 +362,9 @@ void Arteries::ArtNetExplicitTimeInt::solve(Teuchos::RCP<Teuchos::ParameterList>
     eleparams.set("dbctog", dbctog_);
     eleparams.set("Wfnp", Wfnp_);
     eleparams.set("Wbnp", Wbnp_);
-    eleparams
-        .set<Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>>(
-            "Junctions Parameters", junc_nodal_vals_);
+    eleparams.set<
+        std::shared_ptr<std::map<const int, std::shared_ptr<Arteries::Utils::JunctionNodeParams>>>>(
+        "Junctions Parameters", junc_nodal_vals_);
 
     // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
     eleparams.set("coupling with 3D fluid params", CouplingTo3DParams);
@@ -427,8 +427,7 @@ void Arteries::ArtNetExplicitTimeInt::solve(Teuchos::RCP<Teuchos::ParameterList>
     eleparams.set("Wfnp", Wfnp_);
     eleparams.set("Wbnp", Wbnp_);
 
-    discret_->evaluate(
-        eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
 }  // ArtNetExplicitTimeInt:Solve
 
@@ -446,12 +445,12 @@ void Arteries::ArtNetExplicitTimeInt::solve_scatra()
     // set vecotr values needed by elements
     discret_->clear_state();
 
-    eleparams.set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wfn", Wfn_);
-    eleparams.set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wbn", Wbn_);
-    eleparams.set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wfo", Wfo_);
-    eleparams.set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("Wbo", Wbo_);
-    eleparams.set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("scatran", scatraO2n_);
-    eleparams.set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("scatranp", scatraO2np_);
+    eleparams.set<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wfn", Wfn_);
+    eleparams.set<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wbn", Wbn_);
+    eleparams.set<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wfo", Wfo_);
+    eleparams.set<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wbo", Wbo_);
+    eleparams.set<std::shared_ptr<Core::LinAlg::Vector<double>>>("scatran", scatraO2n_);
+    eleparams.set<std::shared_ptr<Core::LinAlg::Vector<double>>>("scatranp", scatraO2np_);
 
     eleparams.set("time step size", dta_);
 
@@ -622,7 +621,7 @@ void Arteries::ArtNetExplicitTimeInt::load_state()
  | output of solution vector to binio                       ismail 07/09|
  *----------------------------------------------------------------------*/
 void Arteries::ArtNetExplicitTimeInt::output(
-    bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
+    bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams)
 {
   int step = 0;
   int upres = 0;
@@ -817,15 +816,14 @@ void Arteries::ArtNetExplicitTimeInt::calc_postprocessing_values()
   eleparams.set("flow", qn_);
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro evaluat disc"<<std::endl;
   // call standard loop over all elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro done "<<std::endl;
 }  // Arteries::ArtNetExplicitTimeInt::calc_postprocessing_values
 
 
 void Arteries::ArtNetExplicitTimeInt::calc_scatra_from_scatra_fw(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatra,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatra_fb)
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatra,
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatra_fb)
 {
   scatra->PutScalar(0.0);
 
@@ -841,13 +839,12 @@ void Arteries::ArtNetExplicitTimeInt::calc_scatra_from_scatra_fw(
   eleparams.set("scatra_fb", scatra_fb);
 
   // call standard loop over all elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 void Arteries::ArtNetExplicitTimeInt::test_results()
 {
-  Teuchos::RCP<Core::Utils::ResultTest> resulttest = create_field_test();
+  std::shared_ptr<Core::Utils::ResultTest> resulttest = create_field_test();
   Global::Problem::instance()->add_field_test(resulttest);
   Global::Problem::instance()->test_all(discret_->get_comm());
 }
@@ -855,9 +852,9 @@ void Arteries::ArtNetExplicitTimeInt::test_results()
 /*----------------------------------------------------------------------*
  | create result test for this field                   kremheller 03/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest> Arteries::ArtNetExplicitTimeInt::create_field_test()
+std::shared_ptr<Core::Utils::ResultTest> Arteries::ArtNetExplicitTimeInt::create_field_test()
 {
-  return Teuchos::make_rcp<Arteries::ArteryResultTest>(*(this));
+  return std::make_shared<Arteries::ArteryResultTest>(*(this));
 }
 
 FOUR_C_NAMESPACE_CLOSE

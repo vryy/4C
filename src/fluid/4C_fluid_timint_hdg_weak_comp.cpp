@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                  laspina 08/19 |
  *----------------------------------------------------------------------*/
-FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid)
+FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const std::shared_ptr<Core::FE::Discretization>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntGenAlpha(actdis, solver, params, output, alefluid),
       timealgoset_(Inpar::FLUID::timeint_afgenalpha),
@@ -70,7 +70,7 @@ void FLD::TimIntHDGWeakComp::init()
   dofmapvec_r.reserve(dofset_r.size());
   dofmapvec_r.assign(dofset_r.begin(), dofset_r.end());
   dofset_r.clear();
-  Teuchos::RCP<Epetra_Map> dofmap_r = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> dofmap_r = std::make_shared<Epetra_Map>(
       -1, dofmapvec_r.size(), dofmapvec_r.data(), 0, hdgdis->get_comm());
 
   // define momentum dof map
@@ -78,7 +78,7 @@ void FLD::TimIntHDGWeakComp::init()
   dofmapvec_w.reserve(dofset_w.size());
   dofmapvec_w.assign(dofset_w.begin(), dofset_w.end());
   dofset_w.clear();
-  Teuchos::RCP<Epetra_Map> dofmap_w = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> dofmap_w = std::make_shared<Epetra_Map>(
       -1, dofmapvec_w.size(), dofmapvec_w.data(), 0, hdgdis->get_comm());
 
   // build density/momentum (actually velocity/pressure) splitter
@@ -312,7 +312,7 @@ void FLD::TimIntHDGWeakComp::clear_state_assemble_mat_and_rhs()
 | update within iteration                                 laspina 08/19 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntHDGWeakComp::iter_update(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> increment)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> increment)
 {
   // call element routine to update local solution
   Teuchos::ParameterList params;
@@ -332,7 +332,7 @@ void FLD::TimIntHDGWeakComp::iter_update(
   Core::LinAlg::SerialDenseVector elemintinc;
 
   // initialize increments of local variables
-  Teuchos::RCP<Core::LinAlg::Vector<double>> intvelincnp =
+  std::shared_ptr<Core::LinAlg::Vector<double>> intvelincnp =
       Core::LinAlg::create_vector(*intdofrowmap, true);
 
   // set state
@@ -486,7 +486,7 @@ void FLD::TimIntHDGWeakComp::set_initial_flow_field(
 /*----------------------------------------------------------------------*
  | evaluate error for test cases with analytical solutions laspina 08/19|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<double>>
+std::shared_ptr<std::vector<double>>
 FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
 {
   // HDG needs one more state vector for the interior solution (i.e., the actual solution)
@@ -497,7 +497,7 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
   {
     case Inpar::FLUID::no_error_calculation:
     {
-      return Teuchos::null;
+      return nullptr;
       break;
     }
     case Inpar::FLUID::byfunct:
@@ -508,7 +508,7 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
       // [0]: absolute L2 mixed variable error
       // [1]: absolute L2 density error
       // [2]: absolute L2 momentum error
-      Teuchos::RCP<std::vector<double>> abserror = Teuchos::make_rcp<std::vector<double>>(3);
+      std::shared_ptr<std::vector<double>> abserror = std::make_shared<std::vector<double>>(3);
 
       // create the parameters for the discretization
       Teuchos::ParameterList eleparams;
@@ -534,8 +534,8 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
       // (3: analytical mixed variable for L2 norm)
       // (4: analytical density for L2 norm)
       // (5: analytical momentum for L2 norm)
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(3 + 3);
+      std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
+          std::make_shared<Core::LinAlg::SerialDenseVector>(3 + 3);
 
       // call loop over elements (assemble nothing)
       discret_->evaluate_scalars(eleparams, errors);
@@ -621,7 +621,7 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
       break;
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -652,21 +652,21 @@ namespace
 {
   // internal helper function for output
   void get_node_vectors_hdg_weak_comp(Core::FE::Discretization& dis,
-      const Teuchos::RCP<Core::LinAlg::Vector<double>>& interiorValues,
-      const Teuchos::RCP<Core::LinAlg::Vector<double>>& traceValues, const int ndim,
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mixedvar,
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& density,
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& traceden)
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& interiorValues,
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& traceValues, const int ndim,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>>& mixedvar,
+      std::shared_ptr<Core::LinAlg::Vector<double>>& density,
+      std::shared_ptr<Core::LinAlg::Vector<double>>& traceden)
   {
     const int msd = ndim * (ndim + 1.0) / 2.0;
 
     // create dofsets for mixed variable, density and momentum at nodes
     if (density.get() == nullptr || density->GlobalLength() != dis.num_global_nodes())
     {
-      mixedvar = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), msd);
-      density = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.node_row_map());
+      mixedvar = std::make_shared<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), msd);
+      density = std::make_shared<Core::LinAlg::Vector<double>>(*dis.node_row_map());
     }
-    traceden = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(density->Map());
+    traceden = std::make_shared<Core::LinAlg::Vector<double>>(density->Map());
 
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
@@ -730,8 +730,8 @@ void FLD::TimIntHDGWeakComp::output()
     const unsigned int nsd = params_->get<int>("number of velocity degrees of freedom");
 
     // initialize trace variables
-    Teuchos::RCP<Core::LinAlg::Vector<double>> traceDen;
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> traceMom;
+    std::shared_ptr<Core::LinAlg::Vector<double>> traceDen;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> traceMom;
 
     // get node vectors
     get_node_vectors_hdg_weak_comp(
@@ -746,10 +746,10 @@ void FLD::TimIntHDGWeakComp::output()
         static_cast<const Mat::PAR::WeaklyCompressibleFluid*>(mat);
 
     // evaluate derived variables
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> interpolatedVelocity;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedPressure;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> interpolatedVelocity;
+    std::shared_ptr<Core::LinAlg::Vector<double>> interpolatedPressure;
     interpolatedPressure =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(interpolatedDensity_->Map());
+        std::make_shared<Core::LinAlg::Vector<double>>(interpolatedDensity_->Map());
     for (int i = 0; i < interpolatedDensity_->MyLength(); ++i)
     {
       (*interpolatedPressure)[i] =

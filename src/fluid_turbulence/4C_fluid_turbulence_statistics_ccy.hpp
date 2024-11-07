@@ -16,7 +16,8 @@
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -47,8 +48,8 @@ namespace FLD
 
 
     */
-    TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Discretization> actdis, bool alefluid,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp, Teuchos::ParameterList& params,
+    TurbulenceStatisticsCcy(std::shared_ptr<Core::FE::Discretization> actdis, bool alefluid,
+        std::shared_ptr<Core::LinAlg::Vector<double>> dispnp, Teuchos::ParameterList& params,
         const std::string& statistics_outfilename, const bool withscatra);
 
     /*!
@@ -65,8 +66,8 @@ namespace FLD
     moments for velocities, pressure (and transported scalar fields).
     */
     void do_time_sample(Core::LinAlg::Vector<double>& velnp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> scanp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fullphinp);
+        std::shared_ptr<Core::LinAlg::Vector<double>> scanp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> fullphinp);
 
 
     /*!
@@ -116,7 +117,7 @@ namespace FLD
 
     // Add results from scalar transport field solver to statistics
     void add_scatra_results(
-        Teuchos::RCP<Core::FE::Discretization> scatradis, Core::LinAlg::Vector<double>& phinp);
+        std::shared_ptr<Core::FE::Discretization> scatradis, Core::LinAlg::Vector<double>& phinp);
 
    protected:
     /*!
@@ -145,13 +146,13 @@ namespace FLD
     int countrecord_;
 
     //! The discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! the scatra discretization
-    Teuchos::RCP<Core::FE::Discretization> scatradis_;
+    std::shared_ptr<Core::FE::Discretization> scatradis_;
 
     //! node displacements due to mesh motion
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispnp_;
 
     //! contains plane normal direction etc --- this is the original
     //! fluid dynamic parameterlist
@@ -167,14 +168,14 @@ namespace FLD
     Teuchos::ParameterList eleparams_;
 
     //! pointer to mean vel/pres field
-    Teuchos::RCP<Core::LinAlg::Vector<double>> meanvelnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> meanvelnp_;
 
     //! the dim_-coordinates of the homogeneous planes containing nodes
-    Teuchos::RCP<std::vector<double>> nodeshells_;
+    std::shared_ptr<std::vector<double>> nodeshells_;
 
     //! the dim_-coordinates of the homogeneous planes --- including
     // additional sampling planes
-    Teuchos::RCP<std::vector<double>> shellcoordinates_;
+    std::shared_ptr<std::vector<double>> shellcoordinates_;
 
     //!--------------------------------------------------
     //!       the pointwise averaged stuff
@@ -182,29 +183,29 @@ namespace FLD
     //
 
     //! sum over u (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumu_;
+    std::shared_ptr<std::vector<double>> pointsumu_;
     //! sum over v (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumv_;
+    std::shared_ptr<std::vector<double>> pointsumv_;
     //! sum over w (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumw_;
+    std::shared_ptr<std::vector<double>> pointsumw_;
     //! sum over p (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsump_;
+    std::shared_ptr<std::vector<double>> pointsump_;
 
     //! sum over u^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumuu_;
+    std::shared_ptr<std::vector<double>> pointsumuu_;
     //! sum over v^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumvv_;
+    std::shared_ptr<std::vector<double>> pointsumvv_;
     //! sum over w^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumww_;
+    std::shared_ptr<std::vector<double>> pointsumww_;
     //! sum over p^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumpp_;
+    std::shared_ptr<std::vector<double>> pointsumpp_;
 
     //! sum over uv (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumuv_;
+    std::shared_ptr<std::vector<double>> pointsumuv_;
     //! sum over uw (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumuw_;
+    std::shared_ptr<std::vector<double>> pointsumuw_;
     //! sum over vw (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumvw_;
+    std::shared_ptr<std::vector<double>> pointsumvw_;
 
     // for additional scalar transport
 
@@ -215,20 +216,20 @@ namespace FLD
     int numscatradofpernode_;
 
     //! pointer to mean scalar field
-    Teuchos::RCP<Core::LinAlg::Vector<double>> meanscanp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> meanscanp_;
 
     //! pointer to mean field of all scatra results
-    Teuchos::RCP<Core::LinAlg::Vector<double>> meanfullphinp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> meanfullphinp_;
 
     //! sum over c (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumc_;
+    std::shared_ptr<std::vector<double>> pointsumc_;
     //! sum over c^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumcc_;
+    std::shared_ptr<std::vector<double>> pointsumcc_;
 
     //! sum over c (over one plane in each component)
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> pointsumphi_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> pointsumphi_;
     //! sum over c^2 (over one plane in each component)
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> pointsumphiphi_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> pointsumphiphi_;
   };
 
 }  // namespace FLD

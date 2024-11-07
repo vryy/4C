@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
 void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::FE::Discretization> discret, Core::LinAlg::Vector<double>& systemvector,
+    std::shared_ptr<Core::FE::Discretization> discret, Core::LinAlg::Vector<double>& systemvector,
     Core::LinAlg::SparseOperator* systemmatrix)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 5) evaluate_neumann");
@@ -158,8 +158,8 @@ void XFEM::evaluate_neumann_standard(
     if (fool->first == (std::string) "LineNeumann" || fool->first == (std::string) "SurfaceNeumann")
     {
       Core::Conditions::Condition& cond = *(fool->second);
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond.geometry();
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+      std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = cond.geometry();
+      std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
       Core::LinAlg::SerialDenseVector elevector;
       Core::LinAlg::SerialDenseMatrix elematrix;
       for (curr = geom.begin(); curr != geom.end(); ++curr)

@@ -24,10 +24,10 @@ namespace FLD
 
    public:
     /// Standard Constructor
-    TimIntLoma(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
+    TimIntLoma(const std::shared_ptr<Core::FE::Discretization>& actdis,
+        const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Teuchos::ParameterList>& params,
+        const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
 
 
     /*!
@@ -40,20 +40,21 @@ namespace FLD
     \brief set scalar fields within outer iteration loop
 
     */
-    void set_loma_iter_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaraf,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaram,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> scalardtam,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fsscalaraf, const double thermpressaf,
+    void set_loma_iter_scalar_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> scalaraf,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> scalaram,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> scalardtam,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-        Teuchos::RCP<Core::FE::Discretization> scatradis) override;
+        std::shared_ptr<Core::FE::Discretization> scatradis) override;
 
     /*!
     \brief set scalar fields
 
     */
-    void set_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarnp,
-        const double thermpressnp, Teuchos::RCP<const Core::LinAlg::Vector<double>> scatraresidual,
-        Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar = -1) override;
+    void set_scalar_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> scalarnp,
+        const double thermpressnp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> scatraresidual,
+        std::shared_ptr<Core::FE::Discretization> scatradis, const int whichscalar = -1) override;
 
     /*!
     \brief parameter (fix over all time step) are set in this method.

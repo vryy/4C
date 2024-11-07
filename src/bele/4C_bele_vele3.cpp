@@ -28,24 +28,24 @@ Core::Communication::ParObject* Discret::Elements::Vele3Type::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Vele3Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Vele3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "VELE3")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Vele3>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Vele3>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Vele3Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Vele3Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Vele3>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Vele3>(id, owner);
   return ele;
 }
 
@@ -71,19 +71,19 @@ void Discret::Elements::Vele3Type::setup_element_definition(
   defs["HEX8"] = Input::LineDefinition::Builder().add_int_vector("HEX8", 8).build();
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Vele3SurfaceType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Vele3SurfaceType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Vele3Surface( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Vele3LineType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Vele3LineType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Vele3Line( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -183,7 +183,7 @@ void Discret::Elements::Vele3::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Vele3::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Vele3::lines()
 {
   return Core::Communication::element_boundary_factory<Vele3Line, Vele3>(
       Core::Communication::buildLines, *this);
@@ -193,7 +193,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Vele3::lin
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                            gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Vele3::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Vele3::surfaces()
 {
   return Core::Communication::element_boundary_factory<Vele3Surface, Vele3>(
       Core::Communication::buildSurfaces, *this);

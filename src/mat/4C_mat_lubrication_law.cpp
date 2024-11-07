@@ -31,9 +31,9 @@ Mat::PAR::LubricationLawConstant::LubricationLawConstant(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::LubricationLawConstant::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::LubricationLawConstant::create_material()
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
@@ -68,9 +68,9 @@ Mat::PAR::LubricationLawBarus::LubricationLawBarus(const Core::Mat::PAR::Paramet
 }
 
 // Create material instance of matching type with my parameters
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::LubricationLawBarus::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::LubricationLawBarus::create_material()
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 // Calculate the current viscosity
@@ -108,9 +108,9 @@ Mat::PAR::LubricationLawRoeland::LubricationLawRoeland(
 }
 
 // Create material instance of matching type with my parameters
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::LubricationLawRoeland::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::LubricationLawRoeland::create_material()
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 // Calculate the current viscosity

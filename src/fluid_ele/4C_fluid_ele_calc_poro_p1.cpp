@@ -40,7 +40,7 @@ Discret::Elements::FluidEleCalcPoroP1<distype>::FluidEleCalcPoroP1()
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcPoroP1<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -278,7 +278,7 @@ void Discret::Elements::FluidEleCalcPoroP1<distype>::evaluate_pressure_equation(
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcPoroP1<distype>::evaluate_od(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -434,7 +434,7 @@ int Discret::Elements::FluidEleCalcPoroP1<distype>::evaluate_od(Teuchos::Paramet
     const Core::LinAlg::Matrix<nsd_, nen_>& eaccam, const Core::LinAlg::Matrix<nsd_, nen_>& edispnp,
     const Core::LinAlg::Matrix<nsd_, nen_>& edispn, const Core::LinAlg::Matrix<nsd_, nen_>& egridv,
     const Core::LinAlg::Matrix<nsd_, nen_>& egridvn, const Core::LinAlg::Matrix<nen_, 1>& escaaf,
-    const Core::LinAlg::Matrix<nen_, 1>* eporositynp, Teuchos::RCP<Core::Mat::Material> mat,
+    const Core::LinAlg::Matrix<nen_, 1>* eporositynp, std::shared_ptr<Core::Mat::Material> mat,
     bool isale, const Core::FE::GaussIntegration& intpoints)
 {
   // flag for higher order elements
@@ -470,7 +470,7 @@ void Discret::Elements::FluidEleCalcPoroP1<distype>::sysmat_od(Teuchos::Paramete
     const Core::LinAlg::Matrix<nen_, 1>* eporositynp,
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& ecoupl,
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
-    Teuchos::RCP<const Core::Mat::Material> material, bool isale,
+    std::shared_ptr<const Core::Mat::Material> material, bool isale,
     const Core::FE::GaussIntegration& intpoints)
 {
   //------------------------------------------------------------------------
@@ -610,7 +610,8 @@ void Discret::Elements::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& ecoupl_u,
     Core::LinAlg::Matrix<nen_, nen_ * nsd_>& ecoupl_p,
     Core::LinAlg::Matrix<nen_ * nsd_, nen_>& ecouplp1_u,
-    Core::LinAlg::Matrix<nen_, nen_>& ecouplp1_p, Teuchos::RCP<const Core::Mat::Material> material,
+    Core::LinAlg::Matrix<nen_, nen_>& ecouplp1_p,
+    std::shared_ptr<const Core::Mat::Material> material,
     const Core::FE::GaussIntegration& intpoints)
 {
   // definition of velocity-based momentum residual vectors

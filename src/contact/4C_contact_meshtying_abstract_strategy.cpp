@@ -23,6 +23,7 @@
 #include "4C_mortar_interface.hpp"
 #include "4C_mortar_node.hpp"
 
+#include <Teuchos_RCPStdSharedPtrConversions.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -33,9 +34,9 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<Mortar::Interface>> interface, const int spatialDim,
-    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
-    : Mortar::StrategyBase(Teuchos::make_rcp<Mortar::StratDataContainer>(), dof_row_map, NodeRowMap,
+    std::vector<std::shared_ptr<Mortar::Interface>> interface, const int spatialDim,
+    const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    : Mortar::StrategyBase(std::make_shared<Mortar::StratDataContainer>(), dof_row_map, NodeRowMap,
           params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       dualquadslavetrafo_(false)
@@ -46,13 +47,13 @@ CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* dof_row_map,
   // store interface maps with parallel distribution of underlying
   // problem discretization (i.e. interface maps before parallel
   // redistribution of slave and master sides)
-  non_redist_glmdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*glmdofrowmap_);
-  non_redist_gsdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*gsdofrowmap_);
-  non_redist_gmdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*gmdofrowmap_);
-  non_redist_gsmdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*gsmdofrowmap_);
+  non_redist_glmdofrowmap_ = std::make_shared<Epetra_Map>(*glmdofrowmap_);
+  non_redist_gsdofrowmap_ = std::make_shared<Epetra_Map>(*gsdofrowmap_);
+  non_redist_gmdofrowmap_ = std::make_shared<Epetra_Map>(*gmdofrowmap_);
+  non_redist_gsmdofrowmap_ = std::make_shared<Epetra_Map>(*gsmdofrowmap_);
 
   // build the NOX::Nln::CONSTRAINT::Interface::Required object
-  noxinterface_ptr_ = Teuchos::make_rcp<CONTACT::MtNoxInterface>();
+  noxinterface_ptr_ = std::make_shared<CONTACT::MtNoxInterface>();
 
   return;
 }
@@ -133,14 +134,14 @@ void CONTACT::MtAbstractStrategy::setup(bool redistributed)
 
   // make sure to remove all existing maps first
   // (do NOT remove map of non-interface dofs after redistribution)
-  gsdofrowmap_ = Teuchos::null;
-  gmdofrowmap_ = Teuchos::null;
-  gsmdofrowmap_ = Teuchos::null;
-  glmdofrowmap_ = Teuchos::null;
-  gdisprowmap_ = Teuchos::null;
-  gsnoderowmap_ = Teuchos::null;
-  gmnoderowmap_ = Teuchos::null;
-  if (!redistributed) gndofrowmap_ = Teuchos::null;
+  gsdofrowmap_ = nullptr;
+  gmdofrowmap_ = nullptr;
+  gsmdofrowmap_ = nullptr;
+  glmdofrowmap_ = nullptr;
+  gdisprowmap_ = nullptr;
+  gsnoderowmap_ = nullptr;
+  gmnoderowmap_ = nullptr;
+  if (!redistributed) gndofrowmap_ = nullptr;
 
   // element col. map for binning
   initial_elecolmap_.clear();
@@ -170,7 +171,7 @@ void CONTACT::MtAbstractStrategy::setup(bool redistributed)
 
     // store initial element col map for binning strategy
     initial_elecolmap_.push_back(
-        Teuchos::make_rcp<Epetra_Map>(*interface_[i]->discret().element_col_map()));
+        std::make_shared<Epetra_Map>(*interface_[i]->discret().element_col_map()));
   }
 
   // setup global non-slave-or-master dof map
@@ -192,13 +193,13 @@ void CONTACT::MtAbstractStrategy::setup(bool redistributed)
   // ------------------------------------------------------------------------
 
   // setup Lagrange multiplier vectors
-  z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  zincr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  zold_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  zuzawa_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  z_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  zincr_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  zold_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  zuzawa_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
 
   // setup constraint rhs vector
-  constrrhs_ = Teuchos::null;  // only for saddle point problem formulation
+  constrrhs_ = nullptr;  // only for saddle point problem formulation
 
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -229,13 +230,13 @@ void CONTACT::MtAbstractStrategy::setup(bool redistributed)
     // and otherwise, only consider slave DOFs
     if (lagmultquad == Inpar::Mortar::lagmult_lin)
     {
-      trafo_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsmdofrowmap_, 10);
-      invtrafo_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsmdofrowmap_, 10);
+      trafo_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gsmdofrowmap_, 10);
+      invtrafo_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gsmdofrowmap_, 10);
     }
     else
     {
-      trafo_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
-      invtrafo_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
+      trafo_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
+      invtrafo_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
     }
 
     // set of already processed nodes
@@ -258,8 +259,10 @@ void CONTACT::MtAbstractStrategy::setup(bool redistributed)
  | global evaluation method called from time integrator      popp 06/09 |
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::apply_force_stiff_cmt(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dis, Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter, bool predictor)
+    std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+    std::shared_ptr<Core::LinAlg::SparseOperator>& kt,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+    bool predictor)
 {
   // set displacement state
   set_state(Mortar::state_new_displacement, *dis);
@@ -303,7 +306,7 @@ void CONTACT::MtAbstractStrategy::set_state(
  |  do mortar coupling in reference configuration             popp 12/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::mortar_coupling(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dis)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& dis)
 {
   //********************************************************************
   // initialize and evaluate interfaces
@@ -327,8 +330,8 @@ void CONTACT::MtAbstractStrategy::mortar_coupling(
   // initialize and evaluate global mortar stuff
   //********************************************************************
   // (re)setup global Mortar Core::LinAlg::SparseMatrices and Core::LinAlg::Vectors
-  dmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
-  mmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100);
+  dmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
+  mmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100);
   g_ = Core::LinAlg::create_vector(*gsdofrowmap_, true);
 
   // assemble D- and M-matrix on all interfaces
@@ -339,8 +342,10 @@ void CONTACT::MtAbstractStrategy::mortar_coupling(
   mmatrix_->complete(*gmdofrowmap_, *gsdofrowmap_);
 
   // compute g-vector at global level
-  Teuchos::RCP<Core::LinAlg::Vector<double>> xs = Core::LinAlg::create_vector(*gsdofrowmap_, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> xm = Core::LinAlg::create_vector(*gmdofrowmap_, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> xs =
+      Core::LinAlg::create_vector(*gsdofrowmap_, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> xm =
+      Core::LinAlg::create_vector(*gmdofrowmap_, true);
   assemble_coords("slave", true, *xs);
   assemble_coords("master", true, *xm);
   Core::LinAlg::Vector<double> Dxs(*gsdofrowmap_);
@@ -414,7 +419,7 @@ void CONTACT::MtAbstractStrategy::restrict_meshtying_zone()
   if (par_redist())
   {
     // allreduce restricted slave dof row map in new distribution
-    Teuchos::RCP<Epetra_Map> fullsdofs = Core::LinAlg::allreduce_e_map(*gsdofrowmap_);
+    std::shared_ptr<Epetra_Map> fullsdofs = Core::LinAlg::allreduce_e_map(*gsdofrowmap_);
 
     // map data to be filled
     std::vector<int> data;
@@ -434,7 +439,7 @@ void CONTACT::MtAbstractStrategy::restrict_meshtying_zone()
 
     // re-setup old slave dof row map (with restriction now)
     non_redist_gsdofrowmap_ =
-        Teuchos::make_rcp<Epetra_Map>(-1, (int)data.size(), data.data(), 0, get_comm());
+        std::make_shared<Epetra_Map>(-1, (int)data.size(), data.data(), 0, get_comm());
   }
 
   // Step 5: re-setup internal dof row map (non-interface dofs)
@@ -462,7 +467,7 @@ void CONTACT::MtAbstractStrategy::restrict_meshtying_zone()
  |  mesh initialization for rotational invariance              popp 12/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::mesh_initialization(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> Xslavemod)
+    std::shared_ptr<Core::LinAlg::Vector<double>> Xslavemod)
 {
   //**********************************************************************
   // (1) perform mesh initialization node by node
@@ -568,8 +573,10 @@ void CONTACT::MtAbstractStrategy::mesh_initialization(
   g_ = Core::LinAlg::create_vector(*gsdofrowmap_, true);
 
   // compute g-vector at global level
-  Teuchos::RCP<Core::LinAlg::Vector<double>> xs = Core::LinAlg::create_vector(*gsdofrowmap_, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> xm = Core::LinAlg::create_vector(*gmdofrowmap_, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> xs =
+      Core::LinAlg::create_vector(*gsdofrowmap_, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> xm =
+      Core::LinAlg::create_vector(*gmdofrowmap_, true);
   assemble_coords("slave", true, *xs);
   assemble_coords("master", true, *xm);
   Core::LinAlg::Vector<double> Dxs(*gsdofrowmap_);
@@ -583,9 +590,9 @@ void CONTACT::MtAbstractStrategy::mesh_initialization(
 /*----------------------------------------------------------------------*
  | call appropriate evaluate for contact evaluation           popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dis)
+void CONTACT::MtAbstractStrategy::evaluate(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& feff,
+    std::shared_ptr<Core::LinAlg::Vector<double>> dis)
 {
   // trivial (no choice as for contact)
   evaluate_meshtying(kteff, feff, dis);
@@ -601,7 +608,7 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // get global quantity to be stored in nodes
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vectorglobal = Teuchos::null;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vectorglobal = nullptr;
     switch (type)
     {
       case Mortar::StrategyBase::lmcurrent:
@@ -632,10 +639,10 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
     }  // switch
 
     // export global quantity to current interface slave dof row map
-    Teuchos::RCP<const Epetra_Map> sdofrowmap = interface_[i]->slave_row_dofs();
+    std::shared_ptr<const Epetra_Map> sdofrowmap = interface_[i]->slave_row_dofs();
     Core::LinAlg::Vector<double> vectorinterface(*sdofrowmap);
 
-    if (vectorglobal != Teuchos::null)
+    if (vectorglobal != nullptr)
       Core::LinAlg::export_to(*vectorglobal, vectorinterface);
     else
       FOUR_C_THROW("store_nodal_quantities: Null vector handed in!");
@@ -706,7 +713,7 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
  |  Store dirichlet B.C. status into Mortar::Node               popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::store_dirichlet_status(
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps)
+    std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmaps)
 {
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -751,7 +758,7 @@ void CONTACT::MtAbstractStrategy::store_dirichlet_status(
 /*----------------------------------------------------------------------*
  | Update meshtying at end of time step                       popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::update(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis)
+void CONTACT::MtAbstractStrategy::update(std::shared_ptr<const Core::LinAlg::Vector<double>> dis)
 {
   // store Lagrange multipliers
   // (we need this for interpolation of the next generalized mid-point)
@@ -768,7 +775,7 @@ void CONTACT::MtAbstractStrategy::update(Teuchos::RCP<const Core::LinAlg::Vector
  |  read restart information for meshtying                    popp 03/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::do_read_restart(
-    Core::IO::DiscretizationReader& reader, Teuchos::RCP<const Core::LinAlg::Vector<double>> dis)
+    Core::IO::DiscretizationReader& reader, std::shared_ptr<const Core::LinAlg::Vector<double>> dis)
 {
   // check whether this is a restart with meshtying of a previously
   // non-meshtying simulation run
@@ -778,11 +785,11 @@ void CONTACT::MtAbstractStrategy::do_read_restart(
   set_state(Mortar::state_new_displacement, *dis);
 
   // read restart information on Lagrange multipliers
-  z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  zincr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  z_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  zincr_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   if (!restartwithmeshtying) reader.read_vector(z_, "mt_lagrmultold");
   store_nodal_quantities(Mortar::StrategyBase::lmcurrent);
-  zold_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  zold_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   if (!restartwithmeshtying) reader.read_vector(zold_, "mt_lagrmultold");
   store_nodal_quantities(Mortar::StrategyBase::lmold);
 
@@ -790,7 +797,7 @@ void CONTACT::MtAbstractStrategy::do_read_restart(
   auto st = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
   if (st == Inpar::CONTACT::solution_uzawa)
   {
-    zuzawa_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+    zuzawa_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
     if (!restartwithmeshtying) reader.read_vector(zuzawa_, "mt_lagrmultold");
     store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
   }
@@ -1089,7 +1096,7 @@ void CONTACT::MtAbstractStrategy::assemble_coords(
   // entries in the Core::LinAlg::Vector<double> instead of using Assemble().
 
   // decide which side (slave or master)
-  Teuchos::RCP<Epetra_Map> sidemap = Teuchos::null;
+  std::shared_ptr<Epetra_Map> sidemap = nullptr;
   if (sidename == "slave")
     sidemap = gsnoderowmap_;
   else if (sidename == "master")
@@ -1143,13 +1150,13 @@ void CONTACT::MtAbstractStrategy::assemble_coords(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::collect_maps_for_preconditioner(
-    Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap,
-    Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap) const
+    std::shared_ptr<Epetra_Map>& MasterDofMap, std::shared_ptr<Epetra_Map>& SlaveDofMap,
+    std::shared_ptr<Epetra_Map>& InnerDofMap, std::shared_ptr<Epetra_Map>& ActiveDofMap) const
 {
   InnerDofMap = gndofrowmap_;  // global internal dof row map
 
   // global active slave dof row map (all slave dofs are active  in meshtying)
-  if (non_redist_gsdofrowmap_ != Teuchos::null)
+  if (non_redist_gsdofrowmap_ != nullptr)
     ActiveDofMap = non_redist_gsdofrowmap_;
   else
     ActiveDofMap = gsdofrowmap_;
@@ -1157,11 +1164,11 @@ void CONTACT::MtAbstractStrategy::collect_maps_for_preconditioner(
   // check if parallel redistribution is used
   // if parallel redistribution is activated, then use (original) maps before redistribution
   // otherwise we use just the standard master/slave maps
-  if (non_redist_gsdofrowmap_ != Teuchos::null)
+  if (non_redist_gsdofrowmap_ != nullptr)
     SlaveDofMap = non_redist_gsdofrowmap_;
   else
     SlaveDofMap = gsdofrowmap_;
-  if (non_redist_gmdofrowmap_ != Teuchos::null)
+  if (non_redist_gmdofrowmap_ != nullptr)
     MasterDofMap = non_redist_gmdofrowmap_;
   else
     MasterDofMap = gmdofrowmap_;
@@ -1202,24 +1209,24 @@ void CONTACT::MtAbstractStrategy::fill_maps_for_preconditioner(
    * before redistribution otherwise we use just the standard master/slave
    * maps */
   // (0) masterDofMap
-  if (non_redist_gmdofrowmap_ != Teuchos::null)
-    maps[0] = non_redist_gmdofrowmap_;
+  if (non_redist_gmdofrowmap_ != nullptr)
+    maps[0] = Teuchos::rcp(non_redist_gmdofrowmap_);
   else
-    maps[0] = gmdofrowmap_;
+    maps[0] = Teuchos::rcp(gmdofrowmap_);
   // (1) slaveDofMap
   // (3) activeDofMap (all slave nodes are active!)
-  if (non_redist_gsdofrowmap_ != Teuchos::null)
+  if (non_redist_gsdofrowmap_ != nullptr)
   {
-    maps[1] = non_redist_gsdofrowmap_;
-    maps[3] = non_redist_gsdofrowmap_;
+    maps[1] = Teuchos::rcp(non_redist_gsdofrowmap_);
+    maps[3] = Teuchos::rcp(non_redist_gsdofrowmap_);
   }
   else
   {
-    maps[1] = gsdofrowmap_;
-    maps[3] = gsdofrowmap_;
+    maps[1] = Teuchos::rcp(gsdofrowmap_);
+    maps[3] = Teuchos::rcp(gsdofrowmap_);
   }
   // (2) innerDofMap
-  maps[2] = gndofrowmap_;
+  maps[2] = Teuchos::rcp(gndofrowmap_);
 
   return;
 }
@@ -1236,24 +1243,23 @@ bool CONTACT::MtAbstractStrategy::computePreconditioner(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::postprocess_quantities_per_interface(
-    Teuchos::RCP<Teuchos::ParameterList> outputParams) const
+    std::shared_ptr<Teuchos::ParameterList> outputParams) const
 {
-  using Teuchos::RCP;
-
   // Evaluate slave and master forces
-  RCP<Core::LinAlg::Vector<double>> fcslave =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(d_matrix()->row_map());
-  RCP<Core::LinAlg::Vector<double>> fcmaster =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(m_matrix()->domain_map());
+  auto fcslave = std::make_shared<Core::LinAlg::Vector<double>>(d_matrix()->row_map());
+  auto fcmaster = std::make_shared<Core::LinAlg::Vector<double>>(m_matrix()->domain_map());
   d_matrix()->multiply(true, *zold_, *fcslave);
   m_matrix()->multiply(true, *zold_, *fcmaster);
 
   // Append data to parameter list
-  outputParams->set<RCP<const Core::LinAlg::Vector<double>>>("interface traction", zold_);
-  outputParams->set<RCP<const Core::LinAlg::Vector<double>>>("slave forces", fcslave);
-  outputParams->set<RCP<const Core::LinAlg::Vector<double>>>("master forces", fcmaster);
+  outputParams->set(
+      "interface traction", std::const_pointer_cast<const Core::LinAlg::Vector<double>>(zold_));
+  outputParams->set(
+      "slave forces", std::const_pointer_cast<const Core::LinAlg::Vector<double>>(fcslave));
+  outputParams->set(
+      "master forces", std::const_pointer_cast<const Core::LinAlg::Vector<double>>(fcmaster));
 
-  for (std::vector<Teuchos::RCP<Mortar::Interface>>::const_iterator it = interface_.begin();
+  for (std::vector<std::shared_ptr<Mortar::Interface>>::const_iterator it = interface_.begin();
        it < interface_.end(); ++it)
     (*it)->postprocess_quantities(*outputParams);
 }

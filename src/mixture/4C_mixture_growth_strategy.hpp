@@ -31,12 +31,12 @@ namespace Mixture
       explicit MixtureGrowthStrategy(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Override this method and throw error, as only the create_growth_strategy() should be used.
-      Teuchos::RCP<Core::Mat::Material> create_material() final
+      std::shared_ptr<Core::Mat::Material> create_material() final
       {
         FOUR_C_THROW(
             "Cannot create mixture growth strategy from this method. Use create_growth_strategy() "
             "instead.");
-        return Teuchos::null;
+        return nullptr;
       }
 
       /// create material instance of matching type with my parameters

@@ -16,7 +16,6 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Teuchos_ENull.hpp>
-#include <Teuchos_RCP.hpp>
 
 #include <memory>
 #include <string>
@@ -67,10 +66,10 @@ namespace Mixture
       explicit MixtureRule(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Override this method and throw error, as only the CreateRule() should be used.
-      Teuchos::RCP<Core::Mat::Material> create_material() final
+      std::shared_ptr<Core::Mat::Material> create_material() final
       {
         FOUR_C_THROW("Cannot create mixture rule from this method. Use CreateRule() instead.");
-        return Teuchos::null;
+        return nullptr;
       }
 
       /// create material instance of matching type with my parameters

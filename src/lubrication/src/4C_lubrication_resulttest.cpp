@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor                                                     wirtz 11/15 |
  *----------------------------------------------------------------------*/
-Lubrication::ResultTest::ResultTest(Teuchos::RCP<TimIntImpl> lubrication)
+Lubrication::ResultTest::ResultTest(std::shared_ptr<TimIntImpl> lubrication)
     : Core::Utils::ResultTest("LUBRICATION"),
       dis_(lubrication->discretization()),
       mysol_(lubrication->prenp()),

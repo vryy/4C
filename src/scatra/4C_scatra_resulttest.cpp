@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ScaTra::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatratimint)
+ScaTra::ScaTraResultTest::ScaTraResultTest(std::shared_ptr<ScaTraTimIntImpl> scatratimint)
     : Core::Utils::ResultTest("SCATRA"), scatratimint_(scatratimint)
 {
 }
@@ -168,14 +168,14 @@ double ScaTra::ScaTraResultTest::result_node(
   else if (quantity == "s2ilayerthickness")
   {
     // extract scatra-scatra interface meshtying strategy class
-    const Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> strategy =
-        Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint_->strategy());
-    if (strategy == Teuchos::null)
+    const std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> strategy =
+        std::dynamic_pointer_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint_->strategy());
+    if (strategy == nullptr)
       FOUR_C_THROW("Couldn't extract scatra-scatra interface meshtying strategy class!");
 
     // extract state vector of discrete scatra-scatra interface layer thicknesses
     // depending on whether monolithic or semi-implicit solution approach is used
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> s2igrowthvec(Teuchos::null);
+    std::shared_ptr<const Core::LinAlg::Vector<double>> s2igrowthvec(nullptr);
     switch (strategy->int_layer_growth_evaluation())
     {
       case Inpar::S2I::growth_evaluation_monolithic:
@@ -198,7 +198,7 @@ double ScaTra::ScaTraResultTest::result_node(
     }
 
     // safety check
-    if (s2igrowthvec == Teuchos::null)
+    if (s2igrowthvec == nullptr)
       FOUR_C_THROW(
           "Couldn't extract state vector of discrete scatra-scatra interface layer thicknesses!");
 
@@ -398,9 +398,9 @@ double ScaTra::ScaTraResultTest::result_special(
       FOUR_C_THROW("Invalid processor ID!");
 
     // extract scatra-scatra interface meshtying strategy class
-    const Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> strategy =
-        Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint_->strategy());
-    if (strategy == Teuchos::null)
+    const std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> strategy =
+        std::dynamic_pointer_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint_->strategy());
+    if (strategy == nullptr)
       FOUR_C_THROW("Couldn't extract scatra-scatra interface meshtying strategy class!");
 
     // extract number of degrees of freedom owned by specified processor at specified

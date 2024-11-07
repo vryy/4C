@@ -57,24 +57,24 @@ namespace Discret
       virtual ~FluidIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
       virtual void assemble_internal_faces_using_neighbor_data(
-          Discret::Elements::FluidIntFace* intface,     ///< internal face element
-          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
-          std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
-          std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
+          Discret::Elements::FluidIntFace* intface,        ///< internal face element
+          std::shared_ptr<Core::Mat::Material>& material,  ///< material associated with the faces
+          std::vector<int>& nds_master,                    ///< nodal dofset w.r.t. master element
+          std::vector<int>& nds_slave,                     ///< nodal dofset w.r.t. slave element
           const Inpar::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
           Teuchos::ParameterList& params,          ///< parameter list
-          Core::FE::DiscretizationFaces& discretization,           ///< faces discretization
-          Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
+          Core::FE::DiscretizationFaces& discretization,              ///< faces discretization
+          std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
           ) = 0;
 
       //! Evaluate internal faces
       virtual int evaluate_internal_faces(
-          Discret::Elements::FluidIntFace* intface,     ///< internal face element
-          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
-          Teuchos::ParameterList& params,               ///< parameter list
-          Core::FE::Discretization& discretization,     ///< discretization
-          std::vector<int>& patchlm,                    ///< patch local map
+          Discret::Elements::FluidIntFace* intface,        ///< internal face element
+          std::shared_ptr<Core::Mat::Material>& material,  ///< material associated with the faces
+          Teuchos::ParameterList& params,                  ///< parameter list
+          Core::FE::Discretization& discretization,        ///< discretization
+          std::vector<int>& patchlm,                       ///< patch local map
           std::vector<int>& lm_masterToPatch,  ///< local map between master dofs and patchlm
           std::vector<int>& lm_slaveToPatch,   ///< local map between slave dofs and patchlm
           std::vector<int>& lm_faceToPatch,    ///< local map between face dofs and patchlm
@@ -128,24 +128,24 @@ namespace Discret
 
       //! Assemble internal faces integrals using data from both parent elements
       void assemble_internal_faces_using_neighbor_data(
-          Discret::Elements::FluidIntFace* intface,     ///< internal face element
-          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
-          std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
-          std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
+          Discret::Elements::FluidIntFace* intface,        ///< internal face element
+          std::shared_ptr<Core::Mat::Material>& material,  ///< material associated with the faces
+          std::vector<int>& nds_master,                    ///< nodal dofset w.r.t. master element
+          std::vector<int>& nds_slave,                     ///< nodal dofset w.r.t. slave element
           const Inpar::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
           Teuchos::ParameterList& params,          ///< parameter list
-          Core::FE::DiscretizationFaces& discretization,           ///< faces discretization
-          Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
+          Core::FE::DiscretizationFaces& discretization,              ///< faces discretization
+          std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
           ) override;
 
       //! Evaluate internal faces
       int evaluate_internal_faces(
-          Discret::Elements::FluidIntFace* intface,     ///< internal face element
-          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
-          Teuchos::ParameterList& params,               ///< parameter list
-          Core::FE::Discretization& discretization,     ///< discretization
-          std::vector<int>& patchlm,                    ///< patch local map
+          Discret::Elements::FluidIntFace* intface,        ///< internal face element
+          std::shared_ptr<Core::Mat::Material>& material,  ///< material associated with the faces
+          Teuchos::ParameterList& params,                  ///< parameter list
+          Core::FE::Discretization& discretization,        ///< discretization
+          std::vector<int>& patchlm,                       ///< patch local map
           std::vector<int>& lm_masterToPatch,  ///< local map between master dofs and patchlm
           std::vector<int>& lm_slaveToPatch,   ///< local map between slave dofs and patchlm
           std::vector<int>& lm_faceToPatch,    ///< local map between face dofs and patchlm

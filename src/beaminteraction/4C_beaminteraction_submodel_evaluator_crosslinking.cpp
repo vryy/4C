@@ -45,17 +45,17 @@ FOUR_C_NAMESPACE_OPEN
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Crosslinking()
-    : crosslinking_params_ptr_(Teuchos::null),
-      cl_exporter_(Teuchos::null),
-      beam_exporter_(Teuchos::null),
-      visualization_output_writer_ptr_(Teuchos::null),
-      linker_disnp_(Teuchos::null),
-      dis_at_last_redistr_(Teuchos::null),
+    : crosslinking_params_ptr_(nullptr),
+      cl_exporter_(nullptr),
+      beam_exporter_(nullptr),
+      visualization_output_writer_ptr_(nullptr),
+      linker_disnp_(nullptr),
+      dis_at_last_redistr_(nullptr),
       half_interaction_distance_(0.0),
-      cl_noderowmap_prior_redistr_(Teuchos::null),
-      cl_nodecolmap_prior_redistr_(Teuchos::null),
-      beam_elerowmap_prior_redistr_(Teuchos::null),
-      beam_elecolmap_prior_redistr_(Teuchos::null)
+      cl_noderowmap_prior_redistr_(nullptr),
+      cl_nodecolmap_prior_redistr_(nullptr),
+      beam_elerowmap_prior_redistr_(nullptr),
+      beam_elecolmap_prior_redistr_(nullptr)
 {
   crosslinker_data_.clear();
   beam_data_.clear();
@@ -69,7 +69,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup()
   check_init();
 
   // construct, init and setup data container for crosslinking
-  crosslinking_params_ptr_ = Teuchos::make_rcp<BEAMINTERACTION::CrosslinkingParams>();
+  crosslinking_params_ptr_ = std::make_shared<BEAMINTERACTION::CrosslinkingParams>();
   crosslinking_params_ptr_->init(g_state());
   crosslinking_params_ptr_->setup();
 
@@ -83,15 +83,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup()
   add_crosslinker_to_bin_discretization();
 
   // build runtime visualization output writer
-  if (g_in_output().get_runtime_vtp_output_params() != Teuchos::null)
-    init_output_runtime_structure();
+  if (g_in_output().get_runtime_vtp_output_params() != nullptr) init_output_runtime_structure();
 
   // store old maps prior to redistribution
-  cl_noderowmap_prior_redistr_ = Teuchos::make_rcp<Epetra_Map>(*bin_discret().node_row_map());
-  cl_nodecolmap_prior_redistr_ = Teuchos::make_rcp<Epetra_Map>(*bin_discret().node_col_map());
+  cl_noderowmap_prior_redistr_ = std::make_shared<Epetra_Map>(*bin_discret().node_row_map());
+  cl_nodecolmap_prior_redistr_ = std::make_shared<Epetra_Map>(*bin_discret().node_col_map());
   beam_elerowmap_prior_redistr_ =
-      Teuchos::make_rcp<Epetra_Map>(*ele_type_map_extractor().beam_map());
-  beam_elecolmap_prior_redistr_ = Teuchos::make_rcp<Epetra_Map>(*discret().element_col_map());
+      std::make_shared<Epetra_Map>(*ele_type_map_extractor().beam_map());
+  beam_elecolmap_prior_redistr_ = std::make_shared<Epetra_Map>(*discret().element_col_map());
 
   // set flag
   issetup_ = true;
@@ -120,7 +119,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
     BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), beamele_i,
         *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
 
-    beam_data_[i] = Teuchos::make_rcp<BEAMINTERACTION::Data::BeamData>();
+    beam_data_[i] = std::make_shared<BEAMINTERACTION::Data::BeamData>();
     beam_data_[i]->set_id(beamele_i->id());
 
     // loop over all binding spots of current element
@@ -143,7 +142,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
     }
   }
 
-  std::vector<Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData>> newlinker;
+  std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>> newlinker;
   // map key is crosslinker gid to be able to uniquely address one entry over all procs
   std::map<int, NewDoubleBonds> mynewdbondcl;
   set_all_possible_initial_double_bonded_crosslinker(newlinker, mynewdbondcl);
@@ -158,7 +157,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
   for (unsigned int i = 0; i < numrowcl; ++i)
   {
     Core::Nodes::Node* cl = bin_discret().l_row_node(i);
-    crosslinker_data_[cl->lid()] = Teuchos::make_rcp<BEAMINTERACTION::Data::CrosslinkerData>();
+    crosslinker_data_[cl->lid()] = std::make_shared<BEAMINTERACTION::Data::CrosslinkerData>();
 
     crosslinker_data_[cl->lid()]->set_id(cl->id());
   }
@@ -207,7 +206,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_setup()
 
     // store displacement of restart step as displacement state of last redistribution
     dis_at_last_redistr_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*bin_discret().dof_row_map(), true);
+        std::make_shared<Core::LinAlg::Vector<double>>(*bin_discret().dof_row_map(), true);
     for (int i = 0; i < bin_discret().num_my_row_nodes(); ++i)
     {
       CrossLinking::CrosslinkerNode* crosslinker_i =
@@ -235,7 +234,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::init_submodel_dependencies(
-    Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
+    std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
   // no active influence on other submodels
@@ -283,7 +282,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::set_filament_types()
  *-----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
     set_all_possible_initial_double_bonded_crosslinker(
-        std::vector<Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData>>& newlinker,
+        std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>& newlinker,
         std::map<int, NewDoubleBonds>& mynewdbondcl)
 {
   check_init();
@@ -379,8 +378,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
             for (unsigned int type_i = 0; type_i < matcrosslinkerpertype.size(); ++type_i)
             {
               // check criteria for feasible bond
-              Teuchos::RCP<Mat::CrosslinkerMat> mat =
-                  Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(
+              std::shared_ptr<Mat::CrosslinkerMat> mat =
+                  std::dynamic_pointer_cast<Mat::CrosslinkerMat>(
                       Mat::factory(matcrosslinkerpertype[type_i]));
 
               // linker type needs to match binding spot type
@@ -534,7 +533,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_initial_linke
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_all_procs(
-    std::vector<Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData>>& newlinker,
+    std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>& newlinker,
     std::map<int, std::vector<BEAMINTERACTION::Data::BspotLinkerData>> const& global_bspot_linker,
     std::vector<int>& newlinkermatid)
 {
@@ -598,8 +597,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
       if (discret().element_row_map()->LID(iter.get_ele_gid1()) == -1) continue;
 
       // store data of new crosslinker
-      Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cldata =
-          Teuchos::make_rcp<BEAMINTERACTION::Data::CrosslinkerData>();
+      std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cldata =
+          std::make_shared<BEAMINTERACTION::Data::CrosslinkerData>();
 
       // set positions
       clpos.clear();
@@ -628,7 +627,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup_my_initial_double_bonded_linker(
-    std::vector<Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData>>& newlinker,
+    std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>& newlinker,
     std::map<int, NewDoubleBonds>& mynewdbondcl, std::vector<int> const& newlinkermatid)
 {
   // determine unique gids on each proc (ascending over all procs)
@@ -653,9 +652,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup_my_initial_double_b
   {
     for (unsigned int dim = 0; dim < 3; ++dim) X[dim] = newlinker[i]->get_position()(dim);
 
-    Teuchos::RCP<CrossLinking::CrosslinkerNode> newcrosslinker =
-        Teuchos::make_rcp<CrossLinking::CrosslinkerNode>(gid, X, g_state().get_my_rank());
-    newcrosslinker->set_material(Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(
+    std::shared_ptr<CrossLinking::CrosslinkerNode> newcrosslinker =
+        std::make_shared<CrossLinking::CrosslinkerNode>(gid, X, g_state().get_my_rank());
+    newcrosslinker->set_material(std::dynamic_pointer_cast<Mat::CrosslinkerMat>(
         Mat::factory(newlinkermatid[i])));  // HACK HACK HACK
     bin_discret_ptr()->add_node(newcrosslinker);
 
@@ -732,8 +731,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_crosslinker_to_bin_di
         for (int dim = 0; dim < 3; ++dim) X[dim] = Xmat(dim);
 
         // construct node, init data container, set material and add to bin discret
-        Teuchos::RCP<CrossLinking::CrosslinkerNode> newcrosslinker =
-            Teuchos::make_rcp<CrossLinking::CrosslinkerNode>(gid++, X, g_state().get_my_rank());
+        std::shared_ptr<CrossLinking::CrosslinkerNode> newcrosslinker =
+            std::make_shared<CrossLinking::CrosslinkerNode>(gid++, X, g_state().get_my_rank());
         newcrosslinker->set_material(matcrosslinkerpertype[cltype_i]);
         bin_discret_ptr()->add_node(newcrosslinker);
       }
@@ -753,7 +752,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::reset()
   // reset crosslinker pairs
   for (auto const& iter : doublebondcl_)
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
+    std::shared_ptr<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
 
@@ -836,7 +835,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force()
 
   for (auto const& iter : doublebondcl_)
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
+    std::shared_ptr<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
 
     for (int i = 0; i < 2; ++i)
     {
@@ -857,8 +856,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force()
     // assemble the contributions into force vector class variable
     // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
     BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
-        elegids, eleforce, dummystiff, beam_interaction_data_state_ptr()->get_force_np(),
-        Teuchos::null);
+        elegids, eleforce, dummystiff, beam_interaction_data_state_ptr()->get_force_np(), nullptr);
   }
 
   return true;
@@ -888,7 +886,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_stiff()
 
   for (auto const& iter : doublebondcl_)
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
+    std::shared_ptr<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
 
     for (int i = 0; i < 2; ++i)
     {
@@ -910,8 +908,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_stiff()
     // assemble the contributions into stiffness matrix class variable
     // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
     BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
-        elegids, dummyforce, elestiff, Teuchos::null,
-        beam_interaction_data_state_ptr()->get_stiff());
+        elegids, dummyforce, elestiff, nullptr, beam_interaction_data_state_ptr()->get_stiff());
   }
 
   return true;
@@ -945,7 +942,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force_stiff()
 
   for (auto const& iter : doublebondcl_)
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
+    std::shared_ptr<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
     for (int i = 0; i < 2; ++i)
     {
       elegids[i] = elepairptr->get_ele_gid(i);
@@ -1000,7 +997,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(b
 #endif
 
   linker_disnp_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*bin_discret().dof_row_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*bin_discret().dof_row_map(), true);
   Core::LinAlg::Vector<double> dis_increment(*bin_discret().dof_row_map(), true);
 
   Core::LinAlg::Matrix<3, 1> d;
@@ -1050,9 +1047,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(b
   if (linker_redist or beam_redist)
   {
     // current displacement state gets new reference state
-    dis_at_last_redistr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*linker_disnp_);
+    dis_at_last_redistr_ = std::make_shared<Core::LinAlg::Vector<double>>(*linker_disnp_);
     // transfer crosslinker to new bins
-    Teuchos::RCP<std::list<int>> lostcl = beam_crosslinker_handler_ptr()->transfer_linker(true);
+    std::shared_ptr<std::list<int>> lostcl = beam_crosslinker_handler_ptr()->transfer_linker(true);
     if (not lostcl->empty())
       FOUR_C_THROW("Crosslinker got lost during transfer, something went wrong");
   }
@@ -1129,7 +1126,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::runtime_output_step_state
       "BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::"
       "runtime_output_step_state");
 
-  if (visualization_output_writer_ptr_ != Teuchos::null) write_output_runtime_structure();
+  if (visualization_output_writer_ptr_ != nullptr) write_output_runtime_structure();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1139,7 +1136,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::init_output_runtime_struc
   check_init();
 
   visualization_output_writer_ptr_ =
-      Teuchos::make_rcp<Core::IO::DiscretizationVisualizationWriterNodes>(bin_discret_ptr(),
+      std::make_shared<Core::IO::DiscretizationVisualizationWriterNodes>(bin_discret_ptr(),
           Core::IO::visualization_parameters_factory(
               Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
               *Global::Problem::instance()->output_control_file(), g_state().get_time_n()));
@@ -1160,17 +1157,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
   // append all desired node and dof output data to the writer object's storage
   Core::FE::Discretization const& bindis = bin_discret();
   // node
-  Teuchos::RCP<Core::LinAlg::Vector<double>> numbond =
+  std::shared_ptr<Core::LinAlg::Vector<double>> numbond =
       Core::LinAlg::create_vector(*bindis.node_row_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> owner =
+  std::shared_ptr<Core::LinAlg::Vector<double>> owner =
       Core::LinAlg::create_vector(*bindis.node_row_map(), true);
 
   // dof
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dis =
+  std::shared_ptr<Core::LinAlg::Vector<double>> dis =
       Core::LinAlg::create_vector(*bindis.dof_row_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> orientation =
+  std::shared_ptr<Core::LinAlg::Vector<double>> orientation =
       Core::LinAlg::create_vector(*bindis.dof_row_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> force =
+  std::shared_ptr<Core::LinAlg::Vector<double>> force =
       Core::LinAlg::create_vector(*bindis.dof_row_map(), true);
 
   fill_state_data_vectors_for_output(*dis, *orientation, *numbond, *owner, *force);
@@ -1208,7 +1205,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
   // this may serve as a template for visualization of stochastic&viscous forces, contact forces,
   // ...
 
-  //  Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr =
+  //  std::shared_ptr<RuntimeVtpWriter> vtp_writer_ptr =
   //      Teuchos::rcp( new RuntimeVtpWriter() );
   //
   //  // Todo: we need a better upper bound for total number of time steps here
@@ -1292,7 +1289,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::fill_state_data_vectors_f
     std::vector<int> dofnode = bindis.dof(crosslinker_i);
     int numbonds = crosslinker_data_[crosslinker_i->lid()]->get_number_of_bonds();
 
-    Teuchos::RCP<BEAMINTERACTION::BeamLink> beamlink = Teuchos::null;
+    std::shared_ptr<BEAMINTERACTION::BeamLink> beamlink = nullptr;
 
     if (numbonds == 2)
     {
@@ -1341,11 +1338,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
   Core::Communication::PackBuffer linker_buffer;
   for (auto const& iter : doublebondcl_)
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamLink> btbl = iter.second;
+    std::shared_ptr<BEAMINTERACTION::BeamLink> btbl = iter.second;
     btbl->pack(linker_buffer);
   }
 
-  Teuchos::RCP<std::vector<char>> db_linker = Teuchos::make_rcp<std::vector<char>>();
+  std::shared_ptr<std::vector<char>> db_linker = std::make_shared<std::vector<char>>();
   std::swap(*db_linker, linker_buffer());
 
   // -------------------------------------------------------------------------
@@ -1356,13 +1353,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
   for (unsigned int i = 0; i < numrowcl; ++i)
   {
     int const clgid = bin_discret().node_row_map()->GID(i);
-    Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data_i =
+    std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cl_data_i =
         crosslinker_data_[bin_discret().node_col_map()->LID(clgid)];
 
     cl_data_i->pack(cldata_buffer);
   }
 
-  Teuchos::RCP<std::vector<char>> cldata = Teuchos::make_rcp<std::vector<char>>();
+  std::shared_ptr<std::vector<char>> cldata = std::make_shared<std::vector<char>>();
   std::swap(*cldata, cldata_buffer());
 
   // -------------------------------------------------------------------------
@@ -1373,18 +1370,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
   for (unsigned int i = 0; i < numrowbeam; ++i)
   {
     int const beamgid = ele_type_map_extractor().beam_map()->GID(i);
-    Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data_i =
+    std::shared_ptr<BEAMINTERACTION::Data::BeamData> beam_data_i =
         beam_data_[discret().element_col_map()->LID(beamgid)];
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-    if (beam_data_i == Teuchos::null)
+    if (beam_data_i == nullptr)
       FOUR_C_THROW("beam data of row beam with gid %i not there", beamgid);
 #endif
 
     beam_data_i->pack(beamdata_buffer);
   }
 
-  Teuchos::RCP<std::vector<char>> beamdata = Teuchos::make_rcp<std::vector<char>>();
+  std::shared_ptr<std::vector<char>> beamdata = std::make_shared<std::vector<char>>();
   std::swap(*beamdata, beamdata_buffer());
 
   // -------------------------------------------------------------------------
@@ -1413,7 +1410,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   // -------------------------------------------------------------------------
   // 1) read list of double bonded crosslinker on each proc
   // -------------------------------------------------------------------------
-  Teuchos::RCP<std::vector<char>> linkercharvec;
+  std::shared_ptr<std::vector<char>> linkercharvec;
   bin_reader.read_char_vector(linkercharvec, "Linker");
 
   {
@@ -1423,12 +1420,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
       std::vector<char> data;
       extract_from_pack(buffer, data);
       Core::Communication::UnpackBuffer data_buffer(data);
-      Teuchos::RCP<Core::Communication::ParObject> object =
-          Teuchos::RCP(Core::Communication::factory(data_buffer), true);
-      Teuchos::RCP<BEAMINTERACTION::BeamLink> beamtobeamlink =
-          Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLink>(object);
-      if (beamtobeamlink == Teuchos::null)
-        FOUR_C_THROW("Failed to build a node from the node data");
+      std::shared_ptr<Core::Communication::ParObject> object(
+          Core::Communication::factory(data_buffer));
+      std::shared_ptr<BEAMINTERACTION::BeamLink> beamtobeamlink =
+          std::dynamic_pointer_cast<BEAMINTERACTION::BeamLink>(object);
+      if (beamtobeamlink == nullptr) FOUR_C_THROW("Failed to build a node from the node data");
 
       // insert in my list of double bonded crosslinker
       doublebondcl_[beamtobeamlink->id()] = beamtobeamlink;
@@ -1439,11 +1435,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   // 2) read crosslinker data
   // -------------------------------------------------------------------------
 
-  Teuchos::RCP<std::vector<char>> cldata_charvec;
+  std::shared_ptr<std::vector<char>> cldata_charvec;
   bin_reader.read_char_vector(cldata_charvec, "ClData");
   crosslinker_data_.resize(bin_discret().num_my_col_nodes());
 
-  std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData>> cl_not_owned;
+  std::map<int, std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>> cl_not_owned;
   std::set<int> not_owned_gids;
   std::map<int, std::vector<char>> cl_datapacks;
   std::vector<int> read_node_ids;
@@ -1456,10 +1452,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
 
 
     Core::Communication::UnpackBuffer recv_singlecontainer_buffer(recv_singlecontainer_data);
-    Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::RCP(
+    std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cl_data(
         BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
-            recv_singlecontainer_buffer),
-        true);
+            recv_singlecontainer_buffer));
 
     int const cl_gid = cl_data->get_id();
     read_node_ids.push_back(cl_gid);
@@ -1475,8 +1470,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
       -1, read_node_ids.size(), read_node_ids.data(), 0, bin_discret().get_comm());
 
   // build exporter object
-  Teuchos::RCP<Core::Communication::Exporter> exporter =
-      Teuchos::make_rcp<Core::Communication::Exporter>(
+  std::shared_ptr<Core::Communication::Exporter> exporter =
+      std::make_shared<Core::Communication::Exporter>(
           dummy_cl_map, *bin_discret().node_col_map(), bin_discret().get_comm());
 
   // export
@@ -1494,21 +1489,20 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
     extract_from_pack(cl_buffer, data);
 
     Core::Communication::UnpackBuffer data_buffer(data);
-    Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::RCP(
+    std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cl_data(
         BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
-            data_buffer),
-        true);
+            data_buffer));
     crosslinker_data_[bin_discret().node_col_map()->LID(cl_data->get_id())] = cl_data;
   }
 
   // -------------------------------------------------------------------------
   // 3) read beam data
   // -------------------------------------------------------------------------
-  Teuchos::RCP<std::vector<char>> beamdata_charvec;
+  std::shared_ptr<std::vector<char>> beamdata_charvec;
   bin_reader.read_char_vector(beamdata_charvec, "BeamData");
   beam_data_.resize(discret().num_my_col_elements());
 
-  std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BeamData>> beams_not_owned;
+  std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BeamData>> beams_not_owned;
   not_owned_gids.clear();
   std::map<int, std::vector<char>> beam_datapacks;
   std::vector<int> read_ele_ids;
@@ -1520,10 +1514,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
     extract_from_pack(beamdata_buffer, recv_singlecontainer_data);
 
     Core::Communication::UnpackBuffer recv_singlecontainer_buffer(recv_singlecontainer_data);
-    Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data =
-        Teuchos::RCP(BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(
-                         recv_singlecontainer_buffer),
-            true);
+    std::shared_ptr<BEAMINTERACTION::Data::BeamData> beam_data(
+        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(
+            recv_singlecontainer_buffer));
 
     int const beam_gid = beam_data->get_id();
     read_ele_ids.push_back(beam_gid);
@@ -1535,11 +1528,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   }
 
   // build dummy map according to read data on myrank
-  Teuchos::RCP<Epetra_Map> dummy_beam_map = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> dummy_beam_map = std::make_shared<Epetra_Map>(
       -1, read_ele_ids.size(), read_ele_ids.data(), 0, discret().get_comm());
 
   // build exporter object
-  exporter = Teuchos::make_rcp<Core::Communication::Exporter>(
+  exporter = std::make_shared<Core::Communication::Exporter>(
       *dummy_beam_map, *discret().element_col_map(), discret().get_comm());
 
   // export
@@ -1554,9 +1547,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
     extract_from_pack(buffer, data);
 
     Core::Communication::UnpackBuffer data_buffer(data);
-    Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data = Teuchos::RCP(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(data_buffer),
-        true);
+    std::shared_ptr<BEAMINTERACTION::Data::BeamData> beam_data(
+        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(data_buffer));
     beam_data_[discret().element_col_map()->LID(beam_data->get_id())] = beam_data;
   }
 
@@ -1575,7 +1567,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_read_restart()
 
   // store displacement of restart step as displacement state of last redistribution
   dis_at_last_redistr_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*bin_discret().dof_row_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*bin_discret().dof_row_map(), true);
   for (int i = 0; i < bin_discret().num_my_row_nodes(); ++i)
   {
     Core::Nodes::Node* crosslinker_i = bin_discret().l_row_node(i);
@@ -2054,7 +2046,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
       "update_and_export_crosslinker_data");
 
   //  // if one proc has changed maps, all procs have to update exporter
-  //  int loc_changed_maps = static_cast< int >( (cl_exporter_ == Teuchos::null) or not
+  //  int loc_changed_maps = static_cast< int >( (cl_exporter_ == nullptr) or not
   //      ( cl_exporter_->SourceMap().SameAs( *cl_noderowmap_prior_redistr_ ) and
   //        cl_nodecolmap_prior_redistr_->SameAs(*BinDiscret().NodeColMap() ) ) );
   //
@@ -2067,7 +2059,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
   //  BinDiscret().Comm().MaxAll( &loc_changed_maps, &g_changed_maps, 1 );
   //
   //  if ( g_changed_maps )
-  cl_exporter_ = Teuchos::make_rcp<Core::Communication::Exporter>(
+  cl_exporter_ = std::make_shared<Core::Communication::Exporter>(
       *cl_noderowmap_prior_redistr_, *bin_discret().node_col_map(), bin_discret().get_comm());
 
   // we first need to pack our stuff into and std::vector< char > for communication
@@ -2076,7 +2068,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
   for (unsigned int i = 0; i < numrowcl; ++i)
   {
     int const clgid = cl_noderowmap_prior_redistr_->GID(i);
-    Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data_i =
+    std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cl_data_i =
         crosslinker_data_[cl_nodecolmap_prior_redistr_->LID(clgid)];
 
     Core::Communication::PackBuffer data;
@@ -2097,10 +2089,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
     extract_from_pack(buffer1, data);
 
     Core::Communication::UnpackBuffer buffer2(data);
-    Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::RCP(
+    std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cl_data(
         BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
-            buffer2),
-        true);
+            buffer2));
     crosslinker_data_[bin_discret().node_col_map()->LID(cl_data->get_id())] = cl_data;
   }
 }
@@ -2116,7 +2107,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
   //      "update_and_export_beam_data");
   //
   //  // if maps have change on one proc, all procs have to rebuild the exporter object
-  //  int loc_changed_maps = static_cast< int >( (beam_exporter_ == Teuchos::null) or not
+  //  int loc_changed_maps = static_cast< int >( (beam_exporter_ == nullptr) or not
   //      ( beam_exporter_->SourceMap().SameAs( *beam_elerowmap_prior_redistr_ ) and
   //        beam_elecolmap_prior_redistr_->SameAs( *discret().ElementColMap() ) ) );
   //
@@ -2129,7 +2120,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
   //  discret().Comm().MaxAll( &loc_changed_maps, &g_changed_maps, 1 );
   //
   //  if ( g_changed_maps )
-  beam_exporter_ = Teuchos::make_rcp<Core::Communication::Exporter>(
+  beam_exporter_ = std::make_shared<Core::Communication::Exporter>(
       *beam_elerowmap_prior_redistr_, *discret().element_col_map(), discret().get_comm());
 
   // we first need to pack our row stuff into and std::vector< char > for communication
@@ -2139,11 +2130,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
   {
     int const elegid = beam_elerowmap_prior_redistr_->GID(i);
 
-    Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data_i =
+    std::shared_ptr<BEAMINTERACTION::Data::BeamData> beam_data_i =
         beam_data_[beam_elecolmap_prior_redistr_->LID(elegid)];
 
     // safety check
-    if (beam_data_i == Teuchos::null)
+    if (beam_data_i == nullptr)
       FOUR_C_THROW("beam data container for beam with gid %i not there on rank %i ", elegid,
           g_state().get_my_rank());
 
@@ -2202,9 +2193,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
     extract_from_pack(buffer1, data);
 
     Core::Communication::UnpackBuffer buffer2(data);
-    Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data = Teuchos::RCP(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(buffer2),
-        true);
+    std::shared_ptr<BEAMINTERACTION::Data::BeamData> beam_data(
+        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(buffer2));
     beam_data_[discret().element_col_map()->LID(beam_data->get_id())] = beam_data;
   }
 }
@@ -2254,10 +2244,10 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::bind_crosslinker()
   Global::Problem::instance()->random()->set_rand_range(0.0, 1.0);
 
   // intended bonds of row crosslinker on myrank (key is clgid)
-  std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>> mybonds;
+  std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> mybonds;
   mybonds.clear();
   // intended bond col crosslinker to row element (key is owner of crosslinker != myrank)
-  std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>> undecidedbonds;
+  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>> undecidedbonds;
   undecidedbonds.clear();
 
   // fill binding event maps
@@ -2265,7 +2255,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::bind_crosslinker()
 
   // bind events where myrank only owns the elements, cl are taken care
   // of by their owner (key is clgid)
-  std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>> myelebonds;
+  std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> myelebonds;
 
   // now each row owner of a linker gets requests, makes a random decision and
   // informs back its requesters
@@ -2278,8 +2268,9 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::bind_crosslinker()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::find_potential_binding_events(
-    std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>>& undecidedbonds)
+    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+        undecidedbonds)
 {
   check_init();
 
@@ -2333,8 +2324,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::find_potential_binding_ev
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
     find_potential_binding_events_in_bin_and_neighborhood(Core::Elements::Element* bin,
-        std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-        std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>>&
+        std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
+        std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
             undecidedbonds,
         std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,
         bool checklinkingprop)
@@ -2429,8 +2420,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_if_sphere_prohibits
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(Core::Nodes::Node* node_i,
     std::set<Core::Elements::Element*> const& neighboring_beams,
-    std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>>& undecidedbonds,
+    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+        undecidedbonds,
     std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,
     bool checklinkingprop)
 {
@@ -2505,8 +2497,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(Core::Nod
       // if we made it this far, we can add this potential binding event to its
       // corresponding map
       // ---------------------------------------------------------------------
-      Teuchos::RCP<BEAMINTERACTION::Data::BindEventData> bindeventdata =
-          Teuchos::make_rcp<BEAMINTERACTION::Data::BindEventData>();
+      std::shared_ptr<BEAMINTERACTION::Data::BindEventData> bindeventdata =
+          std::make_shared<BEAMINTERACTION::Data::BindEventData>();
       // default permission is true, is changed if owner of cl has something against it
       bindeventdata->init(crosslinker_i->id(), nbbeam->id(), locnbspot, g_state().get_my_rank(), 1);
 
@@ -2823,9 +2815,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_occupied_cl_b_spot_be
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::manage_binding_in_parallel(
-    std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>>& undecidedbonds,
-    std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>& myelebonds) const
+    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+        undecidedbonds,
+    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& myelebonds) const
 {
   check_init();
 
@@ -2836,14 +2829,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::manage_binding_in_paralle
   // 1) each procs makes his requests and receives the request of other procs
   // -------------------------------------------------------------------------
   // store requested cl and its data
-  std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>> requestedcl;
+  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>> requestedcl;
   communicate_undecided_bonds(undecidedbonds, requestedcl);
 
   // -------------------------------------------------------------------------
   // 2) now myrank needs to decide which proc is allowed to set the requested
   //    link
   // -------------------------------------------------------------------------
-  std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>> decidedbonds;
+  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>> decidedbonds;
   decide_binding_in_parallel(requestedcl, mybonds, decidedbonds);
 
   // -------------------------------------------------------------------------
@@ -2858,8 +2851,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::manage_binding_in_paralle
  *----------------------------------------------------------------------------*/
 int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
     update_my_crosslinker_and_element_binding_states(
-        std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-        std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>& myelebonds)
+        std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
+        std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& myelebonds)
 {
   check_init();
 
@@ -2881,7 +2874,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_crosslinker_binding_states(
-    std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>> const& mybonds,
+    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> const& mybonds,
     std::map<int, NewDoubleBonds>& mynewdbondcl)
 {
   check_init();
@@ -3072,7 +3065,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_crosslinker_bin
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_element_binding_states(
-    std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>> const& myelebonds)
+    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> const& myelebonds)
 {
   check_init();
 
@@ -3159,7 +3152,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
     // create and initialize objects of beam-to-beam connections
     // Todo move this inside the create routines (or one create routine in BeamLink class)
-    Teuchos::RCP<BEAMINTERACTION::BeamLink> linkelepairptr;
+    std::shared_ptr<BEAMINTERACTION::BeamLink> linkelepairptr;
     if (cl_node->get_material()->joint_type() == Inpar::BEAMINTERACTION::beam3r_line2_rigid)
       linkelepairptr = BEAMINTERACTION::BeamLinkRigidJointed::create();
     else if (cl_node->get_material()->joint_type() == Inpar::BEAMINTERACTION::beam3r_line2_pin or
@@ -3204,9 +3197,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
   for (unsigned int bond_i = 0; bond_i < maxbonds; ++bond_i)
   {
     // intended bonds of row crosslinker on myrank (key is clgid)
-    std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>> mybonds;
+    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> mybonds;
     // intended bond col crosslinker to row element (key is owner of crosslinker != myrank)
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>> undecidedbonds;
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>
+        undecidedbonds;
 
     // store bins that have already been examined
     std::vector<int> examinedbins(bin_discret_ptr()->num_my_col_elements(), 0);
@@ -3246,7 +3240,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
     // bind events where myrank only owns the elements, cl are taken care
     // of by their owner (key is clgid)
-    std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>> myelebonds;
+    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> myelebonds;
 
     // now each row owner of a linker gets requests, makes a random decision and
     // informs back its requesters
@@ -3267,10 +3261,11 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::un_bind_crosslinker()
 
   // data containing information about elements that need to be updated on
   // procs != myrank
-  std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>>> sendunbindevents;
+  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>>
+      sendunbindevents;
   sendunbindevents.clear();
   // elements that need to be updated on myrank
-  std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>> myrankunbindevents;
+  std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>> myrankunbindevents;
   myrankunbindevents.clear();
   int num_db_dissolved = 0;
 
@@ -3432,7 +3427,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_beam_binding_status_after_unbinding(
-    std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>> const& unbindevent)
+    std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>> const& unbindevent)
 {
   check_init();
 
@@ -3463,11 +3458,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_double_bonds_af
 {
   check_init();
 
-  std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLink>>> dbcltosend;
+  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::BeamLink>>> dbcltosend;
   std::set<int> dbtoerase;
 
   // loop over all double bonds on myrank
-  std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLink>>::iterator iter;
+  std::map<int, std::shared_ptr<BEAMINTERACTION::BeamLink>>::iterator iter;
   for (iter = doublebondcl_.begin(); iter != doublebondcl_.end(); ++iter)
   {
     const int clgid = iter->first;
@@ -3509,7 +3504,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_double_bonds_re
   // loop over all double bonded crosslinker that were read during restart and
   // get the ones that do not belong to myrank
   std::set<int> notonmyrank;
-  std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLink>>::iterator iter;
+  std::map<int, std::shared_ptr<BEAMINTERACTION::BeamLink>>::iterator iter;
   for (iter = doublebondcl_.begin(); iter != doublebondcl_.end(); ++iter)
   {
     // double bonded crosslinker gid
@@ -3528,7 +3523,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_double_bonds_re
       size, unique_clgidlist.data(), unique_pidlist.data(), nullptr);
   if (err < 0) FOUR_C_THROW("Epetra_BlockMap::RemoteIDList returned err=%d", err);
 
-  std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLink>>> dbcltosend;
+  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::BeamLink>>> dbcltosend;
   for (unsigned int i = 0; i < static_cast<unsigned int>(unique_clgidlist.size()); ++i)
     dbcltosend[unique_pidlist[i]].push_back(doublebondcl_[unique_clgidlist[i]]);
 
@@ -3561,9 +3556,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unbind_crosslinker_in_bin
 
   // data containing information about elements that need to be updated on
   // procs != myrank
-  std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>>> sendunbindevents;
+  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>>
+      sendunbindevents;
   // elements that need to be updated on myrank
-  std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>> myrankunbindevents;
+  std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>> myrankunbindevents;
 
   for (auto const& nb_iter : binsonmyrank)
   {
@@ -3730,9 +3726,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_bin_ids(
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::dissolve_bond(Core::Nodes::Node* linker,
     int freedbspotid, int numbondsold,
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>>>&
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>>&
         sendunbindevents,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>>& myrankunbindevents)
+    std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>& myrankunbindevents)
 {
   check_init_setup();
 
@@ -3748,8 +3744,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::dissolve_bond(Core::Nodes
   BEAMINTERACTION::Data::CrosslinkerData* cldata = crosslinker_data_[clcollid].get();
 
   // store unbinding event data
-  Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData> unbindevent =
-      Teuchos::make_rcp<BEAMINTERACTION::Data::UnBindEventData>();
+  std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData> unbindevent =
+      std::make_shared<BEAMINTERACTION::Data::UnBindEventData>();
   unbindevent->set_cl_id(linker->id());
   unbindevent->set_ele_toupdate(cldata->get_b_spots()[freedbspotid]);
   unbindevent->set_linker_type(crosslinker->get_material()->linker_type());
@@ -3802,14 +3798,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::dissolve_bond(Core::Nodes
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_undecided_bonds(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>>& undecidedbonds,
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>>& requestedcl)
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+        undecidedbonds,
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>& requestedcl)
     const
 {
   check_init();
 
   // do communication
-  std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>> recvbindevent;
+  std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> recvbindevent;
   i_send_recv_any(undecidedbonds, recvbindevent);
 
   for (unsigned int i = 0; i < recvbindevent.size(); ++i)
@@ -3821,13 +3818,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_undecided_bon
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_decided_bonds(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>>& decidedbonds,
-    std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>& myelebonds) const
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>& decidedbonds,
+    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& myelebonds) const
 {
   check_init();
 
   // communicate decided bonds
-  std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>> recvbindevent;
+  std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> recvbindevent;
   i_send_recv_any(decidedbonds, recvbindevent);
 
   // loop over received binding events
@@ -3843,14 +3840,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_decided_bonds
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::decide_binding_in_parallel(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>>& requestedcl,
-    std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>>& decidedbonds)
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>& requestedcl,
+    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>& decidedbonds)
     const
 {
   check_init();
 
-  std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>>::iterator cliter;
+  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>::iterator
+      cliter;
   // loop over all requested cl (note myrank is owner of these)
   for (cliter = requestedcl.begin(); cliter != requestedcl.end(); ++cliter)
   {
@@ -3906,7 +3904,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::decide_binding_in_paralle
       // note: this means link is set between row cl and row ele on myrank,
       // all relevant information for myrank is stored in mybonds
       // loop over all requesters and store their veto
-      std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>::iterator iter;
+      std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>::iterator iter;
       for (iter = cliter->second.begin(); iter != cliter->second.end(); ++iter)
       {
         (*iter)->set_permission(0);
@@ -3917,7 +3915,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::decide_binding_in_paralle
     else
     {
       // loop over all requesters and store veto for all requester except for one
-      std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>::iterator iter;
+      std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>::iterator iter;
 
       int counter = 0;
       for (iter = cliter->second.begin(); iter != cliter->second.end(); ++iter)
@@ -3954,7 +3952,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::decide_binding_in_paralle
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_after_redistribution(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLink>>>& dbondcltosend)
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::BeamLink>>>& dbondcltosend)
 {
   check_init();
 
@@ -3968,10 +3966,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
   // ---- pack data for sending -----
   std::map<int, std::vector<char>> sdata;
   std::vector<int> targetprocs(numproc, 0);
-  std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLink>>>::const_iterator p;
+  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::BeamLink>>>::const_iterator p;
   for (p = dbondcltosend.begin(); p != dbondcltosend.end(); ++p)
   {
-    std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLink>>::const_iterator iter;
+    std::vector<std::shared_ptr<BEAMINTERACTION::BeamLink>>::const_iterator iter;
     for (iter = p->second.begin(); iter != p->second.end(); ++iter)
     {
       Core::Communication::PackBuffer data;
@@ -4021,12 +4019,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
       extract_from_pack(buffer, data);
       // this Teuchos::rcp holds the memory
       Core::Communication::UnpackBuffer data_buffer(data);
-      Teuchos::RCP<Core::Communication::ParObject> object =
-          Teuchos::RCP(Core::Communication::factory(data_buffer), true);
-      Teuchos::RCP<BEAMINTERACTION::BeamLink> beamtobeamlink =
-          Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLink>(object);
-      if (beamtobeamlink == Teuchos::null)
-        FOUR_C_THROW("Received object is not a beam to beam linkage");
+      std::shared_ptr<Core::Communication::ParObject> object =
+          std::shared_ptr<Core::Communication::ParObject>(
+              Core::Communication::factory(data_buffer));
+      std::shared_ptr<BEAMINTERACTION::BeamLink> beamtobeamlink =
+          std::dynamic_pointer_cast<BEAMINTERACTION::BeamLink>(object);
+      if (beamtobeamlink == nullptr) FOUR_C_THROW("Received object is not a beam to beam linkage");
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       // some safety checks
@@ -4052,9 +4050,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_crosslinker_unbinding(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>>>&
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>>&
         sendunbindevent,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>>& myrankunbindevent) const
+    std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>& myrankunbindevent) const
 {
   check_init();
 
@@ -4066,16 +4064,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_crosslinker_u
 template <typename T>
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send(
     Core::Communication::Exporter& exporter, std::vector<MPI_Request>& request,
-    std::map<int, std::vector<Teuchos::RCP<T>>> const& send) const
+    std::map<int, std::vector<std::shared_ptr<T>>> const& send) const
 {
   check_init();
 
   // ---- pack data for sending -----
   std::map<int, std::vector<char>> sdata;
-  typename std::map<int, std::vector<Teuchos::RCP<T>>>::const_iterator p;
+  typename std::map<int, std::vector<std::shared_ptr<T>>>::const_iterator p;
   for (p = send.begin(); p != send.end(); ++p)
   {
-    typename std::vector<Teuchos::RCP<T>>::const_iterator iter;
+    typename std::vector<std::shared_ptr<T>>::const_iterator iter;
 
     for (iter = p->second.begin(); iter != p->second.end(); ++iter)
     {
@@ -4102,7 +4100,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send(
  *-----------------------------------------------------------------------------*/
 template <typename T>
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
-    std::map<int, std::vector<Teuchos::RCP<T>>> const& datasenttorank,
+    std::map<int, std::vector<std::shared_ptr<T>>> const& datasenttorank,
     std::vector<int>& summedtargets) const
 {
   check_init();
@@ -4111,7 +4109,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
 
   // get number of procs from which myrank receives data
   std::vector<int> targetprocs(numproc, 0);
-  typename std::map<int, std::vector<Teuchos::RCP<T>>>::const_iterator prociter;
+  typename std::map<int, std::vector<std::shared_ptr<T>>>::const_iterator prociter;
   for (prociter = datasenttorank.begin(); prociter != datasenttorank.end(); ++prociter)
     targetprocs[prociter->first] = 1;
   // store number of messages myrank receives
@@ -4124,7 +4122,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
 template <typename T>
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
     Core::Communication::Exporter& exporter, int receivesize,
-    std::vector<Teuchos::RCP<T>>& recv) const
+    std::vector<std::shared_ptr<T>>& recv) const
 {
   check_init();
 
@@ -4149,8 +4147,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
       extract_from_pack(buffer, data);
 
       Core::Communication::UnpackBuffer data_buffer(data);
-      Teuchos::RCP<T> data_container =
-          Teuchos::RCP(BEAMINTERACTION::Data::create_data_container<T>(data_buffer), true);
+      std::shared_ptr<T> data_container(
+          BEAMINTERACTION::Data::create_data_container<T>(data_buffer));
 
       // add received data to list
       recv.push_back(data_container);
@@ -4162,8 +4160,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
  *-----------------------------------------------------------------------------*/
 template <typename T>
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
-    std::map<int, std::vector<Teuchos::RCP<T>>> const& send,
-    std::vector<Teuchos::RCP<T>>& recv) const
+    std::map<int, std::vector<std::shared_ptr<T>>> const& send,
+    std::vector<std::shared_ptr<T>>& recv) const
 {
   check_init();
 
@@ -4234,57 +4232,59 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::print_and_check_bind_even
 //-----------------------------------------------------------------------------
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send(
     Core::Communication::Exporter&, std::vector<MPI_Request>&,
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData>>> const&) const;
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>> const&)
+    const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send(
     Core::Communication::Exporter&, std::vector<MPI_Request>&,
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BeamData>>> const&) const;
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BeamData>>> const&) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send(
     Core::Communication::Exporter&, std::vector<MPI_Request>&,
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>> const&) const;
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>> const&) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send(
     Core::Communication::Exporter&, std::vector<MPI_Request>&,
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>>> const&) const;
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>> const&)
+    const;
 
 
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData>>> const&,
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>> const&,
     std::vector<int>&) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BeamData>>> const&,
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BeamData>>> const&,
     std::vector<int>&) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>> const&,
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>> const&,
     std::vector<int>&) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>>> const&,
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>> const&,
     std::vector<int>&) const;
 
 
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
     Core::Communication::Exporter&, int const,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData>>&) const;
+    std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>&) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
     Core::Communication::Exporter&, int const,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BeamData>>&) const;
+    std::vector<std::shared_ptr<BEAMINTERACTION::Data::BeamData>>&) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
     Core::Communication::Exporter&, int const,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>&) const;
+    std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>&) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
     Core::Communication::Exporter&, int const,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>>&) const;
+    std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>&) const;
 
 
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData>>> const&,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData>>&) const;
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>> const&,
+    std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>&) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BeamData>>> const&,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BeamData>>&) const;
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BeamData>>> const&,
+    std::vector<std::shared_ptr<BEAMINTERACTION::Data::BeamData>>&) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>> const&,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::Data::BindEventData>>&) const;
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>> const&,
+    std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>&) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>>> const&,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData>>&) const;
+    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>> const&,
+    std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>&) const;
 
 FOUR_C_NAMESPACE_CLOSE

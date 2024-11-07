@@ -48,15 +48,15 @@ void CONTACT::Interface::round_robin_extend_ghosting(bool firstevaluation)
     slave_ele->delete_search_elements();
   }
 
-  Teuchos::RCP<Epetra_Map> currently_ghosted_elements = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> currently_ghosted_elements = std::make_shared<Epetra_Map>(
       -1, (int)element_GIDs_to_be_ghosted.size(), element_GIDs_to_be_ghosted.data(), 0, get_comm());
-  Teuchos::RCP<Epetra_Map> currently_ghosted_nodes = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> currently_ghosted_nodes = std::make_shared<Epetra_Map>(
       -1, (int)node_GIDs_to_be_ghosted.size(), node_GIDs_to_be_ghosted.data(), 0, get_comm());
 
   if (firstevaluation)
   {
-    eextendedghosting_ = Teuchos::make_rcp<Epetra_Map>(*currently_ghosted_elements);
-    nextendedghosting_ = Teuchos::make_rcp<Epetra_Map>(*currently_ghosted_nodes);
+    eextendedghosting_ = std::make_shared<Epetra_Map>(*currently_ghosted_elements);
+    nextendedghosting_ = std::make_shared<Epetra_Map>(*currently_ghosted_nodes);
   }
   else
   {
@@ -84,7 +84,7 @@ void CONTACT::Interface::round_robin_change_ownership()
 
   // change master-side proc ownership
   // some local variables
-  Teuchos::RCP<Epetra_Comm> comm_v = Teuchos::RCP(get_comm().Clone());
+  std::shared_ptr<Epetra_Comm> comm_v(get_comm().Clone());
   const int myrank = comm_v->MyPID();
   const int numproc = comm_v->NumProc();
   const int torank = (myrank + 1) % numproc;              // to
@@ -99,10 +99,10 @@ void CONTACT::Interface::round_robin_change_ownership()
   Epetra_Map MasterColelesdummy(*master_col_elements());
 
   // create origin maps
-  Teuchos::RCP<Epetra_Map> SCN = Teuchos::make_rcp<Epetra_Map>(*slave_col_nodes());
-  Teuchos::RCP<Epetra_Map> SCE = Teuchos::make_rcp<Epetra_Map>(*slave_col_elements());
-  Teuchos::RCP<Epetra_Map> SRN = Teuchos::make_rcp<Epetra_Map>(*slave_row_nodes());
-  Teuchos::RCP<Epetra_Map> SRE = Teuchos::make_rcp<Epetra_Map>(*slave_row_elements());
+  std::shared_ptr<Epetra_Map> SCN = std::make_shared<Epetra_Map>(*slave_col_nodes());
+  std::shared_ptr<Epetra_Map> SCE = std::make_shared<Epetra_Map>(*slave_col_elements());
+  std::shared_ptr<Epetra_Map> SRN = std::make_shared<Epetra_Map>(*slave_row_nodes());
+  std::shared_ptr<Epetra_Map> SRE = std::make_shared<Epetra_Map>(*slave_row_elements());
 
   // *****************************************
   // Elements
@@ -178,10 +178,10 @@ void CONTACT::Interface::round_robin_change_ownership()
 
       // this Teuchos::rcp holds the memory of the ele
       Core::Communication::UnpackBuffer data_buffer(data);
-      Teuchos::RCP<Core::Communication::ParObject> object =
-          Teuchos::RCP(Core::Communication::factory(data_buffer), true);
-      Teuchos::RCP<Mortar::Element> ele = Teuchos::rcp_dynamic_cast<Mortar::Element>(object);
-      if (ele == Teuchos::null) FOUR_C_THROW("Received object is not an ele");
+      std::shared_ptr<Core::Communication::ParObject> object(
+          Core::Communication::factory(data_buffer));
+      std::shared_ptr<Mortar::Element> ele = std::dynamic_pointer_cast<Mortar::Element>(object);
+      if (ele == nullptr) FOUR_C_THROW("Received object is not an ele");
 
       // add whether its a row ele
       if (ghost == 1)
@@ -296,13 +296,13 @@ void CONTACT::Interface::round_robin_change_ownership()
 
       // this Teuchos::rcp holds the memory of the node
       Core::Communication::UnpackBuffer data_buffer(data);
-      Teuchos::RCP<Core::Communication::ParObject> object =
-          Teuchos::RCP(Core::Communication::factory(data_buffer), true);
+      std::shared_ptr<Core::Communication::ParObject> object(
+          Core::Communication::factory(data_buffer));
 
       if (ftype == Inpar::CONTACT::friction_none)
       {
-        Teuchos::RCP<Mortar::Node> node = Teuchos::rcp_dynamic_cast<Mortar::Node>(object);
-        if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
+        std::shared_ptr<Mortar::Node> node = std::dynamic_pointer_cast<Mortar::Node>(object);
+        if (node == nullptr) FOUR_C_THROW("Received object is not a node");
 
         if (ghost == 1)
         {
@@ -320,8 +320,8 @@ void CONTACT::Interface::round_robin_change_ownership()
       }
       else  // if friction...
       {
-        Teuchos::RCP<FriNode> node = Teuchos::rcp_dynamic_cast<FriNode>(object);
-        if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
+        std::shared_ptr<FriNode> node = std::dynamic_pointer_cast<FriNode>(object);
+        if (node == nullptr) FOUR_C_THROW("Received object is not a node");
 
         if (ghost == 1)
         {
@@ -345,23 +345,23 @@ void CONTACT::Interface::round_robin_change_ownership()
   comm_v->Barrier();
 
   // create maps from sending
-  Teuchos::RCP<Epetra_Map> noderowmap =
-      Teuchos::make_rcp<Epetra_Map>(-1, (int)nrow.size(), nrow.data(), 0, get_comm());
-  Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::make_rcp<Epetra_Map>(-1, (int)ncol.size(), ncol.data(), 0, get_comm());
+  std::shared_ptr<Epetra_Map> noderowmap =
+      std::make_shared<Epetra_Map>(-1, (int)nrow.size(), nrow.data(), 0, get_comm());
+  std::shared_ptr<Epetra_Map> nodecolmap =
+      std::make_shared<Epetra_Map>(-1, (int)ncol.size(), ncol.data(), 0, get_comm());
 
-  Teuchos::RCP<Epetra_Map> elerowmap =
-      Teuchos::make_rcp<Epetra_Map>(-1, (int)erow.size(), erow.data(), 0, get_comm());
-  Teuchos::RCP<Epetra_Map> elecolmap =
-      Teuchos::make_rcp<Epetra_Map>(-1, (int)ecol.size(), ecol.data(), 0, get_comm());
+  std::shared_ptr<Epetra_Map> elerowmap =
+      std::make_shared<Epetra_Map>(-1, (int)erow.size(), erow.data(), 0, get_comm());
+  std::shared_ptr<Epetra_Map> elecolmap =
+      std::make_shared<Epetra_Map>(-1, (int)ecol.size(), ecol.data(), 0, get_comm());
 
   // Merge s/m column maps for eles and nodes
-  Teuchos::RCP<Epetra_Map> colnodesfull = Core::LinAlg::merge_map(nodecolmap, SCN, true);
-  Teuchos::RCP<Epetra_Map> colelesfull = Core::LinAlg::merge_map(elecolmap, SCE, true);
+  std::shared_ptr<Epetra_Map> colnodesfull = Core::LinAlg::merge_map(nodecolmap, SCN, true);
+  std::shared_ptr<Epetra_Map> colelesfull = Core::LinAlg::merge_map(elecolmap, SCE, true);
 
   // Merge s/m row maps for eles and nodes
-  Teuchos::RCP<Epetra_Map> rownodesfull = Core::LinAlg::merge_map(noderowmap, SRN, false);
-  Teuchos::RCP<Epetra_Map> rowelesfull = Core::LinAlg::merge_map(elerowmap, SRE, false);
+  std::shared_ptr<Epetra_Map> rownodesfull = Core::LinAlg::merge_map(noderowmap, SRN, false);
+  std::shared_ptr<Epetra_Map> rowelesfull = Core::LinAlg::merge_map(elerowmap, SRE, false);
 
   // to discretization
   // export nodes and elements to the row map
@@ -402,14 +402,14 @@ void CONTACT::Interface::round_robin_detect_ghosting()
   round_robin_extend_ghosting(true);
 
   // Init Maps
-  Teuchos::RCP<Epetra_Map> initial_slave_node_column_map =
-      Teuchos::make_rcp<Epetra_Map>(*slave_col_nodes());
-  Teuchos::RCP<Epetra_Map> initial_slave_element_column_map =
-      Teuchos::make_rcp<Epetra_Map>(*slave_col_elements());
-  Teuchos::RCP<Epetra_Map> initial_master_node_column_map =
-      Teuchos::make_rcp<Epetra_Map>(*master_col_nodes());
-  Teuchos::RCP<Epetra_Map> initial_master_element_column_map =
-      Teuchos::make_rcp<Epetra_Map>(*master_col_elements());
+  std::shared_ptr<Epetra_Map> initial_slave_node_column_map =
+      std::make_shared<Epetra_Map>(*slave_col_nodes());
+  std::shared_ptr<Epetra_Map> initial_slave_element_column_map =
+      std::make_shared<Epetra_Map>(*slave_col_elements());
+  std::shared_ptr<Epetra_Map> initial_master_node_column_map =
+      std::make_shared<Epetra_Map>(*master_col_nodes());
+  std::shared_ptr<Epetra_Map> initial_master_element_column_map =
+      std::make_shared<Epetra_Map>(*master_col_elements());
 
   // *************************************
   // start RR loop for current interface
@@ -469,8 +469,8 @@ void CONTACT::Interface::round_robin_detect_ghosting()
       Global::Problem::instance()->spatial_approximation_type(), true);
 
   // reset extended ghosting maps
-  eextendedghosting_ = Teuchos::null;
-  nextendedghosting_ = Teuchos::null;
+  eextendedghosting_ = nullptr;
+  nextendedghosting_ = nullptr;
 
   // build new search tree or do nothing for bruteforce
   if (search_alg() == Inpar::Mortar::search_binarytree)

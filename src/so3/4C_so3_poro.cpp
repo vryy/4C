@@ -30,9 +30,9 @@ Discret::Elements::So3Poro<So3Ele, distype>::So3Poro(int id, int owner)
       isNurbs_(false),
       weights_(true),
       myknots_(numdim_),
-      fluid_mat_(Teuchos::null),
-      fluidmulti_mat_(Teuchos::null),
-      struct_mat_(Teuchos::null)
+      fluid_mat_(nullptr),
+      fluidmulti_mat_(nullptr),
+      struct_mat_(nullptr)
 {
   numgpt_ = intpoints_.num_points();
 
@@ -159,7 +159,7 @@ void Discret::Elements::So3Poro<So3Ele, distype>::unpack(Core::Communication::Un
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>>
+std::vector<std::shared_ptr<Core::Elements::Element>>
 Discret::Elements::So3Poro<So3Ele, distype>::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
@@ -167,7 +167,7 @@ Discret::Elements::So3Poro<So3Ele, distype>::surfaces()
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>>
+std::vector<std::shared_ptr<Core::Elements::Element>>
 Discret::Elements::So3Poro<So3Ele, distype>::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
@@ -190,8 +190,8 @@ bool Discret::Elements::So3Poro<So3Ele, distype>::read_element(const std::string
   So3Ele::read_element(eletype, eledistype, container);
 
   // setup poro material
-  Teuchos::RCP<Mat::StructPoro> poromat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
-  if (poromat == Teuchos::null) FOUR_C_THROW("no poro material assigned to poro element!");
+  std::shared_ptr<Mat::StructPoro> poromat = std::dynamic_pointer_cast<Mat::StructPoro>(material());
+  if (poromat == nullptr) FOUR_C_THROW("no poro material assigned to poro element!");
   poromat->poro_setup(numgpt_, container);
 
   read_anisotropic_permeability_directions_from_element_line_definition(container);
@@ -290,7 +290,7 @@ inline Core::Nodes::Node** Discret::Elements::So3Poro<So3Ele, distype>::nodes()
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-inline Teuchos::RCP<Core::Mat::Material> Discret::Elements::So3Poro<So3Ele, distype>::material()
+inline std::shared_ptr<Core::Mat::Material> Discret::Elements::So3Poro<So3Ele, distype>::material()
     const
 {
   return So3Ele::material();

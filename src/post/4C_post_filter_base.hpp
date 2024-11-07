@@ -12,7 +12,7 @@
 
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -51,7 +51,7 @@ class PostFilterBase
   //! get the underlying writer object
   PostWriterBase& get_writer()
   {
-    FOUR_C_ASSERT(writer_ != Teuchos::null, "Not initialized");
+    FOUR_C_ASSERT(writer_ != nullptr, "Not initialized");
     return *writer_;
   }
 
@@ -97,7 +97,7 @@ class PostFilterBase
 
  protected:
   //! The actual writer object
-  Teuchos::RCP<PostWriterBase> writer_;
+  std::shared_ptr<PostWriterBase> writer_;
 };
 
 FOUR_C_NAMESPACE_CLOSE

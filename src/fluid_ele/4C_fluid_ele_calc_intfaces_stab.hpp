@@ -55,8 +55,8 @@ namespace Discret
 
       */
       virtual int evaluate_edge_based_stabilization(
-          Discret::Elements::FluidIntFace* intface,     ///< internal face element
-          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
+          Discret::Elements::FluidIntFace* intface,        ///< internal face element
+          std::shared_ptr<Core::Mat::Material>& material,  ///< material associated with the faces
           Discret::Elements::FluidEleParameterTimInt&
               fldparatimint,  ///< time-integration parameter
           Discret::Elements::FluidEleParameterIntFace&
@@ -155,8 +155,8 @@ namespace Discret
 
       */
       int evaluate_edge_based_stabilization(
-          Discret::Elements::FluidIntFace* intface,     ///< internal face element
-          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
+          Discret::Elements::FluidIntFace* intface,        ///< internal face element
+          std::shared_ptr<Core::Mat::Material>& material,  ///< material associated with the faces
           Discret::Elements::FluidEleParameterTimInt&
               fldparatimint,  ///< time-integration parameter
           Discret::Elements::FluidEleParameterIntFace&
@@ -210,19 +210,19 @@ namespace Discret
       );
 
       //! fill element vectors with extracted data
-      void get_element_data(FluidIntFace* surfele,      ///< surface FluidIntFace element
-          Fluid* master_ele,                            ///< master parent element
-          Fluid* slave_ele,                             ///< slave  parent element
-          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
-          std::vector<double>& mypvelaf,                ///< master velaf
-          std::vector<double>& mypvelnp,                ///< master velnp
-          std::vector<double>& mypedispnp,              ///< master dispnp
-          std::vector<double>& mypgridv,                ///< master grid velocity (ALE)
-          std::vector<double>& myedispnp,               ///< surfele dispnp
-          std::vector<double>& mynvelaf,                ///< slave velaf
-          std::vector<double>& mynvelnp,                ///< slave velnp
-          std::vector<double>& mynedispnp,              ///< slave dispnp
-          std::vector<double>& myngridv                 ///< slave grid velocity (ALE)
+      void get_element_data(FluidIntFace* surfele,         ///< surface FluidIntFace element
+          Fluid* master_ele,                               ///< master parent element
+          Fluid* slave_ele,                                ///< slave  parent element
+          std::shared_ptr<Core::Mat::Material>& material,  ///< material associated with the faces
+          std::vector<double>& mypvelaf,                   ///< master velaf
+          std::vector<double>& mypvelnp,                   ///< master velnp
+          std::vector<double>& mypedispnp,                 ///< master dispnp
+          std::vector<double>& mypgridv,                   ///< master grid velocity (ALE)
+          std::vector<double>& myedispnp,                  ///< surfele dispnp
+          std::vector<double>& mynvelaf,                   ///< slave velaf
+          std::vector<double>& mynvelnp,                   ///< slave velnp
+          std::vector<double>& mynedispnp,                 ///< slave dispnp
+          std::vector<double>& myngridv                    ///< slave grid velocity (ALE)
       );
 
       //! evaluate shape functions and derivatives at integr. point
@@ -1081,7 +1081,7 @@ namespace Discret
 
 
       //! face/edge integration points
-      Teuchos::RCP<Core::FE::GaussPoints> intpoints_;
+      std::shared_ptr<Core::FE::GaussPoints> intpoints_;
 
       //! number of Gaussian points
       unsigned int numgp_;

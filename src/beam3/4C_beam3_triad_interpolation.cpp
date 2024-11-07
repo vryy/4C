@@ -11,7 +11,8 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Sacado.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -26,8 +27,8 @@ LargeRotations::TriadInterpolation<T>::TriadInterpolation()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-Teuchos::RCP<LargeRotations::TriadInterpolation<T>> LargeRotations::TriadInterpolation<T>::create(
-    unsigned int numnodes)
+std::shared_ptr<LargeRotations::TriadInterpolation<T>>
+LargeRotations::TriadInterpolation<T>::create(unsigned int numnodes)
 {
   // so far, the only implemented variant is the one based on local rotation vectors
 
@@ -35,19 +36,19 @@ Teuchos::RCP<LargeRotations::TriadInterpolation<T>> LargeRotations::TriadInterpo
   {
     case 2:
     {
-      return Teuchos::make_rcp<LargeRotations::TriadInterpolationLocalRotationVectors<2, T>>();
+      return std::make_shared<LargeRotations::TriadInterpolationLocalRotationVectors<2, T>>();
     }
     case 3:
     {
-      return Teuchos::make_rcp<LargeRotations::TriadInterpolationLocalRotationVectors<3, T>>();
+      return std::make_shared<LargeRotations::TriadInterpolationLocalRotationVectors<3, T>>();
     }
     case 4:
     {
-      return Teuchos::make_rcp<LargeRotations::TriadInterpolationLocalRotationVectors<4, T>>();
+      return std::make_shared<LargeRotations::TriadInterpolationLocalRotationVectors<4, T>>();
     }
     case 5:
     {
-      return Teuchos::make_rcp<LargeRotations::TriadInterpolationLocalRotationVectors<5, T>>();
+      return std::make_shared<LargeRotations::TriadInterpolationLocalRotationVectors<5, T>>();
     }
     default:
     {
@@ -57,7 +58,7 @@ Teuchos::RCP<LargeRotations::TriadInterpolation<T>> LargeRotations::TriadInterpo
     }
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 // explicit template instantiations

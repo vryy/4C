@@ -68,13 +68,13 @@ namespace Mortar
 
     */
     BinaryTreeNode(BinaryTreeNodeType type, Core::FE::Discretization& discret,
-        Teuchos::RCP<BinaryTreeNode> parent, std::vector<int> elelist,
+        std::shared_ptr<BinaryTreeNode> parent, std::vector<int> elelist,
         const Core::LinAlg::SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
         const bool& useauxpos, const int layer,
-        std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& streenodesmap,
-        std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& mtreenodesmap,
-        std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& sleafsmap,
-        std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& mleafsmap);
+        std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& streenodesmap,
+        std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& mtreenodesmap,
+        std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& sleafsmap,
+        std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& mleafsmap);
 
 
     //! @name Evaluation methods
@@ -122,13 +122,13 @@ namespace Mortar
     \brief Return pointer to right child
 
     */
-    Teuchos::RCP<BinaryTreeNode> rightchild() const { return rightchild_; }
+    std::shared_ptr<BinaryTreeNode> rightchild() const { return rightchild_; }
 
     /*!
     \brief Return pointer to left child
 
     */
-    Teuchos::RCP<BinaryTreeNode> leftchild() const { return leftchild_; }
+    std::shared_ptr<BinaryTreeNode> leftchild() const { return leftchild_; }
     //@}
 
    private:
@@ -143,25 +143,25 @@ namespace Mortar
     // BaseBinaryTreeNode as this would require a lot of dynamic casting and thereby complicating
     // the readability of the code
     //! pointer to the parent BinaryTreeNode
-    Teuchos::RCP<BinaryTreeNode> parent_;
+    std::shared_ptr<BinaryTreeNode> parent_;
 
     //! pointer to the left child TreeNode
-    Teuchos::RCP<BinaryTreeNode> leftchild_;
+    std::shared_ptr<BinaryTreeNode> leftchild_;
 
     //! pointer to the right child TreeNode
-    Teuchos::RCP<BinaryTreeNode> rightchild_;
+    std::shared_ptr<BinaryTreeNode> rightchild_;
 
     //! reference to map of all slave treenodes, sorted by layer
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& streenodesmap_;
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& streenodesmap_;
 
     //! reference to map of all master treenodes, sorted by layer
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& mtreenodesmap_;
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& mtreenodesmap_;
 
     //! reference to map of all slave leaf treenodes
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& sleafsmap_;
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& sleafsmap_;
 
     //! reference to map of all master leaf treenodes
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& mleafsmap_;
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& mleafsmap_;
 
   };  // class BinaryTreeNode
 
@@ -189,8 +189,8 @@ namespace Mortar
     \param useauxpos (in):   flag indicating usage of auxiliary position for calculation of slabs
 
     */
-    BinaryTree(Core::FE::Discretization& discret, Teuchos::RCP<Epetra_Map> selements,
-        Teuchos::RCP<Epetra_Map> melements, int dim, double eps,
+    BinaryTree(Core::FE::Discretization& discret, std::shared_ptr<Epetra_Map> selements,
+        std::shared_ptr<Epetra_Map> melements, int dim, double eps,
         Inpar::Mortar::BinaryTreeUpdateType updatetype, bool useauxpos);
 
 
@@ -225,7 +225,7 @@ namespace Mortar
     \brief Print full tree out of map of treenodes
 
     */
-    void print_tree_of_map(std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& treenodesmap);
+    void print_tree_of_map(std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& treenodesmap);
 
     //@}
 
@@ -241,7 +241,7 @@ namespace Mortar
     \brief Return reference to slave treenodesmap
 
     */
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& streenodesmap()
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& streenodesmap()
     {
       return streenodesmap_;
     }
@@ -250,7 +250,7 @@ namespace Mortar
     \brief Return reference to master treenodesmap
 
     */
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& mtreenodesmap()
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& mtreenodesmap()
     {
       return mtreenodesmap_;
     }
@@ -259,13 +259,16 @@ namespace Mortar
     \brief Return reference to coupling treenodesmap
 
     */
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& coupling_map() { return couplingmap_; }
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& coupling_map()
+    {
+      return couplingmap_;
+    }
 
     /*!
     \brief Return pointer to sroot-treenode
 
     */
-    Teuchos::RCP<BinaryTreeNode>& sroot() { return sroot_; }
+    std::shared_ptr<BinaryTreeNode>& sroot() { return sroot_; }
     //@}
 
     //! @name Evaluation methods
@@ -315,7 +318,7 @@ namespace Mortar
 
     */
     void evaluate_update_tree_bottom_up(
-        std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& treenodesmap);
+        std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>>& treenodesmap);
 
     /*!
     \brief Evaluate binary search tree
@@ -326,30 +329,30 @@ namespace Mortar
 
     */
     void evaluate_search(
-        Teuchos::RCP<BinaryTreeNode> streenode, Teuchos::RCP<BinaryTreeNode> mtreenode);
+        std::shared_ptr<BinaryTreeNode> streenode, std::shared_ptr<BinaryTreeNode> mtreenode);
 
     // don't want = operator and cctor
     BinaryTree operator=(const BinaryTree& old);
     BinaryTree(const BinaryTree& old);
 
     //! all slave elements on surface (column map)
-    Teuchos::RCP<Epetra_Map> selements_;
+    std::shared_ptr<Epetra_Map> selements_;
     //! all master elements on surface (full map)
-    Teuchos::RCP<Epetra_Map> melements_;
+    std::shared_ptr<Epetra_Map> melements_;
     //! map of all slave tree nodes, sorted by layers
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> streenodesmap_;
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>> streenodesmap_;
     //! map of all master tree nodes, sorted by layers
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> mtreenodesmap_;
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>> mtreenodesmap_;
     //! map of all tree nodes, that possibly couple, st/mt
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> couplingmap_;
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>> couplingmap_;
     //! map of all slave leaf tree nodes, [0]=left child,[1]=right child
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> sleafsmap_;
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>> sleafsmap_;
     //! map of all master leaf tree nodes, [0]=left child,[1]=right child
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> mleafsmap_;
+    std::vector<std::vector<std::shared_ptr<BinaryTreeNode>>> mleafsmap_;
     //! slave root tree node
-    Teuchos::RCP<BinaryTreeNode> sroot_;
+    std::shared_ptr<BinaryTreeNode> sroot_;
     //! master root tree node
-    Teuchos::RCP<BinaryTreeNode> mroot_;
+    std::shared_ptr<BinaryTreeNode> mroot_;
     //! update type of binary tree
     const Inpar::Mortar::BinaryTreeUpdateType updatetype_;
     //! bool whether auxiliary position is used when computing dops

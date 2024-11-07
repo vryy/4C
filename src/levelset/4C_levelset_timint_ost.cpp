@@ -22,11 +22,11 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 ScaTra::LevelSetTimIntOneStepTheta::LevelSetTimIntOneStepTheta(
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
-    Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       LevelSetAlgorithm(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntOneStepTheta(actdis, solver, sctratimintparams, extraparams, output)
@@ -236,9 +236,9 @@ void ScaTra::LevelSetTimIntOneStepTheta::redistribute(Epetra_CrsGraph& nodegraph
 
   // now do all the ost specfic steps
   const Epetra_Map* newdofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> old;
+  std::shared_ptr<Core::LinAlg::Vector<double>> old;
 
-  if (fsphinp_ != Teuchos::null)
+  if (fsphinp_ != nullptr)
   {
     old = fsphinp_;
     fsphinp_ = Core::LinAlg::create_vector(*newdofrowmap, true);
@@ -253,7 +253,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::redistribute(Epetra_CrsGraph& nodegraph
  | setup problem after restart                          rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 void ScaTra::LevelSetTimIntOneStepTheta::read_restart(
-    const int step, Teuchos::RCP<Core::IO::InputControl> input)
+    const int step, std::shared_ptr<Core::IO::InputControl> input)
 {
   // do basic restart
   TimIntOneStepTheta::read_restart(step, input);
@@ -265,12 +265,12 @@ void ScaTra::LevelSetTimIntOneStepTheta::read_restart(
 /*----------------------------------------------------------------------*
  | interpolate phi to intermediate time level n+theta   rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> ScaTra::LevelSetTimIntOneStepTheta::phinptheta(
+std::shared_ptr<Core::LinAlg::Vector<double>> ScaTra::LevelSetTimIntOneStepTheta::phinptheta(
     const double theta_inter)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> phi_tmp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> phi_tmp =
+      std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, true);
   phi_tmp->Update((1.0 - theta_inter), *phin_, theta_inter, *phinp_, 0.0);
   return phi_tmp;
 }
@@ -279,12 +279,12 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> ScaTra::LevelSetTimIntOneStepTheta::p
 /*----------------------------------------------------------------------*
  | interpolate phidt to intermediate time level n+theta rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> ScaTra::LevelSetTimIntOneStepTheta::phidtnptheta(
+std::shared_ptr<Core::LinAlg::Vector<double>> ScaTra::LevelSetTimIntOneStepTheta::phidtnptheta(
     const double theta_inter)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> phidt_tmp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> phidt_tmp =
+      std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, true);
   phidt_tmp->Update((1.0 - theta_inter), *phidtn_, theta_inter, *phidtnp_, 0.0);
   return phidt_tmp;
 }

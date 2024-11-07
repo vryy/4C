@@ -20,11 +20,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integrator(
+std::shared_ptr<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integrator(
     const Inpar::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
     const Core::FE::CellType& slave_type, const Epetra_Comm& comm) const
 {
-  Teuchos::RCP<CONTACT::Integrator> integrator = Teuchos::null;
+  std::shared_ptr<CONTACT::Integrator> integrator = nullptr;
   switch (sol_type)
   {
     case Inpar::CONTACT::solution_nitsche:
@@ -32,37 +32,37 @@ Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integrator
       if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)
       {
         integrator =
-            Teuchos::make_rcp<CONTACT::IntegratorNitscheTsi>(mortar_params, slave_type, comm);
+            std::make_shared<CONTACT::IntegratorNitscheTsi>(mortar_params, slave_type, comm);
       }
       else if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi)
       {
         integrator =
-            Teuchos::make_rcp<CONTACT::IntegratorNitscheSsi>(mortar_params, slave_type, comm);
+            std::make_shared<CONTACT::IntegratorNitscheSsi>(mortar_params, slave_type, comm);
       }
       else if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi_elch)
       {
         integrator =
-            Teuchos::make_rcp<CONTACT::IntegratorNitscheSsiElch>(mortar_params, slave_type, comm);
+            std::make_shared<CONTACT::IntegratorNitscheSsiElch>(mortar_params, slave_type, comm);
       }
       else if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::poroelast ||
                mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra)
       {
         integrator =
-            Teuchos::make_rcp<CONTACT::IntegratorNitschePoro>(mortar_params, slave_type, comm);
+            std::make_shared<CONTACT::IntegratorNitschePoro>(mortar_params, slave_type, comm);
       }
       else if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::fsi)
       {
         integrator =
-            Teuchos::make_rcp<CONTACT::IntegratorNitscheFsi>(mortar_params, slave_type, comm);
+            std::make_shared<CONTACT::IntegratorNitscheFsi>(mortar_params, slave_type, comm);
       }
       else if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::fpi)
       {
         integrator =
-            Teuchos::make_rcp<CONTACT::IntegratorNitscheFpi>(mortar_params, slave_type, comm);
+            std::make_shared<CONTACT::IntegratorNitscheFpi>(mortar_params, slave_type, comm);
       }
       else
       {
-        integrator = Teuchos::make_rcp<CONTACT::IntegratorNitsche>(mortar_params, slave_type, comm);
+        integrator = std::make_shared<CONTACT::IntegratorNitsche>(mortar_params, slave_type, comm);
       }
       break;
     }
@@ -71,20 +71,20 @@ Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integrator
     {
       if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(mortar_params, "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts)
-        integrator = Teuchos::make_rcp<CONTACT::IntegratorNitsche>(mortar_params, slave_type, comm);
+        integrator = std::make_shared<CONTACT::IntegratorNitsche>(mortar_params, slave_type, comm);
       else
-        integrator = Teuchos::make_rcp<CONTACT::Integrator>(mortar_params, slave_type, comm);
+        integrator = std::make_shared<CONTACT::Integrator>(mortar_params, slave_type, comm);
       break;
     }
     case Inpar::CONTACT::solution_lagmult:
     case Inpar::CONTACT::solution_uzawa:
     {
-      integrator = Teuchos::make_rcp<CONTACT::Integrator>(mortar_params, slave_type, comm);
+      integrator = std::make_shared<CONTACT::Integrator>(mortar_params, slave_type, comm);
       break;
     }
     case Inpar::CONTACT::solution_ehl:
     {
-      integrator = Teuchos::make_rcp<CONTACT::IntegratorEhl>(mortar_params, slave_type, comm);
+      integrator = std::make_shared<CONTACT::IntegratorEhl>(mortar_params, slave_type, comm);
 
       break;
     }
@@ -102,7 +102,7 @@ Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integrator
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::build_integrator(
+std::shared_ptr<CONTACT::Integrator> CONTACT::INTEGRATOR::build_integrator(
     const Inpar::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
     const Core::FE::CellType& slave_type, const Epetra_Comm& comm)
 {

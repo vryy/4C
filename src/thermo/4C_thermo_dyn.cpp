@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 void thr_dyn_drt()
 {
   // access the discretization
-  Teuchos::RCP<Core::FE::Discretization> thermodis = Teuchos::null;
+  std::shared_ptr<Core::FE::Discretization> thermodis = nullptr;
   thermodis = Global::Problem::instance()->get_dis("thermo");
 
   // set degrees of freedom in the discretization
@@ -31,8 +31,8 @@ void thr_dyn_drt()
   const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
 
   // create instance of thermo basis algorithm (no structure discretization)
-  Teuchos::RCP<Thermo::BaseAlgorithm> thermoonly =
-      Teuchos::make_rcp<Thermo::BaseAlgorithm>(tdyn, thermodis);
+  std::shared_ptr<Thermo::BaseAlgorithm> thermoonly =
+      std::make_shared<Thermo::BaseAlgorithm>(tdyn, thermodis);
 
   // do restart if demanded from input file
   const int restart = Global::Problem::instance()->restart();

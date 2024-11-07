@@ -113,7 +113,7 @@ namespace BEAMINTERACTION
 
       //! derived
       void init_submodel_dependencies(
-          Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap) override;
+          std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap) override;
 
       //! derived
       void add_bins_to_bin_col_map(std::set<int>& colbins) override;
@@ -159,19 +159,19 @@ namespace BEAMINTERACTION
 
       /// compute force dependent off rate for a catch-slip bond
       virtual void calc_force_dependent_catch_slip_bond_unbind_probability(
-          Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr, double& p_unbind);
+          std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr, double& p_unbind);
 
       //! @}
 
      private:
       //! cell discretization
-      Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking> sm_crosslinkink_ptr_;
+      std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking> sm_crosslinkink_ptr_;
 
       //! data container holding all beam contact related parameters
-      Teuchos::RCP<BEAMINTERACTION::SphereBeamLinkingParams> spherebeamlinking_params_ptr_;
+      std::shared_ptr<BEAMINTERACTION::SphereBeamLinkingParams> spherebeamlinking_params_ptr_;
 
       //! runtime output for cell beam crosslinks (integrins)
-      Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager_ptr_;
+      std::shared_ptr<Core::IO::VisualizationManager> visualization_manager_ptr_;
 
       //! step number for random stuff concerning sphere beam linking
       int random_number_sphere_beam_linking_step_;

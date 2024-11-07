@@ -62,13 +62,14 @@ bool PoroElastScaTra::Utils::is_poro_p1_scatra_element(const Core::Elements::Ele
          actele->element_type() == Discret::Elements::WallQuad9PoroP1ScatraType::instance();
 }
 
-Teuchos::RCP<PoroElastScaTra::PoroScatraBase> PoroElastScaTra::Utils::create_poro_scatra_algorithm(
+std::shared_ptr<PoroElastScaTra::PoroScatraBase>
+PoroElastScaTra::Utils::create_poro_scatra_algorithm(
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
 {
   Global::Problem* problem = Global::Problem::instance();
 
   // create an empty PoroScatraBase instance
-  Teuchos::RCP<PoroElastScaTra::PoroScatraBase> algo = Teuchos::null;
+  std::shared_ptr<PoroElastScaTra::PoroScatraBase> algo = nullptr;
 
   // Parameter reading
   const Teuchos::ParameterList& params = problem->poro_scatra_control_params();
@@ -79,29 +80,29 @@ Teuchos::RCP<PoroElastScaTra::PoroScatraBase> PoroElastScaTra::Utils::create_por
   {
     case Inpar::PoroScaTra::Monolithic:
     {
-      algo = Teuchos::make_rcp<PoroElastScaTra::PoroScatraMono>(comm, timeparams);
+      algo = std::make_shared<PoroElastScaTra::PoroScatraMono>(comm, timeparams);
       break;
     }
     case Inpar::PoroScaTra::Part_ScatraToPoro:
     {
-      algo = Teuchos::make_rcp<PoroElastScaTra::PoroScatraPart1WCScatraToPoro>(comm, timeparams);
+      algo = std::make_shared<PoroElastScaTra::PoroScatraPart1WCScatraToPoro>(comm, timeparams);
       break;
     }
     case Inpar::PoroScaTra::Part_PoroToScatra:
     {
-      algo = Teuchos::make_rcp<PoroElastScaTra::PoroScatraPart1WCPoroToScatra>(comm, timeparams);
+      algo = std::make_shared<PoroElastScaTra::PoroScatraPart1WCPoroToScatra>(comm, timeparams);
       break;
     }
     case Inpar::PoroScaTra::Part_TwoWay:
     {
-      algo = Teuchos::make_rcp<PoroElastScaTra::PoroScatraPart2WC>(comm, timeparams);
+      algo = std::make_shared<PoroElastScaTra::PoroScatraPart2WC>(comm, timeparams);
       break;
     }
     default:
       break;
   }
 
-  if (algo.is_null())
+  if (!algo)
   {
     FOUR_C_THROW("Creation of the Poroelast Scatra Algorithm failed.");
   }
@@ -112,10 +113,10 @@ Teuchos::RCP<PoroElastScaTra::PoroScatraBase> PoroElastScaTra::Utils::create_por
   return algo;
 }
 
-Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElastScaTra::Utils::build_poro_scatra_splitter(
+std::shared_ptr<Core::LinAlg::MapExtractor> PoroElastScaTra::Utils::build_poro_scatra_splitter(
     Core::FE::Discretization& dis)
 {
-  Teuchos::RCP<Core::LinAlg::MapExtractor> porositysplitter = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::MapExtractor> porositysplitter = nullptr;
 
   // Loop through all elements on processor
   int locporop1 = std::count_if(
@@ -127,7 +128,7 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElastScaTra::Utils::build_poro_scat
   // Yes, it was. Go ahead for all processors (even if they do not carry any PoroP1 elements)
   if (glonumporop1 > 0)
   {
-    porositysplitter = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+    porositysplitter = std::make_shared<Core::LinAlg::MapExtractor>();
     const int ndim = Global::Problem::instance()->n_dim();
     Core::LinAlg::create_map_extractor_from_discretization(dis, ndim, *porositysplitter);
   }
@@ -142,7 +143,7 @@ void PoroElastScaTra::Utils::create_volume_ghosting(Core::FE::Discretization& id
 
   Global::Problem* problem = Global::Problem::instance();
 
-  std::vector<Teuchos::RCP<Core::FE::Discretization>> voldis;
+  std::vector<std::shared_ptr<Core::FE::Discretization>> voldis;
   voldis.push_back(problem->get_dis("structure"));
   voldis.push_back(problem->get_dis("porofluid"));
   voldis.push_back(problem->get_dis("scatra"));
@@ -157,7 +158,7 @@ void PoroElastScaTra::Utils::create_volume_ghosting(Core::FE::Discretization& id
     // Fill rdata with existing colmap
 
     const Epetra_Map* elecolmap = voldi->element_col_map();
-    const Teuchos::RCP<Epetra_Map> allredelecolmap =
+    const std::shared_ptr<Epetra_Map> allredelecolmap =
         Core::LinAlg::allreduce_e_map(*voldi->element_row_map());
 
     for (int i = 0; i < elecolmap->NumMyElements(); ++i)
@@ -206,9 +207,9 @@ void PoroElastScaTra::Utils::create_volume_ghosting(Core::FE::Discretization& id
   PoroElast::Utils::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
 
   // 4 In case we use
-  Teuchos::RCP<Core::FE::DiscretizationFaces> facediscret =
-      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(voldis[1]);
-  if (facediscret != Teuchos::null) facediscret->fill_complete_faces(true, true, true, true);
+  std::shared_ptr<Core::FE::DiscretizationFaces> facediscret =
+      std::dynamic_pointer_cast<Core::FE::DiscretizationFaces>(voldis[1]);
+  if (facediscret != nullptr) facediscret->fill_complete_faces(true, true, true, true);
 }
 
 FOUR_C_NAMESPACE_CLOSE

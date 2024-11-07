@@ -237,7 +237,7 @@ namespace Mat
       ScatraReactionMat(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// returns the enum of the current coupling type
       Mat::PAR::ReactionCoupling set_coupling_type(const Core::Mat::PAR::Parameter::Data& matdata);
@@ -276,7 +276,7 @@ namespace Mat
       bool isinit_;
 
       /// implementation of reaction coupling
-      Teuchos::RCP<REACTIONCOUPLING::ReactionInterface> reaction_;
+      std::shared_ptr<REACTIONCOUPLING::ReactionInterface> reaction_;
 
     };  // class ScatraReactionMat
 
@@ -359,9 +359,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ScatraReactionMat>(*this);
+      return std::make_shared<ScatraReactionMat>(*this);
     }
 
     /// return number of scalars for this reaction

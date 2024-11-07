@@ -13,8 +13,8 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <map>
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -140,10 +140,10 @@ namespace Core::GeometricSearch
         Core::Communication::UnpackBuffer& buffer, std::vector<char>& data) = 0;
 
     //! check if unpacked type is correct
-    virtual int check_valid_entity_type(Teuchos::RCP<Core::Communication::ParObject> o) = 0;
+    virtual int check_valid_entity_type(std::shared_ptr<Core::Communication::ParObject> o) = 0;
 
     //! create an octree element
-    virtual Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
+    virtual std::shared_ptr<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
         Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer) = 0;
 
     //@}
@@ -231,7 +231,7 @@ namespace Core::GeometricSearch
     //! \brief order of magnitude of smallest element size (used for tolerances)
     double tol_;
     //! \brief root of the local search tree
-    Teuchos::RCP<OctreeElement> octreeroot_;
+    std::shared_ptr<OctreeElement> octreeroot_;
     //! \brief coordinate of one point in the master plane
     std::vector<double> masterplanecoords_;
     //! \brief ids of entities to be coupled (e.g. nodes in \ref NodeMatchingOctree )
@@ -304,10 +304,10 @@ namespace Core::GeometricSearch
     void unpack_entity(Communication::UnpackBuffer& buffer, std::vector<char>& data) override;
 
     //! check if unpacked type is correct
-    int check_valid_entity_type(Teuchos::RCP<Core::Communication::ParObject> o) override;
+    int check_valid_entity_type(std::shared_ptr<Core::Communication::ParObject> o) override;
 
     //! create an octree element
-    Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
+    std::shared_ptr<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
         Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
   };  // class NodeMatchingOctree
@@ -342,10 +342,10 @@ namespace Core::GeometricSearch
     void unpack_entity(Communication::UnpackBuffer& buffer, std::vector<char>& data) override;
 
     //! check if unpacked type is correct
-    int check_valid_entity_type(Teuchos::RCP<Core::Communication::ParObject> o) override;
+    int check_valid_entity_type(std::shared_ptr<Core::Communication::ParObject> o) override;
 
     //! create an octree element
-    Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
+    std::shared_ptr<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
         Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
    private:
@@ -364,7 +364,7 @@ namespace Core::GeometricSearch
     //!
     //! \author Andreas Rauch
     //! \date   10/16
-    std::map<int, Teuchos::RCP<Core::Nodes::Node>> nodes_;
+    std::map<int, std::shared_ptr<Core::Nodes::Node>> nodes_;
 
   };  // class ElementMatchingOctree
 
@@ -461,8 +461,8 @@ namespace Core::GeometricSearch
 
     \param   x   (i) coordinate
 
-    \return  Teuchos::RCP<OctreeElement> child  */
-    Teuchos::RCP<OctreeElement> return_child_containing_point(const std::vector<double>& x);
+    \return  std::shared_ptr<OctreeElement> child  */
+    std::shared_ptr<OctreeElement> return_child_containing_point(const std::vector<double>& x);
 
     /*! \brief Print some information on the octree leaf
 
@@ -484,7 +484,7 @@ namespace Core::GeometricSearch
         const Core::FE::Discretization* dis, const int id, double* coord) = 0;
 
     //! create an octree element
-    virtual Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
+    virtual std::shared_ptr<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
         Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer) = 0;
 
    protected:
@@ -501,9 +501,9 @@ namespace Core::GeometricSearch
     //! tolerance for octree
     double tol_;
     //! pointer to first child
-    Teuchos::RCP<OctreeElement> octreechild1_;
+    std::shared_ptr<OctreeElement> octreechild1_;
     //! pointer to second child
-    Teuchos::RCP<OctreeElement> octreechild2_;
+    std::shared_ptr<OctreeElement> octreechild2_;
 
    private:
     //! flag indicating if class is setup
@@ -554,7 +554,7 @@ namespace Core::GeometricSearch
         const Core::FE::Discretization* dis, const int id, double* coord) override;
 
     //! create an octree element
-    Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
+    std::shared_ptr<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
         Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
   };  // OctreeNodalElement
@@ -573,7 +573,7 @@ namespace Core::GeometricSearch
         const Core::FE::Discretization* dis, const int id, double* coord) override;
 
     //! create an octree element
-    Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
+    std::shared_ptr<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
         Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
   };  // OctreeNodalElement

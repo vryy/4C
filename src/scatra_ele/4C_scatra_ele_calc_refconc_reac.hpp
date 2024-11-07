@@ -39,8 +39,8 @@ namespace Discret
 
      protected:
       //! Set reac. body force, reaction coefficient and derivatives
-      void set_advanced_reaction_terms(const int k,               //!< index of current scalar
-          const Teuchos::RCP<Mat::MatListReactions> matreaclist,  //!< index of current scalar
+      void set_advanced_reaction_terms(const int k,                  //!< index of current scalar
+          const std::shared_ptr<Mat::MatListReactions> matreaclist,  //!< index of current scalar
           const double* gpcoord  //!< current Gauss-point coordinates
           ) override;
 

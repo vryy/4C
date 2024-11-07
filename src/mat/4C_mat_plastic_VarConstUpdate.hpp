@@ -49,12 +49,12 @@ namespace Mat
       //@{
 
       /// provide access to material/summand by its ID
-      Teuchos::RCP<const Mat::Elastic::Summand> material_by_id(
+      std::shared_ptr<const Mat::Elastic::Summand> material_by_id(
           const int id  ///< ID to look for in collection of summands
       ) const;
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
       //@}
 
     };  // class PlasticElastHyper
@@ -129,9 +129,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<PlasticElastHyperVCU>(*this);
+      return std::make_shared<PlasticElastHyperVCU>(*this);
     }
 
 
@@ -291,10 +291,10 @@ namespace Mat
 
     // derivative of heating at each gp w.r.t. nodal temperature vector
     // (only EAS contribution)
-    Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseVector>> d_hep_d_teas() override
+    std::shared_ptr<std::vector<Core::LinAlg::SerialDenseVector>> d_hep_d_teas() override
     {
       FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
-      return Teuchos::null;
+      return nullptr;
     }
 
    protected:

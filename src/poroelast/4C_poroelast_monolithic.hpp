@@ -42,7 +42,7 @@ namespace PoroElast
    public:
     //! create using a Epetra_Comm
     Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
+        std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     /*! do the setup for the monolithic system
 
@@ -85,7 +85,7 @@ namespace PoroElast
     //! @name Access methods for subclasses
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> extractor() const override
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> extractor() const override
     {
       return blockrowdofmap_;
     }
@@ -99,28 +99,28 @@ namespace PoroElast
     // this method merges the block matrix when called.
     // As this is very expensive this,this method is not meant to be used any more.
     // Use block_system_matrix() instead and assemble the blocks separately, if necessary.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override;
 
     //! block system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
       return systemmatrix_;
     }
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() override;
+    std::shared_ptr<const Epetra_Map> dof_row_map() override;
 
     //! dof row map of Structure field
-    Teuchos::RCP<const Epetra_Map> dof_row_map_structure() override;
+    std::shared_ptr<const Epetra_Map> dof_row_map_structure() override;
 
     //! dof row map of Fluid field
-    Teuchos::RCP<const Epetra_Map> dof_row_map_fluid() override;
+    std::shared_ptr<const Epetra_Map> dof_row_map_fluid() override;
 
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> combined_dbc_map() const override { return combinedDBCMap_; }
+    std::shared_ptr<const Epetra_Map> combined_dbc_map() const override { return combinedDBCMap_; }
 
     //! right hand side vector
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override { return rhs_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override { return rhs_; }
 
     //! zero all entries in iterinc vector
     void clear_poro_iterinc();
@@ -149,39 +149,39 @@ namespace PoroElast
     void create_linear_solver();
 
     //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void update_state_incrementally(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void update_state_incrementally(std::shared_ptr<const Core::LinAlg::Vector<double>>
             iterinc  //!< increment between iteration i and i+1
         ) override;
 
     //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc (with structural and fluid
     //! increment separately)
-    void update_state_incrementally(Teuchos::RCP<const Core::LinAlg::Vector<double>> s_iterinc,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> f_iterinc);
+    void update_state_incrementally(std::shared_ptr<const Core::LinAlg::Vector<double>> s_iterinc,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> f_iterinc);
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     //! and assemble systemmatrix and rhs-vector
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
                       iterinc,  //!< increment between iteration i and i+1
         bool firstiter) override;
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     //! and assemble systemmatrix and rhs-vector
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
                       s_iterinc,  //!< structural increment between iteration i and i+1
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             f_iterinc,  //!< fluid increment between iteration i and i+1
         bool firstiter) override;
 
     //! evaluate fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void evaluate_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc);
+    virtual void evaluate_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> iterinc);
 
     //! evaluate fields seperately at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void evaluate_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> s_iterinc,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> f_iterinc);
+    virtual void evaluate_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> s_iterinc,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> f_iterinc);
 
     //! extract initial guess from fields
     //! returns \f$\Delta x_{n+1}^{<k>}\f$
-    virtual void initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> ig);
+    virtual void initial_guess(std::shared_ptr<Core::LinAlg::Vector<double>> ig);
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
@@ -231,7 +231,7 @@ namespace PoroElast
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
     //! iteration step (i.e. condensed forces onto the structure) needed for rhs in next time step
     virtual void recover_lagrange_multiplier_after_newton_step(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc);
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iterinc);
 
     //! Setup solver for monolithic system
     bool setup_solver() override;
@@ -250,12 +250,12 @@ namespace PoroElast
 
     //! Evaluate mechanical-fluid system matrix
     virtual void apply_str_coupl_matrix(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
+        std::shared_ptr<Core::LinAlg::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
     );
 
     //! Evaluate fluid-mechanical system matrix
     virtual void apply_fluid_coupl_matrix(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
+        std::shared_ptr<Core::LinAlg::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
     );
 
     //!@}
@@ -271,16 +271,16 @@ namespace PoroElast
      \param sx (o) structural vector (e.g. displacements)
      \param fx (o) fluid vector (e.g. velocities and pressure)
      */
-    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx, bool firstcall = false);
+    virtual void extract_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& fx, bool firstcall = false);
 
     //! @name General purpose algorithm members
     //!@{
 
-    bool solveradapttol_;                        //!< adapt solver tolerance
-    double solveradaptolbetter_;                 //!< tolerance to which is adpated ????
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
+    bool solveradapttol_;                           //!< adapt solver tolerance
+    double solveradaptolbetter_;                    //!< tolerance to which is adpated ????
+    std::shared_ptr<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
 
     //!@}
 
@@ -293,9 +293,9 @@ namespace PoroElast
     //!@}
 
     //! @name Global vectors
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;  //!< rhs of Poroelasticity system
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_;  //!< rhs of Poroelasticity system
 
     //!@}
 
@@ -304,35 +304,35 @@ namespace PoroElast
     //! @name Global matrixes
 
     //! block systemmatrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     //! structure-fluid coupling matrix
-    Teuchos::RCP<Core::LinAlg::SparseOperator> k_sf_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> k_sf_;
     //! fluid-structure coupling matrix
-    Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> k_fs_;
 
     //!@}
 
     //! dof row map (not splitted)
-    Teuchos::RCP<Epetra_Map> fullmap_;
+    std::shared_ptr<Epetra_Map> fullmap_;
 
     //! dof row map splitted in (field) blocks
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! dirichlet map of monolithic system
-    Teuchos::RCP<Epetra_Map> combinedDBCMap_;
+    std::shared_ptr<Epetra_Map> combinedDBCMap_;
 
     //! return structure fluid coupling sparse matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_fluid_coupling_matrix();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> struct_fluid_coupling_matrix();
 
     //! return fluid structure coupling sparse matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> fluid_struct_coupling_matrix();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> fluid_struct_coupling_matrix();
 
     //! return structure fluid coupling block sparse matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> struct_fluid_coupling_block_matrix();
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> struct_fluid_coupling_block_matrix();
 
     //! return fluid structure coupling block sparse matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> fluid_struct_coupling_block_matrix();
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> fluid_struct_coupling_block_matrix();
 
 
     //! @name poro-contact
@@ -350,9 +350,10 @@ namespace PoroElast
 
     //! build block vector from field vectors, e.g. rhs, increment vector
     virtual void setup_vector(Core::LinAlg::Vector<double>& f,  //!< vector of length of all dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             sv,  //!< vector containing only structural dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv  //!< vector containing only fluid dofs
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
+            fv  //!< vector containing only fluid dofs
     );
 
     //! @name Iterative solution technique
@@ -397,7 +398,7 @@ namespace PoroElast
     double normrhsporo_;  //!< norm of residual forces (porosity)
     double normincporo_;  //!< norm of residual unknowns (porosity)
 
-    Teuchos::RCP<Teuchos::Time> timer_;  //!< timer for solution technique
+    std::shared_ptr<Teuchos::Time> timer_;  //!< timer for solution technique
 
     int iter_;  //!< iteration step
 
@@ -405,7 +406,7 @@ namespace PoroElast
 
     //! @name Various global forces
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         iterinc_;  //!< increment between Newton steps k and k+1
     //!< \f$\Delta{x}^{<k>}_{n+1}\f$
 
@@ -418,10 +419,10 @@ namespace PoroElast
 
     //! difference of last two solutions
     // del = r^{i+1}_{n+1} = d^{i+1}_{n+1} - d^i_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> del_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> del_;
     //! difference of difference of last two pair of solutions
     // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
-    Teuchos::RCP<Core::LinAlg::Vector<double>> delhist_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> delhist_;
     //! Aitken factor
     double mu_;
     //!@}
@@ -429,7 +430,7 @@ namespace PoroElast
     //! @name matrix equilibration
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<Core::LinAlg::Equilibration> equilibration_;
+    std::shared_ptr<Core::LinAlg::Equilibration> equilibration_;
 
     //! equilibration method applied to system matrix
     Core::LinAlg::EquilibrationMethod equilibration_method_;

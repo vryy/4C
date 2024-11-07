@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <map>
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -45,7 +45,7 @@ namespace ScaTra
         Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
     /// set element-specific data (material etc.)
-    void set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+    void set_element_data(std::shared_ptr<Core::Elements::Element> newele,
         Core::Elements::Element* oldele, const int matid, const bool isnurbs);
 
     /// check for correct material
@@ -75,7 +75,7 @@ namespace ScaTra
         Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
     /// set element-specific data (material etc.)
-    void set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+    void set_element_data(std::shared_ptr<Core::Elements::Element> newele,
         Core::Elements::Element* oldele, const int matid, const bool isnurbs);
 
     /// check for correct material

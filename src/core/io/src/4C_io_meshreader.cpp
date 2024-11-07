@@ -39,7 +39,7 @@ Core::IO::MeshReader::MeshReader(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::MeshReader::add_advanced_reader(Teuchos::RCP<Core::FE::Discretization> dis,
+void Core::IO::MeshReader::add_advanced_reader(std::shared_ptr<Core::FE::Discretization> dis,
     Core::IO::InputFile& input, const std::string& sectionname,
     const Core::IO::GeometryType geometrysource, const std::string* geofilepath)
 {
@@ -128,7 +128,7 @@ void Core::IO::MeshReader::rebalance()
     if (numnodes)
       graph_[i] = Core::Rebalance::build_graph(*discret, *element_readers_[i].get_row_elements());
     else
-      graph_[i] = Teuchos::null;
+      graph_[i] = nullptr;
 
     // create partitioning parameters
     const double imbalance_tol =
@@ -140,9 +140,9 @@ void Core::IO::MeshReader::rebalance()
     const auto rebalanceMethod = Teuchos::getIntegralValue<Core::Rebalance::RebalanceType>(
         parameters_.mesh_paritioning_parameters, "METHOD");
 
-    Teuchos::RCP<Epetra_Map> rowmap, colmap;
+    std::shared_ptr<Epetra_Map> rowmap, colmap;
 
-    if (!graph_[i].is_null())
+    if (graph_[i])
     {
       switch (rebalanceMethod)
       {
@@ -163,18 +163,18 @@ void Core::IO::MeshReader::rebalance()
           // here we can reuse the graph, which was calculated before, this saves us some time and
           // in addition calculate geometric information based on the coordinates of the
           // discretization
-          rowmap = Teuchos::make_rcp<Epetra_Map>(-1, graph_[i]->RowMap().NumMyElements(),
+          rowmap = std::make_shared<Epetra_Map>(-1, graph_[i]->RowMap().NumMyElements(),
               graph_[i]->RowMap().MyGlobalElements(), 0, comm_);
-          colmap = Teuchos::make_rcp<Epetra_Map>(-1, graph_[i]->ColMap().NumMyElements(),
+          colmap = std::make_shared<Epetra_Map>(-1, graph_[i]->ColMap().NumMyElements(),
               graph_[i]->ColMap().MyGlobalElements(), 0, comm_);
 
           discret->redistribute(*rowmap, *colmap, false, false, false);
 
-          Teuchos::RCP<Core::LinAlg::MultiVector<double>> coordinates =
+          std::shared_ptr<Core::LinAlg::MultiVector<double>> coordinates =
               discret->build_node_coordinates();
 
           std::tie(rowmap, colmap) = Core::Rebalance::rebalance_node_maps(
-              *graph_[i], rebalanceParams, Teuchos::null, Teuchos::null, coordinates);
+              *graph_[i], rebalanceParams, nullptr, nullptr, coordinates);
 
           break;
         }
@@ -182,14 +182,14 @@ void Core::IO::MeshReader::rebalance()
         {
           rebalanceParams.set("partitioning method", "HYPERGRAPH");
 
-          rowmap = Teuchos::make_rcp<Epetra_Map>(-1, graph_[i]->RowMap().NumMyElements(),
+          rowmap = std::make_shared<Epetra_Map>(-1, graph_[i]->RowMap().NumMyElements(),
               graph_[i]->RowMap().MyGlobalElements(), 0, comm_);
-          colmap = Teuchos::make_rcp<Epetra_Map>(-1, graph_[i]->ColMap().NumMyElements(),
+          colmap = std::make_shared<Epetra_Map>(-1, graph_[i]->ColMap().NumMyElements(),
               graph_[i]->ColMap().MyGlobalElements(), 0, comm_);
 
           discret->redistribute(*rowmap, *colmap, true, true, false);
 
-          Teuchos::RCP<const Epetra_CrsGraph> enriched_graph =
+          std::shared_ptr<const Epetra_CrsGraph> enriched_graph =
               Core::Rebalance::build_monolithic_node_graph(*discret,
                   Core::GeometricSearch::GeometricSearchParams(
                       parameters_.geometric_search_parameters, parameters_.io_parameters));
@@ -205,7 +205,7 @@ void Core::IO::MeshReader::rebalance()
     }
     else
     {
-      rowmap = colmap = Teuchos::make_rcp<Epetra_Map>(-1, 0, nullptr, 0, comm_);
+      rowmap = colmap = std::make_shared<Epetra_Map>(-1, 0, nullptr, 0, comm_);
     }
 
     discret->redistribute(*rowmap, *colmap, false, false, false);

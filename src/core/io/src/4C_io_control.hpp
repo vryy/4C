@@ -14,9 +14,9 @@
 #include "4C_io_legacy_types.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
 
 #include <fstream>
+#include <memory>
 #include <string>
 
 

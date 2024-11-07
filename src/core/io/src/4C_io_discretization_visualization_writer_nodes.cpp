@@ -23,10 +23,10 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   DiscretizationVisualizationWriterNodes::DiscretizationVisualizationWriterNodes(
-      const Teuchos::RCP<const Core::FE::Discretization>& discretization,
+      const std::shared_ptr<const Core::FE::Discretization>& discretization,
       VisualizationParameters parameters)
       : discretization_(discretization),
-        visualization_manager_(Teuchos::make_rcp<Core::IO::VisualizationManager>(
+        visualization_manager_(std::make_shared<Core::IO::VisualizationManager>(
             std::move(parameters), discretization->get_comm(), discretization->name()))
   {
   }

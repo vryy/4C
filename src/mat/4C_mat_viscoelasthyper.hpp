@@ -51,7 +51,7 @@ namespace Mat
       ViscoElastHyper(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       //@}
 
@@ -161,17 +161,17 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ViscoElastHyper>(*this);
+      return std::make_shared<ViscoElastHyper>(*this);
     }
 
     /// Check if history variables are already initialized
     virtual bool initialized() const
     {
-      return isinitvis_ && (histscgcurr_ != Teuchos::null);
-      return isinitvis_ && (histstresscurr_ != Teuchos::null);
-      return isinitvis_ && (histartstresscurr_ != Teuchos::null);
+      return isinitvis_ && (histscgcurr_ != nullptr);
+      return isinitvis_ && (histstresscurr_ != nullptr);
+      return isinitvis_ && (histartstresscurr_ != nullptr);
     }
 
     /// hyperelastic stress response plus elasticity tensor
@@ -253,33 +253,33 @@ namespace Mat
 
    private:
     /// viscous history Cauchy-Green-Tensor
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<6, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<6, 1>>>
         histscgcurr_;  ///< current Cauchy-Green-Tensor
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<6, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<6, 1>>>
         histscglast_;  ///< Cauchy-Green-Tensor of last converged state
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<6, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<6, 1>>>
         histmodrcgcurr_;  ///< current decoupled Cauchy-Green-Tensor
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<6, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<6, 1>>>
         histmodrcglast_;  ///< decoupled Cauchy-Green-Tensor of last converged state
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         histstresscurr_;  ///< current stress
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         histstresslast_;  ///< stress of last converged state
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         histartstresscurr_;  ///< current stress
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         histartstresslast_;  ///< stress of last converged state
-    Teuchos::RCP<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
+    std::shared_ptr<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
         histbranchstresscurr_;  ///< current stress of the branches
-    Teuchos::RCP<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
+    std::shared_ptr<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
         histbranchstresslast_;  ///< stress of the branches of last converged state
-    Teuchos::RCP<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
+    std::shared_ptr<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
         histbranchelaststresscurr_;  ///< current elastic stress of the branches
-    Teuchos::RCP<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
+    std::shared_ptr<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
         histbranchelaststresslast_;  ///< elastic stress of the branches of last converged state
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         histfractartstresscurr_;  ///< current artificial stress of fractional SLS-model
-    Teuchos::RCP<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
+    std::shared_ptr<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
         histfractartstresslastall_;  ///< artificial fractional stress of all last converged states
 
     bool isinitvis_;  ///< indicates if #Initialized routine has been called

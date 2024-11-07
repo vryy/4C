@@ -49,8 +49,8 @@ namespace SSI
 
     //! constructor
     explicit MeshtyingStrategyBase(bool is_scatra_manifold,
-        Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
-        Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying);
+        std::shared_ptr<SSI::Utils::SSIMaps> ssi_maps,
+        std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying);
 
     /*!
      * @brief apply mesh tying to structure matrix
@@ -61,7 +61,7 @@ namespace SSI
      *                                   adding something
      */
     void apply_meshtying_to_structure_matrix(Core::LinAlg::SparseMatrix& ssi_structure_matrix,
-        Teuchos::RCP<const Core::LinAlg::SparseMatrix> structure_matrix, bool do_uncomplete);
+        std::shared_ptr<const Core::LinAlg::SparseMatrix> structure_matrix, bool do_uncomplete);
 
     /*!
      * @brief apply mesh tying to scatra manifold structure matrix
@@ -71,7 +71,7 @@ namespace SSI
      *                                           before adding something
      */
     virtual void apply_meshtying_to_scatra_manifold_structure(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> manifold_structure_matrix,
+        std::shared_ptr<Core::LinAlg::SparseOperator> manifold_structure_matrix,
         bool do_uncomplete) = 0;
 
     /*!
@@ -82,7 +82,8 @@ namespace SSI
      *                                         before adding something
      */
     virtual void apply_meshtying_to_scatra_structure(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_matrix, bool do_uncomplete) = 0;
+        std::shared_ptr<Core::LinAlg::SparseOperator> scatra_structure_matrix,
+        bool do_uncomplete) = 0;
 
     /*!
      * @brief apply mesh tying to structure right hand side vector
@@ -101,7 +102,8 @@ namespace SSI
      *                                         before adding something
      */
     virtual void apply_meshtying_to_structure_scatra(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_matrix, bool do_uncomplete) = 0;
+        std::shared_ptr<Core::LinAlg::SparseOperator> structure_scatra_matrix,
+        bool do_uncomplete) = 0;
 
    protected:
     /*!
@@ -128,22 +130,22 @@ namespace SSI
     bool is_scatra_manifold() const { return is_scatra_manifold_; }
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps() const { return ssi_maps_; }
+    std::shared_ptr<const SSI::Utils::SSIMaps> ssi_maps() const { return ssi_maps_; }
 
     //! SSI structure meshtying object containing coupling adapters, converters and maps
-    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying() const
+    std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying() const
     {
       return ssi_structure_meshtying_;
     }
 
     //! scatra structure contribution matrix
-    Teuchos::RCP<Core::LinAlg::SparseOperator> temp_scatra_struct_mat_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> temp_scatra_struct_mat_;
 
     //! scatra-manifold structure system matrix used to apply mesh tying to this matrix block
-    Teuchos::RCP<Core::LinAlg::SparseOperator> temp_scatramanifold_struct_mat_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> temp_scatramanifold_struct_mat_;
 
     //! structure scatra system matrix used to apply mesh tying to this matrix block
-    Teuchos::RCP<Core::LinAlg::SparseOperator> temp_struct_scatra_mat_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> temp_struct_scatra_mat_;
 
    private:
     /*!
@@ -158,10 +160,10 @@ namespace SSI
     const bool is_scatra_manifold_;
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps_;
+    std::shared_ptr<const SSI::Utils::SSIMaps> ssi_maps_;
 
     //! SSI structure meshtying object containing coupling adapters, converters and maps
-    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying_;
+    std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying_;
   };
 
   //! SSI problem is represented by one sparse matrix
@@ -170,19 +172,19 @@ namespace SSI
    public:
     //! constructor
     explicit MeshtyingStrategySparse(bool is_scatra_manifold,
-        Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
-        Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying);
+        std::shared_ptr<SSI::Utils::SSIMaps> ssi_maps,
+        std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying);
 
     void apply_meshtying_to_scatra_manifold_structure(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> manifold_structure_matrix,
+        std::shared_ptr<Core::LinAlg::SparseOperator> manifold_structure_matrix,
         bool do_uncomplete) override;
 
     void apply_meshtying_to_scatra_structure(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_matrix,
+        std::shared_ptr<Core::LinAlg::SparseOperator> scatra_structure_matrix,
         bool do_uncomplete) override;
 
     void apply_meshtying_to_structure_scatra(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_matrix,
+        std::shared_ptr<Core::LinAlg::SparseOperator> structure_scatra_matrix,
         bool do_uncomplete) override;
   };
 
@@ -192,19 +194,19 @@ namespace SSI
    public:
     //! constructor
     explicit MeshtyingStrategyBlock(bool is_scatra_manifold,
-        Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
-        Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying);
+        std::shared_ptr<SSI::Utils::SSIMaps> ssi_maps,
+        std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying);
 
     void apply_meshtying_to_scatra_manifold_structure(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> manifold_structure_matrix,
+        std::shared_ptr<Core::LinAlg::SparseOperator> manifold_structure_matrix,
         bool do_uncomplete) override;
 
     void apply_meshtying_to_scatra_structure(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_matrix,
+        std::shared_ptr<Core::LinAlg::SparseOperator> scatra_structure_matrix,
         bool do_uncomplete) override;
 
     void apply_meshtying_to_structure_scatra(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_matrix,
+        std::shared_ptr<Core::LinAlg::SparseOperator> structure_scatra_matrix,
         bool do_uncomplete) override;
 
    protected:
@@ -232,9 +234,9 @@ namespace SSI
   };
 
   //! build specific mesh tying strategy
-  Teuchos::RCP<SSI::MeshtyingStrategyBase> build_meshtying_strategy(bool is_scatra_manifold,
-      Core::LinAlg::MatrixType matrixtype_scatra, Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
-      Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying);
+  std::shared_ptr<SSI::MeshtyingStrategyBase> build_meshtying_strategy(bool is_scatra_manifold,
+      Core::LinAlg::MatrixType matrixtype_scatra, std::shared_ptr<SSI::Utils::SSIMaps> ssi_maps,
+      std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying);
 }  // namespace SSI
 FOUR_C_NAMESPACE_CLOSE
 

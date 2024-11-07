@@ -17,7 +17,8 @@
 #include "4C_material_base.hpp"
 
 #include <Sacado.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 

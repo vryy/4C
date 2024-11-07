@@ -45,10 +45,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::pre_e
  */
 template <typename Beam, typename Solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evaluate_and_assemble(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    const std::shared_ptr<const Core::FE::Discretization>& discret,
+    const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
   if (!this->meshtying_is_evaluated_)
@@ -273,11 +273,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
     gid_pair(i + Beam::n_dof_ + Solid::n_dof_) = rot_gid[i];
 
   // If given, assemble force terms into the global force vector.
-  if (force_vector != Teuchos::null)
+  if (force_vector != nullptr)
     force_vector->SumIntoGlobalValues(gid_pair.num_rows(), gid_pair.data(), force_pair.data());
 
   // If given, assemble force terms into the global stiffness matrix.
-  if (stiffness_matrix != Teuchos::null)
+  if (stiffness_matrix != nullptr)
     for (unsigned int i_dof = 0; i_dof < n_dof_pair_; i_dof++)
       for (unsigned int j_dof = 0; j_dof < n_dof_pair_; j_dof++)
         stiffness_matrix->fe_assemble(stiff_pair(i_dof, j_dof), gid_pair(i_dof), gid_pair(j_dof));
@@ -289,7 +289,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
 template <typename Beam, typename Solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::reset_rotation_state(
     const Core::FE::Discretization& discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& ia_discolnp)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& ia_discolnp)
 {
   get_beam_triad_interpolation_scheme(discret, *ia_discolnp, this->element1(),
       triad_interpolation_scheme_, this->triad_interpolation_scheme_ref_);

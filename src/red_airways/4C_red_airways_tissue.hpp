@@ -16,7 +16,7 @@
 #include "4C_red_airways_resulttest.hpp"
 #include "4C_utils_result_test.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -62,50 +62,50 @@ namespace Airway
     void update_and_output();
 
     /// access to structural field
-    Teuchos::RCP<Adapter::StructureRedAirway>& structure_field() { return structure_; }
+    std::shared_ptr<Adapter::StructureRedAirway>& structure_field() { return structure_; }
 
     /// access to airway field
-    Teuchos::RCP<RedAirwayImplicitTimeInt>& red_airway_field() { return redairways_; }
+    std::shared_ptr<RedAirwayImplicitTimeInt>& red_airway_field() { return redairways_; }
 
 
    private:
     /// underlying structure
-    Teuchos::RCP<Adapter::StructureRedAirway> structure_;
+    std::shared_ptr<Adapter::StructureRedAirway> structure_;
 
-    Teuchos::RCP<RedAirwayImplicitTimeInt> redairways_;
+    std::shared_ptr<RedAirwayImplicitTimeInt> redairways_;
 
     /// redundant vector of outlet pressures (new iteration step)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> couppres_ip_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> couppres_ip_;
 
     /// redundant vector of outlet pressures (old iteration step)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> couppres_im_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> couppres_im_;
 
 
     // Aitken Variables:
     // Relaxation factor
-    Teuchos::RCP<Core::LinAlg::Vector<double>> omega_np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> omega_np_;
 
     /// redundant vector of outlet pressures (before old iteration step), p^{i}_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> couppres_il_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> couppres_il_;
 
     /// redundant vector of outlet pressures (old iteration step guess), \tilde{p}^{i+1}_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> couppres_im_tilde_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> couppres_im_tilde_;
 
     /// redundant vector of outlet pressures (new iteration step guess), \tilde{p}^{i+2}_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> couppres_ip_tilde_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> couppres_ip_tilde_;
 
 
     /// redundant vector of outlet fluxes (new iteration step)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> coupflux_ip_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> coupflux_ip_;
 
     /// redundant vector of outlet fluxes (old iteration step)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> coupflux_im_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> coupflux_im_;
 
     /// redundant vector of 3D volumes (new iteration step)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> coupvol_ip_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> coupvol_ip_;
 
     /// redundant vector of 3D volumes (old iteration step)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> coupvol_im_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> coupvol_im_;
 
     /// internal iteration step
     int itermax_;

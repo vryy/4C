@@ -33,18 +33,18 @@ void XFEM::XFieldField::Coupling::init(const enum MinDofDiscretization& min_dof_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::master_to_slave(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& mv,
+std::shared_ptr<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::master_to_slave(
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& mv,
     const enum XFEM::MapType& map_type) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> sv = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Vector<double>> sv = nullptr;
   switch (map_type)
   {
     case XFEM::map_dofs:
       return ::FourC::Coupling::Adapter::Coupling::master_to_slave(*mv);
       break;
     case XFEM::map_nodes:
-      sv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavenodemap_);
+      sv = std::make_shared<Core::LinAlg::Vector<double>>(*slavenodemap_);
       break;
   }
 
@@ -54,18 +54,18 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::master_t
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::slave_to_master(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& sv,
+std::shared_ptr<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::slave_to_master(
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& sv,
     const enum XFEM::MapType& map_type) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> mv = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Vector<double>> mv = nullptr;
   switch (map_type)
   {
     case XFEM::map_dofs:
       return ::FourC::Coupling::Adapter::Coupling::slave_to_master(*sv);
       break;
     case XFEM::map_nodes:
-      mv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*masternodemap_);
+      mv = std::make_shared<Core::LinAlg::Vector<double>>(*masternodemap_);
       break;
   }
 
@@ -75,18 +75,18 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::slave_to
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> XFEM::XFieldField::Coupling::master_to_slave(
-    const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& mv,
+std::shared_ptr<Core::LinAlg::MultiVector<double>> XFEM::XFieldField::Coupling::master_to_slave(
+    const std::shared_ptr<const Core::LinAlg::MultiVector<double>>& mv,
     const enum XFEM::MapType& map_type) const
 {
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> sv = nullptr;
   switch (map_type)
   {
     case XFEM::map_dofs:
       return ::FourC::Coupling::Adapter::Coupling::master_to_slave(*mv);
       break;
     case XFEM::map_nodes:
-      sv = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*slavenodemap_, mv->NumVectors());
+      sv = std::make_shared<Core::LinAlg::MultiVector<double>>(*slavenodemap_, mv->NumVectors());
       break;
   }
 
@@ -96,18 +96,18 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> XFEM::XFieldField::Coupling::mas
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> XFEM::XFieldField::Coupling::slave_to_master(
-    const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& sv,
+std::shared_ptr<Core::LinAlg::MultiVector<double>> XFEM::XFieldField::Coupling::slave_to_master(
+    const std::shared_ptr<const Core::LinAlg::MultiVector<double>>& sv,
     const enum XFEM::MapType& map_type) const
 {
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> mv = nullptr;
   switch (map_type)
   {
     case XFEM::map_dofs:
       return ::FourC::Coupling::Adapter::Coupling::slave_to_master(*sv);
       break;
     case XFEM::map_nodes:
-      mv = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*masternodemap_, sv->NumVectors());
+      mv = std::make_shared<Core::LinAlg::MultiVector<double>>(*masternodemap_, sv->NumVectors());
       break;
   }
 
@@ -180,10 +180,11 @@ void XFEM::XFieldField::Coupling::slave_to_master(const Core::LinAlg::MultiVecto
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::XFieldField::Coupling::build_dof_maps(const Core::FE::Discretization& masterdis,
-    const Core::FE::Discretization& slavedis, const Teuchos::RCP<const Epetra_Map>& masternodemap,
-    const Teuchos::RCP<const Epetra_Map>& slavenodemap,
-    const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
-    const Teuchos::RCP<const Epetra_Map>& permslavenodemap, const std::vector<int>& masterdofs,
+    const Core::FE::Discretization& slavedis,
+    const std::shared_ptr<const Epetra_Map>& masternodemap,
+    const std::shared_ptr<const Epetra_Map>& slavenodemap,
+    const std::shared_ptr<const Epetra_Map>& permmasternodemap,
+    const std::shared_ptr<const Epetra_Map>& permslavenodemap, const std::vector<int>& masterdofs,
     const std::vector<int>& slavedofs, const int nds_master, const int nds_slave)
 {
   save_node_maps(masternodemap, slavenodemap, permmasternodemap, permslavenodemap);
@@ -235,27 +236,27 @@ void XFEM::XFieldField::Coupling::build_dof_maps(const Core::FE::Discretization&
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::XFieldField::Coupling::save_node_maps(
-    const Teuchos::RCP<const Epetra_Map>& masternodemap,
-    const Teuchos::RCP<const Epetra_Map>& slavenodemap,
-    const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
-    const Teuchos::RCP<const Epetra_Map>& permslavenodemap)
+    const std::shared_ptr<const Epetra_Map>& masternodemap,
+    const std::shared_ptr<const Epetra_Map>& slavenodemap,
+    const std::shared_ptr<const Epetra_Map>& permmasternodemap,
+    const std::shared_ptr<const Epetra_Map>& permslavenodemap)
 {
   masternodemap_ = masternodemap;
   slavenodemap_ = slavenodemap;
   permmasternodemap_ = permmasternodemap;
   permslavenodemap_ = permslavenodemap;
 
-  nodal_masterexport_ = Teuchos::make_rcp<Epetra_Export>(*permmasternodemap, *masternodemap);
-  nodal_slaveexport_ = Teuchos::make_rcp<Epetra_Export>(*permslavenodemap, *slavenodemap);
+  nodal_masterexport_ = std::make_shared<Epetra_Export>(*permmasternodemap, *masternodemap);
+  nodal_slaveexport_ = std::make_shared<Epetra_Export>(*permslavenodemap, *slavenodemap);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::XFieldField::Coupling::build_min_dof_maps(const Core::FE::Discretization& min_dis,
     const Epetra_Map& min_nodemap, const Epetra_Map& min_permnodemap,
-    Teuchos::RCP<const Epetra_Map>& min_dofmap, Teuchos::RCP<const Epetra_Map>& min_permdofmap,
-    Teuchos::RCP<Epetra_Export>& min_exporter, const Epetra_Map& max_nodemap,
-    std::map<int, unsigned>& my_mindofpernode) const
+    std::shared_ptr<const Epetra_Map>& min_dofmap,
+    std::shared_ptr<const Epetra_Map>& min_permdofmap, std::shared_ptr<Epetra_Export>& min_exporter,
+    const Epetra_Map& max_nodemap, std::map<int, unsigned>& my_mindofpernode) const
 {
   std::vector<int> dofmapvec;
   std::map<int, std::vector<int>> dofs;
@@ -278,7 +279,7 @@ void XFEM::XFieldField::Coupling::build_min_dof_maps(const Core::FE::Discretizat
 
   // dof map is the original, unpermuted distribution of dofs
   min_dofmap =
-      Teuchos::make_rcp<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, min_dis.get_comm());
+      std::make_shared<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, min_dis.get_comm());
 
   dofmapvec.clear();
 
@@ -309,19 +310,19 @@ void XFEM::XFieldField::Coupling::build_min_dof_maps(const Core::FE::Discretizat
 
   // permuted dof map according to a given permuted node map
   min_permdofmap =
-      Teuchos::make_rcp<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, min_dis.get_comm());
+      std::make_shared<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, min_dis.get_comm());
 
   /* prepare communication plan to create a dofmap out of a permuted
    * dof map */
-  min_exporter = Teuchos::make_rcp<Epetra_Export>(*min_permdofmap, *min_dofmap);
+  min_exporter = std::make_shared<Epetra_Export>(*min_permdofmap, *min_dofmap);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::XFieldField::Coupling::build_max_dof_maps(const Core::FE::Discretization& max_dis,
     const Epetra_Map& max_nodemap, const Epetra_Map& max_permnodemap,
-    Teuchos::RCP<const Epetra_Map>& max_dofmap, Teuchos::RCP<const Epetra_Map>& max_permdofmap,
-    Teuchos::RCP<Epetra_Export>& max_exporter,
+    std::shared_ptr<const Epetra_Map>& max_dofmap,
+    std::shared_ptr<const Epetra_Map>& max_permdofmap, std::shared_ptr<Epetra_Export>& max_exporter,
     const std::map<int, unsigned>& my_mindofpernode) const
 {
   std::vector<int> dofmapvec;
@@ -356,7 +357,7 @@ void XFEM::XFieldField::Coupling::build_max_dof_maps(const Core::FE::Discretizat
 
   // dof map is the original, unpermuted distribution of dofs
   max_dofmap =
-      Teuchos::make_rcp<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, max_dis.get_comm());
+      std::make_shared<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, max_dis.get_comm());
 
   dofmapvec.clear();
 
@@ -376,11 +377,11 @@ void XFEM::XFieldField::Coupling::build_max_dof_maps(const Core::FE::Discretizat
 
   // permuted dof map according to a given permuted node map
   max_permdofmap =
-      Teuchos::make_rcp<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, max_dis.get_comm());
+      std::make_shared<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, max_dis.get_comm());
 
   /* prepare communication plan to create a dofmap out of a permuted
    * dof map */
-  max_exporter = Teuchos::make_rcp<Epetra_Export>(*max_permdofmap, *max_dofmap);
+  max_exporter = std::make_shared<Epetra_Export>(*max_permdofmap, *max_dofmap);
 }
 
 FOUR_C_NAMESPACE_CLOSE

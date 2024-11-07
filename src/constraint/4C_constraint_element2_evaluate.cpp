@@ -33,8 +33,8 @@ int Discret::Elements::ConstraintElement2::evaluate(Teuchos::ParameterList& para
     return 0;
   else if (action == "calc_MPC_stiff")
   {
-    Teuchos::RCP<Core::Conditions::Condition> condition =
-        params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
+    std::shared_ptr<Core::Conditions::Condition> condition =
+        params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
     const std::string& type = condition->parameters().get<std::string>("control value");
 
     if (type == "dist")
@@ -58,9 +58,9 @@ int Discret::Elements::ConstraintElement2::evaluate(Teuchos::ParameterList& para
     break;
     case calc_MPC_dist_stiff:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numnode = 3;
@@ -79,9 +79,9 @@ int Discret::Elements::ConstraintElement2::evaluate(Teuchos::ParameterList& para
     break;
     case calc_MPC_angle_stiff:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numnode = 3;

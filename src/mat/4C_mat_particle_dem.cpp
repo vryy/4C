@@ -30,9 +30,9 @@ Mat::PAR::ParticleMaterialDEM::ParticleMaterialDEM(const Core::Mat::PAR::Paramet
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ParticleMaterialDEM::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ParticleMaterialDEM::create_material()
 {
-  return Teuchos::make_rcp<Mat::ParticleMaterialDEM>(this);
+  return std::make_shared<Mat::ParticleMaterialDEM>(this);
 }
 
 /*---------------------------------------------------------------------------*
@@ -90,7 +90,7 @@ void Mat::ParticleMaterialDEM::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       // note: dynamic_cast needed due diamond inheritance structure

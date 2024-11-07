@@ -43,7 +43,7 @@ NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
   testMap = dynamic_cast<const Epetra_Map*>(&currentX.getEpetraVector().Map());
   if (testMap != nullptr)
   {
-    epetraMap = Teuchos::make_rcp<Epetra_Map>(*testMap);
+    epetraMap = std::make_shared<Epetra_Map>(*testMap);
   }
   else
   {
@@ -51,7 +51,7 @@ NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
     int mySize = currentX.getEpetraVector().Map().NumMyPoints();
     int indexBase = currentX.getEpetraVector().Map().IndexBase();
     const Epetra_Comm& comm = currentX.getEpetraVector().Map().Comm();
-    epetraMap = Teuchos::make_rcp<Epetra_Map>(size, mySize, indexBase, comm);
+    epetraMap = std::make_shared<Epetra_Map>(size, mySize, indexBase, comm);
   }
 }
 
@@ -184,8 +184,7 @@ bool NOX::FSI::FSIMatrixFree::computeJacobian(const Epetra_Vector& x, Epetra_Ope
 void NOX::FSI::FSIMatrixFree::set_group_for_compute_f(const ::NOX::Abstract::Group& group)
 {
   useGroupForComputeF = true;
-  groupPtr = group.clone();
-  return;
+  groupPtr = std::shared_ptr<::NOX::Abstract::Group>(group.clone().release().get());
 }
 
 FOUR_C_NAMESPACE_CLOSE

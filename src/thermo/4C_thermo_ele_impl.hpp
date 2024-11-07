@@ -348,7 +348,7 @@ namespace Discret
       ) const;
 
       //! get corresponding structural material
-      Teuchos::RCP<Core::Mat::Material> get_str_material(
+      std::shared_ptr<Core::Mat::Material> get_str_material(
           const Core::Elements::Element* ele  //!< the element whose matrix is calculated
       ) const;
 

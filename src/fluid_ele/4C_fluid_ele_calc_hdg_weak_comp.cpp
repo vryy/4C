@@ -16,6 +16,7 @@
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_mat_fluid_weakly_compressible.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
@@ -43,26 +44,25 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::initialize_shapes(
     usescompletepoly_ = hdgwkele->uses_complete_polynomial_space();
 
     // initialize shapes
-    if (shapes_ == Teuchos::null)
-      shapes_ = Teuchos::make_rcp<Core::FE::ShapeValues<distype>>(
+    if (shapes_ == nullptr)
+      shapes_ = std::make_shared<Core::FE::ShapeValues<distype>>(
           hdgwkele->degree(), usescompletepoly_, 2 * ele->degree());
     else if (shapes_->degree_ != unsigned(ele->degree()) ||
              shapes_->usescompletepoly_ != usescompletepoly_)
-      shapes_ = Teuchos::make_rcp<Core::FE::ShapeValues<distype>>(
+      shapes_ = std::make_shared<Core::FE::ShapeValues<distype>>(
           hdgwkele->degree(), usescompletepoly_, 2 * ele->degree());
 
     // initialize shapes on faces
-    if (shapesface_ == Teuchos::null)
+    if (shapesface_ == nullptr)
     {
       Core::FE::ShapeValuesFaceParams svfparams(
           ele->degree(), usescompletepoly_, 2 * ele->degree());
-      shapesface_ = Teuchos::make_rcp<Core::FE::ShapeValuesFace<distype>>(svfparams);
+      shapesface_ = std::make_shared<Core::FE::ShapeValuesFace<distype>>(svfparams);
     }
 
     // initialize local solver
-    if (local_solver_ == Teuchos::null)
-      local_solver_ =
-          Teuchos::make_rcp<LocalSolver>(ele, *shapes_, *shapesface_, usescompletepoly_);
+    if (local_solver_ == nullptr)
+      local_solver_ = std::make_shared<LocalSolver>(ele, *shapes_, *shapesface_, usescompletepoly_);
   }
   else
     FOUR_C_THROW("Only works for HDG weakly compressible fluid elements");
@@ -73,7 +73,7 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::initialize_shapes(
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -90,7 +90,7 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::evaluate(Discret::Eleme
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix&,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector&,
     Core::LinAlg::SerialDenseVector&, bool offdiag)
@@ -151,7 +151,7 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::read_global_vectors(
   interior_acc_.resize((msd_ + 1 + nsd_) * shapes_->ndofs_);
 
   // read the trace values
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
       discretization.get_state(0, "velaf");
   Core::FE::extract_my_values(*matrix_state, trace_val_, lm);
 
@@ -197,7 +197,7 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::read_ale_vectors(
       }
 
       // initialize matrix state
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state;
 
       // read the ale displacement
       matrix_state = discretization.get_state(2, "dispnp");
@@ -215,7 +215,7 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::read_ale_vectors(
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::evaluate_service(
     Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
+    std::shared_ptr<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
     Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
@@ -258,7 +258,7 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::evaluate_service(
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::update_local_solution(
     Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
+    std::shared_ptr<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& interiorinc)
 {
   // read global vectors
@@ -296,7 +296,7 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::update_local_solution(
   // extract local trace increments
   std::vector<double> localtraceinc_vec;
   localtraceinc_vec.resize(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
       discretization.get_state(0, "globaltraceinc");
   Core::FE::extract_my_values(*matrix_state, localtraceinc_vec, lm);
 
@@ -328,7 +328,7 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::update_local_solution(
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::compute_error(
     Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
+    std::shared_ptr<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec)
 {
   // read ale vectors
@@ -342,7 +342,7 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::compute_error(
   const double time = local_solver_->fldparatimint_->time();
 
   // get interior values
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
       discretization.get_state(1, "intvelnp");
   std::vector<int> localDofs = discretization.dof(1, ele);
   std::vector<double> vecValues(localDofs.size());
@@ -439,7 +439,7 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::compute_error(
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::project_field(
     Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
+    std::shared_ptr<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector& elevec2)
 {
@@ -678,7 +678,7 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to
   // get local solution values
   // The vector "matrix_state" contains the interior velocity values following
   // the local id numbers
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
       discretization.get_state(1, "intvelnp");
   // Vector of the ids of the DOF for the element
   std::vector<int> localDofs = discretization.dof(1, ele);
@@ -979,10 +979,11 @@ Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::LocalSolver(
     }
 
   // pointer to class FluidEleParameter (access to the general parameter)
-  fldparatimint_ = Teuchos::rcpFromRef(*Discret::Elements::FluidEleParameterTimInt::instance());
+  fldparatimint_ =
+      Core::Utils::shared_ptr_from_ref(*Discret::Elements::FluidEleParameterTimInt::instance());
 
   // initialize also general parameter list, also it will be overwritten in derived subclasses
-  fldpara_ = Teuchos::rcpFromRef(*Discret::Elements::FluidEleParameterStd::instance());
+  fldpara_ = Core::Utils::shared_ptr_from_ref(*Discret::Elements::FluidEleParameterStd::instance());
 }
 
 
@@ -1042,7 +1043,7 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::initializ
 
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_material_matrix(
-    const Teuchos::RCP<Core::Mat::Material>& mat, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
+    const std::shared_ptr<Core::Mat::Material>& mat, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
     Core::LinAlg::SerialDenseMatrix& DL, Core::LinAlg::SerialDenseMatrix& Dw)
 {
   // initialize DL and Dw
@@ -1100,7 +1101,7 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_m
 
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_interior_residual(
-    const Teuchos::RCP<Core::Mat::Material>& mat, const std::vector<double>& val,
+    const std::shared_ptr<Core::Mat::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& accel, const std::vector<double>& alevel)
 {
   // set convective flag
@@ -1301,7 +1302,7 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_i
 
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_interior_matrices(
-    const Teuchos::RCP<Core::Mat::Material>& mat)
+    const std::shared_ptr<Core::Mat::Material>& mat)
 {
   // get material properties
   const Mat::WeaklyCompressibleFluid* actmat =
@@ -1474,7 +1475,7 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_i
 
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_face_residual(
-    const int f, const Teuchos::RCP<Core::Mat::Material>& mat, const std::vector<double>& val,
+    const int f, const std::shared_ptr<Core::Mat::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& traceval, const std::vector<double>& alevel)
 {
   // get material properties
@@ -1663,7 +1664,7 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_f
 
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_face_matrices(
-    const int f, const Teuchos::RCP<Core::Mat::Material>& mat)
+    const int f, const std::shared_ptr<Core::Mat::Material>& mat)
 {
   // get material properties
   const Mat::WeaklyCompressibleFluid* actmat =

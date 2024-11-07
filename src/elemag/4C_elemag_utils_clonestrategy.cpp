@@ -44,8 +44,8 @@ void EleMag::Utils::ScatraCloneStrategy<sft>::check_material_type(const int mati
 /*----------------------------------------------------------------------------*/
 template <Core::FE::ShapeFunctionType sft>
 void EleMag::Utils::ScatraCloneStrategy<sft>::set_element_data(
-    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
-    const bool nurbsdis)
+    std::shared_ptr<Core::Elements::Element> newele, Core::Elements::Element* oldele,
+    const int matid, const bool nurbsdis)
 {
   auto Transport = dynamic_cast<Discret::Elements::Transport*>(newele.get());
   if (Transport != nullptr)

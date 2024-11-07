@@ -41,7 +41,7 @@ CONTACT::Coupling2d::Coupling2d(Core::FE::Discretization& idiscret, int dim, boo
  |  Integrate slave / master overlap (public)                 popp 04/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling2d::integrate_overlap(
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   // explicitly defined shape function type needed
   if (shape_fcn() == Inpar::Mortar::shape_undefined)
@@ -77,7 +77,7 @@ bool CONTACT::Coupling2d::integrate_overlap(
   double mxib = xiproj_[3];
 
   // create a CONTACT integrator instance with correct num_gp and Dim
-  Teuchos::RCP<CONTACT::Integrator> integrator =
+  std::shared_ptr<CONTACT::Integrator> integrator =
       CONTACT::INTEGRATOR::build_integrator(stype_, imortar_, slave_element().shape(), get_comm());
   // *******************************************************************
   // different options for mortar integration
@@ -160,7 +160,7 @@ const Epetra_Comm& CONTACT::Coupling2dManager::get_comm() const { return idiscre
  |  Evaluate coupling pairs                                  farah 10/14|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling2dManager::evaluate_coupling(
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   if (master_elements().size() == 0) return false;
 
@@ -187,7 +187,7 @@ bool CONTACT::Coupling2dManager::evaluate_coupling(
  |  Evaluate mortar coupling pairs                           Popp 03/09 |
  *----------------------------------------------------------------------*/
 void CONTACT::Coupling2dManager::integrate_coupling(
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   //**********************************************************************
   // STANDARD INTEGRATION (SEGMENTS)
@@ -198,7 +198,7 @@ void CONTACT::Coupling2dManager::integrate_coupling(
     for (int m = 0; m < (int)master_elements().size(); ++m)
     {
       // create Coupling2d object and push back
-      coupling().push_back(Teuchos::make_rcp<Coupling2d>(
+      coupling().push_back(std::make_shared<Coupling2d>(
           idiscret_, dim_, quad_, imortar_, slave_element(), master_element(m)));
 
       // project the element pair
@@ -228,7 +228,7 @@ void CONTACT::Coupling2dManager::integrate_coupling(
     if ((int)master_elements().size() == 0) return;
 
     // create an integrator instance with correct num_gp and Dim
-    Teuchos::RCP<CONTACT::Integrator> integrator = CONTACT::INTEGRATOR::build_integrator(
+    std::shared_ptr<CONTACT::Integrator> integrator = CONTACT::INTEGRATOR::build_integrator(
         stype_, imortar_, slave_element().shape(), get_comm());
 
     // *******************************************************************
@@ -253,7 +253,7 @@ void CONTACT::Coupling2dManager::integrate_coupling(
       for (unsigned m = 0; m < master_elements().size(); ++m)
       {
         // create Coupling2d object and push back
-        coupling().push_back(Teuchos::make_rcp<Coupling2d>(
+        coupling().push_back(std::make_shared<Coupling2d>(
             idiscret_, dim_, quad_, imortar_, slave_element(), master_element(m)));
 
         // project the element pair
@@ -284,7 +284,7 @@ void CONTACT::Coupling2dManager::integrate_coupling(
           for (int m = 0; m < (int)master_elements().size(); ++m)
           {
             // create Coupling2d object and push back
-            coupling().push_back(Teuchos::make_rcp<Coupling2d>(
+            coupling().push_back(std::make_shared<Coupling2d>(
                 idiscret_, dim_, quad_, imortar_, slave_element(), master_element(m)));
 
             // project the element pair
@@ -313,7 +313,7 @@ void CONTACT::Coupling2dManager::integrate_coupling(
           for (int m = 0; m < (int)master_elements().size(); ++m)
           {
             // create Coupling2d object and push back
-            coupling().push_back(Teuchos::make_rcp<Coupling2d>(
+            coupling().push_back(std::make_shared<Coupling2d>(
                 idiscret_, dim_, quad_, imortar_, slave_element(), master_element(m)));
 
             // project the element pair
@@ -472,7 +472,7 @@ void CONTACT::Coupling2dManager::consistent_dual_shape()
 
   // store derivae into element
   slave_element().mo_data().deriv_dual_shape() =
-      Teuchos::make_rcp<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>(
+      std::make_shared<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>(
           linsize + 2 * ndof * mnodes, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes));
   Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& derivae =
       *(slave_element().mo_data().deriv_dual_shape());
@@ -653,7 +653,7 @@ void CONTACT::Coupling2dManager::consistent_dual_shape()
   }
 
   // store ae matrix in slave element data container
-  slave_element().mo_data().dual_shape() = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(ae);
+  slave_element().mo_data().dual_shape() = std::make_shared<Core::LinAlg::SerialDenseMatrix>(ae);
 
   return;
 }

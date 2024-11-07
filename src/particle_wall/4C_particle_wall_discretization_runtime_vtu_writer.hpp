@@ -13,8 +13,6 @@
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -65,7 +63,7 @@ namespace PARTICLEWALL
      *
      */
     explicit WallDiscretizationRuntimeVtuWriter(
-        const Teuchos::RCP<Core::FE::Discretization> walldiscretization,
+        const std::shared_ptr<Core::FE::Discretization> walldiscretization,
         const std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate, double restart_time);
 
     /*!
@@ -90,7 +88,7 @@ namespace PARTICLEWALL
 
    private:
     //! wall discretization
-    Teuchos::RCP<Core::FE::Discretization> walldiscretization_;
+    std::shared_ptr<Core::FE::Discretization> walldiscretization_;
 
     //! wall data state container
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate_;

@@ -47,7 +47,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
       searchdis_(searchdis),
       basisnodes_(discret.num_global_nodes())
 {
-  extrusionvalue_ = Teuchos::make_rcp<std::vector<double>>();
+  extrusionvalue_ = std::make_shared<std::vector<double>>();
   extrusionvalue_->clear();
 
   Inpar::BEAMCONTACT::OctreeType bboxtype_input = Inpar::BEAMCONTACT::boct_none;
@@ -126,7 +126,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
         "BEAMS_EXTVAL in your input file.");
 
   // statmech input section no longer existent, get parameters out of new section if needed
-  periodlength_ = Teuchos::make_rcp<std::vector<double>>();
+  periodlength_ = std::make_shared<std::vector<double>>();
   periodlength_->clear();
   for (int i = 0; i < 2; i++) periodlength_->push_back(0);
   periodic_bc_ = false;
@@ -254,8 +254,8 @@ bool Beam3ContactOctTree::intersect_b_boxes_with(
   bool intersection = false;
 
   // determine bounding box limits
-  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(1, 1);
+  std::shared_ptr<Core::LinAlg::SerialDenseMatrix> bboxlimits =
+      std::make_shared<Core::LinAlg::SerialDenseMatrix>(1, 1);
 
   // build bounding box according to given type
   switch (boundingbox_)
@@ -393,7 +393,7 @@ void Beam3ContactOctTree::octree_output(
       out << '\n';
     }
     // bounding box coords output
-    if (allbboxes_ != Teuchos::null)
+    if (allbboxes_ != nullptr)
     {
       std::ostringstream filename;
       if (step != -2)
@@ -421,11 +421,11 @@ void Beam3ContactOctTree::initialize_octree_search()
   // intersection optimization)
   if (periodic_bc_)
     numshifts_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(searchdis_.element_col_map()), true);
+        std::make_shared<Core::LinAlg::Vector<double>>(*(searchdis_.element_col_map()), true);
 
   // determine radius factor by looking at the absolute mean variance of a bounding box (not quite
   // sure...) beam diameter
-  diameter_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(searchdis_.element_col_map()));
+  diameter_ = std::make_shared<Core::LinAlg::Vector<double>>(*(searchdis_.element_col_map()));
   switch (boundingbox_)
   {
     // for this case, the diameter is calculated in create_spbb()
@@ -472,7 +472,7 @@ void Beam3ContactOctTree::initialize_octree_search()
   // maxnumshifts = 0)
   int maxnumshifts = 0;
   if (periodic_bc_) maxnumshifts = 3;
-  allbboxes_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+  allbboxes_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
       *(searchdis_.element_col_map()), (maxnumshifts + 1) * numbboxcoords + 1, true);
 
   return;
@@ -601,14 +601,14 @@ void Beam3ContactOctTree::create_bounding_boxes(
  |  Create an Axis Aligned Bounding Box   (private)                           mueller 11/11|
  *----------------------------------------------------------------------------------------*/
 void Beam3ContactOctTree::create_aabb(Core::LinAlg::SerialDenseMatrix& coord, const int& elecolid,
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits)
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
   // hypothetical bounding box (i.e. without an element) can be tested for intersection. Hence, we
   // store the limits of this bounding box into bboxlimits if needed. Since the hypothetical
   // bounding box stands for a crosslinker to be set, we just need the exact dimensions of the
   // element
-  if (bboxlimits != Teuchos::null) FOUR_C_THROW("Not in use!");
+  if (bboxlimits != nullptr) FOUR_C_THROW("Not in use!");
 
   // factor by which the box is extruded in each dimension
   double extrusionvalue = get_bounding_box_extrusion_value();
@@ -709,14 +709,14 @@ void Beam3ContactOctTree::create_aabb(Core::LinAlg::SerialDenseMatrix& coord, co
  |  Create Cylindrical an Oriented Bounding Box   (private)                   mueller 11/11|
  *----------------------------------------------------------------------------------------*/
 void Beam3ContactOctTree::create_cobb(Core::LinAlg::SerialDenseMatrix& coord, const int& elecolid,
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits)
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
   // hypothetical bounding box (i.e. without an element) can be tested for intersection. Hence, we
   // store the limits of this bounding box into bboxlimits if needed. Since the hypothetical
   // bounding box stands for a crosslinker to be set, we just need the exact dimensions of the
   // element
-  if (bboxlimits != Teuchos::null) FOUR_C_THROW("Not in use!");
+  if (bboxlimits != nullptr) FOUR_C_THROW("Not in use!");
   // make the bounding box continuous
   std::vector<int> cut(3, 0);
   int numshifts = 0;
@@ -813,14 +813,14 @@ void Beam3ContactOctTree::create_cobb(Core::LinAlg::SerialDenseMatrix& coord, co
  |  Create Spherical Bounding Box   (private)                                  mueller 1/12|
  *-----------------------------------------------------------------------------------------*/
 void Beam3ContactOctTree::create_spbb(Core::LinAlg::SerialDenseMatrix& coord, const int& elecolid,
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits)
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
   // hypothetical bounding box (i.e. without an element) can be tested for intersection. Hence, we
   // store the limits of this bounding box into bboxlimits if needed. Since the hypothetical
   // bounding box stands for a crosslinker to be set, we just need the exact dimensions of the
   // element
-  if (bboxlimits != Teuchos::null) FOUR_C_THROW("Not in use!");
+  if (bboxlimits != nullptr) FOUR_C_THROW("Not in use!");
   // make the bounding box continuous
   std::vector<int> cut(3, 0);
   int numshifts = 0;
@@ -989,7 +989,7 @@ bool Beam3ContactOctTree::locate_all()
 
   // communicate bbox2octant_ to all Procs
   searchdis_.get_comm().MaxAll(&maxnumoctlocal, &maxnumoctglobal, 1);
-  bbox2octant_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+  bbox2octant_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
       *(searchdis_.element_col_map()), maxnumoctglobal, true);
 
   // fill epetra vector
@@ -1024,7 +1024,7 @@ bool Beam3ContactOctTree::locate_all()
     // build Core::LinAlg::MultiVector<double>s which hold the BBs of the OctreeMap; for
     // communication
     bboxesinoctants_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(octtreemap, maxdepthglobal);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(octtreemap, maxdepthglobal);
     Core::LinAlg::MultiVector<double> bboxinoctrow(octtreerowmap, maxdepthglobal, true);
 
     // fill bboxinoct for Proc 0
@@ -1095,7 +1095,7 @@ void Beam3ContactOctTree::locate_box(std::vector<std::vector<double>>& allbboxes
    *    0 ========================= 2        ---> x
    *
    */
-  Teuchos::RCP<Core::LinAlg::Matrix<3, 1>> octcenter = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Matrix<3, 1>> octcenter = nullptr;
 
   // Goes through all suboctants
   for (int oct = 0; oct < 8; oct++)
@@ -1108,7 +1108,7 @@ void Beam3ContactOctTree::locate_box(std::vector<std::vector<double>>& allbboxes
     if (boundingbox_ == Beam3ContactOctTree::cyloriented ||
         boundingbox_ == Beam3ContactOctTree::spherical)
     {
-      octcenter = Teuchos::make_rcp<Core::LinAlg::Matrix<3, 1>>();
+      octcenter = std::make_shared<Core::LinAlg::Matrix<3, 1>>();
       for (int i = 0; i < (int)octcenter->m(); i++)
         (*octcenter)(i) = 0.5 * (suboctlimits[oct](2 * i) + suboctlimits[oct](2 * i + 1));
     }
@@ -1581,14 +1581,14 @@ void Beam3ContactOctTree::bounding_box_intersection(
  |  represent actual finite elements  (private)                         mueller 11/11|
  *----------------------------------------------------------------------------------*/
 bool Beam3ContactOctTree::intersection_aabb(
-    const std::vector<int>& bboxIDs, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits)
+    const std::vector<int>& bboxIDs, std::shared_ptr<Core::LinAlg::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
   // hypothetical bounding box (i.e. without an element) can be tested for intersection. Hence, we
   // store the limits of this bounding box into bboxlimits if needed. Since the hypothetical
   // bounding box stands for a crosslinker to be set, we just need the exact dimensions of the
   // element
-  if (bboxlimits != Teuchos::null) FOUR_C_THROW("Not in use!");
+  if (bboxlimits != nullptr) FOUR_C_THROW("Not in use!");
 
   // translate box / element GIDs to ElementColMap()-LIDs
   // note: GID and ColumnMap LID are usually the same except for crosslinker elements from
@@ -1642,14 +1642,14 @@ bool Beam3ContactOctTree::intersection_aabb(
  |  represent actual finite elements  (private)                         mueller 11/11|
  *----------------------------------------------------------------------------------*/
 bool Beam3ContactOctTree::intersection_cobb(
-    const std::vector<int>& bboxIDs, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits)
+    const std::vector<int>& bboxIDs, std::shared_ptr<Core::LinAlg::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
   // hypothetical bounding box (i.e. without an element) can be tested for intersection. Hence, we
   // store the limits of this bounding box into bboxlimits if needed. Since the hypothetical
   // bounding box stands for a crosslinker to be set, we just need the exact dimensions of the
   // element
-  if (bboxlimits != Teuchos::null) FOUR_C_THROW("Not in use!");
+  if (bboxlimits != nullptr) FOUR_C_THROW("Not in use!");
 
   /* intersection test by calculating the distance between the two bounding box center lines
    * and comparing it to the respective diameters of the beams*/
@@ -1759,14 +1759,14 @@ bool Beam3ContactOctTree::intersection_cobb(
  |  for linkers                                       (private)        mueller 01/12|
  *----------------------------------------------------------------------------------*/
 bool Beam3ContactOctTree::intersection_spbb(
-    const std::vector<int>& bboxIDs, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits)
+    const std::vector<int>& bboxIDs, std::shared_ptr<Core::LinAlg::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
   // hypothetical bounding box (i.e. without an element) can be tested for intersection. Hence, we
   // store the limits of this bounding box into bboxlimits if needed. Since the hypothetical
   // bounding box stands for a crosslinker to be set, we just need the exact dimensions of the
   // element
-  if (bboxlimits != Teuchos::null) FOUR_C_THROW("Not in use!");
+  if (bboxlimits != nullptr) FOUR_C_THROW("Not in use!");
 
   int bboxid0 = searchdis_.element_col_map()->LID(bboxIDs[0]);
   int bboxid1 = searchdis_.element_col_map()->LID(bboxIDs[1]);

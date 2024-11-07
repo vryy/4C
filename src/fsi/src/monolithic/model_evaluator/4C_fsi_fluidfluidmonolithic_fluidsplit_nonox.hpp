@@ -60,10 +60,10 @@ namespace FSI
     void create_combined_dof_row_map() override;
 
     /// initial guess for subsequent fields
-    void initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> ig) override;
+    void initial_guess(std::shared_ptr<Core::LinAlg::Vector<double>> ig) override;
 
     /// create merged Dirichlet map from single field maps
-    Teuchos::RCP<Epetra_Map> combined_dbc_map() override;
+    std::shared_ptr<Epetra_Map> combined_dbc_map() override;
 
     /// Newton loop
     void newton() override;
@@ -81,10 +81,10 @@ namespace FSI
     //! \param sx (o) structural displacements
     //! \param fx (o) fluid velocities and pressure
     //! \param ax (o) ale displacements
-    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& ax) override;
+    void extract_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& fx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& ax) override;
 
     /// compute the Lagrange multiplier (FSI stresses) for the current time step
     void recover_lagrange_multiplier() override;
@@ -123,18 +123,18 @@ namespace FSI
         double fluidscale);
 
     /// access type-cast pointer to problem-specific fluid-wrapper
-    const Teuchos::RCP<Adapter::FluidFluidFSI>& fluid_field() { return MonolithicNoNOX::fluid_; }
+    const std::shared_ptr<Adapter::FluidFluidFSI>& fluid_field() { return MonolithicNoNOX::fluid_; }
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> fggtransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> fgitransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> figtransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> aigtransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> fmgitransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> fmggtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowColTransform> fggtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowTransform> fgitransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> figtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> aigtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> fmiitransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowColTransform> fmgitransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowColTransform> fmggtransform_;
 
     //@}
 
@@ -143,41 +143,41 @@ namespace FSI
     //@{
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
     //! fluid) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambda_;
 
     //! block \f$F_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fggprev_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> fggprev_;
 
     //! block \f$F_{\Gamma I,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fgiprev_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> fgiprev_;
 
     //! block \f$F^G_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fmggprev_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> fmggprev_;
 
     //! block \f$F^G_{\Gamma I,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fmgiprev_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> fmgiprev_;
 
     //! block \f$F_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fggcur_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> fggcur_;
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fgicur_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> fgicur_;
 
     //! block \f$F^G_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fmggcur_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> fmggcur_;
 
     //! block \f$F^G_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fmgicur_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> fmgicur_;
 
     //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX
     //! iteration \f$i+1\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ddialeinc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ddialeinc_;
     //! interface structure displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at
     //! current iteration \f$i+1\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ddginc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ddginc_;
     //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current NOX iteration
     //! \f$i+1\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> duiinc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> duiinc_;
     //@}
   };
 }  // namespace FSI

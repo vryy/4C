@@ -17,7 +17,7 @@
 #include "4C_poroelast_utils.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -54,7 +54,7 @@ namespace PoroElastScaTra
   //! poroelasticity-scatra problems
   namespace Utils
   {
-    Teuchos::RCP<Core::LinAlg::MapExtractor> build_poro_scatra_splitter(
+    std::shared_ptr<Core::LinAlg::MapExtractor> build_poro_scatra_splitter(
         Core::FE::Discretization& dis);
 
     //! check if element is a poro-scatra-element
@@ -64,11 +64,11 @@ namespace PoroElastScaTra
     bool is_poro_p1_scatra_element(const Core::Elements::Element* actele);
 
 
-    Teuchos::RCP<Core::LinAlg::MapExtractor> build_poro_splitter(
-        Teuchos::RCP<Core::FE::Discretization> dis);
+    std::shared_ptr<Core::LinAlg::MapExtractor> build_poro_splitter(
+        std::shared_ptr<Core::FE::Discretization> dis);
 
     //! create solution algorithm depending on input file
-    Teuchos::RCP<PoroElast::PoroBase> create_poro_algorithm(
+    std::shared_ptr<PoroElast::PoroBase> create_poro_algorithm(
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
         const Epetra_Comm& comm,                   //!< communicator(i)
         bool setup_solve = true  //!< setup linear solver for Poroelastic problem (only required if
@@ -76,14 +76,15 @@ namespace PoroElastScaTra
     );
 
     //! create solution algorithm depending on input file
-    Teuchos::RCP<PoroElastScaTra::PoroScatraBase> create_poro_scatra_algorithm(
+    std::shared_ptr<PoroElastScaTra::PoroScatraBase> create_poro_scatra_algorithm(
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
         const Epetra_Comm& comm                    //!< communicator(i)
     );
 
     //! reset Material pointers after redistribution
-    void set_material_pointers_matching_grid(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
-        Teuchos::RCP<const Core::FE::Discretization> targetdis);
+    void set_material_pointers_matching_grid(
+        std::shared_ptr<const Core::FE::Discretization> sourcedis,
+        std::shared_ptr<const Core::FE::Discretization> targetdis);
 
     /*!
      Create volume ghosting:
@@ -110,7 +111,7 @@ namespace PoroElastScaTra
 
     //! Determine norm of vector
     double calculate_vector_norm(const enum Inpar::PoroElast::VectorNorm norm,  //!< norm to use
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> vect  //!< the vector of interest
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> vect  //!< the vector of interest
     );
 
     //! Set the slave and master elements of the face element
@@ -145,14 +146,14 @@ namespace PoroElastScaTra
       //! assignment of fluid material to structure material
       void assign_material2_to1(const Coupling::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele1, const std::vector<int>& ids_2,
-          Teuchos::RCP<Core::FE::Discretization> dis1,
-          Teuchos::RCP<Core::FE::Discretization> dis2) override;
+          std::shared_ptr<Core::FE::Discretization> dis1,
+          std::shared_ptr<Core::FE::Discretization> dis2) override;
 
       //! assignment of structure material to fluid material
       void assign_material1_to2(const Coupling::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele2, const std::vector<int>& ids_1,
-          Teuchos::RCP<Core::FE::Discretization> dis1,
-          Teuchos::RCP<Core::FE::Discretization> dis2) override;
+          std::shared_ptr<Core::FE::Discretization> dis1,
+          std::shared_ptr<Core::FE::Discretization> dis2) override;
     };
   }  // namespace Utils
 

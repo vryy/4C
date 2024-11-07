@@ -13,9 +13,9 @@
 #include "4C_linalg_multi_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <functional>
+#include <map>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -43,7 +43,7 @@ namespace Core::FE
     \author Georg Hammerl
     \date 06/14
    */
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> compute_nodal_l2_projection(
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> compute_nodal_l2_projection(
       Core::FE::Discretization& dis,   ///< underlying discretization
       const std::string& statename,    ///< name of state which will be set
       const int& numvec,               ///< number of entries per node to project
@@ -54,13 +54,13 @@ namespace Core::FE
           get_solver_params  ///< function that returns the solver parameters for the i-th solver
   );
 
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> evaluate_and_solve_nodal_l2_projection(
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> evaluate_and_solve_nodal_l2_projection(
       Core::FE::Discretization& dis, const Epetra_Map& noderowmap, const std::string& statename,
       const int& numvec, Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
       const std::function<const Teuchos::ParameterList&(int)> get_solver_params,
       const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap);
 
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> solve_nodal_l2_projection(
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> solve_nodal_l2_projection(
       Core::LinAlg::SparseMatrix& massmatrix, Core::LinAlg::MultiVector<double>& rhs,
       const Epetra_Comm& comm, const int& numvec, const Teuchos::ParameterList& solverparams,
       const std::function<const Teuchos::ParameterList&(int)> get_solver_params,

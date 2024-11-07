@@ -26,8 +26,8 @@ ScaTra::ScaTraAlgorithm::ScaTraAlgorithm(const Epetra_Comm& comm,  ///< communic
       natconv_(scatradyn.get<bool>("NATURAL_CONVECTION")),
       natconvitmax_(scatradyn.sublist("NONLINEAR").get<int>("ITEMAX_OUTER")),
       natconvittol_(scatradyn.sublist("NONLINEAR").get<double>("CONVTOL_OUTER")),
-      velincnp_(Teuchos::null),
-      phiincnp_(Teuchos::null),
+      velincnp_(nullptr),
+      phiincnp_(nullptr),
       samstart_(fdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
       samstop_(fdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))
 {
@@ -41,12 +41,12 @@ void ScaTra::ScaTraAlgorithm::setup()
   Adapter::ScaTraFluidCouplingAlgorithm::setup();
 
   // create vectors
-  velincnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+  velincnp_ = std::make_shared<Core::LinAlg::Vector<double>>(
       *(fluid_field()->extract_velocity_part(fluid_field()->velnp())));
-  phiincnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(scatra_field()->phinp()));
+  phiincnp_ = std::make_shared<Core::LinAlg::Vector<double>>(*(scatra_field()->phinp()));
 
-  if (velincnp_ == Teuchos::null) FOUR_C_THROW("velincnp_ == Teuchos::null");
-  if (phiincnp_ == Teuchos::null) FOUR_C_THROW("phiincnp_ == Teuchos::null");
+  if (velincnp_ == nullptr) FOUR_C_THROW("velincnp_ == nullptr");
+  if (phiincnp_ == nullptr) FOUR_C_THROW("phiincnp_ == nullptr");
 }
 
 /*----------------------------------------------------------------------*/
@@ -218,7 +218,7 @@ void ScaTra::ScaTraAlgorithm::prepare_time_step_convection()
     {
       fluid_field()->set_iter_scalar_fields(scatra_field()->densafnp(),
           scatra_field()->densafnp(),  // not needed, provided as dummy vector
-          Teuchos::null, scatra_field()->discretization());
+          nullptr, scatra_field()->discretization());
       break;
     }
     default:
@@ -234,7 +234,7 @@ void ScaTra::ScaTraAlgorithm::prepare_time_step_convection()
   //(fluid initial field was set inside the constructor of fluid base class)
   if (step() == 1)
     scatra_field()->set_velocity_field(
-        fluid_field()->velnp(), fluid_field()->hist(), Teuchos::null, Teuchos::null);
+        fluid_field()->velnp(), fluid_field()->hist(), nullptr, nullptr);
 
   // prepare time step (+ initialize one-step-theta scheme correctly with
   // velocity given above)
@@ -296,8 +296,8 @@ void ScaTra::ScaTraAlgorithm::set_velocity_field()
   // this is ugly, but FsVel() may give a Null pointer which we canNOT give to the volmortart
   // framework
   // TODO (thon): make this somehow prettier..
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvel = fluid_field()->fs_vel();
-  if (fsvel != Teuchos::null) fsvel = fluid_to_scatra(fsvel);
+  std::shared_ptr<const Core::LinAlg::Vector<double>> fsvel = fluid_field()->fs_vel();
+  if (fsvel != nullptr) fsvel = fluid_to_scatra(fsvel);
 
   switch (fluid_field()->tim_int_scheme())
   {
@@ -361,7 +361,7 @@ void ScaTra::ScaTraAlgorithm::outer_iteration_convection()
     // compute new density field and pass it to the fluid discretization
     scatra_field()->compute_density();
     fluid_field()->set_scalar_fields(
-        scatra_field()->densafnp(), 0.0, Teuchos::null, scatra_field()->discretization());
+        scatra_field()->densafnp(), 0.0, nullptr, scatra_field()->discretization());
 
     // convergence check based on incremental values
     stopnonliniter = convergence_check(natconvitnum, natconvitmax_, natconvittol_);
@@ -399,7 +399,7 @@ void ScaTra::ScaTraAlgorithm::output()
     // if statistics for one-way coupled problems is performed, provide
     // the field for the first scalar!
     fluid_field()->set_scalar_fields(
-        scatra_field()->phinp(), 0.0, Teuchos::null, scatra_field()->discretization(),
+        scatra_field()->phinp(), 0.0, nullptr, scatra_field()->discretization(),
         0  // do statistics for FIRST dof at every node!!
     );
   }
@@ -408,7 +408,7 @@ void ScaTra::ScaTraAlgorithm::output()
   scatra_field()->check_and_write_output_and_restart();
 
   // we have to call the output of averaged fields for scatra separately
-  if (fluid_field()->turbulence_statistic_manager() != Teuchos::null)
+  if (fluid_field()->turbulence_statistic_manager() != nullptr)
     fluid_field()->turbulence_statistic_manager()->do_output_for_scatra(
         *scatra_field()->disc_writer(), scatra_field()->step());
 }
@@ -425,7 +425,7 @@ bool ScaTra::ScaTraAlgorithm::convergence_check(
   //     | phi_n+1 |_2
 
   bool stopnonliniter = false;
-  Teuchos::RCP<Core::LinAlg::MapExtractor> phisplitter = scatra_field()->splitter();
+  std::shared_ptr<Core::LinAlg::MapExtractor> phisplitter = scatra_field()->splitter();
   // Variables to save different L2 - Norms
 
   double velincnorm_L2(0.0);

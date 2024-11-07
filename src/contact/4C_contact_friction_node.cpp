@@ -282,11 +282,11 @@ void CONTACT::FriNode::pack(Core::Communication::PackBuffer& data) const
   CONTACT::Node::pack(data);
 
   // add data_
-  bool hasdata = (fridata_ != Teuchos::null);
+  bool hasdata = (fridata_ != nullptr);
   add_to_pack(data, hasdata);
   if (hasdata) fridata_->pack(data);
 
-  bool hasweardata = (weardata_ != Teuchos::null);
+  bool hasweardata = (weardata_ != nullptr);
   add_to_pack(data, hasweardata);
   if (hasweardata) weardata_->pack(data);
 }
@@ -310,22 +310,22 @@ void CONTACT::FriNode::unpack(Core::Communication::UnpackBuffer& buffer)
   bool hasdata = extract_int(buffer);
   if (hasdata)
   {
-    fridata_ = Teuchos::make_rcp<CONTACT::FriNodeDataContainer>();
+    fridata_ = std::make_shared<CONTACT::FriNodeDataContainer>();
     fridata_->unpack(buffer);
   }
   else
-    fridata_ = Teuchos::null;
+    fridata_ = nullptr;
 
   // **************************
   // FriDataPlus
   bool hasdataplus = extract_int(buffer);
   if (hasdataplus)
   {
-    weardata_ = Teuchos::make_rcp<CONTACT::FriNodeWearDataContainer>();
+    weardata_ = std::make_shared<CONTACT::FriNodeWearDataContainer>();
     weardata_->unpack(buffer);
   }
   else
-    weardata_ = Teuchos::null;
+    weardata_ = nullptr;
 
   // Check
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
@@ -337,7 +337,7 @@ void CONTACT::FriNode::unpack(Core::Communication::UnpackBuffer& buffer)
 double CONTACT::FriNode::fr_coeff(const double frcoeff_in) const
 {
   // return the friction coefficient, if we do not have a TSI problem
-  if (cTSIdata_ == Teuchos::null) return frcoeff_in;
+  if (cTSIdata_ == nullptr) return frcoeff_in;
 
   // in TSI case, the friction coefficient is temperature dependent
   else
@@ -359,7 +359,7 @@ void CONTACT::FriNode::deriv_fr_coeff_temp(
   derivDisp.clear();
 
   // if we do not have a TSI problem, the friction coefficient is constant
-  if (cTSIdata_ == Teuchos::null) return;
+  if (cTSIdata_ == nullptr) return;
 
   double T_dam = cTSIdata_->temp_dam();
   double T_ref = cTSIdata_->temp_ref();
@@ -552,18 +552,17 @@ void CONTACT::FriNode::initialize_data_container()
       dentries_ += elements()[i]->num_dof_per_node(*(elements()[i]->nodes()[j]));
 
   // only initialize if not yet done
-  if (modata_ == Teuchos::null && codata_ == Teuchos::null && fridata_ == Teuchos::null)
+  if (modata_ == nullptr && codata_ == nullptr && fridata_ == nullptr)
   {
-    modata_ = Teuchos::make_rcp<Mortar::NodeDataContainer>();
-    codata_ = Teuchos::make_rcp<CONTACT::NodeDataContainer>();
-    fridata_ = Teuchos::make_rcp<CONTACT::FriNodeDataContainer>();
+    modata_ = std::make_shared<Mortar::NodeDataContainer>();
+    codata_ = std::make_shared<CONTACT::NodeDataContainer>();
+    fridata_ = std::make_shared<CONTACT::FriNodeDataContainer>();
   }
 
   // initialize data container for wear and tsi problems
   if (wear_ == true)
   {
-    if (weardata_ == Teuchos::null)
-      weardata_ = Teuchos::make_rcp<CONTACT::FriNodeWearDataContainer>();
+    if (weardata_ == nullptr) weardata_ = std::make_shared<CONTACT::FriNodeWearDataContainer>();
   }
 }
 
@@ -572,11 +571,11 @@ void CONTACT::FriNode::initialize_data_container()
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::reset_data_container()
 {
-  // reset to Teuchos::null
-  fridata_ = Teuchos::null;
-  weardata_ = Teuchos::null;
-  codata_ = Teuchos::null;
-  modata_ = Teuchos::null;
+  // reset to nullptr
+  fridata_ = nullptr;
+  weardata_ = nullptr;
+  codata_ = nullptr;
+  modata_ = nullptr;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                     krank 09/13|
  *----------------------------------------------------------------------*/
 FLD::Boxfilter::Boxfilter(
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params)
+    std::shared_ptr<Core::FE::Discretization> actdis, Teuchos::ParameterList& params)
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
@@ -103,7 +103,7 @@ FLD::Boxfilter::Boxfilter(
 /*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
-void FLD::Boxfilter::add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
+void FLD::Boxfilter::add_scatra(std::shared_ptr<Core::FE::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
@@ -120,7 +120,7 @@ void FLD::Boxfilter::initialize_vreman()
   return;
 }
 
-void FLD::Boxfilter::initialize_vreman_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
+void FLD::Boxfilter::initialize_vreman_scatra(std::shared_ptr<Core::FE::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
@@ -135,9 +135,10 @@ void FLD::Boxfilter::initialize_vreman_scatra(Teuchos::RCP<Core::FE::Discretizat
 /*---------------------------------------------------------------------*
  | Perform box filter operation                                        |
  *---------------------------------------------------------------------*/
-void FLD::Boxfilter::apply_filter(const Teuchos::RCP<const Core::LinAlg::Vector<double>> velocity,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle)
+void FLD::Boxfilter::apply_filter(
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> velocity,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle)
 {
   // perform filtering depending on the LES model
   apply_box_filter(velocity, scalar, thermpress, *dirichtoggle);
@@ -146,8 +147,8 @@ void FLD::Boxfilter::apply_filter(const Teuchos::RCP<const Core::LinAlg::Vector<
 }
 
 void FLD::Boxfilter::apply_filter_scatra(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle, const int ndsvel)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle, const int ndsvel)
 {
   // perform filtering depending on the LES model
   apply_box_filter_scatra(scalar, thermpress, *dirichtoggle, ndsvel);
@@ -160,8 +161,8 @@ void FLD::Boxfilter::apply_filter_scatra(
  |                                                            rasthofer |
  *----------------------------------------------------------------------*/
 void FLD::Boxfilter::apply_box_filter(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velocity,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> velocity,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
     const Core::LinAlg::Vector<double>& dirichtoggle)
 {
   TEUCHOS_FUNC_TIME_MONITOR("apply_filter_for_dynamic_computation_of_cs");
@@ -195,45 +196,44 @@ void FLD::Boxfilter::apply_box_filter(
   Core::LinAlg::Vector<double> patchvol(*noderowmap, true);
 
   // free mem and reallocate to zero out vecs
-  if (velocity_) filtered_vel_ = Teuchos::null;
-  if (reynoldsstress_) filtered_reynoldsstress_ = Teuchos::null;
-  if (modeled_subgrid_stress_) filtered_modeled_subgrid_stress_ = Teuchos::null;
-  if (densvelocity_) filtered_dens_vel_ = Teuchos::null;
-  if (density_) filtered_dens_ = Teuchos::null;
-  if (densstrainrate_) filtered_dens_strainrate_ = Teuchos::null;
-  if (finescale_velocity_) fs_vel_ = Teuchos::null;
-  if (strainrate_) filtered_strainrate_ = Teuchos::null;
-  if (expression_) filtered_expression_ = Teuchos::null;
-  if (alphaij_) filtered_alphaij_ = Teuchos::null;
-  if (alpha2_) filtered_alpha2_ = Teuchos::null;
+  if (velocity_) filtered_vel_ = nullptr;
+  if (reynoldsstress_) filtered_reynoldsstress_ = nullptr;
+  if (modeled_subgrid_stress_) filtered_modeled_subgrid_stress_ = nullptr;
+  if (densvelocity_) filtered_dens_vel_ = nullptr;
+  if (density_) filtered_dens_ = nullptr;
+  if (densstrainrate_) filtered_dens_strainrate_ = nullptr;
+  if (finescale_velocity_) fs_vel_ = nullptr;
+  if (strainrate_) filtered_strainrate_ = nullptr;
+  if (expression_) filtered_expression_ = nullptr;
+  if (alphaij_) filtered_alphaij_ = nullptr;
+  if (alpha2_) filtered_alpha2_ = nullptr;
 
   if (velocity_)
-    filtered_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
+    filtered_vel_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
   if (reynoldsstress_)
     filtered_reynoldsstress_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
   if (modeled_subgrid_stress_)
     filtered_modeled_subgrid_stress_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
   if (densvelocity_)
     filtered_dens_vel_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
-  if (density_) filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
+  if (density_) filtered_dens_ = std::make_shared<Core::LinAlg::Vector<double>>(*noderowmap, true);
   if (densstrainrate_)
-    filtered_dens_strainrate_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
+    filtered_dens_strainrate_ = std::make_shared<Core::LinAlg::Vector<double>>(*noderowmap, true);
   if (strainrate_)
     filtered_strainrate_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
   if (expression_)
-    filtered_expression_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
+    filtered_expression_ = std::make_shared<Core::LinAlg::Vector<double>>(*noderowmap, true);
   if (alphaij_)
     filtered_alphaij_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
-  if (alpha2_)
-    filtered_alpha2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
+  if (alpha2_) filtered_alpha2_ = std::make_shared<Core::LinAlg::Vector<double>>(*noderowmap, true);
 
   if (finescale_velocity_)
-    fs_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
+    fs_vel_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
 
   // ---------------------------------------------------------------
   // do the integration of the (not normalized) box filter function
@@ -246,12 +246,12 @@ void FLD::Boxfilter::apply_box_filter(
     Core::Elements::Element* ele = discret_->l_col_element(nele);
 
     // provide vectors for filtered quantities
-    Teuchos::RCP<std::vector<double>> vel_hat =
-        Teuchos::make_rcp<std::vector<double>>((numdim), 0.0);
-    Teuchos::RCP<std::vector<std::vector<double>>> reynoldsstress_hat =
-        Teuchos::make_rcp<std::vector<std::vector<double>>>();
-    Teuchos::RCP<std::vector<std::vector<double>>> modeled_subgrid_stress =
-        Teuchos::make_rcp<std::vector<std::vector<double>>>();
+    std::shared_ptr<std::vector<double>> vel_hat =
+        std::make_shared<std::vector<double>>((numdim), 0.0);
+    std::shared_ptr<std::vector<std::vector<double>>> reynoldsstress_hat =
+        std::make_shared<std::vector<std::vector<double>>>();
+    std::shared_ptr<std::vector<std::vector<double>>> modeled_subgrid_stress =
+        std::make_shared<std::vector<std::vector<double>>>();
     // set to dimensions
     if (reynoldsstress_) (*reynoldsstress_hat).resize(numdim);
     if (modeled_subgrid_stress_) (*modeled_subgrid_stress).resize(numdim);
@@ -269,22 +269,22 @@ void FLD::Boxfilter::apply_box_filter(
         if (modeled_subgrid_stress_) (*modeled_subgrid_stress)[rr][ss] = 0.0;
       }
     }
-    Teuchos::RCP<std::vector<double>> densvel_hat =
-        Teuchos::make_rcp<std::vector<double>>((numdim), 0.0);
+    std::shared_ptr<std::vector<double>> densvel_hat =
+        std::make_shared<std::vector<double>>((numdim), 0.0);
     // and set them in parameter list
-    filterparams.set<Teuchos::RCP<std::vector<double>>>("densvel_hat", densvel_hat);
+    filterparams.set<std::shared_ptr<std::vector<double>>>("densvel_hat", densvel_hat);
 
-    filterparams.set<Teuchos::RCP<std::vector<double>>>("vel_hat", vel_hat);
-    filterparams.set<Teuchos::RCP<std::vector<std::vector<double>>>>(
+    filterparams.set<std::shared_ptr<std::vector<double>>>("vel_hat", vel_hat);
+    filterparams.set<std::shared_ptr<std::vector<std::vector<double>>>>(
         "reynoldsstress_hat", reynoldsstress_hat);
-    filterparams.set<Teuchos::RCP<std::vector<std::vector<double>>>>(
+    filterparams.set<std::shared_ptr<std::vector<std::vector<double>>>>(
         "modeled_subgrid_stress", modeled_subgrid_stress);
 
     // Vreman_initialization
-    Teuchos::RCP<std::vector<std::vector<double>>> strainrate_hat =
-        Teuchos::make_rcp<std::vector<std::vector<double>>>();
-    Teuchos::RCP<std::vector<std::vector<double>>> alphaij_hat =
-        Teuchos::make_rcp<std::vector<std::vector<double>>>();
+    std::shared_ptr<std::vector<std::vector<double>>> strainrate_hat =
+        std::make_shared<std::vector<std::vector<double>>>();
+    std::shared_ptr<std::vector<std::vector<double>>> alphaij_hat =
+        std::make_shared<std::vector<std::vector<double>>>();
     if (strainrate_) (*strainrate_hat).resize(numdim);
     if (alphaij_) (*alphaij_hat).resize(numdim);
     for (int rr = 0; rr < numdim; rr++)
@@ -303,10 +303,10 @@ void FLD::Boxfilter::apply_box_filter(
     }
 
     // if(strainrate_)
-    filterparams.set<Teuchos::RCP<std::vector<std::vector<double>>>>(
+    filterparams.set<std::shared_ptr<std::vector<std::vector<double>>>>(
         "strainrate_hat", strainrate_hat);
     // if(alphaij_)
-    filterparams.set<Teuchos::RCP<std::vector<std::vector<double>>>>("alphaij_hat", alphaij_hat);
+    filterparams.set<std::shared_ptr<std::vector<std::vector<double>>>>("alphaij_hat", alphaij_hat);
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
@@ -893,33 +893,33 @@ void FLD::Boxfilter::apply_box_filter(
   // allocate distributed vectors in col map format to have the filtered
   // quantities available on ghosted nodes
   if (velocity_)
-    col_filtered_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+    col_filtered_vel_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   if (reynoldsstress_)
     col_filtered_reynoldsstress_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
   if (modeled_subgrid_stress_)
     col_filtered_modeled_subgrid_stress_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
   if (finescale_velocity_)
-    col_fs_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+    col_fs_vel_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   if (densvelocity_)
     col_filtered_dens_vel_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   if (density_)
-    col_filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+    col_filtered_dens_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   if (densstrainrate_)
     col_filtered_dens_strainrate_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+        std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   if (strainrate_)
     col_filtered_strainrate_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
   if (alphaij_)
     col_filtered_alphaij_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
   if (expression_)
-    col_filtered_expression_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+    col_filtered_expression_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   if (alpha2_)
-    col_filtered_alpha2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+    col_filtered_alpha2_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
 
   // export filtered vectors in rowmap to columnmap format
   if (velocity_) Core::LinAlg::export_to(*filtered_vel_, *col_filtered_vel_);
@@ -947,7 +947,7 @@ void FLD::Boxfilter::apply_box_filter(
  |                                                      rasthofer 08/12 |
  *----------------------------------------------------------------------*/
 void FLD::Boxfilter::apply_box_filter_scatra(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
     const Core::LinAlg::Vector<double>& dirichtoggle, const int ndsvel)
 {
   TEUCHOS_FUNC_TIME_MONITOR("apply_filter_for_dynamic_computation_of_prt");
@@ -982,36 +982,36 @@ void FLD::Boxfilter::apply_box_filter_scatra(
   Core::LinAlg::Vector<double> patchvol(*noderowmap, true);
 
   // free mem and reallocate to zero out vecs
-  filtered_dens_vel_temp_ = Teuchos::null;
-  filtered_dens_rateofstrain_temp_ = Teuchos::null;
-  filtered_vel_ = Teuchos::null;
-  filtered_dens_vel_ = Teuchos::null;
-  filtered_temp_ = Teuchos::null;
-  filtered_dens_temp_ = Teuchos::null;
-  filtered_dens_ = Teuchos::null;
-  if (phi_) filtered_phi_ = Teuchos::null;
-  if (phi2_) filtered_phi2_ = Teuchos::null;
-  if (phiexpression_) filtered_phiexpression_ = Teuchos::null;
-  if (alphaijsc_) filtered_alphaijsc_ = Teuchos::null;
+  filtered_dens_vel_temp_ = nullptr;
+  filtered_dens_rateofstrain_temp_ = nullptr;
+  filtered_vel_ = nullptr;
+  filtered_dens_vel_ = nullptr;
+  filtered_temp_ = nullptr;
+  filtered_dens_temp_ = nullptr;
+  filtered_dens_ = nullptr;
+  if (phi_) filtered_phi_ = nullptr;
+  if (phi2_) filtered_phi2_ = nullptr;
+  if (phiexpression_) filtered_phiexpression_ = nullptr;
+  if (alphaijsc_) filtered_alphaijsc_ = nullptr;
 
   filtered_dens_vel_temp_ =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
   filtered_dens_rateofstrain_temp_ =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
-  filtered_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
+  filtered_vel_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
   filtered_dens_vel_ =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
-  filtered_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
-  filtered_dens_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
-  filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
+  filtered_temp_ = std::make_shared<Core::LinAlg::Vector<double>>(*noderowmap, true);
+  filtered_dens_temp_ = std::make_shared<Core::LinAlg::Vector<double>>(*noderowmap, true);
+  filtered_dens_ = std::make_shared<Core::LinAlg::Vector<double>>(*noderowmap, true);
   if (phi_)
-    filtered_phi_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
-  if (phi2_) filtered_phi2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
+    filtered_phi_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
+  if (phi2_) filtered_phi2_ = std::make_shared<Core::LinAlg::Vector<double>>(*noderowmap, true);
   if (phiexpression_)
-    filtered_phiexpression_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
+    filtered_phiexpression_ = std::make_shared<Core::LinAlg::Vector<double>>(*noderowmap, true);
   if (alphaijsc_)
     filtered_alphaijsc_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
 
   // ---------------------------------------------------------------
   // do the integration of the (not normalized) box filter function
@@ -1024,18 +1024,18 @@ void FLD::Boxfilter::apply_box_filter_scatra(
     Core::Elements::Element* ele = scatradiscret_->l_col_element(nele);
 
     // provide vectors for filtered quantities //declaration necessary even if not used
-    Teuchos::RCP<std::vector<double>> vel_hat =
-        Teuchos::make_rcp<std::vector<double>>((numdim), 0.0);
-    Teuchos::RCP<std::vector<double>> densvel_hat =
-        Teuchos::make_rcp<std::vector<double>>((numdim), 0.0);
-    Teuchos::RCP<std::vector<double>> densveltemp_hat =
-        Teuchos::make_rcp<std::vector<double>>((numdim), 0.0);
-    Teuchos::RCP<std::vector<double>> densstraintemp_hat =
-        Teuchos::make_rcp<std::vector<double>>((numdim), 0.0);
-    Teuchos::RCP<std::vector<double>> phi_hat =
-        Teuchos::make_rcp<std::vector<double>>((numdim), 0.0);
-    Teuchos::RCP<std::vector<std::vector<double>>> alphaijsc_hat =
-        Teuchos::make_rcp<std::vector<std::vector<double>>>();
+    std::shared_ptr<std::vector<double>> vel_hat =
+        std::make_shared<std::vector<double>>((numdim), 0.0);
+    std::shared_ptr<std::vector<double>> densvel_hat =
+        std::make_shared<std::vector<double>>((numdim), 0.0);
+    std::shared_ptr<std::vector<double>> densveltemp_hat =
+        std::make_shared<std::vector<double>>((numdim), 0.0);
+    std::shared_ptr<std::vector<double>> densstraintemp_hat =
+        std::make_shared<std::vector<double>>((numdim), 0.0);
+    std::shared_ptr<std::vector<double>> phi_hat =
+        std::make_shared<std::vector<double>>((numdim), 0.0);
+    std::shared_ptr<std::vector<std::vector<double>>> alphaijsc_hat =
+        std::make_shared<std::vector<std::vector<double>>>();
     if (alphaijsc_)
     {
       (*alphaijsc_hat).resize(numdim);
@@ -1047,12 +1047,13 @@ void FLD::Boxfilter::apply_box_filter_scatra(
       }
     }
     // and set them in parameter list
-    filterparams.set<Teuchos::RCP<std::vector<double>>>("vel_hat", vel_hat);
-    filterparams.set<Teuchos::RCP<std::vector<double>>>("densvel_hat", densvel_hat);
-    filterparams.set<Teuchos::RCP<std::vector<double>>>("densveltemp_hat", densveltemp_hat);
-    filterparams.set<Teuchos::RCP<std::vector<double>>>("densstraintemp_hat", densstraintemp_hat);
-    filterparams.set<Teuchos::RCP<std::vector<double>>>("phi_hat", phi_hat);
-    filterparams.set<Teuchos::RCP<std::vector<std::vector<double>>>>(
+    filterparams.set<std::shared_ptr<std::vector<double>>>("vel_hat", vel_hat);
+    filterparams.set<std::shared_ptr<std::vector<double>>>("densvel_hat", densvel_hat);
+    filterparams.set<std::shared_ptr<std::vector<double>>>("densveltemp_hat", densveltemp_hat);
+    filterparams.set<std::shared_ptr<std::vector<double>>>(
+        "densstraintemp_hat", densstraintemp_hat);
+    filterparams.set<std::shared_ptr<std::vector<double>>>("phi_hat", phi_hat);
+    filterparams.set<std::shared_ptr<std::vector<std::vector<double>>>>(
         "alphaijsc_hat", alphaijsc_hat);
 
     // initialize variables for filtered scalar quantities
@@ -1303,9 +1304,9 @@ void FLD::Boxfilter::apply_box_filter_scatra(
 
   // ---------------------------------------------------------------
   // extract convective velocity from scatra discretization
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
       scatradiscret_->get_state(ndsvel, "convective velocity field");
-  if (convel == Teuchos::null) FOUR_C_THROW("Cannot extract convective velocity field");
+  if (convel == nullptr) FOUR_C_THROW("Cannot extract convective velocity field");
 
   // replace values at dirichlet nodes
   {
@@ -1534,26 +1535,24 @@ void FLD::Boxfilter::apply_box_filter_scatra(
 
   // allocate distributed vectors in col map format to have the filtered
   // quantities available on ghosted nodes
-  col_filtered_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+  col_filtered_vel_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   col_filtered_dens_vel_ =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   col_filtered_dens_vel_temp_ =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   col_filtered_dens_rateofstrain_temp_ =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
-  col_filtered_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
-  col_filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
-  col_filtered_dens_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+  col_filtered_temp_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+  col_filtered_dens_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+  col_filtered_dens_temp_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   if (phi_)
-    col_filtered_phi_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
-  if (phi2_)
-    col_filtered_phi2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+    col_filtered_phi_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+  if (phi2_) col_filtered_phi2_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   if (phiexpression_)
-    col_filtered_phiexpression_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+    col_filtered_phiexpression_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   if (alphaijsc_)
     col_filtered_alphaijsc_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
 
   // export filtered vectors in rowmap to columnmap format
   Core::LinAlg::export_to(*filtered_vel_, *col_filtered_vel_);

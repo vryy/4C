@@ -17,8 +17,7 @@
 #include "4C_porofluidmultiphase_ele_action.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -86,16 +85,16 @@ namespace Discret
         virtual ~PhaseManagerInterface() = default;
 
         //! factory method
-        static Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface>
+        static std::shared_ptr<Discret::Elements::PoroFluidManager::PhaseManagerInterface>
         create_phase_manager(const Discret::Elements::PoroFluidMultiPhaseEleParameter& para,
             int nsd, Core::Materials::MaterialType mattype,
             const POROFLUIDMULTIPHASE::Action& action, int totalnumdofpernode, int numfluidphases);
 
         //! factory method
-        static Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface>
+        static std::shared_ptr<Discret::Elements::PoroFluidManager::PhaseManagerInterface>
         wrap_phase_manager(const Discret::Elements::PoroFluidMultiPhaseEleParameter& para, int nsd,
             Core::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
-            Teuchos::RCP<PhaseManagerInterface> corephasemanager);
+            std::shared_ptr<PhaseManagerInterface> corephasemanager);
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
@@ -846,7 +845,7 @@ namespace Discret
        public:
         //! constructor
         explicit PhaseManagerDecorator(
-            Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager)
+            std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager)
             : phasemanager_(phasemanager){};
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
@@ -1249,7 +1248,7 @@ namespace Discret
 
        protected:
         //! wrapped phase manager
-        Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager_;
+        std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager_;
       };
 
       /*----------------------------------------------------------------------*
@@ -1269,7 +1268,7 @@ namespace Discret
        public:
         //! constructor
         explicit PhaseManagerDeriv(
-            Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager);
+            std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager);
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -1306,17 +1305,17 @@ namespace Discret
        private:
         //! derivative of true pressure w.r.t. degrees of freedom
         // first index: pressure, second index: dof
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> pressurederiv_;
+        std::shared_ptr<Core::LinAlg::SerialDenseMatrix> pressurederiv_;
         //! derivative of saturations w.r.t. degrees of freedom
         // first index: saturation, second index: dof
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> saturationderiv_;
+        std::shared_ptr<Core::LinAlg::SerialDenseMatrix> saturationderiv_;
         //! second derivative of saturations w.r.t. degrees of freedom
-        Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> saturationderivderiv_;
+        std::shared_ptr<std::vector<Core::LinAlg::SerialDenseMatrix>> saturationderivderiv_;
 
         //! derivative of solid pressure w.r.t. degrees of freedom
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector> solidpressurederiv_;
+        std::shared_ptr<Core::LinAlg::SerialDenseVector> solidpressurederiv_;
         //! second derivative of solid pressure w.r.t. degrees of freedom;
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> solidpressurederivderiv_;
+        std::shared_ptr<Core::LinAlg::SerialDenseMatrix> solidpressurederivderiv_;
       };
 
       /*----------------------------------------------------------------------*
@@ -1336,7 +1335,7 @@ namespace Discret
        public:
         //! constructor
         explicit PhaseManagerDerivAndPorosity(
-            Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager);
+            std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager);
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -1383,7 +1382,7 @@ namespace Discret
         double dporosity_dp_;
 
         //! derivative of porosity w.r.t. degrees of freedom
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector> porosityderiv_;
+        std::shared_ptr<Core::LinAlg::SerialDenseVector> porosityderiv_;
       };
 
       /*----------------------------------------------------------------------*
@@ -1402,7 +1401,7 @@ namespace Discret
       {
        public:
         //! constructor
-        PhaseManagerReaction(Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager);
+        PhaseManagerReaction(std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager);
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
@@ -1491,7 +1490,8 @@ namespace Discret
       {
        public:
         //! constructor
-        PhaseManagerDiffusion(Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager);
+        PhaseManagerDiffusion(
+            std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager);
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
@@ -1593,7 +1593,7 @@ namespace Discret
       {
        public:
         //! constructor
-        PhaseManagerVolFrac(Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager);
+        PhaseManagerVolFrac(std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager);
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element

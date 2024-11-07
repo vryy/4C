@@ -88,138 +88,141 @@ namespace CONTACT
       return constr_direction_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& active_nodes() { return activenodes_; }
+    inline std::shared_ptr<Epetra_Map>& active_nodes() { return activenodes_; }
 
-    [[nodiscard]] inline const Teuchos::RCP<Epetra_Map>& active_nodes() const
+    [[nodiscard]] inline const std::shared_ptr<Epetra_Map>& active_nodes() const
     {
       return activenodes_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& active_dofs() { return activedofs_; }
+    inline std::shared_ptr<Epetra_Map>& active_dofs() { return activedofs_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> active_dofs() const { return activedofs_; }
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> active_dofs() const
+    {
+      return activedofs_;
+    }
 
-    inline Teuchos::RCP<Epetra_Map>& inactive_nodes() { return inactivenodes_; }
+    inline std::shared_ptr<Epetra_Map>& inactive_nodes() { return inactivenodes_; }
 
-    [[nodiscard]] inline const Teuchos::RCP<Epetra_Map>& inactive_nodes() const
+    [[nodiscard]] inline const std::shared_ptr<Epetra_Map>& inactive_nodes() const
     {
       return inactivenodes_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& inactive_dofs() { return inactivedofs_; }
+    inline std::shared_ptr<Epetra_Map>& inactive_dofs() { return inactivedofs_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> inactive_dofs() const
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> inactive_dofs() const
     {
       return inactivedofs_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& active_n() { return activen_; }
+    inline std::shared_ptr<Epetra_Map>& active_n() { return activen_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> active_n() const { return activen_; }
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> active_n() const { return activen_; }
 
-    inline Teuchos::RCP<Epetra_Map>& active_t() { return activet_; }
+    inline std::shared_ptr<Epetra_Map>& active_t() { return activet_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> active_t() const { return activet_; }
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> active_t() const { return activet_; }
 
-    inline Teuchos::RCP<Epetra_Map>& slip_nodes() { return slipnodes_; }
+    inline std::shared_ptr<Epetra_Map>& slip_nodes() { return slipnodes_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> slip_nodes() const { return slipnodes_; }
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> slip_nodes() const { return slipnodes_; }
 
-    inline Teuchos::RCP<Epetra_Map>& slip_dofs() { return slipdofs_; }
+    inline std::shared_ptr<Epetra_Map>& slip_dofs() { return slipdofs_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> slip_dofs() const { return slipdofs_; }
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> slip_dofs() const { return slipdofs_; }
 
-    inline Teuchos::RCP<Epetra_Map>& slip_t() { return slipt_; }
+    inline std::shared_ptr<Epetra_Map>& slip_t() { return slipt_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> slip_t() const { return slipt_; }
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> slip_t() const { return slipt_; }
 
-    inline Teuchos::RCP<Epetra_Map>& non_smooth_nodes() { return nonsmoothnodes_; }
+    inline std::shared_ptr<Epetra_Map>& non_smooth_nodes() { return nonsmoothnodes_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> non_smooth_nodes() const
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> non_smooth_nodes() const
     {
       return nonsmoothnodes_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& smooth_nodes() { return smoothnodes_; }
+    inline std::shared_ptr<Epetra_Map>& smooth_nodes() { return smoothnodes_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> smooth_nodes() const
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> smooth_nodes() const
     {
       return smoothnodes_;
     }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> sdof_vertex_rowmap() const
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> sdof_vertex_rowmap() const
     {
       return sdof_vertex_rowmap_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& sdof_vertex_rowmap() { return sdof_vertex_rowmap_; }
+    inline std::shared_ptr<Epetra_Map>& sdof_vertex_rowmap() { return sdof_vertex_rowmap_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> sdof_vertex_colmap() const
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> sdof_vertex_colmap() const
     {
       return sdof_vertex_colmap_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& sdof_vertex_colmap() { return sdof_vertex_colmap_; }
+    inline std::shared_ptr<Epetra_Map>& sdof_vertex_colmap() { return sdof_vertex_colmap_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> sdof_edge_rowmap() const
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> sdof_edge_rowmap() const
     {
       return sdof_edge_rowmap_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& sdof_edge_rowmap() { return sdof_edge_rowmap_; }
+    inline std::shared_ptr<Epetra_Map>& sdof_edge_rowmap() { return sdof_edge_rowmap_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> sdof_edge_colmap() const
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> sdof_edge_colmap() const
     {
       return sdof_edge_colmap_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& sdof_edge_colmap() { return sdof_edge_colmap_; }
+    inline std::shared_ptr<Epetra_Map>& sdof_edge_colmap() { return sdof_edge_colmap_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> sdof_surf_rowmap() const
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> sdof_surf_rowmap() const
     {
       return sdof_surf_rowmap_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& sdof_surf_rowmap() { return sdof_surf_rowmap_; }
+    inline std::shared_ptr<Epetra_Map>& sdof_surf_rowmap() { return sdof_surf_rowmap_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> sdof_surf_colmap() const
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> sdof_surf_colmap() const
     {
       return sdof_surf_colmap_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& sdof_surf_colmap() { return sdof_surf_colmap_; }
+    inline std::shared_ptr<Epetra_Map>& sdof_surf_colmap() { return sdof_surf_colmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& n_extended_ghosting() { return nextendedghosting_; }
+    inline std::shared_ptr<Epetra_Map>& n_extended_ghosting() { return nextendedghosting_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> n_extended_ghosting() const
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> n_extended_ghosting() const
     {
       return nextendedghosting_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& e_extended_ghosting() { return eextendedghosting_; }
+    inline std::shared_ptr<Epetra_Map>& e_extended_ghosting() { return eextendedghosting_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> e_extended_ghosting() const
+    [[nodiscard]] inline std::shared_ptr<const Epetra_Map> e_extended_ghosting() const
     {
       return eextendedghosting_;
     }
 
-    inline Teuchos::RCP<SelfBinaryTree>& binary_tree_self() { return binarytreeself_; }
+    inline std::shared_ptr<SelfBinaryTree>& binary_tree_self() { return binarytreeself_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const SelfBinaryTree> binary_tree_self() const
+    [[nodiscard]] inline std::shared_ptr<const SelfBinaryTree> binary_tree_self() const
     {
       return binarytreeself_;
     }
 
-    inline Teuchos::RCP<Core::LinAlg::Vector<double>>& cn_values() { return cn_values_; }
+    inline std::shared_ptr<Core::LinAlg::Vector<double>>& cn_values() { return cn_values_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Core::LinAlg::Vector<double>> cn_values() const
+    [[nodiscard]] inline std::shared_ptr<const Core::LinAlg::Vector<double>> cn_values() const
     {
       return cn_values_;
     }
 
-    inline Teuchos::RCP<Core::LinAlg::Vector<double>>& ct_values() { return ct_values_; }
+    inline std::shared_ptr<Core::LinAlg::Vector<double>>& ct_values() { return ct_values_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Core::LinAlg::Vector<double>> ct_values() const
+    [[nodiscard]] inline std::shared_ptr<const Core::LinAlg::Vector<double>> ct_values() const
     {
       return ct_values_;
     }
@@ -258,69 +261,69 @@ namespace CONTACT
     //! @{
 
     //! row map of all active slave nodes
-    Teuchos::RCP<Epetra_Map> activenodes_;
+    std::shared_ptr<Epetra_Map> activenodes_;
 
     //! row map of all active slave dofs
-    Teuchos::RCP<Epetra_Map> activedofs_;
+    std::shared_ptr<Epetra_Map> activedofs_;
 
     //! row map of all inactive slave nodes
-    Teuchos::RCP<Epetra_Map> inactivenodes_;
+    std::shared_ptr<Epetra_Map> inactivenodes_;
 
     //! row map of all inactive slave dofs
-    Teuchos::RCP<Epetra_Map> inactivedofs_;
+    std::shared_ptr<Epetra_Map> inactivedofs_;
 
     //! row map of global N-matrix
-    Teuchos::RCP<Epetra_Map> activen_;
+    std::shared_ptr<Epetra_Map> activen_;
 
     //! row map of global T-matrix
-    Teuchos::RCP<Epetra_Map> activet_;
+    std::shared_ptr<Epetra_Map> activet_;
 
     //! row map of all slip slave nodes
-    Teuchos::RCP<Epetra_Map> slipnodes_;
+    std::shared_ptr<Epetra_Map> slipnodes_;
 
     //! row map of all slip slave dofs
-    Teuchos::RCP<Epetra_Map> slipdofs_;
+    std::shared_ptr<Epetra_Map> slipdofs_;
 
     //! row map of part of T-matrix (slip nodes)
-    Teuchos::RCP<Epetra_Map> slipt_;
+    std::shared_ptr<Epetra_Map> slipt_;
 
     //! row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> nonsmoothnodes_;
+    std::shared_ptr<Epetra_Map> nonsmoothnodes_;
 
     //! row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map> smoothnodes_;
+    std::shared_ptr<Epetra_Map> smoothnodes_;
 
     //! row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdof_vertex_rowmap_;
+    std::shared_ptr<Epetra_Map> sdof_vertex_rowmap_;
 
     //! row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdof_vertex_colmap_;
+    std::shared_ptr<Epetra_Map> sdof_vertex_colmap_;
 
     //! row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdof_edge_rowmap_;
+    std::shared_ptr<Epetra_Map> sdof_edge_rowmap_;
 
     //! row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdof_edge_colmap_;
+    std::shared_ptr<Epetra_Map> sdof_edge_colmap_;
 
     //! row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdof_surf_rowmap_;
+    std::shared_ptr<Epetra_Map> sdof_surf_rowmap_;
 
     //! row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdof_surf_colmap_;
+    std::shared_ptr<Epetra_Map> sdof_surf_colmap_;
 
-    Teuchos::RCP<Epetra_Map> nextendedghosting_;
-    Teuchos::RCP<Epetra_Map> eextendedghosting_;
+    std::shared_ptr<Epetra_Map> nextendedghosting_;
+    std::shared_ptr<Epetra_Map> eextendedghosting_;
 
     //! @}
 
     //! binary tree for self contact search
-    Teuchos::RCP<SelfBinaryTree> binarytreeself_;
+    std::shared_ptr<SelfBinaryTree> binarytreeself_;
 
     //! cn-values of each node
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cn_values_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> cn_values_;
 
     //! ct-values of each node
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ct_values_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ct_values_;
 
     //! proc local number of slave/master pairs
     int smpairs_;
@@ -342,7 +345,7 @@ namespace CONTACT
   {
    protected:
     /// constructor ( only for derived classes )
-    Interface(const Teuchos::RCP<CONTACT::InterfaceDataContainer>& interfaceData_ptr);
+    Interface(const std::shared_ptr<CONTACT::InterfaceDataContainer>& interfaceData_ptr);
 
    public:
     /** \brief Create a new contact interface object
@@ -357,7 +360,7 @@ namespace CONTACT
      *  \param selfcontact (in): Boolean flag to indicate self-contact
      *
      *  \author hiermeier \date 03/17 */
-    static Teuchos::RCP<Interface> create(const int id, const Epetra_Comm& comm,
+    static std::shared_ptr<Interface> create(const int id, const Epetra_Comm& comm,
         const int spatialDim, const Teuchos::ParameterList& icontact, const bool selfcontact);
 
     /*!
@@ -375,9 +378,9 @@ namespace CONTACT
     \param selfcontact (in): Flag for self contact status
 
     */
-    Interface(const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData_ptr, const int id,
-        const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
-        bool selfcontact);
+    Interface(const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData_ptr,
+        const int id, const Epetra_Comm& comm, const int spatialDim,
+        const Teuchos::ParameterList& icontact, bool selfcontact);
 
     // don't want = operator and cctor
     Interface operator=(const Interface& old) = delete;
@@ -412,7 +415,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    [[nodiscard]] Teuchos::RCP<const Epetra_Map> active_nodes() const
+    [[nodiscard]] std::shared_ptr<const Epetra_Map> active_nodes() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
@@ -425,14 +428,14 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    [[nodiscard]] Teuchos::RCP<const Epetra_Map> active_dofs() const
+    [[nodiscard]] std::shared_ptr<const Epetra_Map> active_dofs() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return activedofs_;
     }
 
-    [[nodiscard]] Teuchos::RCP<const Epetra_Map> inactive_nodes() const
+    [[nodiscard]] std::shared_ptr<const Epetra_Map> inactive_nodes() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
@@ -445,7 +448,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> inactive_dofs() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> inactive_dofs() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
@@ -458,7 +461,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> active_n_dofs() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> active_n_dofs() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
@@ -471,7 +474,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> active_t_dofs() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> active_t_dofs() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
@@ -484,7 +487,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> slip_nodes() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> slip_nodes() const
     {
       if (filled())
       {
@@ -502,7 +505,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> slip_dofs() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> slip_dofs() const
     {
       if (filled())
       {
@@ -520,7 +523,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> slip_t_dofs() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> slip_t_dofs() const
     {
       if (filled())
       {
@@ -538,7 +541,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> non_smooth_nodes() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> non_smooth_nodes() const
     {
       if (filled())
       {
@@ -556,7 +559,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> smooth_nodes() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> smooth_nodes() const
     {
       if (filled())
       {
@@ -574,7 +577,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> sdof_vertex_rowmap() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> sdof_vertex_rowmap() const
     {
       if (filled())
       {
@@ -591,7 +594,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> sdof_vertex_colmap() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> sdof_vertex_colmap() const
     {
       if (filled())
       {
@@ -602,7 +605,7 @@ namespace CONTACT
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       }
     }
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> sdof_edge_rowmap() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> sdof_edge_rowmap() const
     {
       if (filled())
       {
@@ -613,7 +616,7 @@ namespace CONTACT
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       }
     }
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> sdof_edge_colmap() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> sdof_edge_colmap() const
     {
       if (filled())
       {
@@ -624,7 +627,7 @@ namespace CONTACT
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       }
     }
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> sdof_surf_rowmap() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> sdof_surf_rowmap() const
     {
       if (filled())
       {
@@ -635,7 +638,7 @@ namespace CONTACT
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       }
     }
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> sdof_surf_colmap() const
+    [[nodiscard]] virtual std::shared_ptr<const Epetra_Map> sdof_surf_colmap() const
     {
       if (filled())
       {
@@ -677,7 +680,7 @@ namespace CONTACT
     \return Filled()==false
 
     */
-    virtual void add_node(Teuchos::RCP<CONTACT::Node> cnode);
+    virtual void add_node(std::shared_ptr<CONTACT::Node> cnode);
 
     /*!
     \brief Add a CONTACT::Element to the interface
@@ -689,7 +692,7 @@ namespace CONTACT
     \return Filled()==false
 
     */
-    virtual void add_element(Teuchos::RCP<CONTACT::Element> cele);
+    virtual void add_element(std::shared_ptr<CONTACT::Element> cele);
 
     //! @name Parallel distribution and ghosting
     /* References
@@ -842,7 +845,7 @@ namespace CONTACT
 
     */
     bool mortar_coupling(Mortar::Element* sele, std::vector<Mortar::Element*> mele,
-        const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) final;
+        const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr) final;
 
     /*!
     \brief evaluate coupling terms for nts coupling + lin
@@ -891,15 +894,16 @@ namespace CONTACT
     evaluated here.
 
     */
-    virtual void evaluate_relative_movement(const Teuchos::RCP<Core::LinAlg::Vector<double>> xsmod,
-        const Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrixmod,
-        const Teuchos::RCP<Core::LinAlg::SparseMatrix> doldmod);
+    virtual void evaluate_relative_movement(
+        const std::shared_ptr<Core::LinAlg::Vector<double>> xsmod,
+        const std::shared_ptr<Core::LinAlg::SparseMatrix> dmatrixmod,
+        const std::shared_ptr<Core::LinAlg::SparseMatrix> doldmod);
 
     /*!
       \brief Evaluate nodal distances and linearization
 
     */
-    virtual void evaluate_distances(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec,
+    virtual void evaluate_distances(const std::shared_ptr<const Core::LinAlg::Vector<double>>& vec,
         std::map<int, std::vector<double>>& mynormals,
         std::map<int, std::vector<Core::Gen::Pairedvector<int, double>>>& dmynormals,
         std::map<int, double>& mygap, std::map<int, std::map<int, double>>& dmygap);
@@ -908,7 +912,7 @@ namespace CONTACT
     \brief Assemble slave coordinates (xs)
 
     */
-    virtual void assemble_slave_coord(Teuchos::RCP<Core::LinAlg::Vector<double>>& xsmod);
+    virtual void assemble_slave_coord(std::shared_ptr<Core::LinAlg::Vector<double>>& xsmod);
 
     /*!
     \brief Evaluate L2 Norm of tangential contact conditions
@@ -962,8 +966,8 @@ namespace CONTACT
     \brief Assemble matrix T containing nodal tangents and/or matrix N containing nodal normals!
 
     */
-    virtual void assemble_tn(Teuchos::RCP<Core::LinAlg::SparseMatrix> tglobal = Teuchos::null,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> nglobal = Teuchos::null);
+    virtual void assemble_tn(std::shared_ptr<Core::LinAlg::SparseMatrix> tglobal = nullptr,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> nglobal = nullptr);
 
     /*!
     \brief Assemble matrix S containing linearizations
@@ -991,9 +995,8 @@ namespace CONTACT
 
     */
     virtual void assemble_t_nderiv(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> tderivglobal = Teuchos::null,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> nderivglobal = Teuchos::null,
-        bool usePoroLM = false);
+        std::shared_ptr<Core::LinAlg::SparseMatrix> tderivglobal = nullptr,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> nderivglobal = nullptr, bool usePoroLM = false);
 
     /*!
     \brief Assemble matrices LinD, LinM containing linearizations
@@ -1171,7 +1174,7 @@ namespace CONTACT
     @param x ??
     */
     virtual void assemble_coup_lin_d(
-        Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Core::LinAlg::Vector<double>> x);
+        Core::LinAlg::SparseMatrix& CoupLin, const std::shared_ptr<Core::LinAlg::Vector<double>> x);
 
     /*! \brief Derivative of (transposed) M-matrix multiplied with a slave dof vector
 
@@ -1181,7 +1184,7 @@ namespace CONTACT
     @param x ??
     */
     virtual void assemble_coup_lin_m(
-        Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Core::LinAlg::Vector<double>> x);
+        Core::LinAlg::SparseMatrix& CoupLin, const std::shared_ptr<Core::LinAlg::Vector<double>> x);
 
     /*!
     \brief Store current (contact) nodal entries to old ones
@@ -1363,36 +1366,42 @@ namespace CONTACT
 
     //! @}
    public:
-    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> cn() const { return cnValues_; };
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> cn() const
+    {
+      return cnValues_;
+    };
 
     [[nodiscard]] const Core::LinAlg::Vector<double>& cn_ref() const
     {
-      if (cnValues_.is_null()) FOUR_C_THROW("The cnValues_ is not initialized!");
+      if (!cnValues_) FOUR_C_THROW("The cnValues_ is not initialized!");
       return *cnValues_;
     }
 
-    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> ct() const { return ctValues_; };
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> ct() const
+    {
+      return ctValues_;
+    };
 
     [[nodiscard]] const Core::LinAlg::Vector<double>& ct_ref() const
     {
-      if (ctValues_.is_null()) FOUR_C_THROW("The ctValues_ is not initialized!");
+      if (!ctValues_) FOUR_C_THROW("The ctValues_ is not initialized!");
       return *ctValues_;
     }
 
    private:
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& get_cn() { return cnValues_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>>& get_cn() { return cnValues_; };
 
     Core::LinAlg::Vector<double>& get_cn_ref()
     {
-      if (cnValues_.is_null()) FOUR_C_THROW("The cnValues_ is not initialized!");
+      if (!cnValues_) FOUR_C_THROW("The cnValues_ is not initialized!");
       return *cnValues_;
     }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& get_ct() { return ctValues_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>>& get_ct() { return ctValues_; };
 
     Core::LinAlg::Vector<double>& get_ct_ref()
     {
-      if (ctValues_.is_null()) FOUR_C_THROW("The ctValues_ is not initialized!");
+      if (!ctValues_) FOUR_C_THROW("The ctValues_ is not initialized!");
       return *ctValues_;
     }
 
@@ -1462,14 +1471,14 @@ namespace CONTACT
 
     */
     void evaluate_coupling(const Epetra_Map& selecolmap, const Epetra_Map* snoderowmap,
-        const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) final;
+        const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr) final;
 
     /*!
     \brief Evaluate segment-to-segment coupling (mortar...)
 
     */
     void evaluate_sts(const Epetra_Map& selecolmap,
-        const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) final;
+        const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr) final;
 
     /*!
     \brief export master nodal normals for cpp calculation
@@ -1628,7 +1637,7 @@ namespace CONTACT
     void set_condition_specific_parameters();
 
     /// pointer to the interface data object
-    Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_;
+    std::shared_ptr<CONTACT::InterfaceDataContainer> interface_data_;
 
    protected:
     /** @name References to the interface data container content
@@ -1651,34 +1660,36 @@ namespace CONTACT
     Inpar::CONTACT::ConstraintDirection&
         constr_direction_;  ///< ref. to direction in which the contact constraints are formulated
 
-    Teuchos::RCP<Epetra_Map>& activenodes_;    ///< ref. to row map of all active slave nodes
-    Teuchos::RCP<Epetra_Map>& activedofs_;     ///< ref. to row map of all active slave dofs
-    Teuchos::RCP<Epetra_Map>& inactivenodes_;  ///< ref. to row map of all active slave nodes
-    Teuchos::RCP<Epetra_Map>& inactivedofs_;   ///< ref. to row map of all active slave dofs
-    Teuchos::RCP<Epetra_Map>& activen_;        ///< ref. to row map of global N-matrix
-    Teuchos::RCP<Epetra_Map>& activet_;        ///< ref. to row map of global T-matrix
-    Teuchos::RCP<Epetra_Map>& slipnodes_;      ///< ref. to row map of all slip slave nodes
-    Teuchos::RCP<Epetra_Map>& slipdofs_;       ///< ref. to row map of all slip slave dofs
-    Teuchos::RCP<Epetra_Map>& slipt_;          ///< ref. to row map of part of T-matrix (slip nodes)
+    std::shared_ptr<Epetra_Map>& activenodes_;    ///< ref. to row map of all active slave nodes
+    std::shared_ptr<Epetra_Map>& activedofs_;     ///< ref. to row map of all active slave dofs
+    std::shared_ptr<Epetra_Map>& inactivenodes_;  ///< ref. to row map of all active slave nodes
+    std::shared_ptr<Epetra_Map>& inactivedofs_;   ///< ref. to row map of all active slave dofs
+    std::shared_ptr<Epetra_Map>& activen_;        ///< ref. to row map of global N-matrix
+    std::shared_ptr<Epetra_Map>& activet_;        ///< ref. to row map of global T-matrix
+    std::shared_ptr<Epetra_Map>& slipnodes_;      ///< ref. to row map of all slip slave nodes
+    std::shared_ptr<Epetra_Map>& slipdofs_;       ///< ref. to row map of all slip slave dofs
+    std::shared_ptr<Epetra_Map>& slipt_;  ///< ref. to row map of part of T-matrix (slip nodes)
 
-    Teuchos::RCP<Epetra_Map>& nonsmoothnodes_;    ///< ref. to row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map>& smoothnodes_;       ///< ref. to row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map>& sdofVertexRowmap_;  ///< ref. to row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map>& sdofVertexColmap_;  ///< ref. to row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map>& sdofEdgeRowmap_;    ///< ref. to row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map>& sdofEdgeColmap_;    ///< ref. to row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map>& sdofSurfRowmap_;    ///< ref. to row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map>& sdofSurfColmap_;    ///< ref. to row map of all smooth slave nodes
+    std::shared_ptr<Epetra_Map>& nonsmoothnodes_;  ///< ref. to row map of all nonsmooth slave nodes
+    std::shared_ptr<Epetra_Map>& smoothnodes_;     ///< ref. to row map of all smooth slave nodes
+    std::shared_ptr<Epetra_Map>&
+        sdofVertexRowmap_;  ///< ref. to row map of all nonsmooth slave nodes
+    std::shared_ptr<Epetra_Map>& sdofVertexColmap_;  ///< ref. to row map of all smooth slave nodes
+    std::shared_ptr<Epetra_Map>& sdofEdgeRowmap_;  ///< ref. to row map of all nonsmooth slave nodes
+    std::shared_ptr<Epetra_Map>& sdofEdgeColmap_;  ///< ref. to row map of all smooth slave nodes
+    std::shared_ptr<Epetra_Map>& sdofSurfRowmap_;  ///< ref. to row map of all nonsmooth slave nodes
+    std::shared_ptr<Epetra_Map>& sdofSurfColmap_;  ///< ref. to row map of all smooth slave nodes
 
-    Teuchos::RCP<Epetra_Map>& nextendedghosting_;
-    Teuchos::RCP<Epetra_Map>& eextendedghosting_;
+    std::shared_ptr<Epetra_Map>& nextendedghosting_;
+    std::shared_ptr<Epetra_Map>& eextendedghosting_;
 
 
-    Teuchos::RCP<SelfBinaryTree>& binarytreeself_;  ///< ref. to binary tree for self contact search
+    std::shared_ptr<SelfBinaryTree>&
+        binarytreeself_;  ///< ref. to binary tree for self contact search
 
     //! cn-values of each node
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& cnValues_;  ///< ref. to cn
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& ctValues_;  ///< ref. to ct
+    std::shared_ptr<Core::LinAlg::Vector<double>>& cnValues_;  ///< ref. to cn
+    std::shared_ptr<Core::LinAlg::Vector<double>>& ctValues_;  ///< ref. to ct
 
     int& smpairs_;     ///< ref. to proc local number of slave/master pairs
     int& smintpairs_;  ///< ref. to proc local number of slave/master integration pairs

@@ -31,10 +31,10 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(
 {
   // cast to problem-specific fluid-wrapper
   fluid_ =
-      Teuchos::rcp_dynamic_cast<Adapter::FluidFluidFSI>(MonolithicStructureSplit::fluid_field());
+      std::dynamic_pointer_cast<Adapter::FluidFluidFSI>(MonolithicStructureSplit::fluid_field());
 
   // cast to problem-specific ALE-wrapper
-  ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleXFFsiWrapper>(MonolithicStructureSplit::ale_field());
+  ale_ = std::dynamic_pointer_cast<Adapter::AleXFFsiWrapper>(MonolithicStructureSplit::ale_field());
 
   // XFFSI_Full_Newton is an invalid choice together with NOX,
   // because DOF-maps can change from one iteration step to the other (XFEM cut)
@@ -86,25 +86,25 @@ void FSI::FluidFluidMonolithicStructureSplit::prepare_time_step()
 void FSI::FluidFluidMonolithicStructureSplit::setup_dbc_map_extractor()
 {
   // merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
-  std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> dbcmaps;
 
   // structure DBC
   dbcmaps.push_back(structure_field()->get_dbc_map_extractor()->cond_map());
   // fluid DBC (including background & embedded discretization)
   dbcmaps.push_back(fluid_field()->get_dbc_map_extractor()->cond_map());
   // ALE-DBC-maps, free of FSI DOF
-  std::vector<Teuchos::RCP<const Epetra_Map>> aleintersectionmaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> aleintersectionmaps;
   aleintersectionmaps.push_back(ale_field()->get_dbc_map_extractor()->cond_map());
   aleintersectionmaps.push_back(ale_field()->interface()->other_map());
-  Teuchos::RCP<Epetra_Map> aleintersectionmap =
+  std::shared_ptr<Epetra_Map> aleintersectionmap =
       Core::LinAlg::MultiMapExtractor::intersect_maps(aleintersectionmaps);
   dbcmaps.push_back(aleintersectionmap);
 
-  Teuchos::RCP<const Epetra_Map> dbcmap = Core::LinAlg::MultiMapExtractor::merge_maps(dbcmaps);
+  std::shared_ptr<const Epetra_Map> dbcmap = Core::LinAlg::MultiMapExtractor::merge_maps(dbcmaps);
 
   // finally, create the global FSI Dirichlet map extractor
-  dbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*dof_row_map(), dbcmap, true);
-  if (dbcmaps_ == Teuchos::null)
+  dbcmaps_ = std::make_shared<Core::LinAlg::MapExtractor>(*dof_row_map(), dbcmap, true);
+  if (dbcmaps_ == nullptr)
   {
     FOUR_C_THROW("Creation of Dirichlet map extractor failed.");
   }

@@ -61,7 +61,7 @@ namespace Mat
       //@}
 
       //! create material instance of matching type with parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
     };
 
   }  // namespace PAR
@@ -138,9 +138,9 @@ namespace Mat
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ParticleMaterialSPHFluid>(*this);
+      return std::make_shared<ParticleMaterialSPHFluid>(*this);
     }
 
     //! return quick accessible material parameter data

@@ -29,7 +29,7 @@ namespace PoroElast
     //! create using a Epetra_Comm
     explicit MonolithicSplitNoPenetration(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
+        std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! Setup the monolithic system
     void setup_system() override;
@@ -58,18 +58,18 @@ namespace PoroElast
 
     //! Evaluate mechanical-fluid system matrix
     void apply_str_coupl_matrix(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
+        std::shared_ptr<Core::LinAlg::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
         ) override;
 
     //! Evaluate fluid-mechanical system matrix
     void apply_fluid_coupl_matrix(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
+        std::shared_ptr<Core::LinAlg::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
         ) override;
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
     //! iteration step (i.e. condensed forces onto the structure) needed for rhs in next newton step
     void recover_lagrange_multiplier_after_newton_step(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> x) override;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> x) override;
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
     //! step (i.e. condensed forces onto the structure) needed for rhs in next time step
@@ -91,59 +91,60 @@ namespace PoroElast
    private:
     //! build block vector from field vectors, e.g. rhs, increment vector
     void setup_vector(Core::LinAlg::Vector<double>& f,  //!< vector of length of all dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             sv,  //!< vector containing only structural dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv  //!< vector containing only fluid dofs
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
+            fv  //!< vector containing only fluid dofs
         ) override;
 
     //! @name Global matrices and vectors
 
-    Teuchos::RCP<Core::LinAlg::SparseOperator> k_struct_;
-    Teuchos::RCP<Core::LinAlg::SparseOperator> k_fluid_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> k_struct_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> k_fluid_;
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_lambda_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_d_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_inv_d_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_lambda_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_d_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_inv_d_;
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_dn_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_dn_;
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_lambdainv_d_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_lambdainv_d_;
 
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> k_porodisp_;
-    Teuchos::RCP<Core::LinAlg::SparseOperator> k_porofluid_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> k_porodisp_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> k_porofluid_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> nopenetration_rhs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> nopenetration_rhs_;
 
     //! transform object for k_D matrix \f$D\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> k_d_transform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> k_d_transform_;
     //! transform object for k_D matrix \f$D\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> k_inv_d_transform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowTransform> k_inv_d_transform_;
 
     //! transform object for linearization of k_D matrix \f$D\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> k_d_lin_transform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> k_d_lin_transform_;
 
     //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto
     //! the structure) evaluated at actual iteration step \f$t_{n+1}\f$ but needed for next
     //! iteration step
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdanp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambdanp_;
 
     //!@}
 
     //! @name Some quantities to recover the Langrange multiplier at the end of each iteration step
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fgicur_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> fgicur_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fggcur_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> fggcur_;
 
     //! block \f$Cfs_{\Gamma\Gamma,i+1}\f$ of fs-coupling matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> cfsgicur_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> cfsgicur_;
 
     //! block \f$Cfs_{\Gamma\Gamma,i+1}\f$ of fs-coupling matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> cfsggcur_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> cfsggcur_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_fgcur_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_fgcur_;
 
     //!@}
 
@@ -153,7 +154,7 @@ namespace PoroElast
     double normrhs_nopenetration_;
     //!@}
 
-    Teuchos::RCP<Adapter::CouplingNonLinMortar> mortar_adapter_;
+    std::shared_ptr<Adapter::CouplingNonLinMortar> mortar_adapter_;
   };
 
 }  // namespace PoroElast

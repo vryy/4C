@@ -23,7 +23,7 @@ void Discret::Elements::So3PoroScatra<So3Ele, distype>::pre_evaluate(Teuchos::Pa
     if (discretization.has_state(2, "scalar"))
     {
       // check if you can get the scalar state
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarnp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> scalarnp =
           discretization.get_state(2, "scalar");
 
       // extract local values of the global vectors
@@ -32,18 +32,18 @@ void Discret::Elements::So3PoroScatra<So3Ele, distype>::pre_evaluate(Teuchos::Pa
 
       if (So3Ele::num_material() < 2)
         FOUR_C_THROW("no second material defined for Wall poro element!");
-      Teuchos::RCP<Core::Mat::Material> scatramat = So3Ele::material(2);
+      std::shared_ptr<Core::Mat::Material> scatramat = So3Ele::material(2);
 
       int numscal = 1;
       if (scatramat->material_type() == Core::Materials::m_matlist or
           scatramat->material_type() == Core::Materials::m_matlist_reactions)
       {
-        Teuchos::RCP<Mat::MatList> matlist = Teuchos::rcp_dynamic_cast<Mat::MatList>(scatramat);
+        std::shared_ptr<Mat::MatList> matlist = std::dynamic_pointer_cast<Mat::MatList>(scatramat);
         numscal = matlist->num_mat();
       }
 
-      Teuchos::RCP<std::vector<double>> scalar =
-          Teuchos::make_rcp<std::vector<double>>(numscal, 0.0);
+      std::shared_ptr<std::vector<double>> scalar =
+          std::make_shared<std::vector<double>>(numscal, 0.0);
       if ((int)myscalar.size() != numscal * numnod_) FOUR_C_THROW("sizes do not match!");
 
       for (int i = 0; i < numnod_; i++)

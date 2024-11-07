@@ -61,10 +61,10 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::setup()
  */
 template <typename Beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    const std::shared_ptr<const Core::FE::Discretization>& discret,
+    const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   evaluate_and_assemble_positional_coupling(
       *discret, force_vector, stiffness_matrix, *displacement_vector);
@@ -77,8 +77,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble(
  */
 template <typename Beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_positional_coupling(
-    const Core::FE::Discretization& discret, const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const Core::FE::Discretization& discret, const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Core::LinAlg::Vector<double>& displacement_vector) const
 {
   const std::array<const Core::Elements::Element*, 2> beam_ele = {
@@ -141,13 +141,13 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
             factor * force(i_dir) * r[i_beam](i_dir).dx(i_beam * Beam::n_dof_ + i_dof);
 
     // Add the coupling force to the global force vector.
-    if (force_vector != Teuchos::null)
+    if (force_vector != nullptr)
       force_vector->SumIntoGlobalValues(gid_pos[i_beam].num_rows(), gid_pos[i_beam].data(),
           Core::FADUtils::cast_to_double(force_element[i_beam]).data());
   }
 
   // Evaluate and assemble the coupling stiffness terms.
-  if (stiffness_matrix != Teuchos::null)
+  if (stiffness_matrix != nullptr)
   {
     for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
     {
@@ -168,8 +168,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
  */
 template <typename Beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_rotational_coupling(
-    const Core::FE::Discretization& discret, const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const Core::FE::Discretization& discret, const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Core::LinAlg::Vector<double>& displacement_vector) const
 {
   const std::array<const Core::Elements::Element*, 2> beam_ele = {
@@ -261,13 +261,13 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
       }
     }
 
-    if (force_vector != Teuchos::null)
+    if (force_vector != nullptr)
       force_vector->SumIntoGlobalValues(gid_rot[i_beam].size(), gid_rot[i_beam].data(),
           Core::FADUtils::cast_to_double(moment_nodal_load[i_beam]).data());
   }
 
   // Evaluate and assemble the coupling stiffness terms.
-  if (stiffness_matrix != Teuchos::null)
+  if (stiffness_matrix != nullptr)
   {
     for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
     {

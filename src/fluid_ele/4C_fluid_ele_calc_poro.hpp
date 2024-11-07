@@ -82,7 +82,8 @@ namespace Discret
        */
       int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          std::shared_ptr<Core::Mat::Material>& mat,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -106,7 +107,8 @@ namespace Discret
        */
       virtual int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          std::shared_ptr<Core::Mat::Material>& mat,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -132,7 +134,7 @@ namespace Discret
        */
       virtual int evaluate_od(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+          Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -146,7 +148,7 @@ namespace Discret
           Interface function for supporting methods of the element
        */
       int evaluate_service(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
+          std::shared_ptr<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -203,8 +205,9 @@ namespace Discret
           const Core::LinAlg::Matrix<nen_, 1>& escaaf,
           const Core::LinAlg::Matrix<nen_, 1>* eporositynp,
           const Core::LinAlg::Matrix<nen_, 1>* eporositydot,
-          const Core::LinAlg::Matrix<nen_, 1>* eporositydotn, Teuchos::RCP<Core::Mat::Material> mat,
-          bool isale, const Core::FE::GaussIntegration& intpoints);
+          const Core::LinAlg::Matrix<nen_, 1>* eporositydotn,
+          std::shared_ptr<Core::Mat::Material> mat, bool isale,
+          const Core::FE::GaussIntegration& intpoints);
 
       /*!
           \brief evaluate function for Fluid element for porous flow
@@ -253,8 +256,9 @@ namespace Discret
           const Core::LinAlg::Matrix<nen_, 1>& escaaf,
           const Core::LinAlg::Matrix<nsd_, nen_>& emhist,
           const Core::LinAlg::Matrix<nen_, 1>& echist,
-          const Core::LinAlg::Matrix<nen_, 1>* eporositynp, Teuchos::RCP<Core::Mat::Material> mat,
-          bool isale, const Core::FE::GaussIntegration& intpoints);
+          const Core::LinAlg::Matrix<nen_, 1>* eporositynp,
+          std::shared_ptr<Core::Mat::Material> mat, bool isale,
+          const Core::FE::GaussIntegration& intpoints);
 
       /*!
         \brief calculate element matrix and rhs for porous flow
@@ -308,7 +312,7 @@ namespace Discret
           const Core::LinAlg::Matrix<nen_, 1>* eporositydotn,
           Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
           Core::LinAlg::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
-          Teuchos::RCP<const Core::Mat::Material> material, bool isale,
+          std::shared_ptr<const Core::Mat::Material> material, bool isale,
           const Core::FE::GaussIntegration& intpoints);
 
       /*!
@@ -357,7 +361,7 @@ namespace Discret
           const Core::LinAlg::Matrix<nen_, 1>* eporositynp,
           Core::LinAlg::Matrix<(nsd_ + 1) * nen_, nsd_ * nen_>& ecoupl,
           Core::LinAlg::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
-          Teuchos::RCP<const Core::Mat::Material> material, bool isale,
+          std::shared_ptr<const Core::Mat::Material> material, bool isale,
           const Core::FE::GaussIntegration& intpoints);
 
       /*!
@@ -714,7 +718,7 @@ namespace Discret
           Core::LinAlg::Matrix<nen_, nen_ * nsd_>& estif_q_u,
           Core::LinAlg::Matrix<nen_, nen_>& ppmat, Core::LinAlg::Matrix<nen_, 1>& preforce,
           Core::LinAlg::Matrix<nsd_, nen_>& velforce,
-          Teuchos::RCP<const Core::Mat::Material> material,
+          std::shared_ptr<const Core::Mat::Material> material,
           const Core::FE::GaussIntegration& intpoints);
 
       /*!
@@ -762,7 +766,7 @@ namespace Discret
           Core::LinAlg::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
           Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& ecoupl_u,
           Core::LinAlg::Matrix<nen_, nen_ * nsd_>& ecoupl_p,
-          Teuchos::RCP<const Core::Mat::Material> material,
+          std::shared_ptr<const Core::Mat::Material> material,
           const Core::FE::GaussIntegration& intpoints);
 
       /*!
@@ -913,11 +917,11 @@ namespace Discret
       void get_struct_material(Discret::Elements::Fluid* ele);
 
       //! get material parameters of poro fluid element
-      void get_material_paramters(Teuchos::RCP<const Core::Mat::Material> material);
+      void get_material_paramters(std::shared_ptr<const Core::Mat::Material> material);
 
       //! compute spatial reactive term (darcy term)
       void compute_spatial_reaction_terms(
-          Teuchos::RCP<const Core::Mat::Material> material,  //< fluid material
+          std::shared_ptr<const Core::Mat::Material> material,  //< fluid material
           const Core::LinAlg::Matrix<nsd_, nsd_>&
               invdefgrd  //!< inverse of deformationgradient at gausspoint
       );
@@ -925,7 +929,7 @@ namespace Discret
       //! compute linearization of spatial reactive term (darcy term) w.r.t to structural
       //! displacements
       void compute_lin_spatial_reaction_terms(
-          Teuchos::RCP<const Core::Mat::Material> material,  //< fluid material
+          std::shared_ptr<const Core::Mat::Material> material,  //< fluid material
           const Core::LinAlg::Matrix<nsd_, nsd_>&
               defgrd_inv,  //!< inverse of deformationgradient at gausspoint
           const Core::LinAlg::Matrix<1, nsd_ * nen_>*
@@ -978,11 +982,11 @@ namespace Discret
           general function to compute the error (analytical solution) for particular problem type
        */
       int compute_error(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
+          std::shared_ptr<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec) override;
 
       int compute_error(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
+          std::shared_ptr<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
           const Core::FE::GaussIntegration& intpoints2) override;
 
@@ -1080,7 +1084,7 @@ namespace Discret
       Core::LinAlg::Matrix<nsd_, nsd_ * nen_> mixresLinOD_;
 
       //! corresponding poro structure material
-      Teuchos::RCP<Mat::StructPoro> struct_mat_;
+      std::shared_ptr<Mat::StructPoro> struct_mat_;
 
       //! state if reaction/permeability tensor is constant
       bool const_permeability_;

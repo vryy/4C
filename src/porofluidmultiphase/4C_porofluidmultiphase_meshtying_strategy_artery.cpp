@@ -42,7 +42,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
   auto timintscheme =
       Teuchos::getIntegralValue<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
 
-  Teuchos::RCP<Core::IO::DiscretizationWriter> artery_output = arterydis_->writer();
+  std::shared_ptr<Core::IO::DiscretizationWriter> artery_output = arterydis_->writer();
   artery_output->write_mesh(0, 0.0);
 
   // build art net time integrator
@@ -91,19 +91,18 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
       couplingcondname, "COUPLEDDOFS_ART", "COUPLEDDOFS_PORO", evaluate_on_lateral_surface);
 
   // Initialize rhs vector
-  rhs_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*arttoporofluidcoupling_->full_map(), true);
+  rhs_ = std::make_shared<Core::LinAlg::Vector<double>>(*arttoporofluidcoupling_->full_map(), true);
 
   // Initialize increment vector
   comb_increment_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*arttoporofluidcoupling_->full_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*arttoporofluidcoupling_->full_map(), true);
   // Initialize phinp vector
   comb_phinp_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*arttoporofluidcoupling_->full_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*arttoporofluidcoupling_->full_map(), true);
 
   // initialize Poromultiphase-elasticity-systemmatrix_
   comb_systemmatrix_ =
-      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+      std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           *arttoporofluidcoupling_->global_extractor(),
           *arttoporofluidcoupling_->global_extractor(), 81, false, true);
 
@@ -144,7 +143,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::update()
  | initialize the linear solver                            kremheller 07/20 |
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::initialize_linear_solver(
-    Teuchos::RCP<Core::LinAlg::Solver> solver)
+    std::shared_ptr<Core::LinAlg::Solver> solver)
 {
   const Teuchos::ParameterList& porofluidparams =
       Global::Problem::instance()->poro_fluid_multi_phase_dynamic_params();
@@ -190,9 +189,11 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::initialize_linear_solver(
  | solve linear system of equations                        kremheller 04/18 |
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::linear_solve(
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> increment,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual, Core::LinAlg::SolverParams& solver_params)
+    std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Core::LinAlg::SparseOperator> sysmat,
+    std::shared_ptr<Core::LinAlg::Vector<double>> increment,
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual,
+    Core::LinAlg::SolverParams& solver_params)
 {
   comb_systemmatrix_->complete();
 
@@ -212,7 +213,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::linear_solve(
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::calculate_norms(std::vector<double>& preresnorm,
     std::vector<double>& incprenorm, std::vector<double>& prenorm,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> increment)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> increment)
 {
   preresnorm.resize(2);
   incprenorm.resize(2);
@@ -221,8 +222,8 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::calculate_norms(std::vector<d
   prenorm[0] = Utils::calculate_vector_norm(vectornorminc_, *porofluidmultitimint_->phinp());
   prenorm[1] = Utils::calculate_vector_norm(vectornorminc_, *artnettimint_->pressurenp());
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> arterypressinc;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> porofluidinc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> arterypressinc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> porofluidinc;
 
   arttoporofluidcoupling_->extract_single_field_vectors(
       comb_increment_, porofluidinc, arterypressinc);
@@ -230,8 +231,8 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::calculate_norms(std::vector<d
   incprenorm[0] = Utils::calculate_vector_norm(vectornorminc_, *porofluidinc);
   incprenorm[1] = Utils::calculate_vector_norm(vectornorminc_, *arterypressinc);
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> arterypressrhs;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> porofluidrhs;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> arterypressrhs;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> porofluidrhs;
 
   arttoporofluidcoupling_->extract_single_field_vectors(rhs_, porofluidrhs, arterypressrhs);
 
@@ -246,7 +247,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::calculate_norms(std::vector<d
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::create_field_test()
 {
-  Teuchos::RCP<Core::Utils::ResultTest> arteryresulttest = artnettimint_->create_field_test();
+  std::shared_ptr<Core::Utils::ResultTest> arteryresulttest = artnettimint_->create_field_test();
   Global::Problem::instance()->add_field_test(arteryresulttest);
   return;
 }
@@ -266,7 +267,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::read_restart(const int step)
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::output()
 {
-  if (porofluidmultitimint_->step() != 0) artnettimint_->output(false, Teuchos::null);
+  if (porofluidmultitimint_->step() != 0) artnettimint_->output(false, nullptr);
 
   return;
 }
@@ -299,12 +300,12 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::evaluate()
 /*----------------------------------------------------------------------*
  | extract and update                                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::extract_and_update_iter(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> inc)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> arterypressinc;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> porofluidinc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> arterypressinc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> porofluidinc;
 
   arttoporofluidcoupling_->extract_single_field_vectors(inc, porofluidinc, arterypressinc);
 
@@ -316,7 +317,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::extract_and_update_iter(
 /*----------------------------------------------------------------------*
  | artery dof row map                                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::artery_dof_row_map()
+std::shared_ptr<const Epetra_Map> POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::artery_dof_row_map()
     const
 {
   return arttoporofluidcoupling_->artery_dof_row_map();
@@ -325,7 +326,7 @@ Teuchos::RCP<const Epetra_Map> POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::art
 /*-----------------------------------------------------------------------*
  | access to block system matrix of artery poro problem kremheller 04/18 |
  *-----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
+std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>
 POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::artery_porofluid_sysmat() const
 {
   return comb_systemmatrix_;
@@ -334,7 +335,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::artery_porofluid_sysmat() const
 /*----------------------------------------------------------------------*
  | return coupled residual                             kremheller 05/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::artery_porofluid_rhs() const
 {
   return rhs_;
@@ -343,9 +344,9 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::artery_porofluid_rhs() const
 /*----------------------------------------------------------------------*
  | extract and update                                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::combined_increment(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) const
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> inc) const
 {
   return comb_increment_;
 }
@@ -354,7 +355,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::combined_increment(
  | check initial fields                                kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::check_initial_fields(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_cont) const
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vec_cont) const
 {
   arttoporofluidcoupling_->check_initial_fields(vec_cont, artnettimint_->pressurenp());
   return;
@@ -391,7 +392,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::apply_mesh_movement() const
 /*----------------------------------------------------------------------*
  | access to blood vessel volume fraction              kremheller 10/19 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::blood_vessel_volume_fraction()
 {
   return arttoporofluidcoupling_->blood_vessel_volume_fraction();

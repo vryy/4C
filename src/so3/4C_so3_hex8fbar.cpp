@@ -34,24 +34,24 @@ Core::Communication::ParObject* Discret::Elements::SoHex8fbarType::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8fbarType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex8fbarType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::SoHex8fbar>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::SoHex8fbar>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8fbarType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex8fbarType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::SoHex8fbar>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::SoHex8fbar>(id, owner);
   return ele;
 }
 
@@ -98,11 +98,11 @@ void Discret::Elements::SoHex8fbarType::setup_element_definition(
 Discret::Elements::SoHex8fbar::SoHex8fbar(int id, int owner) : Discret::Elements::SoHex8(id, owner)
 {
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOH8, NUMGPT_SOH8 + 1);
+    prestress_ = std::make_shared<Discret::Elements::PreStress>(NUMNOD_SOH8, NUMGPT_SOH8 + 1);
 
-  Teuchos::RCP<const Teuchos::ParameterList> params =
+  std::shared_ptr<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
-  if (params != Teuchos::null)
+  if (params != nullptr)
   {
     Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());

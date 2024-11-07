@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToSolidMortarManagerContact::BeamToSolidMortarManagerContact(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
+    const std::shared_ptr<const Core::FE::Discretization>& discret,
+    const std::shared_ptr<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
     int start_value_lambda_gid)
     : BeamToSolidMortarManager(discret, params, start_value_lambda_gid)
 {
@@ -33,21 +33,21 @@ BEAMINTERACTION::BeamToSolidMortarManagerContact::BeamToSolidMortarManagerContac
 /**
  *
  */
-std::tuple<Teuchos::RCP<Core::LinAlg::Vector<double>>, Teuchos::RCP<Core::LinAlg::Vector<double>>,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>>
+std::tuple<std::shared_ptr<Core::LinAlg::Vector<double>>,
+    std::shared_ptr<Core::LinAlg::Vector<double>>, std::shared_ptr<Core::LinAlg::Vector<double>>>
 BEAMINTERACTION::BeamToSolidMortarManagerContact::get_penalty_regularization(
     const bool compute_linearization) const
 {
   using fad_type = fad_type_1st_order_2_variables;
   const auto beam_to_solid_conact_params =
-      Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidSurfaceContactParams>(
-          beam_to_solid_params_, true);
+      std::dynamic_pointer_cast<const BEAMINTERACTION::BeamToSolidSurfaceContactParams>(
+          beam_to_solid_params_);
 
   // Get the penalty regularized Lagrange multipliers and the derivative w.r.t. the constraint
   // vector (averaged gap) and the scaling vector (kappa)
   auto create_lambda_row_vector_with_zeros = [this]()
   {
-    auto row_vector = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
+    auto row_vector = std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
     row_vector->PutScalar(0.0);
     return row_vector;
   };

@@ -36,16 +36,17 @@ namespace BEAMINTERACTION
      * @params params (in) Beam-to-solid parameters.
      * @params start_value_lambda_gid (in) Start value for the Lagrange multiplier global IDs.
      */
-    BeamToSolidMortarManagerContact(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
+    BeamToSolidMortarManagerContact(const std::shared_ptr<const Core::FE::Discretization>& discret,
+        const std::shared_ptr<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
         int start_value_lambda_gid);
 
    protected:
     /**
      * \brief Get the penalty regularization of the constraint vector (derived)
      */
-    [[nodiscard]] std::tuple<Teuchos::RCP<Core::LinAlg::Vector<double>>,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>, Teuchos::RCP<Core::LinAlg::Vector<double>>>
+    [[nodiscard]] std::tuple<std::shared_ptr<Core::LinAlg::Vector<double>>,
+        std::shared_ptr<Core::LinAlg::Vector<double>>,
+        std::shared_ptr<Core::LinAlg::Vector<double>>>
     get_penalty_regularization(const bool compute_linearization = false) const override;
   };
 }  // namespace BEAMINTERACTION

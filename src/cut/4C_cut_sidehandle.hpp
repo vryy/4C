@@ -61,7 +61,7 @@ namespace Cut
     \brief Get the Gaussian rule projected on the side. Not used now
      */
     template <Core::FE::CellType distype>
-    Teuchos::RCP<Core::FE::GaussPoints> create_projected(BoundaryCell* bc)
+    std::shared_ptr<Core::FE::GaussPoints> create_projected(BoundaryCell* bc)
     {
       const unsigned nen = Core::FE::num_nodes<distype>;
 
@@ -77,7 +77,7 @@ namespace Cut
         std::copy(xi.data(), xi.data() + 2, &xie(0, i));
       }
 
-      Teuchos::RCP<Core::FE::GaussPoints> gp =
+      std::shared_ptr<Core::FE::GaussPoints> gp =
           Core::FE::GaussIntegration::create_projected<distype>(xie, bc->get_cubature_degree());
       return gp;
     }

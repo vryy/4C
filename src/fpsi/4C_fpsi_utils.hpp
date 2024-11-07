@@ -17,7 +17,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -40,10 +40,10 @@ namespace FPSI
     static InterfaceUtils* instance();
 
     //! singleton object
-    static Teuchos::RCP<FPSI::InterfaceUtils> instance_;
+    static std::shared_ptr<FPSI::InterfaceUtils> instance_;
 
     //! Setup Discretizations for FPSI problem (clone ALE and porofluid and setup interfaces)
-    Teuchos::RCP<FPSI::FpsiBase> setup_discretizations(const Epetra_Comm& comm,
+    std::shared_ptr<FPSI::FpsiBase> setup_discretizations(const Epetra_Comm& comm,
         const Teuchos::ParameterList& fpsidynparams,
         const Teuchos::ParameterList& poroelastdynparams);
 
@@ -53,8 +53,8 @@ namespace FPSI
 
     //! build map for fpsi interface
     void setup_interface_map(const Epetra_Comm& comm, Core::FE::Discretization& structdis,
-        Teuchos::RCP<Core::FE::Discretization> porofluiddis,
-        Teuchos::RCP<Core::FE::Discretization> fluiddis, Core::FE::Discretization& aledis);
+        std::shared_ptr<Core::FE::Discretization> porofluiddis,
+        std::shared_ptr<Core::FE::Discretization> fluiddis, Core::FE::Discretization& aledis);
 
     //! Fills a map that matches the global id of an interface element on the slave side to the
     //! global id of the opposing bulk element. This is done processor locally. Works only for
@@ -76,11 +76,11 @@ namespace FPSI
         std::map<int, int>& interfacefacingelementmap);
 
     //! access methods
-    Teuchos::RCP<std::map<int, int>> get_fluid_poro_fluid_interface_map()
+    std::shared_ptr<std::map<int, int>> get_fluid_poro_fluid_interface_map()
     {
       return fluid_poro_fluid_interface_map_;
     };
-    Teuchos::RCP<std::map<int, int>> get_poro_fluid_fluid_interface_map()
+    std::shared_ptr<std::map<int, int>> get_poro_fluid_fluid_interface_map()
     {
       return poro_fluid_fluid_interface_map_;
     };
@@ -89,8 +89,8 @@ namespace FPSI
     InterfaceUtils() = default;
 
     //! interface maps
-    Teuchos::RCP<std::map<int, int>> fluid_poro_fluid_interface_map_;
-    Teuchos::RCP<std::map<int, int>> poro_fluid_fluid_interface_map_;
+    std::shared_ptr<std::map<int, int>> fluid_poro_fluid_interface_map_;
+    std::shared_ptr<std::map<int, int>> poro_fluid_fluid_interface_map_;
 
   };  // class Utils
 
@@ -123,11 +123,11 @@ namespace FPSI
        * \author kruse
        * \date 05/2014
        */
-      void setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
+      void setup(std::shared_ptr<const Epetra_Map>& additionalothermap,
           const FPSI::Utils::MapExtractor& extractor);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int>> conditioned_element_map(
+      std::shared_ptr<std::set<int>> conditioned_element_map(
           const Core::FE::Discretization& dis) const;
 
       MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)

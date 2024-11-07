@@ -33,11 +33,11 @@ namespace Discret
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
       /// create an element from a dat file specifier
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
       /// create an empty element
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       /// nodal block information to create a null space description
       void nodal_block_information(
@@ -57,11 +57,11 @@ namespace Discret
 
       /// pre-evaluation
       void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
-          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3) override;
+          std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+          std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3) override;
 
      private:
       /// the actual instance
@@ -119,7 +119,7 @@ namespace Discret
         \note reimplementation of this method, due to initialising
               numdofpernode_, since the material is known now.
        */
-      void set_material(const int index, Teuchos::RCP<Core::Mat::Material> mat) override;
+      void set_material(const int index, std::shared_ptr<Core::Mat::Material> mat) override;
 
       /*!
       \brief Get shape type of element
@@ -151,14 +151,14 @@ namespace Discret
       int num_volume() const override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
+      \brief Get vector of std::shared_ptrs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -327,7 +327,7 @@ namespace Discret
 
       static PoroFluidMultiPhaseBoundaryType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
@@ -407,15 +407,15 @@ namespace Discret
       int num_surface() const override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
+      \brief Get vector of std::shared_ptrs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id

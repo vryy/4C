@@ -70,8 +70,8 @@ namespace BEAMINTERACTION
      */
     void evaluate_and_assemble(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
-        const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+        const std::shared_ptr<Epetra_FEVector>& force_vector,
+        const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Core::LinAlg::Vector<double>& global_lambda,
         const Core::LinAlg::Vector<double>& displacement_vector) override;
 
@@ -87,7 +87,7 @@ namespace BEAMINTERACTION
         Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
         Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
         Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) override;
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector) override;
   };
 
 
@@ -136,8 +136,8 @@ namespace BEAMINTERACTION
      */
     void evaluate_and_assemble(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
-        const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+        const std::shared_ptr<Epetra_FEVector>& force_vector,
+        const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Core::LinAlg::Vector<double>& global_lambda,
         const Core::LinAlg::Vector<double>& displacement_vector) override;
 
@@ -153,7 +153,7 @@ namespace BEAMINTERACTION
         Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
         Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
         Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) override;
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector) override;
 
    private:
     /**
@@ -190,7 +190,7 @@ namespace BEAMINTERACTION
    * @param surface_normal_strategy (in) Strategy for surface normal evaluation.
    * @return Pointer to the created pair.
    */
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+  std::shared_ptr<BEAMINTERACTION::BeamContactPair>
   beam_to_solid_surface_meshtying_pair_mortar_fad_factory(const Core::FE::CellType surface_shape,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction,
       const bool rotational_coupling,

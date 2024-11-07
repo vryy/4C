@@ -13,6 +13,8 @@
 
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
+#include <map>
+
 // forward declaration
 class Epetra_Map;
 #include "4C_utils_parameter_list.fwd.hpp"
@@ -71,11 +73,11 @@ namespace Solid
 
 
       //! initialize the class variables
-      void init(const Teuchos::RCP<Solid::ModelEvaluator::Data>& eval_data_ptr,
-          const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
-          const Teuchos::RCP<Solid::Integrator>& int_ptr,
-          const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr,
+      void init(const std::shared_ptr<Solid::ModelEvaluator::Data>& eval_data_ptr,
+          const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+          const std::shared_ptr<Solid::TimeInt::BaseDataIO>& gio_ptr,
+          const std::shared_ptr<Solid::Integrator>& int_ptr,
+          const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr,
           const int& dof_offset) override;
 
       //! setup class variables
@@ -177,24 +179,24 @@ namespace Solid
       //! @{
 
       //! Returns a pointer to the model specific dof row map
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override
       {
-        return Teuchos::null;
+        return nullptr;
       };
 
       //! Returns a pointer to the current model solution vector (usually the Lagrange multiplier
       //! vector)
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override
       {
-        return Teuchos::null;
+        return nullptr;
       };
 
       //! Returns a pointer to the model solution vector of the last time step (usually the Lagrange
       //! multiplier vector)
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override
       {
-        return Teuchos::null;
+        return nullptr;
       };
 
       //! @}
@@ -202,7 +204,7 @@ namespace Solid
      protected:
       //! map containing the model evaluators of the sub modules
       std::map<enum Solid::ModelEvaluator::MultiphysicType,
-          Teuchos::RCP<Solid::ModelEvaluator::Generic>>
+          std::shared_ptr<Solid::ModelEvaluator::Generic>>
           me_map_;
 
       //! currently active model evaluator type
@@ -210,7 +212,7 @@ namespace Solid
 
       //! return reference to map containing the model evaluators
       std::map<enum Solid::ModelEvaluator::MultiphysicType,
-          Teuchos::RCP<Solid::ModelEvaluator::Generic>>&
+          std::shared_ptr<Solid::ModelEvaluator::Generic>>&
       get_model_evalutaor_map()
       {
         return me_map_;
@@ -218,7 +220,7 @@ namespace Solid
 
      public:
       //! return RCP to model evaluator of specific MultiphysicType
-      Teuchos::RCP<Solid::ModelEvaluator::Generic> get_model_evaluator_from_map(
+      std::shared_ptr<Solid::ModelEvaluator::Generic> get_model_evaluator_from_map(
           enum Solid::ModelEvaluator::MultiphysicType mtype) const
       {
         return me_map_.at(mtype);

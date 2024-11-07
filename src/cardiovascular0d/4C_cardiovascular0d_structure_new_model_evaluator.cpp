@@ -30,9 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Solid::ModelEvaluator::Cardiovascular0D::Cardiovascular0D()
-    : disnp_ptr_(Teuchos::null),
-      stiff_cardio_ptr_(Teuchos::null),
-      fstructcardio_np_ptr_(Teuchos::null)
+    : disnp_ptr_(nullptr), stiff_cardio_ptr_(nullptr), fstructcardio_np_ptr_(nullptr)
 {
   // empty
 }
@@ -43,31 +41,30 @@ void Solid::ModelEvaluator::Cardiovascular0D::setup()
 {
   check_init();
 
-  Teuchos::RCP<Core::FE::Discretization> dis = discret_ptr();
+  std::shared_ptr<Core::FE::Discretization> dis = discret_ptr();
 
   // setup the displacement pointer
   disnp_ptr_ = global_state().get_dis_np();
 
   // contributions of 0D model to structural rhs and stiffness
   fstructcardio_np_ptr_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view());
-  stiff_cardio_ptr_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view());
+  stiff_cardio_ptr_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *global_state().dof_row_map_view(), 81, true, true);
 
   Teuchos::ParameterList solvparams;
   Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-  Teuchos::RCP<Core::LinAlg::Solver> dummysolver(new Core::LinAlg::Solver(
+  std::shared_ptr<Core::LinAlg::Solver> dummysolver(new Core::LinAlg::Solver(
       solvparams, disnp_ptr_->Comm(), nullptr, Core::IO::Verbositylevel::standard));
 
   // ToDo: we do not want to hand in the structural dynamics parameter list
   // to the manager in the future! -> get rid of it as soon as old
   // time-integration dies ...
   // initialize 0D cardiovascular manager
-  cardvasc0dman_ = Teuchos::make_rcp<Utils::Cardiovascular0DManager>(dis, disnp_ptr_,
+  cardvasc0dman_ = std::make_shared<Utils::Cardiovascular0DManager>(dis, disnp_ptr_,
       Global::Problem::instance()->structural_dynamic_params(),
-      Global::Problem::instance()->cardiovascular0_d_structural_params(), *dummysolver,
-      Teuchos::null);
+      Global::Problem::instance()->cardiovascular0_d_structural_params(), *dummysolver, nullptr);
 
   // set flag
   issetup_ = true;
@@ -100,7 +97,7 @@ bool Solid::ModelEvaluator::Cardiovascular0D::evaluate_force()
 
   // only forces are evaluated!
   cardvasc0dman_->evaluate_force_stiff(
-      time_np, disnp_ptr_, fstructcardio_np_ptr_, Teuchos::null, pcardvasc0d);
+      time_np, disnp_ptr_, fstructcardio_np_ptr_, nullptr, pcardvasc0d);
 
   return true;
 }
@@ -117,7 +114,7 @@ bool Solid::ModelEvaluator::Cardiovascular0D::evaluate_stiff()
 
   // only stiffnesses are evaluated!
   cardvasc0dman_->evaluate_force_stiff(
-      time_np, disnp_ptr_, Teuchos::null, stiff_cardio_ptr_, pcardvasc0d);
+      time_np, disnp_ptr_, nullptr, stiff_cardio_ptr_, pcardvasc0d);
 
   if (not stiff_cardio_ptr_->filled()) stiff_cardio_ptr_->complete();
 
@@ -147,7 +144,7 @@ bool Solid::ModelEvaluator::Cardiovascular0D::evaluate_force_stiff()
 bool Solid::ModelEvaluator::Cardiovascular0D::assemble_force(
     Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> block_vec_ptr = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> block_vec_ptr = nullptr;
 
   // assemble and scale with str time-integrator dependent value
   Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *fstructcardio_np_ptr_);
@@ -155,7 +152,7 @@ bool Solid::ModelEvaluator::Cardiovascular0D::assemble_force(
   // assemble 0D model rhs - already at the generalized mid-point t_{n+theta} !
   block_vec_ptr = cardvasc0dman_->get_cardiovascular0_drhs();
 
-  if (block_vec_ptr.is_null())
+  if (!block_vec_ptr)
     FOUR_C_THROW(
         "The 0D cardiovascular model vector is a nullptr pointer, although \n"
         "the structural part indicates, that 0D cardiovascular model contributions \n"
@@ -175,10 +172,10 @@ bool Solid::ModelEvaluator::Cardiovascular0D::assemble_force(
 bool Solid::ModelEvaluator::Cardiovascular0D::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> block_ptr = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> block_ptr = nullptr;
 
   // --- Kdd - block - scale with str time-integrator dependent value---
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
   jac_dd_ptr->add(*stiff_cardio_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_cardio_ptr_->zero();
@@ -189,19 +186,19 @@ bool Solid::ModelEvaluator::Cardiovascular0D::assemble_jacobian(
   block_ptr->scale(timefac_np);
   global_state().assign_model_block(jac, *block_ptr, type(), MatBlockType::displ_lm);
   // reset the block pointer, just to be on the safe side
-  block_ptr = Teuchos::null;
+  block_ptr = nullptr;
 
   // --- Kzd - block - already scaled correctly by 0D model !-----------
   block_ptr = Core::LinAlg::matrix_transpose(*cardvasc0dman_->get_mat_dcardvasc0d_dd());
   global_state().assign_model_block(jac, *block_ptr, type(), MatBlockType::lm_displ);
   // reset the block pointer, just to be on the safe side
-  block_ptr = Teuchos::null;
+  block_ptr = nullptr;
 
   // --- Kzz - block - already scaled with 0D theta by 0D model !-------
   block_ptr = cardvasc0dman_->get_cardiovascular0_d_stiffness();
   global_state().assign_model_block(jac, *block_ptr, type(), MatBlockType::lm_lm);
   // reset the block pointer, just to be on the safe side
-  block_ptr = Teuchos::null;
+  block_ptr = nullptr;
 
   return true;
 }
@@ -238,7 +235,7 @@ void Solid::ModelEvaluator::Cardiovascular0D::run_post_compute_x(
 {
   check_init_setup();
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> cv0d_incr =
+  std::shared_ptr<Core::LinAlg::Vector<double>> cv0d_incr =
       global_state().extract_model_entries(Inpar::Solid::model_cardiovascular0d, dir);
 
   cardvasc0dman_->update_cv0_d_dof(*cv0d_incr);
@@ -261,9 +258,9 @@ void Solid::ModelEvaluator::Cardiovascular0D::update_step_state(const double& ti
 
   // add the 0D cardiovascular force contributions to the old structural
   // residual state vector
-  if (not fstructcardio_np_ptr_.is_null())
+  if (fstructcardio_np_ptr_)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& fstructold_ptr =
+    std::shared_ptr<Core::LinAlg::Vector<double>>& fstructold_ptr =
         global_state().get_fstructure_old();
     fstructold_ptr->Update(timefac_n, *fstructcardio_np_ptr_, 1.0);
   }
@@ -326,8 +323,8 @@ void Solid::ModelEvaluator::Cardiovascular0D::reset_step_state()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Cardiovascular0D::get_block_dof_row_map_ptr()
-    const
+std::shared_ptr<const Epetra_Map>
+Solid::ModelEvaluator::Cardiovascular0D::get_block_dof_row_map_ptr() const
 {
   check_init_setup();
 
@@ -336,20 +333,20 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Cardiovascular0D::get_bloc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Cardiovascular0D::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Cardiovascular0D::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*

@@ -65,7 +65,7 @@ namespace Core::LinearSolver
      */
     static Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
     extract_nullspace_from_parameterlist(
-        const Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>>& row_map,
+        const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>& row_map,
         Teuchos::ParameterList& list);
   };
 }  // namespace Core::LinearSolver

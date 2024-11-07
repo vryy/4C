@@ -84,15 +84,15 @@ namespace BEAMINTERACTION
       virtual ~Generic() = default;
 
       //! initialize the class variables
-      virtual void init(Teuchos::RCP<Core::FE::Discretization> const& ia_discret,
-          Teuchos::RCP<Core::FE::Discretization> const& bindis,
-          Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> const& gstate,
-          Teuchos::RCP<Solid::TimeInt::BaseDataIO> const& gio_ptr,
-          Teuchos::RCP<Solid::ModelEvaluator::BeamInteractionDataState> const& ia_gstate_ptr,
-          Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
-          Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy,
-          Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
-          Teuchos::RCP<BEAMINTERACTION::Utils::MapExtractor> const& eletypeextractor);
+      virtual void init(std::shared_ptr<Core::FE::Discretization> const& ia_discret,
+          std::shared_ptr<Core::FE::Discretization> const& bindis,
+          std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> const& gstate,
+          std::shared_ptr<Solid::TimeInt::BaseDataIO> const& gio_ptr,
+          std::shared_ptr<Solid::ModelEvaluator::BeamInteractionDataState> const& ia_gstate_ptr,
+          std::shared_ptr<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
+          std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy,
+          std::shared_ptr<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
+          std::shared_ptr<BEAMINTERACTION::Utils::MapExtractor> const& eletypeextractor);
 
       //! setup class variables
       virtual void setup() = 0;
@@ -176,7 +176,7 @@ namespace BEAMINTERACTION
 
       //! reset routine for model evlaluator
       virtual void init_submodel_dependencies(
-          Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> const submodelvector) = 0;
+          std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> const submodelvector) = 0;
 
       //! \brief add subproblem specific contributions to bin col map
       virtual void add_bins_to_bin_col_map(std::set<int>& colbins) = 0;
@@ -198,18 +198,18 @@ namespace BEAMINTERACTION
       //! @{
       //! Returns the (structural) discretization
       Core::FE::Discretization& discret();
-      Teuchos::RCP<Core::FE::Discretization>& discret_ptr();
-      Teuchos::RCP<const Core::FE::Discretization> discret_ptr() const;
+      std::shared_ptr<Core::FE::Discretization>& discret_ptr();
+      std::shared_ptr<const Core::FE::Discretization> discret_ptr() const;
       Core::FE::Discretization const& discret() const;
 
       Core::FE::Discretization& bin_discret();
-      Teuchos::RCP<Core::FE::Discretization>& bin_discret_ptr();
-      Teuchos::RCP<const Core::FE::Discretization> bin_discret_ptr() const;
+      std::shared_ptr<Core::FE::Discretization>& bin_discret_ptr();
+      std::shared_ptr<const Core::FE::Discretization> bin_discret_ptr() const;
       Core::FE::Discretization const& bin_discret() const;
 
       //! Returns the global state data container
       Solid::TimeInt::BaseDataGlobalState& g_state();
-      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& g_state_ptr();
+      std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& g_state_ptr();
       Solid::TimeInt::BaseDataGlobalState const& g_state() const;
 
       //! Returns the global input/output data container
@@ -218,24 +218,24 @@ namespace BEAMINTERACTION
 
       //! Returns the global state data container
       Solid::ModelEvaluator::BeamInteractionDataState& beam_interaction_data_state();
-      Teuchos::RCP<Solid::ModelEvaluator::BeamInteractionDataState>&
+      std::shared_ptr<Solid::ModelEvaluator::BeamInteractionDataState>&
       beam_interaction_data_state_ptr();
       Solid::ModelEvaluator::BeamInteractionDataState const& beam_interaction_data_state() const;
 
       BEAMINTERACTION::BeamCrosslinkerHandler& beam_crosslinker_handler();
-      Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler>& beam_crosslinker_handler_ptr();
+      std::shared_ptr<BEAMINTERACTION::BeamCrosslinkerHandler>& beam_crosslinker_handler_ptr();
       BEAMINTERACTION::BeamCrosslinkerHandler const& beam_crosslinker_handler() const;
 
       Core::Binstrategy::BinningStrategy& bin_strategy();
-      Teuchos::RCP<Core::Binstrategy::BinningStrategy>& bin_strategy_ptr();
+      std::shared_ptr<Core::Binstrategy::BinningStrategy>& bin_strategy_ptr();
       Core::Binstrategy::BinningStrategy const& bin_strategy() const;
 
       Core::Geo::MeshFree::BoundingBox& periodic_bounding_box();
-      Teuchos::RCP<Core::Geo::MeshFree::BoundingBox>& periodic_bounding_box_ptr();
+      std::shared_ptr<Core::Geo::MeshFree::BoundingBox>& periodic_bounding_box_ptr();
       Core::Geo::MeshFree::BoundingBox const& periodic_bounding_box() const;
 
       BEAMINTERACTION::Utils::MapExtractor& ele_type_map_extractor();
-      Teuchos::RCP<BEAMINTERACTION::Utils::MapExtractor>& ele_type_map_extractor_ptr();
+      std::shared_ptr<BEAMINTERACTION::Utils::MapExtractor>& ele_type_map_extractor_ptr();
       BEAMINTERACTION::Utils::MapExtractor const& ele_type_map_extractor() const;
 
       //! @}
@@ -248,31 +248,31 @@ namespace BEAMINTERACTION
 
      private:
       //! pointer to the interaction discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_ptr_;
+      std::shared_ptr<Core::FE::Discretization> discret_ptr_;
 
       //! pointer to the interaction discretization
-      Teuchos::RCP<Core::FE::Discretization> bindis_ptr_;
+      std::shared_ptr<Core::FE::Discretization> bindis_ptr_;
 
       //! pointer to the global state data container
-      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
+      std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
       //! pointer to input/ouput data container
-      Teuchos::RCP<Solid::TimeInt::BaseDataIO> gio_ptr_;
+      std::shared_ptr<Solid::TimeInt::BaseDataIO> gio_ptr_;
 
       //! pointer to the global state data container
-      Teuchos::RCP<Solid::ModelEvaluator::BeamInteractionDataState> beaminteractiondatastate_;
+      std::shared_ptr<Solid::ModelEvaluator::BeamInteractionDataState> beaminteractiondatastate_;
 
       //! beam crosslinker handler
-      Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> beam_crosslinker_handler_;
+      std::shared_ptr<BEAMINTERACTION::BeamCrosslinkerHandler> beam_crosslinker_handler_;
 
       //! binning strategy
-      Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy_;
+      std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy_;
 
       //! periodic bounding box
-      Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox_;
+      std::shared_ptr<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox_;
 
       /// map extractor for split of different element types
-      Teuchos::RCP<BEAMINTERACTION::Utils::MapExtractor> eletypeextractor_;
+      std::shared_ptr<BEAMINTERACTION::Utils::MapExtractor> eletypeextractor_;
 
     };  // class Generic
 

@@ -25,7 +25,7 @@ namespace PoroElast
     //! create using a Epetra_Comm
     explicit MonolithicStructureSplit(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
+        std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     /*! do the setup for the monolithic system
 
@@ -60,9 +60,9 @@ namespace PoroElast
      \param sx (o) structural vector (e.g. displacements)
      \param fx (o) fluid vector (e.g. velocities and pressure)
      */
-    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx, bool firstcall = false) override;
+    void extract_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& fx, bool firstcall = false) override;
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
     //! step (i.e. condensed forces onto the structure) needed for rhs in next time step
@@ -70,35 +70,35 @@ namespace PoroElast
 
     //! @name matrix transformation
     //! transform object for structure interface matrix \f$S_{\Gamma \Gamma}\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> sggtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowColTransform> sggtransform_;
     //! transform object for structure interface matrix \f$S_{\Gamma I}\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> sgitransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowTransform> sgitransform_;
     //! transform object for structure interface matrix \f$S_{I \Gamma}\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> sigtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> sigtransform_;
     //! transform object for structure coupling matrix \f$C_{\Gamma \Gamma}^S\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> csggtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowTransform> csggtransform_;
     //! transform object for fluid coupling matrix \f$C_{\Gamma \Gamma}^G\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> cfggtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> cfggtransform_;
     //! transform object for structure coupling matrix \f$C_{\Gamma I}^S\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> csgitransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowTransform> csgitransform_;
     //! transform object for fluid coupling matrix \f$C_{I \Gamma}^F\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> cfigtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> cfigtransform_;
 
     //!@}
 
     //! @name Some quantities to recover the Langrange multiplier at the end of each time step
 
     //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> sgicur_;
+    std::shared_ptr<const Core::LinAlg::SparseOperator> sgicur_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> sggcur_;
+    std::shared_ptr<const Core::LinAlg::SparseOperator> sggcur_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> cgicur_;
+    std::shared_ptr<const Core::LinAlg::SparseOperator> cgicur_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> cggcur_;
+    std::shared_ptr<const Core::LinAlg::SparseOperator> cggcur_;
 
     //!@}
   };

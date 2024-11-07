@@ -95,12 +95,12 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::initialize_shapes(
   {
     usescompletepoly_ = hdgele->uses_complete_polynomial_space();
 
-    if (shapes_ == Teuchos::null)
-      shapes_ = Teuchos::make_rcp<Core::FE::ShapeValues<distype>>(
+    if (shapes_ == nullptr)
+      shapes_ = std::make_shared<Core::FE::ShapeValues<distype>>(
           hdgele->degree(), usescompletepoly_, 2 * hdgele->degree());
     else if (shapes_->degree_ != unsigned(hdgele->degree()) ||
              shapes_->usescompletepoly_ != usescompletepoly_)
-      shapes_ = Teuchos::make_rcp<Core::FE::ShapeValues<distype>>(
+      shapes_ = std::make_shared<Core::FE::ShapeValues<distype>>(
           hdgele->degree(), usescompletepoly_, 2 * hdgele->degree());
 
     int onfdofs = 0;
@@ -118,9 +118,9 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::initialize_shapes(
     // check if only one scalar is defined
     if (numscal_ > 1) FOUR_C_THROW("Not implemented for multiple scalars");
 
-    if (local_solver_ == Teuchos::null)
-      local_solver_ = Teuchos::make_rcp<LocalSolver>(
-          ele, *shapes_, *shapesface_, usescompletepoly_, disname, 1);
+    if (local_solver_ == nullptr)
+      local_solver_ =
+          std::make_shared<LocalSolver>(ele, *shapes_, *shapesface_, usescompletepoly_, disname, 1);
   }
   else
     FOUR_C_THROW("Only works for HDG transport elements");
@@ -472,26 +472,26 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::read_global_vectors(
   interiorPhin_.size(shapes_->ndofs_ * (nsd_ + 1));
   interiorPhinp_.size(shapes_->ndofs_ * (nsd_ + 1));
   tracenm_.size(hdgele->onfdofs_);
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phiaf = discretization.get_state("phiaf");
-  if (phiaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector phiaf");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phiaf = discretization.get_state("phiaf");
+  if (phiaf == nullptr) FOUR_C_THROW("Cannot get state vector phiaf");
   Core::FE::extract_my_values(*phiaf, tracen_, la[0].lm_);
 
 
   if (discretization.has_state("phin"))
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
     Core::FE::extract_my_values(*phin, tracenm_, la[0].lm_);
   }
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> intphinp =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> intphinp =
       discretization.get_state(2, "intphinp");
-  if (intphinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector intphinp");
+  if (intphinp == nullptr) FOUR_C_THROW("Cannot get state vector intphinp");
   std::vector<int> localDofs = discretization.dof(2, ele);
   Core::FE::extract_my_values(*intphinp, interiorPhinp_, localDofs);
 
   if (discretization.has_state(2, "intphin"))
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> intphin =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> intphin =
         discretization.get_state(2, "intphin");
     Core::FE::extract_my_values(*intphin, interiorPhin_, localDofs);
   }
@@ -535,7 +535,8 @@ Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::LocalSolver(
        //    Xmat(),
       onfdofs_(0),
       scatrapara_(Discret::Elements::ScaTraEleParameterStd::instance(disname)),
-      scatraparatimint_(Discret::Elements::ScaTraEleParameterTimInt::instance(disname), false)
+      scatraparatimint_(Core::Utils::shared_ptr_from_ref(
+          *Discret::Elements::ScaTraEleParameterTimInt::instance(disname)))
 //    diff_(nsd_,nsd_),                        // diffusion coefficient
 //    invdiff_(nsd_,nsd_),                     // inverse diffusion coefficient
 //    reacoeff_(numscal),                     // reaction coefficient
@@ -575,8 +576,8 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::compute
 
   bool usescompletepoly = hdgele->uses_complete_polynomial_space();
 
-  shapes_ = Teuchos::RCP(
-      new Core::FE::ShapeValues<distype>(hdgele->degree(), usescompletepoly, 2 * ele->degree()));
+  shapes_ = std::make_shared<Core::FE::ShapeValues<distype>>(
+      hdgele->degree(), usescompletepoly, 2 * ele->degree());
   shapes_->evaluate(*ele);
   compute_interior_matrices(hdgele);
 
@@ -765,7 +766,7 @@ void Discret::Elements::ScaTraEleCalcHDG<distype,
 
   // polynomial space to get the value of the shape function at the material gauss points
   Core::FE::PolynomialSpaceParams params(distype, hdgele->degree(), shapes_->usescompletepoly_);
-  Teuchos::RCP<Core::FE::PolynomialSpace<probdim>> polySpace =
+  std::shared_ptr<Core::FE::PolynomialSpace<probdim>> polySpace =
       Core::FE::PolynomialSpaceCache<probdim>::instance().create(params);
 
   const Core::FE::IntPointsAndWeights<Core::FE::dim<distype>> intpoints(
@@ -1382,22 +1383,22 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::prepare_material_par
     Core::Elements::Element* ele  //!< the element we are dealing with
 )
 {
-  Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor =
-      Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseMatrix>>();
+  std::shared_ptr<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor =
+      std::make_shared<std::vector<Core::LinAlg::SerialDenseMatrix>>();
 
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   if (material->material_type() == Core::Materials::m_matlist)
   {
-    const Teuchos::RCP<const Mat::MatList>& actmat =
-        Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
+    const std::shared_ptr<const Mat::MatList>& actmat =
+        std::dynamic_pointer_cast<const Mat::MatList>(material);
     if (actmat->num_mat() < numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < numscal_; ++k)
     {
       int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
         prepare_materials(ele, singlemat, k, difftensor);
@@ -1430,18 +1431,18 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::get_material_params(
   Core::LinAlg::SerialDenseMatrix ivecnpderiv(shapes_->ndofs_, shapes_->ndofs_);
 
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   if (material->material_type() == Core::Materials::m_matlist)
   {
-    const Teuchos::RCP<const Mat::MatList>& actmat =
-        Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
+    const std::shared_ptr<const Mat::MatList>& actmat =
+        std::dynamic_pointer_cast<const Mat::MatList>(material);
     if (actmat->num_mat() < numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < numscal_; ++k)
     {
       int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       materials(singlemat, k, difftensor, ivecn, ivecnp, ivecnpderiv);
     }
@@ -1767,14 +1768,14 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::set_initial_field(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::prepare_materials(
-    Core::Elements::Element* ele,                            //!< the element we are dealing with
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor  //!< diffusion tensor
+    Core::Elements::Element* ele,                               //!< the element we are dealing with
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    std::shared_ptr<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor  //!< diffusion tensor
 )
 {
-  const Teuchos::RCP<const Mat::ScatraMat>& actmat =
-      Teuchos::rcp_dynamic_cast<const Mat::ScatraMat>(material);
+  const std::shared_ptr<const Mat::ScatraMat>& actmat =
+      std::dynamic_pointer_cast<const Mat::ScatraMat>(material);
 
   double diffscalar;
 
@@ -1886,8 +1887,8 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::project_field(
   // set change of element degree to false
   hdgele->set_padapt_ele(false);
 
-  Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes_old =
-      Teuchos::make_rcp<Core::FE::ShapeValues<distype>>(
+  std::shared_ptr<Core::FE::ShapeValues<distype>> shapes_old =
+      std::make_shared<Core::FE::ShapeValues<distype>>(
           hdgele->degree_old(), usescompletepoly_, 2 * hdgele->degree_old());
 
   FOUR_C_ASSERT(
@@ -1896,20 +1897,20 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::project_field(
 
   // polynomial space to get the value of the shape function at the new points
   Core::FE::PolynomialSpaceParams params_old(distype, shapes_old->degree_, usescompletepoly_);
-  Teuchos::RCP<Core::FE::PolynomialSpace<probdim>> polySpace_old =
+  std::shared_ptr<Core::FE::PolynomialSpace<probdim>> polySpace_old =
       Core::FE::PolynomialSpaceCache<probdim>::instance().create(params_old);
 
   Core::LinAlg::SerialDenseVector interiorPhi_old(shapes_old->ndofs_ * (nsd_ + 1));
 
   // get node based values!
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("phi");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("phi");
 
   std::vector<double> tracephi;
   Core::FE::extract_my_values(*matrix_state, tracephi, la[nds_var_old].lm_);
 
   // get node based values!
-  matrix_state = params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("intphi");
+  matrix_state = params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("intphi");
   std::vector<double> intphi;
   Core::FE::extract_my_values(*matrix_state, intphi, la[nds_intvar_old].lm_);
   if (intphi.size() != shapes_old->ndofs_ * (nsd_ + 1))
@@ -1957,17 +1958,17 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::project_field(
       // shape values of old element degree
       Discret::Elements::ScaTraHDGIntFace* hdgeleface =
           dynamic_cast<Discret::Elements::ScaTraHDGIntFace*>(
-              const_cast<Core::Elements::FaceElement*>(ele->faces()[face].getRawPtr()));
+              const_cast<Core::Elements::FaceElement*>(ele->faces()[face].get()));
       Core::FE::ShapeValuesFaceParams svfparams_old(
           hdgeleface->degree_old(), usescompletepoly_, 2 * hdgeleface->degree_old());
 
-      Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> shapesface_old =
+      std::shared_ptr<Core::FE::ShapeValuesFace<distype>> shapesface_old =
           Core::FE::ShapeValuesFaceCache<distype>::instance().create(svfparams_old);
 
 
       Core::FE::PolynomialSpaceParams polyparams(Core::FE::DisTypeToFaceShapeType<distype>::shape,
           hdgeleface->degree_old(), usescompletepoly_);
-      Teuchos::RCP<Core::FE::PolynomialSpace<nsd_ - 1>> polySpaceFace_old =
+      std::shared_ptr<Core::FE::PolynomialSpace<nsd_ - 1>> polySpaceFace_old =
           Core::FE::PolynomialSpaceCache<nsd_ - 1>::instance().create(polyparams);
 
       Core::LinAlg::SerialDenseVector tracePhi_face_old(shapesface_old->nfdofs_);
@@ -2028,17 +2029,17 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::project_field(
       // shape values of old element degree
       Discret::Elements::ScaTraHDGIntFace* hdgeleface =
           dynamic_cast<Discret::Elements::ScaTraHDGIntFace*>(
-              const_cast<Core::Elements::FaceElement*>(ele->faces()[face].getRawPtr()));
+              const_cast<Core::Elements::FaceElement*>(ele->faces()[face].get()));
       Core::FE::ShapeValuesFaceParams svfparams_old(
           hdgeleface->degree_old(), usescompletepoly_, 2 * hdgeleface->degree_old());
 
-      Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> shapesface_old =
+      std::shared_ptr<Core::FE::ShapeValuesFace<distype>> shapesface_old =
           Core::FE::ShapeValuesFaceCache<distype>::instance().create(svfparams_old);
 
 
       Core::FE::PolynomialSpaceParams polyparams(Core::FE::DisTypeToFaceShapeType<distype>::shape,
           hdgeleface->degree_old(), usescompletepoly_);
-      Teuchos::RCP<Core::FE::PolynomialSpace<nsd_ - 1>> polySpaceFace_old =
+      std::shared_ptr<Core::FE::PolynomialSpace<nsd_ - 1>> polySpaceFace_old =
           Core::FE::PolynomialSpaceCache<nsd_ - 1>::instance().create(polyparams);
 
       //      Core::LinAlg::SerialDenseVector tracePhi_face_old(shapesface_old->nfdofs_);

@@ -16,7 +16,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -60,25 +60,25 @@ namespace Core::Elements
     }
 
     /// create an element from a dat file specifier
-    virtual Teuchos::RCP<Element> create(
+    virtual std::shared_ptr<Element> create(
         const std::string eletype, const std::string eledistype, const int id, const int owner)
     {
-      return Teuchos::null;
+      return nullptr;
     }
 
     /// create an empty element
-    virtual Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) = 0;
+    virtual std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) = 0;
 
     /// initialize the element type
     virtual int initialize(Core::FE::Discretization& dis);
 
     /// preevaluation
     virtual inline void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
     {
       return;
     }

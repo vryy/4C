@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams::CubicConstitutiveLawParams(
-    const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container)
+    const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container)
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
       a_(container->get<double>("A")),
       b_(container->get<double>("B")),
@@ -28,10 +28,10 @@ CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams::CubicConstitutiveLawParams
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
+std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
 CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams::create_constitutive_law()
 {
-  return Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw>(this);
+  return std::make_shared<CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw>(this);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

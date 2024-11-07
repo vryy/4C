@@ -13,7 +13,7 @@
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -73,7 +73,7 @@ namespace BEAMINTERACTION
     }
 
     /// linker material id
-    Teuchos::RCP<Mat::CrosslinkerMat> get_linker_material() const
+    std::shared_ptr<Mat::CrosslinkerMat> get_linker_material() const
     {
       /// HACK: FIX IF MORE THAN ONE CROSSLINKER TYPE
       check_init_setup();
@@ -156,7 +156,7 @@ namespace BEAMINTERACTION
     /// contraction rate of cell (integrin linker) in [microm/s]
     std::map<Inpar::BEAMINTERACTION::CrosslinkerType, double> contractionrate_;
     /// crosslinker material
-    std::vector<Teuchos::RCP<Mat::CrosslinkerMat>> mat_;
+    std::vector<std::shared_ptr<Mat::CrosslinkerMat>> mat_;
     /// number of crosslinkers in the simulated volume
     std::vector<int> maxnumlinkerpertype_;
     /// material numbers for crosslinker types

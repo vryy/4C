@@ -29,7 +29,7 @@ namespace CONTACT
 
     Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-    Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+    std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
     void nodal_block_information(
         Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -234,8 +234,7 @@ namespace CONTACT
      */
     Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& get_dderiv()
     {
-      if (d_matrix_deriv_ == Teuchos::null)
-        FOUR_C_THROW("trying to get Dderiv, but not initialized");
+      if (d_matrix_deriv_ == nullptr) FOUR_C_THROW("trying to get Dderiv, but not initialized");
       return *d_matrix_deriv_;
     }
 
@@ -244,8 +243,7 @@ namespace CONTACT
      */
     Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& get_mderiv()
     {
-      if (m_matrix_deriv_ == Teuchos::null)
-        FOUR_C_THROW("trying to get Mderiv, but not initialized");
+      if (m_matrix_deriv_ == nullptr) FOUR_C_THROW("trying to get Mderiv, but not initialized");
       return *m_matrix_deriv_;
     }
 
@@ -272,9 +270,9 @@ namespace CONTACT
         std::vector<Core::Gen::Pairedvector<int, double>>& derivn);
 
    private:
-    Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>
+    std::shared_ptr<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>
         d_matrix_deriv_;  //< temporary matrix for D linearization during integration
-    Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>
+    std::shared_ptr<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>
         m_matrix_deriv_;  //< temporary matrix for M linearization during integration
   };
   // class Element

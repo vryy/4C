@@ -13,7 +13,7 @@
 
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -39,10 +39,10 @@ namespace FLD
 
       //! perform infnorm-scaling of linear system
       void scale_system(
-          Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Core::LinAlg::Vector<double>& b);
+          std::shared_ptr<Core::LinAlg::SparseOperator> matrix, Core::LinAlg::Vector<double>& b);
 
       //! perform un-scaling of solution (and the system, just to be on the safe side)
-      void unscale_solution(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,
+      void unscale_solution(std::shared_ptr<Core::LinAlg::SparseOperator> matrix,
           Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& b);
 
      private:
@@ -52,10 +52,10 @@ namespace FLD
       //! Extractor for splitting of velocity and pressure dofs
       Core::LinAlg::MapExtractor& velpressplitter_;
 
-      Teuchos::RCP<Core::LinAlg::Vector<double>> srowsum_;
-      Teuchos::RCP<Core::LinAlg::Vector<double>> scolsum_;
-      Teuchos::RCP<Core::LinAlg::Vector<double>> prowsum_;
-      Teuchos::RCP<Core::LinAlg::Vector<double>> pcolsum_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> srowsum_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> scolsum_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> prowsum_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> pcolsum_;
 
       // flags
       const bool leftscale_momentum_;

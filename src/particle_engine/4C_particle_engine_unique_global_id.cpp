@@ -64,7 +64,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::read_restart(
 
   // get reusable global ids from restart
   {
-    Teuchos::RCP<std::vector<char>> buffer = Teuchos::make_rcp<std::vector<char>>();
+    std::shared_ptr<std::vector<char>> buffer = std::make_shared<std::vector<char>>();
 
     reader->read_char_vector(buffer, objectname_ + "reusableglobalids");
 

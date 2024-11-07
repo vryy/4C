@@ -167,16 +167,16 @@ namespace Discret
       int num_line() const override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
+      \brief Get vector of std::shared_ptrs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       //@}
 
@@ -274,7 +274,7 @@ namespace Discret
       virtual void init_jacobian_mapping();
 
       // get parameter list from ssn_plast_manager
-      virtual void read_parameter_list(Teuchos::RCP<Teuchos::ParameterList> plparams);
+      virtual void read_parameter_list(std::shared_ptr<Teuchos::ParameterList> plparams);
 
       void get_cauchy_n_dir_and_derivatives_at_xi(const Core::LinAlg::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const Core::LinAlg::Matrix<3, 1>& n,
@@ -634,16 +634,16 @@ namespace Discret
       double old_step_length_{};
 
       // EAS element technology ************************************
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> KaaInv_;
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Kad_;
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> KaT_;
-      Teuchos::RCP<Core::LinAlg::Matrix<numdofperelement_, nen_>> KdT_eas_;
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> feas_;
-      Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> Kba_;
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> alpha_eas_;
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> alpha_eas_last_timestep_;
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> alpha_eas_delta_over_last_timestep_;
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> alpha_eas_inc_;
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> KaaInv_;
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> Kad_;
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> KaT_;
+      std::shared_ptr<Core::LinAlg::Matrix<numdofperelement_, nen_>> KdT_eas_;
+      std::shared_ptr<Core::LinAlg::SerialDenseVector> feas_;
+      std::shared_ptr<std::vector<Core::LinAlg::SerialDenseMatrix>> Kba_;
+      std::shared_ptr<Core::LinAlg::SerialDenseVector> alpha_eas_;
+      std::shared_ptr<Core::LinAlg::SerialDenseVector> alpha_eas_last_timestep_;
+      std::shared_ptr<Core::LinAlg::SerialDenseVector> alpha_eas_delta_over_last_timestep_;
+      std::shared_ptr<Core::LinAlg::SerialDenseVector> alpha_eas_inc_;
       Discret::Elements::So3PlastEasType eastype_;
       int neas_{};
 
@@ -653,16 +653,16 @@ namespace Discret
       /// derivative of the internal force vector w.r.t. temperature at this GP
       /// derivative w.r.t. gp temperature is sufficient as the gp temperature depends linearily
       /// on the nodal values.
-      Teuchos::RCP<std::vector<Core::LinAlg::Matrix<numdofperelement_, 1>>> dFintdT_;
+      std::shared_ptr<std::vector<Core::LinAlg::Matrix<numdofperelement_, 1>>> dFintdT_;
 
       /// derivative of NCP w.r.t. temperatures at gp
-      Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseVector>> KbT_;
+      std::shared_ptr<std::vector<Core::LinAlg::SerialDenseVector>> KbT_;
 
       /// Temperature at each gp in last Newton iteration
       /// this is needed for the recovery of the plastic flow using KbT_
       /// As the gp temperature depends linearly on the nodal temperature dofs
       /// a scalar value is sufficient
-      Teuchos::RCP<std::vector<double>> temp_last_;
+      std::shared_ptr<std::vector<double>> temp_last_;
 
       // Cauchy stress for Nitsche contact **************************
       bool is_nitsche_contact_{};

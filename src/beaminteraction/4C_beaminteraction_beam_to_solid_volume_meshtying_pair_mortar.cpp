@@ -48,7 +48,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
     Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
     Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -85,26 +85,27 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
  */
 template <typename Beam, typename Solid, typename Mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
-    Mortar>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+    Mortar>::get_pair_visualization(std::shared_ptr<BeamToSolidVisualizationOutputWriterBase>
                                         visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
       visualization_writer->get_visualization_writer("btsv-mortar");
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
       visualization_writer->get_visualization_writer("btsv-mortar-continuous");
-  if (visualization_discret.is_null() and visualization_continuous.is_null()) return;
+  if (!visualization_discret and visualization_continuous == nullptr) return;
 
-  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>& output_params_ptr =
-      visualization_params
-          .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
-              "btsv-output_params_ptr");
+  const std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>&
+      output_params_ptr =
+          visualization_params
+              .get<std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+                  "btsv-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->get_write_unique_ids_flag();
 
-  if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
+  if (visualization_discret != nullptr || visualization_continuous != nullptr)
   {
     // Setup variables.
     GEOMETRYPAIR::ElementData<Mortar, double> element_data_lambda;
@@ -116,11 +117,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
-    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
-        visualization_params.get<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+    std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
+        visualization_params.get<std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager>>(
             "mortar_manager");
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
-        visualization_params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("lambda");
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambda =
+        visualization_params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("lambda");
 
     // Get the lambda GIDs of this pair.
     const auto& [lambda_row_pos, _] = mortar_manager->location_vector(*this);
@@ -131,11 +132,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
       element_data_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 
     // Add the discrete values of the Lagrange multipliers.
-    if (visualization_discret != Teuchos::null)
+    if (visualization_discret != nullptr)
     {
       // Check if data for this beam was already written.
-      Teuchos::RCP<std::unordered_set<int>> beam_tracker =
-          visualization_params.get<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker");
+      std::shared_ptr<std::unordered_set<int>> beam_tracker =
+          visualization_params.get<std::shared_ptr<std::unordered_set<int>>>("beam_tracker");
 
       auto it = beam_tracker->find(this->element1()->id());
       if (it == beam_tracker->end())
@@ -194,11 +195,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
 
 
     // Add the continuous values for the Lagrange multipliers.
-    if (visualization_continuous != Teuchos::null and this->line_to_3D_segments_.size() > 0)
+    if (visualization_continuous != nullptr and this->line_to_3D_segments_.size() > 0)
     {
       const unsigned int mortar_segments =
           visualization_params
-              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+              .get<std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
                   "btsv-output_params_ptr")
               ->get_mortar_lambda_continuous_segments();
       double xi;

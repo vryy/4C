@@ -17,8 +17,9 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_particle_engine_typedefs.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -65,7 +66,7 @@ namespace PARTICLEWALL
      *
      * \return wall discretization
      */
-    virtual Teuchos::RCP<const Core::FE::Discretization> get_wall_discretization() const = 0;
+    virtual std::shared_ptr<const Core::FE::Discretization> get_wall_discretization() const = 0;
 
     /*!
      * \brief get wall data state container

@@ -38,9 +38,9 @@ Mat::PAR::KirchhoffLoveShell::KirchhoffLoveShell(const Core::Mat::PAR::Parameter
 /**
  *
  */
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::KirchhoffLoveShell::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::KirchhoffLoveShell::create_material()
 {
-  return Teuchos::make_rcp<Mat::KirchhoffLoveShell>(this);
+  return std::make_shared<Mat::KirchhoffLoveShell>(this);
 }
 
 /**
@@ -94,7 +94,7 @@ void Mat::KirchhoffLoveShell::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

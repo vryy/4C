@@ -16,8 +16,6 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -56,7 +54,7 @@ namespace PARTICLEWALL
      *
      * \param[in] walldiscretization wall discretization
      */
-    void init(const Teuchos::RCP<Core::FE::Discretization> walldiscretization);
+    void init(const std::shared_ptr<Core::FE::Discretization> walldiscretization);
 
     /*!
      * \brief setup wall data state container
@@ -83,37 +81,37 @@ namespace PARTICLEWALL
     //! @{
 
     //! get wall displacements (row map based)
-    inline Teuchos::RCP<const Core::LinAlg::Vector<double>> get_disp_row() const
+    inline std::shared_ptr<const Core::LinAlg::Vector<double>> get_disp_row() const
     {
       return disp_row_;
     };
 
     //! get wall displacements (column map based)
-    inline Teuchos::RCP<const Core::LinAlg::Vector<double>> get_disp_col() const
+    inline std::shared_ptr<const Core::LinAlg::Vector<double>> get_disp_col() const
     {
       return disp_col_;
     };
 
     //! get wall displacements (row map based) after last transfer
-    inline Teuchos::RCP<const Core::LinAlg::Vector<double>> get_disp_row_last_transfer() const
+    inline std::shared_ptr<const Core::LinAlg::Vector<double>> get_disp_row_last_transfer() const
     {
       return disp_row_last_transfer_;
     };
 
     //! get wall velocities (column map based)
-    inline Teuchos::RCP<const Core::LinAlg::Vector<double>> get_vel_col() const
+    inline std::shared_ptr<const Core::LinAlg::Vector<double>> get_vel_col() const
     {
       return vel_col_;
     };
 
     //! get wall accelerations (column map based)
-    inline Teuchos::RCP<const Core::LinAlg::Vector<double>> get_acc_col() const
+    inline std::shared_ptr<const Core::LinAlg::Vector<double>> get_acc_col() const
     {
       return acc_col_;
     };
 
     //! get wall forces (column map based)
-    inline Teuchos::RCP<const Core::LinAlg::Vector<double>> get_force_col() const
+    inline std::shared_ptr<const Core::LinAlg::Vector<double>> get_force_col() const
     {
       return force_col_;
     };
@@ -124,27 +122,27 @@ namespace PARTICLEWALL
     //! @{
 
     //! get wall displacements (row map based)
-    inline Teuchos::RCP<Core::LinAlg::Vector<double>> get_disp_row() { return disp_row_; };
-    inline Teuchos::RCP<Core::LinAlg::Vector<double>>& get_ref_disp_row() { return disp_row_; };
+    inline std::shared_ptr<Core::LinAlg::Vector<double>> get_disp_row() { return disp_row_; };
+    inline std::shared_ptr<Core::LinAlg::Vector<double>>& get_ref_disp_row() { return disp_row_; };
 
     //! get wall displacements (column map based)
-    inline Teuchos::RCP<Core::LinAlg::Vector<double>> get_disp_col() { return disp_col_; };
-    inline Teuchos::RCP<Core::LinAlg::Vector<double>>& get_ref_disp_col() { return disp_col_; };
+    inline std::shared_ptr<Core::LinAlg::Vector<double>> get_disp_col() { return disp_col_; };
+    inline std::shared_ptr<Core::LinAlg::Vector<double>>& get_ref_disp_col() { return disp_col_; };
 
     //! get wall displacements (row map based) after last transfer
-    inline Teuchos::RCP<Core::LinAlg::Vector<double>> get_disp_row_last_transfer()
+    inline std::shared_ptr<Core::LinAlg::Vector<double>> get_disp_row_last_transfer()
     {
       return disp_row_last_transfer_;
     };
 
     //! get wall velocities (column map based)
-    inline Teuchos::RCP<Core::LinAlg::Vector<double>> get_vel_col() { return vel_col_; };
+    inline std::shared_ptr<Core::LinAlg::Vector<double>> get_vel_col() { return vel_col_; };
 
     //! get wall accelerations (column map based)
-    inline Teuchos::RCP<Core::LinAlg::Vector<double>> get_acc_col() { return acc_col_; };
+    inline std::shared_ptr<Core::LinAlg::Vector<double>> get_acc_col() { return acc_col_; };
 
     //! get wall forces (column map based)
-    inline Teuchos::RCP<Core::LinAlg::Vector<double>> get_force_col() { return force_col_; };
+    inline std::shared_ptr<Core::LinAlg::Vector<double>> get_force_col() { return force_col_; };
 
     //! @}
 
@@ -153,31 +151,31 @@ namespace PARTICLEWALL
     const Teuchos::ParameterList& params_;
 
     //! wall discretization
-    Teuchos::RCP<Core::FE::Discretization> walldiscretization_;
+    std::shared_ptr<Core::FE::Discretization> walldiscretization_;
 
     //! current dof row map
-    Teuchos::RCP<Epetra_Map> curr_dof_row_map_;
+    std::shared_ptr<Epetra_Map> curr_dof_row_map_;
 
     //! @name stored states
     //! @{
 
     //! wall displacements (row map based)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disp_row_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> disp_row_;
 
     //! wall displacements (column map based)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disp_col_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> disp_col_;
 
     //! wall displacements (row map based) after last transfer
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disp_row_last_transfer_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> disp_row_last_transfer_;
 
     //! wall velocities (column map based)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vel_col_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> vel_col_;
 
     //! wall accelerations (column map based)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acc_col_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acc_col_;
 
     //! wall forces (column map based)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> force_col_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> force_col_;
 
     //! @}
   };

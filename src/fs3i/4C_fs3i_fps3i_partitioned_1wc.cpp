@@ -176,7 +176,7 @@ void FS3I::PartFpS3I1Wc::prepare_time_step()
   // prepare time step for both fluid- and poro-based scatra field
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
     scatra->scatra_field()->prepare_time_step();
   }
 }
@@ -224,9 +224,9 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
       double connorm(0.0);
       // set up vector of absolute concentrations
       Core::LinAlg::Vector<double> con(scatraincrement_->Map());
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra1 =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> scatra1 =
           scatravec_[0]->scatra_field()->phinp();
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra2 =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> scatra2 =
           scatravec_[1]->scatra_field()->phinp();
       setup_coupled_scatra_vector(con, *scatra1, *scatra2);
       con.Norm2(&connorm);

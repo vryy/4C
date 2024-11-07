@@ -17,7 +17,7 @@
 #include <utility>
 
 void setup_parallel_output(
-    std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group);
+    std::string& outputfile_kenner, std::shared_ptr<Epetra_Comm> lcomm, int group);
 
 /*----------------------------------------------------------------------*
   | general input of the problem to be solved              m.gee 10/06  |
@@ -28,8 +28,8 @@ void ntainp_ccadiscret(
   using namespace FourC;
 
   Global::Problem* problem = Global::Problem::instance();
-  Teuchos::RCP<Epetra_Comm> lcomm = problem->get_communicators()->local_comm();
-  Teuchos::RCP<Epetra_Comm> gcomm = problem->get_communicators()->global_comm();
+  std::shared_ptr<Epetra_Comm> lcomm = problem->get_communicators()->local_comm();
+  std::shared_ptr<Epetra_Comm> gcomm = problem->get_communicators()->global_comm();
   int group = problem->get_communicators()->group_id();
   Core::Communication::NestedParallelismType npType = problem->get_communicators()->np_type();
 
@@ -105,7 +105,7 @@ void ntainp_ccadiscret(
   | setup parallel output                                  ghamm 11/12  |
  *----------------------------------------------------------------------*/
 void setup_parallel_output(
-    std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group)
+    std::string& outputfile_kenner, std::shared_ptr<Epetra_Comm> lcomm, int group)
 {
   using namespace FourC;
 

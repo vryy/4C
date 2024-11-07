@@ -714,19 +714,19 @@ namespace Core::FE
   }
 
   template <int nsd>
-  Teuchos::RCP<Core::FE::PolynomialSpace<nsd>> Core::FE::PolynomialSpaceCache<nsd>::create(
+  std::shared_ptr<Core::FE::PolynomialSpace<nsd>> Core::FE::PolynomialSpaceCache<nsd>::create(
       PolynomialSpaceParams params)
   {
-    typename std::map<PolynomialSpaceParams, Teuchos::RCP<Core::FE::PolynomialSpace<nsd>>>::iterator
-        i = ps_cache_.find(params);
+    typename std::map<PolynomialSpaceParams,
+        std::shared_ptr<Core::FE::PolynomialSpace<nsd>>>::iterator i = ps_cache_.find(params);
     if (i != ps_cache_.end())
     {
       return i->second;
     }
 
     // this is expensive and should not be done too often
-    Teuchos::RCP<PolynomialSpace<nsd>> ps;
-    ps = Teuchos::make_rcp<PolynomialSpace<nsd>>(params);
+    std::shared_ptr<PolynomialSpace<nsd>> ps;
+    ps = std::make_shared<PolynomialSpace<nsd>>(params);
 
     ps_cache_[params] = ps;
 

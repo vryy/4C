@@ -52,20 +52,19 @@ void FSI::DirichletNeumannVel::setup()
     FOUR_C_THROW("Please set the fsi coupling variable to Velocity or Force!\n");
   set_kinematic_coupling(Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(
                              fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::vel);
-  if (Teuchos::rcp_dynamic_cast<Adapter::FBIStructureWrapper>(structure_field(), true) ==
-      Teuchos::null)
+  if (std::dynamic_pointer_cast<Adapter::FBIStructureWrapper>(structure_field()) == nullptr)
   {
     FOUR_C_THROW("Something went very wrong here! You should have a FBIStructureWrapper!\n");
   }
-  if (Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(mb_fluid_field(), true) == Teuchos::null)
+  if (std::dynamic_pointer_cast<Adapter::FBIFluidMB>(mb_fluid_field()) == nullptr)
   {
     FOUR_C_THROW("Something went very wrong here! You should have a FBIFluidMB adapter!\n");
   }
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::fluid_op(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel, const FillType fillFlag)
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::fluid_op(
+    std::shared_ptr<Core::LinAlg::Vector<double>> ivel, const FillType fillFlag)
 {
   const Teuchos::ParameterList& fbi = Global::Problem::instance()->fbi_params();
 
@@ -74,7 +73,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::fluid_op(
   if (fillFlag == User)
   {
     FOUR_C_THROW("Not implemented!\n");
-    return fluid_to_struct(mb_fluid_field()->relaxation_solve(Teuchos::null, dt()));
+    return fluid_to_struct(mb_fluid_field()->relaxation_solve(nullptr, dt()));
   }
   else
   {
@@ -83,7 +82,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::fluid_op(
 
     if (fillFlag == MF_Res and mfresitemax_ > 0) mb_fluid_field()->set_itemax(mfresitemax_ + 1);
 
-    mb_fluid_field()->nonlinear_solve(Teuchos::null, Teuchos::null);
+    mb_fluid_field()->nonlinear_solve(nullptr, nullptr);
 
     mb_fluid_field()->set_itemax(itemax);
 
@@ -99,8 +98,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::fluid_op(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::struct_op(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag)
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::struct_op(
+    std::shared_ptr<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag)
 {
   FSI::Partitioned::struct_op(iforce, fillFlag);
 
@@ -126,23 +125,21 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::struct_op(
     constraint_manager_->evaluate();
     if (!(Teuchos::getIntegralValue<Inpar::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
             Inpar::FBI::BeamToFluidCoupling::solid))
-      Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(mb_fluid_field(), true)
-          ->reset_external_forces();
+      std::dynamic_pointer_cast<Adapter::FBIFluidMB>(mb_fluid_field())->reset_external_forces();
   }
 
   return struct_to_fluid(iforce);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::initial_guess()
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::initial_guess()
 {
   if (get_kinematic_coupling())
   {
     // predict velocity
     // For now, we want to use no predictor. This function returns the current interface velocity.
-    if (Teuchos::rcp_dynamic_cast<Adapter::FBIStructureWrapper>(structure_field(), true) !=
-        Teuchos::null)
-      return Teuchos::rcp_dynamic_cast<Adapter::FBIStructureWrapper>(structure_field(), true)
+    if (std::dynamic_pointer_cast<Adapter::FBIStructureWrapper>(structure_field()) != nullptr)
+      return std::dynamic_pointer_cast<Adapter::FBIStructureWrapper>(structure_field())
           ->predict_interface_velnp();
   }
   else
@@ -157,22 +154,22 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::initial_gue
     return interface_force();
   }
   FOUR_C_THROW("Something went very wrong here!\n");
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::fluid_to_struct(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iv)
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::fluid_to_struct(
+    std::shared_ptr<Core::LinAlg::Vector<double>> iv)
 {
   return constraint_manager_->fluid_to_structure();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::struct_to_fluid(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iv)
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::struct_to_fluid(
+    std::shared_ptr<Core::LinAlg::Vector<double>> iv)
 {
   return constraint_manager_->structure_to_fluid(step());
 }
@@ -198,13 +195,13 @@ void FSI::DirichletNeumannVel::timeloop(
   constraint_manager_->setup(structure_field(), mb_fluid_field());
   if (get_kinematic_coupling()) constraint_manager_->prepare_fluid_solve();
   visualization_output_writer_ =
-      Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter>(
+      std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter>(
           Core::IO::visualization_parameters_factory(
               Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
               *Global::Problem::instance()->output_control_file(), time()),
           constraint_manager_->get_bridge()->get_params()->get_visualization_ouput_params_ptr());
   constraint_manager_->evaluate();
-  if (get_kinematic_coupling()) struct_to_fluid(Teuchos::null);
+  if (get_kinematic_coupling()) struct_to_fluid(nullptr);
 
   FSI::Partitioned::timeloop(interface);
 }
@@ -212,7 +209,8 @@ void FSI::DirichletNeumannVel::timeloop(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void FSI::DirichletNeumannVel::set_binning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning)
+void FSI::DirichletNeumannVel::set_binning(
+    std::shared_ptr<Core::Binstrategy::BinningStrategy> binning)
 {
   constraint_manager_->set_binning(binning);
 };

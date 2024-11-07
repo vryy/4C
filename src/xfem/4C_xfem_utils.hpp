@@ -23,7 +23,7 @@ namespace XFEM
     //! \author schott \date 01/13
     void extract_node_vectors(Core::FE::Discretization& dis,
         std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp);
+        std::shared_ptr<Core::LinAlg::Vector<double>> idispnp);
 
     //! @name Get material properties for the Volume Cell
 
@@ -36,7 +36,7 @@ namespace XFEM
 
      */
     void get_volume_cell_material(Core::Elements::Element* actele,  // element for volume cell INPUT
-        Teuchos::RCP<Core::Mat::Material>& mat,                   // material of volume cell OUTPUT
+        std::shared_ptr<Core::Mat::Material>& mat,                // material of volume cell OUTPUT
         Cut::Point::PointPosition position = Cut::Point::outside  // position of volume cell INPUT
                                                                   // to determine position
     );
@@ -49,7 +49,7 @@ namespace XFEM
 
      */
     void safety_check_materials(
-        Teuchos::RCP<Core::Mat::Material>& pmat, Teuchos::RCP<Core::Mat::Material>& nmat);
+        std::shared_ptr<Core::Mat::Material>& pmat, std::shared_ptr<Core::Mat::Material>& nmat);
 
     //! @name Extract quantities on a element
     /*!

@@ -349,7 +349,7 @@ namespace Discret
         //! add contributions from convective stabilization
         //! this method is applied in a non-Nitsche context (e.g. MHVS) by
         //! employing shape functions and velocities from another slave element coupling object
-        void apply_conv_stab_terms(const Teuchos::RCP<SlaveElementInterface<distype>>&
+        void apply_conv_stab_terms(const std::shared_ptr<SlaveElementInterface<distype>>&
                                        slave_ele,  ///< associated slave element coupling object
             const Core::LinAlg::Matrix<nen_, 1>& funct_m,   ///< master shape functions
             const Core::LinAlg::Matrix<nsd_, 1>& velint_m,  ///< vector of slave shape functions

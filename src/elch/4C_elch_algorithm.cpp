@@ -60,7 +60,7 @@ bool ElCh::Algorithm::convergence_check(
   //     | concentration_n+1 |_2
 
   bool stopnonliniter = false;
-  Teuchos::RCP<Core::LinAlg::MapExtractor> conpotsplitter = scatra_field()->splitter();
+  std::shared_ptr<Core::LinAlg::MapExtractor> conpotsplitter = scatra_field()->splitter();
   // Variables to save different L2 - Norms
 
   double potincnorm_L2 = 0.0;

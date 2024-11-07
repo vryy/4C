@@ -76,7 +76,7 @@ void poromultiphasescatra_dyn(int restart)
   auto solscheme = Teuchos::getIntegralValue<Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields>(
       poroscatraparams, "COUPALGO");
 
-  Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase> algo =
+  std::shared_ptr<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase> algo =
       PoroMultiPhaseScaTra::Utils::create_poro_multi_phase_scatra_algorithm(
           solscheme, poroscatraparams, comm);
 

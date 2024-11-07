@@ -17,18 +17,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::MembraneLine2Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneLine2Type::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new MembraneLine( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::MembraneLine3Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneLine3Type::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new MembraneLine( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -182,11 +182,10 @@ void Discret::Elements::Membrane<distype>::unpack(Core::Communication::UnpackBuf
  |  return solid material (public)                         sfuchs 05/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Teuchos::RCP<Mat::So3Material> Discret::Elements::Membrane<distype>::solid_material(
+std::shared_ptr<Mat::So3Material> Discret::Elements::Membrane<distype>::solid_material(
     int nummat) const
 {
-  return Teuchos::rcp_dynamic_cast<Mat::So3Material>(
-      Core::Elements::Element::material(nummat), true);
+  return std::dynamic_pointer_cast<Mat::So3Material>(Core::Elements::Element::material(nummat));
 }
 
 /*----------------------------------------------------------------------*
@@ -195,15 +194,15 @@ template <Core::FE::CellType distype>
 void Discret::Elements::Membrane<distype>::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
-    interface_ptr_ = p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface");
+    interface_ptr_ = p.get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface");
   else
-    interface_ptr_ = Teuchos::null;
+    interface_ptr_ = nullptr;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Teuchos::RCP<Core::Elements::ParamsInterface>
+std::shared_ptr<Core::Elements::ParamsInterface>
 Discret::Elements::Membrane<distype>::params_interface_ptr()
 {
   return interface_ptr_;
@@ -215,7 +214,7 @@ template <Core::FE::CellType distype>
 Solid::Elements::ParamsInterface& Discret::Elements::Membrane<distype>::str_params_interface()
 {
   if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
-  return *(Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(interface_ptr_, true));
+  return *(std::dynamic_pointer_cast<Solid::Elements::ParamsInterface>(interface_ptr_));
 }
 
 /*----------------------------------------------------------------------*
@@ -235,7 +234,7 @@ void Discret::Elements::Membrane<distype>::print(std::ostream& os) const
  |  get vector of lines (public)                           fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Membrane<distype>::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Membrane<distype>::lines()
 {
   return Core::Communication::element_boundary_factory<MembraneLine<distype>, Membrane<distype>>(
       Core::Communication::buildLines, *this);
@@ -245,9 +244,10 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Membrane<d
  |  get vector of surfaces (public)                        fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Membrane<distype>::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>>
+Discret::Elements::Membrane<distype>::surfaces()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 template class Discret::Elements::Membrane<Core::FE::CellType::tri3>;

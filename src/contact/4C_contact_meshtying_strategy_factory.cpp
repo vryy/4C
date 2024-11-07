@@ -307,7 +307,7 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList& mtparams,
-    std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces, bool& poroslave,
+    std::vector<std::shared_ptr<Mortar::Interface>>& interfaces, bool& poroslave,
     bool& poromaster) const
 {
   int dim = Global::Problem::instance()->n_dim();
@@ -448,7 +448,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
         Global::Problem::instance()->spatial_approximation_type()));
 
     // get it again
-    Teuchos::RCP<Mortar::Interface> interface = interfaces[(int)interfaces.size() - 1];
+    std::shared_ptr<Mortar::Interface> interface = interfaces[(int)interfaces.size() - 1];
 
     // note that the nodal ids are unique because they come from
     // one global problem discretization conatining all nodes of the
@@ -471,7 +471,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // create Node object
-        Teuchos::RCP<Mortar::Node> mtnode = Teuchos::make_rcp<Mortar::Node>(
+        std::shared_ptr<Mortar::Node> mtnode = std::make_shared<Mortar::Node>(
             node->id(), node->x(), node->owner(), discret().dof(0, node), isslave[j]);
         //-------------------
         // get nurbs weight!
@@ -524,7 +524,8 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
     for (int j = 0; j < (int)currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele = currentgroup[j]->geometry();
+      std::map<int, std::shared_ptr<Core::Elements::Element>>& currele =
+          currentgroup[j]->geometry();
 
       // elements in a boundary condition have a unique id
       // but ids are not unique among 2 distinct conditions
@@ -539,12 +540,13 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
       get_comm().SumAll(&lsize, &gsize, 1);
 
 
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator fool;
+      std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator fool;
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
-        Teuchos::RCP<Core::Elements::Element> ele = fool->second;
-        Teuchos::RCP<Mortar::Element> mtele = Teuchos::make_rcp<Mortar::Element>(ele->id() + ggsize,
-            ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), isslave[j], nurbs);
+        std::shared_ptr<Core::Elements::Element> ele = fool->second;
+        std::shared_ptr<Mortar::Element> mtele =
+            std::make_shared<Mortar::Element>(ele->id() + ggsize, ele->owner(), ele->shape(),
+                ele->num_node(), ele->node_ids(), isslave[j], nurbs);
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
@@ -570,12 +572,12 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_strategy(
+std::shared_ptr<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_strategy(
     const Teuchos::ParameterList& params, const bool& poroslave, const bool& poromaster,
-    const int& dof_offset, std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces) const
+    const int& dof_offset, std::vector<std::shared_ptr<Mortar::Interface>>& interfaces) const
 {
   const auto stype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY");
-  Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr = Teuchos::null;
+  std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr = nullptr;
 
   return build_strategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
       discret().dof_row_map(), discret().node_row_map(), n_dim(), comm_ptr(), *data_ptr);
@@ -583,14 +585,14 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_str
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_strategy(
+std::shared_ptr<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_strategy(
     const Inpar::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
     const bool& poroslave, const bool& poromaster, const int& dof_offset,
-    std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces, const Epetra_Map* dof_row_map,
-    const Epetra_Map* node_row_map, const int dim, const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
-    Mortar::StratDataContainer& data_ptr)
+    std::vector<std::shared_ptr<Mortar::Interface>>& interfaces, const Epetra_Map* dof_row_map,
+    const Epetra_Map* node_row_map, const int dim,
+    const std::shared_ptr<const Epetra_Comm>& comm_ptr, Mortar::StratDataContainer& data_ptr)
 {
-  Teuchos::RCP<CONTACT::MtAbstractStrategy> strategy_ptr = Teuchos::null;
+  std::shared_ptr<CONTACT::MtAbstractStrategy> strategy_ptr = nullptr;
 
   //**********************************************************************
   // create the solver strategy object
@@ -608,11 +610,11 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_str
 
   if (stype == Inpar::CONTACT::solution_lagmult)
   {
-    strategy_ptr = Teuchos::make_rcp<CONTACT::MtLagrangeStrategy>(
+    strategy_ptr = std::make_shared<CONTACT::MtLagrangeStrategy>(
         dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset);
   }
   else if (stype == Inpar::CONTACT::solution_penalty or stype == Inpar::CONTACT::solution_uzawa)
-    strategy_ptr = Teuchos::make_rcp<CONTACT::MtPenaltyStrategy>(
+    strategy_ptr = std::make_shared<CONTACT::MtPenaltyStrategy>(
         dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset);
   else
     FOUR_C_THROW("Unrecognized strategy");

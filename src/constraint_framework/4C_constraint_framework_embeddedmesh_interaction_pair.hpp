@@ -17,8 +17,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <unordered_set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -56,11 +56,11 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     /*!
     \brief Constructor
     */
-    SolidInteractionPair(Teuchos::RCP<Core::Elements::Element> element1,
+    SolidInteractionPair(std::shared_ptr<Core::Elements::Element> element1,
         Core::Elements::Element* element2,
         CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr,
-        Teuchos::RCP<Cut::CutWizard> cutwizard_ptr,
-        std::vector<Teuchos::RCP<Cut::BoundaryCell>>& boundary_cells);
+        std::shared_ptr<Cut::CutWizard> cutwizard_ptr,
+        std::vector<std::shared_ptr<Cut::BoundaryCell>>& boundary_cells);
 
     /*!
     \brief Destructor
@@ -104,9 +104,9 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     */
     virtual void get_pair_visualization(
         const Core::IO::VisualizationData& lagrange_multipliers_visualization_data,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> lambda,
+        std::shared_ptr<Core::LinAlg::Vector<double>> lambda,
         const CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager* mortar_manager,
-        Teuchos::RCP<std::unordered_set<int>> interface_tracker) = 0;
+        std::shared_ptr<std::unordered_set<int>> interface_tracker) = 0;
 
 
     //! @name Evaluation methods
@@ -141,14 +141,14 @@ namespace CONSTRAINTS::EMBEDDEDMESH
         const Core::LinAlg::Vector<double>& displacement_vector) = 0;
 
     //! Get the cutwizard
-    Teuchos::RCP<Cut::CutWizard> get_cutwizard()
+    std::shared_ptr<Cut::CutWizard> get_cutwizard()
     {
-      if (cutwizard_ptr_ == Teuchos::null) FOUR_C_THROW("The cut wizard hasn't been initialized!");
+      if (cutwizard_ptr_ == nullptr) FOUR_C_THROW("The cut wizard hasn't been initialized!");
       return cutwizard_ptr_;
     }
 
     //! Get the boundary cells
-    std::vector<Teuchos::RCP<Cut::BoundaryCell>> get_boundary_cells() { return boundary_cells_; }
+    std::vector<std::shared_ptr<Cut::BoundaryCell>> get_boundary_cells() { return boundary_cells_; }
 
    protected:
     //! embedded mesh parameter data container
@@ -157,16 +157,16 @@ namespace CONSTRAINTS::EMBEDDEDMESH
    private:
     //! @name member variables
     //! first element of interacting pair
-    const Teuchos::RCP<Core::Elements::Element> element1_;
+    const std::shared_ptr<Core::Elements::Element> element1_;
 
     //! second element of interacting pair
     const Core::Elements::Element* element2_;
 
     //! pointer to the cutwizard
-    Teuchos::RCP<Cut::CutWizard> cutwizard_ptr_ = Teuchos::null;
+    std::shared_ptr<Cut::CutWizard> cutwizard_ptr_ = nullptr;
 
     //! boundary cells that are related to this coupling pair
-    std::vector<Teuchos::RCP<Cut::BoundaryCell>> boundary_cells_;
+    std::vector<std::shared_ptr<Cut::BoundaryCell>> boundary_cells_;
   };
 }  // namespace CONSTRAINTS::EMBEDDEDMESH
 

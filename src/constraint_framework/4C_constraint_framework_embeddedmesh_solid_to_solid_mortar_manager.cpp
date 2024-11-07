@@ -26,17 +26,18 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::SolidToSolidMortarManager(
-    Teuchos::RCP<Core::FE::Discretization>& discret,
+    std::shared_ptr<Core::FE::Discretization>& discret,
     const Core::LinAlg::Vector<double>& displacement_vector,
     CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& embedded_mesh_coupling_params,
-    Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager, int start_value_lambda_gid)
+    std::shared_ptr<Core::IO::VisualizationManager> visualization_manager,
+    int start_value_lambda_gid)
     : discret_(discret),
       start_value_lambda_gid_(start_value_lambda_gid),
       embedded_mesh_coupling_params_(embedded_mesh_coupling_params),
       visualization_manager_(visualization_manager)
 {
   // Initialize cutwizard instance and perform the cut
-  Teuchos::RCP<Cut::CutWizard> cutwizard = Teuchos::make_rcp<Cut::CutWizard>(discret_);
+  std::shared_ptr<Cut::CutWizard> cutwizard = std::make_shared<Cut::CutWizard>(discret_);
   CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(
       cutwizard, discret_, embedded_mesh_coupling_params_);
 
@@ -132,7 +133,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::setup(
   }
 
   // Rowmap for the additional GIDs used by the mortar contact discretization.
-  lambda_dof_rowmap_ = Teuchos::make_rcp<Epetra_Map>(
+  lambda_dof_rowmap_ = std::make_shared<Epetra_Map>(
       -1, my_lambda_gid.size(), my_lambda_gid.data(), 0, discret_->get_comm());
 
   // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id
@@ -142,15 +143,15 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::setup(
 
   // Map from global node ids to global lagrange multiplier ids. Only create the
   // multivector if it has one or more columns.
-  node_gid_to_lambda_gid_ = Teuchos::null;
+  node_gid_to_lambda_gid_ = nullptr;
   if (n_lambda_node_ > 0)
     node_gid_to_lambda_gid_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(node_gid_rowmap, n_lambda_node_, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(node_gid_rowmap, n_lambda_node_, true);
 
   // Fill in the entries in the node global id to Lagrange multiplier global id vector.
   int error_code = 0;
   int lagrange_gid = -1;
-  if (node_gid_to_lambda_gid_ != Teuchos::null)
+  if (node_gid_to_lambda_gid_ != nullptr)
   {
     for (unsigned int i_node = 0; i_node < n_nodes; i_node++)
       for (unsigned int i_lambda = 0; i_lambda < n_lambda_node_; i_lambda++)
@@ -168,17 +169,17 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::setup(
   set_global_maps();
 
   // Create the global coupling matrices.
-  global_constraint_ = Teuchos::make_rcp<Epetra_FEVector>(*lambda_dof_rowmap_);
-  global_g_bl_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  global_constraint_ = std::make_shared<Epetra_FEVector>(*lambda_dof_rowmap_);
+  global_g_bl_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *lambda_dof_rowmap_, 30, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
-  global_g_bg_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  global_g_bg_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *lambda_dof_rowmap_, 100, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
-  global_fbl_l_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  global_fbl_l_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *boundary_layer_interface_dof_rowmap_, 30, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
-  global_fbg_l_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  global_fbg_l_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *background_dof_rowmap_, 100, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
-  global_kappa_ = Teuchos::make_rcp<Epetra_FEVector>(*lambda_dof_rowmap_);
-  global_active_lambda_ = Teuchos::make_rcp<Epetra_FEVector>(*lambda_dof_rowmap_);
+  global_kappa_ = std::make_shared<Epetra_FEVector>(*lambda_dof_rowmap_);
+  global_active_lambda_ = std::make_shared<Epetra_FEVector>(*lambda_dof_rowmap_);
 
   // Set flag for successful setup.
   is_setup_ = true;
@@ -204,9 +205,9 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_global_maps()
 
   // Create the beam and solid maps.
   boundary_layer_interface_dof_rowmap_ =
-      Teuchos::make_rcp<Epetra_Map>(-1, boundary_layer_interface_dofs.size(),
+      std::make_shared<Epetra_Map>(-1, boundary_layer_interface_dofs.size(),
           &boundary_layer_interface_dofs[0], 0, discret_->get_comm());
-  background_dof_rowmap_ = Teuchos::make_rcp<Epetra_Map>(
+  background_dof_rowmap_ = std::make_shared<Epetra_Map>(
       -1, background_dofs.size(), &background_dofs[0], 0, discret_->get_comm());
 
   // Reset the local maps.
@@ -235,7 +236,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_local_maps(
   // Loop over the pairs and get the global node and element indices needed on this rank.
   for (unsigned int i_pair = 0; i_pair < embedded_mesh_solid_pairs_.size(); i_pair++)
   {
-    const Teuchos::RCP<EMBEDDEDMESH::SolidInteractionPair>& pair =
+    const std::shared_ptr<EMBEDDEDMESH::SolidInteractionPair>& pair =
         embedded_mesh_solid_pairs_[i_pair];
 
     // The first (beam) element should always be on the same processor as the pair.
@@ -264,20 +265,20 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_local_maps(
       -1, node_gid_needed.size(), &node_gid_needed[0], 0, discret_->get_comm());
 
   // Create the Multivectors that will be filled with all values needed on this rank.
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_copy = Teuchos::null;
-  if (node_gid_to_lambda_gid_ != Teuchos::null)
-    node_gid_to_lambda_gid_copy = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_copy = nullptr;
+  if (node_gid_to_lambda_gid_ != nullptr)
+    node_gid_to_lambda_gid_copy = std::make_shared<Core::LinAlg::MultiVector<double>>(
         node_gid_needed_rowmap, n_lambda_node_, true);
 
   // Export values from the global multi vector to the ones needed on this rank.
-  if (node_gid_to_lambda_gid_ != Teuchos::null)
+  if (node_gid_to_lambda_gid_ != nullptr)
     Core::LinAlg::export_to(*node_gid_to_lambda_gid_, *node_gid_to_lambda_gid_copy);
 
   // Fill in the local maps.
   std::vector<int> lambda_gid_for_col_map;
   lambda_gid_for_col_map.clear();
   node_gid_to_lambda_gid_map_.clear();
-  if (node_gid_to_lambda_gid_ != Teuchos::null)
+  if (node_gid_to_lambda_gid_ != nullptr)
   {
     std::vector<int> temp_node(n_lambda_node_);
     for (int i_node = 0; i_node < node_gid_needed_rowmap.NumMyElements(); i_node++)
@@ -291,7 +292,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_local_maps(
   }
 
   // Create the global lambda col map.
-  lambda_dof_colmap_ = Teuchos::make_rcp<Epetra_Map>(
+  lambda_dof_colmap_ = std::make_shared<Epetra_Map>(
       -1, lambda_gid_for_col_map.size(), &lambda_gid_for_col_map[0], 0, discret_->get_comm());
 
   // Set flags for local maps.
@@ -370,34 +371,34 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::evaluate_global_coupl
 void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::
     add_global_force_stiffness_penalty_contributions(
         Solid::TimeInt::BaseDataGlobalState& data_state,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> force) const
+        std::shared_ptr<Core::LinAlg::SparseMatrix> stiff,
+        std::shared_ptr<Core::LinAlg::Vector<double>> force) const
 {
   check_setup();
   check_global_maps();
 
   int linalg_error = 0;
 
-  if (stiff != Teuchos::null)
+  if (stiff != nullptr)
   {
     // Scale the linearizations of the constraint equations.
-    Teuchos::RCP<Core::LinAlg::Vector<double>> global_penalty_kappa_inv = penalty_invert_kappa();
+    std::shared_ptr<Core::LinAlg::Vector<double>> global_penalty_kappa_inv = penalty_invert_kappa();
     Core::LinAlg::SparseMatrix penalty_kappa_inv_mat(*global_penalty_kappa_inv);
     penalty_kappa_inv_mat.complete();
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_BL_scaled = Core::LinAlg::matrix_multiply(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> global_G_BL_scaled = Core::LinAlg::matrix_multiply(
         penalty_kappa_inv_mat, false, *global_g_bl_, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_BG_scaled = Core::LinAlg::matrix_multiply(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> global_G_BG_scaled = Core::LinAlg::matrix_multiply(
         penalty_kappa_inv_mat, false, *global_g_bg_, false, false, false, true);
 
     // Calculate the needed submatrices.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBL_L_times_G_BL = Core::LinAlg::matrix_multiply(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> FBL_L_times_G_BL = Core::LinAlg::matrix_multiply(
         *global_fbl_l_, false, *global_G_BL_scaled, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBL_L_times_G_BG = Core::LinAlg::matrix_multiply(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> FBL_L_times_G_BG = Core::LinAlg::matrix_multiply(
         *global_fbl_l_, false, *global_G_BG_scaled, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBG_L_times_G_BL = Core::LinAlg::matrix_multiply(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> FBG_L_times_G_BL = Core::LinAlg::matrix_multiply(
         *global_fbg_l_, false, *global_G_BL_scaled, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBG_L_times_G_BG = Core::LinAlg::matrix_multiply(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> FBG_L_times_G_BG = Core::LinAlg::matrix_multiply(
         *global_fbg_l_, false, *global_G_BG_scaled, false, false, false, true);
 
     // Add contributions to the global stiffness matrix.
@@ -407,14 +408,14 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::
     stiff->add(*FBG_L_times_G_BG, false, 1.0, 1.0);
   }
 
-  if (force != Teuchos::null)
+  if (force != nullptr)
   {
     // Factor for right hand side (forces). 1 corresponds to the meshtying forces being added to the
     // right hand side, -1 to the left hand side.
     const double rhs_factor = 1.0;
 
     // Get the penalty Lagrange multiplier vector.
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda = get_global_lambda();
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambda = get_global_lambda();
 
     // Multiply the lambda vector with FBL_L and FBG_L to get the forces on the boundary layer and
     // background, respectively.
@@ -440,21 +441,21 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::
 /**
  *
  */
-Teuchos::RCP<Core::LinAlg::Vector<double>>
+std::shared_ptr<Core::LinAlg::Vector<double>>
 CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::get_global_lambda() const
 {
   check_setup();
   check_global_maps();
 
   // Get the inverted kappa matrix.
-  Teuchos::RCP<Core::LinAlg::Vector<double>> penalty_global_kappa_inv = penalty_invert_kappa();
+  std::shared_ptr<Core::LinAlg::Vector<double>> penalty_global_kappa_inv = penalty_invert_kappa();
   Core::LinAlg::SparseMatrix penalty_kappa_inv_mat(*penalty_global_kappa_inv);
   penalty_kappa_inv_mat.complete();
 
   // Multiply the inverted kappa matrix with the constraint equations and scale them with the
   // penalty parameter.
-  Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> lambda =
+      std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
   int linalg_error = penalty_kappa_inv_mat.multiply(
       false, Core::LinAlg::Vector<double>(*global_constraint_), *lambda);
   if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
@@ -465,21 +466,21 @@ CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::get_global_lambda() const
 /**
  *
  */
-Teuchos::RCP<Core::LinAlg::Vector<double>>
+std::shared_ptr<Core::LinAlg::Vector<double>>
 CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::get_global_lambda_col() const
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_col =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lambda_dof_colmap_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> lambda_col =
+      std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_colmap_);
   Core::LinAlg::export_to(*get_global_lambda(), *lambda_col);
   return lambda_col;
 }
 
-Teuchos::RCP<Core::LinAlg::Vector<double>>
+std::shared_ptr<Core::LinAlg::Vector<double>>
 CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::penalty_invert_kappa() const
 {
   // Create the inverse vector.
-  Teuchos::RCP<Core::LinAlg::Vector<double>> global_kappa_inv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> global_kappa_inv =
+      std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
 
   // Get the penalty parameters.
   const double penalty_params =
@@ -532,10 +533,10 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::collect_output_lagran
   auto& lagrange_multipliers_visualization_data =
       visualization_manager_->get_visualization_data("lagrange_multipliers");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> lambda = get_global_lambda_col();
+  std::shared_ptr<Core::LinAlg::Vector<double>> lambda = get_global_lambda_col();
 
-  Teuchos::RCP<std::unordered_set<int>> interface_tracker =
-      Teuchos::make_rcp<std::unordered_set<int>>();
+  std::shared_ptr<std::unordered_set<int>> interface_tracker =
+      std::make_shared<std::unordered_set<int>>();
 
   // Loop over pairs
   for (auto& elepairptr : embedded_mesh_solid_pairs_)

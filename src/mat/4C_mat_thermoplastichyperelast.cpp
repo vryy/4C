@@ -45,9 +45,9 @@ Mat::PAR::ThermoPlasticHyperElast::ThermoPlasticHyperElast(
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from read_materials()       dano 03/13 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ThermoPlasticHyperElast::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ThermoPlasticHyperElast::create_material()
 {
-  return Teuchos::make_rcp<Mat::ThermoPlasticHyperElast>(this);
+  return std::make_shared<Mat::ThermoPlasticHyperElast>(this);
 }
 
 Mat::ThermoPlasticHyperElastType Mat::ThermoPlasticHyperElastType::instance_;
@@ -68,23 +68,21 @@ Core::Communication::ParObject* Mat::ThermoPlasticHyperElastType::create(
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 03/13 |
  *----------------------------------------------------------------------*/
-Mat::ThermoPlasticHyperElast::ThermoPlasticHyperElast() : params_(nullptr), thermo_(Teuchos::null)
-{
-}
+Mat::ThermoPlasticHyperElast::ThermoPlasticHyperElast() : params_(nullptr), thermo_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
  | copy-constructor (public)                                 dano 03/13 |
  *----------------------------------------------------------------------*/
 Mat::ThermoPlasticHyperElast::ThermoPlasticHyperElast(Mat::PAR::ThermoPlasticHyperElast* params)
-    : params_(params), thermo_(Teuchos::null), plastic_step_(false)
+    : params_(params), thermo_(nullptr), plastic_step_(false)
 {
   const int thermoMatId = this->params_->thermomat_;
   if (thermoMatId != -1)
   {
     auto mat = Mat::factory(thermoMatId);
-    if (mat == Teuchos::null) FOUR_C_THROW("Failed to create thermo material, id=%d", thermoMatId);
-    thermo_ = Teuchos::rcp_dynamic_cast<Mat::Trait::Thermo>(mat);
+    if (mat == nullptr) FOUR_C_THROW("Failed to create thermo material, id=%d", thermoMatId);
+    thermo_ = std::dynamic_pointer_cast<Mat::Trait::Thermo>(mat);
   }
 }
 
@@ -154,7 +152,7 @@ void Mat::ThermoPlasticHyperElast::unpack(Core::Communication::UnpackBuffer& buf
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -176,22 +174,22 @@ void Mat::ThermoPlasticHyperElast::unpack(Core::Communication::UnpackBuffer& buf
   // if system is not yet initialised, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
 
-  defgrdlast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
-  defgrdcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  defgrdlast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  defgrdcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 3>>>();
 
-  bebarlast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
-  bebarcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  bebarlast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  bebarcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 3>>>();
 
-  accplstrainlast_ = Teuchos::make_rcp<std::vector<double>>();
-  accplstraincurr_ = Teuchos::make_rcp<std::vector<double>>();
+  accplstrainlast_ = std::make_shared<std::vector<double>>();
+  accplstraincurr_ = std::make_shared<std::vector<double>>();
 
-  mechdiss_ = Teuchos::make_rcp<std::vector<double>>();
-  mechdiss_k_tt_ = Teuchos::make_rcp<std::vector<double>>();
-  mechdiss_k_td_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  cmat_kd_t_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  thrplheat_ = Teuchos::make_rcp<std::vector<double>>();
-  thrplheat_k_tt_ = Teuchos::make_rcp<std::vector<double>>();
-  thrplheat_k_td_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  mechdiss_ = std::make_shared<std::vector<double>>();
+  mechdiss_k_tt_ = std::make_shared<std::vector<double>>();
+  mechdiss_k_td_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  cmat_kd_t_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  thrplheat_ = std::make_shared<std::vector<double>>();
+  thrplheat_k_tt_ = std::make_shared<std::vector<double>>();
+  thrplheat_k_td_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
   for (int var = 0; var < histsize; ++var)
   {
@@ -255,22 +253,22 @@ void Mat::ThermoPlasticHyperElast::setup(
     int numgp, const Core::IO::InputParameterContainer& container)
 {
   // initialise hist variables
-  defgrdlast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
-  defgrdcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  defgrdlast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  defgrdcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 3>>>();
 
-  bebarlast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
-  bebarcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  bebarlast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  bebarcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 3>>>();
 
-  accplstrainlast_ = Teuchos::make_rcp<std::vector<double>>();
-  accplstraincurr_ = Teuchos::make_rcp<std::vector<double>>();
+  accplstrainlast_ = std::make_shared<std::vector<double>>();
+  accplstraincurr_ = std::make_shared<std::vector<double>>();
 
-  mechdiss_ = Teuchos::make_rcp<std::vector<double>>();
-  mechdiss_k_tt_ = Teuchos::make_rcp<std::vector<double>>();
-  mechdiss_k_td_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<6, 1>>>();
-  cmat_kd_t_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<6, 1>>>();
-  thrplheat_ = Teuchos::make_rcp<std::vector<double>>();
-  thrplheat_k_tt_ = Teuchos::make_rcp<std::vector<double>>();
-  thrplheat_k_td_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<6, 1>>>();
+  mechdiss_ = std::make_shared<std::vector<double>>();
+  mechdiss_k_tt_ = std::make_shared<std::vector<double>>();
+  mechdiss_k_td_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>();
+  cmat_kd_t_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>();
+  thrplheat_ = std::make_shared<std::vector<double>>();
+  thrplheat_k_tt_ = std::make_shared<std::vector<double>>();
+  thrplheat_k_td_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>();
 
   defgrdlast_->resize(numgp);
   defgrdcurr_->resize(numgp);
@@ -328,9 +326,9 @@ void Mat::ThermoPlasticHyperElast::update()
   accplstrainlast_ = accplstraincurr_;
 
   // empty vectors of current data
-  defgrdcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
-  bebarcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
-  accplstraincurr_ = Teuchos::make_rcp<std::vector<double>>();
+  defgrdcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  bebarcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  accplstraincurr_ = std::make_shared<std::vector<double>>();
 
   // get the size of the vector
   // (use the last vector, because it includes latest results, current is empty)
@@ -1549,16 +1547,16 @@ double Mat::ThermoPlasticHyperElast::capacity_deriv_t() const
 void Mat::ThermoPlasticHyperElast::reinit(double temperature, unsigned gp)
 {
   current_temperature_ = temperature;
-  if (thermo_ != Teuchos::null) thermo_->reinit(temperature, gp);
+  if (thermo_ != nullptr) thermo_->reinit(temperature, gp);
 }
 void Mat::ThermoPlasticHyperElast::reset_current_state()
 {
-  if (thermo_ != Teuchos::null) thermo_->reset_current_state();
+  if (thermo_ != nullptr) thermo_->reset_current_state();
 }
 
 void Mat::ThermoPlasticHyperElast::commit_current_state()
 {
-  if (thermo_ != Teuchos::null) thermo_->commit_current_state();
+  if (thermo_ != nullptr) thermo_->commit_current_state();
 }
 
 /*----------------------------------------------------------------------*/

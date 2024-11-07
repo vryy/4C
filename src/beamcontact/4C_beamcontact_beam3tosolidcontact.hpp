@@ -122,7 +122,7 @@ namespace CONTACT
         Core::LinAlg::Vector<double>& fint, const double& pp) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
-    static Teuchos::RCP<Beam3tosolidcontactinterface> impl(const int numnodessol,
+    static std::shared_ptr<Beam3tosolidcontactinterface> impl(const int numnodessol,
         const int numnodes, const int numnodalvalues, const Core::FE::Discretization& pdiscret,
         const Core::FE::Discretization& cdiscret, const std::map<int, int>& dofoffsetmap,
         Core::Elements::Element* element1, Core::Elements::Element* element2,
@@ -398,10 +398,10 @@ namespace CONTACT
     std::vector<std::pair<TYPEBTS, Core::LinAlg::Matrix<3, 1, TYPEBTS>>> normalsets_old_;
 
     //! neighbor elements of element 1
-    Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> neighbors1_;
+    std::shared_ptr<BEAMINTERACTION::B3CNeighbor> neighbors1_;
 
     //! neighbor elements of element 2
-    Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> neighbors2_;
+    std::shared_ptr<BEAMINTERACTION::B3CNeighbor> neighbors2_;
 
     //! averaged nodal tangents, necessary for smoothed tangent fields of C^0 Reissner beams
     Core::LinAlg::Matrix<3 * numnodes, 1> nodaltangentssmooth1_;

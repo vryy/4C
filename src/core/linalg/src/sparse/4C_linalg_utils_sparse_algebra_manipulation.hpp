@@ -19,7 +19,8 @@
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -67,7 +68,7 @@ namespace Core::LinAlg
    *  \return the extracted partial Core::LinAlg::Vector<double> as RCP
    *
    *  \author hiermeier \date 03/17 */
-  Teuchos::RCP<Core::LinAlg::Vector<double>> extract_my_vector(
+  std::unique_ptr<Core::LinAlg::Vector<double>> extract_my_vector(
       const Core::LinAlg::Vector<double>& source, const Epetra_Map& target_map);
 
   /*! \brief Extract a partial Eptra_Vector from a given source vector
@@ -87,7 +88,7 @@ namespace Core::LinAlg
    *
    *  \return Returned the filtered sparse matrix.
    */
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> threshold_matrix(
+  std::unique_ptr<Core::LinAlg::SparseMatrix> threshold_matrix(
       const Core::LinAlg::SparseMatrix& A, const double threshold);
 
   /*! \brief Filter the graph of a sparse matrix based on a threshold value and diagonal Jacobi
@@ -103,7 +104,7 @@ namespace Core::LinAlg
    *
    *  \return Returned the filtered sparse matrix graph.
    */
-  Teuchos::RCP<Epetra_CrsGraph> threshold_matrix_graph(
+  std::shared_ptr<Epetra_CrsGraph> threshold_matrix_graph(
       const Core::LinAlg::SparseMatrix& A, const double threshold);
 
   /*! \brief Enrich a matrix graph based on it's powers.
@@ -113,7 +114,7 @@ namespace Core::LinAlg
    *
    *  \return Returned the enriched graph G(A^(power))
    */
-  Teuchos::RCP<Epetra_CrsGraph> enrich_matrix_graph(const SparseMatrix& A, int power);
+  std::shared_ptr<Epetra_CrsGraph> enrich_matrix_graph(const SparseMatrix& A, int power);
 
   /*!
    \brief split a matrix into a 2x2 block system where the rowmap of one of the blocks is given
@@ -121,7 +122,7 @@ namespace Core::LinAlg
 
    Splits a given matrix into a 2x2 block system where the rowmap of one of the blocks is given
    on input. Blocks A11 and A22 are assumed to be square.
-   All values on entry have to be Teuchos::null except the given rowmap and matrix A.
+   All values on entry have to be nullptr except the given rowmap and matrix A.
    Note that either A11rowmap or A22rowmap or both have to be nonzero. In case
    both rowmaps are supplied they have to be an exact and nonoverlapping split of A->RowMap().
    Matrix blocks are fill_complete() on exit.
@@ -131,15 +132,15 @@ namespace Core::LinAlg
    \param A11rowmap : rowmap of A11 or null
    \param A22rowmap : rowmap of A22 or null
    */
-  bool split_matrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
-      Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>>& Ablock,
-      Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap);
+  bool split_matrix2x2(std::shared_ptr<Epetra_CrsMatrix> A,
+      std::shared_ptr<BlockSparseMatrix<DefaultBlockMatrixStrategy>>& Ablock,
+      std::shared_ptr<Epetra_Map>& A11rowmap, std::shared_ptr<Epetra_Map>& A22rowmap);
 
   /*!
    \brief split a matrix into a 2x2 block system
 
    Splits a given matrix into a 2x2 block system. All values on entry have to be
-   Teuchos::null except the given rowmap(s) / domainmap(s) and matrix A.
+   nullptr except the given rowmap(s) / domainmap(s) and matrix A.
    Note that either A11rowmap or A22rowmap or both have to be nonzero!
    Note that either A11domainmap or A22domainmap or both have to be nonzero!
    In case both rowmaps / domainmaps are supplied they have to be an exact and
@@ -156,11 +157,13 @@ namespace Core::LinAlg
    \param A21          : on exit matrix block A21
    \param A22          : on exit matrix block A22
    */
-  bool split_matrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
-      Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap,
-      Teuchos::RCP<Epetra_Map>& A11domainmap, Teuchos::RCP<Epetra_Map>& A22domainmap,
-      Teuchos::RCP<Core::LinAlg::SparseMatrix>& A11, Teuchos::RCP<Core::LinAlg::SparseMatrix>& A12,
-      Teuchos::RCP<Core::LinAlg::SparseMatrix>& A21, Teuchos::RCP<Core::LinAlg::SparseMatrix>& A22);
+  bool split_matrix2x2(std::shared_ptr<Core::LinAlg::SparseMatrix> A,
+      std::shared_ptr<Epetra_Map>& A11rowmap, std::shared_ptr<Epetra_Map>& A22rowmap,
+      std::shared_ptr<Epetra_Map>& A11domainmap, std::shared_ptr<Epetra_Map>& A22domainmap,
+      std::shared_ptr<Core::LinAlg::SparseMatrix>& A11,
+      std::shared_ptr<Core::LinAlg::SparseMatrix>& A12,
+      std::shared_ptr<Core::LinAlg::SparseMatrix>& A21,
+      std::shared_ptr<Core::LinAlg::SparseMatrix>& A22);
 
   /*! \brief Split matrix in 2x2 blocks, where main diagonal blocks have to be square
    *
@@ -187,14 +190,14 @@ namespace Core::LinAlg
     \note This method will NOT call Complete() on the output BlockSparseMatrix.
    */
   template <class Strategy>
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Strategy>> split_matrix(
+  std::shared_ptr<Core::LinAlg::BlockSparseMatrix<Strategy>> split_matrix(
       const Core::LinAlg::SparseMatrix& ASparse, const MultiMapExtractor& domainmaps,
       const MultiMapExtractor& rangemaps)
   {
     // initialize resulting BlockSparseMatrix. no need to provide estimates of nonzeros because
     // all entries will be inserted at once anyway
-    Teuchos::RCP<BlockSparseMatrix<Strategy>> blockA =
-        Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Strategy>>(
+    std::shared_ptr<BlockSparseMatrix<Strategy>> blockA =
+        std::make_shared<Core::LinAlg::BlockSparseMatrix<Strategy>>(
             domainmaps, rangemaps, 0, ASparse.explicit_dirichlet(), ASparse.save_graph());
 
     if (domainmaps.num_maps() == 2 && rangemaps.num_maps() == 2)
@@ -232,13 +235,13 @@ namespace Core::LinAlg
    \param[in] Agiven    : on entry submap that is given and part of Amap
    \return the remainder map of Amap that is not overlapping with Agiven
    */
-  Teuchos::RCP<Epetra_Map> split_map(const Epetra_Map& Amap, const Epetra_Map& Agiven);
+  std::shared_ptr<Epetra_Map> split_map(const Epetra_Map& Amap, const Epetra_Map& Agiven);
 
   /*!
    \brief merges two given Epetra_Maps
 
    merges input map1 and input map2, both of which have to be unique,
-   but may be overlapping, to a new map and returns Teuchos::RCP to it.
+   but may be overlapping, to a new map and returns std::shared_ptr to it.
 
    \param map1         : one map to be merged
    \param map2         : the other map to be merged
@@ -246,7 +249,7 @@ namespace Core::LinAlg
    map is overlapping (default = true, overlap allowed)
    \return the (sorted) merged map of input maps map1 and map2
    */
-  Teuchos::RCP<Epetra_Map> merge_map(
+  std::shared_ptr<Epetra_Map> merge_map(
       const Epetra_Map& map1, const Epetra_Map& map2, bool overlap = true);
 
   /*!
@@ -258,15 +261,15 @@ namespace Core::LinAlg
    \param map2         : second map
    \return the (sorted) intersection map of input maps map1 and map2
    */
-  Teuchos::RCP<Epetra_Map> intersect_map(const Epetra_Map& map1, const Epetra_Map& map2);
+  std::shared_ptr<Epetra_Map> intersect_map(const Epetra_Map& map1, const Epetra_Map& map2);
 
 
   /*!
    \brief merges two given Epetra_Maps
 
-   merges input map1 and input map2 (given as Teuchos::RCP), both of which
+   merges input map1 and input map2 (given as std::shared_ptr), both of which
    have to be unique, but may be overlapping, to a new map and returns
-   Teuchos::RCP to it. The case that one or both input Teuchos::RCPs are null is
+   std::shared_ptr to it. The case that one or both input std::shared_ptrs are null is
    detected and handled appropriately.
 
    \param map1         : one map to be merged
@@ -275,11 +278,11 @@ namespace Core::LinAlg
    map is overlapping (default = true, overlap allowed)
    \return the (sorted) merged map of input maps map1 and map2
    */
-  Teuchos::RCP<Epetra_Map> merge_map(const Teuchos::RCP<const Epetra_Map>& map1,
-      const Teuchos::RCP<const Epetra_Map>& map2, bool overlap = true);
+  std::shared_ptr<Epetra_Map> merge_map(const std::shared_ptr<const Epetra_Map>& map1,
+      const std::shared_ptr<const Epetra_Map>& map2, bool overlap = true);
 
   /*!
-     \brief split a vector into 2 non-overlapping pieces (Teuchos::RCP version)
+     \brief split a vector into 2 non-overlapping pieces (std::shared_ptr version)
 
      \param xmap    : map of vector to be split
      \param x       : vector to be split
@@ -290,11 +293,11 @@ namespace Core::LinAlg
 
      */
   bool split_vector(const Epetra_Map& xmap, const Core::LinAlg::Vector<double>& x,
-      Teuchos::RCP<Epetra_Map>& x1map, Teuchos::RCP<Core::LinAlg::Vector<double>>& x1,
-      Teuchos::RCP<Epetra_Map>& x2map, Teuchos::RCP<Core::LinAlg::Vector<double>>& x2);
+      std::shared_ptr<Epetra_Map>& x1map, std::shared_ptr<Core::LinAlg::Vector<double>>& x1,
+      std::shared_ptr<Epetra_Map>& x2map, std::shared_ptr<Core::LinAlg::Vector<double>>& x2);
 
   /*!
-   \brief split a vector into 2 non-overlapping pieces (Teuchos::RCP version)
+   \brief split a vector into 2 non-overlapping pieces (std::shared_ptr version)
 
    \param xmap    : map of vector to be split
    \param x       : vector to be split
@@ -305,8 +308,8 @@ namespace Core::LinAlg
 
    */
   bool split_vector(const Epetra_Map& xmap, const Core::LinAlg::Vector<double>& x,
-      Teuchos::RCP<const Epetra_Map>& x1map, Teuchos::RCP<Core::LinAlg::Vector<double>>& x1,
-      Teuchos::RCP<const Epetra_Map>& x2map, Teuchos::RCP<Core::LinAlg::Vector<double>>& x2);
+      std::shared_ptr<const Epetra_Map>& x1map, std::shared_ptr<Core::LinAlg::Vector<double>>& x1,
+      std::shared_ptr<const Epetra_Map>& x2map, std::shared_ptr<Core::LinAlg::Vector<double>>& x2);
 
   /*! \brief Write values from a std::vector to a Core::LinAlg::MultiVector<double>
    *

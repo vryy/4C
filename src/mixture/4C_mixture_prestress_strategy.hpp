@@ -16,7 +16,6 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Teuchos_ENull.hpp>
-#include <Teuchos_RCP.hpp>
 
 #include <memory>
 #include <utility>
@@ -67,11 +66,11 @@ namespace Mixture
       }
 
       /// Override this method and throw error, as only the CreateRule() should be used.
-      Teuchos::RCP<Core::Mat::Material> create_material() final
+      std::shared_ptr<Core::Mat::Material> create_material() final
       {
         FOUR_C_THROW(
             "Cannot create prestress strategy from this method. Use CreateRule() instead.");
-        return Teuchos::null;
+        return nullptr;
       }
 
       /// create prestress strategy instance of matching type with my parameters
@@ -150,7 +149,7 @@ namespace Mixture
      * @param eleGID (in) : Global element id
      */
     virtual void evaluate_prestress(const MixtureRule& mixtureRule,
-        const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+        const std::shared_ptr<const Mat::CoordinateSystemProvider> anisotropy,
         Mixture::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) = 0;
 
@@ -165,7 +164,7 @@ namespace Mixture
      * \param gp (in) : Gauss point
      * \param eleGID (in) : Global element id
      */
-    virtual void update(const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+    virtual void update(const std::shared_ptr<const Mat::CoordinateSystemProvider> anisotropy,
         Mixture::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
         Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };

@@ -21,16 +21,17 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::evaluate_force_stiff(
-    Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
-    Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
+    std::shared_ptr<Core::FE::Discretization> discret,
+    const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
+    std::shared_ptr<Epetra_FEVector> fe_sysvec,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> fe_sysmat)
 {
   mortar_manager_->evaluate_force_stiff_penalty_regularization(data_state, fe_sysmat, fe_sysvec);
 }
 
 
 double BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::get_energy(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& disp) const
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& disp) const
 {
   const double global_mortar_energy = mortar_manager_->get_energy();
 

@@ -485,9 +485,9 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
     // get material parameters of wall element
     {
       // cast material to particle wall material
-      const Teuchos::RCP<const Mat::ParticleWallMaterialDEM>& particlewallmaterial =
-          Teuchos::rcp_dynamic_cast<const Mat::ParticleWallMaterialDEM>(ele->material());
-      if (particlewallmaterial == Teuchos::null)
+      const std::shared_ptr<const Mat::ParticleWallMaterialDEM>& particlewallmaterial =
+          std::dynamic_pointer_cast<const Mat::ParticleWallMaterialDEM>(ele->material());
+      if (particlewallmaterial == nullptr)
         FOUR_C_THROW("cast to Mat::ParticleWallMaterialDEM failed!");
 
       // get adhesion surface energy

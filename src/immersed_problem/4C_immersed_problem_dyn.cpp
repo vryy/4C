@@ -85,9 +85,9 @@ void immersed_problem_drt()
                   "previous time step.");
           }
 
-          Teuchos::RCP<Immersed::ImmersedPartitionedFSIDirichletNeumann> algo = Teuchos::null;
+          std::shared_ptr<Immersed::ImmersedPartitionedFSIDirichletNeumann> algo = nullptr;
           if (scheme == Inpar::Immersed::dirichletneumann)
-            algo = Teuchos::make_rcp<Immersed::ImmersedPartitionedFSIDirichletNeumann>(comm);
+            algo = std::make_shared<Immersed::ImmersedPartitionedFSIDirichletNeumann>(comm);
           else
           {
             FOUR_C_THROW("unknown coupling scheme");
@@ -112,7 +112,7 @@ void immersed_problem_drt()
             // additional setup for structural search tree, etc.
             algo->setup_structural_discretization();
 
-          algo->timeloop(algo);
+          algo->timeloop(Teuchos::rcpFromRef(*algo));
 
           if (immersedmethodparams.get<std::string>("TIMESTATS") == "endofsim")
           {

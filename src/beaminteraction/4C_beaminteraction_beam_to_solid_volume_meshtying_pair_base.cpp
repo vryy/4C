@@ -68,7 +68,7 @@ template <typename ScalarType, typename Beam, typename Solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
     Solid>::create_geometry_pair(const Core::Elements::Element* element1,
     const Core::Elements::Element* element2,
-    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
+    const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   this->geometry_pair_ = GEOMETRYPAIR::geometry_pair_line_to_volume_factory<double, Beam, Solid>(
       element1, element2, geometry_evaluation_data_ptr);
@@ -139,7 +139,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid
  */
 template <typename ScalarType, typename Beam, typename Solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
-    Solid>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+    Solid>::get_pair_visualization(std::shared_ptr<BeamToSolidVisualizationOutputWriterBase>
                                        visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
@@ -147,20 +147,22 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
   // Get the writers.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_segmentation =
-      visualization_writer->get_visualization_writer("btsv-segmentation");
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+      visualization_segmentation =
+          visualization_writer->get_visualization_writer("btsv-segmentation");
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
       visualization_integration_points =
           visualization_writer->get_visualization_writer("btsv-integration-points");
-  if (visualization_segmentation.is_null() and visualization_integration_points.is_null()) return;
+  if (!visualization_segmentation and visualization_integration_points == nullptr) return;
 
-  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>& output_params_ptr =
-      visualization_params
-          .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
-              "btsv-output_params_ptr");
+  const std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>&
+      output_params_ptr =
+          visualization_params
+              .get<std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+                  "btsv-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->get_write_unique_ids_flag();
 
-  if (visualization_segmentation != Teuchos::null)
+  if (visualization_segmentation != nullptr)
   {
     // Setup variables.
     Core::LinAlg::Matrix<3, 1, ScalarType> X;
@@ -206,7 +208,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
   }
 
   // If a writer exists for integration point data, add the integration point data.
-  if (visualization_integration_points != Teuchos::null)
+  if (visualization_integration_points != nullptr)
   {
     // Setup variables.
     Core::LinAlg::Matrix<3, 1, double> X;

@@ -12,8 +12,7 @@
 
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 // NOLINTBEGIN(readability-identifier-naming)
@@ -71,7 +70,7 @@ namespace Core::LinAlg
   class Equilibration
   {
    public:
-    Equilibration(Teuchos::RCP<const Epetra_Map> dofrowmap);
+    Equilibration(std::shared_ptr<const Epetra_Map> dofrowmap);
 
     virtual ~Equilibration() = default;
 
@@ -81,15 +80,15 @@ namespace Core::LinAlg
      * @param[in,out] systemmatrix  system matrix
      * @param[in]     blockmaps     (block) map(s) of system matrix
      */
-    virtual void equilibrate_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmaps) const = 0;
+    virtual void equilibrate_matrix(std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> blockmaps) const = 0;
 
     /*!
      * @brief equilibrate right hand side
      *
      * @param[in,out] residual  residual vector
      */
-    virtual void equilibrate_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> residual) const = 0;
+    virtual void equilibrate_rhs(std::shared_ptr<Core::LinAlg::Vector<double>> residual) const = 0;
 
     /*!
      * @brief equilibrate global system of equations if necessary
@@ -98,9 +97,9 @@ namespace Core::LinAlg
      * @param[in,out] residual      residual vector
      * @param[in]     blockmaps     (block) map(s) of system matrix
      */
-    void equilibrate_system(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> residual,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmaps) const;
+    void equilibrate_system(std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
+        std::shared_ptr<Core::LinAlg::Vector<double>> residual,
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> blockmaps) const;
 
     /*!
      * @brief unequilibrate global increment vector if necessary
@@ -108,7 +107,7 @@ namespace Core::LinAlg
      * @param[in,out] increment  increment vector
      */
     virtual void unequilibrate_increment(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> increment) const = 0;
+        std::shared_ptr<Core::LinAlg::Vector<double>> increment) const = 0;
 
    protected:
     /*!
@@ -159,10 +158,10 @@ namespace Core::LinAlg
         Core::LinAlg::SparseMatrix& matrix, const Core::LinAlg::Vector<double>& invrowsums) const;
 
     //! inverse sums of absolute values of column entries in global system matrix
-    Teuchos::RCP<Core::LinAlg::Vector<double>> invcolsums_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> invcolsums_;
 
     //! inverse sums of absolute values of row entries in global system matrix
-    Teuchos::RCP<Core::LinAlg::Vector<double>> invrowsums_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> invrowsums_;
   };
 
   /*----------------------------------------------------------------------*
@@ -171,14 +170,14 @@ namespace Core::LinAlg
   class EquilibrationUniversal : public Equilibration
   {
    public:
-    EquilibrationUniversal(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
+    EquilibrationUniversal(EquilibrationMethod method, std::shared_ptr<const Epetra_Map> dofrowmap);
     //! return equilibration method
     EquilibrationMethod method() const { return method_; }
 
-    void equilibrate_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> residual) const override;
+    void equilibrate_rhs(std::shared_ptr<Core::LinAlg::Vector<double>> residual) const override;
 
     void unequilibrate_increment(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> increment) const override;
+        std::shared_ptr<Core::LinAlg::Vector<double>> increment) const override;
 
    private:
     EquilibrationMethod method_;
@@ -190,16 +189,16 @@ namespace Core::LinAlg
   class EquilibrationSparse : public EquilibrationUniversal
   {
    public:
-    EquilibrationSparse(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
-    void equilibrate_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmaps) const override;
+    EquilibrationSparse(EquilibrationMethod method, std::shared_ptr<const Epetra_Map> dofrowmap);
+    void equilibrate_matrix(std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> blockmaps) const override;
 
     /*!
      * @brief equilibrate matrix if necessary
      *
      * @param[in,out] systemmatrix  system matrix
      */
-    void equilibrate_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix) const;
+    void equilibrate_matrix(std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix) const;
   };
 
   /*----------------------------------------------------------------------*
@@ -208,9 +207,9 @@ namespace Core::LinAlg
   class EquilibrationBlock : public EquilibrationUniversal
   {
    public:
-    EquilibrationBlock(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
-    void equilibrate_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmaps) const override;
+    EquilibrationBlock(EquilibrationMethod method, std::shared_ptr<const Epetra_Map> dofrowmap);
+    void equilibrate_matrix(std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> blockmaps) const override;
   };
 
   /*----------------------------------------------------------------------*
@@ -219,15 +218,16 @@ namespace Core::LinAlg
   class EquilibrationBlockSpecific : public Equilibration
   {
    public:
-    EquilibrationBlockSpecific(
-        const std::vector<EquilibrationMethod>& method, Teuchos::RCP<const Epetra_Map> dofrowmap);
-    void equilibrate_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmaps) const override;
+    EquilibrationBlockSpecific(const std::vector<EquilibrationMethod>& method,
+        std::shared_ptr<const Epetra_Map> dofrowmap);
+    void equilibrate_matrix(std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> blockmaps) const override;
 
-    void equilibrate_rhs(const Teuchos::RCP<Core::LinAlg::Vector<double>> residual) const override;
+    void equilibrate_rhs(
+        const std::shared_ptr<Core::LinAlg::Vector<double>> residual) const override;
 
     void unequilibrate_increment(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> increment) const override;
+        std::shared_ptr<Core::LinAlg::Vector<double>> increment) const override;
 
    private:
     std::vector<EquilibrationMethod> method_blocks_;
@@ -239,16 +239,16 @@ namespace Core::LinAlg
   class EquilibrationNone : public Equilibration
   {
    public:
-    EquilibrationNone(Teuchos::RCP<const Epetra_Map> dofrowmap) : Equilibration(dofrowmap) {}
-    void equilibrate_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmaps) const override
+    EquilibrationNone(std::shared_ptr<const Epetra_Map> dofrowmap) : Equilibration(dofrowmap) {}
+    void equilibrate_matrix(std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> blockmaps) const override
     {
     }
 
-    void equilibrate_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> residual) const override {}
+    void equilibrate_rhs(std::shared_ptr<Core::LinAlg::Vector<double>> residual) const override {}
 
     void unequilibrate_increment(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> increment) const override
+        std::shared_ptr<Core::LinAlg::Vector<double>> increment) const override
     {
     }
   };
@@ -263,8 +263,8 @@ namespace Core::LinAlg
    *
    * @return equilibration method
    */
-  Teuchos::RCP<Core::LinAlg::Equilibration> build_equilibration(MatrixType type,
-      const std::vector<EquilibrationMethod>& method, Teuchos::RCP<const Epetra_Map> dofrowmap);
+  std::shared_ptr<Core::LinAlg::Equilibration> build_equilibration(MatrixType type,
+      const std::vector<EquilibrationMethod>& method, std::shared_ptr<const Epetra_Map> dofrowmap);
 }  // namespace Core::LinAlg
 FOUR_C_NAMESPACE_CLOSE
 

@@ -1256,14 +1256,14 @@ void Discret::Elements::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_a
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleUtilsElch<distype>::mat_ion(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< ion material
-    const int k,                                             //!< ID of ion material
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< ion material
+    const int k,                                                //!< ID of ion material
     const Inpar::ElCh::EquPot equpot,  //!< type of closing equation for electric potential
-    const Teuchos::RCP<ScaTraEleDiffManagerElch>& diffmanager  //!< diffusion manager
+    const std::shared_ptr<ScaTraEleDiffManagerElch>& diffmanager  //!< diffusion manager
 )
 {
   // cast material to ion material
-  const Teuchos::RCP<const Mat::Ion> mation = Teuchos::rcp_static_cast<const Mat::Ion>(material);
+  const std::shared_ptr<const Mat::Ion> mation = std::static_pointer_cast<const Mat::Ion>(material);
 
   // valence of ionic species
   diffmanager->set_valence(mation->valence(), k);

@@ -23,10 +23,10 @@ namespace
   {
    public:
     //! Testing parameters
-    Teuchos::RCP<Epetra_Comm> comm_;
+    std::shared_ptr<Epetra_Comm> comm_;
 
    protected:
-    SparseAlgebraMathTest() { comm_ = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD)); }
+    SparseAlgebraMathTest() { comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD); }
   };
 
   /** The test setup is based on a simple 1d poisson problem with the given matrix "poisson1d.mm"
@@ -42,11 +42,11 @@ namespace
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
         TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(), *comm_, A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
-    Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
+    std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> A_inverse = Core::LinAlg::matrix_sparse_inverse(
-        A_sparse, Teuchos::rcp(new Epetra_CrsGraph(A->Graph())));
+    std::shared_ptr<Core::LinAlg::SparseMatrix> A_inverse = Core::LinAlg::matrix_sparse_inverse(
+        A_sparse, std::make_shared<Epetra_CrsGraph>(A->Graph()));
 
     // Check for global entries
     const int A_sparse_nnz = A_sparse.epetra_matrix()->NumGlobalNonzeros();
@@ -80,11 +80,11 @@ namespace
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
         TESTING::get_support_file_path("test_matrices/nonsym.mm").c_str(), *comm_, A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
-    Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
+    std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> A_inverse = Core::LinAlg::matrix_sparse_inverse(
-        A_sparse, Teuchos::rcp(new Epetra_CrsGraph(A->Graph())));
+    std::shared_ptr<Core::LinAlg::SparseMatrix> A_inverse = Core::LinAlg::matrix_sparse_inverse(
+        A_sparse, std::make_shared<Epetra_CrsGraph>(A->Graph()));
 
     // Check for global entries
     const int A_sparse_nnz = A_sparse.epetra_matrix()->NumGlobalNonzeros();
@@ -130,16 +130,16 @@ namespace
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
         TESTING::get_support_file_path("test_matrices/beam.mm").c_str(), *comm_, A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
-    Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
+    std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
 
     {
       const double tol = 1e-8;
-      Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern =
+      std::shared_ptr<Epetra_CrsGraph> sparsity_pattern =
           Core::LinAlg::threshold_matrix_graph(A_sparse, tol);
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> A_inverse =
+      std::shared_ptr<Core::LinAlg::SparseMatrix> A_inverse =
           Core::LinAlg::matrix_sparse_inverse(A_sparse, sparsity_pattern);
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> A_thresh =
+      std::shared_ptr<Core::LinAlg::SparseMatrix> A_thresh =
           Core::LinAlg::threshold_matrix(*A_inverse, tol);
 
       // Check for global entries
@@ -154,14 +154,14 @@ namespace
       const double tol = 1e-10;
       const int power = 3;
 
-      Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern =
-          Teuchos::rcp(new Epetra_CrsGraph(A->Graph()));
+      std::shared_ptr<Epetra_CrsGraph> sparsity_pattern =
+          std::make_shared<Epetra_CrsGraph>(A->Graph());
 
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> A_thresh =
+      std::shared_ptr<Core::LinAlg::SparseMatrix> A_thresh =
           Core::LinAlg::threshold_matrix(A_sparse, tol);
-      Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern_enriched =
+      std::shared_ptr<Epetra_CrsGraph> sparsity_pattern_enriched =
           Core::LinAlg::enrich_matrix_graph(*A_thresh, power);
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> A_inverse =
+      std::shared_ptr<Core::LinAlg::SparseMatrix> A_inverse =
           Core::LinAlg::matrix_sparse_inverse(A_sparse, sparsity_pattern_enriched);
       A_thresh = Core::LinAlg::threshold_matrix(*A_inverse, tol);
 

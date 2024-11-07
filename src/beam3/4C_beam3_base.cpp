@@ -28,8 +28,8 @@ Discret::Elements::Beam3Base::Beam3Base(int id, int owner)
       Tref_(0),
       centerline_hermite_(true),
       filamenttype_(Inpar::BEAMINTERACTION::filtype_arbitrary),
-      interface_ptr_(Teuchos::null),
-      browndyn_interface_ptr_(Teuchos::null)
+      interface_ptr_(nullptr),
+      browndyn_interface_ptr_(nullptr)
 {
   // empty
 }
@@ -92,10 +92,10 @@ void Discret::Elements::Beam3Base::unpack(Core::Communication::UnpackBuffer& buf
 void Discret::Elements::Beam3Base::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(
-        p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
+    interface_ptr_ = std::dynamic_pointer_cast<Solid::Elements::ParamsInterface>(
+        p.get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface"));
   else
-    interface_ptr_ = Teuchos::null;
+    interface_ptr_ = nullptr;
 }
 
 /*----------------------------------------------------------------------*
@@ -109,14 +109,15 @@ void Discret::Elements::Beam3Base::set_brownian_dyn_params_interface_ptr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::ParamsInterface> Discret::Elements::Beam3Base::params_interface_ptr()
+std::shared_ptr<Core::Elements::ParamsInterface>
+Discret::Elements::Beam3Base::params_interface_ptr()
 {
   return interface_ptr_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<BrownianDynamics::ParamsInterface>
+std::shared_ptr<BrownianDynamics::ParamsInterface>
 Discret::Elements::Beam3Base::brownian_dyn_params_interface_ptr() const
 {
   return browndyn_interface_ptr_;
@@ -189,7 +190,7 @@ void Discret::Elements::Beam3Base::get_ref_pos_at_xi(
 Mat::BeamMaterial& Discret::Elements::Beam3Base::get_beam_material() const
 {
   // get the material law
-  Teuchos::RCP<Core::Mat::Material> material_ptr = material();
+  std::shared_ptr<Core::Mat::Material> material_ptr = material();
 
   if (material_ptr->material_type() != Core::Materials::m_beam_elast_hyper_generic)
     FOUR_C_THROW("unknown or improper type of material law! expected beam material law!");
@@ -203,7 +204,7 @@ Mat::BeamMaterial& Discret::Elements::Beam3Base::get_beam_material() const
 template <typename T>
 Mat::BeamMaterialTemplated<T>& Discret::Elements::Beam3Base::get_templated_beam_material() const
 {
-  return *Teuchos::rcp_dynamic_cast<Mat::BeamMaterialTemplated<T>>(material(), true);
+  return *std::dynamic_pointer_cast<Mat::BeamMaterialTemplated<T>>(material());
 };
 
 

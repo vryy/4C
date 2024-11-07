@@ -21,18 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Mortar::STRATEGY::Factory::Factory()
-    : discret_ptr_(Teuchos::null),
-      isinit_(false),
-      issetup_(false),
-      comm_ptr_(Teuchos::null),
-      dim_(-1)
+    : discret_ptr_(nullptr), isinit_(false), issetup_(false), comm_ptr_(nullptr), dim_(-1)
 {
   // empty
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::STRATEGY::Factory::init(Teuchos::RCP<Core::FE::Discretization> dis)
+void Mortar::STRATEGY::Factory::init(std::shared_ptr<Core::FE::Discretization> dis)
 {
   // call setup() after init()
   issetup_ = false;
@@ -49,7 +45,7 @@ void Mortar::STRATEGY::Factory::setup(const int dim)
   check_init();
 
   // get a copy of the underlying structural communicator
-  comm_ptr_ = Teuchos::RCP(discret_ptr_->get_comm().Clone());
+  comm_ptr_ = std::shared_ptr<Epetra_Comm>(discret_ptr_->get_comm().Clone());
 
   // get the problem dimension
   dim_ = dim;
@@ -107,7 +103,7 @@ const Epetra_Comm& Mortar::STRATEGY::Factory::get_comm() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Comm> Mortar::STRATEGY::Factory::comm_ptr()
+std::shared_ptr<Epetra_Comm> Mortar::STRATEGY::Factory::comm_ptr()
 {
   check_init_setup();
   return comm_ptr_;
@@ -115,7 +111,7 @@ Teuchos::RCP<Epetra_Comm> Mortar::STRATEGY::Factory::comm_ptr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Comm> Mortar::STRATEGY::Factory::comm_ptr() const
+std::shared_ptr<const Epetra_Comm> Mortar::STRATEGY::Factory::comm_ptr() const
 {
   check_init_setup();
   return comm_ptr_;
@@ -143,20 +139,20 @@ void Mortar::STRATEGY::Factory::check_dimension() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mortar::STRATEGY::Factory::prepare_nurbs_element(const Core::FE::Discretization& discret,
-    Teuchos::RCP<Core::Elements::Element> ele, Mortar::Element& cele) const
+    std::shared_ptr<Core::Elements::Element> ele, Mortar::Element& cele) const
 {
   const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
       dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(discret));
   if (nurbsdis == nullptr) FOUR_C_THROW("Dynamic cast failed!");
 
-  Teuchos::RCP<const Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
+  std::shared_ptr<const Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
   std::vector<Core::LinAlg::SerialDenseVector> parentknots(n_dim());
   std::vector<Core::LinAlg::SerialDenseVector> mortarknots(n_dim() - 1);
 
   double normalfac = 0.0;
-  Teuchos::RCP<Core::Elements::FaceElement> faceele =
-      Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
-  if (faceele.is_null()) FOUR_C_THROW("Cast to FaceElement failed!");
+  std::shared_ptr<Core::Elements::FaceElement> faceele =
+      std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
+  if (!faceele) FOUR_C_THROW("Cast to FaceElement failed!");
 
   bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
       faceele->parent_master_element()->id(), faceele->face_master_number());
@@ -185,7 +181,7 @@ void Mortar::STRATEGY::Factory::prepare_nurbs_node(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Mortar::STRATEGY::Factory::build_search_tree(
-    const std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces) const
+    const std::vector<std::shared_ptr<Mortar::Interface>>& interfaces) const
 {
   for (unsigned i = 0; i < interfaces.size(); ++i) interfaces[i]->create_search_tree();
 

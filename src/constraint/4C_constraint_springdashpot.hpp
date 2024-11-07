@@ -15,7 +15,7 @@
 #include "4C_utils_pairedvector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 
 FOUR_C_NAMESPACE_OPEN
@@ -61,13 +61,13 @@ namespace CONSTRAINTS
     /*!
     \brief constructor
      */
-    SpringDashpot(
-        Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::Conditions::Condition> cond);
+    SpringDashpot(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::Conditions::Condition> cond);
 
     //! add contribution of spring dashpot BC to residual vector
     // old version, NOT consistently integrated over element surface!!
     void evaluate_force(Core::LinAlg::Vector<double>& fint,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
         const Core::LinAlg::Vector<double>& vel, const Teuchos::ParameterList& p);
 
     //! add contribution of spring dashpot BC to stiffness matrix
@@ -75,14 +75,14 @@ namespace CONSTRAINTS
     // ToDo: remove redundant code in evaluate_force and evaluate_force_stiff
     // -> however should migrate to new EvaluateRobin... mhv 08/2016
     void evaluate_force_stiff(Core::LinAlg::SparseMatrix& stiff, Core::LinAlg::Vector<double>& fint,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
         const Core::LinAlg::Vector<double>& vel, Teuchos::ParameterList p);
 
     // NEW version, consistently integrated over element surface!!
-    void evaluate_robin(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fint,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> velo, Teuchos::ParameterList p);
+    void evaluate_robin(std::shared_ptr<Core::LinAlg::SparseMatrix> stiff,
+        std::shared_ptr<Core::LinAlg::Vector<double>> fint,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> velo, Teuchos::ParameterList p);
 
     //! reset after Newton step
     void reset_newton();
@@ -140,20 +140,20 @@ namespace CONSTRAINTS
     void initialize_cur_surf_normal();
 
     //! calculate nodal area - old!
-    void get_area(const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom);
+    void get_area(const std::map<int, std::shared_ptr<Core::Elements::Element>>& geom);
 
     //! get current normal
     void get_cur_normals(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& disp, Teuchos::ParameterList p);
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& disp, Teuchos::ParameterList p);
 
     //! initialize prestr offset
     void initialize_prestr_offset();
 
-    Teuchos::RCP<Core::FE::Discretization> actdisc_;    ///< standard discretization
-    Teuchos::RCP<Core::Conditions::Condition> spring_;  ///< spring dashpot condition
+    std::shared_ptr<Core::FE::Discretization> actdisc_;    ///< standard discretization
+    std::shared_ptr<Core::Conditions::Condition> spring_;  ///< spring dashpot condition
 
     /// Mortar interface in case of curnormal springs
-    Teuchos::RCP<Adapter::CouplingNonLinMortar> mortar_;
+    std::shared_ptr<Adapter::CouplingNonLinMortar> mortar_;
 
     //! @name Spring properties
     //@{
@@ -223,7 +223,7 @@ namespace CONSTRAINTS
      *  This is a pointer to the accumulated whole displacement vector of all last load steps
      *  has dimension of full problem
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> offset_prestr_new_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> offset_prestr_new_;
 
    private:
     //! Type of spring

@@ -83,14 +83,14 @@ namespace Discret
       }
 
       //! evaluate material
-      void materials(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,       //!< density at t_(n+alpha_M)
-          double& visc,         //!< fluid viscosity
-          const int iquad = -1  //!< id of current gauss point (default = -1)
+      void materials(const std::shared_ptr<const Core::Mat::Material>
+                         material,  //!< pointer to current material
+          const int k,              //!< id of current scalar
+          double& densn,            //!< density at t_(n)
+          double& densnp,           //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,           //!< density at t_(n+alpha_M)
+          double& visc,             //!< fluid viscosity
+          const int iquad = -1      //!< id of current gauss point (default = -1)
           ) override;
 
       //! calculation of convective element matrix in convective form (off diagonal term fluid)
@@ -119,9 +119,9 @@ namespace Discret
       }
 
       //! get internal variable manager for multiporo formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerArtery<nsd_, nen_>> var_manager()
+      std::shared_ptr<ScaTraEleInternalVariableManagerArtery<nsd_, nen_>> var_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerArtery<nsd_, nen_>>(
+        return std::static_pointer_cast<ScaTraEleInternalVariableManagerArtery<nsd_, nen_>>(
             my::scatravarmanager_);
       };
 
@@ -190,7 +190,7 @@ namespace Discret
               ele->material(1)->material_type());
 
         // here we rely that the Artery material has been added as second material
-        arterymat_ = Teuchos::rcp_dynamic_cast<Mat::Cnst1dArt>(ele->material(1));
+        arterymat_ = std::dynamic_pointer_cast<Mat::Cnst1dArt>(ele->material(1));
 
         materialset_ = true;
       }
@@ -205,7 +205,7 @@ namespace Discret
       double visc() { return artery_mat()->viscosity(); }
 
       //! return artery material
-      Teuchos::RCP<Mat::Cnst1dArt> artery_mat()
+      std::shared_ptr<Mat::Cnst1dArt> artery_mat()
       {
         if (!materialset_) FOUR_C_THROW("Artery Material has not yet been set in Variablemanager");
 
@@ -214,7 +214,7 @@ namespace Discret
 
      private:
       //! artery material
-      Teuchos::RCP<Mat::Cnst1dArt> arterymat_;
+      std::shared_ptr<Mat::Cnst1dArt> arterymat_;
 
       //! check if artery material has been set
       bool materialset_;

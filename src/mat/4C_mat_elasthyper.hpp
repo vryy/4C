@@ -56,7 +56,7 @@ namespace Mat
       //@{
 
       //       /// provide access to material/summand by its ID
-      //       Teuchos::RCP<const Mat::Elastic::Summand> MaterialById(
+      //       std::shared_ptr<const Mat::Elastic::Summand> MaterialById(
       //         const int id  ///< ID to look for in collection of summands
       //         ) const;
 
@@ -73,7 +73,7 @@ namespace Mat
       const int polyconvex_;
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       //@}
 
@@ -188,9 +188,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ElastHyper>(*this);
+      return std::make_shared<ElastHyper>(*this);
     }
 
     /// number of materials
@@ -332,7 +332,7 @@ namespace Mat
     );
 
     /// Return potential summand pointer for the given material type
-    Teuchos::RCP<const Mat::Elastic::Summand> get_pot_summand_ptr(
+    std::shared_ptr<const Mat::Elastic::Summand> get_pot_summand_ptr(
         const Core::Materials::MaterialType& materialtype) const;
 
     /// Return quick accessible material parameter data
@@ -364,7 +364,7 @@ namespace Mat
     Mat::PAR::ElastHyper* params_;
 
     /// map to materials/potential summands
-    std::vector<Teuchos::RCP<Mat::Elastic::Summand>> potsum_;
+    std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsum_;
 
     /// Holder of anisotropy
     Mat::Anisotropy anisotropy_;

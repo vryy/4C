@@ -17,7 +17,8 @@
 FOUR_C_NAMESPACE_OPEN
 
 CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::EmbeddedMeshConstraintManager(
-    Teuchos::RCP<Core::FE::Discretization> discret_ptr, const Core::LinAlg::Vector<double>& dispnp)
+    std::shared_ptr<Core::FE::Discretization> discret_ptr,
+    const Core::LinAlg::Vector<double>& dispnp)
 {
   // Get the parameter lists and get information from them
   auto embedded_mesh_parameter_list = Global::Problem::instance()->embedded_mesh_params();
@@ -60,22 +61,22 @@ CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::EmbeddedMeshConst
       .cut_params_ = cut_parameter_list};
 
   // Initialize visualization manager
-  auto visualization_manager = Teuchos::make_rcp<Core::IO::VisualizationManager>(
+  auto visualization_manager = std::make_shared<Core::IO::VisualizationManager>(
       Core::IO::visualization_parameters_factory(
           Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
           *Global::Problem::instance()->output_control_file(), 0.0),  // Fix time
       discret_ptr->get_comm(), "embedded_mesh");
 
-  mortar_manager_ = Teuchos::make_rcp<CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager>(
+  mortar_manager_ = std::make_shared<CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager>(
       discret_ptr, dispnp, embedded_mesh_coupling_params, visualization_manager,
       discret_ptr->dof_row_map()->MaxAllGID() + 1);
 }
 
 bool CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::evaluate_force_stiff(
     const Core::LinAlg::Vector<double>& displacement_vector,
-    Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> me_stiff_ptr,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> me_force_ptr)
+    std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> me_stiff_ptr,
+    std::shared_ptr<Core::LinAlg::Vector<double>> me_force_ptr)
 {
   // Evaluate the global mortar matrices
   mortar_manager_->evaluate_global_coupling_contributions(displacement_vector);

@@ -72,7 +72,7 @@ namespace Mixture
      * @param eleGID (in) : Global element id
      */
     void evaluate_prestress(const MixtureRule& mixtureRule,
-        const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
+        const std::shared_ptr<const Mat::CoordinateSystemProvider> cosy,
         Mixture::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
@@ -89,11 +89,11 @@ namespace Mixture
      * \return double Fraction of the membrane stress contribution to ensure equilibrium
      */
     double evaluate_mue_frac(MixtureRule& mixtureRule,
-        const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
+        const std::shared_ptr<const Mat::CoordinateSystemProvider> cosy,
         Mixture::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
         Teuchos::ParameterList& params, int gp, int eleGID) const override;
 
-    void update(const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+    void update(const std::shared_ptr<const Mat::CoordinateSystemProvider> anisotropy,
         Mixture::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
         Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
 

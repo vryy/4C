@@ -16,7 +16,9 @@
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+#include <Teuchos_RCPDecl.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -51,12 +53,11 @@ namespace Core::Rebalance
 
   @return Node row map and node column map after rebalancing with weights
   */
-  std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> rebalance_node_maps(
+  std::pair<std::shared_ptr<Epetra_Map>, std::shared_ptr<Epetra_Map>> rebalance_node_maps(
       const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams,
-      const Teuchos::RCP<Core::LinAlg::Vector<double>>& initialNodeWeights = Teuchos::null,
-      const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null,
-      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& initialNodeCoordinates =
-          Teuchos::null);
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& initialNodeWeights = nullptr,
+      const std::shared_ptr<Epetra_CrsMatrix>& initialEdgeWeights = nullptr,
+      const std::shared_ptr<Core::LinAlg::MultiVector<double>>& initialNodeCoordinates = nullptr);
 
   /*!
   \brief Rebalance graph using node and edge weights based on the initial graph
@@ -78,10 +79,9 @@ namespace Core::Rebalance
   */
   Teuchos::RCP<Epetra_CrsGraph> rebalance_graph(const Epetra_CrsGraph& initialGraph,
       const Teuchos::ParameterList& rebalanceParams,
-      const Teuchos::RCP<Core::LinAlg::Vector<double>>& initialNodeWeights = Teuchos::null,
-      const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null,
-      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& initialNodeCoordinates =
-          Teuchos::null);
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& initialNodeWeights = nullptr,
+      const std::shared_ptr<Epetra_CrsMatrix>& initialEdgeWeights = nullptr,
+      const std::shared_ptr<Core::LinAlg::MultiVector<double>>& initialNodeCoordinates = nullptr);
 
   /*!
   \brief Rebalance coordinates using weights based on the initial coordinates
@@ -95,8 +95,8 @@ namespace Core::Rebalance
 
   @return Rebalanced coordinates
   */
-  std::pair<Teuchos::RCP<Core::LinAlg::MultiVector<double>>,
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>>>
+  std::pair<std::shared_ptr<Core::LinAlg::MultiVector<double>>,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>>>
   rebalance_coordinates(const Core::LinAlg::MultiVector<double>& initialCoordinates,
       const Teuchos::ParameterList& rebalanceParams,
       const Core::LinAlg::MultiVector<double>& initialWeights);
@@ -108,7 +108,7 @@ namespace Core::Rebalance
 
   @return Node and edge weights to be used for repartitioning
   */
-  std::pair<Teuchos::RCP<Core::LinAlg::Vector<double>>, Teuchos::RCP<Epetra_CrsMatrix>>
+  std::pair<std::shared_ptr<Core::LinAlg::Vector<double>>, std::shared_ptr<Epetra_CrsMatrix>>
   build_weights(const Core::FE::Discretization& dis);
 
   /*!
@@ -121,7 +121,7 @@ namespace Core::Rebalance
 
   @return Uncompleted node graph of input discretization
   */
-  Teuchos::RCP<const Epetra_CrsGraph> build_graph(
+  std::shared_ptr<const Epetra_CrsGraph> build_graph(
       Core::FE::Discretization& dis, const Epetra_Map& roweles);
 
   /*!
@@ -137,7 +137,7 @@ namespace Core::Rebalance
 
   @return Completed monolithic node graph of input discretization
   */
-  Teuchos::RCP<const Epetra_CrsGraph> build_monolithic_node_graph(
+  std::shared_ptr<const Epetra_CrsGraph> build_monolithic_node_graph(
       const Core::FE::Discretization& dis,
       const Core::GeometricSearch::GeometricSearchParams& params);
 

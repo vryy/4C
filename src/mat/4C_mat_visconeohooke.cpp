@@ -30,9 +30,9 @@ Mat::PAR::ViscoNeoHooke::ViscoNeoHooke(const Core::Mat::PAR::Parameter::Data& ma
 {
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ViscoNeoHooke::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ViscoNeoHooke::create_material()
 {
-  return Teuchos::make_rcp<Mat::ViscoNeoHooke>(this);
+  return std::make_shared<Mat::ViscoNeoHooke>(this);
 }
 
 
@@ -54,10 +54,10 @@ Core::Communication::ParObject* Mat::ViscoNeoHookeType::create(
 Mat::ViscoNeoHooke::ViscoNeoHooke() : params_(nullptr)
 {
   isinit_ = false;
-  histstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  artstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  histstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  artstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  histstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  artstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  histstresslast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  artstresslast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 }
 
 
@@ -117,7 +117,7 @@ void Mat::ViscoNeoHooke::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -136,10 +136,10 @@ void Mat::ViscoNeoHooke::unpack(Core::Communication::UnpackBuffer& buffer)
 
   if (twicehistsize == 0) isinit_ = false;
 
-  histstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  artstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  histstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  artstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  histstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  artstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  histstresslast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  artstresslast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
   for (int var = 0; var < twicehistsize; var += 2)
   {
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> tmp(true);
@@ -161,10 +161,10 @@ void Mat::ViscoNeoHooke::unpack(Core::Communication::UnpackBuffer& buffer)
  *----------------------------------------------------------------------*/
 void Mat::ViscoNeoHooke::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
-  histstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  artstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  histstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  artstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  histstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  artstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  histstresslast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  artstresslast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
   const Core::LinAlg::Matrix<NUM_STRESS_3D, 1> emptyvec(true);
   histstresscurr_->resize(numgp);
   histstresslast_->resize(numgp);
@@ -196,8 +196,8 @@ void Mat::ViscoNeoHooke::update()
   histstresslast_ = histstresscurr_;
   artstresslast_ = artstresscurr_;
   const Core::LinAlg::Matrix<NUM_STRESS_3D, 1> emptyvec(true);
-  histstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  artstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  histstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  artstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
   const int numgp = histstresslast_->size();
   histstresscurr_->resize(numgp);
   artstresscurr_->resize(numgp);

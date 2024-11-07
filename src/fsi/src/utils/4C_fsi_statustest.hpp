@@ -199,7 +199,7 @@ namespace NOX
      public:
       PartialSumNormF(std::string name, const Core::LinAlg::MapExtractor& extractor1, double scale1,
           const Core::LinAlg::MapExtractor& extractor2, double scale2,
-          Teuchos::RCP<Coupling::Adapter::CouplingConverter> converter, double tolerance,
+          std::shared_ptr<Coupling::Adapter::CouplingConverter> converter, double tolerance,
           ScaleType stype = Scaled);
 
      protected:
@@ -210,7 +210,7 @@ namespace NOX
       const Core::LinAlg::MapExtractor extractor2_;
       double scale1_;
       double scale2_;
-      Teuchos::RCP<Coupling::Adapter::CouplingConverter> converter_;
+      std::shared_ptr<Coupling::Adapter::CouplingConverter> converter_;
     };
 
 
@@ -272,7 +272,7 @@ namespace NOX
       ::NOX::StatusTest::StatusType status_;
 
       //! Vector containing the update for the current outer iteration
-      Teuchos::RCP<::NOX::Abstract::Vector> update_vector_ptr_;
+      std::shared_ptr<::NOX::Abstract::Vector> update_vector_ptr_;
 
       //! Type of norm to use
       ::NOX::Abstract::Vector::NormType norm_type_;

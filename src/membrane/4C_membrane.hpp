@@ -17,7 +17,7 @@
 #include "4C_membrane_eletypes.hpp"
 #include "4C_thermo_ele_impl_utils.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -123,16 +123,16 @@ namespace Discret
       int num_surface() const override { return 1; }
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
+      \brief Get vector of std::shared_ptrs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -198,7 +198,7 @@ namespace Discret
 
       \param nummat (in): number of requested material
       */
-      virtual Teuchos::RCP<Mat::So3Material> solid_material(int nummat = 0) const;
+      virtual std::shared_ptr<Mat::So3Material> solid_material(int nummat = 0) const;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -391,13 +391,13 @@ namespace Discret
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline bool is_params_interface() const override { return (not interface_ptr_.is_null()); }
+      inline bool is_params_interface() const override { return (interface_ptr_ != nullptr); }
 
       /** \brief get access to the parameter interface pointer
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override;
+      std::shared_ptr<Core::Elements::ParamsInterface> params_interface_ptr() override;
 
      protected:
       /** \brief get access to the interface
@@ -420,7 +420,7 @@ namespace Discret
       /** \brief interface ptr
        *
        *  data exchange between the element and the time integrator. */
-      Teuchos::RCP<Core::Elements::ParamsInterface> interface_ptr_;
+      std::shared_ptr<Core::Elements::ParamsInterface> interface_ptr_;
 
       /// type of 2D dimension reduction
       enum DimensionalReduction
@@ -515,7 +515,7 @@ namespace Discret
 
       static MembraneLine2Type& instance();
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
@@ -544,7 +544,7 @@ namespace Discret
 
       static MembraneLine3Type& instance();
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override

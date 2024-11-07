@@ -14,8 +14,7 @@
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -59,8 +58,8 @@ namespace Core::FE
      *                              discretization column map ( optional )
      */
     void evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvector,
         const Epetra_Map* col_ele_map = nullptr);
 
     /** \brief Evaluate the elements of the given discretization and fill the
@@ -79,8 +78,8 @@ namespace Core::FE
      *                              discretization column map ( optional )
      */
     void evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
-        std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>>& systemmatrices,
-        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& systemvector,
+        std::vector<std::shared_ptr<Core::LinAlg::SparseOperator>>& systemmatrices,
+        std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>& systemvector,
         const Epetra_Map* col_ele_map = nullptr);
 
     /** \brief Evaluate the elements of the given discretization and fill the
@@ -107,11 +106,11 @@ namespace Core::FE
      */
     void evaluate_dirichlet(const Core::FE::Discretization& discret,
         const Teuchos::ParameterList& params,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectord,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectordd,
-        const Teuchos::RCP<Core::LinAlg::Vector<int>>& toggle,
-        const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor);
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvector,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvectord,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvectordd,
+        const std::shared_ptr<Core::LinAlg::Vector<int>>& toggle,
+        const std::shared_ptr<Core::LinAlg::MapExtractor>& dbcmapextractor);
 
     /** \brief Evaluate Dirichlet boundary conditions
      *
@@ -120,13 +119,13 @@ namespace Core::FE
      */
     inline void evaluate_dirichlet(const Core::FE::Discretization& discret,
         const Teuchos::ParameterList& params,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectord,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectordd,
-        const Teuchos::RCP<Core::LinAlg::Vector<int>>& toggle)
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvector,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvectord,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvectordd,
+        const std::shared_ptr<Core::LinAlg::Vector<int>>& toggle)
     {
       evaluate_dirichlet(
-          discret, params, systemvector, systemvectord, systemvectordd, toggle, Teuchos::null);
+          discret, params, systemvector, systemvectord, systemvectordd, toggle, nullptr);
     }
 
     /*!
@@ -159,7 +158,7 @@ namespace Core::FE
      *
      *  The Dbc object is build in dependency of the given discretization.
      */
-    Teuchos::RCP<const Dbc> build_dbc(const Core::FE::Discretization* discret_ptr);
+    std::shared_ptr<const Dbc> build_dbc(const Core::FE::Discretization* discret_ptr);
 
     /** \brief Default Dirchilet boundary condition evaluation class
      */
@@ -237,17 +236,17 @@ namespace Core::FE
        *  evaluation process can start
        */
       void operator()(const Core::FE::Discretization& discret, const Teuchos::ParameterList& params,
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectord,
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectordd,
-          const Teuchos::RCP<Core::LinAlg::Vector<int>>& toggle,
-          const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const;
+          const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvector,
+          const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvectord,
+          const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvectordd,
+          const std::shared_ptr<Core::LinAlg::Vector<int>>& toggle,
+          const std::shared_ptr<Core::LinAlg::MapExtractor>& dbcmapextractor) const;
 
      protected:
       /// create the toggle vector based on the given systemvector maps
-      Teuchos::RCP<Core::LinAlg::Vector<int>> create_toggle_vector(
-          const Teuchos::RCP<Core::LinAlg::Vector<int>> toggle_input,
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors) const;
+      std::shared_ptr<Core::LinAlg::Vector<int>> create_toggle_vector(
+          const std::shared_ptr<Core::LinAlg::Vector<int>> toggle_input,
+          const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors) const;
 
       /** \brief Evaluate Dirichlet boundary conditions
        *
@@ -290,8 +289,8 @@ namespace Core::FE
        */
       virtual void evaluate(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, double time,
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors, DbcInfo& info,
-          Teuchos::RCP<std::set<int>>* dbcgids) const;
+          const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors, DbcInfo& info,
+          std::shared_ptr<std::set<int>>* dbcgids) const;
 
       /** \brief loop through Dirichlet conditions and evaluate them
        *
@@ -326,14 +325,14 @@ namespace Core::FE
        */
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret,
-          const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
-          DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids) const;
+          const std::vector<std::shared_ptr<Core::Conditions::Condition>>& conds, double time,
+          DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and read the given type
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret,
-          const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
-          DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+          const std::vector<std::shared_ptr<Core::Conditions::Condition>>& conds, double time,
+          DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
           const enum Core::Conditions::ConditionType& type) const;
 
       /** \brief Determine dofs subject to Dirichlet condition from input file
@@ -365,7 +364,7 @@ namespace Core::FE
        */
       virtual void read_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
-          double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+          double time, DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
           int hierarchical_order) const;
 
       /** \brief Assignment of the values to the system vectors.
@@ -377,17 +376,17 @@ namespace Core::FE
        */
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret,
-          const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+          const std::vector<std::shared_ptr<Core::Conditions::Condition>>& conds, double time,
+          const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
           const Core::LinAlg::Vector<int>& toggle,
-          const Teuchos::RCP<std::set<int>>* dbcgids) const;
+          const std::shared_ptr<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and assign the given type
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret,
-          const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-          const Core::LinAlg::Vector<int>& toggle, const Teuchos::RCP<std::set<int>>* dbcgids,
+          const std::vector<std::shared_ptr<Core::Conditions::Condition>>& conds, double time,
+          const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
+          const Core::LinAlg::Vector<int>& toggle, const std::shared_ptr<std::set<int>>* dbcgids,
           const enum Core::Conditions::ConditionType& type) const;
 
       /** \brief Apply the Dirichlet values to the system vectors
@@ -431,15 +430,15 @@ namespace Core::FE
        */
       virtual void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
-          double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+          double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
           const Core::LinAlg::Vector<int>& toggle,
-          const Teuchos::RCP<std::set<int>>* dbcgids) const;
+          const std::shared_ptr<std::set<int>>* dbcgids) const;
 
       /** \brief Create a Dbc map extractor, if desired
        */
       void build_dbc_map_extractor(const Core::FE::Discretization& discret,
-          const Teuchos::RCP<const std::set<int>>& dbcrowgids,
-          const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const;
+          const std::shared_ptr<const std::set<int>>& dbcrowgids,
+          const std::shared_ptr<Core::LinAlg::MapExtractor>& dbcmapextractor) const;
 
     };  // class Dbc
   }     // namespace Utils

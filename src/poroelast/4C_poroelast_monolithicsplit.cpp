@@ -22,27 +22,27 @@ FOUR_C_NAMESPACE_OPEN
 
 PoroElast::MonolithicSplit::MonolithicSplit(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
-    Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
+    std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter)
     : Monolithic(comm, timeparams, porosity_splitter)
 {
-  icoupfs_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+  icoupfs_ = std::make_shared<Coupling::Adapter::Coupling>();
 
   evaluateinterface_ = false;
 
-  fgcur_ = Teuchos::null;
-  ddiinc_ = Teuchos::null;
-  solipre_ = Teuchos::null;
-  ddginc_ = Teuchos::null;
-  solgpre_ = Teuchos::null;
-  duiinc_ = Teuchos::null;
-  solivelpre_ = Teuchos::null;
-  duginc_ = Teuchos::null;
-  solgvelpre_ = Teuchos::null;
+  fgcur_ = nullptr;
+  ddiinc_ = nullptr;
+  solipre_ = nullptr;
+  ddginc_ = nullptr;
+  solgpre_ = nullptr;
+  duiinc_ = nullptr;
+  solivelpre_ = nullptr;
+  duginc_ = nullptr;
+  solgvelpre_ = nullptr;
 
-  fsibcmap_ = Teuchos::null;
-  fsibcextractor_ = Teuchos::null;
+  fsibcmap_ = nullptr;
+  fsibcextractor_ = nullptr;
 
-  ddi_ = Teuchos::null;
+  ddi_ = nullptr;
 }
 
 void PoroElast::MonolithicSplit::prepare_time_step()
@@ -63,14 +63,15 @@ void PoroElast::MonolithicSplit::prepare_time_step()
 
     double timescale = fluid_field()->time_scaling();
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> idispnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> idispnp =
         structure_field()->interface()->extract_fsi_cond_vector(*structure_field()->dispnp());
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> idispn =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> idispn =
         structure_field()->interface()->extract_fsi_cond_vector(*structure_field()->dispn());
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> ivelnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> ivelnp =
         structure_field()->interface()->extract_fsi_cond_vector(*structure_field()->velnp());
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ifvelnp = fluid_field()->extract_interface_velnp();
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ifveln = fluid_field()->extract_interface_veln();
+    std::shared_ptr<Core::LinAlg::Vector<double>> ifvelnp =
+        fluid_field()->extract_interface_velnp();
+    std::shared_ptr<Core::LinAlg::Vector<double>> ifveln = fluid_field()->extract_interface_veln();
 
     ddi_->Update(1.0, *idispnp, -1.0, *idispn, 0.0);
     ddi_->Update(-1.0, *ifveln, timescale);
@@ -79,9 +80,9 @@ void PoroElast::MonolithicSplit::prepare_time_step()
     {
       // if there are DBCs on FSI conditioned nodes, they have to be treated seperately
 
-      Teuchos::RCP<Core::LinAlg::Vector<double>> ibcveln =
+      std::shared_ptr<Core::LinAlg::Vector<double>> ibcveln =
           fsibcextractor_->extract_cond_vector(*structure_to_fluid_at_interface(*ivelnp));
-      Teuchos::RCP<Core::LinAlg::Vector<double>> inobcveln =
+      std::shared_ptr<Core::LinAlg::Vector<double>> inobcveln =
           fsibcextractor_->extract_other_vector(*structure_to_fluid_at_interface(*ddi_));
 
       // DBCs at FSI-Interface
@@ -97,47 +98,47 @@ void PoroElast::MonolithicSplit::prepare_time_step()
   }
 }
 
-Teuchos::RCP<Core::LinAlg::Vector<double>>
+std::shared_ptr<Core::LinAlg::Vector<double>>
 PoroElast::MonolithicSplit::structure_to_fluid_at_interface(
     const Core::LinAlg::Vector<double>& iv) const
 {
   return icoupfs_->master_to_slave(iv);
 }
 
-Teuchos::RCP<Core::LinAlg::Vector<double>>
+std::shared_ptr<Core::LinAlg::Vector<double>>
 PoroElast::MonolithicSplit::fluid_to_structure_at_interface(
     const Core::LinAlg::Vector<double>& iv) const
 {
   return icoupfs_->slave_to_master(iv);
 }
 
-Teuchos::RCP<Epetra_Map> PoroElast::MonolithicSplit::fsidbc_map()
+std::shared_ptr<Epetra_Map> PoroElast::MonolithicSplit::fsidbc_map()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::MonolithicSplit::FSIDBCMap");
 
   // get interface map and DBC map of fluid
-  std::vector<Teuchos::RCP<const Epetra_Map>> fluidmaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> fluidmaps;
   fluidmaps.push_back(fluid_field()->interface()->fsi_cond_map());
   fluidmaps.push_back(fluid_field()->get_dbc_map_extractor()->cond_map());
 
   // build vector of dbc and fsi coupling of fluid field
-  Teuchos::RCP<Epetra_Map> fluidfsibcmap =
+  std::shared_ptr<Epetra_Map> fluidfsibcmap =
       Core::LinAlg::MultiMapExtractor::intersect_maps(fluidmaps);
 
   if (fluidfsibcmap->NumMyElements())
     FOUR_C_THROW("Dirichlet boundary conditions on fluid and FSI interface not supported!!");
 
   // get interface map and DBC map of structure
-  std::vector<Teuchos::RCP<const Epetra_Map>> structmaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> structmaps;
   structmaps.push_back(structure_field()->interface()->fsi_cond_map());
   structmaps.push_back(structure_field()->get_dbc_map_extractor()->cond_map());
 
   // vector of dbc and fsi coupling of structure field
-  Teuchos::RCP<Epetra_Map> structfsibcmap =
+  std::shared_ptr<Epetra_Map> structfsibcmap =
       Core::LinAlg::MultiMapExtractor::intersect_maps(structmaps);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gidmarker_struct =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+  std::shared_ptr<Core::LinAlg::Vector<double>> gidmarker_struct =
+      std::make_shared<Core::LinAlg::Vector<double>>(
           *structure_field()->interface()->fsi_cond_map(), true);
 
   // Todo this is ugly, fix it!
@@ -154,7 +155,7 @@ Teuchos::RCP<Epetra_Map> PoroElast::MonolithicSplit::fsidbc_map()
   }
 
   // transfer to fluid side
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gidmarker_fluid =
+  std::shared_ptr<Core::LinAlg::Vector<double>> gidmarker_fluid =
       structure_to_fluid_at_interface(*gidmarker_struct);
 
   std::vector<int> structfsidbcvector;
@@ -167,7 +168,7 @@ Teuchos::RCP<Epetra_Map> PoroElast::MonolithicSplit::fsidbc_map()
     if (val == 1.0) structfsidbcvector.push_back(fluidmap[i]);
   }
 
-  Teuchos::RCP<Epetra_Map> structfsidbcmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> structfsidbcmap = std::make_shared<Epetra_Map>(
       -1, structfsidbcvector.size(), structfsidbcvector.data(), 0, get_comm());
   // FOUR_C_ASSERT(fluidfsidbcmap->UniqueGIDs(),"fsidbcmap is not unique!");
 
@@ -189,31 +190,31 @@ void PoroElast::MonolithicSplit::setup_coupling_and_matrices()
   {
     if (fsibcmap_->NumGlobalElements())
     {
-      const Teuchos::RCP<Adapter::FluidPoro>& fluidfield =
-          Teuchos::rcp_dynamic_cast<Adapter::FluidPoro>(fluid_field());
+      const std::shared_ptr<Adapter::FluidPoro>& fluidfield =
+          std::dynamic_pointer_cast<Adapter::FluidPoro>(fluid_field());
       fluidfield->add_dirich_cond(fsibcmap_);
 
-      fsibcextractor_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+      fsibcextractor_ = std::make_shared<Core::LinAlg::MapExtractor>(
           *fluid_field()->interface()->fsi_cond_map(), fsibcmap_);
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> idispnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> idispnp =
         structure_field()->interface()->extract_fsi_cond_vector(*structure_field()->dispnp());
-    ddi_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(idispnp->Map(), true);
+    ddi_ = std::make_shared<Core::LinAlg::Vector<double>>(idispnp->Map(), true);
   }
 
   // initialize Poroelasticity-systemmatrix_
   systemmatrix_ =
-      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+      std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           *extractor(), *extractor(), 81, false, true);
 
   // initialize coupling matrices
   k_fs_ =
-      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+      std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           *(structure_field()->interface()), *(fluid_field()->interface()), 81, false, true);
 
   k_sf_ =
-      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+      std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           *(fluid_field()->interface()), *(structure_field()->interface()), 81, false, true);
 }
 
@@ -222,22 +223,22 @@ void PoroElast::MonolithicSplit::build_combined_dbc_map()
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::MonolithicSplit::combined_dbc_map");
 
   // first, get DBC-maps from structure and fluid field and merge them to one map
-  const Teuchos::RCP<const Epetra_Map> scondmap =
+  const std::shared_ptr<const Epetra_Map> scondmap =
       structure_field()->get_dbc_map_extractor()->cond_map();
-  const Teuchos::RCP<const Epetra_Map> fcondmap =
+  const std::shared_ptr<const Epetra_Map> fcondmap =
       fluid_field()->get_dbc_map_extractor()->cond_map();
 
-  std::vector<Teuchos::RCP<const Epetra_Map>> vectoroverallfsimaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> vectoroverallfsimaps;
   vectoroverallfsimaps.push_back(scondmap);
   vectoroverallfsimaps.push_back(fcondmap);
 
-  Teuchos::RCP<Epetra_Map> overallfsidbcmaps =
+  std::shared_ptr<Epetra_Map> overallfsidbcmaps =
       Core::LinAlg::MultiMapExtractor::merge_maps(vectoroverallfsimaps);
 
   // now we intersect the global dof map with the DBC map to get all dofs with DBS applied, which
   // are in the global
   // system, i.e. are not condensed
-  std::vector<Teuchos::RCP<const Epetra_Map>> vectordbcmaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> vectordbcmaps;
   vectordbcmaps.emplace_back(overallfsidbcmaps);
   vectordbcmaps.emplace_back(fullmap_);
 

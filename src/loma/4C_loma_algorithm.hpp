@@ -111,10 +111,10 @@ namespace LowMach
     void setup_mono_loma_matrix();
 
     /// evaluate off-diagonal block with fluid weighting functions
-    void evaluate_loma_od_block_mat_fluid(Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_fs);
+    void evaluate_loma_od_block_mat_fluid(std::shared_ptr<Core::LinAlg::SparseMatrix> mat_fs);
 
     /// evaluate off-diagonal block with scatra weighting functions
-    // void EvaluateLomaODBlockMatScaTra(Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_sf);
+    // void EvaluateLomaODBlockMatScaTra(std::shared_ptr<Core::LinAlg::SparseMatrix> mat_sf);
 
     /// set up right-hand-side for monolithic low-Mach-number system
     void setup_mono_loma_rhs();
@@ -142,22 +142,22 @@ namespace LowMach
 
     /// combined Dirichlet boundary condition map for monolithic solver
     /// (unique map of all dofs with Dirichlet boundary conditions)
-    Teuchos::RCP<Epetra_Map> lomadbcmap_;
+    std::shared_ptr<Epetra_Map> lomadbcmap_;
 
     /// incremental vector for monolithic solver
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lomaincrement_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lomaincrement_;
 
     /// rhs vector for monolithic solver
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lomarhs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lomarhs_;
 
     /// vector of zeros for Dirichlet boundary conditions for monolithic solver
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;
 
     /// block matrix for monolithic solver
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> lomasystemmatrix_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> lomasystemmatrix_;
 
     /// monolithic solver
-    Teuchos::RCP<Core::LinAlg::Solver> lomasolver_;
+    std::shared_ptr<Core::LinAlg::Solver> lomasolver_;
 
     /// time-step length, maximum time and maximum number of steps
     double dt_;

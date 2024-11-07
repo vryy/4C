@@ -28,20 +28,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::FE::Discretization::Discretization(
-    const std::string& name, Teuchos::RCP<Epetra_Comm> comm, unsigned int n_dim)
-    : name_(name),
-      comm_(comm),
-      writer_(Teuchos::null),
-      filled_(false),
-      havedof_(false),
-      n_dim_(n_dim)
+    const std::string& name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim)
+    : name_(name), comm_(comm), writer_(nullptr), filled_(false), havedof_(false), n_dim_(n_dim)
 {
-  dofsets_.emplace_back(Teuchos::make_rcp<Core::DOFSets::DofSet>());
+  dofsets_.emplace_back(std::make_shared<Core::DOFSets::DofSet>());
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::add_element(Teuchos::RCP<Core::Elements::Element> ele)
+void Core::FE::Discretization::add_element(std::shared_ptr<Core::Elements::Element> ele)
 {
   element_[ele->id()] = ele;
   reset();
@@ -68,7 +63,7 @@ void Core::FE::Discretization::check_filled_globally()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::add_node(Teuchos::RCP<Core::Nodes::Node> node)
+void Core::FE::Discretization::add_node(std::shared_ptr<Core::Nodes::Node> node)
 {
   node_[node->id()] = node;
   reset();
@@ -76,7 +71,7 @@ void Core::FE::Discretization::add_node(Teuchos::RCP<Core::Nodes::Node> node)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::FE::Discretization::delete_node(Teuchos::RCP<Core::Nodes::Node> node)
+bool Core::FE::Discretization::delete_node(std::shared_ptr<Core::Nodes::Node> node)
 {
   auto it_node = node_.find(node->id());
   if (it_node == node_.end()) return false;
@@ -118,7 +113,7 @@ bool Core::FE::Discretization::delete_elements()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::FE::Discretization::delete_element(Teuchos::RCP<Core::Elements::Element> ele)
+bool Core::FE::Discretization::delete_element(std::shared_ptr<Core::Elements::Element> ele)
 {
   auto it_ele = element_.find(ele->id());
   if (it_ele == element_.end()) return false;
@@ -253,7 +248,7 @@ bool Core::FE::Discretization::have_global_element(const int gid) const
  *----------------------------------------------------------------------*/
 Core::Elements::Element* Core::FE::Discretization::g_element(const int gid) const
 {
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator curr = element_.find(gid);
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator curr = element_.find(gid);
   FOUR_C_ASSERT(
       curr != element_.end(), "Element with global id gid=%d not stored on this proc!", gid);
   return curr->second.get();
@@ -270,7 +265,7 @@ bool Core::FE::Discretization::have_global_node(const int gid) const
  *----------------------------------------------------------------------*/
 Core::Nodes::Node* Core::FE::Discretization::g_node(int gid) const
 {
-  std::map<int, Teuchos::RCP<Core::Nodes::Node>>::const_iterator curr = node_.find(gid);
+  std::map<int, std::shared_ptr<Core::Nodes::Node>>::const_iterator curr = node_.find(gid);
   FOUR_C_ASSERT(curr != node_.end(), "Node with global id gid=%d not stored on this proc!", gid);
   return curr->second.get();
 }
@@ -297,12 +292,12 @@ void Core::FE::Discretization::print(std::ostream& os) const
   else
   {
     int nummynodes = 0;
-    std::map<int, Teuchos::RCP<Core::Nodes::Node>>::const_iterator ncurr;
+    std::map<int, std::shared_ptr<Core::Nodes::Node>>::const_iterator ncurr;
     for (ncurr = node_.begin(); ncurr != node_.end(); ++ncurr)
       if (ncurr->second->owner() == get_comm().MyPID()) nummynodes++;
 
     int nummyele = 0;
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator ecurr;
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator ecurr;
     for (ecurr = element_.begin(); ecurr != element_.end(); ++ecurr)
       if (ecurr->second->owner() == get_comm().MyPID()) nummyele++;
 
@@ -336,7 +331,7 @@ void Core::FE::Discretization::print(std::ostream& os) const
         // print elements
         {
           os << "-------------------------- Proc " << proc << " :\n";
-          std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator curr;
+          std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator curr;
           for (curr = element_.begin(); curr != element_.end(); ++curr)
           {
             os << *(curr->second);
@@ -356,7 +351,7 @@ void Core::FE::Discretization::print(std::ostream& os) const
         // print nodes
         {
           os << "-------------------------- Proc " << proc << " :\n";
-          std::map<int, Teuchos::RCP<Core::Nodes::Node>>::const_iterator curr;
+          std::map<int, std::shared_ptr<Core::Nodes::Node>>::const_iterator curr;
           for (curr = node_.begin(); curr != node_.end(); ++curr)
           {
             os << *(curr->second);
@@ -381,7 +376,7 @@ void Core::FE::Discretization::print(std::ostream& os) const
         if (numcond)
         {
           os << numcond << " Conditions:\n";
-          std::map<std::string, Teuchos::RCP<Core::Conditions::Condition>>::const_iterator curr;
+          std::map<std::string, std::shared_ptr<Core::Conditions::Condition>>::const_iterator curr;
           for (curr = condition_.begin(); curr != condition_.end(); ++curr)
           {
             os << curr->first << " ";
@@ -428,7 +423,7 @@ const Epetra_Map* Core::FE::Discretization::dof_col_map(const unsigned nds) cons
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::replace_dof_set(const unsigned nds,
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> newdofset, const bool replaceinstatdofsets)
+    std::shared_ptr<Core::DOFSets::DofSetInterface> newdofset, const bool replaceinstatdofsets)
 {
   FOUR_C_ASSERT(
       nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
@@ -442,7 +437,7 @@ void Core::FE::Discretization::replace_dof_set(const unsigned nds,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::FE::Discretization::add_dof_set(Teuchos::RCP<Core::DOFSets::DofSetInterface> newdofset)
+int Core::FE::Discretization::add_dof_set(std::shared_ptr<Core::DOFSets::DofSetInterface> newdofset)
 {
   // if we already have our dofs here and we add a properly filled (proxy)
   // DofSet, we do not need (and do not want) to refill.
@@ -454,18 +449,18 @@ int Core::FE::Discretization::add_dof_set(Teuchos::RCP<Core::DOFSets::DofSetInte
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::DOFSets::DofSetInterface> Core::FE::Discretization::get_dof_set_proxy(
+std::shared_ptr<Core::DOFSets::DofSetInterface> Core::FE::Discretization::get_dof_set_proxy(
     const int nds)
 {
   FOUR_C_ASSERT(
       nds < (int)dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
-  return Teuchos::make_rcp<Core::DOFSets::DofSetProxy>(&*dofsets_[nds]);
+  return std::make_shared<Core::DOFSets::DofSetProxy>(&*dofsets_[nds]);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::replace_dof_set(
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> newdofset, const bool replaceinstatdofsets)
+    std::shared_ptr<Core::DOFSets::DofSetInterface> newdofset, const bool replaceinstatdofsets)
 {
   FOUR_C_ASSERT(dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
   havedof_ = false;
@@ -480,10 +475,10 @@ std::map<int, std::vector<int>>* Core::FE::Discretization::get_all_pbc_coupled_c
   // check for pbcs
   for (int nds = 0; nds < num_dof_sets(); nds++)
   {
-    Teuchos::RCP<Core::DOFSets::PBCDofSet> pbcdofset =
-        Teuchos::rcp_dynamic_cast<Core::DOFSets::PBCDofSet>(dofsets_[nds]);
+    std::shared_ptr<Core::DOFSets::PBCDofSet> pbcdofset =
+        std::dynamic_pointer_cast<Core::DOFSets::PBCDofSet>(dofsets_[nds]);
 
-    if (pbcdofset != Teuchos::null)
+    if (pbcdofset != nullptr)
     {
       // it is assumed that, if one pbc set is available, all other potential dofsets hold the same
       // layout
@@ -496,16 +491,16 @@ std::map<int, std::vector<int>>* Core::FE::Discretization::get_all_pbc_coupled_c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::map<int, int>>
+std::shared_ptr<std::map<int, int>>
 Core::FE::Discretization::get_pbc_slave_to_master_node_connectivity()
 {
   // check for pbcs
   for (int nds = 0; nds < num_dof_sets(); nds++)
   {
-    Teuchos::RCP<Core::DOFSets::PBCDofSet> pbcdofset =
-        Teuchos::rcp_dynamic_cast<Core::DOFSets::PBCDofSet>(dofsets_[nds]);
+    std::shared_ptr<Core::DOFSets::PBCDofSet> pbcdofset =
+        std::dynamic_pointer_cast<Core::DOFSets::PBCDofSet>(dofsets_[nds]);
 
-    if (pbcdofset != Teuchos::null)
+    if (pbcdofset != nullptr)
     {
       // it is assumed that, if one pbc set is available, all other potential dofsets hold the same
       // layout
@@ -513,14 +508,14 @@ Core::FE::Discretization::get_pbc_slave_to_master_node_connectivity()
     }
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::set_state(const unsigned nds, const std::string& name,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> state)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> state)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Discretization::set_state");
 
@@ -541,7 +536,7 @@ void Core::FE::Discretization::set_state(const unsigned nds, const std::string& 
         "col map of discretization %s and state vector %s are different. This is a fatal bug!",
         name_.c_str(), name.c_str());
     // make a copy as in parallel such that no additional RCP points to the state vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tmp = Core::LinAlg::create_vector(*colmap, false);
+    std::shared_ptr<Core::LinAlg::Vector<double>> tmp = Core::LinAlg::create_vector(*colmap, false);
     tmp->Update(1.0, *state, 0.0);
     state_[nds][name] = tmp;
   }
@@ -550,20 +545,20 @@ void Core::FE::Discretization::set_state(const unsigned nds, const std::string& 
     FOUR_C_ASSERT(dof_row_map(nds)->SameAs(state->Map()),
         "row map of discretization %s and state vector %s are different. This is a fatal bug!",
         name_.c_str(), name.c_str());
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tmp = Core::LinAlg::create_vector(*colmap, false);
+    std::shared_ptr<Core::LinAlg::Vector<double>> tmp = Core::LinAlg::create_vector(*colmap, false);
 
     // this is necessary to find out the number of nodesets in the beginning
     if (stateimporter_.size() <= nds)
     {
       stateimporter_.resize(nds + 1);
-      for (unsigned i = 0; i <= nds; ++i) stateimporter_[i] = Teuchos::null;
+      for (unsigned i = 0; i <= nds; ++i) stateimporter_[i] = nullptr;
     }
     // (re)build importer if necessary
-    if (stateimporter_[nds] == Teuchos::null or
+    if (stateimporter_[nds] == nullptr or
         not stateimporter_[nds]->SourceMap().SameAs(state->Map()) or
         not stateimporter_[nds]->TargetMap().SameAs(*colmap))
     {
-      stateimporter_[nds] = Teuchos::make_rcp<Epetra_Import>(*colmap, state->Map());
+      stateimporter_[nds] = std::make_shared<Epetra_Import>(*colmap, state->Map());
     }
 
     // transfer data
@@ -579,27 +574,28 @@ void Core::FE::Discretization::set_state(const unsigned nds, const std::string& 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::set_condition(
-    const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
+    const std::string& name, std::shared_ptr<Core::Conditions::Condition> cond)
 {
-  condition_.insert(std::pair<std::string, Teuchos::RCP<Core::Conditions::Condition>>(name, cond));
+  condition_.insert(
+      std::pair<std::string, std::shared_ptr<Core::Conditions::Condition>>(name, cond));
   filled_ = false;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::replace_conditions(
-    const std::string& name, const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds)
+    const std::string& name, const std::vector<std::shared_ptr<Core::Conditions::Condition>>& conds)
 {
   if (condition_.count(name) > 0) condition_.erase(name);
 
-  std::vector<Teuchos::RCP<Core::Conditions::Condition>>::const_iterator cit;
+  std::vector<std::shared_ptr<Core::Conditions::Condition>>::const_iterator cit;
   for (cit = conds.begin(); cit != conds.end(); ++cit)
   {
     // skip null pointers (these conditions will be deleted only and
     // therefore may disappear completely from this discretization)
-    if (not cit->is_null())
+    if (*cit != nullptr)
       condition_.insert(
-          std::pair<std::string, Teuchos::RCP<Core::Conditions::Condition>>(name, *cit));
+          std::pair<std::string, std::shared_ptr<Core::Conditions::Condition>>(name, *cit));
   }
   filled_ = false;
 }
@@ -624,7 +620,7 @@ void Core::FE::Discretization::get_condition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::get_condition(
-    const std::string& name, std::vector<Teuchos::RCP<Core::Conditions::Condition>>& out) const
+    const std::string& name, std::vector<std::shared_ptr<Core::Conditions::Condition>>& out) const
 {
   const unsigned num = condition_.count(name);
   out.resize(num);
@@ -664,7 +660,7 @@ void Core::FE::Discretization::get_condition_names(std::vector<std::string>& nam
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::FE::Discretization::pack_my_elements() const
+std::shared_ptr<std::vector<char>> Core::FE::Discretization::pack_my_elements() const
 {
   FOUR_C_THROW_UNLESS(
       filled(), "fill_complete was not called on discretization %s!", name_.c_str());
@@ -673,7 +669,7 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::pack_my_elements() con
 
   for (auto* ele : elerowptr_) ele->pack(buffer);
 
-  auto block = Teuchos::make_rcp<std::vector<char>>();
+  auto block = std::make_shared<std::vector<char>>();
   std::swap(*block, buffer());
   return block;
 }
@@ -681,7 +677,7 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::pack_my_elements() con
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::FE::Discretization::pack_my_nodes() const
+std::shared_ptr<std::vector<char>> Core::FE::Discretization::pack_my_nodes() const
 {
   FOUR_C_THROW_UNLESS(
       filled(), "fill_complete was not called on discretization %s!", name_.c_str());
@@ -690,7 +686,7 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::pack_my_nodes() const
 
   for (auto* node : noderowptr_) node->pack(buffer);
 
-  auto block = Teuchos::make_rcp<std::vector<char>>();
+  auto block = std::make_shared<std::vector<char>>();
   std::swap(*block, buffer());
   return block;
 }
@@ -711,7 +707,7 @@ void Core::FE::Discretization::unpack_my_elements(std::vector<char>& e)
     FOUR_C_THROW_UNLESS(ele != nullptr,
         "Failed to build an element from the element data for discretization %s", name_.c_str());
     ele->set_owner(comm_->MyPID());
-    add_element(Teuchos::RCP(ele));
+    add_element(std::shared_ptr<Core::Elements::Element>(ele));
   }
   // in case add_element forgets...
   reset();
@@ -732,7 +728,7 @@ void Core::FE::Discretization::unpack_my_nodes(std::vector<char>& e)
     FOUR_C_THROW_UNLESS(node != nullptr,
         "Failed to build a node from the node data for discretization %s", name_.c_str());
     node->set_owner(comm_->MyPID());
-    add_node(Teuchos::RCP(node));
+    add_node(std::shared_ptr<Core::Nodes::Node>(node));
   }
   // in case add_node forgets...
   reset();
@@ -819,9 +815,9 @@ void Core::FE::Discretization::compute_null_space_if_necessary(
   // see whether we have previously computed the nullspace
   // and recomputation is enforced
   Teuchos::ParameterList& mllist = *mllist_ptr;
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> ns =
-      mllist.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", Teuchos::null);
-  if (ns != Teuchos::null && !recompute) return;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> ns =
+      mllist.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", nullptr);
+  if (ns != nullptr && !recompute) return;
 
   // no, we have not previously computed the nullspace
   // or want to recompute it anyway
@@ -839,12 +835,12 @@ void Core::FE::Discretization::compute_null_space_if_necessary(
  |                                                            gjb 06/09 |
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::add_multi_vector_to_parameter_list(Teuchos::ParameterList& p,
-    const std::string name, Teuchos::RCP<const Core::LinAlg::MultiVector<double>> vec)
+    const std::string name, std::shared_ptr<const Core::LinAlg::MultiVector<double>> vec)
 {
   // provide data in node-based multi-vector for usage on element level
   // -> export to column map is necessary for parallel evaluation
   // set_state cannot be used since this multi-vector is nodebased and not dofbased!
-  if (vec != Teuchos::null)
+  if (vec != nullptr)
   {
     const Epetra_Map* nodecolmap = node_col_map();
     const int numcol = vec->NumVectors();
@@ -854,21 +850,21 @@ void Core::FE::Discretization::add_multi_vector_to_parameter_list(Teuchos::Param
     if (vec->Map().PointSameAs(*nodecolmap))
     {
       // make a copy as in parallel such that no additional RCP points to the state vector
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> tmp =
-          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, numcol);
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> tmp =
+          std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, numcol);
       tmp->Update(1.0, *vec, 0.0);
       p.set(name, tmp);
     }
     else  // if it's not in column map export and allocate
     {
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> tmp =
-          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, numcol);
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> tmp =
+          std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, numcol);
       Core::LinAlg::export_to(*vec, *tmp);
       p.set(name, tmp);
     }
   }
   else
-    p.set(name, Teuchos::null);
+    p.set(name, nullptr);
 
   return;
 }

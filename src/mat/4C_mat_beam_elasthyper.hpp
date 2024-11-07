@@ -15,8 +15,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_beam_templated_material_generic.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <typeinfo>
 
 FOUR_C_NAMESPACE_OPEN
@@ -130,9 +129,9 @@ namespace Mat
     /** \brief return copy of this material object
      *
      */
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<BeamElastHyperMaterial>(*this);
+      return std::make_shared<BeamElastHyperMaterial>(*this);
     }
 
     /** \brief get quick accessible material parameter data

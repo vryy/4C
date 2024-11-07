@@ -42,7 +42,7 @@ void pasi_dyn()
       const_cast<Teuchos::ParameterList&>(problem->structural_dynamic_params()));
 
   // create particle structure interaction algorithm
-  Teuchos::RCP<PaSI::PartitionedAlgo> algo = Teuchos::null;
+  std::shared_ptr<PaSI::PartitionedAlgo> algo = nullptr;
 
   // get type of partitioned coupling
   const auto coupling =
@@ -53,22 +53,22 @@ void pasi_dyn()
   {
     case Inpar::PaSI::partitioned_onewaycoup:
     {
-      algo = Teuchos::make_rcp<PaSI::PasiPartOneWayCoup>(comm, params);
+      algo = std::make_shared<PaSI::PasiPartOneWayCoup>(comm, params);
       break;
     }
     case Inpar::PaSI::partitioned_twowaycoup:
     {
-      algo = Teuchos::make_rcp<PaSI::PasiPartTwoWayCoup>(comm, params);
+      algo = std::make_shared<PaSI::PasiPartTwoWayCoup>(comm, params);
       break;
     }
     case Inpar::PaSI::partitioned_twowaycoup_disprelax:
     {
-      algo = Teuchos::make_rcp<PaSI::PasiPartTwoWayCoupDispRelax>(comm, params);
+      algo = std::make_shared<PaSI::PasiPartTwoWayCoupDispRelax>(comm, params);
       break;
     }
     case Inpar::PaSI::partitioned_twowaycoup_disprelaxaitken:
     {
-      algo = Teuchos::make_rcp<PaSI::PasiPartTwoWayCoupDispRelaxAitken>(comm, params);
+      algo = std::make_shared<PaSI::PasiPartTwoWayCoupDispRelaxAitken>(comm, params);
       break;
     }
     default:
@@ -95,9 +95,9 @@ void pasi_dyn()
   algo->test_results(comm);
 
   // print summary statistics for all timers
-  Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
+  std::shared_ptr<const Teuchos::Comm<int>> TeuchosComm =
       Core::Communication::to_teuchos_comm<int>(comm);
-  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+  Teuchos::TimeMonitor::summarize(Teuchos::Ptr(TeuchosComm.get()), std::cout, false, true, false);
 }
 
 FOUR_C_NAMESPACE_CLOSE

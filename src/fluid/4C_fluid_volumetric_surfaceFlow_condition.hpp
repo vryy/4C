@@ -20,7 +20,8 @@
 
 #include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -47,7 +48,8 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidVolumetricSurfaceFlowWrapper(Teuchos::RCP<Core::FE::Discretization> actdis, double dta);
+      FluidVolumetricSurfaceFlowWrapper(
+          std::shared_ptr<Core::FE::Discretization> actdis, double dta);
 
       /*!
       \brief Destructor
@@ -67,7 +69,7 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::update_residual
       */
-      void update_residual(Teuchos::RCP<Core::LinAlg::Vector<double>> residual);
+      void update_residual(std::shared_ptr<Core::LinAlg::Vector<double>> residual);
 
 
       /*!
@@ -85,10 +87,10 @@ namespace FLD
       /*!
       \brief all single fluid volumetric surface flow conditions
       */
-      std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>> fvsf_map_;
+      std::map<const int, std::shared_ptr<class FluidVolumetricSurfaceFlowBc>> fvsf_map_;
 
       //! fluid discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_;
+      std::shared_ptr<Core::FE::Discretization> discret_;
 
     };  // class FluidWomersleyWrapper
 
@@ -102,7 +104,7 @@ namespace FLD
       \brief Standard Constructor
       */
 
-      TotalTractionCorrector(Teuchos::RCP<Core::FE::Discretization> actdis, double dta);
+      TotalTractionCorrector(std::shared_ptr<Core::FE::Discretization> actdis, double dta);
 
       /*!
       \brief Destructor
@@ -113,14 +115,14 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
       */
-      void evaluate_velocities(Teuchos::RCP<Core::LinAlg::Vector<double>> velocities, double time,
-          double theta, double dta);
+      void evaluate_velocities(std::shared_ptr<Core::LinAlg::Vector<double>> velocities,
+          double time, double theta, double dta);
 
       /*!
       \brief export and set boundary values
       */
       void export_and_set_boundary_values(Core::LinAlg::Vector<double>& source,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> target, std::string name);
+          std::shared_ptr<Core::LinAlg::Vector<double>> target, std::string name);
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::update_residual
@@ -143,10 +145,10 @@ namespace FLD
       /*!
       \brief all single fluid volumetric surface flow conditions
       */
-      std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>> fvsf_map_;
+      std::map<const int, std::shared_ptr<class FluidVolumetricSurfaceFlowBc>> fvsf_map_;
 
       //! fluid discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_;
+      std::shared_ptr<Core::FE::Discretization> discret_;
 
     };  // class TotalTractionCorrector
 
@@ -169,7 +171,7 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidVolumetricSurfaceFlowBc(Teuchos::RCP<Core::FE::Discretization> actdis, double dta,
+      FluidVolumetricSurfaceFlowBc(std::shared_ptr<Core::FE::Discretization> actdis, double dta,
           std::string ds_condname, std::string dl_condname, int condid, int surf_numcond,
           int line_numcond);
 
@@ -186,8 +188,8 @@ namespace FLD
       /*!
       \brief calculates the center of mass
       */
-      void center_of_mass_calculation(Teuchos::RCP<std::vector<double>> coords,
-          Teuchos::RCP<std::vector<double>> normal, std::string ds_condname);
+      void center_of_mass_calculation(std::shared_ptr<std::vector<double>> coords,
+          std::shared_ptr<std::vector<double>> normal, std::string ds_condname);
 
 
       /*!
@@ -198,15 +200,16 @@ namespace FLD
       /*!
       \brief get the node row map of the womersley condition
       */
-      void build_condition_node_row_map(Teuchos::RCP<Core::FE::Discretization> dis,
-          std::string condname, int condid, int condnum, Teuchos::RCP<Epetra_Map>& cond_noderowmap);
+      void build_condition_node_row_map(std::shared_ptr<Core::FE::Discretization> dis,
+          std::string condname, int condid, int condnum,
+          std::shared_ptr<Epetra_Map>& cond_noderowmap);
 
       /*!
       \brief get the dof row map of the womersley condition
       */
-      void build_condition_dof_row_map(Teuchos::RCP<Core::FE::Discretization> dis,
+      void build_condition_dof_row_map(std::shared_ptr<Core::FE::Discretization> dis,
           const std::string condname, int condid, int condnum,
-          Teuchos::RCP<Epetra_Map>& cond_dofrowmap);
+          std::shared_ptr<Epetra_Map>& cond_dofrowmap);
 
       /*!
       \brief Evaluate velocities
@@ -281,7 +284,7 @@ namespace FLD
       \brief export and set boundary values
       */
       void export_and_set_boundary_values(Core::LinAlg::Vector<double>& source,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> target, std::string name);
+          std::shared_ptr<Core::LinAlg::Vector<double>> target, std::string name);
 
       /*!
       \brief reset traction velocity components
@@ -291,8 +294,8 @@ namespace FLD
       /*!
       \brief Calculate the Flowrate on a boundary
       */
-      void dft(Teuchos::RCP<std::vector<double>> f,
-          Teuchos::RCP<std::vector<std::complex<double>>>& F, int starting_pos);
+      void dft(std::shared_ptr<std::vector<double>> f,
+          std::shared_ptr<std::vector<std::complex<double>>>& F, int starting_pos);
 
 
 
@@ -357,47 +360,47 @@ namespace FLD
       int myrank_;
 
       //! fluid discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_;
+      std::shared_ptr<Core::FE::Discretization> discret_;
 
       //! Flowrate array for Womersley conditions
-      Teuchos::RCP<std::vector<double>> flowrates_;
+      std::shared_ptr<std::vector<double>> flowrates_;
 
       //! Position at which the next element should be replaced
       //! initialised to zero as the first element will be replaced first
       int flowratespos_;
 
       //! center of mass coordinates
-      Teuchos::RCP<std::vector<double>> cmass_;
+      std::shared_ptr<std::vector<double>> cmass_;
 
       //! avarage normal of the surface
-      Teuchos::RCP<std::vector<double>> normal_;
+      std::shared_ptr<std::vector<double>> normal_;
 
       //! direction normal of the velocity
-      Teuchos::RCP<std::vector<double>> vnormal_;
+      std::shared_ptr<std::vector<double>> vnormal_;
 
       //! a Node row map of the nodes that belong to the current condition
-      Teuchos::RCP<Epetra_Map> cond_surfnoderowmap_;
+      std::shared_ptr<Epetra_Map> cond_surfnoderowmap_;
 
       //! a Node row map of the nodes that belong to border of the current condition
-      Teuchos::RCP<Epetra_Map> cond_linenoderowmap_;
+      std::shared_ptr<Epetra_Map> cond_linenoderowmap_;
 
       //! a Dof row map of the degrees of freedom that belong to the current condition
-      Teuchos::RCP<Epetra_Map> cond_dofrowmap_;
+      std::shared_ptr<Epetra_Map> cond_dofrowmap_;
 
       //! A map of the local radii
-      Teuchos::RCP<Core::LinAlg::Vector<double>> local_radii_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> local_radii_;
 
       //! A map of corresponding border radii
-      Teuchos::RCP<Core::LinAlg::Vector<double>> border_radii_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> border_radii_;
 
       //! A map of only condition velocites
-      Teuchos::RCP<Core::LinAlg::Vector<double>> cond_velocities_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> cond_velocities_;
 
       //! A dof col map of only condition velocites
-      Teuchos::RCP<Core::LinAlg::Vector<double>> drt_velocities_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> drt_velocities_;
 
       //! A map of only condition velocites
-      Teuchos::RCP<Core::LinAlg::Vector<double>> cond_traction_vel_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> cond_traction_vel_;
 
       //! initial area of the codition surface
       double area_;

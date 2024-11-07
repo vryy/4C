@@ -170,8 +170,8 @@ namespace Mortar
      \brief Return vector of integration cells
 
      */
-    virtual std::vector<Teuchos::RCP<IntCell>>& cells() { return cells_; }
-    const std::vector<Teuchos::RCP<IntCell>>& cells() const { return cells_; }
+    virtual std::vector<std::shared_ptr<IntCell>>& cells() { return cells_; }
+    const std::vector<std::shared_ptr<IntCell>>& cells() const { return cells_; }
 
     /*!
      \brief Return the 'DerivAuxn' map (vector) of this coupling pair
@@ -245,7 +245,7 @@ namespace Mortar
      and assembled into the slave element nodes.
 
      */
-    virtual bool integrate_cells(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+    virtual bool integrate_cells(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
 
     //@}
 
@@ -466,7 +466,7 @@ namespace Mortar
     std::vector<Vertex> mvertices_;    // master node vertex objects
     std::vector<Vertex> clip_;         // clipped polygon vertex objects
 
-    std::vector<Teuchos::RCP<IntCell>> cells_;  // vector of integration cells
+    std::vector<std::shared_ptr<IntCell>> cells_;  // vector of integration cells
     std::vector<Core::Gen::Pairedvector<int, double>>
         derivauxn_;  // derivatives of auxiliary plane normal
   };
@@ -578,7 +578,7 @@ namespace Mortar
      \brief Get coupling pairs
 
      */
-    virtual std::vector<Teuchos::RCP<Mortar::Coupling3d>>& coupling() { return coup_; }
+    virtual std::vector<std::shared_ptr<Mortar::Coupling3d>>& coupling() { return coup_; }
 
     /*!
      \brief Get type of integration scheme
@@ -608,7 +608,7 @@ namespace Mortar
      \brief Evaluate coupling pairs
 
      */
-    virtual bool evaluate_coupling(Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr);
+    virtual bool evaluate_coupling(std::shared_ptr<Mortar::ParamsInterface> mparams_ptr);
 
     /*!
      \brief Return the LM interpolation / testing type for quadratic FE
@@ -628,7 +628,7 @@ namespace Mortar
      \brief Evaluate mortar-coupling pairs
 
      */
-    virtual void integrate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+    virtual void integrate_coupling(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
 
     /*!
      \brief Calculate consistent dual shape functions in boundary elements
@@ -650,7 +650,7 @@ namespace Mortar
     Teuchos::ParameterList& imortar_;     // containing contact input parameters
     Mortar::Element* sele_;               // slave element
     std::vector<Mortar::Element*> mele_;  // master elements
-    std::vector<Teuchos::RCP<Mortar::Coupling3d>> coup_;  // coupling pairs
+    std::vector<std::shared_ptr<Mortar::Coupling3d>> coup_;  // coupling pairs
   };
   // class Coupling3dManager
 
@@ -714,14 +714,14 @@ namespace Mortar
      \brief Evaluate mortar-coupling pairs
 
      */
-    void integrate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
+    void integrate_coupling(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr) override;
 
     /*!
      \brief Split Mortar::Elements into IntElements for 3D quadratic coupling
 
      */
     virtual bool split_int_elements(
-        Mortar::Element& ele, std::vector<Teuchos::RCP<Mortar::IntElement>>& auxele);
+        Mortar::Element& ele, std::vector<std::shared_ptr<Mortar::IntElement>>& auxele);
 
     // don't want = operator and cctor
     Coupling3dQuadManager operator=(const Coupling3dQuadManager& old);

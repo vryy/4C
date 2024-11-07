@@ -15,7 +15,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -70,7 +71,7 @@ namespace BEAMINTERACTION
     */
     virtual ~BeamContactPair() = default;
     //! Initialization
-    virtual void init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
+    virtual void init(const std::shared_ptr<BEAMINTERACTION::BeamContactParams> params_ptr,
         std::vector<Core::Elements::Element const*> elements);
 
     //! Setup
@@ -95,7 +96,7 @@ namespace BEAMINTERACTION
         Core::LinAlg::SerialDenseMatrix* stiffmat22) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
-    static Teuchos::RCP<BeamContactPair> create(
+    static std::shared_ptr<BeamContactPair> create(
         std::vector<Core::Elements::Element const*> const& ele_ptrs,
         BEAMINTERACTION::BeamInteractionConditions& beam_interaction_conditions_ptr);
 
@@ -110,13 +111,13 @@ namespace BEAMINTERACTION
      * \brief Update state of rotational DoFs of both elements
      */
     virtual void reset_rotation_state(const Core::FE::Discretization& discret,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& ia_discolnp){};
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& ia_discolnp){};
 
     //@}
 
     //! @name Access methods
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params() const { return params_; }
+    inline std::shared_ptr<BEAMINTERACTION::BeamContactParams> params() const { return params_; }
 
     /*!
     \brief Get an element pointer by the elements index.
@@ -145,9 +146,9 @@ namespace BEAMINTERACTION
     /*!
     \brief Get the geometry pair object. Throw error if it does not exist.
     */
-    inline Teuchos::RCP<GEOMETRYPAIR::GeometryPair> geometry_pair() const
+    inline std::shared_ptr<GEOMETRYPAIR::GeometryPair> geometry_pair() const
     {
-      if (geometry_pair_ == Teuchos::null)
+      if (geometry_pair_ == nullptr)
         FOUR_C_THROW("The geometry pair is requested, but it is a null pointer!");
       return geometry_pair_;
     }
@@ -248,10 +249,11 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    virtual void evaluate_and_assemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector){};
+    virtual void evaluate_and_assemble(
+        const std::shared_ptr<const Core::FE::Discretization>& discret,
+        const std::shared_ptr<Epetra_FEVector>& force_vector,
+        const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector){};
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
@@ -274,8 +276,8 @@ namespace BEAMINTERACTION
      */
     virtual void evaluate_and_assemble(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
-        const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+        const std::shared_ptr<Epetra_FEVector>& force_vector,
+        const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Core::LinAlg::Vector<double>& global_lambda,
         const Core::LinAlg::Vector<double>& displacement_vector){};
 
@@ -321,7 +323,7 @@ namespace BEAMINTERACTION
         Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
         Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
         Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector){};
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector){};
 
     /**
      * \brief Add the visualization of this pair to the beam to solid visualization output writer.
@@ -335,7 +337,7 @@ namespace BEAMINTERACTION
      * visualization in the pairs.
      */
     virtual void get_pair_visualization(
-        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
+        std::shared_ptr<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const
     {
     }
@@ -353,7 +355,8 @@ namespace BEAMINTERACTION
      */
     virtual void create_geometry_pair(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
-        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
+        const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>&
+            geometry_evaluation_data_ptr)
     {
       FOUR_C_THROW("CreateGeometryPair has to be implemented in the derived class.");
     };
@@ -379,7 +382,7 @@ namespace BEAMINTERACTION
      *
      * @param face_element (in) RCP to the face element.
      */
-    virtual void set_face_element(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element)
+    virtual void set_face_element(std::shared_ptr<GEOMETRYPAIR::FaceElement>& face_element)
     {
       FOUR_C_THROW("This method has to be implemented in the derived class.");
     }
@@ -407,11 +410,11 @@ namespace BEAMINTERACTION
     bool issetup_;
 
     //! pointer to the geometry pair
-    Teuchos::RCP<GEOMETRYPAIR::GeometryPair> geometry_pair_;
+    std::shared_ptr<GEOMETRYPAIR::GeometryPair> geometry_pair_;
 
    private:
     //! beam contact parameter data container
-    Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_;
+    std::shared_ptr<BEAMINTERACTION::BeamContactParams> params_;
 
     //! first element of interacting pair
     const Core::Elements::Element* element1_;

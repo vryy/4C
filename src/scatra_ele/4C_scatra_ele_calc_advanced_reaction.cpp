@@ -49,7 +49,7 @@ Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
     : Discret::Elements::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
           numdofpernode, numscal, disname)
 {
-  my::reamanager_ = Teuchos::make_rcp<ScaTraEleReaManagerAdvReac>(my::numscal_);
+  my::reamanager_ = std::make_shared<ScaTraEleReaManagerAdvReac>(my::numscal_);
 
   for (unsigned i = 0; i < numdim_gp_; ++i) gpcoord_[i] = 0.0;
 
@@ -73,7 +73,7 @@ void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::get_material_par
 )
 {
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   // We may have some reactive and some non-reactive elements in one discretisation.
   // But since the calculation classes are singleton, we have to reset all reactive stuff in case
@@ -82,14 +82,14 @@ void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::get_material_par
 
   if (material->material_type() == Core::Materials::m_matlist)
   {
-    const Teuchos::RCP<const Mat::MatList> actmat =
-        Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
+    const std::shared_ptr<const Mat::MatList> actmat =
+        std::dynamic_pointer_cast<const Mat::MatList>(material);
     if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
@@ -97,14 +97,14 @@ void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::get_material_par
 
   else if (material->material_type() == Core::Materials::m_matlist_reactions)
   {
-    const Teuchos::RCP<Mat::MatListReactions> actmat =
-        Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(material);
+    const std::shared_ptr<Mat::MatListReactions> actmat =
+        std::dynamic_pointer_cast<Mat::MatListReactions>(material);
     if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       // Note: order is important here!!
       materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
@@ -127,9 +127,9 @@ void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::get_material_par
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::materials(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity
@@ -186,7 +186,7 @@ void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
   // NOTE: The shape of f(c) can be arbitrary. So better consider using this term for new
   // implementations
 
-  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = rea_manager();
+  const std::shared_ptr<ScaTraEleReaManagerAdvReac> remanager = rea_manager();
 
   Core::LinAlg::Matrix<nen_, 1> functint = my::funct_;
   if (not my::scatrapara_->mat_gp()) functint = funct_elementcenter_;
@@ -321,12 +321,12 @@ void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
  *-------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::set_advanced_reaction_terms(
-    const int k,                                            //!< index of current scalar
-    const Teuchos::RCP<Mat::MatListReactions> matreaclist,  //!< index of current scalar
-    const double* gpcoord                                   //!< current Gauss-point coordinates
+    const int k,                                               //!< index of current scalar
+    const std::shared_ptr<Mat::MatListReactions> matreaclist,  //!< index of current scalar
+    const double* gpcoord                                      //!< current Gauss-point coordinates
 )
 {
-  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = rea_manager();
+  const std::shared_ptr<ScaTraEleReaManagerAdvReac> remanager = rea_manager();
 
   remanager->add_to_rea_body_force(
       matreaclist->calc_rea_body_force_term(k, my::scatravarmanager_->phinp(), gpcoord), k);

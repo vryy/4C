@@ -73,11 +73,11 @@ namespace ScaTra
     \author rauch
     */
     void evaluate_condition(Teuchos::ParameterList& params,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3, const std::string& condstring,
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3, const std::string& condstring,
         const int condid) override;
 
     /*!
@@ -95,11 +95,11 @@ namespace ScaTra
     \author rauch
     */
     void set_state(unsigned nds, const std::string& name,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> state) override;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> state) override;
 
    private:
     //! the discretization for the reaction
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! private copy constructor
     HeterogeneousReactionStrategy(const HeterogeneousReactionStrategy& old);

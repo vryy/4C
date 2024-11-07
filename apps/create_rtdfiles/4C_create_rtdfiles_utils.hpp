@@ -14,10 +14,9 @@
 #include "4C_inpar_validparameters.hpp"
 #include "4C_mat_materialdefinition.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -180,7 +179,7 @@ namespace RTD
    *  \param[in] matlist: vector containing all material definitions
    */
   void write_material_reference(
-      std::ostream& stream, const std::vector<Teuchos::RCP<Mat::MaterialDefinition>>& matlist);
+      std::ostream& stream, const std::vector<std::shared_ptr<Mat::MaterialDefinition>>& matlist);
 
   /*!
    *  \brief write the information of a single material to readthedocs
@@ -189,7 +188,7 @@ namespace RTD
    *  \param[in] material: single material definition
    */
   void write_single_material_read_the_docs(
-      std::ostream& stream, const Teuchos::RCP<Mat::MaterialDefinition> material);
+      std::ostream& stream, const std::shared_ptr<Mat::MaterialDefinition> material);
   /*!
    *  \brief write all parameters of the header sections for readthedocs
    *
@@ -209,7 +208,7 @@ namespace RTD
    *  @param[in] condlist List of prescribed conditions to be written to that file
    */
   void write_conditions_reference(std::ostream& stream,
-      const std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
+      const std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist);
 
   /*!
    *  write a single condition including explanations (if available) to a .rst file for
@@ -228,8 +227,8 @@ namespace RTD
    *  @param[in] stream restructuredText file for prescribed contact law.
    *  @param[in] coconstlaw Single contact law to be written to that file
    */
-  void write_single_contact_law_read_the_docs(
-      std::ostream& stream, const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> contactlaw);
+  void write_single_contact_law_read_the_docs(std::ostream& stream,
+      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition> contactlaw);
 
   /*!
    *  write all known contact laws including explanations (if available) to a .rst file for
@@ -238,7 +237,7 @@ namespace RTD
    *  @param[in] stream restructuredText file for prescribed contact law.
    */
   void write_contact_law_reference(std::ostream& stream,
-      const std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist);
+      const std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist);
   /*!
    *  write various other parameters including explanations (if available) to a .rst file for
    * ReadTheDocs

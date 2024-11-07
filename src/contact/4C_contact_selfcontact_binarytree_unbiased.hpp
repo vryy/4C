@@ -39,7 +39,7 @@ namespace CONTACT
 
     */
     UnbiasedSelfBinaryTree(Core::FE::Discretization& discret, const Teuchos::ParameterList& iparams,
-        Teuchos::RCP<Epetra_Map> elements, int dim, double eps);
+        std::shared_ptr<Epetra_Map> elements, int dim, double eps);
 
 
     /*!
@@ -58,8 +58,8 @@ namespace CONTACT
     \param [in]  treenode2:  second tree node
 
     */
-    void add_tree_nodes_to_contact_pairs(Teuchos::RCP<SelfBinaryTreeNode> treenode1,
-        Teuchos::RCP<SelfBinaryTreeNode> treenode2) final;
+    void add_tree_nodes_to_contact_pairs(std::shared_ptr<SelfBinaryTreeNode> treenode1,
+        std::shared_ptr<SelfBinaryTreeNode> treenode2) final;
 
     /*!
     \brief Calculate the processor specific dual graph
@@ -70,7 +70,8 @@ namespace CONTACT
 
     */
     void calculate_proc_specific_dual_graph(
-        std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualGraph,
+        std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>>*
+            dualGraph,
         const std::vector<int>& elelist, const int p);
 
     /*!
@@ -86,8 +87,8 @@ namespace CONTACT
     \param [in,out]  contractedNode:  node that consists of both nodes of contracted edge
 
     */
-    void get_contracted_node(Teuchos::RCP<SelfDualEdge>& contractedEdge,
-        Teuchos::RCP<SelfBinaryTreeNode>& contractedNode) final;
+    void get_contracted_node(std::shared_ptr<SelfDualEdge>& contractedEdge,
+        std::shared_ptr<SelfBinaryTreeNode>& contractedNode) final;
 
     /*!
     \brief Initialize Tree in a bottom up way based on dual graph
@@ -97,7 +98,7 @@ namespace CONTACT
 
     */
     void initialize_tree_bottom_up(std::map<int,
-        std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>>*
+        std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>>>*
             procdualGraph);
 
     /*!

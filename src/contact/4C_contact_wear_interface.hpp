@@ -27,7 +27,7 @@ namespace Wear
     \brief Constructor
 
     */
-    WearInterface(const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData_ptr,
+    WearInterface(const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData_ptr,
         const int id, const Epetra_Comm& comm, const int dim,
         const Teuchos::ParameterList& icontact, bool selfcontact);
 
@@ -286,9 +286,9 @@ namespace Wear
     \brief Returning dofs for both-sided wear mapping
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> involved_dofs() const { return involveddofs_; }
+    virtual std::shared_ptr<const Epetra_Map> involved_dofs() const { return involveddofs_; }
 
-    virtual Teuchos::RCP<const Epetra_Map> involved_nodes() const { return involvednodes_; }
+    virtual std::shared_ptr<const Epetra_Map> involved_nodes() const { return involvednodes_; }
 
     /*!
     \brief Set element areas
@@ -333,7 +333,7 @@ namespace Wear
     \brief Get map of slave wear dofs (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> w_dofs() const
+    virtual std::shared_ptr<const Epetra_Map> w_dofs() const
     {
       if (filled())
         return wdofmap_;
@@ -346,7 +346,7 @@ namespace Wear
     \brief Get map of master wear dofs (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> wm_dofs() const
+    virtual std::shared_ptr<const Epetra_Map> wm_dofs() const
     {
       if (filled())
         return wmdofmap_;
@@ -359,7 +359,7 @@ namespace Wear
     \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> sn_dofs() const
+    virtual std::shared_ptr<const Epetra_Map> sn_dofs() const
     {
       if (filled())
         return sndofmap_;
@@ -372,7 +372,7 @@ namespace Wear
     \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> mn_dofs() const
+    virtual std::shared_ptr<const Epetra_Map> mn_dofs() const
     {
       if (filled())
         return mndofmap_;
@@ -385,7 +385,7 @@ namespace Wear
     \brief Get row map of active nodes (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> active_master_nodes() const
+    virtual std::shared_ptr<const Epetra_Map> active_master_nodes() const
     {
       if (filled())
         return activmasternodes_;
@@ -398,7 +398,7 @@ namespace Wear
     \brief Get row map of active nodes (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> slip_master_nodes() const
+    virtual std::shared_ptr<const Epetra_Map> slip_master_nodes() const
     {
       if (filled())
         return slipmasternodes_;
@@ -411,7 +411,7 @@ namespace Wear
     \brief Get row map of active nodes (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> slip_master_n_dofs() const
+    virtual std::shared_ptr<const Epetra_Map> slip_master_n_dofs() const
     {
       if (filled())
         return slipmn_;
@@ -441,20 +441,20 @@ namespace Wear
 
 
     // both-sided wear specific stuff
-    Teuchos::RCP<Epetra_Map> involvednodes_;  // row map of all involved master nodes
-    Teuchos::RCP<Epetra_Map> involveddofs_;   // row map of all involved master dofs
+    std::shared_ptr<Epetra_Map> involvednodes_;  // row map of all involved master nodes
+    std::shared_ptr<Epetra_Map> involveddofs_;   // row map of all involved master dofs
 
-    Teuchos::RCP<Epetra_Map> wdofmap_;   // row map of all slave wear dofs
-    Teuchos::RCP<Epetra_Map> wmdofmap_;  // row map of all master wear dofs
+    std::shared_ptr<Epetra_Map> wdofmap_;   // row map of all slave wear dofs
+    std::shared_ptr<Epetra_Map> wmdofmap_;  // row map of all master wear dofs
 
-    Teuchos::RCP<Epetra_Map> sndofmap_;  // row map of all slave dofs (first entries)
-    Teuchos::RCP<Epetra_Map> mndofmap_;  // row map of all master dofs (first entries)
+    std::shared_ptr<Epetra_Map> sndofmap_;  // row map of all slave dofs (first entries)
+    std::shared_ptr<Epetra_Map> mndofmap_;  // row map of all master dofs (first entries)
 
-    Teuchos::RCP<Epetra_Map>
+    std::shared_ptr<Epetra_Map>
         activmasternodes_;  // row map of all active master nodes (first entries)
-    Teuchos::RCP<Epetra_Map>
-        slipmasternodes_;              // row map of all active master nodes (first entries)
-    Teuchos::RCP<Epetra_Map> slipmn_;  // row map of all active master nodes (first entries)
+    std::shared_ptr<Epetra_Map>
+        slipmasternodes_;                 // row map of all active master nodes (first entries)
+    std::shared_ptr<Epetra_Map> slipmn_;  // row map of all active master nodes (first entries)
 
     bool wear_;      // bool for wear
     bool wearimpl_;  // bool for implicit wear

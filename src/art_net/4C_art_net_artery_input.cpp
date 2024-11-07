@@ -85,7 +85,7 @@ bool Discret::Elements::Artery::read_element(const std::string& eletype, const s
 void Discret::Elements::Artery::set_diam_in_material(const double diam)
 {
   // now the element knows its material, and we can use it to set the diameter
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
   if (mat->material_type() == Core::Materials::m_cnst_art)
   {
     Mat::Cnst1dArt* arterymat = dynamic_cast<Mat::Cnst1dArt*>(mat.get());

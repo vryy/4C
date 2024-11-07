@@ -36,11 +36,11 @@ void sti_dyn(const int& restartstep  //! time step for restart
   const Epetra_Comm& comm = problem->get_dis("scatra")->get_comm();
 
   // access scatra discretization
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
+  std::shared_ptr<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
 
   // add dofset for velocity-related quantities to scatra discretization
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(problem->n_dim() + 1, 0, 0, true);
+  std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux =
+      std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(problem->n_dim() + 1, 0, 0, true);
   if (scatradis->add_dof_set(dofsetaux) != 1)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
 
@@ -54,11 +54,11 @@ void sti_dyn(const int& restartstep  //! time step for restart
         "cloned from it!");
 
   // access thermo discretization
-  Teuchos::RCP<Core::FE::Discretization> thermodis = problem->get_dis("thermo");
+  std::shared_ptr<Core::FE::Discretization> thermodis = problem->get_dis("thermo");
 
   // add dofset for velocity-related quantities to thermo discretization
   dofsetaux =
-      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(problem->n_dim() + 1, 0, 0, true);
+      std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(problem->n_dim() + 1, 0, 0, true);
   if (thermodis->add_dof_set(dofsetaux) != 1)
     FOUR_C_THROW("Thermo discretization has illegal number of dofsets!");
 
@@ -115,7 +115,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
         "DYNAMIC'!");
 
   // instantiate coupling algorithm for scatra-thermo interaction
-  Teuchos::RCP<STI::Algorithm> sti_algorithm(Teuchos::null);
+  std::shared_ptr<STI::Algorithm> sti_algorithm(nullptr);
 
   switch (Teuchos::getIntegralValue<Inpar::STI::CouplingType>(stidyn, "COUPLINGTYPE"))
   {
@@ -129,7 +129,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
             "No global linear solver was specified in input file section 'STI "
             "DYNAMIC/MONOLITHIC'!");
 
-      sti_algorithm = Teuchos::make_rcp<STI::Monolithic>(comm, stidyn, scatradyn,
+      sti_algorithm = std::make_shared<STI::Monolithic>(comm, stidyn, scatradyn,
           Global::Problem::instance()->solver_params(solver_id),
           Global::Problem::instance()->solver_params(solver_id_scatra),
           Global::Problem::instance()->solver_params(solver_id_thermo));
@@ -146,7 +146,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
     case Inpar::STI::CouplingType::twoway_thermotoscatra:
     case Inpar::STI::CouplingType::twoway_thermotoscatra_aitken:
     {
-      sti_algorithm = Teuchos::make_rcp<STI::Partitioned>(comm, stidyn, scatradyn,
+      sti_algorithm = std::make_shared<STI::Partitioned>(comm, stidyn, scatradyn,
           Global::Problem::instance()->solver_params(solver_id_scatra),
           Global::Problem::instance()->solver_params(solver_id_thermo));
 
@@ -175,16 +175,16 @@ void sti_dyn(const int& restartstep  //! time step for restart
 
   // perform result tests
   problem->add_field_test(
-      Teuchos::RCP<Core::Utils::ResultTest>(new STI::STIResultTest(sti_algorithm)));
+      std::shared_ptr<Core::Utils::ResultTest>(new STI::STIResultTest(sti_algorithm)));
   if (Teuchos::getIntegralValue<Inpar::STI::ScaTraTimIntType>(
           problem->sti_dynamic_params(), "SCATRATIMINTTYPE") == Inpar::STI::ScaTraTimIntType::elch)
-    problem->add_field_test(Teuchos::RCP<Core::Utils::ResultTest>(new ScaTra::ElchResultTest(
-        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(sti_algorithm->scatra_field()))));
+    problem->add_field_test(std::shared_ptr<Core::Utils::ResultTest>(new ScaTra::ElchResultTest(
+        std::dynamic_pointer_cast<ScaTra::ScaTraTimIntElch>(sti_algorithm->scatra_field()))));
   else
     FOUR_C_THROW(
         "Scatra-thermo interaction is currently only available for thermodynamic electrochemistry, "
         "but not for other kinds of thermodynamic scalar transport!");
-  problem->add_field_test(Teuchos::RCP<Core::Utils::ResultTest>(
+  problem->add_field_test(std::shared_ptr<Core::Utils::ResultTest>(
       new ScaTra::ScaTraResultTest(sti_algorithm->thermo_field())));
   problem->test_all(comm);
 

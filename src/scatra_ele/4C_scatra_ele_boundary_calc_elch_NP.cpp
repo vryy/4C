@@ -152,13 +152,13 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype,
         ephinp,  ///< nodal values of concentration and electric potential
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
     double timefac,                                           ///< time factor
-    Teuchos::RCP<const Core::Mat::Material> material,         ///< material
-    Teuchos::RCP<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
-    const int nume,                                  ///< number of transferred electrons
-    const std::vector<int> stoich,                   ///< stoichiometry of the reaction
-    const int kinetics,                              ///< desired electrode kinetics model
-    const double pot0,                               ///< electrode potential on metal side
-    const double frt,                                ///< factor F/RT
+    std::shared_ptr<const Core::Mat::Material> material,      ///< material
+    std::shared_ptr<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
+    const int nume,                                     ///< number of transferred electrons
+    const std::vector<int> stoich,                      ///< stoichiometry of the reaction
+    const int kinetics,                                 ///< desired electrode kinetics model
+    const double pot0,                                  ///< electrode potential on metal side
+    const double frt,                                   ///< factor F/RT
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {
@@ -246,23 +246,23 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype,
  *-------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 double Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype, probdim>::get_valence(
-    const Teuchos::RCP<const Core::Mat::Material>& material,  // element material
-    const int k                                               // species number
+    const std::shared_ptr<const Core::Mat::Material>& material,  // element material
+    const int k                                                  // species number
 ) const
 {
   double valence(0.);
 
   if (material->material_type() == Core::Materials::m_matlist)
   {
-    const Teuchos::RCP<const Mat::MatList> matlist =
-        Teuchos::rcp_static_cast<const Mat::MatList>(material);
+    const std::shared_ptr<const Mat::MatList> matlist =
+        std::static_pointer_cast<const Mat::MatList>(material);
 
-    const Teuchos::RCP<const Core::Mat::Material> species =
+    const std::shared_ptr<const Core::Mat::Material> species =
         matlist->material_by_id(matlist->mat_id(k));
 
     if (species->material_type() == Core::Materials::m_ion)
     {
-      valence = Teuchos::rcp_static_cast<const Mat::Ion>(species)->valence();
+      valence = std::static_pointer_cast<const Mat::Ion>(species)->valence();
       if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
     }
     else

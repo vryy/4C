@@ -16,10 +16,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Adapter::AdapterScatraWrapper::AdapterScatraWrapper(Teuchos::RCP<ScatraInterface> scatra)
+Adapter::AdapterScatraWrapper::AdapterScatraWrapper(std::shared_ptr<ScatraInterface> scatra)
     : scatra_timint_(scatra)
 {
-  Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntImpl>(scatra_timint_, true)
+  std::dynamic_pointer_cast<ScaTra::ScaTraTimIntImpl>(scatra_timint_)
       ->set_model_evaluatro_ptr(this);
 }
 
@@ -27,8 +27,8 @@ Adapter::AdapterScatraWrapper::AdapterScatraWrapper(Teuchos::RCP<ScatraInterface
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Adapter::AdapterScatraWrapper::evaluate_additional_solution_depending_models(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs)
 {
   // do nothing so far
   return;

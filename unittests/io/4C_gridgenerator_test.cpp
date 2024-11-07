@@ -49,17 +49,17 @@ namespace
     void SetUp() override
     {
       create_material_in_global_problem();
-      comm_ = Teuchos::make_rcp<Epetra_SerialComm>();
+      comm_ = std::make_shared<Epetra_SerialComm>();
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
-      testdis_ = Teuchos::make_rcp<Core::FE::Discretization>("dummy", comm_, 3);
+      testdis_ = std::make_shared<Core::FE::Discretization>("dummy", comm_, 3);
     }
 
     void TearDown() override { Core::IO::cout.close(); }
 
    public:
     Core::IO::GridGenerator::RectangularCuboidInputs inputData_{};
-    Teuchos::RCP<Core::FE::Discretization> testdis_;
-    Teuchos::RCP<Epetra_Comm> comm_;
+    std::shared_ptr<Core::FE::Discretization> testdis_;
+    std::shared_ptr<Epetra_Comm> comm_;
   };
 
   TEST_F(GridGeneratorTest, TestGridGeneratorWithHex8Elements)

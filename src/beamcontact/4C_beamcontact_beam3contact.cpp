@@ -220,7 +220,7 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
 template <const int numnodes, const int numnodalvalues>
 bool CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate(
     Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fint, const double& pp,
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
+    std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>>& contactpairmap,
     Teuchos::ParameterList& timeintparams, bool fdcheck)
 {
   //**********************************************************************
@@ -407,7 +407,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_large_angle_pai
     {
       std::pair<int, int> integration_ids = std::make_pair(-2, -2);
       cpvariables_.push_back(
-          Teuchos::make_rcp<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
+          std::make_shared<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
               closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
     }
   }
@@ -853,7 +853,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_small_angle_pai
                 // number of the Gauss point [numgp] and the number of the integration interval
                 // [interval] are stored in the pair segids_ of the class beamcontactvaribles!)
                 gpvariables_.push_back(
-                    Teuchos::make_rcp<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
+                    std::make_shared<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
                         closestpoint, leftpoint_ids, integration_ids, parallel_pp, jacobi));
               }
               // We can leave the k-loop as soon as we have found a valid projection for the given
@@ -1100,7 +1100,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
+            std::make_shared<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1132,7 +1132,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
+            std::make_shared<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1164,7 +1164,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
+            std::make_shared<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1196,7 +1196,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
+            std::make_shared<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1225,7 +1225,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
+            std::make_shared<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1255,7 +1255,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
+            std::make_shared<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1284,7 +1284,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
+            std::make_shared<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1313,7 +1313,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
+            std::make_shared<CONTACT::Beam3contactvariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -4972,7 +4972,7 @@ template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contact<numnodes, numnodalvalues>::compute_normal(
     Core::LinAlg::Matrix<3, 1, TYPE>& r1, Core::LinAlg::Matrix<3, 1, TYPE>& r2,
     Core::LinAlg::Matrix<3, 1, TYPE>& r1_xi, Core::LinAlg::Matrix<3, 1, TYPE>& r2_xi,
-    Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues>> variables, int contacttype)
+    std::shared_ptr<Beam3contactvariables<numnodes, numnodalvalues>> variables, int contacttype)
 {
   // compute non-unit normal
   Core::LinAlg::Matrix<3, 1, TYPE> delta_r = Core::FADUtils::diff_vector(r1, r2);
@@ -5415,7 +5415,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::fad_check_lin_orthogonalit
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contact<numnodes, numnodalvalues>::fd_check(
     Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fint, const double& pp,
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
+    std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>>& contactpairmap,
     Teuchos::ParameterList& timeintparams, bool fdcheck)
 {
   // This FD-Check is very general, since it applies the complete method "Evaluate" recursively.

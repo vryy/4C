@@ -13,6 +13,8 @@
 #include "4C_solver_nonlin_nox_abstract_prepostoperator.hpp"
 #include "4C_structure_new_predict_generic.hpp"
 
+#include <Teuchos_RCPDecl.hpp>
+
 // forward declaration
 
 FOUR_C_NAMESPACE_OPEN
@@ -48,7 +50,7 @@ namespace Solid
       bool pre_apply_force_external(Core::LinAlg::Vector<double>& fextnp) const override;
 
      private:
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dbc_incr_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> dbc_incr_ptr_;
 
       bool apply_linear_reaction_forces_;
     };  // class TangDis

@@ -55,7 +55,7 @@ void SlaveElementInterface<distype>::define_state_names(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Teuchos::RCP<SlaveElementInterface<distype>>
+std::shared_ptr<SlaveElementInterface<distype>>
 SlaveElementInterface<distype>::create_slave_element_representation(
     Core::Elements::Element* slave_ele,  ///< coupling slave element
     Core::LinAlg::SerialDenseMatrix&
@@ -165,13 +165,13 @@ SlaveElementInterface<distype>::create_slave_element_representation(
     }
   }
 
-  return Teuchos::RCP(sla);
+  return std::shared_ptr<SlaveElementInterface<distype>>(sla);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Teuchos::RCP<NitscheInterface<distype>>
+std::shared_ptr<NitscheInterface<distype>>
 NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(
     Core::LinAlg::SerialDenseMatrix::Base& C_umum, Core::LinAlg::SerialDenseMatrix::Base& rhC_um,
     const Discret::Elements::FluidEleParameterXFEM& fldparaxfem)
@@ -180,12 +180,12 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(
   typedef NitscheCoupling<distype, Core::FE::CellType::dis_none, 3> NitscheCouplType;
   nit = new NitscheCouplType(C_umum, rhC_um, fldparaxfem);
 
-  return Teuchos::RCP(nit);
+  return std::shared_ptr<NitscheInterface<distype>>(nit);
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Teuchos::RCP<NitscheInterface<distype>>
+std::shared_ptr<NitscheInterface<distype>>
 NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(Core::Elements::Element* bele,
     Core::LinAlg::SerialDenseMatrix::Base& bele_xyz, Core::LinAlg::SerialDenseMatrix::Base& C_umum,
     Core::LinAlg::SerialDenseMatrix::Base& rhC_um,
@@ -275,13 +275,13 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(Core::Elements::
   else
     FOUR_C_THROW("Unsupported number of %d nodes for coupling slave element.", numdofpernode);
 
-  return Teuchos::RCP(nit);
+  return std::shared_ptr<NitscheInterface<distype>>(nit);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Teuchos::RCP<NitscheInterface<distype>>
+std::shared_ptr<NitscheInterface<distype>>
 NitscheInterface<distype>::create_nitsche_coupling_x_fluid_sided(Core::Elements::Element* bele,
     Core::LinAlg::SerialDenseMatrix::Base& bele_xyz, Core::LinAlg::SerialDenseMatrix::Base& C_umum,
     Core::LinAlg::SerialDenseMatrix::Base& C_usum, Core::LinAlg::SerialDenseMatrix::Base& C_umus,
@@ -387,13 +387,13 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_sided(Core::Elements:
   else
     FOUR_C_THROW("Unsupported number of %d nodes for coupling slave element.", numdofpernode);
 
-  return Teuchos::RCP(nit);
+  return std::shared_ptr<NitscheInterface<distype>>(nit);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Teuchos::RCP<NitscheInterface<distype>>
+std::shared_ptr<NitscheInterface<distype>>
 NitscheInterface<distype>::create_nitsche_coupling_two_sided(Core::Elements::Element* vele,
     Core::LinAlg::SerialDenseMatrix::Base& vele_xyz, Core::LinAlg::SerialDenseMatrix::Base& C_umum,
     Core::LinAlg::SerialDenseMatrix::Base& C_usum, Core::LinAlg::SerialDenseMatrix::Base& C_umus,
@@ -468,14 +468,14 @@ NitscheInterface<distype>::create_nitsche_coupling_two_sided(Core::Elements::Ele
     }
   }
 
-  return Teuchos::RCP(nit);
+  return std::shared_ptr<NitscheInterface<distype>>(nit);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Teuchos::RCP<HybridLMInterface<distype>>
+std::shared_ptr<HybridLMInterface<distype>>
 HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_wdbc(
     bool is_viscAdjointSymmetric  ///< flag that indicates equal signs of Nitsche's standard &
                                   ///< adjoint viscous term
@@ -485,12 +485,12 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_wdbc(
   typedef HybridLMCoupling<distype, Core::FE::CellType::dis_none, 3> HybridLMCouplType;
   hybridlm = new HybridLMCouplType(is_viscAdjointSymmetric);
 
-  return Teuchos::RCP(hybridlm);
+  return std::shared_ptr<HybridLMInterface<distype>>(hybridlm);
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Teuchos::RCP<HybridLMInterface<distype>>
+std::shared_ptr<HybridLMInterface<distype>>
 HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_wdbc(
     Core::Elements::Element* bele,              ///< boundary element
     Core::LinAlg::SerialDenseMatrix& bele_xyz,  ///< global node coordinates of boundary element
@@ -523,19 +523,19 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_wdbc(
     case Core::FE::CellType::quad4:
     {
       typedef HybridLMCoupling<distype, Core::FE::CellType::quad4, 3> HybridLMCouplType;
-      return Teuchos::make_rcp<HybridLMCouplType>(bele_xyz, is_viscAdjointSymmetric);
+      return std::make_shared<HybridLMCouplType>(bele_xyz, is_viscAdjointSymmetric);
       break;
     }
     case Core::FE::CellType::quad8:
     {
       typedef HybridLMCoupling<distype, Core::FE::CellType::quad8, 3> HybridLMCouplType;
-      return Teuchos::make_rcp<HybridLMCouplType>(bele_xyz, is_viscAdjointSymmetric);
+      return std::make_shared<HybridLMCouplType>(bele_xyz, is_viscAdjointSymmetric);
       break;
     }
     case Core::FE::CellType::quad9:
     {
       typedef HybridLMCoupling<distype, Core::FE::CellType::quad9, 3> HybridLMCouplType;
-      return Teuchos::make_rcp<HybridLMCouplType>(bele_xyz, is_viscAdjointSymmetric);
+      return std::make_shared<HybridLMCouplType>(bele_xyz, is_viscAdjointSymmetric);
       break;
     }
     default:
@@ -543,13 +543,13 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_wdbc(
       break;
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Teuchos::RCP<HybridLMInterface<distype>>
+std::shared_ptr<HybridLMInterface<distype>>
 HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_sided(
     Core::Elements::Element* bele,              ///< boundary element
     Core::LinAlg::SerialDenseMatrix& bele_xyz,  ///< global node coordinates of boundary element
@@ -660,7 +660,7 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_sided(
   else
     FOUR_C_THROW("Unsupported number of %d nodes for coupling slave element.", numdofpernode);
 
-  return Teuchos::RCP(hlm);
+  return std::shared_ptr<HybridLMInterface<distype>>(hlm);
 }
 
 template class Discret::Elements::XFLUID::SlaveElementInterface<Core::FE::CellType::hex8>;

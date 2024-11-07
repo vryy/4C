@@ -19,11 +19,11 @@ Solid::ModelEvaluator::Multiphysics::Multiphysics() : active_mt_(mt_none)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Multiphysics::init(
-    const Teuchos::RCP<Solid::ModelEvaluator::Data>& eval_data_ptr,
-    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
-    const Teuchos::RCP<Solid::Integrator>& int_ptr,
-    const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr, const int& dof_offset)
+    const std::shared_ptr<Solid::ModelEvaluator::Data>& eval_data_ptr,
+    const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+    const std::shared_ptr<Solid::TimeInt::BaseDataIO>& gio_ptr,
+    const std::shared_ptr<Solid::Integrator>& int_ptr,
+    const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr, const int& dof_offset)
 {
   Solid::ModelEvaluator::Generic::init(
       eval_data_ptr, gstate_ptr, gio_ptr, int_ptr, timint_ptr, dof_offset);

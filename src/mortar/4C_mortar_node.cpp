@@ -98,7 +98,7 @@ Mortar::Node::Node(int id, const std::vector<double>& coords, const int owner,
       hassegment_(false),
       detected_(false),
       dentries_(0),
-      modata_(Teuchos::null),
+      modata_(nullptr),
       nurbsw_(-1.0)
 {
   for (std::size_t i = 0; i < coords.size(); ++i)
@@ -213,7 +213,7 @@ void Mortar::Node::pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, nurbsw_);
 
   // add data_
-  bool hasdata = (modata_ != Teuchos::null);
+  bool hasdata = (modata_ != nullptr);
   add_to_pack(data, hasdata);
   if (hasdata) modata_->pack(data);
 }
@@ -265,12 +265,12 @@ void Mortar::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   bool hasdata = extract_int(buffer);
   if (hasdata)
   {
-    modata_ = Teuchos::make_rcp<Mortar::NodeDataContainer>();
+    modata_ = std::make_shared<Mortar::NodeDataContainer>();
     modata_->unpack(buffer);
   }
   else
   {
-    modata_ = Teuchos::null;
+    modata_ = nullptr;
   }
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
@@ -409,7 +409,7 @@ void Mortar::Node::initialize_data_container()
   }
 
   // only initialize if not yet done
-  if (modata_ == Teuchos::null) modata_ = Teuchos::make_rcp<Mortar::NodeDataContainer>();
+  if (modata_ == nullptr) modata_ = std::make_shared<Mortar::NodeDataContainer>();
 }
 
 
@@ -417,8 +417,8 @@ void Mortar::Node::initialize_data_container()
  *----------------------------------------------------------------------*/
 void Mortar::Node::reset_data_container()
 {
-  // reset to Teuchos::null
-  modata_ = Teuchos::null;
+  // reset to nullptr
+  modata_ = nullptr;
 }
 
 
@@ -469,8 +469,9 @@ void Mortar::Node::build_averaged_normal()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Mortar::Node* Mortar::Node::find_closest_node(const Teuchos::RCP<Core::FE::Discretization> intdis,
-    const Teuchos::RCP<Epetra_Map> nodesearchmap, double& mindist)
+Mortar::Node* Mortar::Node::find_closest_node(
+    const std::shared_ptr<Core::FE::Discretization> intdis,
+    const std::shared_ptr<Epetra_Map> nodesearchmap, double& mindist)
 {
   Node* closestnode = nullptr;
 

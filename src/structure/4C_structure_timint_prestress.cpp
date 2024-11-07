@@ -19,10 +19,10 @@ FOUR_C_NAMESPACE_OPEN
 /* constructor */
 Solid::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, const Teuchos::RCP<Core::FE::Discretization>& actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
+    const Teuchos::ParameterList& xparams, const std::shared_ptr<Core::FE::Discretization>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Core::LinAlg::Solver>& contactsolver,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output)
     : TimIntStatics(
           timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output)
 {
@@ -89,7 +89,7 @@ void Solid::TimIntPrestress::update_step_element()
 
   // go to elements
   discret_->set_state("displacement", (*dis_)(0));
-  discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
 
 
   if (pre_stress == Inpar::Solid::PreStress::mulf && (*time_)[0] <= pstime + 1e-15)

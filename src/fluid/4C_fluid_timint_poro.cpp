@@ -17,10 +17,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-FLD::TimIntPoro::TimIntPoro(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+FLD::TimIntPoro::TimIntPoro(const std::shared_ptr<Core::FE::Discretization>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid)
 {
 }
@@ -96,8 +96,7 @@ void FLD::TimIntPoro::set_element_custom_parameter()
   eleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 void FLD::TimIntPoro::set_initial_porosity_field(
@@ -146,16 +145,16 @@ void FLD::TimIntPoro::set_initial_porosity_field(
 }
 
 void FLD::TimIntPoro::update_iter_incrementally(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)  //!< input residual velocities
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel)  //!< input residual velocities
 
 {
   FluidImplicitTimeInt::update_iter_incrementally(vel);
   // set the new solution we just got
-  if (vel != Teuchos::null)
+  if (vel != nullptr)
   {
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    Teuchos::RCP<Core::LinAlg::Vector<double>> aux =
+    std::shared_ptr<Core::LinAlg::Vector<double>> aux =
         Core::LinAlg::create_vector(*(discret_->dof_row_map(0)), true);
 
     // only one step theta
@@ -174,8 +173,8 @@ void FLD::TimIntPoro::output()
   // output of solution
   if (step_ % upres_ == 0)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> convel =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*velnp_);
+    std::shared_ptr<Core::LinAlg::Vector<double>> convel =
+        std::make_shared<Core::LinAlg::Vector<double>>(*velnp_);
     convel->Update(-1.0, *gridv_, 1.0);
     output_->write_vector("convel", convel);
     output_->write_vector("gridv", gridv_);
@@ -225,7 +224,7 @@ void FLD::TimIntPoro::poro_int_update()
     discret_->set_state("velnp", velnp_);
     discret_->set_state("scaaf", scaaf_);
     discret_->evaluate_condition(
-        eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
+        eleparams, sysmat_, nullptr, residual_, nullptr, nullptr, condname);
     discret_->clear_state();
   }
 
@@ -246,7 +245,7 @@ void FLD::TimIntPoro::poro_int_update()
     discret_->set_state("gridv", gridv_);
     discret_->set_state("velnp", velnp_);
     discret_->evaluate_condition(
-        eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
+        eleparams, sysmat_, nullptr, residual_, nullptr, nullptr, condname);
     discret_->clear_state();
   }
   sysmat_->complete();

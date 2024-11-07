@@ -27,7 +27,7 @@ namespace Core::Communication
   /*----------------------------------------------------------------------*
    | create communicator                                      ghamm 02/12 |
    *----------------------------------------------------------------------*/
-  Teuchos::RCP<Communicators> create_comm(std::vector<std::string> argv)
+  std::shared_ptr<Communicators> create_comm(std::vector<std::string> argv)
   {
     // for coupled simulations: color = 1 for 4C and color = 0 for other programs
     // so far: either nested parallelism within 4C or coupling with further
@@ -237,10 +237,10 @@ namespace Core::Communication
     MPI_Comm mpi_local_comm;
     MPI_Comm_split(MPI_COMM_WORLD, color, myrank, &mpi_local_comm);
 
-    Teuchos::RCP<Epetra_Comm> lcomm = Teuchos::make_rcp<Epetra_MpiComm>(mpi_local_comm);
+    std::shared_ptr<Epetra_Comm> lcomm = std::make_shared<Epetra_MpiComm>(mpi_local_comm);
 
     // the global communicator is created
-    Teuchos::RCP<Epetra_Comm> gcomm;
+    std::shared_ptr<Epetra_Comm> gcomm;
 
     if (ngroup == 1)
     {
@@ -257,7 +257,7 @@ namespace Core::Communication
       MPI_Comm_create(MPI_COMM_WORLD, world_group, &mpi_global_comm);
       MPI_Group_free(&world_group);
 
-      gcomm = Teuchos::make_rcp<Epetra_MpiComm>(mpi_global_comm);
+      gcomm = std::make_shared<Epetra_MpiComm>(mpi_global_comm);
     }
 
     // mapping of local proc ids to global proc ids
@@ -269,8 +269,8 @@ namespace Core::Communication
     }
 
     // nested parallelism group is created
-    Teuchos::RCP<Communicators> communicators =
-        Teuchos::make_rcp<Communicators>(color, ngroup, lpidgpid, lcomm, gcomm, npType);
+    std::shared_ptr<Communicators> communicators =
+        std::make_shared<Communicators>(color, ngroup, lpidgpid, lcomm, gcomm, npType);
 
     // info for the nested parallelism user
     if (lcomm->MyPID() == 0 && ngroup > 1)
@@ -288,14 +288,14 @@ namespace Core::Communication
    | constructor communicators                                ghamm 03/12 |
    *----------------------------------------------------------------------*/
   Communicators::Communicators(int groupId, int ngroup, std::map<int, int> lpidgpid,
-      Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm,
+      std::shared_ptr<Epetra_Comm> lcomm, std::shared_ptr<Epetra_Comm> gcomm,
       NestedParallelismType npType)
       : group_id_(groupId),
         ngroup_(ngroup),
         lpidgpid_(lpidgpid),
         lcomm_(lcomm),
         gcomm_(gcomm),
-        subcomm_(Teuchos::null),
+        subcomm_(nullptr),
         np_type_(npType)
   {
     return;
@@ -314,7 +314,7 @@ namespace Core::Communication
     }
     // if GPID is not part of the current group
     printf("\n\n\nERROR: GPID (%d) is not in this group (%d) \n\n\n\n", GPID, group_id_);
-    MPI_Abort(Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm_, true)->GetMpiComm(), EXIT_FAILURE);
+    MPI_Abort(std::dynamic_pointer_cast<Epetra_MpiComm>(gcomm_)->GetMpiComm(), EXIT_FAILURE);
     exit(1);
 
     return -1;
@@ -323,7 +323,7 @@ namespace Core::Communication
   /*----------------------------------------------------------------------*
    | set sub communicator                                     ghamm 04/12 |
    *----------------------------------------------------------------------*/
-  void Communicators::set_sub_comm(Teuchos::RCP<Epetra_Comm> subcomm)
+  void Communicators::set_sub_comm(std::shared_ptr<Epetra_Comm> subcomm)
   {
     subcomm_ = subcomm;
     return;
@@ -335,10 +335,10 @@ namespace Core::Communication
       const Core::LinAlg::MultiVector<double>& vec, const char* name, double tol /*= 1.0e-14*/
   )
   {
-    Teuchos::RCP<Epetra_Comm> lcomm = communicators.local_comm();
-    Teuchos::RCP<Epetra_Comm> gcomm = communicators.global_comm();
-    MPI_Comm mpi_lcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(lcomm)->GetMpiComm();
-    MPI_Comm mpi_gcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm)->GetMpiComm();
+    std::shared_ptr<Epetra_Comm> lcomm = communicators.local_comm();
+    std::shared_ptr<Epetra_Comm> gcomm = communicators.global_comm();
+    MPI_Comm mpi_lcomm = std::dynamic_pointer_cast<Epetra_MpiComm>(lcomm)->GetMpiComm();
+    MPI_Comm mpi_gcomm = std::dynamic_pointer_cast<Epetra_MpiComm>(gcomm)->GetMpiComm();
 
     int result = -1;
     MPI_Comm_compare(mpi_gcomm, mpi_lcomm, &result);
@@ -355,7 +355,7 @@ namespace Core::Communication
         vecblockmap.MyGlobalElements(), 0, vec.Comm());
 
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
-    Teuchos::RCP<Epetra_Map> proc0map;
+    std::shared_ptr<Epetra_Map> proc0map;
     if (lcomm->MyPID() == gcomm->MyPID())
       proc0map = Core::LinAlg::allreduce_overlapping_e_map(vecmap, 0);
     else
@@ -476,10 +476,10 @@ namespace Core::Communication
       Epetra_CrsMatrix& matrix, const char* name, double tol /*= 1.0e-14*/
   )
   {
-    Teuchos::RCP<Epetra_Comm> lcomm = communicators.local_comm();
-    Teuchos::RCP<Epetra_Comm> gcomm = communicators.global_comm();
-    MPI_Comm mpi_lcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(lcomm)->GetMpiComm();
-    MPI_Comm mpi_gcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm)->GetMpiComm();
+    std::shared_ptr<Epetra_Comm> lcomm = communicators.local_comm();
+    std::shared_ptr<Epetra_Comm> gcomm = communicators.global_comm();
+    MPI_Comm mpi_lcomm = std::dynamic_pointer_cast<Epetra_MpiComm>(lcomm)->GetMpiComm();
+    MPI_Comm mpi_gcomm = std::dynamic_pointer_cast<Epetra_MpiComm>(gcomm)->GetMpiComm();
     const int myglobalrank = gcomm->MyPID();
 
     int result = -1;
@@ -495,13 +495,13 @@ namespace Core::Communication
     const Epetra_Map& domainmap = matrix.DomainMap();
 
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
-    Teuchos::RCP<Epetra_Map> serialrowmap;
+    std::shared_ptr<Epetra_Map> serialrowmap;
     if (lcomm->MyPID() == gcomm->MyPID())
       serialrowmap = Core::LinAlg::allreduce_overlapping_e_map(rowmap, 0);
     else
       serialrowmap = Core::LinAlg::allreduce_overlapping_e_map(rowmap, lcomm->NumProc() - 1);
 
-    Teuchos::RCP<Epetra_Map> serialdomainmap;
+    std::shared_ptr<Epetra_Map> serialdomainmap;
     if (lcomm->MyPID() == gcomm->MyPID())
       serialdomainmap = Core::LinAlg::allreduce_overlapping_e_map(domainmap, 0);
     else

@@ -20,13 +20,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Adapter::ArtNet> Arteries::Utils::create_algorithm(
-    Inpar::ArtDyn::TimeIntegrationScheme timintscheme, Teuchos::RCP<Core::FE::Discretization> dis,
-    const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& artparams, Core::IO::DiscretizationWriter& output)
+std::shared_ptr<Adapter::ArtNet> Arteries::Utils::create_algorithm(
+    Inpar::ArtDyn::TimeIntegrationScheme timintscheme,
+    std::shared_ptr<Core::FE::Discretization> dis, const int linsolvernumber,
+    const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
+    Core::IO::DiscretizationWriter& output)
 {
   // Creation of Coupled Problem algortihm.
-  Teuchos::RCP<Adapter::ArtNet> algo = Teuchos::null;
+  std::shared_ptr<Adapter::ArtNet> algo = nullptr;
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
@@ -38,14 +39,14 @@ Teuchos::RCP<Adapter::ArtNet> Arteries::Utils::create_algorithm(
     case Inpar::ArtDyn::TimeIntegrationScheme::tay_gal:
     {
       // create algorithm
-      algo = Teuchos::make_rcp<Arteries::ArtNetExplicitTimeInt>(
+      algo = std::make_shared<Arteries::ArtNetExplicitTimeInt>(
           dis, linsolvernumber, probparams, artparams, output);
       break;
     }
     case Inpar::ArtDyn::TimeIntegrationScheme::stationary:
     {
       // create algorithm
-      algo = Teuchos::make_rcp<Arteries::ArtNetImplStationary>(
+      algo = std::make_shared<Arteries::ArtNetImplStationary>(
           dis, linsolvernumber, probparams, artparams, output);
       break;
     }
@@ -65,8 +66,8 @@ void Arteries::Utils::assign_material_pointers(
 {
   Global::Problem* problem = Global::Problem::instance();
 
-  Teuchos::RCP<Core::FE::Discretization> arterydis = problem->get_dis(artery_disname);
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
+  std::shared_ptr<Core::FE::Discretization> arterydis = problem->get_dis(artery_disname);
+  std::shared_ptr<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
 
   set_material_pointers_matching_grid(*arterydis, *scatradis);
 }
@@ -116,8 +117,8 @@ bool Arteries::ArteryScatraCloneStrategy::determine_ele_type(
  | set the element data (protected)                    kremheller 03/18 |
  *----------------------------------------------------------------------*/
 void Arteries::ArteryScatraCloneStrategy::set_element_data(
-    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
-    const bool isnurbs)
+    std::shared_ptr<Core::Elements::Element> newele, Core::Elements::Element* oldele,
+    const int matid, const bool isnurbs)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual

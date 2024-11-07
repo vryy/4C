@@ -17,9 +17,9 @@
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include <memory>
 #include <unordered_map>
 
 FOUR_C_NAMESPACE_OPEN
@@ -50,10 +50,10 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -157,9 +157,9 @@ namespace Discret
       int num_line() const override { return (1); }
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
 
       /*!
@@ -292,13 +292,13 @@ namespace Discret
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline bool is_params_interface() const override { return (not interface_ptr_.is_null()); }
+      inline bool is_params_interface() const override { return (interface_ptr_ != nullptr); }
 
       /*! \brief get access to the parameter interface pointer
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override;
+      std::shared_ptr<Core::Elements::ParamsInterface> params_interface_ptr() override;
       //@}
 
       //! @name methods for biopolymer network simulations
@@ -366,7 +366,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 06/17 */
-      Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> get_bond(int bond_id)
+      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> get_bond(int bond_id)
       {
         return mybondstobeams_[bond_id];
       }
@@ -375,7 +375,8 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 06/17 */
-      std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed>> const& get_bond_map() const
+      std::map<int, std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed>> const& get_bond_map()
+          const
       {
         return mybondstobeams_;
       }
@@ -384,7 +385,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 06/17 */
-      void add_bond(int id, Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> newbondpartner)
+      void add_bond(int id, std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> newbondpartner)
       {
         mybondstobeams_[id] = newbondpartner;
       };
@@ -432,7 +433,7 @@ namespace Discret
       /*! \brief interface ptr
        *
        *  data exchange between the element and the time integrator. */
-      Teuchos::RCP<Solid::Elements::ParamsInterface> interface_ptr_;
+      std::shared_ptr<Solid::Elements::ParamsInterface> interface_ptr_;
 
       //! radius of the sphere
       double radius_;
@@ -444,7 +445,7 @@ namespace Discret
 
       /// holds unique id of beam element binding spot to which sphere is bonded to (size equals
       /// number of bonds)
-      std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed>> mybondstobeams_;
+      std::map<int, std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed>> mybondstobeams_;
 
       //@}
 

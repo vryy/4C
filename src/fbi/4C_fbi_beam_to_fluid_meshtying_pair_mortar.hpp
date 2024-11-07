@@ -69,7 +69,7 @@ namespace BEAMINTERACTION
      * @param visualization_params Parameter list
      */
     void get_pair_visualization(
-        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
+        std::shared_ptr<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
    protected:

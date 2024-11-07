@@ -33,14 +33,14 @@ namespace
 
     GeometricSearchDistributed()
     {
-      comm_ = Teuchos::make_rcp<Epetra_MpiComm>(MPI_COMM_WORLD);
+      comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
       verbosity_ = Core::IO::minimal;
       my_rank_ = comm_->MyPID();
     }
 
    protected:
     std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives_, predicates_;
-    Teuchos::RCP<Epetra_Comm> comm_;
+    std::shared_ptr<Epetra_Comm> comm_;
     int my_rank_;
     Core::IO::Verbositylevel verbosity_;
   };

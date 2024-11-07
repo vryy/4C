@@ -175,9 +175,9 @@ Mat::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from read_materials()                  |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticNlnLogNeoHooke::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::PlasticNlnLogNeoHooke::create_material()
 {
-  return Teuchos::make_rcp<Mat::PlasticNlnLogNeoHooke>(this);
+  return std::make_shared<Mat::PlasticNlnLogNeoHooke>(this);
 }
 
 
@@ -265,7 +265,7 @@ void Mat::PlasticNlnLogNeoHooke::unpack(Core::Communication::UnpackBuffer& buffe
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

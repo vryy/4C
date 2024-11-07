@@ -15,7 +15,7 @@ void Adapter::AleNOXCorrectionWrapper::prepare_time_step()
 {
   AleWrapper::prepare_time_step();
 
-  if (stepinc_ != Teuchos::null) stepinc_->PutScalar(0.0);
+  if (stepinc_ != nullptr) stepinc_->PutScalar(0.0);
 
   return;
 }
@@ -23,14 +23,14 @@ void Adapter::AleNOXCorrectionWrapper::prepare_time_step()
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void Adapter::AleNOXCorrectionWrapper::evaluate(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> stepinc)
 {
-  if (stepinc != Teuchos::null)
+  if (stepinc != nullptr)
   {
     // iteration increments
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*stepinc);
-    if (stepinc_ != Teuchos::null)
+    std::shared_ptr<Core::LinAlg::Vector<double>> iterinc =
+        std::make_shared<Core::LinAlg::Vector<double>>(*stepinc);
+    if (stepinc_ != nullptr)
     {
       iterinc->Update(-1.0, *stepinc_, 1.0);
 
@@ -40,7 +40,7 @@ void Adapter::AleNOXCorrectionWrapper::evaluate(
     }
     else
     {
-      stepinc_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*stepinc);
+      stepinc_ = std::make_shared<Core::LinAlg::Vector<double>>(*stepinc);
     }
 
     // do structural update with provided residual displacements - iteration increment
@@ -48,7 +48,7 @@ void Adapter::AleNOXCorrectionWrapper::evaluate(
   }
   else
   {
-    AleWrapper::evaluate(Teuchos::null);
+    AleWrapper::evaluate(nullptr);
   }
 
   return;

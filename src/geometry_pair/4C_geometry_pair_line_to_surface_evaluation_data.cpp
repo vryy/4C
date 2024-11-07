@@ -40,8 +40,8 @@ void GEOMETRYPAIR::LineToSurfaceEvaluationData::clear()
  *
  */
 void GEOMETRYPAIR::LineToSurfaceEvaluationData::setup(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    const std::shared_ptr<const Core::FE::Discretization>& discret,
+    const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   face_elements_ = face_elements;
 
@@ -58,7 +58,7 @@ void GEOMETRYPAIR::LineToSurfaceEvaluationData::setup(
  *
  */
 void GEOMETRYPAIR::LineToSurfaceEvaluationData::set_state(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_col_np)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_col_np)
 {
   for (const auto& [id, face_element] : face_elements_)
     if (face_element->is_part_of_pair())

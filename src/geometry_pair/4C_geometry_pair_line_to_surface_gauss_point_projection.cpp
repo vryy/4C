@@ -21,7 +21,8 @@ template <typename ScalarType, typename Line, typename Surface>
 GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<ScalarType, Line,
     Surface>::GeometryPairLineToSurfaceGaussPointProjection(const Core::Elements::Element* element1,
     const Core::Elements::Element* element2,
-    const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& line_to_surface_evaluation_data)
+    const std::shared_ptr<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
+        line_to_surface_evaluation_data)
     : GeometryPairLineToSurface<ScalarType, Line, Surface>(
           element1, element2, line_to_surface_evaluation_data)
 {

@@ -261,7 +261,7 @@ namespace RTD
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void write_material_reference(
-      std::ostream &stream, const std::vector<Teuchos::RCP<Mat::MaterialDefinition>> &matlist)
+      std::ostream &stream, const std::vector<std::shared_ptr<Mat::MaterialDefinition>> &matlist)
   {
     write_linktarget(stream, "materialsreference");
     write_header(stream, 0, "Material reference");
@@ -297,7 +297,7 @@ namespace RTD
 
 
   void write_single_material_read_the_docs(
-      std::ostream &stream, const Teuchos::RCP<Mat::MaterialDefinition> material)
+      std::ostream &stream, const std::shared_ptr<Mat::MaterialDefinition> material)
   {
     /* Each entry consists of a number of fields:
     - header
@@ -442,7 +442,7 @@ namespace RTD
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void write_conditions_reference(std::ostream &stream,
-      const std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>> &condlist)
+      const std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>> &condlist)
   {
     write_linktarget(stream, "prescribedconditionreference");
     write_header(stream, 0, "Prescribed Condition Reference");
@@ -608,7 +608,7 @@ namespace RTD
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void write_contact_law_reference(std::ostream &stream,
-      const std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>> &coconstlawlist)
+      const std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>> &coconstlawlist)
   {
     write_linktarget(stream, "contactconstitutivelawreference");
     write_header(stream, 0, "Contact Constitutive Law Reference");
@@ -627,8 +627,8 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_single_contact_law_read_the_docs(
-      std::ostream &stream, const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> contactlaw)
+  void write_single_contact_law_read_the_docs(std::ostream &stream,
+      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition> contactlaw)
   {
     /* Each entry consists of a number of fields:
     - header

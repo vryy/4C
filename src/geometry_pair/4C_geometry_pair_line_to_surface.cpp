@@ -26,7 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 template <typename ScalarType, typename Line, typename Surface>
 GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::GeometryPairLineToSurface(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
-    const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& line_to_surface_evaluation_data)
+    const std::shared_ptr<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
+        line_to_surface_evaluation_data)
     : GeometryPair(element1, element2),
       line_to_surface_evaluation_data_(line_to_surface_evaluation_data),
       is_unit_test_(false)

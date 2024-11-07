@@ -47,22 +47,22 @@ namespace SSTI
    public:
     //! constructor
     explicit ThermoStructureOffDiagCoupling(
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmapstructure,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmapthermo,
-        Teuchos::RCP<const Epetra_Map> full_map_structure,
-        Teuchos::RCP<const Epetra_Map> full_map_thermo,
-        Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssti_structure_meshtying,
-        Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo,
-        Teuchos::RCP<Adapter::SSIStructureWrapper> structure,
-        Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo);
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> blockmapstructure,
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> blockmapthermo,
+        std::shared_ptr<const Epetra_Map> full_map_structure,
+        std::shared_ptr<const Epetra_Map> full_map_thermo,
+        std::shared_ptr<const SSI::Utils::SSIMeshTying> ssti_structure_meshtying,
+        std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo,
+        std::shared_ptr<Adapter::SSIStructureWrapper> structure,
+        std::shared_ptr<Adapter::ScaTraBaseAlgorithm> thermo);
 
     //! derivative of structure residuals w.r.t. thermo dofs in domain
     void evaluate_off_diag_block_structure_thermo_domain(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> structurethermodomain);
+        std::shared_ptr<Core::LinAlg::SparseOperator> structurethermodomain);
 
     //! derivative of thermo residuals w.r.t. structure dofs in domain
     void evaluate_off_diag_block_thermo_structure_domain(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> thermostructuredomain);
+        std::shared_ptr<Core::LinAlg::SparseOperator> thermostructuredomain);
 
     //! derivative of thermo residuals w.r.t. structure dofs on interface
     void evaluate_off_diag_block_thermo_structure_interface(
@@ -70,34 +70,34 @@ namespace SSTI
 
    private:
     void copy_slave_to_master_thermo_structure_interface(
-        Teuchos::RCP<const Core::LinAlg::SparseOperator> slavematrix,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& mastermatrix);
+        std::shared_ptr<const Core::LinAlg::SparseOperator> slavematrix,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& mastermatrix);
 
     void evaluate_thermo_structure_interface_slave_side(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix);
+        std::shared_ptr<Core::LinAlg::SparseOperator> slavematrix);
 
     //! map extractor associated with all degrees of freedom inside structure field
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmapstructure_;
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> blockmapstructure_;
 
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmapthermo_;
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> blockmapthermo_;
 
     //! map extractor associated with all degrees of freedom inside structural field
-    Teuchos::RCP<const Epetra_Map> full_map_structure_;
+    std::shared_ptr<const Epetra_Map> full_map_structure_;
 
     //! map extractor associated with all degrees of freedom inside thermo field
-    Teuchos::RCP<const Epetra_Map> full_map_thermo_;
+    std::shared_ptr<const Epetra_Map> full_map_thermo_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo_;
+    std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo_;
 
     //! SSTI structure meshtying object containing coupling adapters, converters and maps
-    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssti_structure_meshtying_;
+    std::shared_ptr<const SSI::Utils::SSIMeshTying> ssti_structure_meshtying_;
 
     //! structure problem
-    Teuchos::RCP<Adapter::SSIStructureWrapper> structure_;
+    std::shared_ptr<Adapter::SSIStructureWrapper> structure_;
 
     //! thermo problem
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> thermo_;
   };
 }  // namespace SSTI
 

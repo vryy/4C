@@ -70,19 +70,20 @@ namespace Lubrication
   class TimIntImpl
   {
    public:
-    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() { return output_; }
+    virtual std::shared_ptr<Core::IO::DiscretizationWriter> disc_writer() { return output_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& inf_gap_toggle() { return inf_gap_toggle_lub_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>>& inf_gap_toggle() { return inf_gap_toggle_lub_; }
 
     /*========================================================================*/
     //! @name Constructors and destructors and related methods
     /*========================================================================*/
 
     //! Standard Constructor
-    TimIntImpl(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    TimIntImpl(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     //! Destructor
     virtual ~TimIntImpl() = default;
@@ -99,20 +100,20 @@ namespace Lubrication
     //! set the nodal film height
     void set_height_field_pure_lub(const int nds);
     //! set the nodal film height
-    void set_height_field(const int nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> gap);
+    void set_height_field(const int nds, std::shared_ptr<const Core::LinAlg::Vector<double>> gap);
 
     //! set the time derivative of the height (film thickness) by OST
     void set_height_dot_field(
-        const int nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> heightdot);
+        const int nds, std::shared_ptr<const Core::LinAlg::Vector<double>> heightdot);
 
     //! set relative tangential interface velocity for Reynolds equation
     void set_average_velocity_field_pure_lub(const int nds);
     void set_relative_velocity_field(
-        const int nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> rel_vel);
+        const int nds, std::shared_ptr<const Core::LinAlg::Vector<double>> rel_vel);
 
     //! set average tangential interface velocity for Reynolds equation
     void set_average_velocity_field(
-        const int nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> av_vel);
+        const int nds, std::shared_ptr<const Core::LinAlg::Vector<double>> av_vel);
 
     //! add global state vectors specific for time-integration scheme
     virtual void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) = 0;
@@ -143,7 +144,7 @@ namespace Lubrication
 
     //! apply moving mesh data
     void apply_mesh_movement(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp,  //!< displacement vector
+        std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp,  //!< displacement vector
         int nds  //!< number of the dofset the displacement state belongs to
     );
 
@@ -156,10 +157,10 @@ namespace Lubrication
     virtual void print_time_step_info();
 
     //! return system matrix downcasted as sparse matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix();
 
     //! update Newton step
-    virtual void update_newton(Teuchos::RCP<const Core::LinAlg::Vector<double>> prei);
+    virtual void update_newton(std::shared_ptr<const Core::LinAlg::Vector<double>> prei);
 
     //! Update iteration incrementally
     //!
@@ -172,8 +173,8 @@ namespace Lubrication
 
     //! Update iteration incrementally with prescribed residual
     //! pressures
-    void update_iter_incrementally(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> prei  //!< input residual pressures
+    void update_iter_incrementally(const std::shared_ptr<const Core::LinAlg::Vector<double>>
+            prei  //!< input residual pressures
     );
 
     //! build linear system tangent matrix, rhs/force residual
@@ -181,26 +182,26 @@ namespace Lubrication
     void evaluate();
 
     //! non-overlapping DOF map for multiple dofsets
-    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds = 0)
+    std::shared_ptr<const Epetra_Map> dof_row_map(unsigned nds = 0)
     {
       const Epetra_Map* dofrowmap = discret_->dof_row_map(nds);
-      return Teuchos::make_rcp<Epetra_Map>(*dofrowmap);
+      return std::make_shared<Epetra_Map>(*dofrowmap);
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const
+    std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const
     {
       return dbcmaps_;
     }
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() { return residual_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() { return residual_; }
 
     //! return flag indicating if an incremental solution approach is used
     bool is_incremental() { return incremental_; }
 
     //! return discretization
-    Teuchos::RCP<Core::FE::Discretization> discretization() { return discret_; }
+    std::shared_ptr<Core::FE::Discretization> discretization() { return discret_; }
 
     //! output solution and restart data to file
     virtual void output(const int num = 0);
@@ -230,7 +231,7 @@ namespace Lubrication
     /*--- query and output ---------------------------------------------------*/
 
     //! return pressure field pre at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> prenp() { return prenp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> prenp() { return prenp_; }
 
     //! output mean values of pressure(s)
     virtual void output_mean_pressures(const int num = 0);
@@ -271,9 +272,10 @@ namespace Lubrication
     /*--- calculate and update -----------------------------------------------*/
 
     //! Apply Dirichlet boundary conditions on provided state vector
-    void apply_dirichlet_bc(const double time,             //!< evaluation time
-        Teuchos::RCP<Core::LinAlg::Vector<double>> prenp,  //!< pressure (may be = null)
-        Teuchos::RCP<Core::LinAlg::Vector<double>> predt  //!< first time derivative (may be = null)
+    void apply_dirichlet_bc(const double time,                //!< evaluation time
+        std::shared_ptr<Core::LinAlg::Vector<double>> prenp,  //!< pressure (may be = null)
+        std::shared_ptr<Core::LinAlg::Vector<double>>
+            predt  //!< first time derivative (may be = null)
     );
 
     //! potential residual scaling and potential addition of Neumann terms
@@ -361,10 +363,10 @@ namespace Lubrication
     /*========================================================================*/
 
     //! solver
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;
+    std::shared_ptr<Core::LinAlg::Solver> solver_;
 
     //! parameter list
-    const Teuchos::RCP<Teuchos::ParameterList> params_;
+    const std::shared_ptr<Teuchos::ParameterList> params_;
 
     //! processor id
     int myrank_;
@@ -436,7 +438,7 @@ namespace Lubrication
     int nsd_;
 
     //! pressure at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> prenp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> prenp_;
 
     /*========================================================================*/
     //! @name velocity, pressure, and related
@@ -450,37 +452,37 @@ namespace Lubrication
     /*========================================================================*/
 
     //! the lubrication discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! the discretization writer
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
+    std::shared_ptr<Core::IO::DiscretizationWriter> output_;
 
     //! system matrix (either sparse matrix or block sparse matrix)
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> sysmat_;
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;
 
     //! maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;
 
     //! the vector containing body and surface forces
-    Teuchos::RCP<Core::LinAlg::Vector<double>> neumann_loads_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> neumann_loads_;
 
     //! residual vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual_;
 
     //! true (rescaled) residual vector without zeros at Dirichlet conditions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> trueresidual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> trueresidual_;
 
     //! nonlinear iteration increment vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> increment_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> increment_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> prei_;  //!< residual pressures
-                                                       //!< \f$\Delta{p}^{<k>}_{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> prei_;  //!< residual pressures
+                                                          //!< \f$\Delta{p}^{<k>}_{n+1}\f$
 
     //! Dirchlet toggle vector for unprojectable nodes (i.e. infinite gap)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> inf_gap_toggle_lub_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> inf_gap_toggle_lub_;
 
     /*========================================================================*/
     //! @name not classified variables - to be kept clean!!!

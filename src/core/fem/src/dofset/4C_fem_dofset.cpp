@@ -104,14 +104,14 @@ void Core::DOFSets::DofSet::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 void Core::DOFSets::DofSet::reset()
 {
-  dofrowmap_ = Teuchos::null;
-  dofcolmap_ = Teuchos::null;
-  numdfcolnodes_ = Teuchos::null;
-  numdfcolelements_ = Teuchos::null;
-  idxcolnodes_ = Teuchos::null;
-  idxcolelements_ = Teuchos::null;
-  shiftcolnodes_ = Teuchos::null;
-  dofscolnodes_ = Teuchos::null;
+  dofrowmap_ = nullptr;
+  dofcolmap_ = nullptr;
+  numdfcolnodes_ = nullptr;
+  numdfcolelements_ = nullptr;
+  idxcolnodes_ = nullptr;
+  idxcolelements_ = nullptr;
+  shiftcolnodes_ = nullptr;
+  dofscolnodes_ = nullptr;
 
   filled_ = false;
 
@@ -159,11 +159,12 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
   int count = get_first_gid_number_to_be_used(dis);
 
   // Check if we have a face discretization which supports degrees of freedom on faces
-  Teuchos::RCP<const Core::FE::DiscretizationHDG> facedis =
-      Teuchos::rcp_dynamic_cast<const Core::FE::DiscretizationHDG>(Teuchos::rcpFromRef(dis));
+  std::shared_ptr<const Core::FE::DiscretizationHDG> facedis =
+      std::dynamic_pointer_cast<const Core::FE::DiscretizationHDG>(
+          Core::Utils::shared_ptr_from_ref(dis));
 
   // set count to 0 in case of dofset 2 in HDG discretizations
-  if (facedis != Teuchos::null && dspos_ == 2) count = 0;
+  if (facedis != nullptr && dspos_ == 2) count = 0;
 
   // Now this is tricky. We have to care for nodes, faces, and elements, both
   // row and column maps. In general both nodes, faces, and elements can have
@@ -182,16 +183,16 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
   // or element.
 
   // numdf for all nodes and elements
-  numdfcolnodes_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
-  numdfcolelements_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.element_col_map());
-  if (facedis != Teuchos::null && facedis->face_col_map() != nullptr)
-    numdfcolfaces_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*facedis->face_col_map());
+  numdfcolnodes_ = std::make_shared<Core::LinAlg::Vector<int>>(*dis.node_col_map());
+  numdfcolelements_ = std::make_shared<Core::LinAlg::Vector<int>>(*dis.element_col_map());
+  if (facedis != nullptr && facedis->face_col_map() != nullptr)
+    numdfcolfaces_ = std::make_shared<Core::LinAlg::Vector<int>>(*facedis->face_col_map());
 
   // index of first dof for all nodes and elements
-  idxcolnodes_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
-  idxcolelements_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.element_col_map());
-  if (facedis != Teuchos::null && facedis->face_col_map() != nullptr)
-    idxcolfaces_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*facedis->face_col_map());
+  idxcolnodes_ = std::make_shared<Core::LinAlg::Vector<int>>(*dis.node_col_map());
+  idxcolelements_ = std::make_shared<Core::LinAlg::Vector<int>>(*dis.element_col_map());
+  if (facedis != nullptr && facedis->face_col_map() != nullptr)
+    idxcolfaces_ = std::make_shared<Core::LinAlg::Vector<int>>(*facedis->face_col_map());
 
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
@@ -347,7 +348,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     //////////////////////////////////////////////////////////////////
 
     // Now do it again for the faces
-    if (facedis != Teuchos::null && facedis->face_row_map() != nullptr)
+    if (facedis != nullptr && facedis->face_row_map() != nullptr)
     {
       Core::LinAlg::Vector<int> numdfrowfaces(*facedis->face_row_map());
       Core::LinAlg::Vector<int> idxrowfaces(*facedis->face_row_map());
@@ -356,7 +357,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
       const int mypid = dis.get_comm().MyPID();
       for (int i = 0; i < numcolelements; ++i)
       {
-        Teuchos::RCP<Core::Elements::FaceElement>* faces = dis.l_col_element(i)->faces();
+        std::shared_ptr<Core::Elements::FaceElement>* faces = dis.l_col_element(i)->faces();
         // If no faces are found, continue...
         if (faces == nullptr) continue;
         for (int face = 0; face < dis.l_col_element(i)->num_face(); ++face)
@@ -372,7 +373,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
 
       for (int i = 0; i < numcolelements; ++i)
       {
-        Teuchos::RCP<Core::Elements::FaceElement>* faces = dis.l_col_element(i)->faces();
+        std::shared_ptr<Core::Elements::FaceElement>* faces = dis.l_col_element(i)->faces();
         if (faces == nullptr) continue;
         for (int face = 0; face < dis.l_col_element(i)->num_face(); ++face)
           if (faces[face]->owner() == mypid)
@@ -496,7 +497,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
       *dis.element_row_map(), *dis.element_col_map(), dis.get_comm());
   elementexporter.do_export(elementdofset);
 
-  if (facedis != Teuchos::null && facedis->face_row_map() != nullptr)
+  if (facedis != nullptr && facedis->face_row_map() != nullptr)
   {
     Core::Communication::Exporter faceexporter(
         *facedis->face_row_map(), *facedis->face_col_map(), dis.get_comm());
@@ -527,20 +528,20 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     std::copy(dofs.begin(), dofs.end(), std::back_inserter(localcoldofs));
   }
 
-  dofrowmap_ = Teuchos::make_rcp<Epetra_Map>(
-      -1, localrowdofs.size(), localrowdofs.data(), 0, dis.get_comm());
+  dofrowmap_ =
+      std::make_shared<Epetra_Map>(-1, localrowdofs.size(), localrowdofs.data(), 0, dis.get_comm());
   if (!dofrowmap_->UniqueGIDs()) FOUR_C_THROW("Dof row map is not unique");
-  dofcolmap_ = Teuchos::make_rcp<Epetra_Map>(
-      -1, localcoldofs.size(), localcoldofs.data(), 0, dis.get_comm());
+  dofcolmap_ =
+      std::make_shared<Epetra_Map>(-1, localcoldofs.size(), localcoldofs.data(), 0, dis.get_comm());
 
   // **********************************************************************
   // **********************************************************************
   // build map of all (non-unique) column DoFs
-  dofscolnodes_ = Teuchos::make_rcp<Epetra_Map>(
+  dofscolnodes_ = std::make_shared<Epetra_Map>(
       -1, allnodelocalcoldofs.size(), allnodelocalcoldofs.data(), 0, dis.get_comm());
 
   // build shift vector
-  shiftcolnodes_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
+  shiftcolnodes_ = std::make_shared<Core::LinAlg::Vector<int>>(*dis.node_col_map());
   int numcolnodes = dis.num_my_col_nodes();
   for (int i = 0; i < numcolnodes; ++i)
   {
@@ -572,7 +573,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
  *----------------------------------------------------------------------*/
 bool Core::DOFSets::DofSet::initialized() const
 {
-  if (dofcolmap_ == Teuchos::null or dofrowmap_ == Teuchos::null)
+  if (dofcolmap_ == nullptr or dofrowmap_ == nullptr)
     return false;
   else
     return true;
@@ -582,7 +583,7 @@ bool Core::DOFSets::DofSet::initialized() const
  *----------------------------------------------------------------------*/
 const Epetra_Map* Core::DOFSets::DofSet::dof_row_map() const
 {
-  if (dofrowmap_ == Teuchos::null)
+  if (dofrowmap_ == nullptr)
     FOUR_C_THROW("Core::DOFSets::DofSet::dof_row_map(): dofrowmap_ not initialized, yet");
   return dofrowmap_.get();
 }
@@ -592,7 +593,7 @@ const Epetra_Map* Core::DOFSets::DofSet::dof_row_map() const
  *----------------------------------------------------------------------*/
 const Epetra_Map* Core::DOFSets::DofSet::dof_col_map() const
 {
-  if (dofcolmap_ == Teuchos::null)
+  if (dofcolmap_ == nullptr)
     FOUR_C_THROW("Core::DOFSets::DofSet::DofColMap(): dofcolmap_ not initialized, yet");
   return dofcolmap_.get();
 }
@@ -601,7 +602,7 @@ const Epetra_Map* Core::DOFSets::DofSet::dof_col_map() const
  *----------------------------------------------------------------------*/
 int Core::DOFSets::DofSet::num_global_elements() const
 {
-  if (dofrowmap_ == Teuchos::null)
+  if (dofrowmap_ == nullptr)
     FOUR_C_THROW("Core::DOFSets::DofSet::NumGlobalElements(): dofrowmap_ not initialized, yet");
   return dofrowmap_->NumGlobalElements();
 }
@@ -611,7 +612,7 @@ int Core::DOFSets::DofSet::num_global_elements() const
  *----------------------------------------------------------------------*/
 int Core::DOFSets::DofSet::max_all_gid() const
 {
-  if (dofrowmap_ == Teuchos::null)
+  if (dofrowmap_ == nullptr)
     FOUR_C_THROW("Core::DOFSets::DofSet::MaxAllGID(): dofrowmap_ not initialized, yet");
   return dofrowmap_->MaxAllGID();
 }
@@ -621,7 +622,7 @@ int Core::DOFSets::DofSet::max_all_gid() const
  *----------------------------------------------------------------------*/
 int Core::DOFSets::DofSet::min_all_gid() const
 {
-  if (dofrowmap_ == Teuchos::null)
+  if (dofrowmap_ == nullptr)
     FOUR_C_THROW("Core::DOFSets::DofSet::MinAllGID(): dofrowmap_ not initialized, yet");
   return dofrowmap_->MinAllGID();
 }

@@ -121,10 +121,10 @@ namespace Discret
       int numnode_;
 
       /// history of deformation gradient
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> fhist_;
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> fhist_;
 
       /// updated Lagrange inverse of Jacobian
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> inv_jhist_;
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> inv_jhist_;
 
       /// get number of gaussian points considered
       inline int num_gp() const { return fhist_->numRows(); }

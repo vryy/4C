@@ -31,24 +31,24 @@ Core::Communication::ParObject* Discret::Elements::SoHex8PoroType::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8PoroType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex8PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+    std::shared_ptr<Core::Elements::Element> ele = std::make_shared<
         Discret::Elements::So3Poro<Discret::Elements::SoHex8, Core::FE::CellType::hex8>>(
 
         id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8PoroType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex8PoroType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+  std::shared_ptr<Core::Elements::Element> ele = std::make_shared<
       Discret::Elements::So3Poro<Discret::Elements::SoHex8, Core::FE::CellType::hex8>>(
 
       id, owner);
@@ -110,24 +110,24 @@ Core::Communication::ParObject* Discret::Elements::SoTet4PoroType::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4PoroType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoTet4PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+    std::shared_ptr<Core::Elements::Element> ele = std::make_shared<
         Discret::Elements::So3Poro<Discret::Elements::SoTet4, Core::FE::CellType::tet4>>(
 
         id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4PoroType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoTet4PoroType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+  std::shared_ptr<Core::Elements::Element> ele = std::make_shared<
       Discret::Elements::So3Poro<Discret::Elements::SoTet4, Core::FE::CellType::tet4>>(
 
       id, owner);
@@ -188,24 +188,24 @@ Core::Communication::ParObject* Discret::Elements::SoHex27PoroType::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex27PoroType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex27PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+    std::shared_ptr<Core::Elements::Element> ele = std::make_shared<
         Discret::Elements::So3Poro<Discret::Elements::SoHex27, Core::FE::CellType::hex27>>(
 
         id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex27PoroType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex27PoroType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+  std::shared_ptr<Core::Elements::Element> ele = std::make_shared<
       Discret::Elements::So3Poro<Discret::Elements::SoHex27, Core::FE::CellType::hex27>>(
 
       id, owner);
@@ -264,24 +264,24 @@ Core::Communication::ParObject* Discret::Elements::SoTet10PoroType::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet10PoroType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoTet10PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+    std::shared_ptr<Core::Elements::Element> ele = std::make_shared<
         Discret::Elements::So3Poro<Discret::Elements::SoTet10, Core::FE::CellType::tet10>>(
 
         id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet10PoroType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoTet10PoroType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+  std::shared_ptr<Core::Elements::Element> ele = std::make_shared<
       Discret::Elements::So3Poro<Discret::Elements::SoTet10, Core::FE::CellType::tet10>>(
 
       id, owner);
@@ -340,23 +340,23 @@ Core::Communication::ParObject* Discret::Elements::SoNurbs27PoroType::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoNurbs27PoroType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoNurbs27PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::So3Poro<Discret::Elements::Nurbs::SoNurbs27,
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::So3Poro<Discret::Elements::Nurbs::SoNurbs27,
             Core::FE::CellType::nurbs27>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoNurbs27PoroType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoNurbs27PoroType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+  std::shared_ptr<Core::Elements::Element> ele = std::make_shared<
       Discret::Elements::So3Poro<Discret::Elements::Nurbs::SoNurbs27, Core::FE::CellType::nurbs27>>(
       id, owner);
   return ele;

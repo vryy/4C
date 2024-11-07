@@ -12,7 +12,8 @@
 #include "4C_material_parameter_base.hpp"
 
 #include <Sacado.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -101,20 +102,20 @@ Mat::PAR::BeamElastHyperMaterialParameterGeneric::BeamElastHyperMaterialParamete
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material>
+std::shared_ptr<Core::Mat::Material>
 Mat::PAR::BeamElastHyperMaterialParameterGeneric::create_material()
 {
   /* all the different parameter sets (Reissner/Kirchhoff/..., 'classic'/'by modes') are used to
    * parameterize the same constitutive relations based on a hyperelastic stored energy function
    * formulated for cross-section resultants which are implemented in BeamElastHyperMaterial */
-  Teuchos::RCP<Core::Mat::Material> matobject;
+  std::shared_ptr<Core::Mat::Material> matobject;
 
   if (uses_fad())
   {
-    matobject = Teuchos::make_rcp<Mat::BeamElastHyperMaterial<Sacado::Fad::DFad<double>>>(this);
+    matobject = std::make_shared<Mat::BeamElastHyperMaterial<Sacado::Fad::DFad<double>>>(this);
   }
   else
-    matobject = Teuchos::make_rcp<Mat::BeamElastHyperMaterial<double>>(this);
+    matobject = std::make_shared<Mat::BeamElastHyperMaterial<double>>(this);
   return matobject;
 }
 

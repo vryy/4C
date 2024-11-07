@@ -92,9 +92,9 @@ int Discret::Elements::Torsion3::evaluate(Teuchos::ParameterList& params,
       // need current global displacement and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual
       // values for each degree of freedom
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
@@ -114,15 +114,15 @@ int Discret::Elements::Torsion3::evaluate(Teuchos::ParameterList& params,
       // values for each degree of freedom
       //
       // get element displcements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       // get residual displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> res =
           discretization.get_state("residual displacement");
-      if (res == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'residual displacement'");
+      if (res == nullptr) FOUR_C_THROW("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
       Core::FE::extract_my_values(*res, myres, lm);
 
@@ -305,7 +305,7 @@ void Discret::Elements::Torsion3::t3_energy(Teuchos::ParameterList& params,
   deltatheta = acos(s);
 
   // spring constant from material law
-  Teuchos::RCP<const Core::Mat::Material> currmat = material();
+  std::shared_ptr<const Core::Mat::Material> currmat = material();
   double spring = 0.0;
 
   // assignment of material parameters; only spring material is accepted for this element
@@ -437,7 +437,7 @@ void Discret::Elements::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
   }
 
   // spring constant from material law
-  Teuchos::RCP<const Core::Mat::Material> currmat = material();
+  std::shared_ptr<const Core::Mat::Material> currmat = material();
   double spring = 0.0;
 
   // assignment of material parameters; only spring material is accepted for this element

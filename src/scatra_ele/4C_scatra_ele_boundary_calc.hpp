@@ -490,12 +490,12 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& erhs);
 
       //! get density at integration point
-      virtual double get_density(Teuchos::RCP<const Core::Mat::Material> material,
+      virtual double get_density(std::shared_ptr<const Core::Mat::Material> material,
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp, const int k);
 
       //! calculate boundary condition due to convective heat transfer
       void convective_heat_transfer(const Core::Elements::FaceElement* ele,
-          Teuchos::RCP<const Core::Mat::Material> material,
+          std::shared_ptr<const Core::Mat::Material> material,
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,
           Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs,
           const double heatranscoeff, const double surtemp);
@@ -513,7 +513,7 @@ namespace Discret
       template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
       void weak_dirichlet(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization,
-          Teuchos::RCP<const Core::Mat::Material> material,
+          std::shared_ptr<const Core::Mat::Material> material,
           Core::LinAlg::SerialDenseMatrix& elemat_epetra,
           Core::LinAlg::SerialDenseVector& elevec_epetra);
 
@@ -593,7 +593,7 @@ namespace Discret
       //! metric tensor at integration point
       Core::LinAlg::Matrix<nsd_ele_, nsd_ele_> metrictensor_;
       //! for the handling of rotationally symmetric periodic boundary conditions
-      Teuchos::RCP<
+      std::shared_ptr<
           FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, Discret::Elements::Fluid::none>>
           rotsymmpbc_;
     };

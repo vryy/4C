@@ -26,9 +26,9 @@ Mat::PAR::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden(const Core::Mat::PAR::Param
 {
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::Maxwell0dAcinusOgden::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::Maxwell0dAcinusOgden::create_material()
 {
-  return Teuchos::make_rcp<Mat::Maxwell0dAcinusOgden>(this);
+  return std::make_shared<Mat::Maxwell0dAcinusOgden>(this);
 }
 
 /*----------------------------------------------------------------------*/
@@ -93,7 +93,7 @@ void Mat::Maxwell0dAcinusOgden::unpack(Core::Communication::UnpackBuffer& buffer
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

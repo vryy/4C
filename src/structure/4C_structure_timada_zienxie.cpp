@@ -10,9 +10,9 @@
 #include "4C_structure_timint.hpp"
 
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
 
 #include <iostream>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 Solid::TimAdaZienXie::TimAdaZienXie(
     const Teuchos::ParameterList& timeparams,  //!< TIS input parameters
     const Teuchos::ParameterList& adaparams,   //!< adaptive input flags
-    Teuchos::RCP<TimInt> tis                   //!< marching time integrator
+    std::shared_ptr<TimInt> tis                //!< marching time integrator
     )
     : TimAda(timeparams, adaparams, tis)
 {
@@ -42,10 +42,10 @@ Solid::TimAdaZienXie::TimAdaZienXie(
 void Solid::TimAdaZienXie::integrate_step_auxiliar()
 {
   // get state vectors of marching integrator
-  const Teuchos::RCP<Core::LinAlg::Vector<double>> dis = sti_->dis();       // D_{n}^{A2}
-  const Teuchos::RCP<Core::LinAlg::Vector<double>> vel = sti_->vel();       // V_{n}^{A2}
-  const Teuchos::RCP<Core::LinAlg::Vector<double>> acc = sti_->acc();       // A_{n}^{A2}
-  const Teuchos::RCP<Core::LinAlg::Vector<double>> accn = sti_->acc_new();  // A_{n+1}^{A2}
+  const std::shared_ptr<Core::LinAlg::Vector<double>> dis = sti_->dis();       // D_{n}^{A2}
+  const std::shared_ptr<Core::LinAlg::Vector<double>> vel = sti_->vel();       // V_{n}^{A2}
+  const std::shared_ptr<Core::LinAlg::Vector<double>> acc = sti_->acc();       // A_{n}^{A2}
+  const std::shared_ptr<Core::LinAlg::Vector<double>> accn = sti_->acc_new();  // A_{n+1}^{A2}
 
   // build ZX displacements D_{n+1}^{ZX}
   // using the second order (or lower) accurate new accelerations

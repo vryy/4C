@@ -17,7 +17,7 @@
 #include "4C_mat_so3_material.hpp"
 #include "4C_material_parameter_base.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -32,7 +32,7 @@ namespace Mat
       /// constructor
       MuscleWeickenmeier(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -144,9 +144,9 @@ namespace Mat
     // Constructor for the material given the material parameters
     explicit MuscleWeickenmeier(Mat::PAR::MuscleWeickenmeier* params);
 
-    [[nodiscard]] Teuchos::RCP<Core::Mat::Material> clone() const override
+    [[nodiscard]] std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<MuscleWeickenmeier>(*this);
+      return std::make_shared<MuscleWeickenmeier>(*this);
     }
 
     [[nodiscard]] Core::Mat::PAR::Parameter* parameter() const override { return params_; }

@@ -13,8 +13,8 @@
 #include "4C_fem_geometry_searchtree_nearestobject.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -97,7 +97,7 @@ namespace Core::Geo
       const double z_plane_coordinate_;
 
       //! treenode has 8 children (octtree) or 4 children (quadtree)
-      std::vector<Teuchos::RCP<TreeNode>> children_;
+      std::vector<std::shared_ptr<TreeNode>> children_;
 
       //! list of elements belonging to this treenode
       std::map<int, std::set<int>> element_list_;
@@ -177,7 +177,7 @@ namespace Core::Geo
        \param xyze_element         coordinates of element
        \return vector of children ids
        */
-      std::vector<int> classify_element(const Teuchos::RCP<Core::Elements::Element> element,
+      std::vector<int> classify_element(const std::shared_ptr<Core::Elements::Element> element,
           const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions) const;
 
       /*!
@@ -271,7 +271,7 @@ namespace Core::Geo
        \param index   child node index
        \return retruns pointer to child node
        */
-      Teuchos::RCP<Core::Geo::SearchTree::TreeNode> get_child(const int index) const;
+      std::shared_ptr<Core::Geo::SearchTree::TreeNode> get_child(const int index) const;
 
       /*!
        \brief return pointer to the parent node
@@ -391,7 +391,7 @@ namespace Core::Geo
      \param treetype             quadtree
      */
     void initialize_tree_slide_ale(const Core::LinAlg::Matrix<3, 2>& nodeBox,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements, const TreeType treetype);
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& elements, const TreeType treetype);
 
     void insert_element(const int eid);
 
@@ -452,7 +452,7 @@ namespace Core::Geo
     const int max_depth_;
 
     //! pointer to the root of the tree
-    Teuchos::RCP<Core::Geo::SearchTree::TreeNode> tree_root_;
+    std::shared_ptr<Core::Geo::SearchTree::TreeNode> tree_root_;
   };
   // class tree
 }  // namespace Core::Geo

@@ -55,7 +55,7 @@ namespace Discret::Elements
     }
     else
     {
-      return *params.get<Teuchos::RCP<std::vector<char>>>("stress");
+      return *params.get<std::shared_ptr<std::vector<char>>>("stress");
     }
   }
 
@@ -68,7 +68,7 @@ namespace Discret::Elements
     }
     else
     {
-      return *params.get<Teuchos::RCP<std::vector<char>>>("strain");
+      return *params.get<std::shared_ptr<std::vector<char>>>("strain");
     }
   }
 
@@ -270,14 +270,14 @@ namespace Discret::Elements
           case Inpar::Solid::GaussPointDataOutputType::element_center:
           {
             // compute average of the quantities
-            Teuchos::RCP<Core::LinAlg::MultiVector<double>> global_data =
+            std::shared_ptr<Core::LinAlg::MultiVector<double>> global_data =
                 gp_data_output_manager.get_element_center_data().at(quantity_name);
             Core::FE::assemble_averaged_element_values(*global_data, gp_data, ele);
             break;
           }
           case Inpar::Solid::GaussPointDataOutputType::nodes:
           {
-            Teuchos::RCP<Core::LinAlg::MultiVector<double>> global_data =
+            std::shared_ptr<Core::LinAlg::MultiVector<double>> global_data =
                 gp_data_output_manager.get_nodal_data().at(quantity_name);
 
             Core::LinAlg::Vector<int>& global_nodal_element_count =
@@ -290,7 +290,7 @@ namespace Discret::Elements
           }
           case Inpar::Solid::GaussPointDataOutputType::gauss_points:
           {
-            std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>& global_data =
+            std::vector<std::shared_ptr<Core::LinAlg::MultiVector<double>>>& global_data =
                 gp_data_output_manager.get_gauss_point_data().at(quantity_name);
             Discret::Elements::assemble_gauss_point_values(global_data, gp_data, ele);
             break;

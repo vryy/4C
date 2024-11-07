@@ -26,7 +26,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_so3_base.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -51,10 +51,10 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -165,11 +165,11 @@ namespace Discret
       /// Return number of surfaces of this element
       int num_surface() const override { return 1; }
 
-      /// Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      /// Get vector of std::shared_ptrs to the lines of this element
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
-      /// Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      /// Get vector of std::shared_ptrs to the surfaces of this element
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       /// Return unique ParObject id
       ///
@@ -357,16 +357,16 @@ namespace Discret
           const std::vector<double>& disp,              ///< element displacements
           const std::vector<double>& residual,          ///< residual displacements
           std::vector<Core::LinAlg::SerialDenseVector>&
-              myknots,                                       ///< knot vector for nurbs elements
-          Core::LinAlg::SerialDenseMatrix* stiffmatrix,      ///< element stiffness matrix
-          Core::LinAlg::SerialDenseMatrix* massmatrix,       ///< element mass matrix
-          Core::LinAlg::SerialDenseVector* force,            ///< element internal force vector
-          Core::LinAlg::SerialDenseMatrix* elestress,        ///< element stresses
-          Core::LinAlg::SerialDenseMatrix* elestrain,        ///< element strains
-          Teuchos::RCP<const Core::Mat::Material> material,  ///< element material
-          Teuchos::ParameterList& params,                    ///< algorithmic parameters e.g. time
-          const Inpar::Solid::StressType iostress,           ///< stress output option
-          const Inpar::Solid::StrainType iostrain            ///< strain output option
+              myknots,                                          ///< knot vector for nurbs elements
+          Core::LinAlg::SerialDenseMatrix* stiffmatrix,         ///< element stiffness matrix
+          Core::LinAlg::SerialDenseMatrix* massmatrix,          ///< element mass matrix
+          Core::LinAlg::SerialDenseVector* force,               ///< element internal force vector
+          Core::LinAlg::SerialDenseMatrix* elestress,           ///< element stresses
+          Core::LinAlg::SerialDenseMatrix* elestrain,           ///< element strains
+          std::shared_ptr<const Core::Mat::Material> material,  ///< element material
+          Teuchos::ParameterList& params,           ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,  ///< stress output option
+          const Inpar::Solid::StrainType iostrain   ///< strain output option
       );
 
       /// evaluate the geometrically linear element forces and stiffness and mass
@@ -374,16 +374,16 @@ namespace Discret
           const std::vector<double>& disp,              ///< element displacements
           const std::vector<double>& residual,          ///< residual displacements
           std::vector<Core::LinAlg::SerialDenseVector>&
-              myknots,                                       ///< knot vector for nurbs elements
-          Core::LinAlg::SerialDenseMatrix* stiffmatrix,      ///< element stiffness matrix
-          Core::LinAlg::SerialDenseMatrix* massmatrix,       ///< element mass matrix
-          Core::LinAlg::SerialDenseVector* force,            ///< element internal force vector
-          Core::LinAlg::SerialDenseMatrix* elestress,        ///< element stresses
-          Core::LinAlg::SerialDenseMatrix* elestrain,        ///< element strains
-          Teuchos::RCP<const Core::Mat::Material> material,  ///< element material
-          Teuchos::ParameterList& params,                    ///< algorithmic parameters e.g. time
-          const Inpar::Solid::StressType iostress,           ///< stress output option
-          const Inpar::Solid::StrainType iostrain            ///< strain output option
+              myknots,                                          ///< knot vector for nurbs elements
+          Core::LinAlg::SerialDenseMatrix* stiffmatrix,         ///< element stiffness matrix
+          Core::LinAlg::SerialDenseMatrix* massmatrix,          ///< element mass matrix
+          Core::LinAlg::SerialDenseVector* force,               ///< element internal force vector
+          Core::LinAlg::SerialDenseMatrix* elestress,           ///< element stresses
+          Core::LinAlg::SerialDenseMatrix* elestrain,           ///< element strains
+          std::shared_ptr<const Core::Mat::Material> material,  ///< element material
+          Teuchos::ParameterList& params,           ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,  ///< stress output option
+          const Inpar::Solid::StrainType iostrain   ///< strain output option
       );
 
       /// Jacobian matrix for mapping from parameter space in physical material space
@@ -479,8 +479,8 @@ namespace Discret
           const std::vector<int>& lm,              ///< location vector
           const std::vector<double>&
               dis,  ///< element displacements \f$d_{n}^{(e)}\f$ at \f$t_{n}\f$
-          Core::LinAlg::SerialDenseVector* energies,        ///< (in/out) energies
-          Teuchos::RCP<const Core::Mat::Material> material  ///< element material
+          Core::LinAlg::SerialDenseVector* energies,           ///< (in/out) energies
+          std::shared_ptr<const Core::Mat::Material> material  ///< element material
       );
 
       //@}
@@ -610,13 +610,13 @@ namespace Discret
       /// Constitutive matrix \f$C\f$ and stresses
       /// \author mgit \date 05/07
       void w1_call_matgeononl(
-          const Core::LinAlg::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
-          Core::LinAlg::SerialDenseMatrix& stress,           ///< stress matrix
-          Core::LinAlg::SerialDenseMatrix& C,                ///< elasticity matrix
-          const int numeps,                                  ///< number of strains
-          Teuchos::RCP<const Core::Mat::Material> material,  ///< the material data
-          Teuchos::ParameterList& params,                    ///< element parameter list
-          int gp                                             ///< Gauss point
+          const Core::LinAlg::SerialDenseVector& strain,        ///< Green-Lagrange strain vector
+          Core::LinAlg::SerialDenseMatrix& stress,              ///< stress matrix
+          Core::LinAlg::SerialDenseMatrix& C,                   ///< elasticity matrix
+          const int numeps,                                     ///< number of strains
+          std::shared_ptr<const Core::Mat::Material> material,  ///< the material data
+          Teuchos::ParameterList& params,                       ///< element parameter list
+          int gp                                                ///< Gauss point
       );
 
       /// Stress and constitutive matrix mapper from 3d to 2d
@@ -649,10 +649,10 @@ namespace Discret
 
       /// Internal/strain energy
       double energy_internal(
-          Teuchos::RCP<const Core::Mat::Material> material,  ///< element material
-          Teuchos::ParameterList& params,                    ///< element parameter list
-          const Core::LinAlg::SerialDenseVector& Ev,         ///< Green-Lagrange strain vector
-          int gp                                             ///< Gauss point
+          std::shared_ptr<const Core::Mat::Material> material,  ///< element material
+          Teuchos::ParameterList& params,                       ///< element parameter list
+          const Core::LinAlg::SerialDenseVector& Ev,            ///< Green-Lagrange strain vector
+          int gp                                                ///< Gauss point
       );
 
       /// Kinetic Energy
@@ -688,7 +688,7 @@ namespace Discret
 
       static Wall1LineType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override

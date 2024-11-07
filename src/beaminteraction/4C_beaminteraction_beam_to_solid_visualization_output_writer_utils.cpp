@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 void BEAMINTERACTION::add_beam_interaction_nodal_forces(
-    const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
-    const Teuchos::RCP<const Core::FE::Discretization>& discret_ptr,
-    const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& displacement,
+    const std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
+    const std::shared_ptr<const Core::FE::Discretization>& discret_ptr,
+    const std::shared_ptr<const Core::LinAlg::MultiVector<double>>& displacement,
     const Core::LinAlg::MultiVector<double>& force, const bool write_unique_ids)
 {
   // Add the reference geometry and displacement to the visualization.
@@ -50,11 +50,11 @@ void BEAMINTERACTION::add_beam_interaction_nodal_forces(
       -1, gid_solid_dof.size(), gid_solid_dof.data(), 0, discret_ptr->get_comm());
 
   // Extract the forces and add them to the discretization.
-  Teuchos::RCP<Core::LinAlg::Vector<double>> force_beam =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(beam_dof_map, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> force_beam =
+      std::make_shared<Core::LinAlg::Vector<double>>(beam_dof_map, true);
   Core::LinAlg::export_to(force, *force_beam);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> force_solid =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(solid_dof_map, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> force_solid =
+      std::make_shared<Core::LinAlg::Vector<double>>(solid_dof_map, true);
   Core::LinAlg::export_to(force, *force_solid);
   visualization->add_discretization_nodal_data("force_beam", *force_beam);
   visualization->add_discretization_nodal_data("force_solid", *force_solid);
@@ -73,7 +73,7 @@ void BEAMINTERACTION::add_beam_interaction_nodal_forces(
  */
 void BEAMINTERACTION::add_averaged_nodal_normals(
     BEAMINTERACTION::BeamToSolidOutputWriterVisualization& output_writer_base_ptr,
-    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements,
+    const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements,
     const int condition_coupling_id, const bool write_unique_ids)
 {
   // Get the visualization vectors.

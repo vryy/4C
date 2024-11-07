@@ -20,7 +20,8 @@
 #include "4C_porofluidmultiphase_ele_variablemanager.hpp"
 
 #include <Sacado.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 // define Fad object for evaluation
 typedef Sacado::Fad::DFad<double> FAD;
@@ -80,12 +81,12 @@ namespace PoroMultiPhaseScaTra
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    virtual void pre_evaluate(Teuchos::RCP<Core::LinAlg::MultiVector<double>> gp_vector) = 0;
+    virtual void pre_evaluate(std::shared_ptr<Core::LinAlg::MultiVector<double>> gp_vector) = 0;
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
     virtual void delete_unnecessary_gps(
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> gp_vector) = 0;
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> gp_vector) = 0;
 
     /*!
      * @brief Evaluate this pair
@@ -110,8 +111,8 @@ namespace PoroMultiPhaseScaTra
     virtual bool diam_function_active() = 0;
 
     //! reset state
-    virtual void reset_state(Teuchos::RCP<Core::FE::Discretization> contdis,
-        Teuchos::RCP<Core::FE::Discretization> artdis) = 0;
+    virtual void reset_state(std::shared_ptr<Core::FE::Discretization> contdis,
+        std::shared_ptr<Core::FE::Discretization> artdis) = 0;
 
     /**
      * Setup the porofluid-managers and the materials for later evaluation
@@ -135,7 +136,7 @@ namespace PoroMultiPhaseScaTra
 
     //! apply mesh movement on artery element
     virtual double apply_mesh_movement(
-        const bool firstcall, Teuchos::RCP<Core::FE::Discretization> contdis) = 0;
+        const bool firstcall, std::shared_ptr<Core::FE::Discretization> contdis) = 0;
 
     //! set segment id
     virtual void set_segment_id(const int& segmentid) = 0;
@@ -178,19 +179,20 @@ namespace PoroMultiPhaseScaTra
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    void pre_evaluate(Teuchos::RCP<Core::LinAlg::MultiVector<double>> gp_vector) override;
+    void pre_evaluate(std::shared_ptr<Core::LinAlg::MultiVector<double>> gp_vector) override;
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    void delete_unnecessary_gps(Teuchos::RCP<Core::LinAlg::MultiVector<double>> gp_vector) override;
+    void delete_unnecessary_gps(
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> gp_vector) override;
 
     //! flag if diameter function is active, i.e., varying diameter linearization need to be
     //! calculated
     bool diam_function_active() override { return diam_funct_active_; }
 
     //! reset state
-    void reset_state(Teuchos::RCP<Core::FE::Discretization> contdis,
-        Teuchos::RCP<Core::FE::Discretization> artdis) override;
+    void reset_state(std::shared_ptr<Core::FE::Discretization> contdis,
+        std::shared_ptr<Core::FE::Discretization> artdis) override;
 
     /**
      * Setup the porofluid-managers and the materials for later evaluation
@@ -234,7 +236,7 @@ namespace PoroMultiPhaseScaTra
 
     //! apply mesh movement on artery element
     double apply_mesh_movement(
-        const bool firstcall, Teuchos::RCP<Core::FE::Discretization> contdis) override;
+        const bool firstcall, std::shared_ptr<Core::FE::Discretization> contdis) override;
 
     //! set segment id
     void set_segment_id(const int& segmentid) override;
@@ -663,10 +665,10 @@ namespace PoroMultiPhaseScaTra
     std::vector<Core::LinAlg::Matrix<numdim_, numdim_>> inv_j_;
 
     //! phase manager of the fluid
-    Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface> phasemanager_;
+    std::shared_ptr<Discret::Elements::PoroFluidManager::PhaseManagerInterface> phasemanager_;
 
     //! variable manager of the fluid
-    Teuchos::RCP<
+    std::shared_ptr<
         Discret::Elements::PoroFluidManager::VariableManagerInterface<numdim_, numnodescont_>>
         variablemanager_;
 
@@ -727,7 +729,7 @@ namespace PoroMultiPhaseScaTra
     std::vector<std::vector<int>> cont_dofs_to_assemble_functions_into_;
 
     //! the artery material
-    Teuchos::RCP<Mat::Cnst1dArt> arterymat_;
+    std::shared_ptr<Mat::Cnst1dArt> arterymat_;
   };
 
 }  // namespace PoroMultiPhaseScaTra

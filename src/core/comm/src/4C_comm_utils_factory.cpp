@@ -23,7 +23,7 @@ Core::Communication::ParObject* Core::Communication::factory(
 /*----------------------------------------------------------------------*
  |  allocate an element of a specific type (public)          mwgee 03|07|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Core::Communication::factory(
+std::shared_ptr<Core::Elements::Element> Core::Communication::factory(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   return ParObjectFactory::instance().create(eletype, eledistype, id, owner);

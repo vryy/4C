@@ -19,7 +19,7 @@
 #include "4C_timestepping_mstep.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 class Epetra_Comm;
 namespace Teuchos
@@ -103,9 +103,9 @@ namespace Solid
        * @param sdynparams Parameter list for structural dynamics from input file
        * @param datasdyn Structural dynamics data container
        */
-      void init(const Teuchos::RCP<Core::FE::Discretization> discret,
+      void init(const std::shared_ptr<Core::FE::Discretization> discret,
           const Teuchos::ParameterList& sdynparams,
-          const Teuchos::RCP<const BaseDataSDyn> datasdyn);
+          const std::shared_ptr<const BaseDataSDyn> datasdyn);
 
       /// setup of the new class variables
       virtual void setup();
@@ -153,21 +153,21 @@ namespace Solid
        * extract velocities of those DOFs associated with translations.
        *
        * \param source (in) : full vector to extract from. */
-      Teuchos::RCP<Core::LinAlg::Vector<double>> extract_displ_entries(
+      std::shared_ptr<Core::LinAlg::Vector<double>> extract_displ_entries(
           const Core::LinAlg::Vector<double>& source) const;
 
       /*! \brief Extract the part of a vector which belongs to the model dofs.
        *
        * \param mt (in)     : model type of the desired block.
        * \param source (in) : full vector to extract from. */
-      Teuchos::RCP<Core::LinAlg::Vector<double>> extract_model_entries(
+      std::shared_ptr<Core::LinAlg::Vector<double>> extract_model_entries(
           const Inpar::Solid::ModelType& mt, const Core::LinAlg::Vector<double>& source) const;
 
       /* \brief Extract the part of a vector which belongs to non-additive rotation
        * (pseudo-)vector dofs.
        *
        * \param source (in) : full vector to extract from. */
-      Teuchos::RCP<Core::LinAlg::Vector<double>> extract_rot_vec_entries(
+      std::shared_ptr<Core::LinAlg::Vector<double>> extract_rot_vec_entries(
           const Core::LinAlg::Vector<double>& source) const;
 
       /** \brief Read-only access of the desired block of the global jacobian
@@ -177,11 +177,11 @@ namespace Solid
        *  \param bt (in)  : Desired matrix block type.
        *
        *  \author hiermeier \date 04/17 */
-      Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_jacobian_block(
+      std::shared_ptr<const Core::LinAlg::SparseMatrix> get_jacobian_block(
           const Inpar::Solid::ModelType mt, const MatBlockType bt) const;
 
       /// Get the block of the stiffness matrix which belongs to the displacement dofs.
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> extract_displ_block(
+      std::shared_ptr<Core::LinAlg::SparseMatrix> extract_displ_block(
           Core::LinAlg::SparseOperator& jac) const;
 
       /* \brief Get the block of the desired model which belongs to the given block type.
@@ -189,14 +189,14 @@ namespace Solid
        * \param jac (in) : Full jacobian to extract from.
        * \param mt (in)  : Model type of the desired block.
        * \param bt (in)  : Desired matrix block type.  */
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> extract_model_block(
+      std::shared_ptr<Core::LinAlg::SparseMatrix> extract_model_block(
           Core::LinAlg::SparseOperator& jac, const Inpar::Solid::ModelType& mt,
           const MatBlockType& bt) const;
 
-      Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> extract_displ_row_of_blocks(
+      std::shared_ptr<std::vector<Core::LinAlg::SparseMatrix*>> extract_displ_row_of_blocks(
           Core::LinAlg::SparseOperator& jac) const;
 
-      Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> extract_row_of_blocks(
+      std::shared_ptr<std::vector<Core::LinAlg::SparseMatrix*>> extract_row_of_blocks(
           Core::LinAlg::SparseOperator& jac, const Inpar::Solid::ModelType& mt) const;
 
       /** \brief Assign a Core::LinAlg::SparseMatrix to one of the blocks of the corresponding
@@ -221,24 +221,25 @@ namespace Solid
 
       /// Get the displacement block of the global jacobian matrix in the global
       /// state data container.
-      Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_jacobian_displ_block() const;
+      std::shared_ptr<const Core::LinAlg::SparseMatrix> get_jacobian_displ_block() const;
 
       /// Get the displacement block of the global jacobian matrix in the global
       /// state data container.
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> jacobian_displ_block();
+      std::shared_ptr<Core::LinAlg::SparseMatrix> jacobian_displ_block();
 
       /// Create the global solution vector
-      Teuchos::RCP<::NOX::Epetra::Vector> create_global_vector() const;
-      Teuchos::RCP<::NOX::Epetra::Vector> create_global_vector(const enum VecInitType& vecinittype,
-          const Teuchos::RCP<const Solid::ModelEvaluatorManager>& modeleval) const;
+      std::shared_ptr<::NOX::Epetra::Vector> create_global_vector() const;
+      std::shared_ptr<::NOX::Epetra::Vector> create_global_vector(
+          const enum VecInitType& vecinittype,
+          const std::shared_ptr<const Solid::ModelEvaluatorManager>& modeleval) const;
 
       /// Create the structural stiffness matrix block
       Core::LinAlg::SparseOperator* create_structural_stiffness_matrix_block();
 
       /// Create the jacobian matrix
-      Teuchos::RCP<Core::LinAlg::SparseOperator>& create_jacobian();
+      std::shared_ptr<Core::LinAlg::SparseOperator>& create_jacobian();
 
-      Teuchos::RCP<Core::LinAlg::SparseOperator> create_aux_jacobian() const;
+      std::shared_ptr<Core::LinAlg::SparseOperator> create_aux_jacobian() const;
 
      protected:
       inline const bool& is_init() const { return isinit_; };
@@ -264,14 +265,14 @@ namespace Solid
       [[nodiscard]] unsigned int get_dim() const { return dim_; }
 
       /// attached discretisation
-      Teuchos::RCP<const Core::FE::Discretization> get_discret() const
+      std::shared_ptr<const Core::FE::Discretization> get_discret() const
       {
         check_init();
         return discret_;
       };
 
       /// communicator
-      Teuchos::RCP<const Epetra_Comm> get_comm_ptr() const
+      std::shared_ptr<const Epetra_Comm> get_comm_ptr() const
       {
         check_init();
         return comm_;
@@ -296,11 +297,11 @@ namespace Solid
       ///@{
 
       /// dof map of vector of unknowns
-      virtual Teuchos::RCP<const Epetra_Map> dof_row_map() const;
+      virtual std::shared_ptr<const Epetra_Map> dof_row_map() const;
 
       /// dof map of vector of unknowns
       /// method for multiple dofsets
-      virtual Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) const;
+      virtual std::shared_ptr<const Epetra_Map> dof_row_map(unsigned nds) const;
 
       /// view of dof map of vector of unknowns
       virtual const Epetra_Map* dof_row_map_view() const;
@@ -334,7 +335,7 @@ namespace Solid
       };
 
       /// Return time vector \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
-      Teuchos::RCP<const TimeStepping::TimIntMStep<double>> get_multi_time() const
+      std::shared_ptr<const TimeStepping::TimIntMStep<double>> get_multi_time() const
       {
         check_init();
         return timen_;
@@ -382,14 +383,14 @@ namespace Solid
       };
 
       /// Return time step size \f$\Delta t\f$
-      Teuchos::RCP<const TimeStepping::TimIntMStep<double>> get_delta_time() const
+      std::shared_ptr<const TimeStepping::TimIntMStep<double>> get_delta_time() const
       {
         check_init();
         return dt_;
       };
 
       /// Return timer for solution technique
-      Teuchos::RCP<const Teuchos::Time> get_timer() const
+      std::shared_ptr<const Teuchos::Time> get_timer() const
       {
         check_init_setup();
         return timer_;
@@ -407,119 +408,119 @@ namespace Solid
       ///@{
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_dis_np() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_dis_np() const
       {
         check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_dis_n() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_dis_n() const
       {
         check_init_setup();
         return (*dis_)(0);
       }
 
       /// Return velocities \f$V_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_vel_np() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_vel_np() const
       {
         check_init_setup();
         return velnp_;
       }
 
       /// Return velocities \f$V_{n}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_vel_n() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_vel_n() const
       {
         check_init_setup();
         return (*vel_)(0);
       }
 
       /// Return velocities \f$V_{n}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_vel_nm() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_vel_nm() const
       {
         check_init_setup();
         return (*vel_)(-1);
       }
 
       /// Return accelerations \f$A_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_acc_np() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_acc_np() const
       {
         check_init_setup();
         return accnp_;
       }
 
       /// Return accelerations \f$A_{n}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_acc_n() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_acc_n() const
       {
         check_init_setup();
         return (*acc_)(0);
       }
 
       /// Return internal force \f$fint_{n}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_fint_n() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_fint_n() const
       {
         check_init_setup();
         return fintn_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_fint_np() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_fint_np() const
       {
         check_init_setup();
         return fintnp_;
       }
 
       /// Return external force \f$fext_{n}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_fext_n() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_fext_n() const
       {
         check_init_setup();
         return fextn_;
       }
 
       /// Return external force \f$fext_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_fext_np() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_fext_np() const
       {
         check_init_setup();
         return fextnp_;
       }
 
       /// Return reaction force \f$freact_{n}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_freact_n() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_freact_n() const
       {
         check_init_setup();
         return freactn_;
       }
 
       /// Return reaction force \f$freact_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_freact_np() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_freact_np() const
       {
         check_init_setup();
         return freactnp_;
       }
 
       /// Return inertia force \f$finertial_{n}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_finertial_n() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_finertial_n() const
       {
         check_init_setup();
         return finertialn_;
       }
 
       /// Return inertial force \f$finertial_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_finertial_np() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_finertial_np() const
       {
         check_init_setup();
         return finertialnp_;
       }
 
       /// Return visco force \f$fvisco_{n}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_fvisco_n() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_fvisco_n() const
       {
         check_init_setup();
         return fviscon_;
       }
 
       /// Return visco force \f$fvisco_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_fvisco_np() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_fvisco_np() const
       {
         check_init_setup();
         return fvisconp_;
@@ -530,7 +531,7 @@ namespace Solid
        *
        *  Please note that this old structural residual is already scaled by the
        *  different time integration factors! */
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_fstructure_old() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_fstructure_old() const
       {
         check_init_setup();
         return fstructold_;
@@ -540,21 +541,21 @@ namespace Solid
       /// @name Get system matrices (read only access)
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<const Core::LinAlg::SparseOperator> get_jacobian() const
+      std::shared_ptr<const Core::LinAlg::SparseOperator> get_jacobian() const
       {
         check_init_setup();
         return jac_;
       }
 
       /// mass matrix (constant)
-      Teuchos::RCP<const Core::LinAlg::SparseOperator> get_mass_matrix() const
+      std::shared_ptr<const Core::LinAlg::SparseOperator> get_mass_matrix() const
       {
         check_init_setup();
         return mass_;
       }
 
       /// damping matrix
-      Teuchos::RCP<const Core::LinAlg::SparseOperator> get_damp_matrix() const
+      std::shared_ptr<const Core::LinAlg::SparseOperator> get_damp_matrix() const
       {
         check_init_setup();
         return damp_;
@@ -564,7 +565,7 @@ namespace Solid
       /// @name Get general purpose algorithm members (read only access)
       ///@{
       /// attached discretization
-      Teuchos::RCP<Core::FE::Discretization> get_discret()
+      std::shared_ptr<Core::FE::Discretization> get_discret()
       {
         check_init();
         return discret_;
@@ -577,12 +578,12 @@ namespace Solid
 
       /** \brief Returns Epetra_Map pointer of the given model
        *
-       *  If the given model is not found, Teuchos::null is returned. */
-      Teuchos::RCP<const Epetra_Map> block_map_ptr(const Inpar::Solid::ModelType& mt) const
+       *  If the given model is not found, nullptr is returned. */
+      std::shared_ptr<const Epetra_Map> block_map_ptr(const Inpar::Solid::ModelType& mt) const
       {
         if (model_maps_.find(mt) != model_maps_.end()) return model_maps_.at(mt);
 
-        return Teuchos::null;
+        return nullptr;
       };
 
       /// Returns Epetra_Map of the given model
@@ -615,12 +616,15 @@ namespace Solid
       };
 
       /// Returns global problem map pointer
-      Teuchos::RCP<const Epetra_Map> global_problem_map_ptr() const { return gproblem_map_ptr_; };
+      std::shared_ptr<const Epetra_Map> global_problem_map_ptr() const
+      {
+        return gproblem_map_ptr_;
+      };
 
       /// Returns global problem map
       const Epetra_Map& global_problem_map() const
       {
-        FOUR_C_ASSERT(!gproblem_map_ptr_.is_null(), "The global problem map is not defined!");
+        FOUR_C_ASSERT(gproblem_map_ptr_, "The global problem map is not defined!");
         return *gproblem_map_ptr_;
       };
 
@@ -646,7 +650,7 @@ namespace Solid
       };
 
       /// Return time \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
-      Teuchos::RCP<TimeStepping::TimIntMStep<double>>& get_multi_time()
+      std::shared_ptr<TimeStepping::TimIntMStep<double>>& get_multi_time()
       {
         check_init();
         return timen_;
@@ -684,14 +688,14 @@ namespace Solid
       };
 
       /// Return time step size \f$\Delta t\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<double>>& get_delta_time()
+      std::shared_ptr<TimeStepping::TimIntMStep<double>>& get_delta_time()
       {
         check_init();
         return dt_;
       };
 
       /// Return timer for solution technique
-      Teuchos::RCP<Teuchos::Time>& get_timer()
+      std::shared_ptr<Teuchos::Time>& get_timer()
       {
         check_init_setup();
         return timer_;
@@ -709,149 +713,149 @@ namespace Solid
       ///@{
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_dis_np()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_dis_np()
       {
         check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> get_dis_n()
+      std::shared_ptr<Core::LinAlg::Vector<double>> get_dis_n()
       {
         check_init_setup();
         return (*dis_)(0);
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>& get_multi_dis()
+      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>& get_multi_dis()
       {
         check_init_setup();
         return dis_;
       }
 
       /// Return velocities \f$V_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_vel_np()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_vel_np()
       {
         check_init_setup();
         return velnp_;
       }
 
       /// Return velocities \f$V_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> get_vel_n()
+      std::shared_ptr<Core::LinAlg::Vector<double>> get_vel_n()
       {
         check_init_setup();
         return (*vel_)(0);
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>& get_multi_vel()
+      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>& get_multi_vel()
       {
         check_init_setup();
         return vel_;
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-      const Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>& get_multi_vel()
-          const
+      const std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>&
+      get_multi_vel() const
       {
         check_init_setup();
         return vel_;
       }
 
       /// Return accelerations \f$A_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_acc_np()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_acc_np()
       {
         check_init_setup();
         return accnp_;
       }
 
       /// Return accelerations \f$A_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> get_acc_n()
+      std::shared_ptr<Core::LinAlg::Vector<double>> get_acc_n()
       {
         check_init_setup();
         return (*acc_)(0);
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>& get_multi_acc()
+      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>& get_multi_acc()
       {
         check_init_setup();
         return acc_;
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-      const Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>& get_multi_acc()
-          const
+      const std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>&
+      get_multi_acc() const
       {
         check_init_setup();
         return acc_;
       }
 
       /// Return internal force \f$fint_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_fint_n()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_fint_n()
       {
         check_init_setup();
         return fintn_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_fint_np()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_fint_np()
       {
         check_init_setup();
         return fintnp_;
       }
 
       /// Return external force \f$fext_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_fext_n()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_fext_n()
       {
         check_init_setup();
         return fextn_;
       }
 
       /// Return external force \f$fext_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_fext_np()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_fext_np()
       {
         check_init_setup();
         return fextnp_;
       }
 
       /// Return reaction force \f$freact_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_freact_n()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_freact_n()
       {
         check_init_setup();
         return freactn_;
       }
 
       /// Return reaction force \f$freact_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_freact_np()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_freact_np()
       {
         check_init_setup();
         return freactnp_;
       }
 
       /// Return inertia force \f$finertial_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_finertial_n()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_finertial_n()
       {
         check_init_setup();
         return finertialn_;
       }
 
       /// Return inertial force \f$finertial_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_finertial_np()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_finertial_np()
       {
         check_init_setup();
         return finertialnp_;
       }
 
       /// Return viscous force \f$f_{viscous,n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_fvisco_n()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_fvisco_n()
       {
         check_init_setup();
         return fviscon_;
       }
 
       /// Return viscous force \f$fviscous_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_fvisco_np()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_fvisco_np()
       {
         check_init_setup();
         return fvisconp_;
@@ -861,7 +865,7 @@ namespace Solid
        *
        *  Please note that this old structural residual is already scaled by the
        *  different time integration factors! */
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_fstructure_old()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_fstructure_old()
       {
         check_init_setup();
         return fstructold_;
@@ -872,21 +876,21 @@ namespace Solid
       /// @name Get mutable system matrices
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<Core::LinAlg::SparseOperator>& get_jacobian()
+      std::shared_ptr<Core::LinAlg::SparseOperator>& get_jacobian()
       {
         check_init_setup();
         return jac_;
       }
 
       /// mass matrix (constant)
-      Teuchos::RCP<Core::LinAlg::SparseOperator>& get_mass_matrix()
+      std::shared_ptr<Core::LinAlg::SparseOperator>& get_mass_matrix()
       {
         check_init_setup();
         return mass_;
       }
 
       /// damping matrix
-      Teuchos::RCP<Core::LinAlg::SparseOperator>& get_damp_matrix()
+      std::shared_ptr<Core::LinAlg::SparseOperator>& get_damp_matrix()
       {
         check_init_setup();
         return damp_;
@@ -895,7 +899,7 @@ namespace Solid
 
      protected:
       /// mutable access to the global problem map
-      Teuchos::RCP<Epetra_Map>& global_problem_map_ptr() { return gproblem_map_ptr_; }
+      std::shared_ptr<Epetra_Map>& global_problem_map_ptr() { return gproblem_map_ptr_; }
 
       /** \brief mutable access to the structural stiffness member variable [PROTECTED ONLY]
        *
@@ -904,7 +908,7 @@ namespace Solid
        *
        *  \date 02/17
        *  \author hiermier */
-      Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff_ptr() { return stiff_; }
+      std::shared_ptr<Core::LinAlg::SparseOperator>& stiff_ptr() { return stiff_; }
 
      protected:
       /// @name variables for internal use only
@@ -916,7 +920,7 @@ namespace Solid
       bool issetup_;
 
       /// read only access
-      Teuchos::RCP<const BaseDataSDyn> datasdyn_;
+      std::shared_ptr<const BaseDataSDyn> datasdyn_;
       ///@}
 
      private:
@@ -927,10 +931,10 @@ namespace Solid
       const unsigned int dim_;
 
       /// attached discretisation
-      Teuchos::RCP<Core::FE::Discretization> discret_;
+      std::shared_ptr<Core::FE::Discretization> discret_;
 
       /// communicator
-      Teuchos::RCP<const Epetra_Comm> comm_;
+      std::shared_ptr<const Epetra_Comm> comm_;
 
       /// ID of actual processor in parallel
       int my_rank_;
@@ -943,10 +947,10 @@ namespace Solid
       double timenp_;
 
       /// time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP<TimeStepping::TimIntMStep<double>> timen_;
+      std::shared_ptr<TimeStepping::TimIntMStep<double>> timen_;
 
       /// time step size \f$\Delta t\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<double>> dt_;
+      std::shared_ptr<TimeStepping::TimIntMStep<double>> dt_;
 
       /// time step index \f$n\f$
       int stepn_;
@@ -969,52 +973,52 @@ namespace Solid
       ///@{
 
       /// global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> dis_;
+      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> dis_;
 
       /// global velocities \f${V}_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> vel_;
+      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> vel_;
 
       /// global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> acc_;
+      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> acc_;
 
       /// global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> disnp_;
 
       /// global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> velnp_;
 
       /// global accelerations \f${A}_{n+1}\f$ at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> accnp_;
 
       /// global internal force vector at \f$t_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> fintn_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> fintn_;
 
       /// global internal force vector at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> fintnp_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> fintnp_;
 
       /// global external force vector at \f$t_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> fextn_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> fextn_;
 
       /// global external force vector at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> fextnp_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> fextnp_;
 
       /// global reaction force vector at \f$t_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> freactn_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> freactn_;
 
       /// global reaction force vector at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> freactnp_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> freactnp_;
 
       /// global inertial force vector at \f$t_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> finertialn_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> finertialn_;
 
       /// global inertial force vector at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> finertialnp_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> finertialnp_;
 
       /// global viscous force vector at \f$t_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> fviscon_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> fviscon_;
 
       /// global viscous force vector at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> fvisconp_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> fvisconp_;
 
       /** \brief dynamic structural right hand side of the previous time step
        *
@@ -1025,12 +1029,12 @@ namespace Solid
        * f_{cardio,n} ..., where a_n, b_n, c_n represent different time integration factors.
        *
        *  */
-      Teuchos::RCP<Core::LinAlg::Vector<double>> fstructold_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> fstructold_;
       ///@}
       /// @name System matrices
       ///@{
       /// supposed to hold the entire jacobian (saddle point system if desired)
-      Teuchos::RCP<Core::LinAlg::SparseOperator> jac_;
+      std::shared_ptr<Core::LinAlg::SparseOperator> jac_;
 
       /** \brief structural stiffness matrix block
        *
@@ -1040,20 +1044,20 @@ namespace Solid
        *
        *  \date 02/17
        *  \author hiermeier */
-      Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_;
+      std::shared_ptr<Core::LinAlg::SparseOperator> stiff_;
 
       /// mass matrix (constant)
-      Teuchos::RCP<Core::LinAlg::SparseOperator> mass_;
+      std::shared_ptr<Core::LinAlg::SparseOperator> mass_;
 
       /// damping matrix
-      Teuchos::RCP<Core::LinAlg::SparseOperator> damp_;
+      std::shared_ptr<Core::LinAlg::SparseOperator> damp_;
       ///@}
 
       /// @name Time measurement
       ///@{
 
       /// timer for solution technique
-      Teuchos::RCP<Teuchos::Time> timer_;
+      std::shared_ptr<Teuchos::Time> timer_;
 
       /// linear solver time
       double dtsolve_;
@@ -1066,7 +1070,7 @@ namespace Solid
       /// @{
 
       /// Epetra_Map s of the different models
-      std::map<Inpar::Solid::ModelType, Teuchos::RCP<const Epetra_Map>> model_maps_;
+      std::map<Inpar::Solid::ModelType, std::shared_ptr<const Epetra_Map>> model_maps_;
 
       /// block information for the different models
       std::map<Inpar::Solid::ModelType, int> model_block_id_;
@@ -1074,7 +1078,7 @@ namespace Solid
       int max_block_num_;
 
       /// global problem map
-      Teuchos::RCP<Epetra_Map> gproblem_map_ptr_;
+      std::shared_ptr<Epetra_Map> gproblem_map_ptr_;
 
       /// multi map extractor
       Core::LinAlg::MultiMapExtractor blockextractor_;
@@ -1086,7 +1090,7 @@ namespace Solid
       Core::LinAlg::MultiMapExtractor rotvecextractor_;
 
       /// map extractor for structure/pressure coupled problems
-      Teuchos::RCP<Core::LinAlg::MapExtractor> pressextractor_;
+      std::shared_ptr<Core::LinAlg::MapExtractor> pressextractor_;
       /// @}
     };  // class BaseDataGlobalState
   }     // namespace TimeInt
@@ -1115,8 +1119,8 @@ namespace NOX
           {
            public:
             //! constructor
-            RotVecUpdater(
-                const Teuchos::RCP<const FourC::Solid::TimeInt::BaseDataGlobalState>& gstate_ptr);
+            RotVecUpdater(const std::shared_ptr<const FourC::Solid::TimeInt::BaseDataGlobalState>&
+                    gstate_ptr);
 
             /*! \brief Derived function, which is called before a call to
              * NOX::Nln::Group::computeX()
@@ -1128,7 +1132,7 @@ namespace NOX
 
            private:
             //! pointer to the FourC::Solid::TimeInt::BaseDataGlobalState object (read-only)
-            Teuchos::RCP<const FourC::Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
+            std::shared_ptr<const FourC::Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
           };  // class RotVecUpdater
         }     // namespace TimeInt

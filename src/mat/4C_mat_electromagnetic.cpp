@@ -24,7 +24,7 @@ Mat::PAR::ElectromagneticMat::ElectromagneticMat(const Core::Mat::PAR::Parameter
   Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::instance()->get_communicators()->local_comm()));
   for (int i = first; i <= last; i++)
   {
-    matparams_.push_back(Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dummy_map, true));
+    matparams_.push_back(std::make_shared<Core::LinAlg::Vector<double>>(dummy_map, true));
   }
   matparams_.at(sigma_)->PutScalar(matdata.parameters.get<double>("CONDUCTIVITY"));
   matparams_.at(epsilon_)->PutScalar(matdata.parameters.get<double>("PERMITTIVITY"));
@@ -33,9 +33,9 @@ Mat::PAR::ElectromagneticMat::ElectromagneticMat(const Core::Mat::PAR::Parameter
   return;
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ElectromagneticMat::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ElectromagneticMat::create_material()
 {
-  return Teuchos::make_rcp<Mat::ElectromagneticMat>(this);
+  return std::make_shared<Mat::ElectromagneticMat>(this);
 }
 
 Mat::ElectromagneticMatType Mat::ElectromagneticMatType::instance_;
@@ -89,7 +89,7 @@ void Mat::ElectromagneticMat::unpack(Core::Communication::UnpackBuffer &buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

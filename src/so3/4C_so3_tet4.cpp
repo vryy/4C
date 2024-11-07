@@ -45,25 +45,25 @@ Core::Communication::ParObject* Discret::Elements::SoTet4Type::create(
 
 
 //------------------------------------------------------------------------
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoTet4Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::SoTet4>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::SoTet4>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
 //------------------------------------------------------------------------
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoTet4Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::SoTet4>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::SoTet4>(id, owner);
   return ele;
 }
 
@@ -116,9 +116,9 @@ Discret::Elements::SoTet4::SoTet4(int id, int owner)
       pstime_(0.0),
       time_(0.0)
 {
-  Teuchos::RCP<const Teuchos::ParameterList> params =
+  std::shared_ptr<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
-  if (params != Teuchos::null)
+  if (params != nullptr)
   {
     pstype_ = Prestress::get_type();
     pstime_ = Prestress::get_prestress_time();
@@ -127,8 +127,7 @@ Discret::Elements::SoTet4::SoTet4(int id, int owner)
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::is_mulf(pstype_))
-    prestress_ =
-        Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOTET4, NUMGPT_SOTET4, true);
+    prestress_ = std::make_shared<Discret::Elements::PreStress>(NUMNOD_SOTET4, NUMGPT_SOTET4, true);
 }
 
 /*----------------------------------------------------------------------***
@@ -144,7 +143,7 @@ Discret::Elements::SoTet4::SoTet4(const Discret::Elements::SoTet4& old)
       time_(old.time_)
 {
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(*(old.prestress_));
+    prestress_ = std::make_shared<Discret::Elements::PreStress>(*(old.prestress_));
 }
 
 /*----------------------------------------------------------------------***
@@ -223,9 +222,9 @@ void Discret::Elements::SoTet4::unpack(Core::Communication::UnpackBuffer& buffer
   {
     std::vector<char> tmpprestress(0);
     extract_from_pack(buffer, tmpprestress);
-    if (prestress_ == Teuchos::null)
+    if (prestress_ == nullptr)
       prestress_ =
-          Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOTET4, NUMGPT_SOTET4, true);
+          std::make_shared<Discret::Elements::PreStress>(NUMNOD_SOTET4, NUMGPT_SOTET4, true);
     Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);
     prestress_->unpack(tmpprestress_buffer);
   }
@@ -278,7 +277,7 @@ void Discret::Elements::SoTet4::print(std::ostream& os) const
 |  get vector of surfaces (public)                             maf 04/07|
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoTet4::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::SoTet4::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -314,7 +313,7 @@ std::vector<double> Discret::Elements::SoTet4::element_center_refe_coords()
 /*----------------------------------------------------------------------***++
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoTet4::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::SoTet4::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);

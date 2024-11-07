@@ -17,7 +17,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -107,10 +108,10 @@ namespace ALE
     // friend class AleResultTest;
 
    public:
-    Ale(Teuchos::RCP<Core::FE::Discretization> actdis,       ///< pointer to discretization
-        Teuchos::RCP<Core::LinAlg::Solver> solver,           ///< linear solver
-        Teuchos::RCP<Teuchos::ParameterList> params,         ///< parameter list
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output  ///< output writing
+    Ale(std::shared_ptr<Core::FE::Discretization> actdis,       ///< pointer to discretization
+        std::shared_ptr<Core::LinAlg::Solver> solver,           ///< linear solver
+        std::shared_ptr<Teuchos::ParameterList> params,         ///< parameter list
+        std::shared_ptr<Core::IO::DiscretizationWriter> output  ///< output writing
     );
 
     /*!
@@ -133,18 +134,18 @@ namespace ALE
      *
      */
     void create_system_matrix(
-        Teuchos::RCP<const ALE::Utils::MapExtractor> interface = Teuchos::null  //!< interface
+        std::shared_ptr<const ALE::Utils::MapExtractor> interface = nullptr  //!< interface
         ) override;
 
     /*! \brief evaluate and assemble residual #residual_ and jacobian matrix #sysmat_
      *
      *  use this as evaluate routine for pure ALE problems as well as for coupled problems.
-     *  Update in case of monolithic coupling is done by passing stepinc, Teuchos::null is assumed
+     *  Update in case of monolithic coupling is done by passing stepinc, nullptr is assumed
      * for non monolithic case.
      */
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc =
-                      Teuchos::null,  ///< step increment such that \f$ x_{n+1}^{k+1} =
-                                      ///< x_{n}^{converged}+ stepinc \f$
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> stepinc =
+                      nullptr,  ///< step increment such that \f$ x_{n+1}^{k+1} =
+                                ///< x_{n}^{converged}+ stepinc \f$
         ALE::Utils::MapExtractor::AleDBCSetType dbc_type =
             ALE::Utils::MapExtractor::dbc_set_std  ///< application-specific type of Dirichlet set
         ) override;
@@ -153,7 +154,7 @@ namespace ALE
     int solve() override;
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override { return solver_; }
+    std::shared_ptr<Core::LinAlg::Solver> linear_solver() override { return solver_; }
 
     //! update displacement with iterative increment
     void update_iter() override;
@@ -233,17 +234,17 @@ namespace ALE
     //@{
 
     /// get the whole displacement field at time step \f$t^{n+1}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp() const override { return dispnp_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp() const override { return dispnp_; }
 
     /// get the whole displacement field at time step \f$t^{n}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn() const override { return dispn_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispn() const override { return dispn_; }
 
     //@}
 
     //! @name Writing access to displacement
 
     /// write access to whole displacement field at time step \f$t^{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispnp() const override
+    std::shared_ptr<Core::LinAlg::Vector<double>> write_access_dispnp() const override
     {
       return dispnp_;
     }
@@ -253,35 +254,35 @@ namespace ALE
     //! @name Vector access
 
     /// initial guess of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() const override
     {
       return zeros_;
     }
 
     /// rhs of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const override { return rhs_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() const override { return rhs_; }
 
     //@}
 
     //! @name Misc
 
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const override;
+    std::shared_ptr<const Epetra_Map> dof_row_map() const override;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
 
     /// direct access to discretization
-    Teuchos::RCP<const Core::FE::Discretization> discretization() const override
+    std::shared_ptr<const Core::FE::Discretization> discretization() const override
     {
       return discret_;
     }
 
     /// writing access to discretization
-    Teuchos::RCP<Core::FE::Discretization> write_access_discretization() override
+    std::shared_ptr<Core::FE::Discretization> write_access_discretization() override
     {
       return discret_;
     }
@@ -298,18 +299,18 @@ namespace ALE
     void setup_dbc_map_ex(
         ALE::Utils::MapExtractor::AleDBCSetType dbc_type =
             ALE::Utils::MapExtractor::dbc_set_std,  //!< application-specific type of Dirichlet set
-        Teuchos::RCP<const ALE::Utils::MapExtractor> interface =
-            Teuchos::null,  //!< interface for creation of additional, application-specific
-                            //!< Dirichlet map extractors
-        Teuchos::RCP<const ALE::Utils::XFluidFluidMapExtractor> xff_interface =
-            Teuchos::null  //!< interface for creation of a Dirichlet map extractor, taylored to
-                           //!< XFFSI
+        std::shared_ptr<const ALE::Utils::MapExtractor> interface =
+            nullptr,  //!< interface for creation of additional, application-specific
+                      //!< Dirichlet map extractors
+        std::shared_ptr<const ALE::Utils::XFluidFluidMapExtractor> xff_interface =
+            nullptr  //!< interface for creation of a Dirichlet map extractor, taylored to
+                     //!< XFFSI
         ) override;
 
     /// create result test for encapsulated algorithm
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test() override;
 
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor(
+    std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor(
         ALE::Utils::MapExtractor::AleDBCSetType dbc_type =
             ALE::Utils::MapExtractor::dbc_set_std  //!< application-specific type of Dirichlet set
         ) override
@@ -318,19 +319,22 @@ namespace ALE
     }
 
     //! Return (rotatory) transformation matrix of local co-ordinate systems
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_loc_sys_trafo() const;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> get_loc_sys_trafo() const;
 
     //! Update slave dofs for multifield simulations with ale
-    void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& a) override;
+    void update_slave_dof(std::shared_ptr<Core::LinAlg::Vector<double>>& a) override;
 
     //! Return locsys manager
-    Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() override { return locsysman_; }
+    std::shared_ptr<Core::Conditions::LocsysManager> locsys_manager() override
+    {
+      return locsysman_;
+    }
 
     //! Apply Dirichlet boundary conditions on provided state vectors
     void apply_dirichlet_bc(Teuchos::ParameterList& params,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,    //!< (may be Teuchos::null)
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectord,   //!< (may be Teuchos::null)
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectordd,  //!< (may be Teuchos::null)
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector,    //!< (may be nullptr)
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvectord,   //!< (may be nullptr)
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvectordd,  //!< (may be nullptr)
         bool recreatemap  //!< recreate mapextractor/toggle-vector
                           //!< which stores the DOF IDs subjected
                           //!< to Dirichlet BCs
@@ -355,7 +359,7 @@ namespace ALE
     const Teuchos::ParameterList& params() const { return *params_; }
 
     //! write access to residual
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_residual() const
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> write_access_residual() const
     {
       return residual_;
     }
@@ -366,19 +370,19 @@ namespace ALE
     //! @name Misc
 
     //! ALE discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! linear solver
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;
+    std::shared_ptr<Core::LinAlg::Solver> solver_;
 
     //! parameter list
-    Teuchos::RCP<Teuchos::ParameterList> params_;
+    std::shared_ptr<Teuchos::ParameterList> params_;
 
     //! output writing
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
+    std::shared_ptr<Core::IO::DiscretizationWriter> output_;
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<Core::Conditions::LocsysManager> locsysman_;
+    std::shared_ptr<Core::Conditions::LocsysManager> locsysman_;
 
     //@}
 
@@ -395,7 +399,7 @@ namespace ALE
     //! @name matrices, vectors
     //@{
 
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;  ///< stiffness matrix
+    std::shared_ptr<Core::LinAlg::SparseOperator> sysmat_;  ///< stiffness matrix
 
     /*! \brief residual vector
      *
@@ -404,7 +408,7 @@ namespace ALE
      *
      *  \author mayr.mt \date 10/2014
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual_;
 
     /*! \brief right hand side of Newton-type algorithm
      *
@@ -417,13 +421,13 @@ namespace ALE
      *
      *  \author mayr.mt \date 10/2014
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_;  ///< unknown solution at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispn_;   ///< known solution at \f$t_{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disi_;    ///< iterative displacement increment
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispnp_;  ///< unknown solution at \f$t_{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispn_;   ///< known solution at \f$t_{n}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> disi_;    ///< iterative displacement increment
     double normdisi_;  ///< norm of iterative displacement increment
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> zeros_;  ///< zero vector for dbc handling
+    std::shared_ptr<const Core::LinAlg::Vector<double>> zeros_;  ///< zero vector for dbc handling
 
     //@}
 
@@ -435,7 +439,7 @@ namespace ALE
      *  Each adapter class can extract its map extractor via
      *  an application-specific key
      */
-    std::map<int, Teuchos::RCP<Core::LinAlg::MapExtractor>> dbcmaps_;
+    std::map<int, std::shared_ptr<Core::LinAlg::MapExtractor>> dbcmaps_;
 
     //@}
 
@@ -446,7 +450,7 @@ namespace ALE
     virtual bool evaluate_element_quality();
 
     //! det of element jacobian
-    Teuchos::RCP<Core::LinAlg::Vector<double>> eledetjac_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> eledetjac_;
 
     /*! \brief Element quality measure according to [Oddy et al. 1988a]
      *
@@ -457,7 +461,7 @@ namespace ALE
      *  for isoparametric finite elements, Trans. Can. Soc. Mech. Engrg.,
      *  Vol. 12 (4), pp. 213-217
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> elequality_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> elequality_;
 
     //! Flag to activate (true) and deactivate (false) assessment of mesh quality
     const bool elequalityyesno_;
@@ -501,7 +505,7 @@ namespace ALE
     const int startfuncno_;
 
     //! coupling of ALE-ALE at an internal interface
-    Teuchos::RCP<ALE::Meshtying> meshtying_;
+    std::shared_ptr<ALE::Meshtying> meshtying_;
 
     //@}
 
@@ -536,10 +540,10 @@ namespace ALE
     //@{
 
     //! Constructor
-    AleLinear(Teuchos::RCP<Core::FE::Discretization> actdis,  ///< pointer to discretization
-        Teuchos::RCP<Core::LinAlg::Solver> solver,            ///< linear solver
-        Teuchos::RCP<Teuchos::ParameterList> params_in,       ///< parameter list
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output   ///< output writing
+    AleLinear(std::shared_ptr<Core::FE::Discretization> actdis,  ///< pointer to discretization
+        std::shared_ptr<Core::LinAlg::Solver> solver,            ///< linear solver
+        std::shared_ptr<Teuchos::ParameterList> params_in,       ///< parameter list
+        std::shared_ptr<Core::IO::DiscretizationWriter> output   ///< output writing
     );
 
     //@}

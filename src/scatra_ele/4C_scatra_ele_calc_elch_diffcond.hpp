@@ -308,7 +308,7 @@ namespace Discret
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ehist,       ///< history variables at element nodes
           double timefac,  ///< time factor
-          Teuchos::RCP<Core::Conditions::Condition>
+          std::shared_ptr<Core::Conditions::Condition>
               cond,                       ///< electrode kinetics boundary condition
           const int nume,                 ///< number of transferred electrons
           const std::vector<int> stoich,  ///< stoichiometry of the reaction
@@ -403,15 +403,15 @@ namespace Discret
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! get diffusion manager for diffusion-conduction formulation
-      Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diff_manager()
+      std::shared_ptr<ScaTraEleDiffManagerElchDiffCond> diff_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCond>(my::diffmanager_);
+        return std::static_pointer_cast<ScaTraEleDiffManagerElchDiffCond>(my::diffmanager_);
       }
 
       //! get internal variable manager for diffusion-conduction formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond<nsd_, nen_>> var_manager()
+      std::shared_ptr<ScaTraEleInternalVariableManagerElchDiffCond<nsd_, nen_>> var_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchDiffCond<nsd_, nen_>>(
+        return std::static_pointer_cast<ScaTraEleInternalVariableManagerElchDiffCond<nsd_, nen_>>(
             my::scatravarmanager_);
       }
 

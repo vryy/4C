@@ -52,7 +52,7 @@ namespace Mat
       /**
        * @brief Create material instance of matching type with my parameters
        */
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
     };
 
   }  // namespace PAR
@@ -138,9 +138,9 @@ namespace Mat
     /**
      * @brief Return copy of this material object
      */
-    [[nodiscard]] Teuchos::RCP<Material> clone() const override
+    [[nodiscard]] std::shared_ptr<Material> clone() const override
     {
-      return Teuchos::make_rcp<KirchhoffLoveShell>(*this);
+      return std::make_shared<KirchhoffLoveShell>(*this);
     }
 
     /**

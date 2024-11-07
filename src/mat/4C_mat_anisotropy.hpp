@@ -251,7 +251,7 @@ namespace Mat
     std::vector<CylinderCoordinateSystemManager> gp_cylinder_coordinate_system_managers_;
 
     /// Anisotropy to extend the functionality
-    std::vector<Teuchos::RCP<BaseAnisotropyExtension>> extensions_;
+    std::vector<std::shared_ptr<BaseAnisotropyExtension>> extensions_;
   };
 }  // namespace Mat
 

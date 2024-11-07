@@ -94,7 +94,7 @@ namespace BEAMINTERACTION
     int unique_par_object_id() const override = 0;
 
     //! return copy of this linking object object
-    virtual Teuchos::RCP<BeamLink> clone() const = 0;
+    virtual std::shared_ptr<BeamLink> clone() const = 0;
 
     /*!
     \brief Pack this class so it can be communicated

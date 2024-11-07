@@ -14,6 +14,8 @@
 #include "4C_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
+#include <Teuchos_Ptr.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
@@ -31,10 +33,10 @@ namespace CONTACT
        * \param[in] container containing the law parameter from the input file
        */
       MircoConstitutiveLawParams(
-          const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container);
+          const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container);
 
       /// create constitutive law instance of matching type with my parameters
-      Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> create_constitutive_law() override;
+      std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> create_constitutive_law() override;
 
       /// @name get-functions for the Constitutive Law parameters of a mirco function
       //@{

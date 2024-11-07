@@ -23,38 +23,38 @@ void FLD::Utils::MapExtractor::setup(
   const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
   mcs.set_overlapping(overlapping);  // defines if maps can overlap
-  mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+  mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
       dis, "FSICoupling", 0, ndim + withpressure));
-  mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+  mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
       dis, "FREESURFCoupling", 0, ndim + withpressure));
-  mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+  mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
       dis, "StructAleCoupling", 0, ndim + withpressure));
-  mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+  mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
       dis, "Mortar", 0, ndim + withpressure));
-  mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+  mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
       dis, "ALEUPDATECoupling", 0, ndim + withpressure));
   mcs.setup_extractor(dis, *dis.dof_row_map(nds_master), *this);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::Utils::MapExtractor::setup(
-    Teuchos::RCP<const Epetra_Map>& additionalothermap, const FLD::Utils::MapExtractor& extractor)
+void FLD::Utils::MapExtractor::setup(std::shared_ptr<const Epetra_Map>& additionalothermap,
+    const FLD::Utils::MapExtractor& extractor)
 {
   // build the new othermap
-  std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> othermaps;
   othermaps.push_back(additionalothermap);
   othermaps.push_back(extractor.other_map());
 
   if (Core::LinAlg::MultiMapExtractor::intersect_maps(othermaps)->NumGlobalElements() > 0)
     FOUR_C_THROW("Failed to add dofmap of foreign discretization to other_map. Detected overlap.");
 
-  Teuchos::RCP<const Epetra_Map> mergedothermap =
+  std::shared_ptr<const Epetra_Map> mergedothermap =
       Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
 
   // the vector of maps for the new map extractor consists of othermap at position 0
   // followed by the maps of conditioned DOF
-  std::vector<Teuchos::RCP<const Epetra_Map>> maps;
+  std::vector<std::shared_ptr<const Epetra_Map>> maps;
   // append the merged other map at first position
   maps.push_back(mergedothermap);
 
@@ -62,25 +62,25 @@ void FLD::Utils::MapExtractor::setup(
   for (int i = 1; i < extractor.num_maps(); ++i) maps.push_back(extractor.Map(i));
 
   // merge
-  Teuchos::RCP<const Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
+  std::shared_ptr<const Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
 
   Core::LinAlg::MultiMapExtractor::setup(*fullmap, maps);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> FLD::Utils::MapExtractor::conditioned_element_map(
+std::shared_ptr<std::set<int>> FLD::Utils::MapExtractor::conditioned_element_map(
     const Core::FE::Discretization& dis) const
 {
-  Teuchos::RCP<std::set<int>> condelements =
+  std::shared_ptr<std::set<int>> condelements =
       Core::Conditions::conditioned_element_map(dis, "FSICoupling");
-  Teuchos::RCP<std::set<int>> condelements2 =
+  std::shared_ptr<std::set<int>> condelements2 =
       Core::Conditions::conditioned_element_map(dis, "FREESURFCoupling");
-  Teuchos::RCP<std::set<int>> condelements3 =
+  std::shared_ptr<std::set<int>> condelements3 =
       Core::Conditions::conditioned_element_map(dis, "StructAleCoupling");
-  Teuchos::RCP<std::set<int>> condelements4 =
+  std::shared_ptr<std::set<int>> condelements4 =
       Core::Conditions::conditioned_element_map(dis, "Mortar");
-  Teuchos::RCP<std::set<int>> condelements5 =
+  std::shared_ptr<std::set<int>> condelements5 =
       Core::Conditions::conditioned_element_map(dis, "ALEUPDATECoupling");
   std::copy(condelements2->begin(), condelements2->end(),
       std::inserter(*condelements, condelements->begin()));
@@ -98,7 +98,7 @@ void FLD::Utils::VolumetricFlowMapExtractor::setup(const Core::FE::Discretizatio
   const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
   mcs.set_overlapping(true);  // defines if maps can overlap
-  mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+  mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
       dis, "VolumetricSurfaceFlowCond", 0, ndim));
   mcs.setup_extractor(dis, *dis.dof_row_map(), *this);
 }
@@ -109,17 +109,17 @@ void FLD::Utils::KSPMapExtractor::setup(const Core::FE::Discretization& dis)
 {
   Core::Conditions::MultiConditionSelector mcs;
   mcs.add_selector(
-      Teuchos::make_rcp<Core::Conditions::ConditionSelector>(dis, "KrylovSpaceProjection"));
+      std::make_shared<Core::Conditions::ConditionSelector>(dis, "KrylovSpaceProjection"));
   mcs.setup_extractor(dis, *dis.dof_row_map(), *this);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> FLD::Utils::KSPMapExtractor::conditioned_element_map(
+std::shared_ptr<std::set<int>> FLD::Utils::KSPMapExtractor::conditioned_element_map(
     const Core::FE::Discretization& dis) const
 {
-  Teuchos::RCP<std::set<int>> condelements =
+  std::shared_ptr<std::set<int>> condelements =
       Core::Conditions::conditioned_element_map(dis, "KrylovSpaceProjection");
   return condelements;
 }
@@ -140,29 +140,29 @@ void FLD::Utils::FsiMapExtractor::setup(const Core::FE::Discretization& dis)
   const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
   mcs.add_selector(
-      Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(dis, "FSICoupling", 0, ndim));
+      std::make_shared<Core::Conditions::NDimConditionSelector>(dis, "FSICoupling", 0, ndim));
   mcs.setup_extractor(dis, *dis.dof_row_map(), *this);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::Utils::FsiMapExtractor::setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
+void FLD::Utils::FsiMapExtractor::setup(std::shared_ptr<const Epetra_Map>& additionalothermap,
     const FLD::Utils::FsiMapExtractor& extractor)
 {
   // build the new othermap
-  std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> othermaps;
   othermaps.push_back(additionalothermap);
   othermaps.push_back(extractor.other_map());
 
   if (Core::LinAlg::MultiMapExtractor::intersect_maps(othermaps)->NumGlobalElements() > 0)
     FOUR_C_THROW("Failed to add dofmap of foreign discretization to other_map. Detected overlap.");
 
-  Teuchos::RCP<const Epetra_Map> mergedothermap =
+  std::shared_ptr<const Epetra_Map> mergedothermap =
       Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
 
   // the vector of maps for the new map extractor consists of othermap at position 0
   // followed by the maps of conditioned DOF
-  std::vector<Teuchos::RCP<const Epetra_Map>> maps;
+  std::vector<std::shared_ptr<const Epetra_Map>> maps;
   // append the merged other map at first position
   maps.push_back(mergedothermap);
 
@@ -170,7 +170,7 @@ void FLD::Utils::FsiMapExtractor::setup(Teuchos::RCP<const Epetra_Map>& addition
   for (int i = 1; i < extractor.num_maps(); ++i) maps.push_back(extractor.Map(i));
 
   // merge
-  Teuchos::RCP<const Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
+  std::shared_ptr<const Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
 
   Core::LinAlg::MultiMapExtractor::setup(*fullmap, maps);
 }
@@ -178,9 +178,9 @@ void FLD::Utils::FsiMapExtractor::setup(Teuchos::RCP<const Epetra_Map>& addition
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FLD::Utils::XFluidFluidMapExtractor::setup(const Epetra_Map& fullmap,
-    Teuchos::RCP<const Epetra_Map> fluidmap, Teuchos::RCP<const Epetra_Map> xfluidmap)
+    std::shared_ptr<const Epetra_Map> fluidmap, std::shared_ptr<const Epetra_Map> xfluidmap)
 {
-  std::vector<Teuchos::RCP<const Epetra_Map>> maps;
+  std::vector<std::shared_ptr<const Epetra_Map>> maps;
   maps.push_back(fluidmap);
   maps.push_back(xfluidmap);
   MultiMapExtractor::setup(fullmap, maps);

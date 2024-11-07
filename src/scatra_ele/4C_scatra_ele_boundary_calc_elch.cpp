@@ -102,9 +102,9 @@ void Discret::Elements::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_b
   my::extract_node_values(ehist, discretization, la, "hist");
 
   // get current condition
-  Teuchos::RCP<Core::Conditions::Condition> cond =
-      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-  if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKinetics'");
+  std::shared_ptr<Core::Conditions::Condition> cond =
+      params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
+  if (cond == nullptr) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKinetics'");
 
   // access parameters of the condition
   const auto kinetics = cond->parameters().get<int>("KINETIC_MODEL");
@@ -223,9 +223,9 @@ void Discret::Elements::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {
-  Teuchos::RCP<Core::Conditions::Condition> cond =
-      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-  if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKinetics'");
+  std::shared_ptr<Core::Conditions::Condition> cond =
+      params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
+  if (cond == nullptr) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKinetics'");
 
   const auto kinetics = cond->parameters().get<int>("KINETIC_MODEL");
 
@@ -380,13 +380,13 @@ void Discret::Elements::ScaTraEleBoundaryCalcElch<distype,
         ephinp,  ///< nodal values of concentration and electric potential
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
     double timefac,                                           ///< time factor
-    Teuchos::RCP<const Core::Mat::Material> material,         ///< material
-    Teuchos::RCP<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
-    const int nume,                                  ///< number of transferred electrons
-    const std::vector<int> stoich,                   ///< stoichiometry of the reaction
-    const int kinetics,                              ///< desired electrode kinetics model
-    const double pot0,                               ///< electrode potential on metal side
-    const double frt,                                ///< factor F/RT
+    std::shared_ptr<const Core::Mat::Material> material,      ///< material
+    std::shared_ptr<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
+    const int nume,                                     ///< number of transferred electrons
+    const std::vector<int> stoich,                      ///< stoichiometry of the reaction
+    const int kinetics,                                 ///< desired electrode kinetics model
+    const double pot0,                                  ///< electrode potential on metal side
+    const double frt,                                   ///< factor F/RT
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {

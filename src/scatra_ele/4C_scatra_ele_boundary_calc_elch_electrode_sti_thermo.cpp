@@ -65,9 +65,9 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // access material of parent element
-  Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
-  if (matelectrode == Teuchos::null)
+  std::shared_ptr<const Mat::Electrode> matelectrode =
+      std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
+  if (matelectrode == nullptr)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   const int kineticmodel = my::scatraparamsboundary_->kinetic_model();

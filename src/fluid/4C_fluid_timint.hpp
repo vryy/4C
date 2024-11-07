@@ -17,7 +17,8 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -54,159 +55,159 @@ namespace FLD
   class TimInt : public Adapter::Fluid
   {
    public:
-    TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
-        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output);
+    TimInt(const std::shared_ptr<Core::FE::Discretization>& discret,
+        const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Teuchos::ParameterList>& params,
+        const std::shared_ptr<Core::IO::DiscretizationWriter>& output);
 
 
     void init() override = 0;
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override = 0;
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> true_residual() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override = 0;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> true_residual() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_velnp() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> write_access_velnp() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp() override = 0;
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> velaf() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> velnp() override = 0;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> velaf() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> veln() override = 0;
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> veln() override = 0;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> velnm() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> accnp() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> accnp() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> accn() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> accn() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> accnm() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> accnm() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> accam() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> accam() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> scaaf() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> scaaf() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> scaam() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> scaam() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> hist() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> hist() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> grid_vel() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> grid_vel() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> grid_veln() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> grid_veln() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispn() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> convective_vel() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> convective_vel() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fs_vel() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fs_vel() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> std_veln() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> std_veln() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> std_velnp() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> std_velnp() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> std_velaf() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> std_velaf() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Epetra_Map> dof_row_map() override { return dof_row_map(0); }
-    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
+    std::shared_ptr<const Epetra_Map> dof_row_map() override { return dof_row_map(0); }
+    std::shared_ptr<const Epetra_Map> dof_row_map(unsigned nds) override;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_sparse_matrix() override
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_sparse_matrix() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> shape_derivatives() override
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> shape_derivatives() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    const Teuchos::RCP<Core::FE::Discretization>& discretization() override { return discret_; }
-    Teuchos::RCP<const Core::DOFSets::DofSet> dof_set() override
+    const std::shared_ptr<Core::FE::Discretization>& discretization() override { return discret_; }
+    std::shared_ptr<const Core::DOFSets::DofSet> dof_set() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> stepinc() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
+    std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
     void integrate() override = 0;
     void prepare_time_step() override
@@ -217,7 +218,7 @@ namespace FLD
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) override
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> vel) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -226,7 +227,7 @@ namespace FLD
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return false;
     }
-    void iter_update(const Teuchos::RCP<const Core::LinAlg::Vector<double>> increment) override
+    void iter_update(const std::shared_ptr<const Core::LinAlg::Vector<double>> increment) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -243,11 +244,14 @@ namespace FLD
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& disc_writer() override { return output_; }
-    Teuchos::RCP<Core::LinAlg::MapExtractor> get_vel_press_splitter() override
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& disc_writer() override
+    {
+      return output_;
+    }
+    std::shared_ptr<Core::LinAlg::MapExtractor> get_vel_press_splitter() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
 
 
@@ -258,25 +262,25 @@ namespace FLD
       FOUR_C_THROW("Not implemented in the base class");
     }
     /// get the linear solver object used for this field
-    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override
+    std::shared_ptr<Core::LinAlg::Solver> linear_solver() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Epetra_Map> inner_velocity_row_map() override
+    std::shared_ptr<const Epetra_Map> inner_velocity_row_map() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }  // only used for FSI
-    Teuchos::RCP<const Epetra_Map> velocity_row_map() override
+    std::shared_ptr<const Epetra_Map> velocity_row_map() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<const Epetra_Map> pressure_row_map() override
+    std::shared_ptr<const Epetra_Map> pressure_row_map() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
 
     /// preparations for Krylov space projection
@@ -295,7 +299,7 @@ namespace FLD
 
 
     /// the mesh map contains all velocity dofs that are covered by an ALE node
-    void set_mesh_map(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override
+    void set_mesh_map(std::shared_ptr<const Epetra_Map> mm, const int nds_master = 0) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -314,18 +318,18 @@ namespace FLD
     double tim_int_param() const override = 0;
 
     /// communication object at the interface (neglecting pressure dofs)
-    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override
+    std::shared_ptr<FLD::Utils::MapExtractor> const& interface() const override
     {
       FOUR_C_THROW("Implemented in the fluid wrapper and derived classes");
-      static Teuchos::RCP<FLD::Utils::MapExtractor> ret = Teuchos::null;
+      static std::shared_ptr<FLD::Utils::MapExtractor> ret = nullptr;
       return ret;
     }
 
     /// communication object at the interface needed for fpsi problems (including pressure dofs)
-    Teuchos::RCP<FLD::Utils::MapExtractor> const& fpsi_interface() const override
+    std::shared_ptr<FLD::Utils::MapExtractor> const& fpsi_interface() const override
     {
       FOUR_C_THROW("Implemented in the fluid wrapper and derived classes");
-      static Teuchos::RCP<FLD::Utils::MapExtractor> ret = Teuchos::null;
+      static std::shared_ptr<FLD::Utils::MapExtractor> ret = nullptr;
       return ret;
     }
 
@@ -336,11 +340,11 @@ namespace FLD
     }
 
     void set_restart(const int step, const double time,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> readvelnp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> readveln,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> readvelnm,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> readaccnp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> readaccn) override
+        std::shared_ptr<const Core::LinAlg::Vector<double>> readvelnp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> readveln,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> readvelnm,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> readaccnp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> readaccn) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -446,90 +450,92 @@ namespace FLD
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return 0.0;
     }
-    void redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) override
+    void redistribute(const std::shared_ptr<Epetra_CrsGraph> nodegraph) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_forces() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces_robin()
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_forces_robin()
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_velnp() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_velnp() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_veln() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_veln() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_free_surface_veln() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_free_surface_veln() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
-    void apply_interface_velocities(Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override
+    void apply_interface_velocities(std::shared_ptr<Core::LinAlg::Vector<double>> ivel) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
-    virtual void apply_interface_robin_value(Teuchos::RCP<Core::LinAlg::Vector<double>> ivel,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce)
+    virtual void apply_interface_robin_value(std::shared_ptr<Core::LinAlg::Vector<double>> ivel,
+        std::shared_ptr<Core::LinAlg::Vector<double>> iforce)
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
     /// Apply initial mesh displacement
     void apply_initial_mesh_displacement(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> initfluiddisp) override
+        std::shared_ptr<const Core::LinAlg::Vector<double>> initfluiddisp) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
     void apply_mesh_displacement(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluiddisp) override
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fluiddisp) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
     void apply_mesh_displacement_increment(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispstepinc) override
+        std::shared_ptr<const Core::LinAlg::Vector<double>> dispstepinc) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
-    void apply_mesh_velocity(Teuchos::RCP<const Core::LinAlg::Vector<double>> gridvel) override
-    {
-      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return;
-    }
-
-    void displacement_to_velocity(Teuchos::RCP<Core::LinAlg::Vector<double>> fcx) override
-    {
-      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return;
-    }
-    void velocity_to_displacement(Teuchos::RCP<Core::LinAlg::Vector<double>> fcx) override
+    void apply_mesh_velocity(std::shared_ptr<const Core::LinAlg::Vector<double>> gridvel) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
-    void free_surf_displacement_to_velocity(Teuchos::RCP<Core::LinAlg::Vector<double>> fcx) override
+    void displacement_to_velocity(std::shared_ptr<Core::LinAlg::Vector<double>> fcx) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
-    void free_surf_velocity_to_displacement(Teuchos::RCP<Core::LinAlg::Vector<double>> fcx) override
+    void velocity_to_displacement(std::shared_ptr<Core::LinAlg::Vector<double>> fcx) override
+    {
+      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
+      return;
+    }
+
+    void free_surf_displacement_to_velocity(
+        std::shared_ptr<Core::LinAlg::Vector<double>> fcx) override
+    {
+      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
+      return;
+    }
+    void free_surf_velocity_to_displacement(
+        std::shared_ptr<Core::LinAlg::Vector<double>> fcx) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -548,10 +554,10 @@ namespace FLD
     */
     Inpar::FLUID::TimeIntegrationScheme tim_int_scheme() const override { return timealgo_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> integrate_interface_shape() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
 
     void use_block_matrix(bool splitmatrix) override
@@ -567,31 +573,31 @@ namespace FLD
 
       \note Can only be called after a valid fluid solve.
     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override
+    std::shared_ptr<Core::LinAlg::Vector<double>> relaxation_solve(
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
 
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> extract_velocity_part(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> velpres) override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> extract_velocity_part(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> velpres) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> extract_pressure_part(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> velpres) override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> extract_pressure_part(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> velpres) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     }
 
     /// set initial flow field
@@ -609,7 +615,7 @@ namespace FLD
     }
 
     /// apply external forces to the fluid
-    void apply_external_forces(Teuchos::RCP<Core::LinAlg::MultiVector<double>> fext) override
+    void apply_external_forces(std::shared_ptr<Core::LinAlg::MultiVector<double>> fext) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -617,76 +623,77 @@ namespace FLD
 
     /// apply external forces to the fluid
     void add_contribution_to_external_loads(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> contributing_vector) override
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> contributing_vector) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
     /// expand dirichlet set
-    void add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd) override
+    void add_dirich_cond(const std::shared_ptr<const Epetra_Map> maptoadd) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     };
 
     /// contract dirichlet set
-    void remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove) override
+    void remove_dirich_cond(const std::shared_ptr<const Epetra_Map> maptoremove) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
     ///  set scalar fields within outer iteration loop
-    void set_iter_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaraf,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaram,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> scalardtam,
-        Teuchos::RCP<Core::FE::Discretization> scatradis, int dofset) override
+    void set_iter_scalar_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> scalaraf,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> scalaram,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> scalardtam,
+        std::shared_ptr<Core::FE::Discretization> scatradis, int dofset) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
 
-    void set_loma_iter_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaraf,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaram,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> scalardtam,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fsscalaraf, const double thermpressaf,
+    void set_loma_iter_scalar_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> scalaraf,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> scalaram,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> scalardtam,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-        Teuchos::RCP<Core::FE::Discretization> scatradis) override
+        std::shared_ptr<Core::FE::Discretization> scatradis) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
 
     /// set scalar fields
-    void set_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarnp,
-        const double thermpressnp, Teuchos::RCP<const Core::LinAlg::Vector<double>> scatraresidual,
-        Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar = -1) override
+    void set_scalar_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> scalarnp,
+        const double thermpressnp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> scatraresidual,
+        std::shared_ptr<Core::FE::Discretization> scatradis, const int whichscalar = -1) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
 
     /// set velocity field (separate computation)
-    void set_velocity_field(Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp) override
+    void set_velocity_field(std::shared_ptr<const Core::LinAlg::Vector<double>> velnp) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
     /// provide access to the turbulence statistic manager
-    Teuchos::RCP<FLD::TurbulenceStatisticManager> turbulence_statistic_manager() override
+    std::shared_ptr<FLD::TurbulenceStatisticManager> turbulence_statistic_manager() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     };
     /// provide access to the box filter for dynamic Smagorinsky model
-    Teuchos::RCP<FLD::DynSmagFilter> dyn_smag_filter() override
+    std::shared_ptr<FLD::DynSmagFilter> dyn_smag_filter() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return Teuchos::null;
+      return nullptr;
     };
-    Teuchos::RCP<FLD::Vreman> vreman() override { return Teuchos::null; };
+    std::shared_ptr<FLD::Vreman> vreman() override { return nullptr; };
 
     /// update velocity increment after Newton step
-    void update_newton(Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) override
+    void update_newton(std::shared_ptr<const Core::LinAlg::Vector<double>> vel) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -699,7 +706,7 @@ namespace FLD
     };
 
     // set fluid displacement vector due to biofilm growth
-    void set_fld_gr_disp(Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_growth_disp) override
+    void set_fld_gr_disp(std::shared_ptr<Core::LinAlg::Vector<double>> fluid_growth_disp) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -715,20 +722,20 @@ namespace FLD
 
    protected:
     //! fluid discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! linear solver
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;
+    std::shared_ptr<Core::LinAlg::Solver> solver_;
 
     //! parameter list
-    Teuchos::RCP<Teuchos::ParameterList> params_;
+    std::shared_ptr<Teuchos::ParameterList> params_;
 
     //! output writer
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
+    std::shared_ptr<Core::IO::DiscretizationWriter> output_;
 
 
     /// runtime output writer
-    Teuchos::RCP<Core::IO::DiscretizationVisualizationWriterMesh> runtime_output_writer_;
+    std::shared_ptr<Core::IO::DiscretizationVisualizationWriterMesh> runtime_output_writer_;
 
     /// runtime output parameter
     Discret::Elements::FluidRuntimeOutputParams runtime_output_params_;
@@ -762,10 +769,10 @@ namespace FLD
     bool updateprojection_;
 
     //! Krylov projector himself
-    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;
+    std::shared_ptr<Core::LinAlg::KrylovProjector> projector_;
 
     /// Krylov space projection map extractor
-    Teuchos::RCP<FLD::Utils::KSPMapExtractor> kspsplitter_;
+    std::shared_ptr<FLD::Utils::KSPMapExtractor> kspsplitter_;
 
     //@}
 

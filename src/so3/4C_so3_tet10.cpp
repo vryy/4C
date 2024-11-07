@@ -44,24 +44,24 @@ Core::Communication::ParObject* Discret::Elements::SoTet10Type::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet10Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoTet10Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::SoTet10>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::SoTet10>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet10Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoTet10Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::SoTet10>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::SoTet10>(id, owner);
   return ele;
 }
 
@@ -114,9 +114,9 @@ Discret::Elements::SoTet10::SoTet10(int id, int owner)
       NUMGPT_MASS_SOTET10, Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>(true));
   detJ_mass_.resize(NUMGPT_MASS_SOTET10, 0.0);
 
-  Teuchos::RCP<const Teuchos::ParameterList> params =
+  std::shared_ptr<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
-  if (params != Teuchos::null)
+  if (params != nullptr)
   {
     pstype_ = Prestress::get_type();
     pstime_ = Prestress::get_prestress_time();
@@ -125,7 +125,7 @@ Discret::Elements::SoTet10::SoTet10(int id, int owner)
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOTET10, NUMGPT_SOTET10);
+    prestress_ = std::make_shared<Discret::Elements::PreStress>(NUMNOD_SOTET10, NUMGPT_SOTET10);
 
   return;
 }
@@ -156,7 +156,7 @@ Discret::Elements::SoTet10::SoTet10(const Discret::Elements::SoTet10& old)
   }
 
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(*(old.prestress_));
+    prestress_ = std::make_shared<Discret::Elements::PreStress>(*(old.prestress_));
 
   return;
 }
@@ -252,8 +252,8 @@ void Discret::Elements::SoTet10::unpack(Core::Communication::UnpackBuffer& buffe
   {
     std::vector<char> tmpprestress(0);
     extract_from_pack(buffer, tmpprestress);
-    if (prestress_ == Teuchos::null)
-      prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOTET10, NUMGPT_SOTET10);
+    if (prestress_ == nullptr)
+      prestress_ = std::make_shared<Discret::Elements::PreStress>(NUMNOD_SOTET10, NUMGPT_SOTET10);
     Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);
     prestress_->unpack(tmpprestress_buffer);
   }
@@ -306,7 +306,7 @@ void Discret::Elements::SoTet10::print(std::ostream& os) const
 |  get vector of surfaces (public)                                     |
 |  surface normals always point outward                                |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoTet10::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::SoTet10::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -315,7 +315,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoTet10::s
 /*----------------------------------------------------------------------***++
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoTet10::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::SoTet10::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);

@@ -50,7 +50,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
     Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
     Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // Call the base method.
   base_class::evaluate_and_assemble_mortar_contributions(discret, mortar_manager,
@@ -329,8 +329,8 @@ template <typename Beam, typename Solid, typename Mortar, typename MortarRot>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar,
     MortarRot>::evaluate_and_assemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Core::LinAlg::Vector<double>& global_lambda,
     const Core::LinAlg::Vector<double>& displacement_vector)
 {
@@ -342,7 +342,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // This pair only gives contributions to the stiffness matrix.
-  if (stiffness_matrix == Teuchos::null) return;
+  if (stiffness_matrix == nullptr) return;
 
   // Get the beam triad interpolation schemes.
   LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;

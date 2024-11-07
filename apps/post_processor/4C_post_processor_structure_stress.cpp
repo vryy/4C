@@ -101,7 +101,7 @@ struct WriteNodalStressStep : public SpecialFieldInterface
 
   std::vector<int> num_df_map() override { return std::vector<int>(1, 6); }
 
-  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<std::shared_ptr<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
@@ -109,10 +109,10 @@ struct WriteNodalStressStep : public SpecialFieldInterface
 
     FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
 
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
+    const std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
+    const std::shared_ptr<Core::FE::Discretization> dis = result.field()->discretization();
     const Epetra_Map* noderowmap = dis->node_row_map();
 
     Teuchos::ParameterList p;
@@ -125,8 +125,8 @@ struct WriteNodalStressStep : public SpecialFieldInterface
               ele, *data->at(ele.id()), *dis, nodal_stress);
         });
 
-    filter_.get_writer().write_nodal_result_step(
-        *files[0], Teuchos::rcpFromRef(nodal_stress), resultfilepos, groupname, name[0], 6);
+    filter_.get_writer().write_nodal_result_step(*files[0],
+        Core::Utils::shared_ptr_from_ref(nodal_stress), resultfilepos, groupname, name[0], 6);
   }
 
   StructureFilter& filter_;
@@ -143,15 +143,15 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
 
   std::vector<int> num_df_map() override { return std::vector<int>(1, 6); }
 
-  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<std::shared_ptr<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
     using namespace FourC;
 
     FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
-    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
+    const std::shared_ptr<Core::FE::Discretization> dis = result.field()->discretization();
+    const std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
     Core::LinAlg::MultiVector<double> elestress(*(dis->element_row_map()), 6);
@@ -163,8 +163,8 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
               ele, *data->at(ele.id()), elestress);
         });
 
-    filter_.get_writer().write_element_result_step(
-        *files[0], Teuchos::rcpFromRef(elestress), resultfilepos, groupname, name[0], 6, 0);
+    filter_.get_writer().write_element_result_step(*files[0],
+        Core::Utils::shared_ptr_from_ref(elestress), resultfilepos, groupname, name[0], 6, 0);
   }
 
   StructureFilter& filter_;
@@ -181,15 +181,15 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
 
   std::vector<int> num_df_map() override { return std::vector<int>(1, 9); }
 
-  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<std::shared_ptr<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
     using namespace FourC;
 
     FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
-    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
+    const std::shared_ptr<Core::FE::Discretization> dis = result.field()->discretization();
+    const std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
     Core::LinAlg::MultiVector<double> elerotation(*(dis->element_row_map()), 9);
@@ -206,8 +206,8 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
                 ((elerotation(i * elecenterrot.numRows() + j)))[lid] = elecenterrot(i, j);
         });
 
-    filter_.get_writer().write_element_result_step(
-        *files[0], Teuchos::rcpFromRef(elerotation), resultfilepos, groupname, name[0], 9, 0);
+    filter_.get_writer().write_element_result_step(*files[0],
+        Core::Utils::shared_ptr_from_ref(elerotation), resultfilepos, groupname, name[0], 9, 0);
   }
 
   StructureFilter& filter_;
@@ -224,7 +224,7 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
 
   std::vector<int> num_df_map() override { return std::vector<int>(1, 1); }
 
-  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<std::shared_ptr<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
@@ -232,21 +232,21 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
 
     FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
 
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
+    const std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
+    const std::shared_ptr<Core::FE::Discretization> dis = result.field()->discretization();
     const Epetra_Map* noderowmap = dis->node_row_map();
 
     Teuchos::ParameterList p;
     p.set("action", "postprocess_thickness");
     p.set("optquantitytype", "ndxyz");
     p.set("gpthickmap", data);
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nodal_thickness =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, 1, true);
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_thickness =
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, 1, true);
     p.set("postthick", nodal_thickness);
-    dis->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    if (nodal_thickness == Teuchos::null)
+    dis->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
+    if (nodal_thickness == nullptr)
     {
       FOUR_C_THROW("vector containing nodal thickness not available");
     }
@@ -389,7 +389,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
     return map;
   }
 
-  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<std::shared_ptr<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
@@ -397,10 +397,10 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
 
     FOUR_C_ASSERT(name.size() == 6, "Unexpected number of names");
 
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
+    const std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
+    const std::shared_ptr<Core::FE::Discretization> dis = result.field()->discretization();
     const Epetra_Map* noderowmap = dis->node_row_map();
 
     Core::LinAlg::MultiVector<double> nodal_stress(*noderowmap, 6, true);
@@ -415,11 +415,11 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
 
     // Core::LinAlg::MultiVector<double> with eigenvalues (3) and eigenvectors (9 components) in
     // each row (=node)
-    std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>> nodal_eigen_val_vec(6);
+    std::vector<std::shared_ptr<Core::LinAlg::MultiVector<double>>> nodal_eigen_val_vec(6);
     for (int i = 0; i < 3; ++i)
-      nodal_eigen_val_vec[i] = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, 1);
+      nodal_eigen_val_vec[i] = std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, 1);
     for (int i = 3; i < 6; ++i)
-      nodal_eigen_val_vec[i] = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, 3);
+      nodal_eigen_val_vec[i] = std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, 3);
 
     const int numnodes = dis->num_my_row_nodes();
     bool threedim = true;
@@ -509,16 +509,16 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
     return map;
   }
 
-  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<std::shared_ptr<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
     using namespace FourC;
 
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
+    const std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
+    const std::shared_ptr<Core::FE::Discretization> dis = result.field()->discretization();
 
     Core::LinAlg::MultiVector<double> element_stress(*dis->element_row_map(), 6, true);
 
@@ -530,13 +530,13 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
         });
 
 
-    std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>> nodal_eigen_val_vec(6);
+    std::vector<std::shared_ptr<Core::LinAlg::MultiVector<double>>> nodal_eigen_val_vec(6);
     for (int i = 0; i < 3; ++i)
       nodal_eigen_val_vec[i] =
-          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(dis->element_row_map()), 1);
+          std::make_shared<Core::LinAlg::MultiVector<double>>(*(dis->element_row_map()), 1);
     for (int i = 3; i < 6; ++i)
       nodal_eigen_val_vec[i] =
-          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(dis->element_row_map()), 3);
+          std::make_shared<Core::LinAlg::MultiVector<double>>(*(dis->element_row_map()), 3);
 
     const int numnodes = dis->num_my_row_nodes();
     bool threedim = true;

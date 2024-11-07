@@ -28,7 +28,7 @@ Mat::PAR::StructPoro::StructPoro(const Core::Mat::PAR::Parameter::Data& matdata)
   const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == nullptr)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (Global::Problem::instance(probinst)->materials()->num() == 0)
@@ -75,9 +75,9 @@ Mat::PAR::StructPoro::StructPoro(const Core::Mat::PAR::Parameter::Data& matdata)
   }
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::StructPoro::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::StructPoro::create_material()
 {
-  return Teuchos::make_rcp<Mat::StructPoro>(this);
+  return std::make_shared<Mat::StructPoro>(this);
 }
 
 Mat::StructPoroType Mat::StructPoroType::instance_;
@@ -92,28 +92,25 @@ Core::Communication::ParObject* Mat::StructPoroType::create(
 
 Mat::StructPoro::StructPoro()
     : params_(nullptr),
-      mat_(Teuchos::null),
-      porosity_(Teuchos::null),
-      surf_porosity_(Teuchos::null),
+      mat_(nullptr),
+      porosity_(nullptr),
+      surf_porosity_(nullptr),
       is_initialized_(false)
 {
 }
 
 Mat::StructPoro::StructPoro(Mat::PAR::StructPoro* params)
-    : params_(params),
-      porosity_(Teuchos::null),
-      surf_porosity_(Teuchos::null),
-      is_initialized_(false)
+    : params_(params), porosity_(nullptr), surf_porosity_(nullptr), is_initialized_(false)
 {
-  mat_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::factory(params_->matid_));
-  if (mat_ == Teuchos::null)
+  mat_ = std::dynamic_pointer_cast<Mat::So3Material>(Mat::factory(params_->matid_));
+  if (mat_ == nullptr)
     FOUR_C_THROW("Mat::StructPoro: underlying material should be of type Mat::So3Material");
 }
 
 void Mat::StructPoro::poro_setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
-  porosity_ = Teuchos::make_rcp<std::vector<double>>(numgp, params_->init_porosity_);
-  surf_porosity_ = Teuchos::make_rcp<std::map<int, std::vector<double>>>();
+  porosity_ = std::make_shared<std::vector<double>>(numgp, params_->init_porosity_);
+  surf_porosity_ = std::make_shared<std::map<int, std::vector<double>>>();
 
   is_initialized_ = true;
 }
@@ -170,7 +167,7 @@ void Mat::StructPoro::pack(Core::Communication::PackBuffer& data) const
   }
 
   // Pack data of underlying material
-  if (mat_ != Teuchos::null) mat_->pack(data);
+  if (mat_ != nullptr) mat_->pack(data);
 }
 
 void Mat::StructPoro::unpack(Core::Communication::UnpackBuffer& buffer)
@@ -181,7 +178,7 @@ void Mat::StructPoro::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -199,7 +196,7 @@ void Mat::StructPoro::unpack(Core::Communication::UnpackBuffer& buffer)
   // porosity_
   int size = 0;
   extract_from_pack(buffer, size);
-  porosity_ = Teuchos::make_rcp<std::vector<double>>();
+  porosity_ = std::make_shared<std::vector<double>>();
   double tmp = 0.0;
   for (int i = 0; i < size; ++i)
   {
@@ -209,7 +206,7 @@ void Mat::StructPoro::unpack(Core::Communication::UnpackBuffer& buffer)
 
   // surface porosity (i think it is not necessary to pack/unpack this...)
   extract_from_pack(buffer, size);
-  surf_porosity_ = Teuchos::make_rcp<std::map<int, std::vector<double>>>();
+  surf_porosity_ = std::make_shared<std::map<int, std::vector<double>>>();
   for (int i = 0; i < size; i++)
   {
     int dof;
@@ -231,10 +228,10 @@ void Mat::StructPoro::unpack(Core::Communication::UnpackBuffer& buffer)
         Core::Communication::factory(buffer_datamat);  // Unpack is done here
     auto* mat = dynamic_cast<Mat::So3Material*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack elastic material");
-    mat_ = Teuchos::RCP(mat);
+    mat_ = std::shared_ptr<Mat::So3Material>(mat);
   }
   else
-    mat_ = Teuchos::null;
+    mat_ = nullptr;
 
   is_initialized_ = true;
 }

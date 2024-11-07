@@ -50,7 +50,7 @@ namespace BEAMINTERACTION
     BeamCrosslinkerHandler();
 
     /// initialize linker handler
-    void init(int myrank, Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy);
+    void init(int myrank, std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy);
 
     /// setup linker handler
     void setup();
@@ -59,7 +59,7 @@ namespace BEAMINTERACTION
     virtual ~BeamCrosslinkerHandler() = default;
 
     /// get binning strategy
-    virtual inline Teuchos::RCP<Core::Binstrategy::BinningStrategy>& bin_strategy()
+    virtual inline std::shared_ptr<Core::Binstrategy::BinningStrategy>& bin_strategy()
     {
       return binstrategy_;
     }
@@ -70,30 +70,31 @@ namespace BEAMINTERACTION
     }
 
     /// initial distribution of linker ( more general nodes of bindis_ ) to bins
-    virtual void distribute_linker_to_bins(Teuchos::RCP<Epetra_Map> const& linkerrowmap);
+    virtual void distribute_linker_to_bins(std::shared_ptr<Epetra_Map> const& linkerrowmap);
 
     /// remove all linker
     virtual void remove_all_linker();
 
     /// get bin colume map
-    virtual inline Teuchos::RCP<Epetra_Map>& bin_col_map() { return bincolmap_; }
+    virtual inline std::shared_ptr<Epetra_Map>& bin_col_map() { return bincolmap_; }
 
     /// get myrank
     virtual inline int my_rank() { return myrank_; }
 
     /// linker are checked whether they have moved out of their current bin
     /// and transferred if necessary
-    virtual Teuchos::RCP<std::list<int>> transfer_linker(bool const fill_using_ghosting = true);
+    virtual std::shared_ptr<std::list<int>> transfer_linker(bool const fill_using_ghosting = true);
 
     /// node is placed into the correct row bin or put into the list of homeless linker
-    virtual bool place_node_correctly(Teuchos::RCP<Core::Nodes::Node> node,  ///< node to be placed
-        const double* currpos,  ///< current position of this node
-        std::list<Teuchos::RCP<Core::Nodes::Node>>& homelesslinker  ///< list of homeless linker
+    virtual bool place_node_correctly(
+        std::shared_ptr<Core::Nodes::Node> node,  ///< node to be placed
+        const double* currpos,                    ///< current position of this node
+        std::list<std::shared_ptr<Core::Nodes::Node>>& homelesslinker  ///< list of homeless linker
     );
 
     /// round robin loop to fill linker into its correct bin on according proc
     virtual void fill_linker_into_bins_round_robin(
-        std::list<Teuchos::RCP<Core::Nodes::Node>>& homelesslinker  ///< list of homeless linker
+        std::list<std::shared_ptr<Core::Nodes::Node>>& homelesslinker  ///< list of homeless linker
     );
 
     /// get neighbouring bins of linker containing boundary row bins
@@ -102,31 +103,31 @@ namespace BEAMINTERACTION
 
    protected:
     /// fill linker into their correct bin on according proc using remote id list
-    virtual Teuchos::RCP<std::list<int>> fill_linker_into_bins_remote_id_list(
-        std::list<Teuchos::RCP<Core::Nodes::Node>>& homelesslinker  ///< set of homeless linker
+    virtual std::shared_ptr<std::list<int>> fill_linker_into_bins_remote_id_list(
+        std::list<std::shared_ptr<Core::Nodes::Node>>& homelesslinker  ///< set of homeless linker
     );
 
     /// fill linker into their correct bin on according proc using one layer ghosting
     /// note, this is faster than the other two method as there is no communication required
     /// to find new owner ( complete one layer bin ghosting is required though)
-    virtual Teuchos::RCP<std::list<int>> fill_linker_into_bins_using_ghosting(
-        std::list<Teuchos::RCP<Core::Nodes::Node>>& homelesslinker  ///< set of homeless linker
+    virtual std::shared_ptr<std::list<int>> fill_linker_into_bins_using_ghosting(
+        std::list<std::shared_ptr<Core::Nodes::Node>>& homelesslinker  ///< set of homeless linker
     );
 
     /// receive linker and fill them in correct bin
     virtual void receive_linker_and_fill_them_in_bins(int const numrec,
         Core::Communication::Exporter& exporter,
-        std::list<Teuchos::RCP<Core::Nodes::Node>>& homelesslinker);
+        std::list<std::shared_ptr<Core::Nodes::Node>>& homelesslinker);
 
    private:
     /// binning strategy
-    Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy_;
+    std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy_;
 
     /// myrank
     int myrank_;
 
     /// colmap of bins
-    Teuchos::RCP<Epetra_Map> bincolmap_;
+    std::shared_ptr<Epetra_Map> bincolmap_;
   };
 
 }  // namespace BEAMINTERACTION

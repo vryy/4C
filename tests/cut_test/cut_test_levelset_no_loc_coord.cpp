@@ -170,10 +170,10 @@ void test_level_set_cut_tesselation_and_dd(std::vector<int> nids, std::vector<do
   std::vector<double> tessVol, dirDivVol;
 
   // Sum Tessellation volume of test
-  const std::list<Teuchos::RCP<Cut::VolumeCell>>& other_cells = ci.normal_mesh().volume_cells();
+  const std::list<std::shared_ptr<Cut::VolumeCell>>& other_cells = ci.normal_mesh().volume_cells();
   std::cout << "# Volume Cells Tesselation: " << other_cells.size() << std::endl;
   int iteration_VC = 0;
-  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
@@ -196,9 +196,10 @@ void test_level_set_cut_tesselation_and_dd(std::vector<int> nids, std::vector<do
   //------------------------------------------------------
 
   // Sum Direct Divergence of test
-  const std::list<Teuchos::RCP<Cut::VolumeCell>>& other_cellsdd = cidd.normal_mesh().volume_cells();
+  const std::list<std::shared_ptr<Cut::VolumeCell>>& other_cellsdd =
+      cidd.normal_mesh().volume_cells();
   std::cout << "# Volume Cells Direct Divergence: " << other_cellsdd.size() << std::endl;
-  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator idd = other_cellsdd.begin();
+  for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator idd = other_cellsdd.begin();
        idd != other_cellsdd.end(); ++idd)
   {
     Cut::VolumeCell* vc = &**idd;
@@ -236,10 +237,10 @@ void test_level_set_cut_tesselation_and_dd_same_vc(std::vector<int> nids, std::v
   double diff_tol = BASICTOL;  // 1e-20; //How sharp to test for.
 
   // Sum Tessellation volume of test
-  const std::list<Teuchos::RCP<Cut::VolumeCell>>& other_cells = ci.normal_mesh().volume_cells();
+  const std::list<std::shared_ptr<Cut::VolumeCell>>& other_cells = ci.normal_mesh().volume_cells();
   std::cout << "# Volume Cells Tesselation: " << other_cells.size() << std::endl;
   int iteration_VC = 0;
-  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
@@ -262,7 +263,7 @@ void test_level_set_cut_tesselation_and_dd_same_vc(std::vector<int> nids, std::v
   //------------------------------------------------------
 
   // Cut with DirectDivergence as well
-  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
@@ -1260,8 +1261,8 @@ void test_ls_mesh_hex8_simple()
   std::vector<double> tessVol, dirDivVol;
 
   Cut::Mesh mesh = intersection.normal_mesh();
-  const std::list<Teuchos::RCP<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
-  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  const std::list<std::shared_ptr<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
+  for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
@@ -1269,7 +1270,7 @@ void test_ls_mesh_hex8_simple()
   }
 
   int counter = 1;
-  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
@@ -1412,11 +1413,11 @@ void test_ls_hex8_experiment_magnus()
   ci.dump_gmsh_integration_cells("xxx_cut_test_ls_hex8_magnus6.CUT_integrationcells.pos");
   // #endif
 
-  const std::list<Teuchos::RCP<Cut::VolumeCell>>& other_cells = ci.normal_mesh().volume_cells();
+  const std::list<std::shared_ptr<Cut::VolumeCell>>& other_cells = ci.normal_mesh().volume_cells();
   std::cout << "# Volume Cells: " << other_cells.size() << std::endl;
 
   int iteration_VC = 0;
-  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     iteration_VC++;
@@ -1613,10 +1614,10 @@ void test_ls_hex8_magnus7()
 //  lsi.dump_gmsh_integration_cells("xxx_cut_test_ls_hex8_magnus3.CUT_integrationcells.pos");
 //  mesh.dump_gmsh_volume_cells("xxx_cut_test_ls_hex8_magnus3.CUT_volcells(mesh).pos",true);
 //
-//  const std::list<Teuchos::RCP<Cut::VolumeCell> > & other_cells = mesh.VolumeCells();
+//  const std::list<std::shared_ptr<Cut::VolumeCell> > & other_cells = mesh.VolumeCells();
 //  std::cout << "# Volume Cells: " << other_cells.size() << std::endl;
 //  int iteration_VC = 0;
-//  for ( std::list<Teuchos::RCP<Cut::VolumeCell> >::const_iterator i=other_cells.begin();
+//  for ( std::list<std::shared_ptr<Cut::VolumeCell> >::const_iterator i=other_cells.begin();
 //      i!=other_cells.end();
 //      ++i )
 //  {

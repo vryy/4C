@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
+std::shared_ptr<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
     std::vector<Core::Elements::Element const*> const& ele_ptrs,
     FBI::BeamToFluidMeshtyingParams& params_ptr)
 {
@@ -38,23 +38,23 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
     switch (shape)
     {
       case Core::FE::CellType::hex8:
-        return Teuchos::RCP(
+        return std::shared_ptr<BEAMINTERACTION::BeamContactPair>(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex8>());
       case Core::FE::CellType::hex20:
-        return Teuchos::RCP(
+        return std::shared_ptr<BEAMINTERACTION::BeamContactPair>(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex20>());
       case Core::FE::CellType::hex27:
-        return Teuchos::RCP(
+        return std::shared_ptr<BEAMINTERACTION::BeamContactPair>(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex27>());
       case Core::FE::CellType::tet4:
-        return Teuchos::RCP(
+        return std::shared_ptr<BEAMINTERACTION::BeamContactPair>(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_tet4>());
       case Core::FE::CellType::tet10:
-        return Teuchos::RCP(
+        return std::shared_ptr<BEAMINTERACTION::BeamContactPair>(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_tet10>());
       default:
@@ -73,19 +73,19 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
         switch (shape)
         {
           case Core::FE::CellType::hex8:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2>>();
           case Core::FE::CellType::hex20:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line2>>();
           case Core::FE::CellType::hex27:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line2>>();
           case Core::FE::CellType::tet4:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line2>>();
           case Core::FE::CellType::tet10:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line2>>();
           default:
             FOUR_C_THROW("Wrong element type for solid element.");
@@ -97,19 +97,19 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
         switch (shape)
         {
           case Core::FE::CellType::hex8:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line3>>();
           case Core::FE::CellType::hex20:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line3>>();
           case Core::FE::CellType::hex27:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line3>>();
           case Core::FE::CellType::tet4:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line3>>();
           case Core::FE::CellType::tet10:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line3>>();
           default:
             FOUR_C_THROW("Wrong element type for solid element.");
@@ -121,19 +121,19 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
         switch (shape)
         {
           case Core::FE::CellType::hex8:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line4>>();
           case Core::FE::CellType::hex20:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line4>>();
           case Core::FE::CellType::hex27:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line4>>();
           case Core::FE::CellType::tet4:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line4>>();
           case Core::FE::CellType::tet10:
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
+            return std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>>();
           default:
             FOUR_C_THROW("Wrong element type for solid element.");
@@ -148,7 +148,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
     FOUR_C_THROW("discretization type not yet implemented!\n");
 
   // Default return value.
-  return Teuchos::null;
+  return nullptr;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -61,7 +61,7 @@ namespace Solid
 
        private:
         //! stiffness matrix after scaling
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_scaled_;
+        std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_scaled_;
 
         //! scale thickness of shells
         const enum Inpar::Solid::StcScale stcscale_;
@@ -70,7 +70,7 @@ namespace Solid
         const int stclayer_;
 
         //! scaling matrix for STC
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat_;
+        std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat_;
       };
     }  // namespace LinSystem
   }    // namespace Nln

@@ -16,7 +16,7 @@
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -63,13 +63,14 @@ namespace CONTACT::CONSTITUTIVELAW
      * params[in] contactconstitutivelawdata "dumb" container containing the
      * contactconstitutivelaw data from the input file
      */
-    Parameter(const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> coconstlawdata);
+    Parameter(const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> coconstlawdata);
 
     /// destructor
     virtual ~Parameter() = default;
 
     /// create CoConstLaw instance of matching type with my parameters
-    virtual Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> create_constitutive_law() = 0;
+    virtual std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
+    create_constitutive_law() = 0;
 
     // Access offset of the function
     double get_offset() { return offset_; }
@@ -148,7 +149,7 @@ namespace CONTACT::CONSTITUTIVELAW
     std::string name_{};
 
     /// Unwrapped constitutivelaw data for 'quick' access
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Parameter> params_{};
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::Parameter> params_{};
   };
 }  // namespace CONTACT::CONSTITUTIVELAW
 

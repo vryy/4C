@@ -69,7 +69,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCondSTIThermo<distype>::get_materia
   mydiffcond::get_material_params(ele, densn, densnp, densam, visc, iquad);
 
   // get parameters of secondary, thermodynamic electrolyte material
-  Teuchos::RCP<const Core::Mat::Material> material = ele->material(1);
+  std::shared_ptr<const Core::Mat::Material> material = ele->material(1);
   materialtype_ = material->material_type();
   if (materialtype_ == Core::Materials::m_soret) mythermo::mat_soret(material);
 }  // Discret::Elements::ScaTraEleCalcElchDiffCondSTIThermo<distype>::get_material_params
@@ -334,7 +334,7 @@ Discret::Elements::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ScaTraEleCalcElc
   // replace internal variable manager for isothermal diffusion-conduction formulation by internal
   // variable manager for thermodynamic diffusion-conduction formulation
   my::scatravarmanager_ =
-      Teuchos::make_rcp<ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>>(
+      std::make_shared<ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>>(
           my::numscal_, myelch::elchparams_, mydiffcond::diffcondparams_);
 }
 

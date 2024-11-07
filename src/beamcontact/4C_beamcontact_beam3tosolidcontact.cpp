@@ -2797,7 +2797,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::shift_
  *----------------------------------------------------------------------*/
 
 
-Teuchos::RCP<CONTACT::Beam3tosolidcontactinterface> CONTACT::Beam3tosolidcontactinterface::impl(
+std::shared_ptr<CONTACT::Beam3tosolidcontactinterface> CONTACT::Beam3tosolidcontactinterface::impl(
     const int numnodessol, const int numnodes, const int numnodalvalues,
     const Core::FE::Discretization& pdiscret, const Core::FE::Discretization& cdiscret,
     const std::map<int, int>& dofoffsetmap, Core::Elements::Element* element1,
@@ -2892,7 +2892,7 @@ Teuchos::RCP<CONTACT::Beam3tosolidcontactinterface> CONTACT::Beam3tosolidcontact
           //        }
         case 2:
         {
-          return Teuchos::make_rcp<CONTACT::Beam3tosolidcontact<4, 2, 2>>(
+          return std::make_shared<CONTACT::Beam3tosolidcontact<4, 2, 2>>(
               pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams);
         }
       }
@@ -2970,7 +2970,7 @@ Teuchos::RCP<CONTACT::Beam3tosolidcontactinterface> CONTACT::Beam3tosolidcontact
           //        }
         case 2:
         {
-          return Teuchos::make_rcp<CONTACT::Beam3tosolidcontact<8, 2, 2>>(
+          return std::make_shared<CONTACT::Beam3tosolidcontact<8, 2, 2>>(
               pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams);
         }
       }
@@ -3017,7 +3017,7 @@ Teuchos::RCP<CONTACT::Beam3tosolidcontactinterface> CONTACT::Beam3tosolidcontact
       //    }
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 #if defined(FADCHECKLINCONTACTINTERVALBORDER) || defined(FADCHECKLINGAUSSPOINT)

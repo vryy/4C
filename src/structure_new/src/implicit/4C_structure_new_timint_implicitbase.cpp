@@ -26,7 +26,7 @@ Solid::TimeInt::ImplicitBase::ImplicitBase()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Solid::TimeInt::ImplicitBase::get_f() const
+std::shared_ptr<const Core::LinAlg::Vector<double>> Solid::TimeInt::ImplicitBase::get_f() const
 {
   const ::NOX::Abstract::Group& solgrp = get_solution_group();
   const ::NOX::Epetra::Vector& F = dynamic_cast<const ::NOX::Epetra::Vector&>(solgrp.getF());
@@ -36,7 +36,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Solid::TimeInt::ImplicitBase::g
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::TimeInt::ImplicitBase::freact()
+std::shared_ptr<Core::LinAlg::Vector<double>> Solid::TimeInt::ImplicitBase::freact()
 {
   check_init_setup();
   return data_global_state().get_freact_np();
@@ -44,28 +44,28 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::TimeInt::ImplicitBase::freact(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::ImplicitBase::system_matrix()
+std::shared_ptr<Core::LinAlg::SparseMatrix> Solid::TimeInt::ImplicitBase::system_matrix()
 {
   check_init_setup();
-  return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(data_global_state().get_jacobian());
+  return std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(data_global_state().get_jacobian());
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
+std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>
 Solid::TimeInt::ImplicitBase::block_system_matrix()
 {
   check_init_setup();
-  return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
+  return std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(
       data_global_state().get_jacobian());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::ImplicitBase::use_block_matrix(
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps)
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> domainmaps,
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> rangemaps)
 {
   FOUR_C_THROW("Currently disabled!");
 }
@@ -79,23 +79,23 @@ Inpar::Solid::StcScale Solid::TimeInt::ImplicitBase::get_stc_algo()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::ImplicitBase::get_stc_mat()
+std::shared_ptr<Core::LinAlg::SparseMatrix> Solid::TimeInt::ImplicitBase::get_stc_mat()
 {
   FOUR_C_THROW("Not yet implemented!");
   /* See the scaling object in the NOX::Nln::Epetra::LinearSystem class.
    * The STC matrix has to be implemented as a scaling object or as a
    * preconditioner. Both are part of the linear system. */
   // group->linearsystem->scalingobject
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Solid::TimeInt::ImplicitBase::initial_guess()
+std::shared_ptr<const Core::LinAlg::Vector<double>> Solid::TimeInt::ImplicitBase::initial_guess()
 {
   check_init_setup();
   FOUR_C_THROW("Not yet implemented!");
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*

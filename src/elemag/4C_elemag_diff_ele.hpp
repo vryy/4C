@@ -35,10 +35,10 @@ namespace Discret
       /// Create
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
       /// Create
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
       /// Create
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       /// Nodal block information
       void nodal_block_information(
@@ -92,20 +92,20 @@ namespace Discret
       Core::Elements::Element* clone() const override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
+      \brief Get vector of std::shared_ptrs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       /*!
-      \brief Get Teuchos::RCP to the internal face adjacent to this element as master element and
+      \brief Get std::shared_ptr to the internal face adjacent to this element as master element and
       the parent_slave element
       */
-      Teuchos::RCP<Core::Elements::Element> create_face_element(
+      std::shared_ptr<Core::Elements::Element> create_face_element(
           Core::Elements::Element* parent_slave,  //!< parent slave element
           int nnode,                              //!< number of surface nodes
           const int* nodeids,                     //!< node ids of surface element
@@ -162,7 +162,7 @@ namespace Discret
       // Instance
       static ElemagDiffBoundaryType& instance();
       // Create
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
      private:
       /// Instance
@@ -349,7 +349,7 @@ namespace Discret
       static ElemagDiffIntFaceType& instance();
 
       /// Create
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       /// Nodal block information
       void nodal_block_information(

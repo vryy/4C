@@ -126,7 +126,7 @@ double Solid::EXPLICIT::Generic::calc_ref_norm_force(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::EXPLICIT::Generic::compute_jacobian_contributions_from_element_level_for_ptc(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr)
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr)
 {
   FOUR_C_THROW("%s is not yet implemented", __FUNCTION__);
 }

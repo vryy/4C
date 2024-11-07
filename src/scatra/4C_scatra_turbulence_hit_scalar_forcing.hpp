@@ -15,7 +15,7 @@
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -66,14 +66,14 @@ namespace ScaTra
     Inpar::FLUID::ForcingType forcing_type_;
 
     //! scatra discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! state vector of volume force to be computed
-    Teuchos::RCP<Core::LinAlg::Vector<double>> forcing_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> forcing_;
 
     //! state vectors used to compute forcing
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phiaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phiaf_;
 
     //! threshold wave number for forcing
     //! i.e., forcing is applied to wave numbers <= threshold wave number
@@ -86,16 +86,16 @@ namespace ScaTra
     int nummodes_;
 
     //! vector of coordinates in one spatial direction (same for the other two directions)
-    Teuchos::RCP<std::vector<double>> coordinates_;
+    std::shared_ptr<std::vector<double>> coordinates_;
 
     //! vector of wave numbers
-    Teuchos::RCP<std::vector<double>> wavenumbers_;
+    std::shared_ptr<std::vector<double>> wavenumbers_;
 
     //! vector scalar variance spectrum (sum over k=const) at time n
-    Teuchos::RCP<std::vector<double>> scalarvariancespectrum_n_;
+    std::shared_ptr<std::vector<double>> scalarvariancespectrum_n_;
 
     //! vector scalar variance spectrum  (sum over k=const) at time n+1/n+af
-    Teuchos::RCP<std::vector<double>> scalarvariancespectrum_np_;
+    std::shared_ptr<std::vector<double>> scalarvariancespectrum_np_;
 
     //! time step length
     double dt_;
@@ -104,7 +104,7 @@ namespace ScaTra
     bool activate_;
 
     //! linear compensation factor
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> force_fac_;
+    std::shared_ptr<Core::LinAlg::SerialDenseVector> force_fac_;
 
     //! interpolation function
     static double interpolate(

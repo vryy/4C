@@ -13,7 +13,7 @@
 #include "4C_inpar_fluid.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -63,12 +63,12 @@ namespace FLD
     double calculate_energy_from_spectrum(double k);
 
     //! fluid discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! state vectors to be initialized
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> veln_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> veln_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnm_;
     //! type of energy spectrum for initialization
     Inpar::FLUID::InitialField type_;
 
@@ -76,7 +76,7 @@ namespace FLD
     int nummodes_;
 
     //! vector of coordinates in one spatial direction (same for the other two directions)
-    Teuchos::RCP<std::vector<double>> coordinates_;
+    std::shared_ptr<std::vector<double>> coordinates_;
 
     //! vector containing wave numbers of experiment
     std::vector<double> k_exp_;
@@ -98,9 +98,9 @@ namespace FLD
     void calculate_initial_field() override;
 
    protected:
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intveln_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intvelnm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intvelnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> intveln_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> intvelnm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> intvelnp_;
   };
 
 }  // namespace FLD

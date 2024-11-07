@@ -60,9 +60,9 @@ int Discret::Elements::KirchhoffLoveShellNurbs::evaluate(Teuchos::ParameterList&
       if (zero_size) return 0;
 
       // Get current displacement
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       Core::LinAlg::Matrix<9 * 3, 1> displacement(mydisp.data(), true);
@@ -79,7 +79,7 @@ int Discret::Elements::KirchhoffLoveShellNurbs::evaluate(Teuchos::ParameterList&
 
       // Get material
       const auto shell_material =
-          Teuchos::rcp_dynamic_cast<const Mat::KirchhoffLoveShell>(material(), true);
+          std::dynamic_pointer_cast<const Mat::KirchhoffLoveShell>(material());
 
       // Get integration points
       const std::array<Core::FE::IntegrationPoints1D, 2> integration_points = {

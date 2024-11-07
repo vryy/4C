@@ -24,8 +24,8 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <optional>
 
 FOUR_C_NAMESPACE_OPEN
@@ -155,10 +155,10 @@ namespace
         !is_scalar || num_scalars == 1, "numscalars must be 1 if result type is not a vector!");
 
     // get quantitiy from discretization
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> quantitites_np =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> quantitites_np =
         discretization.get_state(*field_index, field_name);
 
-    if (quantitites_np == Teuchos::null)
+    if (quantitites_np == nullptr)
       FOUR_C_THROW("Cannot get state vector '%s' ", field_name.c_str());
 
     auto my_quantities = std::vector<double>(la[*field_index].lm_.size(), 0.0);
@@ -188,8 +188,8 @@ namespace
     if (!nodal_quantities) return;
 
     // the value of a Teuchos::ParameterList needs to be printable. Until we get rid of the
-    // parameter list here, we wrap it into a Teuchos::RCP<> :(
-    auto gp_quantities = Teuchos::make_rcp<std::vector<double>>();
+    // parameter list here, we wrap it into a std::shared_ptr<> :(
+    auto gp_quantities = std::make_shared<std::vector<double>>();
     *gp_quantities = interpolate_quantity_to_point(shape_functions, *nodal_quantities);
 
     params.set(name, gp_quantities);

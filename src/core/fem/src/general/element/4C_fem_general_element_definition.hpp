@@ -12,10 +12,9 @@
 
 #include "4C_io_linedefinition.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 

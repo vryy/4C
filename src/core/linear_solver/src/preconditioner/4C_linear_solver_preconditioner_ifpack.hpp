@@ -33,7 +33,7 @@ namespace Core::LinearSolver
         Core::LinAlg::MultiVector<double>* b) override;
 
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> prec_operator() const override { return prec_; }
+    std::shared_ptr<Epetra_Operator> prec_operator() const override { return prec_; }
 
    private:
     //! IFPACK parameter list
@@ -43,10 +43,10 @@ namespace Core::LinearSolver
     Teuchos::ParameterList& solverlist_;
 
     //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<Epetra_RowMatrix> pmatrix_;
+    std::shared_ptr<Epetra_RowMatrix> pmatrix_;
 
     //! preconditioner
-    Teuchos::RCP<Ifpack_Preconditioner> prec_;
+    std::shared_ptr<Ifpack_Preconditioner> prec_;
 
   };  // class IFPACKPreconditioner
 }  // namespace Core::LinearSolver

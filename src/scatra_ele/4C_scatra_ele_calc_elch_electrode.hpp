@@ -234,16 +234,16 @@ namespace Discret
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! get diffusion manager for electrodes
-      Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> diff_manager()
+      std::shared_ptr<ScaTraEleDiffManagerElchElectrode> diff_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchElectrode>(my::diffmanager_);
+        return std::static_pointer_cast<ScaTraEleDiffManagerElchElectrode>(my::diffmanager_);
       };
 
      private:
       //! get internal variable manager for electrodes
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrode<nsd_, nen_>> var_manager()
+      std::shared_ptr<ScaTraEleInternalVariableManagerElchElectrode<nsd_, nen_>> var_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchElectrode<nsd_, nen_>>(
+        return std::static_pointer_cast<ScaTraEleInternalVariableManagerElchElectrode<nsd_, nen_>>(
             my::scatravarmanager_);
       };
     };

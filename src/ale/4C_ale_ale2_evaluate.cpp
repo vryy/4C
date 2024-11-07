@@ -57,13 +57,14 @@ int Discret::Elements::Ale2::evaluate(Teuchos::ParameterList& params,
 
 
   // get the material
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   switch (act)
   {
     case calc_ale_solid:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
@@ -73,7 +74,8 @@ int Discret::Elements::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_solid_linear:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
@@ -83,7 +85,8 @@ int Discret::Elements::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_laplace_material:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
       static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp, spatialconfiguration);
@@ -92,7 +95,8 @@ int Discret::Elements::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_laplace_spatial:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
       static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp, true);
@@ -101,7 +105,7 @@ int Discret::Elements::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_springs_material:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
           discretization.get_state("dispnp");  // get the displacements
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
@@ -112,7 +116,7 @@ int Discret::Elements::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_springs_spatial:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
           discretization.get_state("dispnp");  // get the displacements
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
@@ -124,8 +128,7 @@ int Discret::Elements::Ale2::evaluate(Teuchos::ParameterList& params,
     case setup_material:
     {
       // get material
-      Teuchos::RCP<Mat::So3Material> so3mat =
-          Teuchos::rcp_dynamic_cast<Mat::So3Material>(mat, true);
+      std::shared_ptr<Mat::So3Material> so3mat = std::dynamic_pointer_cast<Mat::So3Material>(mat);
 
       if (so3mat->material_type() != Core::Materials::m_elasthyper and
           so3mat->material_type() !=
@@ -139,14 +142,15 @@ int Discret::Elements::Ale2::evaluate(Teuchos::ParameterList& params,
 
       if (so3mat->material_type() == Core::Materials::m_elasthyper)
       {
-        so3mat = Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(mat, true);
+        so3mat = std::dynamic_pointer_cast<Mat::ElastHyper>(mat);
         so3mat->setup(0, Core::IO::InputParameterContainer());
       }
       break;  // no setup for St-Venant / classic_lin required
     }
     case calc_det_jac:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
@@ -1049,12 +1053,12 @@ void Discret::Elements::Ale2::fint(const Core::LinAlg::SerialDenseMatrix& stress
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Discret::Elements::Ale2::call_mat_geo_nonl(
-    const Core::LinAlg::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
-    Core::LinAlg::SerialDenseMatrix& stress,           ///< stress vector
-    Core::LinAlg::SerialDenseMatrix& C,                ///< elasticity matrix
-    const int numeps,                                  ///< number of strains
-    Teuchos::RCP<const Core::Mat::Material> material,  ///< the material data
-    Teuchos::ParameterList& params,                    ///< element parameter list
+    const Core::LinAlg::SerialDenseVector& strain,        ///< Green-Lagrange strain vector
+    Core::LinAlg::SerialDenseMatrix& stress,              ///< stress vector
+    Core::LinAlg::SerialDenseMatrix& C,                   ///< elasticity matrix
+    const int numeps,                                     ///< number of strains
+    std::shared_ptr<const Core::Mat::Material> material,  ///< the material data
+    Teuchos::ParameterList& params,                       ///< element parameter list
     const int gp)
 {
   /*--------------------------- call material law -> get tangent modulus--*/
@@ -1189,8 +1193,9 @@ void Discret::Elements::Ale2::material_response3d(Core::LinAlg::Matrix<6, 1>* st
     Core::LinAlg::Matrix<6, 6>* cmat, const Core::LinAlg::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp)
 {
-  Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_dynamic_cast<Mat::So3Material>(material());
-  if (so3mat == Teuchos::null) FOUR_C_THROW("cast to So3Material failed!");
+  std::shared_ptr<Mat::So3Material> so3mat =
+      std::dynamic_pointer_cast<Mat::So3Material>(material());
+  if (so3mat == nullptr) FOUR_C_THROW("cast to So3Material failed!");
 
   so3mat->evaluate(nullptr, glstrain, params, stress, cmat, gp, id());
 

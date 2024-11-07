@@ -48,7 +48,7 @@ namespace Mortar
 
     Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-    Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+    std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
     void nodal_block_information(
         Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -132,8 +132,11 @@ namespace Mortar
     \brief Return matrix of dual shape function coefficients
 
     */
-    virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& dual_shape() { return dualshapecoeff_; }
-    Teuchos::RCP<const Core::LinAlg::SerialDenseMatrix> dual_shape() const
+    virtual std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& dual_shape()
+    {
+      return dualshapecoeff_;
+    }
+    std::shared_ptr<const Core::LinAlg::SerialDenseMatrix> dual_shape() const
     {
       return dualshapecoeff_;
     }
@@ -142,14 +145,14 @@ namespace Mortar
     \brief Return trafo matrix for boundary modification
 
     */
-    virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& trafo() { return trafocoeff_; }
-    Teuchos::RCP<const Core::LinAlg::SerialDenseMatrix> trafo() const { return trafocoeff_; }
+    virtual std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& trafo() { return trafocoeff_; }
+    std::shared_ptr<const Core::LinAlg::SerialDenseMatrix> trafo() const { return trafocoeff_; }
 
     /*!
     \brief Return directional derivative of matrix of dual shape function coefficients
 
     */
-    virtual Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>&
+    virtual std::shared_ptr<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>&
     deriv_dual_shape()
     {
       return derivdualshapecoeff_;
@@ -160,7 +163,7 @@ namespace Mortar
      (const version)
 
     */
-    Teuchos::RCP<const Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>
+    std::shared_ptr<const Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>
     get_deriv_dual_shape() const
     {
       return derivdualshapecoeff_;
@@ -172,7 +175,7 @@ namespace Mortar
     */
     virtual void reset_dual_shape()
     {
-      dualshapecoeff_ = Teuchos::null;
+      dualshapecoeff_ = nullptr;
       return;
     }
 
@@ -183,7 +186,7 @@ namespace Mortar
     */
     virtual void reset_deriv_dual_shape()
     {
-      derivdualshapecoeff_ = Teuchos::null;
+      derivdualshapecoeff_ = nullptr;
       return;
     }
 
@@ -260,14 +263,14 @@ namespace Mortar
     std::vector<int> searchelements_;  // global ids of potentially contacting elements
 
     // coefficient matrix for dual shape functions
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> dualshapecoeff_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> dualshapecoeff_;
 
     // derivative of coefficient matrix for dual shape functions
-    Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>
+    std::shared_ptr<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>
         derivdualshapecoeff_;
 
     // coefficient matrix for boundary trafo
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> trafocoeff_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> trafocoeff_;
 
     // Displacement of Parent Element
     std::vector<double> parentdisp_;
@@ -467,22 +470,22 @@ namespace Mortar
     int num_surface() const override { return 0; }
 
     /*!
-    \brief Get vector of Teuchos::RCPs to the lines of this element
+    \brief Get vector of std::shared_ptrs to the lines of this element
 
     */
-    std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override
+    std::vector<std::shared_ptr<Core::Elements::Element>> lines() override
     {
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines(0);
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines(0);
       return lines;
     }
 
     /*!
-    \brief Get vector of Teuchos::RCPs to the surfaces of this element
+    \brief Get vector of std::shared_ptrs to the surfaces of this element
 
     */
-    std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override
+    std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override
     {
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces(0);
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces(0);
       return surfaces;
     }
 
@@ -621,13 +624,13 @@ namespace Mortar
     */
     inline Mortar::MortarEleDataContainer& mo_data()
     {
-      FOUR_C_ASSERT(modata_ != Teuchos::null, "Mortar data container not set");
+      FOUR_C_ASSERT(modata_ != nullptr, "Mortar data container not set");
       return *modata_;
     }
 
     inline const Mortar::MortarEleDataContainer& mo_data() const
     {
-      FOUR_C_ASSERT(modata_ != Teuchos::null, "Mortar data container not set");
+      FOUR_C_ASSERT(modata_ != nullptr, "Mortar data container not set");
       return *modata_;
     }
 
@@ -996,7 +999,7 @@ namespace Mortar
     \brief Resets the data container of the element
 
     With this function, the container with mortar specific quantities/information
-    is deleted / reset to Teuchos::null pointer
+    is deleted / reset to nullptr pointer
 
     */
     virtual void reset_data_container();
@@ -1074,7 +1077,7 @@ namespace Mortar
     bool isslave_;              // indicating slave or master side
     bool attached_;             // bool whether an element contributes to M
 
-    Teuchos::RCP<Mortar::MortarEleDataContainer> modata_;  // additional information
+    std::shared_ptr<Mortar::MortarEleDataContainer> modata_;  // additional information
 
     // nurbs specific:
     bool nurbs_;
@@ -1091,7 +1094,7 @@ namespace Mortar
     double traceHCond_;
 
     // data container for element matrices in Nitsche contact
-    Teuchos::RCP<Mortar::ElementNitscheContainer> nitsche_container_;
+    std::shared_ptr<Mortar::ElementNitscheContainer> nitsche_container_;
 
     /*!
     \brief Protected constructor for use in derived classes that expect standard element

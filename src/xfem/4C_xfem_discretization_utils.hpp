@@ -19,8 +19,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -46,7 +46,7 @@ namespace XFEM
 {
   namespace Utils
   {
-    void print_discretization_to_stream(Teuchos::RCP<Core::FE::Discretization> dis,
+    void print_discretization_to_stream(std::shared_ptr<Core::FE::Discretization> dis,
         const std::string& disname, bool elements, bool elecol, bool nodes, bool nodecol,
         bool faces, bool facecol, std::ostream& s,
         std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos = nullptr);
@@ -58,11 +58,11 @@ namespace XFEM
       XFEMDiscretizationBuilder(){/* should stay empty! */};
 
       void setup_xfem_discretization(const Teuchos::ParameterList& xgen_params,
-          Teuchos::RCP<Core::FE::Discretization> dis, int numdof = 4) const;
+          std::shared_ptr<Core::FE::Discretization> dis, int numdof = 4) const;
 
       //! setup xfem discretization and embedded discretization
       void setup_xfem_discretization(const Teuchos::ParameterList& xgen_params,
-          Teuchos::RCP<Core::FE::Discretization> dis, Core::FE::Discretization& embedded_dis,
+          std::shared_ptr<Core::FE::Discretization> dis, Core::FE::Discretization& embedded_dis,
           const std::string& embedded_cond_name, int numdof = 4) const;
 
       /*! \brief Setup xfem discretization and embedded discretization
@@ -113,8 +113,8 @@ namespace XFEM
        *  \author hiermeier
        *  \date 06/16 */
       int setup_xfem_discretization(const Teuchos::ParameterList& xgen_params,
-          Teuchos::RCP<Core::FE::Discretization> src_dis,
-          Teuchos::RCP<Core::FE::Discretization> target_dis,
+          std::shared_ptr<Core::FE::Discretization> src_dis,
+          std::shared_ptr<Core::FE::Discretization> target_dis,
           const std::vector<Core::Conditions::Condition*>& boundary_conds) const;
 
      private:
@@ -133,7 +133,7 @@ namespace XFEM
       void split_discretization(Core::FE::Discretization& sourcedis,
           Core::FE::Discretization& targetdis, const std::map<int, Core::Nodes::Node*>& sourcenodes,
           const std::map<int, Core::Nodes::Node*>& sourcegnodes,
-          const std::map<int, Teuchos::RCP<Core::Elements::Element>>& sourceelements,
+          const std::map<int, std::shared_ptr<Core::Elements::Element>>& sourceelements,
           const std::vector<std::string>& conditions_to_copy) const;
 
       //! re-partitioning of newly created discretizations (e.g. split by condition)
@@ -158,7 +158,7 @@ namespace XFEM
        *         partial discretizations, respectively
        *
        *  \author  hiermeier \date 10/16 */
-      Teuchos::RCP<Core::Conditions::Condition> split_condition(
+      std::shared_ptr<Core::Conditions::Condition> split_condition(
           const Core::Conditions::Condition* src_cond, const std::vector<int>& nodecolvec,
           const Epetra_Comm& comm) const;
     };  // class XFEMDiscretizationBuilder
@@ -174,7 +174,8 @@ namespace XFEM
     \param comm: Epetra comm object associated with this discretization
     \param n_dim: number of space dimensions of this discretization
     */
-    DiscretizationXWall(const std::string name, Teuchos::RCP<Epetra_Comm> comm, unsigned int n_dim);
+    DiscretizationXWall(
+        const std::string name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim);
 
 
 

@@ -15,7 +15,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Operator.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -34,7 +35,7 @@ namespace CONSTRAINTS
     */
 
     ConstraintPenalty(
-        Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization constraint lives on
+        std::shared_ptr<Core::FE::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname  ///< Name of condition to create constraints from
     );
 
@@ -61,35 +62,37 @@ namespace CONSTRAINTS
     void evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector1,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector2,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector3  ///< distributed vector that may be filled
                            ///< by assembly of element contributions
     );
 
    protected:
-    std::map<int, double> penalties_;          ///< map containing penalty values
-    std::map<int, double> rho_;                ///< map containing rhos for augmented Lagrange
-    Teuchos::RCP<Epetra_Export> errorexport_;  ///< exporter for redundant and non-overlapping maps
-    Teuchos::RCP<Epetra_Import> errorimport_;  ///< importer for redundant and non-overlapping maps
-    Teuchos::RCP<Epetra_Map> rederrormap_;     ///< redundant map of errors
-    Teuchos::RCP<Epetra_Map> errormap_;        ///< non-overlapping map of errors
-    Teuchos::RCP<Core::LinAlg::Vector<double>> initerror_;  ///< initial value of bc
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acterror_;   ///< current value of bc
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::map<int, double> penalties_;  ///< map containing penalty values
+    std::map<int, double> rho_;        ///< map containing rhos for augmented Lagrange
+    std::shared_ptr<Epetra_Export>
+        errorexport_;  ///< exporter for redundant and non-overlapping maps
+    std::shared_ptr<Epetra_Import>
+        errorimport_;                          ///< importer for redundant and non-overlapping maps
+    std::shared_ptr<Epetra_Map> rederrormap_;  ///< redundant map of errors
+    std::shared_ptr<Epetra_Map> errormap_;     ///< non-overlapping map of errors
+    std::shared_ptr<Core::LinAlg::Vector<double>> initerror_;  ///< initial value of bc
+    std::shared_ptr<Core::LinAlg::Vector<double>> acterror_;   ///< current value of bc
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         lagrvalues_;  ///< value of Lagrange multiplier in augmented Lagrange
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         lagrvalues_force_;  ///< value of Lagrange multiplier in augmented Lagrange
 
 
@@ -104,13 +107,13 @@ namespace CONSTRAINTS
     void evaluate_constraint(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
         Core::LinAlg::SparseOperator&
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector1,                            ///< distributed vector that may be filled by
                                                       ///< aasembly of element contributions
         Core::LinAlg::Vector<double>& systemvector2,  ///< distributed vector that may be filled by

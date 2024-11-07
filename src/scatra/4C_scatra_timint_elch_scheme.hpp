@@ -25,11 +25,12 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntElchOST(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    ScaTraTimIntElchOST(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     void init() override;
 
@@ -38,7 +39,7 @@ namespace ScaTra
     void update() override;
 
     void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr) override;
 
     void pre_calc_initial_potential_field() override;
 
@@ -60,11 +61,12 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntElchSCLOST(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    ScaTraTimIntElchSCLOST(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
@@ -75,7 +77,7 @@ namespace ScaTra
     void pre_calc_initial_potential_field() override;
 
     void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr) override;
 
     void setup() override;
 
@@ -98,11 +100,12 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntElchBDF2(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    ScaTraTimIntElchBDF2(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     void init() override;
 
@@ -111,7 +114,7 @@ namespace ScaTra
     void update() override;
 
     void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr) override;
 
     void pre_calc_initial_potential_field() override;
 
@@ -132,11 +135,12 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntElchGenAlpha(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    ScaTraTimIntElchGenAlpha(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     void init() override;
 
@@ -145,7 +149,7 @@ namespace ScaTra
     void update() override;
 
     void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr) override;
 
     void pre_calc_initial_potential_field() override;
 
@@ -164,11 +168,12 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntElchStationary(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    ScaTraTimIntElchStationary(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     void init() override;
 
@@ -177,7 +182,7 @@ namespace ScaTra
     void update() override;
 
     void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr) override;
 
     void pre_calc_initial_potential_field() override;
 

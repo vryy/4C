@@ -115,27 +115,27 @@ namespace TSI
     double ittol_;
 
     //! temperature increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tempincnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> tempincnp_;
     //! displacement increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispincnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispincnp_;
 
    private:
     //! displacements at time step (t_n) or (t_n+1)
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disp_;
     //! velocities at time step (t_n) or (t_n+1)
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel_;
 
     //! temperature at time step (t_n) or (t_n+1)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> temp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> temp_;
 
     //! @name Aitken relaxation
 
     //! difference of last two solutions
     // del = r^{i+1}_{n+1} = d^{i+1}_{n+1} - d^i_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> del_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> del_;
     //! difference of difference of last two pair of solutions
     // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
-    Teuchos::RCP<Core::LinAlg::Vector<double>> delhist_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> delhist_;
     //! Aitken factor
     double mu_;
 

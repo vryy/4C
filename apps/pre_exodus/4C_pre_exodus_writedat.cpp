@@ -134,7 +134,7 @@ void EXODUS::write_dat_conditions(
 {
   using namespace FourC;
 
-  Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> condlist =
+  std::shared_ptr<std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>> condlist =
       Input::valid_conditions();
 
   // count how often we have one specific condition
@@ -418,8 +418,8 @@ std::set<int> EXODUS::get_ns_from_bc_entity(const EXODUS::CondDef& e, const EXOD
   else if (e.me == EXODUS::bceb)
   {
     std::set<int> allnodes;
-    Teuchos::RCP<EXODUS::ElementBlock> eb = m.get_element_block(e.id);
-    Teuchos::RCP<const std::map<int, std::vector<int>>> eles = eb->get_ele_conn();
+    std::shared_ptr<EXODUS::ElementBlock> eb = m.get_element_block(e.id);
+    std::shared_ptr<const std::map<int, std::vector<int>>> eles = eb->get_ele_conn();
     for (const auto& ele : *eles)
     {
       const std::vector<int> nodes = ele.second;
@@ -452,7 +452,7 @@ void EXODUS::write_dat_nodes(const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
   dat << "-------------------------------------------------------NODE COORDS" << std::endl;
   dat.precision(16);
-  Teuchos::RCP<std::map<int, std::vector<double>>> nodes = mymesh.get_nodes();
+  std::shared_ptr<std::map<int, std::vector<double>>> nodes = mymesh.get_nodes();
 
   for (const auto& node : *nodes)
   {
@@ -537,7 +537,7 @@ void EXODUS::write_dat_eles(
 
     for (const auto& ele : ele_vector)
     {
-      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.get_element_block(ele.id);
+      std::shared_ptr<EXODUS::ElementBlock> eb = mymesh.get_element_block(ele.id);
       EXODUS::dat_eles(*eb, ele, startele, dat, ele.id);
     }
   };

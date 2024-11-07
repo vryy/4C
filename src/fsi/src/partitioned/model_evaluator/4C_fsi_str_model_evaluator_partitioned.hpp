@@ -32,7 +32,7 @@ namespace Solid
 
       //! get pointer to force vector at time level n+1 (full structural map).
       //! interface part is inserted in Adapter::FSIStructureWrapper.
-      const Teuchos::RCP<Core::LinAlg::Vector<double>>& get_interface_force_np_ptr()
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& get_interface_force_np_ptr()
       {
         return interface_force_np_ptr_;
       };
@@ -133,13 +133,13 @@ namespace Solid
       void post_output() override { return; };
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
       //! @}
@@ -150,8 +150,8 @@ namespace Solid
        * calculation (and matrix free Newton Krylov).
        *
        * \note Can only be called after a valid structural solve. */
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> solve_relaxation_linear(
-          Teuchos::RCP<Adapter::Structure> structure);
+      std::shared_ptr<const Core::LinAlg::Vector<double>> solve_relaxation_linear(
+          std::shared_ptr<Adapter::Structure> structure);
 
       virtual void setup_multi_map_extractor();
 
@@ -163,7 +163,7 @@ namespace Solid
 
      private:
       //! fsi interface force at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> interface_force_np_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> interface_force_np_ptr_;
 
       //! true if relaxation solve is requested
       bool is_relaxationsolve_;

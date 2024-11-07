@@ -84,7 +84,8 @@ enum ::NOX::Abstract::Vector::NormType Solid::Nln::convert2_nox_norm_type(
 void Solid::Nln::convert_model_type2_sol_type(std::vector<enum NOX::Nln::SolutionType>& soltypes,
     std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& slinsolvers,
     const std::set<enum Inpar::Solid::ModelType>& modeltypes,
-    const std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>& mlinsolvers)
+    const std::map<enum Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>&
+        mlinsolvers)
 {
   // initialize the vector and/or force the length to zero
   if (soltypes.size() > 0)
@@ -105,7 +106,7 @@ void Solid::Nln::convert_model_type2_sol_type(std::vector<enum NOX::Nln::Solutio
     soltypes.push_back(soltype);
     // copy the linsolver pointers into the new map
     if (mlinsolvers.find(*mt_iter) != mlinsolvers.end())
-      slinsolvers[soltype] = mlinsolvers.at(*mt_iter);
+      slinsolvers[soltype] = Teuchos::rcpFromRef(*mlinsolvers.at(*mt_iter));
   }
 }
 
@@ -283,7 +284,8 @@ void Solid::Nln::create_constraint_interfaces(NOX::Nln::CONSTRAINT::ReqInterface
         Solid::ModelEvaluator::Generic& model = integrator.evaluator(Inpar::Solid::model_contact);
         Solid::ModelEvaluator::Contact& contact_model =
             dynamic_cast<Solid::ModelEvaluator::Contact&>(model);
-        iconstr[NOX::Nln::sol_contact] = contact_model.strategy_ptr()->nox_interface_ptr();
+        iconstr[NOX::Nln::sol_contact] =
+            Teuchos::rcpFromRef(*contact_model.strategy_ptr()->nox_interface_ptr());
         break;
       }
       case NOX::Nln::sol_meshtying:
@@ -291,7 +293,8 @@ void Solid::Nln::create_constraint_interfaces(NOX::Nln::CONSTRAINT::ReqInterface
         Solid::ModelEvaluator::Generic& model = integrator.evaluator(Inpar::Solid::model_meshtying);
         Solid::ModelEvaluator::Meshtying& mt_model =
             dynamic_cast<Solid::ModelEvaluator::Meshtying&>(model);
-        iconstr[NOX::Nln::sol_meshtying] = mt_model.strategy_ptr()->nox_interface_ptr();
+        iconstr[NOX::Nln::sol_meshtying] =
+            Teuchos::rcpFromRef(*mt_model.strategy_ptr()->nox_interface_ptr());
         break;
       }
       case NOX::Nln::sol_lag_pen_constraint:
@@ -300,7 +303,8 @@ void Solid::Nln::create_constraint_interfaces(NOX::Nln::CONSTRAINT::ReqInterface
             integrator.evaluator(Inpar::Solid::model_lag_pen_constraint);
         Solid::ModelEvaluator::LagPenConstraint& lagpenconstraint_model =
             dynamic_cast<Solid::ModelEvaluator::LagPenConstraint&>(model);
-        iconstr[NOX::Nln::sol_lag_pen_constraint] = lagpenconstraint_model.nox_interface_ptr();
+        iconstr[NOX::Nln::sol_lag_pen_constraint] =
+            Teuchos::rcpFromRef(*lagpenconstraint_model.nox_interface_ptr());
         break;
       }
       default:
@@ -330,7 +334,7 @@ void Solid::Nln::create_constraint_preconditioner(
         /* Actually we use the underlying Mortar::StrategyBase as Preconditioner
          * interface. Nevertheless, the implementations can differ for the
          * contact/meshtying cases. */
-        iconstr_prec[NOX::Nln::sol_contact] = contact_model.strategy_ptr();
+        iconstr_prec[NOX::Nln::sol_contact] = Teuchos::rcpFromRef(*contact_model.strategy_ptr());
         break;
       }
       case NOX::Nln::sol_meshtying:
@@ -338,7 +342,7 @@ void Solid::Nln::create_constraint_preconditioner(
         Solid::ModelEvaluator::Generic& model = integrator.evaluator(Inpar::Solid::model_meshtying);
         Solid::ModelEvaluator::Meshtying& mt_model =
             dynamic_cast<Solid::ModelEvaluator::Meshtying&>(model);
-        iconstr_prec[NOX::Nln::sol_meshtying] = mt_model.strategy_ptr();
+        iconstr_prec[NOX::Nln::sol_meshtying] = Teuchos::rcpFromRef(*mt_model.strategy_ptr());
         break;
       }
       case NOX::Nln::sol_lag_pen_constraint:
@@ -348,7 +352,7 @@ void Solid::Nln::create_constraint_preconditioner(
         Solid::ModelEvaluator::LagPenConstraint& lagpenconstraint_model =
             dynamic_cast<Solid::ModelEvaluator::LagPenConstraint&>(model);
         iconstr_prec[NOX::Nln::sol_lag_pen_constraint] =
-            lagpenconstraint_model.nox_interface_prec_ptr();
+            Teuchos::rcpFromRef(*lagpenconstraint_model.nox_interface_prec_ptr());
         break;
       }
       default:

@@ -44,8 +44,8 @@ Discret::Elements::LubricationEleCalc<distype, probdim>::LubricationEleCalc(
       eheidotnp_(true),
       edispnp_(true),
       viscmanager_(
-          Teuchos::make_rcp<LubricationEleViscManager>()),  // viscosity manager for viscosity
-      lubricationvarmanager_(Teuchos::RCP(
+          std::make_shared<LubricationEleViscManager>()),  // viscosity manager for viscosity
+      lubricationvarmanager_(std::shared_ptr<LubricationEleInternalVariableManager<nsd_, nen_>>(
           new LubricationEleInternalVariableManager<nsd_, nen_>())),  // internal variable manager
       eid_(0),
       ele_(nullptr),
@@ -202,9 +202,9 @@ void Discret::Elements::LubricationEleCalc<distype, probdim>::extract_element_an
   const int ndsvel = 1;
 
   // get the global vector
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> vel =
       discretization.get_state(ndsvel, "av_tang_vel");
-  if (vel.is_null()) FOUR_C_THROW("got nullptr pointer for \"av_tang_vel\"");
+  if (!vel) FOUR_C_THROW("got nullptr pointer for \"av_tang_vel\"");
 
   const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
 
@@ -222,7 +222,7 @@ void Discret::Elements::LubricationEleCalc<distype, probdim>::extract_element_an
     // 1.1 Extract the relative tangential velocity
     // get the global vector
     auto velrel = discretization.get_state(ndsvel, "rel_tang_vel");
-    if (velrel.is_null()) FOUR_C_THROW("got nullptr pointer for \"rel_tang_vel\"");
+    if (!velrel) FOUR_C_THROW("got nullptr pointer for \"rel_tang_vel\"");
 
     const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
 
@@ -244,9 +244,9 @@ void Discret::Elements::LubricationEleCalc<distype, probdim>::extract_element_an
   {
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = 1;  // needs further implementation: params.get<int>("ndsdisp");
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
         discretization.get_state(ndsdisp, "dispnp");
-    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
+    if (dispnp == nullptr) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
     const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
@@ -269,9 +269,9 @@ void Discret::Elements::LubricationEleCalc<distype, probdim>::extract_element_an
   const int ndsheight = 1;  // needs further implementation: params.get<int>("ndsheight");
 
   // get the global vector containing the heights
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> height =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> height =
       discretization.get_state(ndsheight, "height");
-  if (height == Teuchos::null) FOUR_C_THROW("Cannot get state vector height");
+  if (height == nullptr) FOUR_C_THROW("Cannot get state vector height");
 
   // determine number of height related dofs per node
   const int numheightdofpernode = la[ndsheight].lm_.size() / nen_;
@@ -293,7 +293,7 @@ void Discret::Elements::LubricationEleCalc<distype, probdim>::extract_element_an
 
     // get the global vector containing the heightdots
     auto heightdot = discretization.get_state(ndsheightdot, "heightdot");
-    if (heightdot == Teuchos::null) FOUR_C_THROW("Cannot get state vector heightdot");
+    if (heightdot == nullptr) FOUR_C_THROW("Cannot get state vector heightdot");
 
     // determine number of heightdot related dofs per node
     const int numheightdotdofpernode = la[ndsheightdot].lm_.size() / nen_;
@@ -312,8 +312,8 @@ void Discret::Elements::LubricationEleCalc<distype, probdim>::extract_element_an
   // 4. Extract the pressure field at the element nodes
 
   // get the global vector containing the pressure
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> prenp = discretization.get_state("prenp");
-  if (prenp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'prenp'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> prenp = discretization.get_state("prenp");
+  if (prenp == nullptr) FOUR_C_THROW("Cannot get state vector 'prenp'");
 
   // values of pressure field are always in first dofset
   const std::vector<int>& lm = la[0].lm_;
@@ -683,7 +683,7 @@ void Discret::Elements::LubricationEleCalc<distype, probdim>::get_material_param
 )
 {
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   materials(material, densn, densnp, densam, visc, dvisc, iquad);
 
@@ -695,13 +695,13 @@ void Discret::Elements::LubricationEleCalc<distype, probdim>::get_material_param
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::LubricationEleCalc<distype, probdim>::materials(
-    const Teuchos::RCP<Core::Mat::Material> material,  //!< pointer to current material
-    double& densn,                                     //!< density at t_(n)
-    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                                    //!< density at t_(n+alpha_M)
-    double& visc,                                      //!< fluid viscosity
-    double& dvisc,                                     //!< derivative of the fluid viscosity
-    const int iquad                                    //!< id of current gauss point
+    const std::shared_ptr<Core::Mat::Material> material,  //!< pointer to current material
+    double& densn,                                        //!< density at t_(n)
+    double& densnp,                                       //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,                                       //!< density at t_(n+alpha_M)
+    double& visc,                                         //!< fluid viscosity
+    double& dvisc,                                        //!< derivative of the fluid viscosity
+    const int iquad                                       //!< id of current gauss point
 
 )
 {
@@ -722,17 +722,17 @@ void Discret::Elements::LubricationEleCalc<distype, probdim>::materials(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::LubricationEleCalc<distype, probdim>::mat_lubrication(
-    const Teuchos::RCP<Core::Mat::Material> material,  //!< pointer to current material
-    double& densn,                                     //!< density at t_(n)
-    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                                    //!< density at t_(n+alpha_M)
-    double& visc,                                      //!< fluid viscosity
-    double& dvisc,                                     //!< derivative of the fluid viscosity
-    const int iquad                                    //!< id of current gauss point (default = -1)
+    const std::shared_ptr<Core::Mat::Material> material,  //!< pointer to current material
+    double& densn,                                        //!< density at t_(n)
+    double& densnp,                                       //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,                                       //!< density at t_(n+alpha_M)
+    double& visc,                                         //!< fluid viscosity
+    double& dvisc,                                        //!< derivative of the fluid viscosity
+    const int iquad  //!< id of current gauss point (default = -1)
 )
 {
-  const Teuchos::RCP<Mat::LubricationMat>& actmat =
-      Teuchos::rcp_dynamic_cast<Mat::LubricationMat>(material);
+  const std::shared_ptr<Mat::LubricationMat>& actmat =
+      std::dynamic_pointer_cast<Mat::LubricationMat>(material);
   // get constant viscosity
 
   // double pressure = 0.0;
@@ -1261,8 +1261,8 @@ int Discret::Elements::LubricationEleCalc<distype, probdim>::evaluate_action(
       if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
 
       // need current solution
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> prenp = discretization.get_state("prenp");
-      if (prenp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'prenp'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> prenp = discretization.get_state("prenp");
+      if (prenp == nullptr) FOUR_C_THROW("Cannot get state vector 'prenp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
       cal_error_compared_to_analyt_solution(ele, params, elevec1_epetra);
@@ -1277,8 +1277,8 @@ int Discret::Elements::LubricationEleCalc<distype, probdim>::evaluate_action(
 
       // need current pressure vector
       // -> extract local values from the global vectors
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> prenp = discretization.get_state("prenp");
-      if (prenp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'prenp'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> prenp = discretization.get_state("prenp");
+      if (prenp == nullptr) FOUR_C_THROW("Cannot get state vector 'prenp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
       // calculate pressures and domain integral

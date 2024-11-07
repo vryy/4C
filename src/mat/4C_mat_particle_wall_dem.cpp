@@ -34,9 +34,9 @@ Mat::PAR::ParticleWallMaterialDEM::ParticleWallMaterialDEM(
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ParticleWallMaterialDEM::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ParticleWallMaterialDEM::create_material()
 {
-  return Teuchos::make_rcp<Mat::ParticleWallMaterialDEM>(this);
+  return std::make_shared<Mat::ParticleWallMaterialDEM>(this);
 }
 
 /*---------------------------------------------------------------------------*
@@ -94,7 +94,7 @@ void Mat::ParticleWallMaterialDEM::unpack(Core::Communication::UnpackBuffer& buf
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

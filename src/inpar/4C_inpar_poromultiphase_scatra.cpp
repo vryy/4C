@@ -133,7 +133,7 @@ void Inpar::PoroMultiPhaseScaTra::set_valid_parameters(Teuchos::ParameterList& l
 }
 
 void Inpar::PoroMultiPhaseScaTra::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 
@@ -141,22 +141,22 @@ void Inpar::PoroMultiPhaseScaTra::set_valid_conditions(
   // oxygen partial pressure calculation condition
   {
     // definition of oxygen partial pressure calculation condition
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> oxypartpressline =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+    std::shared_ptr<Core::Conditions::ConditionDefinition> oxypartpressline =
+        std::make_shared<Core::Conditions::ConditionDefinition>(
             "DESIGN OXYGEN PARTIAL PRESSURE CALCULATION LINE CONDITIONS",
             "PoroMultiphaseScatraOxyPartPressCalcCond",
             "PoroMultiphaseScatra Oxygen Partial Pressure Calculation line condition",
             Core::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
             Core::Conditions::geometry_type_line);
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> oxypartpresssurf =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+    std::shared_ptr<Core::Conditions::ConditionDefinition> oxypartpresssurf =
+        std::make_shared<Core::Conditions::ConditionDefinition>(
             "DESIGN OXYGEN PARTIAL PRESSURE CALCULATION SURF CONDITIONS",
             "PoroMultiphaseScatraOxyPartPressCalcCond",
             "PoroMultiphaseScatra Oxygen Partial Pressure Calculation surface condition",
             Core::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
             Core::Conditions::geometry_type_surface);
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> oxypartpressvol =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+    std::shared_ptr<Core::Conditions::ConditionDefinition> oxypartpressvol =
+        std::make_shared<Core::Conditions::ConditionDefinition>(
             "DESIGN OXYGEN PARTIAL PRESSURE CALCULATION VOL CONDITIONS",
             "PoroMultiphaseScatraOxyPartPressCalcCond",
             "PoroMultiphaseScatra Oxygen Partial Pressure Calculation volume condition",

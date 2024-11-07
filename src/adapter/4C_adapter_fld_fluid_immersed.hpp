@@ -29,13 +29,13 @@ namespace Adapter
     /*========================================================================*/
 
     /// fluid field
-    const Teuchos::RCP<Adapter::Fluid>& fluid_field() override { return fluid_->fluid_field(); }
+    const std::shared_ptr<Adapter::Fluid>& fluid_field() override { return fluid_->fluid_field(); }
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<Core::FE::Discretization> discretization() override;
+    std::shared_ptr<Core::FE::Discretization> discretization() override;
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override;
+    std::shared_ptr<FLD::Utils::MapExtractor> const& interface() const override;
 
     //@}
 
@@ -60,12 +60,12 @@ namespace Adapter
     /*========================================================================*/
 
     /// nonlinear solve
-    void nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override;
+    void nonlinear_solve(std::shared_ptr<Core::LinAlg::Vector<double>> idisp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel) override;
 
     /// relaxation solve
-    Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt) override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> relaxation_solve(
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp, double dt) override;
     //@}
 
     /*========================================================================*/
@@ -73,7 +73,7 @@ namespace Adapter
     /*========================================================================*/
 
     /// After the fluid solve we need the forces at the FSI interface.
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_forces() override;
     //@}
 
     /*========================================================================*/
@@ -81,10 +81,10 @@ namespace Adapter
     /*========================================================================*/
 
     /// extract the interface velocity at time t^(n+1)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
 
     /// extract the interface velocity at time t^n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_veln() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_veln() override;
     //@}
 
     /*========================================================================*/
@@ -102,10 +102,10 @@ namespace Adapter
     void set_itemax(int itemax) override { fluid_field()->set_itemax(itemax); }
 
     /// add dirichlet conditions to dirichlet condmap before next fluid solve
-    virtual void add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd);
+    virtual void add_dirich_cond(const std::shared_ptr<const Epetra_Map> maptoadd);
 
     /// remove dirichlet conditions from dirichlet condmap after last fluid solve
-    virtual void remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+    virtual void remove_dirich_cond(const std::shared_ptr<const Epetra_Map> maptoremove);
 
     //@}
 
@@ -114,16 +114,16 @@ namespace Adapter
     /*========================================================================*/
 
     /// integrate the interface shape functions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
 
     /// create the testing of fields
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test() override;
 
 
    private:
     /// fluid base algorithm object
-    Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluid_;
-    Teuchos::RCP<Adapter::Fluid> fluidadapter_;
+    std::shared_ptr<Adapter::FluidBaseAlgorithm> fluid_;
+    std::shared_ptr<Adapter::Fluid> fluidadapter_;
   };
 
 }  // namespace Adapter

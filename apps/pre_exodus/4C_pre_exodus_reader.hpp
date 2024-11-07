@@ -38,8 +38,8 @@ namespace EXODUS
     Mesh(std::string exofilename);
 
     //! extension constructor, adds Elementblock and nodes to a basemesh
-    Mesh(const Mesh& basemesh, const Teuchos::RCP<std::map<int, std::vector<double>>> extNodes,
-        const std::map<int, Teuchos::RCP<ElementBlock>>& extBlocks,
+    Mesh(const Mesh& basemesh, const std::shared_ptr<std::map<int, std::vector<double>>> extNodes,
+        const std::map<int, std::shared_ptr<ElementBlock>>& extBlocks,
         const std::map<int, NodeSet>& extNodesets, const std::map<int, SideSet>& extSidesets,
         const std::string newtitle);
 
@@ -74,13 +74,16 @@ namespace EXODUS
     std::string get_title() const;
 
     //! Get ElementBlock map
-    std::map<int, Teuchos::RCP<ElementBlock>> get_element_blocks() const { return element_blocks_; }
+    std::map<int, std::shared_ptr<ElementBlock>> get_element_blocks() const
+    {
+      return element_blocks_;
+    }
 
     //! Get Number of ElementBlocks
     int get_num_element_blocks() const { return element_blocks_.size(); }
 
     //! Get one ElementBlock
-    Teuchos::RCP<ElementBlock> get_element_block(const int id) const;
+    std::shared_ptr<ElementBlock> get_element_block(const int id) const;
 
     //! Get NodeSet map
     std::map<int, NodeSet> get_node_sets() const { return node_sets_; }
@@ -130,7 +133,7 @@ namespace EXODUS
         const EXODUS::SideSet& sideset, const std::map<int, std::vector<int>>& sidesetconn) const;
 
     //! Get Node map
-    Teuchos::RCP<std::map<int, std::vector<double>>> get_nodes() const { return nodes_; }
+    std::shared_ptr<std::map<int, std::vector<double>>> get_nodes() const { return nodes_; }
 
     //! Get one nodal coords
     std::vector<double> get_node(const int NodeID) const;
@@ -148,7 +151,7 @@ namespace EXODUS
     void write_mesh(const std::string newexofilename) const;
 
     //! Add Element Block to mesh
-    void add_element_block(const Teuchos::RCP<EXODUS::ElementBlock> eblock) const;
+    void add_element_block(const std::shared_ptr<EXODUS::ElementBlock> eblock) const;
 
     //! Erase Element Block from mesh
     void erase_element_block(const int id);
@@ -176,9 +179,9 @@ namespace EXODUS
         const std::map<int, std::vector<int>>& conn) const;
 
    private:
-    Teuchos::RCP<std::map<int, std::vector<double>>> nodes_;
+    std::shared_ptr<std::map<int, std::vector<double>>> nodes_;
 
-    std::map<int, Teuchos::RCP<ElementBlock>> element_blocks_;
+    std::map<int, std::shared_ptr<ElementBlock>> element_blocks_;
 
     std::map<int, NodeSet> node_sets_;
 
@@ -234,7 +237,7 @@ namespace EXODUS
     };
 
     ElementBlock(ElementBlock::Shape DisType,
-        Teuchos::RCP<std::map<int, std::vector<int>>>& eleconn,  // Element connectivity
+        std::shared_ptr<std::map<int, std::vector<int>>>& eleconn,  // Element connectivity
         std::string name);
 
     virtual ~ElementBlock() = default;
@@ -243,7 +246,7 @@ namespace EXODUS
 
     int get_num_ele() const { return eleconn_->size(); }
 
-    Teuchos::RCP<std::map<int, std::vector<int>>> get_ele_conn() const { return eleconn_; }
+    std::shared_ptr<std::map<int, std::vector<int>>> get_ele_conn() const { return eleconn_; }
 
     std::vector<int> get_ele_nodes(int i) const;
 
@@ -259,7 +262,7 @@ namespace EXODUS
     Shape distype_;
 
     //! Element Connectivity
-    Teuchos::RCP<std::map<int, std::vector<int>>> eleconn_;
+    std::shared_ptr<std::map<int, std::vector<int>>> eleconn_;
 
     std::string name_;
   };

@@ -55,7 +55,7 @@ namespace
 
   [[nodiscard]] double get_gauss_point_data_value(
       const QuantityNameAndComponent& name_and_component, int node_id,
-      const std::unordered_map<std::string, Teuchos::RCP<Core::LinAlg::MultiVector<double>>>&
+      const std::unordered_map<std::string, std::shared_ptr<Core::LinAlg::MultiVector<double>>>&
           all_data)
   {
     const Core::LinAlg::MultiVector<double>& data = *all_data.at(name_and_component.name);
@@ -135,12 +135,12 @@ Solid::ResultTest::ResultTest()
     : Core::Utils::ResultTest("STRUCTURE"),
       isinit_(false),
       issetup_(false),
-      strudisc_(Teuchos::null),
-      disn_(Teuchos::null),
-      veln_(Teuchos::null),
-      accn_(Teuchos::null),
-      reactn_(Teuchos::null),
-      gstate_(Teuchos::null)
+      strudisc_(nullptr),
+      disn_(nullptr),
+      veln_(nullptr),
+      accn_(nullptr),
+      reactn_(nullptr),
+      gstate_(nullptr)
 {
   // empty constructor
 }
@@ -156,8 +156,8 @@ void Solid::ResultTest::init(
   veln_ = gstate.get_vel_n();
   accn_ = gstate.get_acc_n();
   reactn_ = gstate.get_freact_n();
-  gstate_ = Teuchos::rcpFromRef(gstate);
-  data_ = Teuchos::rcpFromRef(data);
+  gstate_ = Core::Utils::shared_ptr_from_ref(gstate);
+  data_ = Core::Utils::shared_ptr_from_ref(data);
   strudisc_ = gstate.get_discret();
 
   isinit_ = true;
@@ -228,7 +228,7 @@ int Solid::ResultTest::get_nodal_result(
   bool unknownpos = true;  // make sure the result value std::string can be handled
 
   // test displacements or pressure
-  if (disn_ != Teuchos::null)
+  if (disn_ != nullptr)
   {
     const Epetra_BlockMap& disnpmap = disn_->Map();
     int idx = -1;
@@ -253,7 +253,7 @@ int Solid::ResultTest::get_nodal_result(
   }
 
   // test velocities
-  if (veln_ != Teuchos::null)
+  if (veln_ != nullptr)
   {
     const Epetra_BlockMap& velnpmap = veln_->Map();
     int idx = -1;
@@ -276,7 +276,7 @@ int Solid::ResultTest::get_nodal_result(
   }
 
   // test accelerations
-  if (accn_ != Teuchos::null)
+  if (accn_ != nullptr)
   {
     const Epetra_BlockMap& accnpmap = accn_->Map();
     int idx = -1;
@@ -301,7 +301,7 @@ int Solid::ResultTest::get_nodal_result(
   // test nodal stresses
   if (position.rfind("stress", 0) == 0)
   {
-    if (data_->get_stress_data_node_postprocessed() == Teuchos::null)
+    if (data_->get_stress_data_node_postprocessed() == nullptr)
     {
       FOUR_C_THROW(
           "It looks like you don't write stresses. You have to specify the stress type in "
@@ -315,7 +315,7 @@ int Solid::ResultTest::get_nodal_result(
   // test nodal strain
   if (position.rfind("strain", 0) == 0)
   {
-    if (data_->get_stress_data_node_postprocessed() == Teuchos::null)
+    if (data_->get_stress_data_node_postprocessed() == nullptr)
     {
       FOUR_C_THROW(
           "It looks like you don't write strains. You have to specify the strain type in "
@@ -327,7 +327,7 @@ int Solid::ResultTest::get_nodal_result(
   }
 
   // test for any postprocessed gauss point data
-  if (data_->get_gauss_point_data_output_manager_ptr() != Teuchos::null)
+  if (data_->get_gauss_point_data_output_manager_ptr() != nullptr)
   {
     std::optional<QuantityNameAndComponent> name_and_component =
         get_gauss_point_data_name_and_component(
@@ -341,7 +341,7 @@ int Solid::ResultTest::get_nodal_result(
   }
 
   // test reaction
-  if (reactn_ != Teuchos::null)
+  if (reactn_ != nullptr)
   {
     const Epetra_BlockMap& reactmap = reactn_->Map();
     int idx = -1;

@@ -29,12 +29,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void XFEM::XFluidContactComm::initialize_fluid_state(Teuchos::RCP<Cut::CutWizard> cutwizard,
-    Teuchos::RCP<Core::FE::Discretization> fluiddis,
-    Teuchos::RCP<XFEM::ConditionManager> condition_manager,
-    Teuchos::RCP<Teuchos::ParameterList> fluidparams)
+void XFEM::XFluidContactComm::initialize_fluid_state(std::shared_ptr<Cut::CutWizard> cutwizard,
+    std::shared_ptr<Core::FE::Discretization> fluiddis,
+    std::shared_ptr<XFEM::ConditionManager> condition_manager,
+    std::shared_ptr<Teuchos::ParameterList> fluidparams)
 {
-  if (fluiddis != Teuchos::null && condition_manager != Teuchos::null) fluid_init_ = true;
+  if (fluiddis != nullptr && condition_manager != nullptr) fluid_init_ = true;
   cutwizard_ = cutwizard;
   fluiddis_ = fluiddis;
   condition_manager_ = condition_manager;
@@ -73,22 +73,22 @@ void XFEM::XFluidContactComm::initialize_fluid_state(Teuchos::RCP<Cut::CutWizard
   theta_ = fluidparams->get<double>("theta");
 
   mc_.clear();
-  Teuchos::RCP<XFEM::MeshCouplingFSI> mcfsi = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(
+  std::shared_ptr<XFEM::MeshCouplingFSI> mcfsi = std::dynamic_pointer_cast<XFEM::MeshCouplingFSI>(
       condition_manager->get_mesh_coupling("XFEMSurfFSIMono"));
-  if (mcfsi != Teuchos::null) mc_.push_back(mcfsi);
+  if (mcfsi != nullptr) mc_.push_back(mcfsi);
 
-  Teuchos::RCP<XFEM::MeshCouplingFPI> mcfpi = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
+  std::shared_ptr<XFEM::MeshCouplingFPI> mcfpi = std::dynamic_pointer_cast<XFEM::MeshCouplingFPI>(
       condition_manager->get_mesh_coupling("XFEMSurfFPIMono_ps_ps"));
-  if (mcfpi != Teuchos::null)
+  if (mcfpi != nullptr)
   {
     mc_.push_back(mcfpi);
-    mcfpi_ps_pf_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
+    mcfpi_ps_pf_ = std::dynamic_pointer_cast<XFEM::MeshCouplingFPI>(
         condition_manager->get_mesh_coupling("XFEMSurfFPIMono_ps_pf"));
-    if (mcfpi_ps_pf_ == Teuchos::null) FOUR_C_THROW("Couldn't find mcfpi_ps_pf_ object!");
+    if (mcfpi_ps_pf_ == nullptr) FOUR_C_THROW("Couldn't find mcfpi_ps_pf_ object!");
   }
   else
   {
-    mcfpi_ps_pf_ = Teuchos::null;
+    mcfpi_ps_pf_ = nullptr;
   }
 
   if (mc_.size())
@@ -143,7 +143,7 @@ double XFEM::XFluidContactComm::get_fsi_traction(Mortar::Element* ele,
   Discret::Elements::StructuralSurface* sele = get_surf_ele(ele->id());
   mcidx_ = get_surf_mc(ele->id());
 
-  if (Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(mc_[mcidx_]) != Teuchos::null)
+  if (std::dynamic_pointer_cast<XFEM::MeshCouplingFPI>(mc_[mcidx_]) != nullptr)
     isporo_ = true;
   else
     isporo_ = false;
@@ -211,7 +211,7 @@ double XFEM::XFluidContactComm::get_fsi_traction(Mortar::Element* ele,
     Core::LinAlg::Matrix<3, 1> xsi3(new_xsi.data(), true);
     double J = 0;
     porosity =
-        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(mc_[mcidx_])->calc_porosity(sele, xsi3, J);
+        std::dynamic_pointer_cast<XFEM::MeshCouplingFPI>(mc_[mcidx_])->calc_porosity(sele, xsi3, J);
   }
 
   if (mc_[mcidx_]->get_averaging_strategy() == Inpar::XFEM::Xfluid_Sided)
@@ -301,7 +301,8 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
   {
     Core::Elements::LocationArray laf(1);
     fluidele->location_vector(*fluiddis_, fluid_nds, laf, false);
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state = fluiddis_->get_state("velaf");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
+        fluiddis_->get_state("velaf");
     Core::FE::extract_my_values(*matrix_state, velpres, laf[0].lm_);
 
     std::vector<int> lmdisp;
@@ -311,7 +312,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
     {
       for (std::size_t n = 0; n < fluid_nds.size(); ++n)
         for (int dof = 0; dof < 3; ++dof) lmdisp[n * 3 + dof] = laf[0].lm_[n * 4 + dof];
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state_disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state_disp =
           fluiddis_->get_state("dispnp");
       Core::FE::extract_my_values(*matrix_state_disp, disp, lmdisp);
     }
@@ -319,7 +320,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
   {
     Core::Elements::LocationArray las(1);
     sele->location_vector(*mc_[mcidx_]->get_cutter_dis(), las, false);
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
         mc_[mcidx_]->get_cutter_dis()->get_state("ivelnp");
     Core::FE::extract_my_values(*matrix_state, ivel, las[0].lm_);
   }
@@ -328,7 +329,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
   {
     Core::Elements::LocationArray las(1);
     sele->location_vector(*mcfpi_ps_pf_->get_cutter_dis(), las, false);
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
         mcfpi_ps_pf_->get_cutter_dis()->get_state("ivelnp");
     Core::FE::extract_my_values(*matrix_state, ipfvel, las[0].lm_);
   }
@@ -354,7 +355,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
     {
       Core::LinAlg::Matrix<3, 8> xyze(ele_xyze.values(), true);
       // find element local position of gauss point
-      Teuchos::RCP<Cut::Position> pos =
+      std::shared_ptr<Cut::Position> pos =
           Cut::PositionFactory::build_position<3, Core::FE::CellType::hex8>(xyze, x);
       if (!pos->compute(1e-1))  // if we are a litte bit outside of the element we don't care ...
       {
@@ -530,7 +531,7 @@ void XFEM::XFluidContactComm::get_penalty_param(Core::Elements::Element* fluidel
   mc_[mcidx_]->get_visc_penalty_stabfac(fluidele, nullptr, kappa_m, kappa_s, inv_h_k, visc_stab_fac,
       dummy, nit_stab_gamma_, nit_stab_gamma_, is_pseudo_2d_, visc_stab_trace_estimate_);
 
-  Teuchos::RCP<Core::Mat::Material> mat;
+  std::shared_ptr<Core::Mat::Material> mat;
   XFEM::Utils::get_volume_cell_material(fluidele, mat);
   const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
   if (actmat == nullptr) FOUR_C_THROW("Cast of Fluidmat failed!");
@@ -552,8 +553,8 @@ void XFEM::XFluidContactComm::get_penalty_param(
     Discret::Elements::StructuralSurface* sele, double& penalty_fac)
 {
   penalty_fac = nit_stab_gamma_ *
-                Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(mc_[mcidx_])->get_time_fac() *
-                Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(mc_[mcidx_])
+                std::dynamic_pointer_cast<XFEM::MeshCouplingFSI>(mc_[mcidx_])->get_time_fac() *
+                std::dynamic_pointer_cast<XFEM::MeshCouplingFSI>(mc_[mcidx_])
                     ->get_estimate_nitsche_trace_max_eigenvalue(sele);
   return;
 }
@@ -579,7 +580,7 @@ void XFEM::XFluidContactComm::setup_surf_ele_ptrs(Core::FE::Discretization& cont
     if (max_surf_gid < mc_[mc]->get_cutter_dis()->element_col_map()->MaxAllGID() + startgid)
       max_surf_gid = mc_[mc]->get_cutter_dis()->element_col_map()->MaxAllGID() + startgid;
   }
-  if (mcfpi_ps_pf_ != Teuchos::null)
+  if (mcfpi_ps_pf_ != nullptr)
   {
     int startgid = condition_manager_->get_mesh_coupling_start_gid(
         condition_manager_->get_coupling_index(mcfpi_ps_pf_->get_name()));
@@ -625,7 +626,7 @@ void XFEM::XFluidContactComm::setup_surf_ele_ptrs(Core::FE::Discretization& cont
         }
       }
     }
-    if (mcfpi_ps_pf_ != Teuchos::null)
+    if (mcfpi_ps_pf_ != nullptr)
     {
       for (int j = 0; j < mcfpi_ps_pf_->get_cutter_dis()->num_my_col_elements(); ++j)
       {
@@ -817,7 +818,7 @@ bool XFEM::XFluidContactComm::get_volumecell(Discret::Elements::StructuralSurfac
             triangulation[tri][1]->coordinates(xyzf.data() + 3);
             triangulation[tri][2]->coordinates(xyzf.data() + 6);
 
-            Teuchos::RCP<Cut::Position> pos =
+            std::shared_ptr<Cut::Position> pos =
                 Cut::PositionFactory::build_position<3, Core::FE::CellType::tri3>(xyzf, x);
             bool success = pos->compute(1e-6, true);
             if (success)
@@ -979,7 +980,7 @@ Cut::Side* XFEM::XFluidContactComm::findnext_physical_side(Core::LinAlg::Matrix<
   if (sidehandle->shape() == Core::FE::CellType::quad4)
   {
     Core::LinAlg::Matrix<3, 4> xyze(xyzs.values(), true);
-    Teuchos::RCP<Cut::Position> pos =
+    std::shared_ptr<Cut::Position> pos =
         Cut::PositionFactory::build_position<3, Core::FE::CellType::quad4>(xyze, newx);
     pos->compute(1e-15, true);
     pos->local_coordinates(newxsi);
@@ -999,7 +1000,7 @@ double XFEM::XFluidContactComm::distanceto_side(
     Cut::Edge* e = *eit;
     Core::LinAlg::Matrix<3, 2> xyzl;
     e->coordinates(xyzl);
-    Teuchos::RCP<Cut::Position> pos =
+    std::shared_ptr<Cut::Position> pos =
         Cut::PositionFactory::build_position<3, Core::FE::CellType::line2>(xyzl, x);
     pos->compute(true);
     Core::LinAlg::Matrix<1, 1> rst;
@@ -1206,7 +1207,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
 
   Cut::plain_side_set subsides;
   sh->collect_sides(subsides);
-  std::vector<Teuchos::RCP<Cut::Tri3BoundaryCell>> bcs;
+  std::vector<std::shared_ptr<Cut::Tri3BoundaryCell>> bcs;
 
   Core::LinAlg::SerialDenseMatrix tcoords(3, 3);
   for (Cut::plain_side_set::iterator sit = subsides.begin(); sit != subsides.end(); ++sit)
@@ -1230,7 +1231,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
             p->coordinates(coord);
             coord += 3;
           }
-          Teuchos::RCP<Cut::Tri3BoundaryCell> tmp_bc = Teuchos::make_rcp<Cut::Tri3BoundaryCell>(
+          std::shared_ptr<Cut::Tri3BoundaryCell> tmp_bc = std::make_shared<Cut::Tri3BoundaryCell>(
               tcoords, facet, facet->triangulation()[triangle]);
           tmp_bc->normal(Core::LinAlg::Matrix<2, 1>(true), normal_bc);
           if (normal_bc.dot(normal_side) < 0.0)
@@ -1248,8 +1249,8 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
               p->coordinates(coord);
               coord += 3;
             }
-            Teuchos::RCP<Cut::Tri3BoundaryCell> tmp_bc_rev =
-                Teuchos::make_rcp<Cut::Tri3BoundaryCell>(tcoords, facet, points);
+            std::shared_ptr<Cut::Tri3BoundaryCell> tmp_bc_rev =
+                std::make_shared<Cut::Tri3BoundaryCell>(tcoords, facet, points);
             bcs.push_back(tmp_bc_rev);
           }
         }
@@ -1257,8 +1258,8 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
       else if (facet->points().size() == 3)
       {
         facet->coordinates(tcoords.values());
-        Teuchos::RCP<Cut::Tri3BoundaryCell> tmp_bc =
-            Teuchos::make_rcp<Cut::Tri3BoundaryCell>(tcoords, facet, facet->points());
+        std::shared_ptr<Cut::Tri3BoundaryCell> tmp_bc =
+            std::make_shared<Cut::Tri3BoundaryCell>(tcoords, facet, facet->points());
         tmp_bc->normal(Core::LinAlg::Matrix<2, 1>(true), normal_bc);
         if (normal_bc.dot(normal_side) < 0.0)
           bcs.push_back(tmp_bc);
@@ -1274,8 +1275,8 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
             p->coordinates(coord);
             coord += 3;
           }
-          Teuchos::RCP<Cut::Tri3BoundaryCell> tmp_bc_rev =
-              Teuchos::make_rcp<Cut::Tri3BoundaryCell>(tcoords, facet, points);
+          std::shared_ptr<Cut::Tri3BoundaryCell> tmp_bc_rev =
+              std::make_shared<Cut::Tri3BoundaryCell>(tcoords, facet, points);
           bcs.push_back(tmp_bc_rev);
         }
       }
@@ -1303,8 +1304,8 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
         std::vector<Cut::Point*> points;
         for (unsigned p = 0; p < side->num_nodes(); ++p)
           points.push_back(side->nodes()[p]->point());
-        Teuchos::RCP<Cut::Tri3BoundaryCell> tmp_bc =
-            Teuchos::make_rcp<Cut::Tri3BoundaryCell>(tcoords, nullptr, points);
+        std::shared_ptr<Cut::Tri3BoundaryCell> tmp_bc =
+            std::make_shared<Cut::Tri3BoundaryCell>(tcoords, nullptr, points);
         tmp_bc->normal(Core::LinAlg::Matrix<2, 1>(true), normal_bc);
         if (normal_bc.dot(normal_side) < 0.0)
           bcs.push_back(tmp_bc);
@@ -1320,8 +1321,8 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
             p->coordinates(coord);
             coord += 3;
           }
-          Teuchos::RCP<Cut::Tri3BoundaryCell> tmp_bc_rev =
-              Teuchos::make_rcp<Cut::Tri3BoundaryCell>(tcoords, nullptr, tmp_points);
+          std::shared_ptr<Cut::Tri3BoundaryCell> tmp_bc_rev =
+              std::make_shared<Cut::Tri3BoundaryCell>(tcoords, nullptr, tmp_points);
           bcs.push_back(tmp_bc_rev);
         }
       }
@@ -1347,12 +1348,11 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
       for (Core::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
       {
         const Core::LinAlg::Matrix<2, 1> eta(iquad.point(), false);
-        XFEM::Utils::compute_surface_transformation(
-            drs, x_gp_lin, normal, bcs[bc].getRawPtr(), eta);
+        XFEM::Utils::compute_surface_transformation(drs, x_gp_lin, normal, bcs[bc].get(), eta);
 
         // find element local position of gauss point
         const Core::LinAlg::Matrix<3, numnodes_sh> xquad_m(xquad.values(), true);
-        Teuchos::RCP<Cut::Position> pos =
+        std::shared_ptr<Cut::Position> pos =
             Cut::PositionFactory::build_position<3, Core::FE::CellType::quad4>(xquad_m, x_gp_lin);
         pos->compute(true);
         pos->local_coordinates(rst);
@@ -1376,7 +1376,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
 void XFEM::XFluidContactComm::fill_complete_sele_map()
 {
   if (!parallel_) return;
-  if (cutwizard_ == Teuchos::null)
+  if (cutwizard_ == nullptr)
     FOUR_C_THROW("XFluidContactComm::fill_complete_sele_map: CutWizard not set!");
 
   // We also add all unphysical sides
@@ -1393,7 +1393,7 @@ void XFEM::XFluidContactComm::fill_complete_sele_map()
     }
   }
   std::vector<int> my_sele_ids(my_sele_ids_.begin(), my_sele_ids_.end());
-  contact_ele_rowmap_fluidownerbased_ = Teuchos::make_rcp<Epetra_Map>(
+  contact_ele_rowmap_fluidownerbased_ = std::make_shared<Epetra_Map>(
       -1, my_sele_ids.size(), my_sele_ids.data(), 0, fluiddis_->get_comm());
 }
 

@@ -61,17 +61,18 @@ void Discret::Elements::Wall1PoroP1<distype>::unpack(Core::Communication::Unpack
 }
 
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Wall1PoroP1<distype>::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>>
+Discret::Elements::Wall1PoroP1<distype>::lines()
 {
   return Core::Communication::element_boundary_factory<Wall1Line, Wall1PoroP1>(
       Core::Communication::buildLines, *this);
 }
 
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>>
+std::vector<std::shared_ptr<Core::Elements::Element>>
 Discret::Elements::Wall1PoroP1<distype>::surfaces()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 template <Core::FE::CellType distype>

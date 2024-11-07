@@ -67,7 +67,7 @@ void poromultiphase_dyn(int restart)
   auto solscheme = Teuchos::getIntegralValue<Inpar::POROMULTIPHASE::SolutionSchemeOverFields>(
       poroparams, "COUPALGO");
 
-  Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase> algo =
+  std::shared_ptr<POROMULTIPHASE::PoroMultiPhase> algo =
       POROMULTIPHASE::Utils::create_poro_multi_phase_algorithm(solscheme, poroparams, comm);
 
   // initialize

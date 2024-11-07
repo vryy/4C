@@ -152,8 +152,8 @@ namespace Input
     return tablerow;
   }
 
-  Teuchos::RCP<std::stringstream> SeparatorComponent::read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, Core::IO::InputParameterContainer& container)
+  std::shared_ptr<std::stringstream> SeparatorComponent::read(const std::string& section_name,
+      std::shared_ptr<std::stringstream> condline, Core::IO::InputParameterContainer& container)
   {
     // try to find line parameter label "separator_" (with leading and trailing white spaces for
     // uniqueness) in stringstream "condline"
@@ -204,8 +204,8 @@ namespace Input
 
   void StringComponent::describe(std::ostream& stream) {}
 
-  Teuchos::RCP<std::stringstream> StringComponent::read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, Core::IO::InputParameterContainer& container)
+  std::shared_ptr<std::stringstream> StringComponent::read(const std::string& section_name,
+      std::shared_ptr<std::stringstream> condline, Core::IO::InputParameterContainer& container)
   {
     // initialize string parameter value to be read
     std::string str = defaultvalue_;
@@ -294,8 +294,8 @@ namespace Input
     stream << container.get<std::string>(name());
   }
 
-  Teuchos::RCP<std::stringstream> SelectionComponent::read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, Core::IO::InputParameterContainer& container)
+  std::shared_ptr<std::stringstream> SelectionComponent::read(const std::string& section_name,
+      std::shared_ptr<std::stringstream> condline, Core::IO::InputParameterContainer& container)
   {
     std::size_t position{};
     std::string selected_value{defaultvalue_};
@@ -366,8 +366,8 @@ namespace Input
 
   void IntComponent::describe(std::ostream& stream) {}
 
-  Teuchos::RCP<std::stringstream> IntComponent::read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, Core::IO::InputParameterContainer& container)
+  std::shared_ptr<std::stringstream> IntComponent::read(const std::string& section_name,
+      std::shared_ptr<std::stringstream> condline, Core::IO::InputParameterContainer& container)
   {
     // initialize integer parameter value to be read
     int nnumber = data_.default_value;
@@ -487,8 +487,8 @@ namespace Input
     };
   }  // namespace
 
-  Teuchos::RCP<std::stringstream> IntVectorComponent::read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, Core::IO::InputParameterContainer& container)
+  std::shared_ptr<std::stringstream> IntVectorComponent::read(const std::string& section_name,
+      std::shared_ptr<std::stringstream> condline, Core::IO::InputParameterContainer& container)
   {
     const int initialize_value = data_.default_value + (data_.fortran_style ? -1 : 0);
     const int dynamic_length = std::visit(LengthVisitor{container}, length_);
@@ -566,8 +566,8 @@ namespace Input
 
   void RealComponent::describe(std::ostream& stream) {}
 
-  Teuchos::RCP<std::stringstream> RealComponent::read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, Core::IO::InputParameterContainer& container)
+  std::shared_ptr<std::stringstream> RealComponent::read(const std::string& section_name,
+      std::shared_ptr<std::stringstream> condline, Core::IO::InputParameterContainer& container)
   {
     // initialize double parameter value to be read
     double nnumber = data_.default_value;
@@ -634,8 +634,8 @@ namespace Input
 
   void RealVectorComponent::describe(std::ostream& stream) {}
 
-  Teuchos::RCP<std::stringstream> RealVectorComponent::read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, Core::IO::InputParameterContainer& container)
+  std::shared_ptr<std::stringstream> RealVectorComponent::read(const std::string& section_name,
+      std::shared_ptr<std::stringstream> condline, Core::IO::InputParameterContainer& container)
   {
     const int dynamic_length = std::visit(LengthVisitor{container}, length_);
     std::vector<double> nnumbers(dynamic_length, data_.default_value);
@@ -711,8 +711,8 @@ namespace Input
 
   void BoolComponent::describe(std::ostream& stream) {}
 
-  Teuchos::RCP<std::stringstream> BoolComponent::read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, Core::IO::InputParameterContainer& container)
+  std::shared_ptr<std::stringstream> BoolComponent::read(const std::string& section_name,
+      std::shared_ptr<std::stringstream> condline, Core::IO::InputParameterContainer& container)
   {
     // initialize boolean parameter value to be read
     bool boolean = defaultvalue_;
@@ -759,7 +759,7 @@ namespace Input
 
 
   SwitchComponent::SwitchComponent(std::string name, const KeyType& default_key,
-      std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<Input::LineComponent>>>>
+      std::map<KeyType, std::pair<std::string, std::vector<std::shared_ptr<Input::LineComponent>>>>
           choices)
       : Input::LineComponent(std::move(name)),
         default_key_(default_key),
@@ -836,8 +836,8 @@ namespace Input
     }
   }
 
-  Teuchos::RCP<std::stringstream> SwitchComponent::read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, Core::IO::InputParameterContainer& container)
+  std::shared_ptr<std::stringstream> SwitchComponent::read(const std::string& section_name,
+      std::shared_ptr<std::stringstream> condline, Core::IO::InputParameterContainer& container)
   {
     component_for_key_->read(section_name, condline, container);
     const KeyType key = static_cast<KeyType>(container.get<int>(component_for_key_->name()));
@@ -861,8 +861,8 @@ namespace Input
     stream << print_string_;
   }
 
-  Teuchos::RCP<std::stringstream> ProcessedComponent::read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, Core::IO::InputParameterContainer& container)
+  std::shared_ptr<std::stringstream> ProcessedComponent::read(const std::string& section_name,
+      std::shared_ptr<std::stringstream> condline, Core::IO::InputParameterContainer& container)
   {
     // initialize string parameter value to be read
     std::string str = "";

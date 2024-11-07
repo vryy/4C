@@ -27,17 +27,17 @@ ScaTra::MeshtyingStrategyStdElch::MeshtyingStrategyStdElch(ScaTra::ScaTraTimIntE
 /*----------------------------------------------------------------------*
  | initialize system matrix for electrochemistry problems    fang 12/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::MeshtyingStrategyStdElch::init_system_matrix()
+std::shared_ptr<Core::LinAlg::SparseOperator> ScaTra::MeshtyingStrategyStdElch::init_system_matrix()
     const
 {
-  Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix;
+  std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix;
 
   // initialize standard (stabilized) system matrix (and save its graph)
   switch (scatratimint_->matrix_type())
   {
     case Core::LinAlg::MatrixType::sparse:
     {
-      systemmatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      systemmatrix = std::make_shared<Core::LinAlg::SparseMatrix>(
           *scatratimint_->discretization()->dof_row_map(), 27, false, true);
       break;
     }
@@ -45,7 +45,7 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::MeshtyingStrategyStdElch::ini
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
-      systemmatrix = Teuchos::make_rcp<
+      systemmatrix = std::make_shared<
           Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
 
           *scatratimint_->block_maps(), *scatratimint_->block_maps(), 81, false, true);
@@ -71,12 +71,12 @@ void ScaTra::MeshtyingStrategyStdElch::init_conv_check_strategy()
 {
   if (elch_tim_int()->macro_scale())
   {
-    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStdMacroScaleElch>(
+    convcheckstrategy_ = std::make_shared<ScaTra::ConvCheckStrategyStdMacroScaleElch>(
         scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
   }
   else
   {
-    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStdElch>(
+    convcheckstrategy_ = std::make_shared<ScaTra::ConvCheckStrategyStdElch>(
         scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
   }
 }  // ScaTra::MeshtyingStrategyStdElch::init_conv_check_strategy

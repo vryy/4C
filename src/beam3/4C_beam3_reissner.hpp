@@ -58,10 +58,10 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -180,9 +180,9 @@ namespace Discret
       int num_line() const override { return 1; }
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /** \brief Get number of nodes used for centerline interpolation
        *
@@ -747,9 +747,9 @@ namespace Discret
           const std::vector<Core::LinAlg::Matrix<4, 1, T>>& Qnode) const
       {
         // create object of triad interpolation scheme
-        Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
-            triad_interpolation_scheme_ptr = Teuchos::RCP(
-                new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>());
+        std::shared_ptr<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
+            triad_interpolation_scheme_ptr = std::make_shared<
+                LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>();
 
         // reset scheme with nodal quaternions
         triad_interpolation_scheme_ptr->reset(Qnode);

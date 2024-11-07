@@ -55,55 +55,55 @@ namespace FLD
 
     // the vector planes contains the coordinates of the homogeneous planes (in
     // wall normal direction)
-    Teuchos::RCP<std::vector<double>> planes =
-        params.get<Teuchos::RCP<std::vector<double>>>("coordinate vector for hom. planes");
+    std::shared_ptr<std::vector<double>> planes =
+        params.get<std::shared_ptr<std::vector<double>>>("coordinate vector for hom. planes");
 
     // get the pointers to the solution vectors
-    Teuchos::RCP<std::vector<double>> sumarea =
-        params.get<Teuchos::RCP<std::vector<double>>>("element layer area");
+    std::shared_ptr<std::vector<double>> sumarea =
+        params.get<std::shared_ptr<std::vector<double>>>("element layer area");
 
-    Teuchos::RCP<std::vector<double>> sumu =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean velocity u");
-    Teuchos::RCP<std::vector<double>> sumv =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean velocity v");
-    Teuchos::RCP<std::vector<double>> sumw =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean velocity w");
-    Teuchos::RCP<std::vector<double>> sump =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean pressure p");
-    Teuchos::RCP<std::vector<double>> sumrho =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean density rho");
-    Teuchos::RCP<std::vector<double>> sumT =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean temperature T");
-    Teuchos::RCP<std::vector<double>> sumrhou =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean momentum rho*u");
-    Teuchos::RCP<std::vector<double>> sumrhouT =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean rho*u*T");
+    std::shared_ptr<std::vector<double>> sumu =
+        params.get<std::shared_ptr<std::vector<double>>>("mean velocity u");
+    std::shared_ptr<std::vector<double>> sumv =
+        params.get<std::shared_ptr<std::vector<double>>>("mean velocity v");
+    std::shared_ptr<std::vector<double>> sumw =
+        params.get<std::shared_ptr<std::vector<double>>>("mean velocity w");
+    std::shared_ptr<std::vector<double>> sump =
+        params.get<std::shared_ptr<std::vector<double>>>("mean pressure p");
+    std::shared_ptr<std::vector<double>> sumrho =
+        params.get<std::shared_ptr<std::vector<double>>>("mean density rho");
+    std::shared_ptr<std::vector<double>> sumT =
+        params.get<std::shared_ptr<std::vector<double>>>("mean temperature T");
+    std::shared_ptr<std::vector<double>> sumrhou =
+        params.get<std::shared_ptr<std::vector<double>>>("mean momentum rho*u");
+    std::shared_ptr<std::vector<double>> sumrhouT =
+        params.get<std::shared_ptr<std::vector<double>>>("mean rho*u*T");
 
-    Teuchos::RCP<std::vector<double>> sumsqu =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value u^2");
-    Teuchos::RCP<std::vector<double>> sumsqv =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value v^2");
-    Teuchos::RCP<std::vector<double>> sumsqw =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value w^2");
-    Teuchos::RCP<std::vector<double>> sumsqp =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value p^2");
-    Teuchos::RCP<std::vector<double>> sumsqrho =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value rho^2");
-    Teuchos::RCP<std::vector<double>> sumsqT =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value T^2");
+    std::shared_ptr<std::vector<double>> sumsqu =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value u^2");
+    std::shared_ptr<std::vector<double>> sumsqv =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value v^2");
+    std::shared_ptr<std::vector<double>> sumsqw =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value w^2");
+    std::shared_ptr<std::vector<double>> sumsqp =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value p^2");
+    std::shared_ptr<std::vector<double>> sumsqrho =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value rho^2");
+    std::shared_ptr<std::vector<double>> sumsqT =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value T^2");
 
-    Teuchos::RCP<std::vector<double>> sumuv =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value uv");
-    Teuchos::RCP<std::vector<double>> sumuw =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value uw");
-    Teuchos::RCP<std::vector<double>> sumvw =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value vw");
-    Teuchos::RCP<std::vector<double>> sumuT =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value uT");
-    Teuchos::RCP<std::vector<double>> sumvT =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value vT");
-    Teuchos::RCP<std::vector<double>> sumwT =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value wT");
+    std::shared_ptr<std::vector<double>> sumuv =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value uv");
+    std::shared_ptr<std::vector<double>> sumuw =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value uw");
+    std::shared_ptr<std::vector<double>> sumvw =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value vw");
+    std::shared_ptr<std::vector<double>> sumuT =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value uT");
+    std::shared_ptr<std::vector<double>> sumvT =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value vT");
+    std::shared_ptr<std::vector<double>> sumwT =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value wT");
 
     // get node coordinates of element
     Core::LinAlg::Matrix<3, iel> xyze;
@@ -464,47 +464,47 @@ namespace FLD
 
     // the vector planes contains the coordinates of the homogeneous planes (in
     // wall normal direction)
-    Teuchos::RCP<std::vector<double>> planes =
-        params.get<Teuchos::RCP<std::vector<double>>>("coordinate vector for hom. planes");
+    std::shared_ptr<std::vector<double>> planes =
+        params.get<std::shared_ptr<std::vector<double>>>("coordinate vector for hom. planes");
 
     // get the pointers to the solution vectors
-    Teuchos::RCP<std::vector<double>> sumarea =
-        params.get<Teuchos::RCP<std::vector<double>>>("element layer area");
+    std::shared_ptr<std::vector<double>> sumarea =
+        params.get<std::shared_ptr<std::vector<double>>>("element layer area");
 
-    Teuchos::RCP<std::vector<double>> sumu =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean velocity u");
-    Teuchos::RCP<std::vector<double>> sumv =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean velocity v");
-    Teuchos::RCP<std::vector<double>> sumw =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean velocity w");
-    Teuchos::RCP<std::vector<double>> sump =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean pressure p");
-    Teuchos::RCP<std::vector<double>> sumphi =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean scalar phi");
+    std::shared_ptr<std::vector<double>> sumu =
+        params.get<std::shared_ptr<std::vector<double>>>("mean velocity u");
+    std::shared_ptr<std::vector<double>> sumv =
+        params.get<std::shared_ptr<std::vector<double>>>("mean velocity v");
+    std::shared_ptr<std::vector<double>> sumw =
+        params.get<std::shared_ptr<std::vector<double>>>("mean velocity w");
+    std::shared_ptr<std::vector<double>> sump =
+        params.get<std::shared_ptr<std::vector<double>>>("mean pressure p");
+    std::shared_ptr<std::vector<double>> sumphi =
+        params.get<std::shared_ptr<std::vector<double>>>("mean scalar phi");
 
-    Teuchos::RCP<std::vector<double>> sumsqu =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value u^2");
-    Teuchos::RCP<std::vector<double>> sumsqv =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value v^2");
-    Teuchos::RCP<std::vector<double>> sumsqw =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value w^2");
-    Teuchos::RCP<std::vector<double>> sumsqp =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value p^2");
-    Teuchos::RCP<std::vector<double>> sumsqphi =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value phi^2");
+    std::shared_ptr<std::vector<double>> sumsqu =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value u^2");
+    std::shared_ptr<std::vector<double>> sumsqv =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value v^2");
+    std::shared_ptr<std::vector<double>> sumsqw =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value w^2");
+    std::shared_ptr<std::vector<double>> sumsqp =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value p^2");
+    std::shared_ptr<std::vector<double>> sumsqphi =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value phi^2");
 
-    Teuchos::RCP<std::vector<double>> sumuv =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value uv");
-    Teuchos::RCP<std::vector<double>> sumuw =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value uw");
-    Teuchos::RCP<std::vector<double>> sumvw =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value vw");
-    Teuchos::RCP<std::vector<double>> sumuphi =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value uphi");
-    Teuchos::RCP<std::vector<double>> sumvphi =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value vphi");
-    Teuchos::RCP<std::vector<double>> sumwphi =
-        params.get<Teuchos::RCP<std::vector<double>>>("mean value wphi");
+    std::shared_ptr<std::vector<double>> sumuv =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value uv");
+    std::shared_ptr<std::vector<double>> sumuw =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value uw");
+    std::shared_ptr<std::vector<double>> sumvw =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value vw");
+    std::shared_ptr<std::vector<double>> sumuphi =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value uphi");
+    std::shared_ptr<std::vector<double>> sumvphi =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value vphi");
+    std::shared_ptr<std::vector<double>> sumwphi =
+        params.get<std::shared_ptr<std::vector<double>>>("mean value wphi");
 
     // get node coordinates of element
     Core::LinAlg::Matrix<3, iel> xyze;
@@ -1007,7 +1007,7 @@ namespace FLD
 
     // get material at gauss point
     double dens = 0.0;
-    Teuchos::RCP<Core::Mat::Material> material = ele->material();
+    std::shared_ptr<Core::Mat::Material> material = ele->material();
     if (material->material_type() == Core::Materials::m_fluid)
     {
       const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(material.get());
@@ -1667,7 +1667,7 @@ namespace FLD
     else
     {
       // get density from material
-      Teuchos::RCP<Core::Mat::Material> material = ele->material();
+      std::shared_ptr<Core::Mat::Material> material = ele->material();
       if (material->material_type() == Core::Materials::m_fluid)
       {
         const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(material.get());
@@ -2004,7 +2004,8 @@ namespace FLD
   template <int nen, int nsd, Core::FE::CellType distype>
   void f3_get_mf_params(Discret::Elements::Fluid* ele,
       Discret::Elements::FluidEleParameterStd* fldpara, Teuchos::ParameterList& params,
-      Teuchos::RCP<Core::Mat::Material> mat, std::vector<double>& vel, std::vector<double>& fsvel)
+      std::shared_ptr<Core::Mat::Material> mat, std::vector<double>& vel,
+      std::vector<double>& fsvel)
   {
     // get mfs parameter
     Teuchos::ParameterList* turbmodelparamsmfs = &(params.sublist("MULTIFRACTAL SUBGRID SCALES"));
@@ -2676,37 +2677,37 @@ namespace FLD
 
     // set parameter in sublist turbulence
     Teuchos::ParameterList* modelparams = &(params.sublist("TURBULENCE MODEL"));
-    Teuchos::RCP<std::vector<double>> sum_N_stream =
-        modelparams->get<Teuchos::RCP<std::vector<double>>>("local_N_stream_sum");
-    Teuchos::RCP<std::vector<double>> sum_N_normal =
-        modelparams->get<Teuchos::RCP<std::vector<double>>>("local_N_normal_sum");
-    Teuchos::RCP<std::vector<double>> sum_N_span =
-        modelparams->get<Teuchos::RCP<std::vector<double>>>("local_N_span_sum");
-    Teuchos::RCP<std::vector<double>> sum_B_stream =
-        modelparams->get<Teuchos::RCP<std::vector<double>>>("local_B_stream_sum");
-    Teuchos::RCP<std::vector<double>> sum_B_normal =
-        modelparams->get<Teuchos::RCP<std::vector<double>>>("local_B_normal_sum");
-    Teuchos::RCP<std::vector<double>> sum_B_span =
-        modelparams->get<Teuchos::RCP<std::vector<double>>>("local_B_span_sum");
-    Teuchos::RCP<std::vector<double>> sum_Csgs =
-        modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Csgs_sum");
-    Teuchos::RCP<std::vector<double>> sum_Nphi;
-    Teuchos::RCP<std::vector<double>> sum_Dphi;
-    Teuchos::RCP<std::vector<double>> sum_Csgs_phi;
+    std::shared_ptr<std::vector<double>> sum_N_stream =
+        modelparams->get<std::shared_ptr<std::vector<double>>>("local_N_stream_sum");
+    std::shared_ptr<std::vector<double>> sum_N_normal =
+        modelparams->get<std::shared_ptr<std::vector<double>>>("local_N_normal_sum");
+    std::shared_ptr<std::vector<double>> sum_N_span =
+        modelparams->get<std::shared_ptr<std::vector<double>>>("local_N_span_sum");
+    std::shared_ptr<std::vector<double>> sum_B_stream =
+        modelparams->get<std::shared_ptr<std::vector<double>>>("local_B_stream_sum");
+    std::shared_ptr<std::vector<double>> sum_B_normal =
+        modelparams->get<std::shared_ptr<std::vector<double>>>("local_B_normal_sum");
+    std::shared_ptr<std::vector<double>> sum_B_span =
+        modelparams->get<std::shared_ptr<std::vector<double>>>("local_B_span_sum");
+    std::shared_ptr<std::vector<double>> sum_Csgs =
+        modelparams->get<std::shared_ptr<std::vector<double>>>("local_Csgs_sum");
+    std::shared_ptr<std::vector<double>> sum_Nphi;
+    std::shared_ptr<std::vector<double>> sum_Dphi;
+    std::shared_ptr<std::vector<double>> sum_Csgs_phi;
     if (withscatra)
     {
-      sum_Nphi = modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Nphi_sum");
-      sum_Dphi = modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Dphi_sum");
-      sum_Csgs_phi = modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Csgs_phi_sum");
+      sum_Nphi = modelparams->get<std::shared_ptr<std::vector<double>>>("local_Nphi_sum");
+      sum_Dphi = modelparams->get<std::shared_ptr<std::vector<double>>>("local_Dphi_sum");
+      sum_Csgs_phi = modelparams->get<std::shared_ptr<std::vector<double>>>("local_Csgs_phi_sum");
     }
-    Teuchos::RCP<std::vector<double>> sum_sgvisc =
-        modelparams->get<Teuchos::RCP<std::vector<double>>>("local_sgvisc_sum");
+    std::shared_ptr<std::vector<double>> sum_sgvisc =
+        modelparams->get<std::shared_ptr<std::vector<double>>>("local_sgvisc_sum");
 
     // the coordinates of the element layers in the channel
     // planecoords are named nodeplanes in turbulence_statistics_channel!
-    Teuchos::RCP<std::vector<double>> planecoords =
-        modelparams->get<Teuchos::RCP<std::vector<double>>>("planecoords", Teuchos::null);
-    if (planecoords == Teuchos::null)
+    std::shared_ptr<std::vector<double>> planecoords =
+        modelparams->get<std::shared_ptr<std::vector<double>>>("planecoords", nullptr);
+    if (planecoords == nullptr)
       FOUR_C_THROW("planecoords is null, but need channel_flow_of_height_2\n");
 
     bool found = false;
@@ -2850,7 +2851,7 @@ namespace FLD
         // get material
         double dens = 0.0;
         double visc = 0.0;
-        Teuchos::RCP<Core::Mat::Material> material = ele->material();
+        std::shared_ptr<Core::Mat::Material> material = ele->material();
         if (material->material_type() == Core::Materials::m_sutherland)
         {
           const Mat::Sutherland* actmat = static_cast<const Mat::Sutherland*>(material.get());
@@ -3078,11 +3079,11 @@ namespace FLD
     if (is_ale_)
     {
       // get most recent displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp
         =
         discretization.GetState("dispnp");
 
-      if (dispnp==Teuchos::null)
+      if (dispnp==nullptr)
       {
         FOUR_C_THROW("Cannot get state vector 'dispnp'");
       }
@@ -3135,9 +3136,10 @@ namespace FLD
       Core::LinAlg::Matrix<nsd, iel> edispnp(true);
 
       // get most recent displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
 
-      if (dispnp == Teuchos::null)
+      if (dispnp == nullptr)
       {
         FOUR_C_THROW("Cannot get state vector 'dispnp'");
       }

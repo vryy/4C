@@ -76,7 +76,7 @@ namespace Mat
      * \param stucturalTensorStrategy
      */
     explicit FiberAnisotropyExtension(
-        const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& stucturalTensorStrategy);
+        const std::shared_ptr<Elastic::StructuralTensorStrategyBase>& stucturalTensorStrategy);
 
     /*!
      * \brief Create an anisotropy extension without a structural tensor strategy. Computing
@@ -301,8 +301,8 @@ namespace Mat
     std::vector<std::array<Core::LinAlg::Matrix<3, 3>, numfib>> fiber_structural_tensors_;
 
     /// Structural tensor strategy
-    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase> structural_tensor_strategy_ =
-        Teuchos::null;
+    const std::shared_ptr<Elastic::StructuralTensorStrategyBase> structural_tensor_strategy_ =
+        nullptr;
   };
 }  // namespace Mat
 

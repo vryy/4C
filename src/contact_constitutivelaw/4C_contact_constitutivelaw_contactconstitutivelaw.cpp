@@ -23,30 +23,30 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
+std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
 CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(const int id)
 {
   const int probinst =
       Global::Problem::instance()->contact_constitutive_laws()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::instance(probinst)->contact_constitutive_laws() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->contact_constitutive_laws() == nullptr)
     FOUR_C_THROW("Cannot work out problem instance!");
   // yet another safety check
   if (Global::Problem::instance(probinst)->contact_constitutive_laws()->num() == 0)
     FOUR_C_THROW("Cannot find any contact constitutive law!");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> coconstlawdata =
+  std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container> coconstlawdata =
       Global::Problem::instance(probinst)->contact_constitutive_laws()->by_id(id);
   return CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(coconstlawdata);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
+std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
 CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(
-    const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> contactconstitutivelawdata)
+    const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> contactconstitutivelawdata)
 {
   switch (contactconstitutivelawdata->type())
   {
@@ -99,7 +99,7 @@ CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(
       break;
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 FOUR_C_NAMESPACE_CLOSE

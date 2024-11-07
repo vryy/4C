@@ -69,7 +69,7 @@ namespace Mat
           : PoroDensityLaw(matdata){};
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
+      std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };
 
       //! compute derivative of density w.r.t. pressure
       double compute_cur_density_derivative(
@@ -125,7 +125,7 @@ namespace Mat
       explicit PoroDensityLawExp(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       //! compute derivative of density w.r.t. pressure
       double compute_cur_density_derivative(

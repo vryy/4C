@@ -61,7 +61,7 @@ void Solid::IMPLICIT::PreStress::write_restart(
   check_init_setup();
 
   const auto zeros =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
 
   // write zero dynamic forces (for dynamic restart after  static prestressing)
   iowriter.write_vector("finert", zeros);

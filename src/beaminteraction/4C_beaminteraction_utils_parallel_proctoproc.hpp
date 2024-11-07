@@ -11,9 +11,8 @@
 
 #include "4C_config.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <map>
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN

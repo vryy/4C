@@ -15,21 +15,21 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | definitions                                                          |
  *----------------------------------------------------------------------*/
-Adapter::PASIStructureWrapper::PASIStructureWrapper(Teuchos::RCP<Structure> structure)
+Adapter::PASIStructureWrapper::PASIStructureWrapper(std::shared_ptr<Structure> structure)
     : StructureWrapper(structure)
 {
   // set-up PASI interface
-  interface_ = Teuchos::make_rcp<Solid::MapExtractor>();
+  interface_ = std::make_shared<Solid::MapExtractor>();
 
   interface_->setup(*discretization(), *discretization()->dof_row_map());
 }
 
 void Adapter::PASIStructureWrapper::apply_interface_force(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfforce)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> intfforce)
 {
   pasi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
 
-  if (intfforce != Teuchos::null)
+  if (intfforce != nullptr)
     interface_->add_pasi_cond_vector(
         *intfforce, *pasi_model_evaluator()->get_interface_force_np_ptr());
 }

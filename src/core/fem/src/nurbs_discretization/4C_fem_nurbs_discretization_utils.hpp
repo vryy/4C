@@ -93,7 +93,7 @@ namespace Core::FE
       const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
           dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
-      Teuchos::RCP<const Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
+      std::shared_ptr<const Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
 
       bool zero_size = knots->get_boundary_ele_and_parent_knots(
           mypknots, myknots, normalfac, parenteleid, localsurfaceid);
@@ -147,7 +147,7 @@ namespace Core::FE
       const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
           dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
-      Teuchos::RCP<const Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
+      std::shared_ptr<const Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
 
       bool zero_size = knots->get_boundary_ele_and_parent_knots(
           mypknots, myknots, normalfac, parentele->id(), localsurfaceid);

@@ -23,13 +23,13 @@ namespace ScaTra
   {
    public:
     //! constructor
-    ElchResultTest(Teuchos::RCP<ScaTraTimIntElch> elchtimint);
+    ElchResultTest(std::shared_ptr<ScaTraTimIntElch> elchtimint);
 
    private:
     //! return pointer to elch time integrator after cast
-    Teuchos::RCP<const ScaTra::ScaTraTimIntElch> elch_tim_int() const
+    std::shared_ptr<const ScaTra::ScaTraTimIntElch> elch_tim_int() const
     {
-      return Teuchos::rcp_dynamic_cast<const ScaTra::ScaTraTimIntElch>(scatratimint_);
+      return std::dynamic_pointer_cast<const ScaTra::ScaTraTimIntElch>(scatratimint_);
     };
 
     //! get special result to be tested

@@ -52,10 +52,10 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(
+      std::shared_ptr<Core::Elements::Element> create(
           std::string eletype, std::string eledistype, int id, int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(int id, int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(int id, int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -139,16 +139,16 @@ namespace Discret
       int num_line() const override { return 6; }
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
+      \brief Get vector of std::shared_ptrs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       virtual std::vector<double> element_center_refe_coords();
 
@@ -397,7 +397,7 @@ namespace Discret
       double pstime_;
       double time_;
       /// Prestressing object
-      Teuchos::RCP<Discret::Elements::PreStress> prestress_;
+      std::shared_ptr<Discret::Elements::PreStress> prestress_;
       /// compute Jacobian mapping wrt to deformed configuration
       void update_jacobian_mapping(
           const std::vector<double>& disp, Discret::Elements::PreStress& prestress);
@@ -449,10 +449,10 @@ namespace Discret
           Core::LinAlg::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4>* emass);  //!< element mass matrix
 
       //! remodeling for fibers at the end of time step (st 01/10)
-      void so_tet4_remodel(std::vector<int>& lm,          // location matrix
-          std::vector<double>& disp,                      // current displacements
-          Teuchos::ParameterList& params,                 // algorithmic parameters e.g. time
-          const Teuchos::RCP<Core::Mat::Material>& mat);  // material
+      void so_tet4_remodel(std::vector<int>& lm,             // location matrix
+          std::vector<double>& disp,                         // current displacements
+          Teuchos::ParameterList& params,                    // algorithmic parameters e.g. time
+          const std::shared_ptr<Core::Mat::Material>& mat);  // material
 
       //! Evaluate Tet4 Shapefcts at 1 gausspoint to keep them static
       std::vector<Core::LinAlg::Matrix<NUMNOD_SOTET4, 1>> so_tet4_1gp_shapefcts();

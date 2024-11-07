@@ -20,7 +20,8 @@
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -46,10 +47,10 @@ namespace FLD
 
 
     */
-    TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Discretization> actdis, bool alefluid,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp, Teuchos::ParameterList& params,
+    TurbulenceStatisticsCha(std::shared_ptr<Core::FE::Discretization> actdis, bool alefluid,
+        std::shared_ptr<Core::LinAlg::Vector<double>> dispnp, Teuchos::ParameterList& params,
         const std::string& statistics_outfilename, bool subgrid_dissipation,
-        Teuchos::RCP<FLD::XWall> xwallobj);
+        std::shared_ptr<FLD::XWall> xwallobj);
 
     /*!
     \brief Destructor
@@ -65,10 +66,10 @@ namespace FLD
     to caculate mean values of multifractal subgrid-scales modeling
     parameters
     */
-    void store_scatra_discret_and_params(Teuchos::RCP<Core::FE::Discretization> scatradis,
-        Teuchos::RCP<Teuchos::ParameterList> scatraparams,
-        Teuchos::RCP<Teuchos::ParameterList> scatraextraparams,
-        Teuchos::RCP<Teuchos::ParameterList> scatratimeparams);
+    void store_scatra_discret_and_params(std::shared_ptr<Core::FE::Discretization> scatradis,
+        std::shared_ptr<Teuchos::ParameterList> scatraparams,
+        std::shared_ptr<Teuchos::ParameterList> scatraextraparams,
+        std::shared_ptr<Teuchos::ParameterList> scatratimeparams);
 
 
     /*!
@@ -167,8 +168,9 @@ namespace FLD
              subgrid-scales model
     */
 
-    void add_model_params_multifractal(const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvelnp, const bool withscatra);
+    void add_model_params_multifractal(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> velnp,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> fsvelnp, const bool withscatra);
 
     /*!
       \brief do averaging of residuals, dissipation rates etc
@@ -177,12 +179,12 @@ namespace FLD
     */
 
     void evaluate_residuals(
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs,
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::MultiVector<double>>> statetenss,
+        std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>> statevecs,
+        std::map<std::string, std::shared_ptr<Core::LinAlg::MultiVector<double>>> statetenss,
         const double thermpressaf, const double thermpressam, const double thermpressdtaf,
         const double thermpressdtam,
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> scatrastatevecs,
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::MultiVector<double>>> scatrafieldvecs);
+        std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>> scatrastatevecs,
+        std::map<std::string, std::shared_ptr<Core::LinAlg::MultiVector<double>>> scatrafieldvecs);
 
     //@}
 
@@ -275,17 +277,17 @@ namespace FLD
     Inpar::FLUID::PhysicalType physicaltype_;
 
     //! The discretization (required for nodes, dofs etc;)
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! scatra discretization (required for additional multifractal subgrid-scale output in case on
     //! passive scalar transport)
-    Teuchos::RCP<Core::FE::Discretization> scatradiscret_;
+    std::shared_ptr<Core::FE::Discretization> scatradiscret_;
 
     //! flag for ale discretization
     bool alefluid_;
 
     //! node displacements due to mesh motion
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispnp_;
 
     //! contains plane normal direction etc --- this is the original
     //! fluid dynamic parameterlist
@@ -294,13 +296,13 @@ namespace FLD
     const std::string statistics_outfilename_;
     //! contains plane normal direction etc --- this is the original
     //! scatra dynamic parameterlist
-    Teuchos::RCP<Teuchos::ParameterList> scatraparams_;
+    std::shared_ptr<Teuchos::ParameterList> scatraparams_;
     //! additional parameter list in scatra that contains
     //! required parameters form other sublists such as turbulence models, etc.
-    Teuchos::RCP<Teuchos::ParameterList> scatraextraparams_;
+    std::shared_ptr<Teuchos::ParameterList> scatraextraparams_;
     //! additional parameterlist in scatra containing the parameters of the
     //! resepctive time-integration scheme
-    Teuchos::RCP<Teuchos::ParameterList> scatratimeparams_;
+    std::shared_ptr<Teuchos::ParameterList> scatratimeparams_;
 
     //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with
     //! wall damping quantities
@@ -328,28 +330,28 @@ namespace FLD
     Teuchos::ParameterList scatraeleparams_;
 
     //! pointer to mean vel/pres and scalar field
-    Teuchos::RCP<Core::LinAlg::Vector<double>> meanvelnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> meanscanp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> meanvelnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> meanscanp_;
 
     //! pointer to vel/pres^2 field (space allocated in constructor)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> squaredvelnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> squaredvelnp_;
 
     //! toogle vectors --- sums are computed by scalarproducts
     //  with these toggle vectors
-    Teuchos::RCP<Core::LinAlg::Vector<double>> toggleu_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglev_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglew_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglep_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> toggleu_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglev_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglew_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglep_;
 
     //! the dim_-coordinates of the homogeneous planes containing nodes
-    Teuchos::RCP<std::vector<double>> nodeplanes_;
+    std::shared_ptr<std::vector<double>> nodeplanes_;
 
     //! the dim_-coordinates of the homogeneous planes --- including
     // additional sampling planes
-    Teuchos::RCP<std::vector<double>> planecoordinates_;
+    std::shared_ptr<std::vector<double>> planecoordinates_;
 
     //! a bounding box for the channel
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> boundingbox_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> boundingbox_;
 
     //! viscosity to calculate l_tau, y+ etc.
     double dens_;
@@ -359,83 +361,83 @@ namespace FLD
     //! Schmidt number (passive scalar)
     double scnum_;
 
-    Teuchos::RCP<FLD::XWall> myxwall_;
+    std::shared_ptr<FLD::XWall> myxwall_;
 
     //!--------------------------------------------------
     //!         integration based averaging
     //!--------------------------------------------------
     //
     //! sum over u (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumu_;
+    std::shared_ptr<std::vector<double>> sumu_;
     //! sum over v (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumv_;
+    std::shared_ptr<std::vector<double>> sumv_;
     //! sum over w (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumw_;
+    std::shared_ptr<std::vector<double>> sumw_;
     //! sum over p (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sump_;
+    std::shared_ptr<std::vector<double>> sump_;
     //! sum over density (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumrho_;
+    std::shared_ptr<std::vector<double>> sumrho_;
     //! sum over T (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sum_t_;
+    std::shared_ptr<std::vector<double>> sum_t_;
     //! sum over density*u (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumrhou_;
+    std::shared_ptr<std::vector<double>> sumrhou_;
     //! sum over density*u*T (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumrhou_t_;
+    std::shared_ptr<std::vector<double>> sumrhou_t_;
 
     //! sum over u^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumsqu_;
+    std::shared_ptr<std::vector<double>> sumsqu_;
     //! sum over v^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumsqv_;
+    std::shared_ptr<std::vector<double>> sumsqv_;
     //! sum over w^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumsqw_;
+    std::shared_ptr<std::vector<double>> sumsqw_;
     //! sum over p^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumsqp_;
+    std::shared_ptr<std::vector<double>> sumsqp_;
     //! sum over density^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumsqrho_;
+    std::shared_ptr<std::vector<double>> sumsqrho_;
     //! sum over T^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumsq_t_;
+    std::shared_ptr<std::vector<double>> sumsq_t_;
 
     //! sum over uv (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumuv_;
+    std::shared_ptr<std::vector<double>> sumuv_;
     //! sum over uw (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumuw_;
+    std::shared_ptr<std::vector<double>> sumuw_;
     //! sum over vw (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumvw_;
+    std::shared_ptr<std::vector<double>> sumvw_;
     //! sum over uv (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumu_t_;
+    std::shared_ptr<std::vector<double>> sumu_t_;
     //! sum over uw (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumv_t_;
+    std::shared_ptr<std::vector<double>> sumv_t_;
     //! sum over vw (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> sumw_t_;
+    std::shared_ptr<std::vector<double>> sumw_t_;
 
     //!--------------------------------------------------
     //!       the pointwise averaged stuff
     //!--------------------------------------------------
     //
     //! vector of squared velocities and pressures
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pointsquaredvelnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> pointsquaredvelnp_;
 
     //! sum over u (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumu_;
+    std::shared_ptr<std::vector<double>> pointsumu_;
     //! sum over v (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumv_;
+    std::shared_ptr<std::vector<double>> pointsumv_;
     //! sum over w (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumw_;
+    std::shared_ptr<std::vector<double>> pointsumw_;
     //! sum over p (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsump_;
+    std::shared_ptr<std::vector<double>> pointsump_;
     //! sum over T (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsum_t_;
+    std::shared_ptr<std::vector<double>> pointsum_t_;
 
     //! sum over u^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumsqu_;
+    std::shared_ptr<std::vector<double>> pointsumsqu_;
     //! sum over v^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumsqv_;
+    std::shared_ptr<std::vector<double>> pointsumsqv_;
     //! sum over w^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumsqw_;
+    std::shared_ptr<std::vector<double>> pointsumsqw_;
     //! sum over p^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumsqp_;
+    std::shared_ptr<std::vector<double>> pointsumsqp_;
     //! sum over T^2 (over one plane in each component)
-    Teuchos::RCP<std::vector<double>> pointsumsq_t_;
+    std::shared_ptr<std::vector<double>> pointsumsq_t_;
 
     //!--------------------------------------------------
     //!   averaged forces (mean, bottom and top)
@@ -471,188 +473,188 @@ namespace FLD
     //!--------------------------------------------------
 
     //! sum over Cs --- used only for dynamic Smagorinsky model
-    Teuchos::RCP<std::vector<double>> sum_cs_;
+    std::shared_ptr<std::vector<double>> sum_cs_;
     //! sum over (Cs*delta)^2 --- used only for dynamic Smagorinsky model
-    Teuchos::RCP<std::vector<double>> sum_cs_delta_sq_;
+    std::shared_ptr<std::vector<double>> sum_cs_delta_sq_;
     //! sum over effective viscosity --- used only for dynamic Smagorinsky model
-    Teuchos::RCP<std::vector<double>> sumvisceff_;
+    std::shared_ptr<std::vector<double>> sumvisceff_;
     //! increment of sumCs over in one timestep
-    Teuchos::RCP<std::vector<double>> incrsum_cs_;
+    std::shared_ptr<std::vector<double>> incrsum_cs_;
     //! increment of sumCs_delta_sq over in one timestep
-    Teuchos::RCP<std::vector<double>> incrsum_cs_delta_sq_;
+    std::shared_ptr<std::vector<double>> incrsum_cs_delta_sq_;
     //! increment of sumvisceff over in one timestep
-    Teuchos::RCP<std::vector<double>> incrsumvisceff_;
+    std::shared_ptr<std::vector<double>> incrsumvisceff_;
     //! sum over Prt --- used only for dynamic Smagorinsky model
-    Teuchos::RCP<std::vector<double>> sum_prt_;
+    std::shared_ptr<std::vector<double>> sum_prt_;
     //! sum over (Cs*delta)^2/Prt --- used only for dynamic Smagorinsky model
-    Teuchos::RCP<std::vector<double>> sum_cs_delta_sq_prt_;
+    std::shared_ptr<std::vector<double>> sum_cs_delta_sq_prt_;
     //! sum over effective diffusivity --- used only for dynamic Smagorinsky model
-    Teuchos::RCP<std::vector<double>> sumdiffeff_;
+    std::shared_ptr<std::vector<double>> sumdiffeff_;
     //! increment of sumCs_delta_sq_Prt over in one timestep
-    Teuchos::RCP<std::vector<double>> incrsum_cs_delta_sq_prt_;
+    std::shared_ptr<std::vector<double>> incrsum_cs_delta_sq_prt_;
     //! increment of sumPrt over in one timestep
-    Teuchos::RCP<std::vector<double>> incrsum_prt_;
+    std::shared_ptr<std::vector<double>> incrsum_prt_;
     //! increment of sumdiffeff over in one timestep
-    Teuchos::RCP<std::vector<double>> incrsumdiffeff_;
+    std::shared_ptr<std::vector<double>> incrsumdiffeff_;
     //! sum over Ci --- used only for dynamic Smagorinsky model for loma
-    Teuchos::RCP<std::vector<double>> sum_ci_;
+    std::shared_ptr<std::vector<double>> sum_ci_;
     //! sum over (Ci*delta)^2 --- used only for dynamic Smagorinsky model for loma
-    Teuchos::RCP<std::vector<double>> sum_ci_delta_sq_;
+    std::shared_ptr<std::vector<double>> sum_ci_delta_sq_;
     //! increment of sumCi over in one timestep
-    Teuchos::RCP<std::vector<double>> incrsum_ci_;
+    std::shared_ptr<std::vector<double>> incrsum_ci_;
     //! increment of sumCi_delta_sq over in one timestep
-    Teuchos::RCP<std::vector<double>> incrsum_ci_delta_sq_;
+    std::shared_ptr<std::vector<double>> incrsum_ci_delta_sq_;
 
     //!--------------------------------------------------
     //!  averaged quantities from multifractal subgid-scales
     //!--------------------------------------------------
 
     //! sum over parameter N --- used only for multifractal subgid-scale model
-    Teuchos::RCP<std::vector<double>> sum_n_stream_;
-    Teuchos::RCP<std::vector<double>> sum_n_normal_;
-    Teuchos::RCP<std::vector<double>> sum_n_span_;
+    std::shared_ptr<std::vector<double>> sum_n_stream_;
+    std::shared_ptr<std::vector<double>> sum_n_normal_;
+    std::shared_ptr<std::vector<double>> sum_n_span_;
     //! increment of parameter N over in one time step
-    Teuchos::RCP<std::vector<double>> incrsum_n_stream_;
-    Teuchos::RCP<std::vector<double>> incrsum_n_normal_;
-    Teuchos::RCP<std::vector<double>> incrsum_n_span_;
+    std::shared_ptr<std::vector<double>> incrsum_n_stream_;
+    std::shared_ptr<std::vector<double>> incrsum_n_normal_;
+    std::shared_ptr<std::vector<double>> incrsum_n_span_;
     //! sum over parameter B --- used only for multifractal subgid-scale model
-    Teuchos::RCP<std::vector<double>> sum_b_stream_;
-    Teuchos::RCP<std::vector<double>> sum_b_normal_;
-    Teuchos::RCP<std::vector<double>> sum_b_span_;
+    std::shared_ptr<std::vector<double>> sum_b_stream_;
+    std::shared_ptr<std::vector<double>> sum_b_normal_;
+    std::shared_ptr<std::vector<double>> sum_b_span_;
     //! increment of parameter B over in one time step
-    Teuchos::RCP<std::vector<double>> incrsum_b_stream_;
-    Teuchos::RCP<std::vector<double>> incrsum_b_normal_;
-    Teuchos::RCP<std::vector<double>> incrsum_b_span_;
+    std::shared_ptr<std::vector<double>> incrsum_b_stream_;
+    std::shared_ptr<std::vector<double>> incrsum_b_normal_;
+    std::shared_ptr<std::vector<double>> incrsum_b_span_;
     //! sum over parameter Csgs --- used only for multifractal subgid-scale model
-    Teuchos::RCP<std::vector<double>> sum_csgs_;
+    std::shared_ptr<std::vector<double>> sum_csgs_;
     //! increment of Csgs over in one time step
-    Teuchos::RCP<std::vector<double>> incrsum_csgs_;
+    std::shared_ptr<std::vector<double>> incrsum_csgs_;
     //! sum over subgrid viscosity --- used only for multifractal subgid-scale model in combination
     //! with eddy viscosity model
-    Teuchos::RCP<std::vector<double>> sumsgvisc_;
+    std::shared_ptr<std::vector<double>> sumsgvisc_;
     //! increment of subgrid viscosity over in one time step
-    Teuchos::RCP<std::vector<double>> incrsumsgvisc_;
+    std::shared_ptr<std::vector<double>> incrsumsgvisc_;
     //! sum over parameter Nphi --- used only for multifractal subgid-scale model
-    Teuchos::RCP<std::vector<double>> sum_nphi_;
+    std::shared_ptr<std::vector<double>> sum_nphi_;
     //! increment of parameter Nphi over in one time step
-    Teuchos::RCP<std::vector<double>> incrsum_nphi_;
+    std::shared_ptr<std::vector<double>> incrsum_nphi_;
     //! sum over parameter Dphi --- used only for multifractal subgid-scale model
-    Teuchos::RCP<std::vector<double>> sum_dphi_;
+    std::shared_ptr<std::vector<double>> sum_dphi_;
     //! increment of parameter Dphi over in one time step
-    Teuchos::RCP<std::vector<double>> incrsum_dphi_;
+    std::shared_ptr<std::vector<double>> incrsum_dphi_;
     //! sum over parameter Csgs_phi --- used only for multifractal subgid-scale model
-    Teuchos::RCP<std::vector<double>> sum_csgs_phi_;
+    std::shared_ptr<std::vector<double>> sum_csgs_phi_;
     //! increment of Csgs_phi over in one time step
-    Teuchos::RCP<std::vector<double>> incrsum_csgs_phi_;
+    std::shared_ptr<std::vector<double>> incrsum_csgs_phi_;
 
     //!--------------------------------------------------
     //!  averaged resudiuals and subscale quantities
     //!--------------------------------------------------
 
     //! sum over all in plane element sizes
-    Teuchos::RCP<std::vector<double>> sumhk_;
+    std::shared_ptr<std::vector<double>> sumhk_;
     //! sum over all in plane element sizes for the Bazilevs
     //! parameter in the viscous regime
-    Teuchos::RCP<std::vector<double>> sumhbazilevs_;
+    std::shared_ptr<std::vector<double>> sumhbazilevs_;
     //! sum over all in plane stream lengths
-    Teuchos::RCP<std::vector<double>> sumstrle_;
+    std::shared_ptr<std::vector<double>> sumstrle_;
     //! sum over all in plane stream lengths
-    Teuchos::RCP<std::vector<double>> sumgradle_;
+    std::shared_ptr<std::vector<double>> sumgradle_;
 
     //! sum over all in plane residuals
-    Teuchos::RCP<std::vector<double>> sumtau_m_;
+    std::shared_ptr<std::vector<double>> sumtau_m_;
     //! sum over all in plane squared residuals
-    Teuchos::RCP<std::vector<double>> sumtau_c_;
+    std::shared_ptr<std::vector<double>> sumtau_c_;
 
     //! sum over all in plane mk (parameter for stabilization parameter, 1/3 for lin ele)
-    Teuchos::RCP<std::vector<double>> summk_;
+    std::shared_ptr<std::vector<double>> summk_;
 
     //! sum over all in plane residuals
-    Teuchos::RCP<std::vector<double>> sumres_;
+    std::shared_ptr<std::vector<double>> sumres_;
     //! sum over all in plane squared residuals
-    Teuchos::RCP<std::vector<double>> sumres_sq_;
+    std::shared_ptr<std::vector<double>> sumres_sq_;
     //! sum over all in plane residuals norms
-    Teuchos::RCP<std::vector<double>> sumabsres_;
+    std::shared_ptr<std::vector<double>> sumabsres_;
     //! sum over all in plane values of svel/tau
-    Teuchos::RCP<std::vector<double>> sumtauinvsvel_;
+    std::shared_ptr<std::vector<double>> sumtauinvsvel_;
     //! sum over all in plane subscale velocities
-    Teuchos::RCP<std::vector<double>> sumsvelaf_;
+    std::shared_ptr<std::vector<double>> sumsvelaf_;
     //! sum over all in plane squared subscale velocities
-    Teuchos::RCP<std::vector<double>> sumsvelaf_sq_;
+    std::shared_ptr<std::vector<double>> sumsvelaf_sq_;
     //! sum over all in plane subscale velocities norms
-    Teuchos::RCP<std::vector<double>> sumabssvelaf_;
+    std::shared_ptr<std::vector<double>> sumabssvelaf_;
 
     //! sum over all in plane residuals of the continuity equation
-    Teuchos::RCP<std::vector<double>> sumres_c_;
+    std::shared_ptr<std::vector<double>> sumres_c_;
     //! sum over all in plane squared residuals of the continuity equation
-    Teuchos::RCP<std::vector<double>> sumres_c_sq_;
+    std::shared_ptr<std::vector<double>> sumres_c_sq_;
     //! sum over all in plane subscale pressure values at current timestep
-    Teuchos::RCP<std::vector<double>> sumspressnp_;
+    std::shared_ptr<std::vector<double>> sumspressnp_;
     //! sum over all in plane squared subscale pressure values at current timestep
-    Teuchos::RCP<std::vector<double>> sumspressnp_sq_;
+    std::shared_ptr<std::vector<double>> sumspressnp_sq_;
 
     //! sum over all in plane averaged dissipation rates from pspg stabilisation
-    Teuchos::RCP<std::vector<double>> sum_eps_pspg_;
+    std::shared_ptr<std::vector<double>> sum_eps_pspg_;
     //! sum over all in plane averaged dissipation rates from supg stabilisation
-    Teuchos::RCP<std::vector<double>> sum_eps_supg_;
+    std::shared_ptr<std::vector<double>> sum_eps_supg_;
     //! sum over all in plane averaged dissipation rates from cross term
-    Teuchos::RCP<std::vector<double>> sum_eps_cross_;
+    std::shared_ptr<std::vector<double>> sum_eps_cross_;
     //! sum over all in plane averaged dissipation rates from reynolds term
-    Teuchos::RCP<std::vector<double>> sum_eps_rey_;
+    std::shared_ptr<std::vector<double>> sum_eps_rey_;
     //! sum over all in plane averaged dissipation rates from least squares continuity term
-    Teuchos::RCP<std::vector<double>> sum_eps_graddiv_;
+    std::shared_ptr<std::vector<double>> sum_eps_graddiv_;
     //! sum over all in plane averaged dissipation rates from eddy viscosity model (Smagorinsky)
-    Teuchos::RCP<std::vector<double>> sum_eps_eddyvisc_;
+    std::shared_ptr<std::vector<double>> sum_eps_eddyvisc_;
     //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)
-    Teuchos::RCP<std::vector<double>> sum_eps_avm3_;
+    std::shared_ptr<std::vector<double>> sum_eps_avm3_;
     //! sum over all in plane averaged dissipation rates from mfs model
-    Teuchos::RCP<std::vector<double>> sum_eps_mfs_;
+    std::shared_ptr<std::vector<double>> sum_eps_mfs_;
     //! sum over all in plane averaged dissipation rates from mfs model (forwardscatter)
-    Teuchos::RCP<std::vector<double>> sum_eps_mfscross_;
+    std::shared_ptr<std::vector<double>> sum_eps_mfscross_;
     //! sum over all in plane averaged dissipation rates from mfs model (backscatter)
-    Teuchos::RCP<std::vector<double>> sum_eps_mfsrey_;
+    std::shared_ptr<std::vector<double>> sum_eps_mfsrey_;
     //! sum over all in plane averaged dissipation rates from Galerkin viscous term
-    Teuchos::RCP<std::vector<double>> sum_eps_visc_;
+    std::shared_ptr<std::vector<double>> sum_eps_visc_;
     //! sum over all in plane averaged dissipation rates from Galerkin convective term
-    Teuchos::RCP<std::vector<double>> sum_eps_conv_;
+    std::shared_ptr<std::vector<double>> sum_eps_conv_;
 
     //! sum over all in plane averaged supg+cross stress
-    Teuchos::RCP<std::vector<double>> sum_crossstress_;
+    std::shared_ptr<std::vector<double>> sum_crossstress_;
     //! sum over all in plane averaged reynolds stress
-    Teuchos::RCP<std::vector<double>> sum_reystress_;
+    std::shared_ptr<std::vector<double>> sum_reystress_;
 
     //!--------------------------------------------------
     //!  averaged resudiuals and subscale quantities of scalar field
     //!--------------------------------------------------
 
     //! sum over all in plane stabilization parameters
-    Teuchos::RCP<std::vector<double>> sumtau_s_;
+    std::shared_ptr<std::vector<double>> sumtau_s_;
 
     //! sum over all in plane residuals of the convection-diffusion equation
-    Teuchos::RCP<std::vector<double>> sumres_s_;
+    std::shared_ptr<std::vector<double>> sumres_s_;
     //! sum over all in plane squared residuals of the convection-diffusion equation
-    Teuchos::RCP<std::vector<double>> sumres_s_sq_;
+    std::shared_ptr<std::vector<double>> sumres_s_sq_;
 
     //! sum over all in plane averaged dissipation rates from supg stabilisation
-    Teuchos::RCP<std::vector<double>> sum_scatra_eps_supg_;
+    std::shared_ptr<std::vector<double>> sum_scatra_eps_supg_;
     //! sum over all in plane averaged dissipation rates from cross term
-    Teuchos::RCP<std::vector<double>> sum_scatra_eps_cross_;
+    std::shared_ptr<std::vector<double>> sum_scatra_eps_cross_;
     //! sum over all in plane averaged dissipation rates from reynolds term
-    Teuchos::RCP<std::vector<double>> sum_scatra_eps_rey_;
+    std::shared_ptr<std::vector<double>> sum_scatra_eps_rey_;
     //! sum over all in plane averaged dissipation rates from eddy viscosity model (Smagorinsky)
-    Teuchos::RCP<std::vector<double>> sum_scatra_eps_eddyvisc_;
+    std::shared_ptr<std::vector<double>> sum_scatra_eps_eddyvisc_;
     //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)
-    Teuchos::RCP<std::vector<double>> sum_scatra_eps_avm3_;
+    std::shared_ptr<std::vector<double>> sum_scatra_eps_avm3_;
     //! sum over all in plane averaged dissipation rates from mfs model
-    Teuchos::RCP<std::vector<double>> sum_scatra_eps_mfs_;
+    std::shared_ptr<std::vector<double>> sum_scatra_eps_mfs_;
     //! sum over all in plane averaged dissipation rates from mfs model (forwardscatter)
-    Teuchos::RCP<std::vector<double>> sum_scatra_eps_mfscross_;
+    std::shared_ptr<std::vector<double>> sum_scatra_eps_mfscross_;
     //! sum over all in plane averaged dissipation rates from mfs model (backscatter)
-    Teuchos::RCP<std::vector<double>> sum_scatra_eps_mfsrey_;
+    std::shared_ptr<std::vector<double>> sum_scatra_eps_mfsrey_;
     //! sum over all in plane averaged dissipation rates from Galerkin viscous term
-    Teuchos::RCP<std::vector<double>> sum_scatra_eps_visc_;
+    std::shared_ptr<std::vector<double>> sum_scatra_eps_visc_;
     //! sum over all in plane averaged dissipation rates from Galerkin convective term
-    Teuchos::RCP<std::vector<double>> sum_scatra_eps_conv_;
+    std::shared_ptr<std::vector<double>> sum_scatra_eps_conv_;
 
     //! number of sampling planes inside the element
     const int numsubdivisions_;

@@ -43,9 +43,9 @@ Mat::Elastic::RemodelFiber::RemodelFiber(Mat::Elastic::PAR::RemodelFiber* params
   for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-    potsumfiber_.push_back(Teuchos::make_rcp<FiberData>(sum));
+    std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
+    if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
+    potsumfiber_.push_back(std::make_shared<FiberData>(sum));
   }
 }
 
@@ -121,8 +121,8 @@ void Mat::Elastic::RemodelFiber::unpack_summand(Core::Communication::UnpackBuffe
     extract_from_pack(buffer, potsumfiber_[k]->G);
     extract_from_pack(buffer, cauchystress_[k]);
 
-    potsumfiber_[k]->growth = Teuchos::make_rcp<GrowthEvolution>(k_sig, sig_h);
-    potsumfiber_[k]->remodel = Teuchos::make_rcp<RemodelEvolution>(k_sig, sig_h, t_decay);
+    potsumfiber_[k]->growth = std::make_shared<GrowthEvolution>(k_sig, sig_h);
+    potsumfiber_[k]->remodel = std::make_shared<RemodelEvolution>(k_sig, sig_h, t_decay);
   }
 
   extract_from_pack(buffer, init_rho_col_);
@@ -179,8 +179,8 @@ void Mat::Elastic::RemodelFiber::setup(
   Core::LinAlg::Matrix<3, 3> CpreM(true);
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpoActive> t2;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpo> t1;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpoActive> t2;
 
   // identity matrix
   Core::LinAlg::Matrix<3, 3> id(true);
@@ -189,20 +189,19 @@ void Mat::Elastic::RemodelFiber::setup(
   double sig_pre = 0.0;
   for (unsigned k = 0; k < potsumfiber_.size(); ++k)
   {
-    if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(potsumfiber_[k]->fiber))
-            .getRawPtr())
+    if ((t1 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpo>(potsumfiber_[k]->fiber)).get())
     {
       CpreM.update(potsumfiber_[k]->G * potsumfiber_[k]->G, potsumfiber_[k]->AM, 0.0);
       t1->get_derivatives_aniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
       sig_pre = 2.0 * dPI(0) * potsumfiber_[k]->G * potsumfiber_[k]->G;
       for (int gp = 0; gp < numgp; ++gp) cauchystress_[k][gp] = sig_pre;
-      potsumfiber_[k]->growth = Teuchos::make_rcp<GrowthEvolution>(params_->k_growth_, sig_pre);
+      potsumfiber_[k]->growth = std::make_shared<GrowthEvolution>(params_->k_growth_, sig_pre);
       potsumfiber_[k]->remodel =
-          Teuchos::make_rcp<RemodelEvolution>(params_->k_growth_, sig_pre, params_->t_decay_);
+          std::make_shared<RemodelEvolution>(params_->k_growth_, sig_pre, params_->t_decay_);
     }
-    else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(
+    else if ((t2 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpoActive>(
                   potsumfiber_[k]->fiber))
-                 .getRawPtr())
+                 .get())
     {
       CpreM.update(potsumfiber_[k]->G * potsumfiber_[k]->G, potsumfiber_[k]->AM, 0.0);
       t2->get_derivatives_aniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
@@ -211,9 +210,9 @@ void Mat::Elastic::RemodelFiber::setup(
       Core::LinAlg::Voigt::Stresses::vector_to_matrix(stressactv, stressactM);
       sig_pre += stressactM.dot(potsumfiber_[k]->AM);
       for (int gp = 0; gp < numgp; ++gp) cauchystress_[k][gp] = sig_pre;
-      potsumfiber_[k]->growth = Teuchos::make_rcp<GrowthEvolution>(params_->k_growth_, sig_pre);
+      potsumfiber_[k]->growth = std::make_shared<GrowthEvolution>(params_->k_growth_, sig_pre);
       potsumfiber_[k]->remodel =
-          Teuchos::make_rcp<RemodelEvolution>(params_->k_growth_, sig_pre, params_->t_decay_);
+          std::make_shared<RemodelEvolution>(params_->k_growth_, sig_pre, params_->t_decay_);
     }
     else
       FOUR_C_THROW(
@@ -284,8 +283,8 @@ void Mat::Elastic::RemodelFiber::update_sig_h()
   Core::LinAlg::Matrix<3, 3> stressactM(true);
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpoActive> t2;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpo> t1;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpoActive> t2;
 
   // identity matrix
   Core::LinAlg::Matrix<3, 3> id(true);
@@ -294,7 +293,7 @@ void Mat::Elastic::RemodelFiber::update_sig_h()
   double sig = 0.0;
   for (auto& k : potsumfiber_)
   {
-    if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(k->fiber)).getRawPtr())
+    if ((t1 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpo>(k->fiber)).get())
     {
       CpreM.update(k->G * k->G, k->AM, 0.0);
       t1->get_derivatives_aniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
@@ -302,8 +301,7 @@ void Mat::Elastic::RemodelFiber::update_sig_h()
       k->growth->set_sig_h(sig);
       k->remodel->set_sig_h(sig);
     }
-    else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(k->fiber))
-                 .getRawPtr())
+    else if ((t2 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpoActive>(k->fiber)).get())
     {
       CpreM.update(k->G * k->G, k->AM, 0.0);
       t2->get_derivatives_aniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
@@ -572,22 +570,22 @@ void Mat::Elastic::RemodelFiber::add_stress_cmat(Core::LinAlg::Matrix<3, 3> cons
   iFinM.multiply_nn(1.0, iFgM, fiberdat.iFrM[gp], 0.0);
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpoActive> t2;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpo> t1;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpoActive> t2;
 
   static Core::LinAlg::Matrix<3, 3> firstderivM(true);
   static Core::LinAlg::Matrix<6, 1> firstderivv(true);
   static Core::LinAlg::Matrix<6, 6> secderiv(true);
   static Core::LinAlg::Matrix<6, 1> stressactv(true);
   static Core::LinAlg::Matrix<6, 6> cmatact(true);
-  if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).getRawPtr() !=
+  if ((t1 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).get() !=
       nullptr)
   {
     derivd_c(CM, iFinM, fiberdat.AM, *t1, gp, eleGID, firstderivM);
     derivd_cd_c(CM, iFinM, fiberdat.AM, *t1, gp, eleGID, secderiv);
   }
-  else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiberdat.fiber))
-               .getRawPtr() != nullptr)
+  else if ((t2 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpoActive>(fiberdat.fiber))
+               .get() != nullptr)
   {
     derivd_c(CM, iFinM, fiberdat.AM, *t2, gp, eleGID, firstderivM);
     derivd_cd_c(CM, iFinM, fiberdat.AM, *t2, gp, eleGID, secderiv);
@@ -604,12 +602,12 @@ void Mat::Elastic::RemodelFiber::add_stress_cmat(Core::LinAlg::Matrix<3, 3> cons
 template <typename T>
 void Mat::Elastic::RemodelFiber::evaluate_local_cauchy_stress(
     Core::LinAlg::Matrix<3, 3, T> const& CM, Core::LinAlg::Matrix<3, 3, T> const& iFinM,
-    Core::LinAlg::Matrix<3, 3, T> const& AM, Teuchos::RCP<Mat::Elastic::Summand> const& fiber,
+    Core::LinAlg::Matrix<3, 3, T> const& AM, std::shared_ptr<Mat::Elastic::Summand> const& fiber,
     const int gp, int const eleGID, T& sig) const
 {
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpoActive> t2;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpo> t1;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpoActive> t2;
 
   static Core::LinAlg::Matrix<3, 3, T> tmp(true);
   static Core::LinAlg::Matrix<3, 3, T> CeM(true);
@@ -623,11 +621,11 @@ void Mat::Elastic::RemodelFiber::evaluate_local_cauchy_stress(
   static Core::LinAlg::Matrix<3, 1, T> ddPIIe(true);
   static Core::LinAlg::Matrix<4, 1, T> dddPIIIe(true);
   T dPIact = 0.0;
-  if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiber)).getRawPtr())
+  if ((t1 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpo>(fiber)).get())
   {
     t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   }
-  else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiber)).getRawPtr())
+  else if ((t2 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpoActive>(fiber)).get())
   {
     t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
     t2->get_derivative_aniso_active(dPIact);
@@ -639,15 +637,15 @@ void Mat::Elastic::RemodelFiber::evaluate_local_cauchy_stress(
 template <typename T>
 void Mat::Elastic::RemodelFiber::evaluatedsigd_ce(Core::LinAlg::Matrix<3, 3, T> const& CM,
     Core::LinAlg::Matrix<3, 3, T> const& iFgM, Core::LinAlg::Matrix<3, 3, T> const& iFrM,
-    Core::LinAlg::Matrix<3, 3, T> const& AM, Teuchos::RCP<Mat::Elastic::Summand> const& fiber,
+    Core::LinAlg::Matrix<3, 3, T> const& AM, std::shared_ptr<Mat::Elastic::Summand> const& fiber,
     const int gp, int const eleGID, Core::LinAlg::Matrix<3, 3, T>& dsigdCe) const
 {
   // clear some variables
   dsigdCe.clear();
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpoActive> t2;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpo> t1;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpoActive> t2;
 
   static Core::LinAlg::Matrix<3, 3, T> tmp(true);
   static Core::LinAlg::Matrix<3, 3, T> CeM(true);
@@ -665,11 +663,11 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_ce(Core::LinAlg::Matrix<3, 3, T> 
   static Core::LinAlg::Matrix<2, 1, T> dPIe(true);
   static Core::LinAlg::Matrix<3, 1, T> ddPIIe(true);
   static Core::LinAlg::Matrix<4, 1, T> dddPIIIe(true);
-  if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiber)).getRawPtr())
+  if ((t1 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpo>(fiber)).get())
   {
     t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   }
-  else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiber)).getRawPtr())
+  else if ((t2 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpoActive>(fiber)).get())
   {
     t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   }
@@ -680,7 +678,7 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_ce(Core::LinAlg::Matrix<3, 3, T> 
 template <typename ForceAnalytical>
 void Mat::Elastic::RemodelFiber::evaluatedsigd_ced_c(Core::LinAlg::Matrix<3, 3> const& CM,
     Core::LinAlg::Matrix<3, 3> const& iFgM, Core::LinAlg::Matrix<3, 3> const& iFrM,
-    Core::LinAlg::Matrix<3, 3> const& AM, Teuchos::RCP<Mat::Elastic::Summand> const fiber,
+    Core::LinAlg::Matrix<3, 3> const& AM, std::shared_ptr<Mat::Elastic::Summand> const fiber,
     const int gp, ForceAnalytical const eleGID, Core::LinAlg::Matrix<6, 6>& dsigdCedC) const
 {
   // clear some variables
@@ -724,15 +722,15 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_ced_c(Core::LinAlg::Matrix<3, 3> 
 
 void Mat::Elastic::RemodelFiber::evaluatedsigd_ced_c(Core::LinAlg::Matrix<3, 3> const& CM,
     Core::LinAlg::Matrix<3, 3> const& iFgM, Core::LinAlg::Matrix<3, 3> const& iFrM,
-    Core::LinAlg::Matrix<3, 3> const& AM, Teuchos::RCP<Mat::Elastic::Summand> const& fiber,
+    Core::LinAlg::Matrix<3, 3> const& AM, std::shared_ptr<Mat::Elastic::Summand> const& fiber,
     const int gp, int const eleGID, Core::LinAlg::Matrix<6, 6>& dsigdCedC) const
 {
   // clear some variables
   dsigdCedC.clear();
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpoActive> t2;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpo> t1;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpoActive> t2;
 
   static Core::LinAlg::Matrix<3, 3> tmp(true);
   static Core::LinAlg::Matrix<3, 3> CeM(true);
@@ -750,11 +748,11 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_ced_c(Core::LinAlg::Matrix<3, 3> 
   static Core::LinAlg::Matrix<2, 1> dPIe(true);
   static Core::LinAlg::Matrix<3, 1> ddPIIe(true);
   static Core::LinAlg::Matrix<4, 1> dddPIIIe(true);
-  if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiber)).getRawPtr())
+  if ((t1 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpo>(fiber)).get())
   {
     t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   }
-  else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiber)).getRawPtr())
+  else if ((t2 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpoActive>(fiber)).get())
   {
     t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   }
@@ -847,16 +845,16 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_cauchy_growth(
   CeM.multiply_tn(1.0, iFinM, tmp, 0.0);
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpoActive> t2;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpo> t1;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpoActive> t2;
 
   static Core::LinAlg::Matrix<2, 1> dPIe(true);
   static Core::LinAlg::Matrix<3, 1> ddPIIe(true);
   static Core::LinAlg::Matrix<4, 1> dddPIIIe(true);
-  if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).getRawPtr())
+  if ((t1 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).get())
     t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
-  else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiberdat.fiber))
-               .getRawPtr())
+  else if ((t2 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpoActive>(fiberdat.fiber))
+               .get())
     t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
 
   static Core::LinAlg::Matrix<3, 3> dsigdiFgM(true);
@@ -980,15 +978,15 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_cauchy_remodel(
   CeM.multiply_tn(1.0, iFinM, tmp1, 0.0);
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpoActive> t2;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpo> t1;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpoActive> t2;
   static Core::LinAlg::Matrix<2, 1> dPIe(true);
   static Core::LinAlg::Matrix<3, 1> ddPIIe(true);
   static Core::LinAlg::Matrix<4, 1> dddPIIIe(true);
-  if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).getRawPtr())
+  if ((t1 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).get())
     t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
-  else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiberdat.fiber))
-               .getRawPtr())
+  else if ((t2 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpoActive>(fiberdat.fiber))
+               .get())
     t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
 
   static Core::LinAlg::Matrix<3, 3> dsigdiFrM(true);
@@ -1033,7 +1031,7 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_cauchy_remodel(
 template <typename T, typename ForceAnalytical>
 void Mat::Elastic::RemodelFiber::evaluatedsigd_c(Core::LinAlg::Matrix<3, 3, T> const& CM,
     Core::LinAlg::Matrix<3, 3, T> const& iFinM, Core::LinAlg::Matrix<3, 3, T> const& AM,
-    Teuchos::RCP<Mat::Elastic::Summand> const fiber, const int gp, ForceAnalytical const eleGID,
+    std::shared_ptr<Mat::Elastic::Summand> const fiber, const int gp, ForceAnalytical const eleGID,
     Core::LinAlg::Matrix<3, 3, T>& dsigdC) const
 {
   // clear some variables
@@ -1058,15 +1056,15 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_c(Core::LinAlg::Matrix<3, 3, T> c
 template <typename T>
 void Mat::Elastic::RemodelFiber::evaluatedsigd_c(Core::LinAlg::Matrix<3, 3, T> const& CM,
     Core::LinAlg::Matrix<3, 3, T> const& iFinM, Core::LinAlg::Matrix<3, 3, T> const& AM,
-    Teuchos::RCP<Mat::Elastic::Summand> const& fiber, const int gp, int const eleGID,
+    std::shared_ptr<Mat::Elastic::Summand> const& fiber, const int gp, int const eleGID,
     Core::LinAlg::Matrix<3, 3, T>& dsigdC) const
 {
   // clear some variables
   dsigdC.clear();
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpoActive> t2;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpo> t1;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpoActive> t2;
 
   static Core::LinAlg::Matrix<3, 3, T> FinM(true);
   FinM.invert(iFinM);
@@ -1080,9 +1078,9 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_c(Core::LinAlg::Matrix<3, 3, T> c
   static Core::LinAlg::Matrix<2, 1> dPIe(true);
   static Core::LinAlg::Matrix<3, 1> ddPIIe(true);
   static Core::LinAlg::Matrix<4, 1> dddPIIIe(true);
-  if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiber)).getRawPtr())
+  if ((t1 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpo>(fiber)).get())
     t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
-  else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiber)).getRawPtr())
+  else if ((t2 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpoActive>(fiber)).get())
     t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
 
   dsigdC.update(2.0 / CinM.dot(AM) * (ddPIIe(0) * CM.dot(AM) / CinM.dot(AM) + dPIe(0)), AM, 0.0);
@@ -1291,20 +1289,20 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives2nd_piola_kirchhoff_growth_
   AM_fad = fiberdat.AM;
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpoActive> t2;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpo> t1;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpoActive> t2;
 
   static Core::LinAlg::FADMatrix<3, 3> firstderivM_fad(true);
   static Core::LinAlg::Matrix<6, 1> Sactv(true);
   static Core::LinAlg::Matrix<6, 6> cmatact(true);
   static Core::LinAlg::FADMatrix<3, 3> S_fad(true);
   S_fad.clear();
-  if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).getRawPtr())
+  if ((t1 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).get())
   {
     derivd_c(CM_fad, iFinM_fad, AM_fad, *t1, eleGID, firstderivM_fad);
   }
-  else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiberdat.fiber))
-               .getRawPtr())
+  else if ((t2 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpoActive>(fiberdat.fiber))
+               .get())
   {
     derivd_c(CM_fad, iFinM_fad, AM_fad, *t2, eleGID, firstderivM_fad);
     t2->evaluate_active_stress_cmat_aniso(CM, cmatact, Sactv, eleGID);
@@ -1376,18 +1374,18 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives2nd_piola_kirchhoff_growth_
   CeM.multiply_tn(1.0, iFinM, tmp, 0.0);
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
-  Teuchos::RCP<Mat::Elastic::CoupAnisoExpoActive> t2;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpo> t1;
+  std::shared_ptr<Mat::Elastic::CoupAnisoExpoActive> t2;
 
   static Core::LinAlg::Matrix<2, 1> dPIe(true);
   static Core::LinAlg::Matrix<3, 1> ddPIIe(true);
   static Core::LinAlg::Matrix<4, 1> dddPIIIe(true);
   static Core::LinAlg::Matrix<6, 1> stressactv(true);
   static Core::LinAlg::Matrix<6, 6> cmatact(true);
-  if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).getRawPtr())
+  if ((t1 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).get())
     t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
-  else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiberdat.fiber))
-               .getRawPtr())
+  else if ((t2 = std::dynamic_pointer_cast<Mat::Elastic::CoupAnisoExpoActive>(fiberdat.fiber))
+               .get())
   {
     t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
     t2->evaluate_active_stress_cmat_aniso(CM, cmatact, stressactv, gp, eleGID);

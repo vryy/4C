@@ -12,8 +12,7 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -45,7 +44,7 @@ namespace LargeRotations
      *
      *  \author grill
      *  \date 01/17 */
-    static Teuchos::RCP<TriadInterpolation<T>> create(unsigned int numnodes);
+    static std::shared_ptr<TriadInterpolation<T>> create(unsigned int numnodes);
     //@}
 
 

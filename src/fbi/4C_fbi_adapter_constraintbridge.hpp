@@ -15,8 +15,8 @@
 
 #include <Epetra_FEVector.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 
@@ -87,7 +87,7 @@ namespace Adapter
      * \params[in] fluidmeshtying bool indicating if fluid meshtying is included
      */
     virtual void setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix, bool fluidmeshtying);
+        std::shared_ptr<Core::LinAlg::SparseOperator> fluidmatrix, bool fluidmeshtying);
 
     /**
      * \brief Computes the coupling matrices
@@ -97,10 +97,10 @@ namespace Adapter
      * other.
      *
      */
-    virtual void evaluate(Teuchos::RCP<const Core::FE::Discretization> discretization1,
-        Teuchos::RCP<const Core::FE::Discretization> discretization2,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vel,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> beam_vel) = 0;
+    virtual void evaluate(std::shared_ptr<const Core::FE::Discretization> discretization1,
+        std::shared_ptr<const Core::FE::Discretization> discretization2,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_vel,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> beam_vel) = 0;
 
     /**
      * \brief Wraps the ResetState function of the pair
@@ -110,28 +110,28 @@ namespace Adapter
      */
     virtual void reset_pair(const std::vector<double> beam_centerline_dofvec,
         const std::vector<double> fluid_nodal_dofvec,
-        Teuchos::RCP<BEAMINTERACTION::BeamContactPair> interactionpair);
+        std::shared_ptr<BEAMINTERACTION::BeamContactPair> interactionpair);
 
     /// Creates a fluid_beam_meshtying pair
     virtual void create_pair(std::vector<Core::Elements::Element const*> elements,
         std::vector<double> beam_centerline_dofvec, std::vector<double> fluid_nodal_dofvec);
 
     // Get function for the meshtying pairs meshtying_pairs_
-    virtual Teuchos::RCP<std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>> get_pairs()
-        const final
+    virtual std::shared_ptr<std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>>
+    get_pairs() const final
     {
       return meshtying_pairs_;
     };
 
     /// returns data container holding all beam interaction related parameters
-    virtual Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> get_params() const final
+    virtual std::shared_ptr<FBI::BeamToFluidMeshtyingParams> get_params() const final
     {
       return beam_interaction_params_;
     };
 
     /// returns data container geometry_evaluation-data_ holding all geometry related evaluation
     /// data
-    virtual Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> get_geometry_data() const final
+    virtual std::shared_ptr<GEOMETRYPAIR::LineTo3DEvaluationData> get_geometry_data() const final
     {
       return geometry_evaluation_data_;
     };
@@ -146,22 +146,22 @@ namespace Adapter
     virtual void prepare_fluid_solve() = 0;
 
     /// Matrix containing only structure side contributions \f$C_{ss}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_css() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::SparseMatrix> get_css() const = 0;
 
     /// Matrix containing only fluid side contributions \f$C_{ff}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::SparseOperator> get_cff() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::SparseOperator> get_cff() const = 0;
 
     /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_cfs() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::SparseMatrix> get_cfs() const = 0;
 
     /// Matrix containing mixed structure side contributions \f$C_{sf}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_csf() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::SparseMatrix> get_csf() const = 0;
 
     /// Force vector acting on the fluid side \f$f_f\f$
-    virtual Teuchos::RCP<const Epetra_FEVector> get_fluid_coupling_residual() const = 0;
+    virtual std::shared_ptr<const Epetra_FEVector> get_fluid_coupling_residual() const = 0;
 
     /// Force vector acting on the structure side \f$f_s\f$
-    virtual Teuchos::RCP<const Epetra_FEVector> get_structure_coupling_residual() const = 0;
+    virtual std::shared_ptr<const Epetra_FEVector> get_structure_coupling_residual() const = 0;
 
    protected:
     /** \brief You will have to use the Adapter::ConstraintEnforcerFactory
@@ -170,17 +170,18 @@ namespace Adapter
     FBIConstraintBridge();
 
     /// data container holding all beam interaction related parameters
-    Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_interaction_params_;
+    std::shared_ptr<FBI::BeamToFluidMeshtyingParams> beam_interaction_params_;
 
     /// Store the assembly strategy here to hand into the assembly manager
-    Teuchos::RCP<FBI::Utils::FBIAssemblyStrategy> assemblystrategy_;
+    std::shared_ptr<FBI::Utils::FBIAssemblyStrategy> assemblystrategy_;
 
    private:
     /// meshtying pairs
-    Teuchos::RCP<std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>> meshtying_pairs_;
+    std::shared_ptr<std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>>
+        meshtying_pairs_;
 
     /// data container holding all geometry related evaluation data
-    Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> geometry_evaluation_data_;
+    std::shared_ptr<GEOMETRYPAIR::LineTo3DEvaluationData> geometry_evaluation_data_;
   };
 }  // namespace Adapter
 

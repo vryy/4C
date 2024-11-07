@@ -45,7 +45,7 @@ namespace Mat
       //@}
 
       //! create material instance of matching type with parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override = 0;
+      std::shared_ptr<Core::Mat::Material> create_material() override = 0;
     };
 
   }  // namespace PAR

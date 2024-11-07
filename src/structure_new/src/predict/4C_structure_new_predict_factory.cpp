@@ -22,10 +22,10 @@ Solid::Predict::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::Predict::Generic> Solid::Predict::Factory::build_predictor(
+std::shared_ptr<Solid::Predict::Generic> Solid::Predict::Factory::build_predictor(
     const enum Inpar::Solid::PredEnum& predType) const
 {
-  Teuchos::RCP<Solid::Predict::Generic> predictor = Teuchos::null;
+  std::shared_ptr<Solid::Predict::Generic> predictor = nullptr;
 
   switch (predType)
   {
@@ -35,11 +35,11 @@ Teuchos::RCP<Solid::Predict::Generic> Solid::Predict::Factory::build_predictor(
     case Inpar::Solid::pred_constdisvelacc:
     case Inpar::Solid::pred_constdispres:
     case Inpar::Solid::pred_constdisvelaccpres:
-      predictor = Teuchos::make_rcp<Solid::Predict::ConstDisVelAccPress>();
+      predictor = std::make_shared<Solid::Predict::ConstDisVelAccPress>();
       break;
     case Inpar::Solid::pred_tangdis:
     case Inpar::Solid::pred_tangdis_constfext:
-      predictor = Teuchos::make_rcp<Solid::Predict::TangDis>();
+      predictor = std::make_shared<Solid::Predict::TangDis>();
       break;
     case Inpar::Solid::pred_vague:
     default:
@@ -52,7 +52,7 @@ Teuchos::RCP<Solid::Predict::Generic> Solid::Predict::Factory::build_predictor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::Predict::Generic> Solid::Predict::build_predictor(
+std::shared_ptr<Solid::Predict::Generic> Solid::Predict::build_predictor(
     const enum Inpar::Solid::PredEnum& predType)
 {
   Factory factory;

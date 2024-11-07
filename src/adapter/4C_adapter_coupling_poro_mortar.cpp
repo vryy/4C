@@ -41,12 +41,12 @@ Adapter::CouplingPoroMortar::CouplingPoroMortar(int spatial_dimension,
  |  Read Mortar Condition                                     ager 10/15|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingPoroMortar::read_mortar_condition(
-    Teuchos::RCP<Core::FE::Discretization> masterdis,
-    Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    std::shared_ptr<Core::FE::Discretization> masterdis,
+    std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond, Teuchos::ParameterList& input,
     std::map<int, Core::Nodes::Node*>& mastergnodes, std::map<int, Core::Nodes::Node*>& slavegnodes,
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements)
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements)
 {
   // Call Base Class
   CouplingNonLinMortar::read_mortar_condition(masterdis, slavedis, coupleddof, couplingcond, input,
@@ -82,11 +82,11 @@ void Adapter::CouplingPoroMortar::read_mortar_condition(
  |  Add Mortar Elements                                        ager 10/15|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingPoroMortar::add_mortar_elements(
-    Teuchos::RCP<Core::FE::Discretization> masterdis,
-    Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,
-    Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof)
+    std::shared_ptr<Core::FE::Discretization> masterdis,
+    std::shared_ptr<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements,
+    std::shared_ptr<CONTACT::Interface>& interface, int numcoupleddof)
 {
   bool isnurbs = input.get<bool>("NURBS");
 
@@ -108,23 +108,23 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
   }
 
   // feeding master elements to the interface
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator elemiter;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
-    Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
-    Teuchos::RCP<CONTACT::Element> cele = Teuchos::make_rcp<CONTACT::Element>(
+    std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
+    std::shared_ptr<CONTACT::Element> cele = std::make_shared<CONTACT::Element>(
         ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false, isnurbs);
 
-    Teuchos::RCP<Core::Elements::FaceElement> faceele =
-        Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
-    if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
+    std::shared_ptr<Core::Elements::FaceElement> faceele =
+        std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
+    if (faceele == nullptr) FOUR_C_THROW("Cast to FaceElement failed!");
     cele->phys_type() = Mortar::Element::other;
 
-    std::vector<Teuchos::RCP<Core::Conditions::Condition>> porocondvec;
+    std::vector<std::shared_ptr<Core::Conditions::Condition>> porocondvec;
     masterdis->get_condition("PoroCoupling", porocondvec);
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator eleitergeometry;
+      std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = porocondvec[i]->geometry().begin();
            eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
       {
@@ -153,15 +153,15 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
 
     if (isnurbs)
     {
-      Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
-          Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(masterdis);
+      std::shared_ptr<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
+          std::dynamic_pointer_cast<Core::FE::Nurbs::NurbsDiscretization>(masterdis);
 
-      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
+      std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
-      Teuchos::RCP<Core::Elements::FaceElement> faceele =
-          Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
+      std::shared_ptr<Core::Elements::FaceElement> faceele =
+          std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
           faceele->parent_master_element()->id(), faceele->face_master_number());
@@ -178,22 +178,22 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
   // feeding slave elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
-    Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
+    std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
 
-    Teuchos::RCP<CONTACT::Element> cele = Teuchos::make_rcp<CONTACT::Element>(
+    std::shared_ptr<CONTACT::Element> cele = std::make_shared<CONTACT::Element>(
         ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), true, isnurbs);
 
-    Teuchos::RCP<Core::Elements::FaceElement> faceele =
-        Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
-    if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
+    std::shared_ptr<Core::Elements::FaceElement> faceele =
+        std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
+    if (faceele == nullptr) FOUR_C_THROW("Cast to FaceElement failed!");
     cele->phys_type() = Mortar::Element::other;
 
-    std::vector<Teuchos::RCP<Core::Conditions::Condition>> porocondvec;
+    std::vector<std::shared_ptr<Core::Conditions::Condition>> porocondvec;
     masterdis->get_condition("PoroCoupling", porocondvec);
 
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator eleitergeometry;
+      std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = porocondvec[i]->geometry().begin();
            eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
       {
@@ -221,15 +221,15 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
 
     if (isnurbs)
     {
-      Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
-          Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(slavedis);
+      std::shared_ptr<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
+          std::dynamic_pointer_cast<Core::FE::Nurbs::NurbsDiscretization>(slavedis);
 
-      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
+      std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
-      Teuchos::RCP<Core::Elements::FaceElement> faceele =
-          Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
+      std::shared_ptr<Core::Elements::FaceElement> faceele =
+          std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
           faceele->parent_master_element()->id(), faceele->face_master_number());
@@ -250,8 +250,9 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
 /*----------------------------------------------------------------------*
  |  read mortar condition                                    Ager 02/16 |
  *----------------------------------------------------------------------*/
-void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Core::FE::Discretization> masterdis,
-    Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
+void Adapter::CouplingPoroMortar::create_strategy(
+    std::shared_ptr<Core::FE::Discretization> masterdis,
+    std::shared_ptr<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
     int numcoupleddof)
 {
   // poro lagrange strategy:
@@ -336,15 +337,15 @@ void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Core::FE::Discret
   {
     theta = 1.0;
   }
-  std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces;
+  std::vector<std::shared_ptr<CONTACT::Interface>> interfaces;
   interfaces.push_back(interface_);
   double alphaf = 1.0 - theta;
 
   // build the correct data container
-  Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr =
-      Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
+  std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr =
+      std::make_shared<CONTACT::AbstractStratDataContainer>();
   // create contact poro lagrange strategy for mesh tying
-  porolagstrategy_ = Teuchos::make_rcp<CONTACT::LagrangeStrategyPoro>(data_ptr,
+  porolagstrategy_ = std::make_shared<CONTACT::LagrangeStrategyPoro>(data_ptr,
       masterdis->dof_row_map(), masterdis->node_row_map(), input, interfaces, dim, comm_, alphaf,
       numcoupleddof, poroslave, poromaster);
 
@@ -359,7 +360,8 @@ void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Core::FE::Discret
  |  complete interface (also print and parallel redist.)      Ager 02/16|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingPoroMortar::complete_interface(
-    Teuchos::RCP<Core::FE::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface)
+    std::shared_ptr<Core::FE::Discretization> masterdis,
+    std::shared_ptr<CONTACT::Interface>& interface)
 {
   // finalize the contact interface construction
   int maxdof = masterdis->dof_row_map()->MaxAllGID();
@@ -370,9 +372,9 @@ void Adapter::CouplingPoroMortar::complete_interface(
   // interface->create_volume_ghosting(*masterdis);
 
   // store old row maps (before parallel redistribution)
-  slavedofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface->slave_row_dofs());
-  masterdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface->master_row_dofs());
-  slavenoderowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface->slave_row_nodes());
+  slavedofrowmap_ = std::make_shared<Epetra_Map>(*interface->slave_row_dofs());
+  masterdofrowmap_ = std::make_shared<Epetra_Map>(*interface->master_row_dofs());
+  slavenoderowmap_ = std::make_shared<Epetra_Map>(*interface->slave_row_nodes());
 
   // print parallel distribution
   interface->print_parallel_distribution();
@@ -390,14 +392,16 @@ void Adapter::CouplingPoroMortar::complete_interface(
 /*----------------------------------------------------------------------*
  |  evaluate blockmatrices for poro meshtying             ager 10/15    |
  *----------------------------------------------------------------------*/
-void Adapter::CouplingPoroMortar::evaluate_poro_mt(Teuchos::RCP<Core::LinAlg::Vector<double>> fvel,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> svel,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fpres,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sdisp,
-    const Teuchos::RCP<Core::FE::Discretization> sdis, Teuchos::RCP<Core::LinAlg::SparseMatrix>& f,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& k_fs,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& frhs, Coupling::Adapter::Coupling& coupfs,
-    Teuchos::RCP<const Epetra_Map> fdofrowmap)
+void Adapter::CouplingPoroMortar::evaluate_poro_mt(
+    std::shared_ptr<Core::LinAlg::Vector<double>> fvel,
+    std::shared_ptr<Core::LinAlg::Vector<double>> svel,
+    std::shared_ptr<Core::LinAlg::Vector<double>> fpres,
+    std::shared_ptr<Core::LinAlg::Vector<double>> sdisp,
+    const std::shared_ptr<Core::FE::Discretization> sdis,
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& f,
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& k_fs,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& frhs, Coupling::Adapter::Coupling& coupfs,
+    std::shared_ptr<const Epetra_Map> fdofrowmap)
 {
   // safety check
   check_setup();
@@ -444,8 +448,8 @@ void Adapter::CouplingPoroMortar::update_poro_mt()
  |  recover fluid coupling lagrange multiplier            ager 10/15    |
  *----------------------------------------------------------------------*/
 void Adapter::CouplingPoroMortar::recover_fluid_lm_poro_mt(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disi,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> veli)
+    std::shared_ptr<Core::LinAlg::Vector<double>> disi,
+    std::shared_ptr<Core::LinAlg::Vector<double>> veli)
 {
   // safety check
   check_setup();

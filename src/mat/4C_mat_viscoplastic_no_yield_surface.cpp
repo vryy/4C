@@ -51,9 +51,9 @@ Mat::PAR::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ViscoPlasticNoYieldSurface::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ViscoPlasticNoYieldSurface::create_material()
 {
-  return Teuchos::make_rcp<Mat::ViscoPlasticNoYieldSurface>(this);
+  return std::make_shared<Mat::ViscoPlasticNoYieldSurface>(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -72,12 +72,7 @@ Core::Communication::ParObject* Mat::ViscoPlasticNoYieldSurfaceType::create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Mat::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface()
-    : params_(nullptr),
-      last_plastic_defgrd_inverse_(Teuchos::null),
-      last_flowres_isotropic_(Teuchos::null)
-{
-}
+Mat::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface() : params_(nullptr) {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -118,7 +113,7 @@ void Mat::ViscoPlasticNoYieldSurface::unpack(Core::Communication::UnpackBuffer& 
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {

@@ -13,8 +13,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <random>
 
 FOUR_C_NAMESPACE_OPEN
@@ -34,7 +33,7 @@ namespace Core::FE
     numvec vectors with the reconstruced state
    */
   template <int dim>
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> compute_superconvergent_patch_recovery(
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> compute_superconvergent_patch_recovery(
       Core::FE::Discretization& dis,              ///< underlying discretization
       const Core::LinAlg::Vector<double>& state,  ///< state vector needed on element level
       const std::string& statename,               ///< name of state which will be set

@@ -21,7 +21,7 @@ EleMag::ElemagResultTest::ElemagResultTest(ElemagTimeInt& elemagalgo)
     : Core::Utils::ResultTest("ELECTROMAGNETIC")
 {
   dis_ = elemagalgo.discretization();
-  error_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(4);
+  error_ = std::make_shared<Core::LinAlg::SerialDenseVector>(4);
   error_ = elemagalgo.compute_error();
 }
 

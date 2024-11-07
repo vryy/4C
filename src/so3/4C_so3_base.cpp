@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 Discret::Elements::SoBase::SoBase(int id, int owner)
     : Core::Elements::Element(id, owner),
       kintype_(Inpar::Solid::KinemType::vague),
-      interface_ptr_(Teuchos::null),
+      interface_ptr_(nullptr),
       material_post_setup_(false)
 {
   return;
@@ -87,10 +87,9 @@ void Discret::Elements::SoBase::unpack(Core::Communication::UnpackBuffer& buffer
  |  return solid material                                      (public) |
  |                                                           seitz 03/15|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Mat::So3Material> Discret::Elements::SoBase::solid_material(int nummat) const
+std::shared_ptr<Mat::So3Material> Discret::Elements::SoBase::solid_material(int nummat) const
 {
-  return Teuchos::rcp_dynamic_cast<Mat::So3Material>(
-      Core::Elements::Element::material(nummat), true);
+  return std::dynamic_pointer_cast<Mat::So3Material>(Core::Elements::Element::material(nummat));
 }
 
 /*----------------------------------------------------------------------*
@@ -98,14 +97,14 @@ Teuchos::RCP<Mat::So3Material> Discret::Elements::SoBase::solid_material(int num
 void Discret::Elements::SoBase::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
-    interface_ptr_ = p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface");
+    interface_ptr_ = p.get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface");
   else
-    interface_ptr_ = Teuchos::null;
+    interface_ptr_ = nullptr;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::ParamsInterface> Discret::Elements::SoBase::params_interface_ptr()
+std::shared_ptr<Core::Elements::ParamsInterface> Discret::Elements::SoBase::params_interface_ptr()
 {
   return interface_ptr_;
 }
@@ -115,7 +114,7 @@ Teuchos::RCP<Core::Elements::ParamsInterface> Discret::Elements::SoBase::params_
 Solid::Elements::ParamsInterface& Discret::Elements::SoBase::str_params_interface()
 {
   if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
-  return *(Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(interface_ptr_, true));
+  return *(std::dynamic_pointer_cast<Solid::Elements::ParamsInterface>(interface_ptr_));
 }
 
 /*----------------------------------------------------------------------------*

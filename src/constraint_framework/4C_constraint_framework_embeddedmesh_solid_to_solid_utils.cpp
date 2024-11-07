@@ -30,20 +30,20 @@ FOUR_C_NAMESPACE_OPEN
 /*
   Free function that prepares and performs the cut.
 */
-void CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(Teuchos::RCP<Cut::CutWizard> cutwizard,
-    Teuchos::RCP<Core::FE::Discretization>& discret,
+void CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(std::shared_ptr<Cut::CutWizard> cutwizard,
+    std::shared_ptr<Core::FE::Discretization>& discret,
     CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& embedded_mesh_coupling_params)
 {
   //! vector of all coupling discretizations, the background mesh is coupled with
   std::map<std::string, int> dofset_coupling_map;
-  std::vector<Teuchos::RCP<Core::FE::Discretization>> meshcoupl_dis;
+  std::vector<std::shared_ptr<Core::FE::Discretization>> meshcoupl_dis;
   meshcoupl_dis.push_back(discret);
-  std::vector<Teuchos::RCP<Core::FE::Discretization>> levelsetcoupl_dis;
+  std::vector<std::shared_ptr<Core::FE::Discretization>> levelsetcoupl_dis;
   const double time = 0.0;
   const int step = 1;
 
   // create a condition manager and set options of the cutwizard
-  auto condition_manager = Teuchos::make_rcp<XFEM::ConditionManager>(
+  auto condition_manager = std::make_shared<XFEM::ConditionManager>(
       dofset_coupling_map, discret, meshcoupl_dis, levelsetcoupl_dis, time, step);
 
   condition_manager->init();
@@ -59,7 +59,7 @@ void CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(Teuchos::RCP<Cut::CutWiz
   // loop all mesh coupling objects
   for (int mc_idx = 0; mc_idx < condition_manager->num_mesh_coupling(); mc_idx++)
   {
-    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager->get_mesh_coupling(mc_idx);
+    std::shared_ptr<XFEM::MeshCoupling> mc_coupl = condition_manager->get_mesh_coupling(mc_idx);
 
     if (!mc_coupl->cut_geometry()) continue;  // If don't cut the background mesh.
 
@@ -71,7 +71,7 @@ void CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(Teuchos::RCP<Cut::CutWiz
   }
 
   // creating some variables for setting the background state
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> back_disp_col;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> back_disp_col;
 
   // set background state
   cutwizard->set_background_state(
@@ -88,7 +88,7 @@ void CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(Teuchos::RCP<Cut::CutWiz
   // Find corresponding marked surfaces loaded into the cut.
   for (int mc_idx = 0; mc_idx < condition_manager->num_mesh_coupling(); mc_idx++)
   {
-    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager->get_mesh_coupling(mc_idx);
+    std::shared_ptr<XFEM::MeshCoupling> mc_coupl = condition_manager->get_mesh_coupling(mc_idx);
 
     if (mc_coupl->is_marked_geometry())
     {
@@ -103,12 +103,12 @@ void CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(Teuchos::RCP<Cut::CutWiz
 }
 
 // Helper function to create a coupling pair
-Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> coupling_pair_mortar_factory(
-    Teuchos::RCP<Core::Elements::Element> interfaceele_real,
+std::shared_ptr<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> coupling_pair_mortar_factory(
+    std::shared_ptr<Core::Elements::Element> interfaceele_real,
     Core::Elements::Element* background_ele,
     CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr,
-    Teuchos::RCP<Cut::CutWizard>& cutwizard_ptr,
-    std::vector<Teuchos::RCP<Cut::BoundaryCell>>& boundary_cells)
+    std::shared_ptr<Cut::CutWizard>& cutwizard_ptr,
+    std::vector<std::shared_ptr<Cut::BoundaryCell>>& boundary_cells)
 {
   switch (interfaceele_real->shape())
   {
@@ -118,7 +118,7 @@ Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> coupling_pair_mort
       {
         case Core::FE::CellType::hex8:
         {
-          return Teuchos::make_rcp<CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<
+          return std::make_shared<CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<
               GEOMETRYPAIR::t_quad4, GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_quad4>>(
               interfaceele_real, background_ele, params_ptr, cutwizard_ptr, boundary_cells);
           break;
@@ -137,7 +137,7 @@ Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> coupling_pair_mort
       {
         case Core::FE::CellType::hex8:
         {
-          return Teuchos::make_rcp<CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<
+          return std::make_shared<CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<
               GEOMETRYPAIR::t_nurbs9, GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_nurbs9>>(
               interfaceele_real, background_ele, params_ptr, cutwizard_ptr, boundary_cells);
           break;
@@ -157,9 +157,9 @@ Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> coupling_pair_mort
 }
 
 void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
-    Teuchos::RCP<Cut::CutWizard>& cutwizard,
+    std::shared_ptr<Cut::CutWizard>& cutwizard,
     CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr, Core::FE::Discretization& discret,
-    std::vector<Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>&
+    std::vector<std::shared_ptr<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>&
         embeddedmesh_coupling_pairs,
     std::vector<Core::Elements::Element*>& cut_elements_vector)
 {
@@ -170,7 +170,7 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
   Cut::Mesh background_mesh = (cutwizard->get_intersection())->normal_mesh();
 
   // Get the elements inside the background mesh
-  const std::map<int, Teuchos::RCP<Cut::Element>> background_elements =
+  const std::map<int, std::shared_ptr<Cut::Element>> background_elements =
       background_mesh.get_mesh_elements();
 
   // Do a loop to check all the elements of the background mesh, if the element is cut, then
@@ -178,7 +178,7 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
   for (auto background_ele_iter = background_elements.begin();
        background_ele_iter != background_elements.end(); background_ele_iter++)
   {
-    const Teuchos::RCP<Cut::Element> background_element = background_ele_iter->second;
+    const std::shared_ptr<Cut::Element> background_element = background_ele_iter->second;
 
     if (background_element->is_cut())
     {
@@ -215,26 +215,27 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
            iter_id++)
       {
         Core::Elements::Element* interfaceEle = discret.g_element(*iter_id);
-        std::vector<Teuchos::RCP<Core::Elements::Element>> interfaceEleSurfaces =
+        std::vector<std::shared_ptr<Core::Elements::Element>> interfaceEleSurfaces =
             interfaceEle->surfaces();
-        if (interfaceEleSurfaces[0] == Teuchos::null)
+        if (interfaceEleSurfaces[0] == nullptr)
           FOUR_C_THROW("The interface element doesn't have surfaces defined. ");
 
-        Teuchos::RCP<Core::Elements::Element> surface_ele;
+        std::shared_ptr<Core::Elements::Element> surface_ele;
         for (const auto& interfaceEleSurface : interfaceEleSurfaces)
         {
           if (CONSTRAINTS::EMBEDDEDMESH::is_interface_element_surface(*interfaceEleSurface))
             surface_ele = interfaceEleSurface;
         }
 
-        if (surface_ele == Teuchos::null) FOUR_C_THROW("No face/surface was found");
+        if (surface_ele == nullptr) FOUR_C_THROW("No face/surface was found");
 
         // Get the boundary cells of background element related to this coupling pair
-        std::vector<Teuchos::RCP<Cut::BoundaryCell>> coupling_pair_boundary_cells;
+        std::vector<std::shared_ptr<Cut::BoundaryCell>> coupling_pair_boundary_cells;
         auto boundarycells = boundarycells_ids_multimap.equal_range(*iter_id);
         for (auto iter = boundarycells.first; iter != boundarycells.second; ++iter)
         {
-          Teuchos::RCP<Cut::BoundaryCell> boundaryCell(iter->second, false);
+          std::shared_ptr<Cut::BoundaryCell> boundaryCell =
+              Core::Utils::shared_ptr_from_ref(*iter->second);
           coupling_pair_boundary_cells.push_back(boundaryCell);
         }
 
@@ -248,8 +249,8 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
               cut_elements_vector.end();
           if (!is_cut_ele_included) cut_elements_vector.push_back(background_ele);
 
-          Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> embeddedmesh_coupling_pair =
-              coupling_pair_mortar_factory(
+          std::shared_ptr<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>
+              embeddedmesh_coupling_pair = coupling_pair_mortar_factory(
                   surface_ele, background_ele, params_ptr, cutwizard, coupling_pair_boundary_cells);
 
           // Add coupling pair to the vector of coupling pairs
@@ -416,8 +417,8 @@ Core::FE::GaussIntegration CONSTRAINTS::EMBEDDEDMESH::create_gauss_integration_f
     std::vector<Core::FE::GaussIntegration>& intpoints_vector)
 {
   // format as Core::FE::GaussIntegration
-  Teuchos::RCP<Core::FE::CollectedGaussPoints> gp =
-      Teuchos::make_rcp<Core::FE::CollectedGaussPoints>();
+  std::shared_ptr<Core::FE::CollectedGaussPoints> gp =
+      std::make_shared<Core::FE::CollectedGaussPoints>();
 
   for (auto& i_intpoints : intpoints_vector)
   {

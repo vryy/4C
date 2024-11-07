@@ -14,7 +14,7 @@
 #include "4C_fem_condition.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -52,7 +52,7 @@ namespace FLD
   void get_relevant_slave_nodes_of_rot_sym_pbc(
       std::map<int, double>&
           pbcslavenodemap,  ///< map to be filled with node gids and rotation angles
-      Teuchos::RCP<Core::FE::Discretization> dis);  ///< discretization
+      std::shared_ptr<Core::FE::Discretization> dis);  ///< discretization
 
 }  // namespace FLD
 

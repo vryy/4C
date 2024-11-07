@@ -25,9 +25,10 @@
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_CommandLineProcessor.hpp>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <memory>
 
 
 using namespace FourC;
@@ -90,8 +91,9 @@ namespace
               << std::endl;
 
     // write ElementBlocks with specification proposal
-    const std::map<int, Teuchos::RCP<EXODUS::ElementBlock>> myblocks = mymesh.get_element_blocks();
-    std::map<int, Teuchos::RCP<EXODUS::ElementBlock>>::const_iterator it;
+    const std::map<int, std::shared_ptr<EXODUS::ElementBlock>> myblocks =
+        mymesh.get_element_blocks();
+    std::map<int, std::shared_ptr<EXODUS::ElementBlock>>::const_iterator it;
     for (it = myblocks.begin(); it != myblocks.end(); ++it)
     {
       it->second->print(defaultbc);
@@ -128,7 +130,7 @@ namespace
 
     // print validconditions as proposal
     defaultbc << "-----------------------------------------VALIDCONDITIONS" << std::endl;
-    Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> condlist =
+    std::shared_ptr<std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>> condlist =
         Input::valid_conditions();
     Input::print_empty_condition_definitions(defaultbc, *condlist);
 
@@ -165,10 +167,10 @@ int main(int argc, char** argv)
   // create a problem instance
   Global::Problem* problem = Global::Problem::instance();
   // create default communicators
-  Teuchos::RCP<Core::Communication::Communicators> communicators =
+  std::shared_ptr<Core::Communication::Communicators> communicators =
       Core::Communication::create_comm({});
   Global::Problem::instance()->set_communicators(communicators);
-  Teuchos::RCP<Epetra_Comm> comm = communicators->global_comm();
+  std::shared_ptr<Epetra_Comm> comm = communicators->global_comm();
 
   try
   {
@@ -306,7 +308,7 @@ int main(int argc, char** argv)
       if (!defaulthead) FOUR_C_THROW("failed to open file: %s", defaultheadfilename.c_str());
 
       // get valid input parameters
-      Teuchos::RCP<const Teuchos::ParameterList> list = Input::valid_parameters();
+      std::shared_ptr<const Teuchos::ParameterList> list = Input::valid_parameters();
 
       // write default .dat header into file
       std::stringstream prelimhead;
@@ -324,7 +326,7 @@ int main(int argc, char** argv)
 
       // get valid input materials
       {
-        Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> mlist =
+        std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> mlist =
             Input::valid_materials();
         Input::print_empty_material_definitions(defaulthead, *mlist);
       }
@@ -383,7 +385,7 @@ int main(int argc, char** argv)
 
       // screen info
       std::cout << "creating and checking 4C input file       --> " << datfile << std::endl;
-      Teuchos::RCP<Teuchos::Time> timer = Teuchos::TimeMonitor::getNewTimer("pre-exodus timer");
+      auto timer = Teuchos::TimeMonitor::getNewTimer("pre-exodus timer");
 
       // check for positive Element-Center-Jacobians and otherwise rewind them
       {
@@ -436,7 +438,7 @@ int main(int argc, char** argv)
 
     // free the global problem instance and the communicator
     problem->done();
-    comm = Teuchos::null;
+    comm = nullptr;
 
 #ifdef FOUR_C_ENABLE_CORE_DUMP
     abort();

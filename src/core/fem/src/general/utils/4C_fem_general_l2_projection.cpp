@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::evaluate_and_solve_nodal_l2_projection(
+std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::evaluate_and_solve_nodal_l2_projection(
     Core::FE::Discretization &dis, const Epetra_Map &noderowmap, const std::string &statename,
     const int &numvec, Teuchos::ParameterList &params, const Teuchos::ParameterList &solverparams,
     const std::function<const Teuchos::ParameterList &(int)> get_solver_params,
@@ -112,7 +112,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::evaluate_and_solve_nod
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_nodal_l2_projection(
+std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_nodal_l2_projection(
     Core::FE::Discretization &dis, const std::string &statename, const int &numvec,
     Teuchos::ParameterList &params, const Teuchos::ParameterList &solverparams,
     const std::function<const Teuchos::ParameterList &(int)> get_solver_params)
@@ -173,7 +173,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_nodal_l2_proje
 
   // solution vector based on full row map in which the solution of the master node is inserted into
   // slave nodes
-  auto fullnodevec = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*fullnoderowmap, numvec);
+  auto fullnodevec = std::make_shared<Core::LinAlg::MultiVector<double>>(*fullnoderowmap, numvec);
 
   for (int i = 0; i < fullnoderowmap->NumMyElements(); ++i)
   {
@@ -198,7 +198,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_nodal_l2_proje
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_projection(
+std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_projection(
     Core::LinAlg::SparseMatrix &massmatrix, Core::LinAlg::MultiVector<double> &rhs,
     const Epetra_Comm &comm, const int &numvec, const Teuchos::ParameterList &solverparams,
     const std::function<const Teuchos::ParameterList &(int)> get_solver_params,
@@ -235,11 +235,11 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_project
         preclist.set("null space: type", "pre-computed");
         preclist.set("null space: add default vectors", false);
 
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspace =
-            Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(noderowmap, 1, true);
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
+            std::make_shared<Core::LinAlg::MultiVector<double>>(noderowmap, 1, true);
         nullspace->PutScalar(1.0);
 
-        preclist.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
+        preclist.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
         preclist.set("null space: vectors", nullspace->Values());
         preclist.set("ML validate parameter list", false);
       }
@@ -254,7 +254,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_project
   }
 
   // solution vector based on reduced node row map
-  auto nodevec = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(noderowmap, numvec);
+  auto nodevec = std::make_shared<Core::LinAlg::MultiVector<double>>(noderowmap, numvec);
 
   switch (solvertype)
   {
@@ -264,8 +264,8 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_project
       Core::LinAlg::SolverParams solver_params;
       solver_params.refactor = true;
       solver_params.reset = true;
-      solver.solve_with_multi_vector(
-          massmatrix.epetra_operator(), nodevec, Teuchos::rcpFromRef(rhs), solver_params);
+      solver.solve_with_multi_vector(massmatrix.epetra_operator(), nodevec,
+          Core::Utils::shared_ptr_from_ref(rhs), solver_params);
       break;
     }
     default:

@@ -29,9 +29,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Perform the cut and fill state container               schott 01/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::create(
-    const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<FLD::XFluidState> FLD::XFluidStateCreator::create(
+    const std::shared_ptr<XFEM::DiscretizationXFEM>&
+        xdiscret,  //!< xfluid background discretization
+    std::shared_ptr<const Core::LinAlg::Vector<double>>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
     Teuchos::ParameterList& solver_params,  //!< solver parameters
     const int step,                         //!< current time step
@@ -39,26 +40,26 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::create(
 )
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (condition_manager_ == Teuchos::null) FOUR_C_THROW("no condition manager available!");
+  if (condition_manager_ == nullptr) FOUR_C_THROW("no condition manager available!");
 #endif
 
   //--------------------------------------------------------------------------------------
   // create new cut wizard &dofset
-  Teuchos::RCP<Cut::CutWizard> wizard;
-  Teuchos::RCP<XFEM::XFEMDofSet> dofset;
+  std::shared_ptr<Cut::CutWizard> wizard;
+  std::shared_ptr<XFEM::XFEMDofSet> dofset;
 
   create_new_cut_state(dofset, wizard, xdiscret, back_disp_col, solver_params, step);
 
   //--------------------------------------------------------------------------------------
   // Create the XFluidState object
 
-  Teuchos::RCP<const Epetra_Map> xfluiddofrowmap =
-      Teuchos::make_rcp<Epetra_Map>(*xdiscret->dof_row_map());
+  std::shared_ptr<const Epetra_Map> xfluiddofrowmap =
+      std::make_shared<Epetra_Map>(*xdiscret->dof_row_map());
 
-  Teuchos::RCP<const Epetra_Map> xfluiddofcolmap =
-      Teuchos::make_rcp<Epetra_Map>(*xdiscret->dof_col_map());
+  std::shared_ptr<const Epetra_Map> xfluiddofcolmap =
+      std::make_shared<Epetra_Map>(*xdiscret->dof_col_map());
 
-  Teuchos::RCP<XFluidState> state = Teuchos::make_rcp<FLD::XFluidState>(
+  std::shared_ptr<XFluidState> state = std::make_shared<FLD::XFluidState>(
       condition_manager_, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap);
 
   //--------------------------------------------------------------------------------------
@@ -71,11 +72,12 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::create(
 /*----------------------------------------------------------------------*
  |  Perform the cut and fill state container                kruse 08/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::create(
-    const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
-    const Teuchos::RCP<Core::FE::Discretization>&
+std::shared_ptr<FLD::XFluidFluidState> FLD::XFluidStateCreator::create(
+    const std::shared_ptr<XFEM::DiscretizationXFEM>&
+        xdiscret,  //!< xfluid background discretization
+    const std::shared_ptr<Core::FE::Discretization>&
         embfluiddiscret,  //!< embedded fluid discretization
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    std::shared_ptr<const Core::LinAlg::Vector<double>>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
     Teuchos::ParameterList& solver_params,  //!< solver parameters
     const int step,                         //!< current time step
@@ -83,29 +85,29 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::create(
 )
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (condition_manager_ == Teuchos::null) FOUR_C_THROW("no condition manager available!");
+  if (condition_manager_ == nullptr) FOUR_C_THROW("no condition manager available!");
 #endif
 
   //--------------------------------------------------------------------------------------
   // create new cut wizard & dofset
-  Teuchos::RCP<Cut::CutWizard> wizard;
-  Teuchos::RCP<XFEM::XFEMDofSet> dofset;
+  std::shared_ptr<Cut::CutWizard> wizard;
+  std::shared_ptr<XFEM::XFEMDofSet> dofset;
 
   create_new_cut_state(dofset, wizard, xdiscret, back_disp_col, solver_params, step);
 
   //--------------------------------------------------------------------------------------
   // Create the XFluidFluidState object
 
-  Teuchos::RCP<const Epetra_Map> xfluiddofrowmap =
-      Teuchos::make_rcp<Epetra_Map>(*xdiscret->dof_row_map());
+  std::shared_ptr<const Epetra_Map> xfluiddofrowmap =
+      std::make_shared<Epetra_Map>(*xdiscret->dof_row_map());
 
-  Teuchos::RCP<const Epetra_Map> xfluiddofcolmap =
-      Teuchos::make_rcp<Epetra_Map>(*xdiscret->dof_col_map());
+  std::shared_ptr<const Epetra_Map> xfluiddofcolmap =
+      std::make_shared<Epetra_Map>(*xdiscret->dof_col_map());
 
-  Teuchos::RCP<const Epetra_Map> embfluiddofrowmap =
-      Teuchos::make_rcp<Epetra_Map>(*embfluiddiscret->dof_row_map());
+  std::shared_ptr<const Epetra_Map> embfluiddofrowmap =
+      std::make_shared<Epetra_Map>(*embfluiddiscret->dof_row_map());
 
-  Teuchos::RCP<FLD::XFluidFluidState> state = Teuchos::make_rcp<FLD::XFluidFluidState>(
+  std::shared_ptr<FLD::XFluidFluidState> state = std::make_shared<FLD::XFluidFluidState>(
       condition_manager_, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap, embfluiddofrowmap);
 
   //--------------------------------------------------------------------------------------
@@ -119,18 +121,19 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::create(
  |  Initialize ALE state vectors                           schott 12/14 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidStateCreator::create_new_cut_state(
-    Teuchos::RCP<XFEM::XFEMDofSet>& dofset,  //!< xfem dofset obtained from the new wizard
-    Teuchos::RCP<Cut::CutWizard>&
+    std::shared_ptr<XFEM::XFEMDofSet>& dofset,  //!< xfem dofset obtained from the new wizard
+    std::shared_ptr<Cut::CutWizard>&
         wizard,  //!< cut wizard associated with current intersection state
-    const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    const std::shared_ptr<XFEM::DiscretizationXFEM>&
+        xdiscret,  //!< xfluid background discretization
+    std::shared_ptr<const Core::LinAlg::Vector<double>>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
     Teuchos::ParameterList& solver_params,  //!< solver parameters
     const int step                          //!< current time step
 )
 {
   // new wizard using information about cutting sides from the condition_manager
-  wizard = Teuchos::make_rcp<Cut::CutWizard>(xdiscret,
+  wizard = std::make_shared<Cut::CutWizard>(xdiscret,
       [xdiscret](const Core::Nodes::Node& node, std::vector<int>& lm)
       { xdiscret->initial_dof(&node, lm); });
 
@@ -152,7 +155,7 @@ void FLD::XFluidStateCreator::create_new_cut_state(
   // loop all mesh coupling objects
   for (int mc_idx = 0; mc_idx < condition_manager_->num_mesh_coupling(); mc_idx++)
   {
-    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->get_mesh_coupling(mc_idx);
+    std::shared_ptr<XFEM::MeshCoupling> mc_coupl = condition_manager_->get_mesh_coupling(mc_idx);
 
     if (!mc_coupl->cut_geometry()) continue;  // If don't cut the background mesh.
 
@@ -178,7 +181,7 @@ void FLD::XFluidStateCreator::create_new_cut_state(
   // -- Find corresponding marked surfaces loaded into the cut.
   for (int mc_idx = 0; mc_idx < condition_manager_->num_mesh_coupling(); mc_idx++)
   {
-    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->get_mesh_coupling(mc_idx);
+    std::shared_ptr<XFEM::MeshCoupling> mc_coupl = condition_manager_->get_mesh_coupling(mc_idx);
 
     if (mc_coupl->is_marked_geometry())
     {
@@ -196,7 +199,7 @@ void FLD::XFluidStateCreator::create_new_cut_state(
   int maxNumMyReservedDofsperNode = (maxnumdofsets_)*4;
 
   // create a new XFEM-dofset
-  dofset = Teuchos::make_rcp<XFEM::XFEMDofSet>(*wizard, maxNumMyReservedDofsperNode, *xdiscret);
+  dofset = std::make_shared<XFEM::XFEMDofSet>(*wizard, maxNumMyReservedDofsperNode, *xdiscret);
 
   const int restart = Global::Problem::instance()->restart();
   if ((step < 1) or restart) minnumdofsets_ = xdiscret->dof_row_map()->MinAllGID();

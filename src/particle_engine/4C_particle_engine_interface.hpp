@@ -16,9 +16,9 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_particle_engine_container_bundle.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
 
+#include <memory>
 #include <unordered_map>
 
 FOUR_C_NAMESPACE_OPEN

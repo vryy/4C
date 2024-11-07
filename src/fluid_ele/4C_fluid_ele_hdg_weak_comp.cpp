@@ -40,24 +40,24 @@ Core::Communication::ParObject* Discret::Elements::FluidHDGWeakCompType::create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidHDGWeakCompType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidHDGWeakCompType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDHDGWEAKCOMP")
   {
-    return Teuchos::make_rcp<Discret::Elements::FluidHDGWeakComp>(id, owner);
+    return std::make_shared<Discret::Elements::FluidHDGWeakComp>(id, owner);
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidHDGWeakCompType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidHDGWeakCompType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::FluidHDGWeakComp>(id, owner);
+  return std::make_shared<Discret::Elements::FluidHDGWeakComp>(id, owner);
 }
 
 
@@ -200,7 +200,7 @@ int Discret::Elements::FluidHDGWeakComp::evaluate(Teuchos::ParameterList& params
   const auto act = Teuchos::getIntegralValue<FLD::Action>(params, "action");
 
   // get material
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   // switch between different physical types as used below
   std::string impltype = "hdgweakcomp";

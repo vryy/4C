@@ -37,7 +37,7 @@ namespace Mat
       {
        public:
         /// factory method
-        static Teuchos::RCP<ReactionInterface> create_reaction(
+        static std::shared_ptr<ReactionInterface> create_reaction(
             Mat::PAR::ReactionCoupling couplingtype,  //!< coupling type definig reaction
             bool isreacstart,                         //!< flag for reaction start feature
             const std::vector<double>& reacstart      //!< reaction start vector
@@ -130,7 +130,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        ReacStart(Teuchos::RCP<ReactionInterface> reaction, const std::vector<double>& reacstart)
+        ReacStart(std::shared_ptr<ReactionInterface> reaction, const std::vector<double>& reacstart)
             : reaction_(reaction), reacstart_(reacstart){};
 
         /// initialization
@@ -175,7 +175,7 @@ namespace Mat
         virtual std::vector<double> modify_phi(const std::vector<double>& phinp);
 
         /// actual reaction
-        Teuchos::RCP<ReactionInterface> reaction_;
+        std::shared_ptr<ReactionInterface> reaction_;
         /// reacstart vector
         const std::vector<double>& reacstart_;
       };
@@ -190,7 +190,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        ReactionWithPhiScaling(Teuchos::RCP<ReactionInterface> reaction) : reaction_(reaction){};
+        ReactionWithPhiScaling(std::shared_ptr<ReactionInterface> reaction) : reaction_(reaction){};
 
         /// initialization (to be called by derived classes)
         void initialize(int numscal,             //!< number of scalars
@@ -256,7 +256,7 @@ namespace Mat
 
        protected:
         /// actual reaction
-        Teuchos::RCP<ReactionInterface> reaction_;
+        std::shared_ptr<ReactionInterface> reaction_;
 
         /// helper for scaling
         virtual std::vector<double> modify_phi(const std::vector<double>& phinp, double scale_phi);

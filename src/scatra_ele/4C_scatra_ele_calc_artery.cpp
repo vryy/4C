@@ -35,7 +35,7 @@ Discret::Elements::ScaTraEleCalcArtery<distype, probdim>::ScaTraEleCalcArtery(
   }
   // replace internal variable manager by internal variable manager for artery
   my::scatravarmanager_ =
-      Teuchos::make_rcp<ScaTraEleInternalVariableManagerArtery<nsd_, nen_>>(my::numscal_);
+      std::make_shared<ScaTraEleInternalVariableManagerArtery<nsd_, nen_>>(my::numscal_);
 }
 
 /*----------------------------------------------------------------------*
@@ -77,9 +77,9 @@ int Discret::Elements::ScaTraEleCalcArtery<distype, probdim>::setup_calc(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcArtery<distype, probdim>::materials(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity
@@ -91,8 +91,8 @@ void Discret::Elements::ScaTraEleCalcArtery<distype, probdim>::materials(
   {
     case Core::Materials::m_scatra:
     {
-      const Teuchos::RCP<const Mat::ScatraMat>& actmat =
-          Teuchos::rcp_dynamic_cast<const Mat::ScatraMat>(material);
+      const std::shared_ptr<const Mat::ScatraMat>& actmat =
+          std::dynamic_pointer_cast<const Mat::ScatraMat>(material);
 
       densn = 1.0;
       densam = 1.0;
@@ -138,9 +138,9 @@ void Discret::Elements::ScaTraEleCalcArtery<distype, probdim>::extract_element_a
   //---------------------------------------------------------------------------------------------
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (hist == Teuchos::null || phinp == Teuchos::null)
+  std::shared_ptr<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+  if (hist == nullptr || phinp == nullptr)
     FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phinp'");
 
   // values of scatra field are always in first dofset
@@ -151,8 +151,8 @@ void Discret::Elements::ScaTraEleCalcArtery<distype, probdim>::extract_element_a
   if (my::scatraparatimint_->is_gen_alpha() and not my::scatraparatimint_->is_incremental())
   {
     // extract additional local values from global vector
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
-    if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
+    if (phin == nullptr) FOUR_C_THROW("Cannot get state vector 'phin'");
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
   }
 
@@ -162,7 +162,7 @@ void Discret::Elements::ScaTraEleCalcArtery<distype, probdim>::extract_element_a
   // extract element and node values of the artery
   if (discretization.has_state(1, "curr_seg_lengths"))
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> curr_seg_lengths =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> curr_seg_lengths =
         discretization.get_state(1, "curr_seg_lengths");
     std::vector<double> seglengths(la[1].lm_.size());
 
@@ -200,7 +200,7 @@ void Discret::Elements::ScaTraEleCalcArtery<distype, probdim>::extract_element_a
   // extract element and node values of the artery
   if (discretization.has_state(ndsscatra_artery, "one_d_artery_pressure"))
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> arterypn =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> arterypn =
         discretization.get_state(ndsscatra_artery, "one_d_artery_pressure");
     // values of scatra field are always in first dofset
     const std::vector<int>& lm_artery = la[ndsscatra_artery].lm_;

@@ -35,7 +35,7 @@ void Lubrication::LubricationBaseAlgorithm::setup(
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::FE::Discretization> actdis = Teuchos::null;
+  std::shared_ptr<Core::FE::Discretization> actdis = nullptr;
   actdis = Global::Problem::instance()->get_dis(disname);
 
   // -------------------------------------------------------------------
@@ -46,7 +46,7 @@ void Lubrication::LubricationBaseAlgorithm::setup(
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->writer();
+  std::shared_ptr<Core::IO::DiscretizationWriter> output = actdis->writer();
   output->write_mesh(0, 0.0);
 
   // -------------------------------------------------------------------
@@ -54,8 +54,8 @@ void Lubrication::LubricationBaseAlgorithm::setup(
   // -------------------------------------------------------------------
   // TODO: TAW use of solverparams??? change input parameter to solver number instead of parameter
   // list? -> no default paramter possible any more
-  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::make_rcp<Core::LinAlg::Solver>(solverparams,
-      actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
+  std::shared_ptr<Core::LinAlg::Solver> solver = std::make_shared<Core::LinAlg::Solver>(
+      solverparams, actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   actdis->compute_null_space_if_necessary(solver->params());
@@ -64,8 +64,8 @@ void Lubrication::LubricationBaseAlgorithm::setup(
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
   // make a copy (inside an Teuchos::rcp) containing also all sublists
-  Teuchos::RCP<Teuchos::ParameterList> lubricationtimeparams =
-      Teuchos::make_rcp<Teuchos::ParameterList>(lubricationdyn);
+  std::shared_ptr<Teuchos::ParameterList> lubricationtimeparams =
+      std::make_shared<Teuchos::ParameterList>(lubricationdyn);
 
   // -------------------------------------------------------------------
   // overrule certain parameters for coupled problems
@@ -85,13 +85,13 @@ void Lubrication::LubricationBaseAlgorithm::setup(
   // list for extra parameters
   // (put here everything that is not available in lubricationdyn or its sublists)
   // -------------------------------------------------------------------
-  Teuchos::RCP<Teuchos::ParameterList> extraparams = Teuchos::make_rcp<Teuchos::ParameterList>();
+  std::shared_ptr<Teuchos::ParameterList> extraparams = std::make_shared<Teuchos::ParameterList>();
 
   // ----------------Eulerian or ALE formulation of transport equation(s)
   extraparams->set<bool>("isale", isale);
 
   // create instance of time integration class (call the constructor)
-  lubrication_ = Teuchos::make_rcp<Lubrication::TimIntStationary>(
+  lubrication_ = std::make_shared<Lubrication::TimIntStationary>(
       actdis, solver, lubricationtimeparams, extraparams, output);
 
   lubrication_->init();
@@ -102,13 +102,13 @@ void Lubrication::LubricationBaseAlgorithm::setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest>
+std::shared_ptr<Core::Utils::ResultTest>
 Lubrication::LubricationBaseAlgorithm::create_lubrication_field_test()
 {
-  return Teuchos::make_rcp<Lubrication::ResultTest>(lubrication_);
+  return std::make_shared<Lubrication::ResultTest>(lubrication_);
 }
 
-Teuchos::RCP<Core::IO::DiscretizationWriter> Lubrication::LubricationBaseAlgorithm::disc_writer()
+std::shared_ptr<Core::IO::DiscretizationWriter> Lubrication::LubricationBaseAlgorithm::disc_writer()
 {
   return lubrication_->disc_writer();
 }

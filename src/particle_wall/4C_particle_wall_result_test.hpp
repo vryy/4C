@@ -88,7 +88,7 @@ namespace PARTICLEWALL
     std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
 
     //! wall discretization
-    Teuchos::RCP<const Core::FE::Discretization> walldiscretization_;
+    std::shared_ptr<const Core::FE::Discretization> walldiscretization_;
   };
 
 }  // namespace PARTICLEWALL

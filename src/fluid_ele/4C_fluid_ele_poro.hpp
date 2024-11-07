@@ -33,10 +33,10 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -44,11 +44,11 @@ namespace Discret
 
       //! pre-evaluation
       void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
-          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3) override;
+          std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+          std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3) override;
 
      private:
       static FluidPoroEleType instance_;
@@ -114,14 +114,14 @@ namespace Discret
       void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
+      \brief Get vector of std::shared_ptrs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       //!@}
 
@@ -227,7 +227,7 @@ namespace Discret
      public:
       std::string name() const override { return "FluidPoroBoundaryType"; }
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       static FluidPoroBoundaryType& instance();
 

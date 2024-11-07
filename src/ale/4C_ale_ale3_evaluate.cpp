@@ -123,14 +123,15 @@ int Discret::Elements::Ale3::evaluate(Teuchos::ParameterList& params,
     FOUR_C_THROW("Unknown type of action for Ale3");
 
   // get the material
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   switch (act)
   {
     case calc_ale_laplace_material:
     {
       std::vector<double> my_dispnp;
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
       my_dispnp.resize(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
@@ -142,7 +143,8 @@ int Discret::Elements::Ale3::evaluate(Teuchos::ParameterList& params,
     case calc_ale_laplace_spatial:
     {
       std::vector<double> my_dispnp;
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
       my_dispnp.resize(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
@@ -153,7 +155,8 @@ int Discret::Elements::Ale3::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_solid:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
@@ -164,7 +167,8 @@ int Discret::Elements::Ale3::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_solid_linear:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
@@ -175,7 +179,8 @@ int Discret::Elements::Ale3::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_springs_material:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
@@ -185,7 +190,8 @@ int Discret::Elements::Ale3::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_springs_spatial:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
@@ -195,7 +201,8 @@ int Discret::Elements::Ale3::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_node_normal:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
@@ -206,8 +213,7 @@ int Discret::Elements::Ale3::evaluate(Teuchos::ParameterList& params,
     case setup_material:
     {
       // get material
-      Teuchos::RCP<Mat::So3Material> so3mat =
-          Teuchos::rcp_dynamic_cast<Mat::So3Material>(mat, true);
+      std::shared_ptr<Mat::So3Material> so3mat = std::dynamic_pointer_cast<Mat::So3Material>(mat);
 
       if (so3mat->material_type() != Core::Materials::m_elasthyper and
           so3mat->material_type() !=
@@ -221,7 +227,7 @@ int Discret::Elements::Ale3::evaluate(Teuchos::ParameterList& params,
 
       if (so3mat->material_type() == Core::Materials::m_elasthyper)
       {
-        so3mat = Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(mat, true);
+        so3mat = std::dynamic_pointer_cast<Mat::ElastHyper>(mat);
         so3mat->setup(0, Core::IO::InputParameterContainer());
       }
       break;  // no setup for St-Venant
@@ -1525,8 +1531,8 @@ void Discret::Elements::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain_f(glstrain.data());
     // QUICK HACK until so_disp exclusively uses Core::LinAlg::Matrix!!!!!
     Core::LinAlg::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> fixed_defgrd(defgrd);
-    Teuchos::RCP<Mat::So3Material> so3mat =
-        Teuchos::rcp_dynamic_cast<Mat::So3Material>(ele->material());
+    std::shared_ptr<Mat::So3Material> so3mat =
+        std::dynamic_pointer_cast<Mat::So3Material>(ele->material());
     so3mat->evaluate(&fixed_defgrd, &glstrain_f, params, &stress_f, &cmat_f, iquad, ele->id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1573,7 +1579,7 @@ template <Core::FE::CellType distype>
 void Discret::Elements::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
     Core::FE::Discretization& dis, Core::LinAlg::SerialDenseMatrix& sys_mat_epetra,
     Core::LinAlg::SerialDenseVector& residual, std::vector<double>& my_dispnp,
-    Teuchos::RCP<Core::Mat::Material> material, const bool spatialconfiguration)
+    std::shared_ptr<Core::Mat::Material> material, const bool spatialconfiguration)
 {
   //  FOUR_C_THROW("We don't know what is really done in the element evaluation"
   //      "of the Laplace smoothing strategy. Check this CAREFULLY before"

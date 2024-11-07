@@ -25,7 +25,7 @@ namespace CONTACT
     \brief Constructor
 
     */
-    TSIInterface(const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData_ptr,
+    TSIInterface(const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData_ptr,
         const int id, const Epetra_Comm& comm, const int dim,
         const Teuchos::ParameterList& icontact, bool selfcontact);
 
@@ -95,7 +95,7 @@ namespace CONTACT
       */
     virtual void assemble_lin_dm_x(Core::LinAlg::SparseMatrix* linD_X,
         Core::LinAlg::SparseMatrix* linM_X, const double fac, const LinDmXMode mode,
-        const Teuchos::RCP<Epetra_Map> node_rowmap);
+        const std::shared_ptr<Epetra_Map> node_rowmap);
 
     /*!
       \brief Assemble D and M times the linearization of the nodal frictional dissipation

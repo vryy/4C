@@ -43,9 +43,9 @@ Mat::PAR::Damage::Damage(const Core::Mat::PAR::Parameter::Data& matdata)
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from read_materials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::Damage::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::Damage::create_material()
 {
-  return Teuchos::make_rcp<Mat::Damage>(this);
+  return std::make_shared<Mat::Damage>(this);
 }
 
 
@@ -128,7 +128,7 @@ void Mat::Damage::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

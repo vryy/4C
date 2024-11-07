@@ -41,7 +41,7 @@ void Core::Geo::check_geo_type(const Core::Elements::Element* element,
   {
     const std::vector<std::vector<int>> eleNodeNumbering =
         Core::FE::get_ele_node_numbering_surfaces(distype);
-    std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces =
+    std::vector<std::shared_ptr<Core::Elements::Element>> surfaces =
         (const_cast<Core::Elements::Element*>(element))->surfaces();
     for (int i = 0; i < element->num_surface(); i++)
     {

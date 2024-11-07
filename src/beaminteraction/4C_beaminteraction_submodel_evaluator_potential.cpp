@@ -112,7 +112,6 @@ namespace
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::BeamPotential()
-    : beam_potential_params_ptr_(Teuchos::null), beam_potential_element_pairs_(Teuchos::null)
 {
   // clear stl stuff
   nearby_elements_map_.clear();
@@ -125,7 +124,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::setup()
   check_init();
 
   // init and setup beam to beam contact data container
-  beam_potential_params_ptr_ = Teuchos::make_rcp<BEAMINTERACTION::BeamPotentialParams>();
+  beam_potential_params_ptr_ = std::make_shared<BEAMINTERACTION::BeamPotentialParams>();
   beam_potential_params().init(g_state().get_time_n());
   beam_potential_params().setup();
 
@@ -155,7 +154,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::post_setup()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::init_submodel_dependencies(
-    Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
+    std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
   // no active influence on other submodels
@@ -167,11 +166,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::reset()
 {
   check_init_setup();
 
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
+  std::vector<std::shared_ptr<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
   for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
        ++iter)
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
+    std::shared_ptr<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
     std::vector<const Core::Elements::Element*> element_ptr(2);
 
@@ -220,11 +219,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force()
   bool pair_is_active = false;
 
 
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
+  std::vector<std::shared_ptr<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
   for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
        ++iter)
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
+    std::shared_ptr<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
     // conditions applied to the elements of this pair
     std::vector<Core::Conditions::Condition*> conditions_element1;
@@ -274,7 +273,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force()
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
             BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
                 elegids, eleforce, dummystiff, beam_interaction_data_state_ptr()->get_force_np(),
-                Teuchos::null);
+                nullptr);
           }
         }
       }
@@ -309,11 +308,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_stiff()
   bool pair_is_active = false;
 
 
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
+  std::vector<std::shared_ptr<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
   for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
        ++iter)
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
+    std::shared_ptr<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
     // conditions applied to the elements of this pair
     std::vector<Core::Conditions::Condition*> conditions_element1;
@@ -364,7 +363,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_stiff()
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
             BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
-                elegids, dummyforce, elestiff, Teuchos::null,
+                elegids, dummyforce, elestiff, nullptr,
                 beam_interaction_data_state_ptr()->get_stiff());
           }
         }
@@ -406,11 +405,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force_stiff()
   bool pair_is_active = false;
 
 
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
+  std::vector<std::shared_ptr<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
   for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
        ++iter)
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
+    std::shared_ptr<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
     elegids[0] = elepairptr->element1()->id();
     elegids[1] = elepairptr->element2()->id();
@@ -499,7 +498,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::pre_update_step_element(
    * element pairs)
    * move this to runtime_output_step_state as soon as we keep element pairs
    * from previous time step */
-  if (visualization_manager_ != Teuchos::null and
+  if (visualization_manager_ != nullptr and
       g_state().get_step_n() % beam_potential_params()
                                    .get_beam_potential_visualization_output_params()
                                    ->output_interval_in_steps() ==
@@ -615,10 +614,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::run_post_iterate(
 {
   check_init_setup();
 
-  if (visualization_manager_ != Teuchos::null and
-      beam_potential_params()
-          .get_beam_potential_visualization_output_params()
-          ->output_every_iteration())
+  if (visualization_manager_ != nullptr and beam_potential_params()
+                                                .get_beam_potential_visualization_output_params()
+                                                ->output_every_iteration())
   {
     write_iteration_output_runtime_beam_potential(solver.getNumIterations());
   }
@@ -874,7 +872,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::create_beam_potential_el
     {
       ele_ptrs[1] = *secondeleiter;
 
-      Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> newbeaminteractionpair =
+      std::shared_ptr<BEAMINTERACTION::BeamPotentialPair> newbeaminteractionpair =
           BEAMINTERACTION::BeamPotentialPair::create(ele_ptrs, beam_potential_params());
 
       newbeaminteractionpair->init(beam_potential_params_ptr(), ele_ptrs[0], ele_ptrs[1]);
@@ -900,7 +898,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::print_all_beam_potential
     std::ostream& out) const
 {
   out << "\n\nCurrent BeamPotentialElementPairs: ";
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
+  std::vector<std::shared_ptr<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
   for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
        ++iter)
     (*iter)->print(out);
@@ -916,7 +914,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::print_active_beam_potent
       << "):-----------------------------------------\n";
   out << "    ID1            ID2              T xi       eta      angle    gap         force\n";
 
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
+  std::vector<std::shared_ptr<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
   for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
        ++iter)
     (*iter)->print_summary_one_line_per_active_segment_pair(out);
@@ -1007,7 +1005,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::init_output_runtime_beam
 {
   check_init();
 
-  visualization_manager_ = Teuchos::make_rcp<Core::IO::VisualizationManager>(
+  visualization_manager_ = std::make_shared<Core::IO::VisualizationManager>(
       beam_potential_params()
           .get_beam_potential_visualization_output_params()
           ->get_visualization_parameters(),
@@ -1117,7 +1115,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_output_runtime_bea
   std::vector<Core::LinAlg::Matrix<3, 1, double>> potential_moments_ele2_this_pair;
 
   // loop over contact pairs and retrieve all active contact point coordinates
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator pair_iter;
+  std::vector<std::shared_ptr<BEAMINTERACTION::BeamPotentialPair>>::const_iterator pair_iter;
   for (pair_iter = beam_potential_element_pairs_.begin();
        pair_iter != beam_potential_element_pairs_.end(); ++pair_iter)
   {

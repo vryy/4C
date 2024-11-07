@@ -39,24 +39,24 @@ Core::Communication::ParObject* Discret::Elements::SoHex20Type::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex20Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex20Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::SoHex20>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::SoHex20>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex20Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SoHex20Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::SoHex20>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::SoHex20>(id, owner);
   return ele;
 }
 
@@ -106,9 +106,9 @@ Discret::Elements::SoHex20::SoHex20(int id, int owner)
   invJ_.resize(NUMGPT_SOH20, Core::LinAlg::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>(true));
   detJ_.resize(NUMGPT_SOH20, 0.0);
 
-  Teuchos::RCP<const Teuchos::ParameterList> params =
+  std::shared_ptr<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
-  if (params != Teuchos::null)
+  if (params != nullptr)
   {
     pstype_ = Prestress::get_type();
     pstime_ = Prestress::get_prestress_time();
@@ -117,7 +117,7 @@ Discret::Elements::SoHex20::SoHex20(int id, int owner)
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOH20, NUMGPT_SOH20);
+    prestress_ = std::make_shared<Discret::Elements::PreStress>(NUMNOD_SOH20, NUMGPT_SOH20);
 
   return;
 }
@@ -138,7 +138,7 @@ Discret::Elements::SoHex20::SoHex20(const Discret::Elements::SoHex20& old)
   }
 
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(*(old.prestress_));
+    prestress_ = std::make_shared<Discret::Elements::PreStress>(*(old.prestress_));
 
   return;
 }
@@ -219,8 +219,8 @@ void Discret::Elements::SoHex20::unpack(Core::Communication::UnpackBuffer& buffe
   {
     std::vector<char> tmpprestress(0);
     extract_from_pack(buffer, tmpprestress);
-    if (prestress_ == Teuchos::null)
-      prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOH20, NUMGPT_SOH20);
+    if (prestress_ == nullptr)
+      prestress_ = std::make_shared<Discret::Elements::PreStress>(NUMNOD_SOH20, NUMGPT_SOH20);
     Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);
     prestress_->unpack(tmpprestress_buffer);
   }
@@ -246,7 +246,7 @@ void Discret::Elements::SoHex20::print(std::ostream& os) const
 |  get vector of surfaces (public)                                      |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex20::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::SoHex20::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -255,7 +255,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex20::s
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex20::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::SoHex20::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);

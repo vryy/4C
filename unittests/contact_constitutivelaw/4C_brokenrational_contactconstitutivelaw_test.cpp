@@ -20,8 +20,8 @@ namespace
     BrokenrationalConstitutiveLawTest()
     {
       // initialize container for material parameters
-      const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
-          Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::Container>(1,
+      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container> container =
+          std::make_shared<CONTACT::CONSTITUTIVELAW::Container>(1,
               Inpar::CONTACT::ConstitutiveLawType::colaw_brokenrational,
               "Brokenrational Constitutivelaw");
 
@@ -31,14 +31,14 @@ namespace
       container->add("C", -0.5);
       container->add("Offset", 0.5);
 
-      const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> brokenrationalcoconstlaw =
+      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> brokenrationalcoconstlaw =
           CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(container);
       coconstlaw_ = brokenrationalcoconstlaw;
     }
 
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
 
-    Teuchos::RCP<CONTACT::Node> cnode;
+    std::shared_ptr<CONTACT::Node> cnode;
   };
 
   //! test member function Evaluate

@@ -507,7 +507,7 @@ void Cut::Node::sort_nodal_dof_sets()
 
   if (nodaldofsets_.size() > 1)
   {
-    std::vector<Teuchos::RCP<Cut::NodalDofSet>>::iterator it_start = nodaldofsets_.begin();
+    std::vector<std::shared_ptr<Cut::NodalDofSet>>::iterator it_start = nodaldofsets_.begin();
 
     if (nodaldofsets_[0]->is_standard_dof_set())
     {
@@ -541,30 +541,30 @@ void Cut::Node::collect_nodal_dof_sets(bool connect_ghost_with_standard_nds)
   // such that ghost sets to be combined are stored consecutively in the vector of sorted nodal
   // dofsets
 
-  std::vector<Teuchos::RCP<CompositeNodalDofSet>> collected_nodaldofsets;
+  std::vector<std::shared_ptr<CompositeNodalDofSet>> collected_nodaldofsets;
 
-  for (std::vector<Teuchos::RCP<NodalDofSet>>::iterator it = nodaldofsets_.begin();
+  for (std::vector<std::shared_ptr<NodalDofSet>>::iterator it = nodaldofsets_.begin();
        it != nodaldofsets_.end(); it++)
   {
-    Teuchos::RCP<NodalDofSet> nds = *it;
+    std::shared_ptr<NodalDofSet> nds = *it;
 
     bool is_std_dofset = nds->is_standard_dof_set();
     Cut::Point::PointPosition pos = nds->position();
 
     // already an appropriate composite of nodal dofsets found, the current nodal dofset can be
     // combined with?
-    Teuchos::RCP<CompositeNodalDofSet> cnds = Teuchos::null;
+    std::shared_ptr<CompositeNodalDofSet> cnds = nullptr;
 
     if (is_std_dofset)  // do not combine standard dofsets as they are unique for each phase
     {
-      cnds = Teuchos::make_rcp<Cut::CompositeNodalDofSet>(is_std_dofset, pos);
+      cnds = std::make_shared<Cut::CompositeNodalDofSet>(is_std_dofset, pos);
       collected_nodaldofsets.push_back(cnds);
     }
     else  // ghost set -> create new collected set or append to an already existing one
     {
       if (collected_nodaldofsets.size() == 0)  // no composite added yet
       {
-        cnds = Teuchos::make_rcp<Cut::CompositeNodalDofSet>(
+        cnds = std::make_shared<Cut::CompositeNodalDofSet>(
             is_std_dofset, pos);  // if first, then create a new composite
         collected_nodaldofsets.push_back(cnds);
       }
@@ -573,9 +573,8 @@ void Cut::Node::collect_nodal_dof_sets(bool connect_ghost_with_standard_nds)
         // assume that the nodal dofsets have been sorted in a step before
         // then we potentially combine the current nodal dofset with the last CompositeNodalDofSet
         // at most
-        Teuchos::RCP<CompositeNodalDofSet> cnds_last = collected_nodaldofsets.back();
-        if (cnds_last == Teuchos::null)
-          FOUR_C_THROW("there should be a valid CompositeNodalDofSet");
+        std::shared_ptr<CompositeNodalDofSet> cnds_last = collected_nodaldofsets.back();
+        if (cnds_last == nullptr) FOUR_C_THROW("there should be a valid CompositeNodalDofSet");
 
         if (connect_ghost_with_standard_nds)  // classical std-FEM based cut approximation --
                                               // combine ghost and std sets with same position
@@ -585,7 +584,7 @@ void Cut::Node::collect_nodal_dof_sets(bool connect_ghost_with_standard_nds)
             cnds = cnds_last;
           else  // different position, then create a new one!
           {
-            cnds = Teuchos::make_rcp<Cut::CompositeNodalDofSet>(
+            cnds = std::make_shared<Cut::CompositeNodalDofSet>(
                 is_std_dofset, pos);  // if first, then create a new composite
             collected_nodaldofsets.push_back(cnds);
           }
@@ -599,7 +598,7 @@ void Cut::Node::collect_nodal_dof_sets(bool connect_ghost_with_standard_nds)
             cnds = cnds_last;
           else
           {
-            cnds = Teuchos::make_rcp<Cut::CompositeNodalDofSet>(
+            cnds = std::make_shared<Cut::CompositeNodalDofSet>(
                 is_std_dofset, pos);  // if first, then create a new composite
             collected_nodaldofsets.push_back(cnds);
           }
@@ -668,7 +667,7 @@ void Cut::Node::build_dof_cell_sets(Point* p, const std::vector<plain_volumecell
           }
 
           // set if this set is a std set
-          nodaldofsets_.push_back(Teuchos::make_rcp<NodalDofSet>(connected_sets, isnodalcellset));
+          nodaldofsets_.push_back(std::make_shared<NodalDofSet>(connected_sets, isnodalcellset));
 
           std::copy(connected.begin(), connected.end(), std::inserter(done, done.end()));
         }  // connected.size() > 0
@@ -775,21 +774,21 @@ bool Cut::Node::is_at_same_location(const Node* nod) const
  *----------------------------------------------------------------------------*/
 void Cut::Node::remove_non_standard_nodal_dof_sets()
 {
-  std::vector<Teuchos::RCP<NodalDofSet>> std_nodaldofset;
+  std::vector<std::shared_ptr<NodalDofSet>> std_nodaldofset;
   std_nodaldofset.reserve(1);
   for (unsigned i = 0; i < static_cast<unsigned>(num_dof_sets()); ++i)
   {
-    Teuchos::RCP<NodalDofSet>& nodaldofset = nodaldofsets_[i];
+    std::shared_ptr<NodalDofSet>& nodaldofset = nodaldofsets_[i];
     if (nodaldofset->is_standard_dof_set())
     {
       std_nodaldofset.push_back(nodaldofset);
     }
     else
     {
-      if (nodaldofset.strong_count() > 1)
+      if (nodaldofset.use_count() > 1)
         FOUR_C_THROW(
-            "nodaldofset cannot be destroyed! (strong_count = %d)", nodaldofset.strong_count());
-      nodaldofset = Teuchos::null;
+            "nodaldofset cannot be destroyed! (strong_count = %d)", nodaldofset.use_count());
+      nodaldofset = nullptr;
     }
   }
   nodaldofsets_.swap(std_nodaldofset);
@@ -804,7 +803,7 @@ int Cut::Node::get_standard_nodal_dof_set(Point::PointPosition pos)
 {
   for (int i = 0; i < num_dof_sets(); i++)
   {
-    Teuchos::RCP<NodalDofSet> nodaldofset = nodaldofsets_[i];
+    std::shared_ptr<NodalDofSet> nodaldofset = nodaldofsets_[i];
     if (nodaldofset->is_standard_dof_set())
     {
       if (nodaldofset->position() == pos) return i;
@@ -818,7 +817,7 @@ int Cut::Node::get_standard_nodal_dof_set(Point::PointPosition pos)
 /*-----------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------*/
 bool Cut::NodalDofSetCmp::operator()(
-    Teuchos::RCP<NodalDofSet> nodaldofset1, Teuchos::RCP<NodalDofSet> nodaldofset2)
+    std::shared_ptr<NodalDofSet> nodaldofset1, std::shared_ptr<NodalDofSet> nodaldofset2)
 {
   // Use the RCPs to avoid auto-removing them. Since this function is used for sorting a vector
   // of RCPs, the signature needs to stay like this.

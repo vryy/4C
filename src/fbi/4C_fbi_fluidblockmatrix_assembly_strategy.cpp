@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 
 void FBI::Utils::FBIBlockAssemblyStrategy::assemble_fluid_matrix(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> cff, int elegid, const std::vector<int>& lmstride,
+    std::shared_ptr<Core::LinAlg::SparseOperator> cff, int elegid, const std::vector<int>& lmstride,
     const Core::LinAlg::SerialDenseMatrix& elemat, const std::vector<int>& lmrow,
     const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
 {

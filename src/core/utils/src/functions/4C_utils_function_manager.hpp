@@ -15,10 +15,9 @@
 #include "4C_utils_demangle.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <any>
 #include <functional>
+#include <memory>
 #include <typeindex>
 #include <vector>
 
@@ -58,7 +57,7 @@ namespace Core::Utils
      * the input file according to the @p possible_lines that were previously passed in this
      * function. If one or more of these lines match, they are parsed and the @p function_factory
      * that was passed alongside these lines is called with the parsed data. @p function_factory
-     * needs to return the actual function object wrapped in a Teuchos::RCP.
+     * needs to return the actual function object wrapped in a std::shared_ptr.
      */
     void add_function_definition(
         std::vector<Input::LineDefinition> possible_lines, FunctionFactory function_factory);
@@ -116,11 +115,11 @@ const T& Core::Utils::FunctionManager::function_by_id(int num) const
   const auto& function_any = functions_[num];
   FOUR_C_ASSERT(function_any.has_value(), "Implementation error.");
 
-  using StoredType = Teuchos::RCP<T>;
+  using StoredType = std::shared_ptr<T>;
   if (typeid(StoredType) == function_any.type())
   {
     const auto function_rcp = std::any_cast<StoredType>(function_any);
-    FOUR_C_ASSERT(function_rcp != Teuchos::null, "Implementation error.");
+    FOUR_C_ASSERT(function_rcp != nullptr, "Implementation error.");
     return *function_rcp;
   }
   else
@@ -137,7 +136,8 @@ const T& Core::Utils::FunctionManager::function_by_id(int num) const
 
           // if we actually have an RCP, return the contained type name, otherwise fall back to the
           // full type name
-          if (std::string_view(actual_type_name_with_rcp_prefix.c_str(), start) == "Teuchos::RCP")
+          if (std::string_view(actual_type_name_with_rcp_prefix.c_str(), start) ==
+              "std::shared_ptr")
             return std::string(actual_type_name_with_rcp_prefix, start + 1, end - start - 1);
           else
             return actual_type_name_with_rcp_prefix;

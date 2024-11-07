@@ -50,10 +50,16 @@ namespace STI
         ) override;
 
     //! access scatra time integrator
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_field() const { return scatra_->scatra_field(); };
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> scatra_field() const
+    {
+      return scatra_->scatra_field();
+    };
 
     //! access thermo time integrator
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> thermo_field() const { return thermo_->scatra_field(); };
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> thermo_field() const
+    {
+      return thermo_->scatra_field();
+    };
 
     //! time loop
     void time_loop();
@@ -75,28 +81,28 @@ namespace STI
 
     //! pass scatra degrees of freedom to thermo discretization
     void transfer_scatra_to_thermo(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra  //!< scatra state vector
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> scatra  //!< scatra state vector
     ) const;
 
     //! pass thermo degrees of freedom to scatra discretization
     void transfer_thermo_to_scatra(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> thermo  //!< thermo state vector
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> thermo  //!< thermo state vector
     ) const;
 
     //! scatra time integrator
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra_;
 
     //! thermo time integrator
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> thermo_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    Teuchos::RCP<ScaTra::MeshtyingStrategyS2I> strategyscatra_;
+    std::shared_ptr<ScaTra::MeshtyingStrategyS2I> strategyscatra_;
 
     //! meshtying strategy for scatra-scatra interface coupling on thermo discretization
-    Teuchos::RCP<ScaTra::MeshtyingStrategyS2I> strategythermo_;
+    std::shared_ptr<ScaTra::MeshtyingStrategyS2I> strategythermo_;
 
     //! input parameters for scatra and thermo fields
-    Teuchos::RCP<Teuchos::ParameterList> fieldparameters_;
+    std::shared_ptr<Teuchos::ParameterList> fieldparameters_;
 
     //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling iterations
     //! (partitioned algorithm)
@@ -111,11 +117,11 @@ namespace STI
     double itertol_;
 
     //! input parameters for scatra-thermo interaction
-    Teuchos::RCP<Teuchos::ParameterList> stiparameters_;
+    std::shared_ptr<Teuchos::ParameterList> stiparameters_;
 
     //! timer for Newton-Raphson iteration (monolithic algorithm) or outer coupling iteration
     //! (partitioned algorithm)
-    Teuchos::RCP<Teuchos::Time> timer_;
+    std::shared_ptr<Teuchos::Time> timer_;
 
    private:
     //! modify field parameters for thermo field

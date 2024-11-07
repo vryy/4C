@@ -24,9 +24,9 @@
 #include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Utils.H>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -66,11 +66,11 @@ namespace NOX
       /// constructor
       LinearSystem(Teuchos::ParameterList& printParams,  ///< printing parameters
           Teuchos::ParameterList& linearSolverParams,    ///< parameters for linear solution
-          const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>&
+          const std::shared_ptr<::NOX::Epetra::Interface::Jacobian>&
               iJac,  ///< NOX interface to Jacobian, i.e. #Solid::TimIntImpl
-          const Teuchos::RCP<Epetra_Operator>& J,  ///< the Jacobian or stiffness matrix
+          const std::shared_ptr<Epetra_Operator>& J,  ///< the Jacobian or stiffness matrix
           const ::NOX::Epetra::Vector& cloneVector,
-          Teuchos::RCP<Core::LinAlg::Solver>
+          std::shared_ptr<Core::LinAlg::Solver>
               structure_solver,  ///< (used-defined) linear algebraic solver
           const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject = Teuchos::null);
 
@@ -155,14 +155,14 @@ namespace NOX
      protected:
       ::NOX::Utils utils_;
 
-      Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> jacInterfacePtr_;
-      Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> precInterfacePtr_;
+      std::shared_ptr<::NOX::Epetra::Interface::Jacobian> jacInterfacePtr_;
+      std::shared_ptr<::NOX::Epetra::Interface::Preconditioner> precInterfacePtr_;
       OperatorType jacType_;
       OperatorType precType_;
-      mutable Teuchos::RCP<Epetra_Operator> jacPtr_;
-      mutable Teuchos::RCP<Epetra_Operator> precPtr_;
+      mutable std::shared_ptr<Epetra_Operator> jacPtr_;
+      mutable std::shared_ptr<Epetra_Operator> precPtr_;
       Teuchos::RCP<::NOX::Epetra::Scaling> scaling_;
-      mutable Teuchos::RCP<::NOX::Epetra::Vector> tmpVectorPtr_;
+      mutable std::shared_ptr<::NOX::Epetra::Vector> tmpVectorPtr_;
       mutable double conditionNumberEstimate_;
 
       bool outputSolveDetails_;
@@ -173,7 +173,7 @@ namespace NOX
       int callcount_;
 
       /// linear algebraic solver
-      Teuchos::RCP<Core::LinAlg::Solver> structureSolver_;
+      std::shared_ptr<Core::LinAlg::Solver> structureSolver_;
 
       Teuchos::Time timer_;
       mutable double timeApplyJacbianInverse_;

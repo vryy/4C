@@ -60,15 +60,15 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
           ((Global::Problem::instance()->tsi_dynamic_params()).sublist("MONOLITHIC"))
               .get<double>("ADAPTCONV_BETTER")),
       printiter_(true),  // ADD INPUT PARAMETER
-      zeros_(Teuchos::null),
+      zeros_(nullptr),
       strmethodname_(
           Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP")),
       tsidyn_(Global::Problem::instance()->tsi_dynamic_params()),
       tsidynmono_((Global::Problem::instance()->tsi_dynamic_params()).sublist("MONOLITHIC")),
-      blockrowdofmap_(Teuchos::null),
-      systemmatrix_(Teuchos::null),
-      k_st_(Teuchos::null),
-      k_ts_(Teuchos::null),
+      blockrowdofmap_(nullptr),
+      systemmatrix_(nullptr),
+      k_st_(nullptr),
+      k_ts_(nullptr),
       merge_tsi_blockmatrix_(tsidynmono_.get<bool>("MERGE_TSI_BLOCK_MATRIX")),
       soltech_(Teuchos::getIntegralValue<Inpar::TSI::NlnSolTech>(tsidynmono_, "NLNSOL")),
       iternorm_(Teuchos::getIntegralValue<Inpar::TSI::VectorNorm>(tsidynmono_, "ITERNORM")),
@@ -80,13 +80,13 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       dti_(1.0 / ptcdt_),
       ls_strategy_(
           Teuchos::getIntegralValue<Inpar::TSI::LineSearch>(tsidynmono_, "TSI_LINE_SEARCH")),
-      vel_(Teuchos::null)
+      vel_(nullptr)
 {
   fix_time_integration_params();
 
   // another setup of structural time integration with the correct initial temperature is required,
   // so get the temperature
-  if (thermo_field()->tempnp() == Teuchos::null) FOUR_C_THROW("this is nullptr");
+  if (thermo_field()->tempnp() == nullptr) FOUR_C_THROW("this is nullptr");
 
   if (matchinggrid_)
     structure_field()->discretization()->set_state(1, "temperature", thermo_field()->tempnp());
@@ -98,7 +98,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   structure_->setup();
   structure_field()->discretization()->clear_state(true);
 
-  blockrowdofmap_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
+  blockrowdofmap_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();
 
   // initialise internal varible with new velocities V_{n+1} at t_{n+1}
   vel_ = Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
@@ -122,7 +122,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     Teuchos::ParameterList solverparams;
     solverparams = tsisolverparams;
 
-    solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(solverparams, get_comm(),
+    solver_ = std::make_shared<Core::LinAlg::Solver>(solverparams, get_comm(),
         Global::Problem::instance()->solver_params_callback(),
         Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY"));
@@ -140,7 +140,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       locsysman_ = structure_field()->locsys_manager();
     }
     else
-      locsysman_ = Teuchos::null;
+      locsysman_ = nullptr;
   }
 
 #ifndef TFSI
@@ -193,8 +193,8 @@ void TSI::Monolithic::read_restart(int step)
         *structure_field()->discretization(), *thermo_field()->discretization());
   else
   {
-    Teuchos::RCP<TSI::Utils::TSIMaterialStrategy> strategy =
-        Teuchos::make_rcp<TSI::Utils::TSIMaterialStrategy>();
+    std::shared_ptr<TSI::Utils::TSIMaterialStrategy> strategy =
+        std::make_shared<TSI::Utils::TSIMaterialStrategy>();
     volcoupl_->assign_materials(structure_field()->discretization(),
         thermo_field()->discretization(), Global::Problem::instance()->volmortar_params(),
         Global::Problem::instance()->cut_general_params(), strategy);
@@ -202,10 +202,10 @@ void TSI::Monolithic::read_restart(int step)
 
   Teuchos::ParameterList p;
   //! pointer to the model evaluator data container
-  Teuchos::RCP<Core::Elements::ParamsMinimal> EvalData =
-      Teuchos::make_rcp<Core::Elements::ParamsMinimal>();
+  std::shared_ptr<Core::Elements::ParamsMinimal> EvalData =
+      std::make_shared<Core::Elements::ParamsMinimal>();
   EvalData->set_action_type(Core::Elements::struct_calc_reset_istep);
-  p.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", EvalData);
+  p.set<std::shared_ptr<Core::Elements::ParamsInterface>>("interface", EvalData);
   p.set<std::string>("action", "calc_struct_reset_istep");
   structure_field()->discretization()->evaluate(p);
 
@@ -221,7 +221,7 @@ void TSI::Monolithic::prepare_time_step()
 {
   // we may have changed the ghosting when redistributing contact
   // so we make sure all maps in the system are up to date
-  if (contact_strategy_nitsche_ != Teuchos::null) setup_system();
+  if (contact_strategy_nitsche_ != nullptr) setup_system();
 
   // counter and print header
   // increment time and step counter
@@ -272,7 +272,7 @@ void TSI::Monolithic::create_linear_solver()
   }
 
   // prepare linear solvers and preconditioners
-  solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(tsisolverparams, get_comm(),
+  solver_ = std::make_shared<Core::LinAlg::Solver>(tsisolverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
@@ -426,7 +426,7 @@ void TSI::Monolithic::newton_full()
   setup_rhs();
 
   // do the thermo contact modifications all at once
-  if (contact_strategy_lagrange_ != Teuchos::null)
+  if (contact_strategy_lagrange_ != nullptr)
     contact_strategy_lagrange_->evaluate(
         system_matrix(), rhs_, coupST_, structure_field()->dispnp(), thermo_field()->tempnp());
   apply_dbc();
@@ -468,7 +468,7 @@ void TSI::Monolithic::newton_full()
     // *********** time measurement ***********
 
     // recover LM in the case of contact
-    if (contact_strategy_lagrange_ != Teuchos::null) recover_struct_therm_lm();
+    if (contact_strategy_lagrange_ != nullptr) recover_struct_therm_lm();
 
     // reset solver tolerance
     solver_->reset_tolerance();
@@ -496,7 +496,7 @@ void TSI::Monolithic::newton_full()
     setup_rhs();
 
     // do the thermo contact modifications all at once
-    if (contact_strategy_lagrange_ != Teuchos::null)
+    if (contact_strategy_lagrange_ != nullptr)
     {
       // *********** time measurement ***********
       double dtcpu = timernewton_.wallTime();
@@ -553,8 +553,8 @@ void TSI::Monolithic::newton_full()
     // include all stuff here related with convergence test
     normrhs_ = calculate_vector_norm(iternorm_, *rhs_);
     // vector of displacement and temperature residual
-    Teuchos::RCP<Core::LinAlg::Vector<double>> strrhs;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> thrrhs;
+    std::shared_ptr<Core::LinAlg::Vector<double>> strrhs;
+    std::shared_ptr<Core::LinAlg::Vector<double>> thrrhs;
     // extract field vectors
     extract_field_vectors(rhs_, strrhs, thrrhs);
     normstrrhs_ = calculate_vector_norm(iternormstr_, *strrhs);
@@ -562,8 +562,8 @@ void TSI::Monolithic::newton_full()
 
     // --------------------------------- build residual incremental norms
     // vector of displacement and temperature increments
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sx;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tx;
+    std::shared_ptr<Core::LinAlg::Vector<double>> sx;
+    std::shared_ptr<Core::LinAlg::Vector<double>> tx;
     // extract field vectors
     extract_field_vectors(iterinc_, sx, tx);
     norminc_ = calculate_vector_norm(iternorm_, *iterinc_);
@@ -716,10 +716,10 @@ void TSI::Monolithic::ptc()
 
     // modify structural diagonal block k_ss
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> tmp_SS =
+      std::shared_ptr<Core::LinAlg::Vector<double>> tmp_SS =
           Core::LinAlg::create_vector(structure_field()->system_matrix()->row_map(), false);
       tmp_SS->PutScalar(dti);
-      Teuchos::RCP<Core::LinAlg::Vector<double>> diag_SS =
+      std::shared_ptr<Core::LinAlg::Vector<double>> diag_SS =
           Core::LinAlg::create_vector(structure_field()->system_matrix()->row_map(), false);
       structure_field()->system_matrix()->extract_diagonal_copy(*diag_SS);
 
@@ -729,10 +729,10 @@ void TSI::Monolithic::ptc()
     }
     // modify thermal diagonal block k_tt
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> tmp_tt =
+      std::shared_ptr<Core::LinAlg::Vector<double>> tmp_tt =
           Core::LinAlg::create_vector(thermo_field()->system_matrix()->row_map(), false);
       tmp_tt->PutScalar(dti);
-      Teuchos::RCP<Core::LinAlg::Vector<double>> diag_tt =
+      std::shared_ptr<Core::LinAlg::Vector<double>> diag_tt =
           Core::LinAlg::create_vector(thermo_field()->system_matrix()->row_map(), false);
       thermo_field()->system_matrix()->extract_diagonal_copy(*diag_tt);
       diag_tt->Update(1.0, *tmp_tt, 1.0);
@@ -781,8 +781,8 @@ void TSI::Monolithic::ptc()
     // include all stuff here related with convergence test
     normrhs_ = calculate_vector_norm(iternorm_, *rhs_);
     // vector of displacement and temperature residual
-    Teuchos::RCP<Core::LinAlg::Vector<double>> strrhs;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> thrrhs;
+    std::shared_ptr<Core::LinAlg::Vector<double>> strrhs;
+    std::shared_ptr<Core::LinAlg::Vector<double>> thrrhs;
     // extract field vectors
     extract_field_vectors(rhs_, strrhs, thrrhs);
     normstrrhs_ = calculate_vector_norm(iternormstr_, *strrhs);
@@ -790,8 +790,8 @@ void TSI::Monolithic::ptc()
 
     // --------------------------------- build residual incremental norms
     // vector of displacement and temperature increments
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sx;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tx;
+    std::shared_ptr<Core::LinAlg::Vector<double>> sx;
+    std::shared_ptr<Core::LinAlg::Vector<double>> tx;
     // extract field vectors
     extract_field_vectors(iterinc_, sx, tx);
     norminc_ = calculate_vector_norm(iternorm_, *iterinc_);
@@ -857,7 +857,7 @@ void TSI::Monolithic::ptc()
 /*----------------------------------------------------------------------*
  | evaluate the single fields                                dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> stepinc)
+void TSI::Monolithic::evaluate(std::shared_ptr<Core::LinAlg::Vector<double>> stepinc)
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
@@ -868,11 +868,11 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> stepin
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::Evaluate");
 
   // displacement and temperature incremental vector
-  Teuchos::RCP<Core::LinAlg::Vector<double>> sx;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tx;
+  std::shared_ptr<Core::LinAlg::Vector<double>> sx;
+  std::shared_ptr<Core::LinAlg::Vector<double>> tx;
 
   // if an increment vector exists
-  if (stepinc != Teuchos::null)
+  if (stepinc != nullptr)
   {
     // extract displacement sx and temperature tx incremental vector of global
     // unknown incremental vector x
@@ -887,7 +887,7 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> stepin
 #endif  // TSIMONOLITHASOUTPUT
   }
 
-  // else (x == Teuchos::null): initialise the system
+  // else (x == nullptr): initialise the system
 #ifdef TSIMONOLITHASOUTPUT
   std::cout << "Tempnp vor UpdateNewton\n" << *(ThermoField()->Tempnp()) << std::endl;
   printf(
@@ -921,10 +921,10 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> stepin
 #endif  // TSIPARALLEL
 
 #ifdef TSIMONOLITHASOUTPUT
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tempera =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(ThermoField()->Tempn()->Map());
+  std::shared_ptr<Core::LinAlg::Vector<double>> tempera =
+      std::make_shared<Core::LinAlg::Vector<double>>(ThermoField()->Tempn()->Map());
 
-  if (ThermoField()->Tempnp() != Teuchos::null) tempera->Update(1.0, *ThermoField()->Tempnp(), 0.0);
+  if (ThermoField()->Tempnp() != nullptr) tempera->Update(1.0, *ThermoField()->Tempnp(), 0.0);
 
   structure_field()->discretization()->set_state(1, "temperature", tempera);
   structure_field()->discretization()->set_state(1, "temperature", ThermoField()->Tempn());
@@ -998,8 +998,9 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> stepin
  | extract field vectors for calling evaluate() of the       dano 11/10 |
  | single fields                                                        |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::extract_field_vectors(Teuchos::RCP<Core::LinAlg::Vector<double>> x,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& sx, Teuchos::RCP<Core::LinAlg::Vector<double>>& tx)
+void TSI::Monolithic::extract_field_vectors(std::shared_ptr<Core::LinAlg::Vector<double>> x,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& sx,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& tx)
 {
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::extract_field_vectors");
 
@@ -1014,7 +1015,7 @@ void TSI::Monolithic::extract_field_vectors(Teuchos::RCP<Core::LinAlg::Vector<do
 /*----------------------------------------------------------------------*
  | full monolithic dof row map                               dano 05/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> TSI::Monolithic::dof_row_map() const
+std::shared_ptr<const Epetra_Map> TSI::Monolithic::dof_row_map() const
 {
   return extractor()->full_map();
 }  // dof_row_map()
@@ -1047,15 +1048,15 @@ void TSI::Monolithic::setup_system()
   /*----------------------------------------------------------------------*/
   // initialise TSI-systemmatrix_
   systemmatrix_ =
-      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+      std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           *extractor(), *extractor(), 81, false, true);
 
   // create empty matrix
-  k_st_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  k_st_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *(structure_field()->discretization()->dof_row_map(0)), 81, false, true);
 
   // create empty matrix
-  k_ts_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  k_ts_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *(thermo_field()->discretization()->dof_row_map(0)), 81, false, true);
 
 }  // SetupSystem()
@@ -1067,7 +1068,7 @@ void TSI::Monolithic::setup_system()
 void TSI::Monolithic::set_dof_row_maps()
 {
   // create combined map
-  std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
+  std::vector<std::shared_ptr<const Epetra_Map>> vecSpaces;
 
   // use its own dof_row_map, that is the 0th map of the discretization
   vecSpaces.push_back(structure_field()->dof_row_map(0));
@@ -1076,7 +1077,7 @@ void TSI::Monolithic::set_dof_row_maps()
   if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
   if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No temperature equation. Panic.");
 
-  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(vecSpaces);
+  std::shared_ptr<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(vecSpaces);
 
   // full TSI-blockmap
   extractor()->setup(*fullmap, vecSpaces);
@@ -1103,7 +1104,7 @@ void TSI::Monolithic::setup_system_matrix()
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ss = structure_field()->system_matrix();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> k_ss = structure_field()->system_matrix();
 
   // assign structure part to the TSI matrix
   systemmatrix_->assign(0, 0, Core::LinAlg::View, *k_ss);
@@ -1136,7 +1137,7 @@ void TSI::Monolithic::setup_system_matrix()
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix systemmatrix_
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_tt = thermo_field()->system_matrix();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> k_tt = thermo_field()->system_matrix();
 
   // assign thermo part to the TSI matrix
   systemmatrix_->assign(1, 1, Core::LinAlg::View, *(k_tt));
@@ -1165,7 +1166,7 @@ void TSI::Monolithic::setup_system_matrix()
   systemmatrix_->complete();
 
   // apply mortar coupling
-  if (mortar_coupling_ != Teuchos::null) mortar_coupling_->condense_matrix(systemmatrix_);
+  if (mortar_coupling_ != nullptr) mortar_coupling_->condense_matrix(systemmatrix_);
 
 }  // setup_system_matrix()
 
@@ -1184,11 +1185,11 @@ void TSI::Monolithic::setup_rhs()
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::setup_rhs");
 
   // create full monolithic rhs vector
-  rhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
+  rhs_ = std::make_shared<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
 
   // get the structural rhs
-  Teuchos::RCP<Core::LinAlg::Vector<double>> str_rhs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structure_field()->rhs());
+  std::shared_ptr<Core::LinAlg::Vector<double>> str_rhs =
+      std::make_shared<Core::LinAlg::Vector<double>>(*structure_field()->rhs());
   if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
           Global::Problem::instance()->structural_dynamic_params(), "INT_STRATEGY") ==
       Inpar::Solid::int_standard)
@@ -1199,7 +1200,7 @@ void TSI::Monolithic::setup_rhs()
   extractor()->insert_vector(*thermo_field()->rhs(), 1, *rhs_);
 
   // apply mortar coupling
-  if (mortar_coupling_ != Teuchos::null) mortar_coupling_->condense_rhs(*rhs_);
+  if (mortar_coupling_ != nullptr) mortar_coupling_->condense_rhs(*rhs_);
 
 }  // setup_rhs()
 
@@ -1261,7 +1262,7 @@ void TSI::Monolithic::linear_solve()
   else  // (merge_tsi_blockmatrix_ == true)
   {
     // merge blockmatrix to SparseMatrix and solve
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
 
     // standard solver call
     Core::LinAlg::SolverParams solver_params;
@@ -1280,7 +1281,7 @@ void TSI::Monolithic::linear_solve()
 #endif  // TSI_DEBUG
 
   // apply mortar coupling
-  if (mortar_coupling_ != Teuchos::null) mortar_coupling_->recover_incr(*iterinc_);
+  if (mortar_coupling_ != nullptr) mortar_coupling_->recover_incr(*iterinc_);
 
 }  // linear_solve()
 
@@ -1288,7 +1289,7 @@ void TSI::Monolithic::linear_solve()
 /*----------------------------------------------------------------------*
  | initial guess of the displacements/temperatures           dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> ig)
+void TSI::Monolithic::initial_guess(std::shared_ptr<Core::LinAlg::Vector<double>> ig)
 {
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::initial_guess");
 
@@ -1307,8 +1308,8 @@ void TSI::Monolithic::initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> i
  | setup vector of the structure and thermo field            dano 11/10 |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::setup_vector(Core::LinAlg::Vector<double>& f,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> tv)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> sv,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> tv)
 {
   // extract dofs of the two fields
   // and put the structural/thermal field vector into the global vector f
@@ -1460,7 +1461,7 @@ bool TSI::Monolithic::converged()
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
 
   // convergence of active contact set
-  if (contact_strategy_lagrange_ != Teuchos::null)
+  if (contact_strategy_lagrange_ != nullptr)
   {
     conv = conv && (contact_strategy_lagrange_->mech_contact_res_ <
                        contact_strategy_lagrange_->params().get<double>("TOLCONTCONSTR"));
@@ -1607,7 +1608,7 @@ void TSI::Monolithic::print_newton_iter_header(FILE* ofile)
       break;
   }  // switch (normtypetempi_)
 
-  if (contact_strategy_lagrange_ != Teuchos::null)
+  if (contact_strategy_lagrange_ != nullptr)
   {
     oss << std::setw(16) << "sLMres-norm";
     oss << std::setw(16) << "sLMinc-norm";
@@ -1625,7 +1626,7 @@ void TSI::Monolithic::print_newton_iter_header(FILE* ofile)
   oss << std::setw(12) << "wct";
 
   // add contact set information
-  if (contact_strategy_lagrange_ != Teuchos::null)
+  if (contact_strategy_lagrange_ != nullptr)
   {
     oss << std::setw(12) << "tc";
     oss << std::setw(11) << "#active";
@@ -1777,7 +1778,7 @@ void TSI::Monolithic::print_newton_iter_text(FILE* ofile)
       break;
   }  // switch (normtypetempi_)
 
-  if (contact_strategy_lagrange_ != Teuchos::null)
+  if (contact_strategy_lagrange_ != nullptr)
   {
     oss << std::setw(16) << std::setprecision(5) << std::scientific
         << contact_strategy_lagrange_->mech_contact_res_;
@@ -1798,7 +1799,7 @@ void TSI::Monolithic::print_newton_iter_text(FILE* ofile)
       << timernewton_.totalElapsedTime(true);
 
   // add contact information
-  if (contact_strategy_lagrange_ != Teuchos::null)
+  if (contact_strategy_lagrange_ != nullptr)
   {
     oss << std::setw(12) << std::setprecision(2) << std::scientific << dtcmt_;
     oss << std::setw(11) << contact_strategy_lagrange_->number_of_active_nodes();
@@ -1837,7 +1838,7 @@ void TSI::Monolithic::print_newton_conv()
  | evaluate mechanical-thermal system matrix at state        dano 03/11 |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::apply_str_coupl_matrix(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_st  //!< off-diagonal tangent matrix term
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_st  //!< off-diagonal tangent matrix term
 )
 {
 #ifdef TSI_DEBUG
@@ -1850,8 +1851,8 @@ void TSI::Monolithic::apply_str_coupl_matrix(
   Teuchos::ParameterList sparams;
 
   //! pointer to the model evaluator data container
-  Teuchos::RCP<Core::Elements::ParamsMinimal> EvalData =
-      Teuchos::make_rcp<Core::Elements::ParamsMinimal>();
+  std::shared_ptr<Core::Elements::ParamsMinimal> EvalData =
+      std::make_shared<Core::Elements::ParamsMinimal>();
 
   // set parameters needed for element evalutation
   EvalData->set_action_type(Core::Elements::struct_calc_stifftemp);
@@ -1875,16 +1876,16 @@ void TSI::Monolithic::apply_str_coupl_matrix(
   Core::FE::AssembleStrategy structuralstrategy(0,  // structdofset for row
       1,                                            // thermdofset for column
       k_st,                                         // build mechanical-thermal matrix
-      Teuchos::null,                                // no other matrix or vectors
-      Teuchos::null, Teuchos::null, Teuchos::null);
+      nullptr,                                      // no other matrix or vectors
+      nullptr, nullptr, nullptr);
 
 
-  sparams.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", EvalData);
+  sparams.set<std::shared_ptr<Core::Elements::ParamsInterface>>("interface", EvalData);
   structure_field()->discretization()->evaluate(sparams, structuralstrategy);
   structure_field()->discretization()->clear_state(true);
 
   // add nitsche contact integral
-  if (contact_strategy_nitsche_ != Teuchos::null)
+  if (contact_strategy_nitsche_ != nullptr)
     k_st->add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::displ_temp),
         false, 1., 1.);
 
@@ -1927,7 +1928,7 @@ void TSI::Monolithic::apply_str_coupl_matrix(
  | evaluate thermal-mechanical system matrix at state        dano 03/11 |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::apply_thr_coupl_matrix(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
 )
 {
 #ifdef TSI_DEBUG
@@ -2027,15 +2028,15 @@ void TSI::Monolithic::apply_thr_coupl_matrix(
   Core::FE::AssembleStrategy thermostrategy(0,  // thermdofset for row
       1,                                        // structdofset for column
       k_ts,                                     // thermal-mechanical matrix
-      Teuchos::null,                            // no other matrix or vectors
-      Teuchos::null, Teuchos::null, Teuchos::null);
+      nullptr,                                  // no other matrix or vectors
+      nullptr, nullptr, nullptr);
 
   // evaluate the thermal-mechanical system matrix on the thermal element
   thermo_field()->discretization()->evaluate(tparams, thermostrategy);
   thermo_field()->discretization()->clear_state(true);
 
   // add nitsche contact integral
-  if (contact_strategy_nitsche_ != Teuchos::null)
+  if (contact_strategy_nitsche_ != nullptr)
     k_ts->add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::temp_displ),
         false, timefac, 1.);
 }  // ApplyThrCouplMatrix()
@@ -2045,7 +2046,7 @@ void TSI::Monolithic::apply_thr_coupl_matrix(
  | evaluate thermal-mechanical system matrix at state        dano 12/12 |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
 )
 {
 #ifdef TSI_DEBUG
@@ -2122,8 +2123,8 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
     Core::FE::AssembleStrategy thermostrategy(0,  // thermdofset for row
         1,                                        // structdofset for column
         k_ts,                                     // thermal-mechanical matrix
-        Teuchos::null,                            // no other matrix or vectors
-        Teuchos::null, Teuchos::null, Teuchos::null);
+        nullptr,                                  // no other matrix or vectors
+        nullptr, nullptr, nullptr);
 
     // evaluate the thermal-mechanical system matrix on the thermal element
     thermo_field()->discretization()->evaluate_condition(tparams, thermostrategy, condstring);
@@ -2137,13 +2138,13 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
 /*----------------------------------------------------------------------*
  | map containing the dofs with Dirichlet BC                 dano 03/11 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> TSI::Monolithic::combined_dbc_map()
+std::shared_ptr<Epetra_Map> TSI::Monolithic::combined_dbc_map()
 {
-  const Teuchos::RCP<const Epetra_Map> scondmap =
+  const std::shared_ptr<const Epetra_Map> scondmap =
       structure_field()->get_dbc_map_extractor()->cond_map();
-  const Teuchos::RCP<const Epetra_Map> tcondmap =
+  const std::shared_ptr<const Epetra_Map> tcondmap =
       thermo_field()->get_dbc_map_extractor()->cond_map();
-  Teuchos::RCP<Epetra_Map> condmap = Core::LinAlg::merge_map(scondmap, tcondmap, false);
+  std::shared_ptr<Epetra_Map> condmap = Core::LinAlg::merge_map(scondmap, tcondmap, false);
   return condmap;
 
 }  // combined_dbc_map()
@@ -2157,11 +2158,11 @@ Teuchos::RCP<Epetra_Map> TSI::Monolithic::combined_dbc_map()
 void TSI::Monolithic::recover_struct_therm_lm()
 {
   // only in the case of contact
-  if (contact_strategy_lagrange_ == Teuchos::null) return;
+  if (contact_strategy_lagrange_ == nullptr) return;
 
   // split the increment
-  Teuchos::RCP<Core::LinAlg::Vector<double>> sx;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tx;
+  std::shared_ptr<Core::LinAlg::Vector<double>> sx;
+  std::shared_ptr<Core::LinAlg::Vector<double>> tx;
 
   // extract field vectors
   extract_field_vectors(iterinc_, sx, tx);
@@ -2186,9 +2187,9 @@ void TSI::Monolithic::scale_system(
   {
     // The matrices are modified here. Do we have to change them back later on?
 
-    Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
-    srowsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A->RowMap(), false);
-    scolsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A->RowMap(), false);
+    std::shared_ptr<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
+    srowsum_ = std::make_shared<Core::LinAlg::Vector<double>>(A->RowMap(), false);
+    scolsum_ = std::make_shared<Core::LinAlg::Vector<double>>(A->RowMap(), false);
     A->InvRowSums(srowsum_->get_ref_of_Epetra_Vector());
     A->InvColSums(scolsum_->get_ref_of_Epetra_Vector());
     if ((A->LeftScale(*srowsum_)) or (A->RightScale(*scolsum_)) or
@@ -2197,8 +2198,8 @@ void TSI::Monolithic::scale_system(
       FOUR_C_THROW("structure scaling failed");
 
     A = mat.matrix(1, 1).epetra_matrix();
-    trowsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A->RowMap(), false);
-    tcolsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A->RowMap(), false);
+    trowsum_ = std::make_shared<Core::LinAlg::Vector<double>>(A->RowMap(), false);
+    tcolsum_ = std::make_shared<Core::LinAlg::Vector<double>>(A->RowMap(), false);
     A->InvRowSums(trowsum_->get_ref_of_Epetra_Vector());
     A->InvColSums(tcolsum_->get_ref_of_Epetra_Vector());
     if ((A->LeftScale(*trowsum_)) or (A->RightScale(*tcolsum_)) or
@@ -2206,8 +2207,8 @@ void TSI::Monolithic::scale_system(
         (mat.matrix(0, 1).epetra_matrix()->RightScale(*tcolsum_)))
       FOUR_C_THROW("thermo scaling failed");
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sx = extractor()->extract_vector(b, 0);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tx = extractor()->extract_vector(b, 1);
+    std::shared_ptr<Core::LinAlg::Vector<double>> sx = extractor()->extract_vector(b, 0);
+    std::shared_ptr<Core::LinAlg::Vector<double>> tx = extractor()->extract_vector(b, 1);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (tx->Multiply(1.0, *trowsum_, *tx, 0.0)) FOUR_C_THROW("thermo scaling failed");
@@ -2228,8 +2229,8 @@ void TSI::Monolithic::unscale_solution(Core::LinAlg::BlockSparseMatrixBase& mat,
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sy = extractor()->extract_vector(x, 0);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ty = extractor()->extract_vector(x, 1);
+    std::shared_ptr<Core::LinAlg::Vector<double>> sy = extractor()->extract_vector(x, 0);
+    std::shared_ptr<Core::LinAlg::Vector<double>> ty = extractor()->extract_vector(x, 1);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ty->Multiply(1.0, *tcolsum_, *ty, 0.0)) FOUR_C_THROW("thermo scaling failed");
@@ -2237,8 +2238,8 @@ void TSI::Monolithic::unscale_solution(Core::LinAlg::BlockSparseMatrixBase& mat,
     extractor()->insert_vector(*sy, 0, x);
     extractor()->insert_vector(*ty, 1, x);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sx = extractor()->extract_vector(b, 0);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tx = extractor()->extract_vector(b, 1);
+    std::shared_ptr<Core::LinAlg::Vector<double>> sx = extractor()->extract_vector(b, 0);
+    std::shared_ptr<Core::LinAlg::Vector<double>> tx = extractor()->extract_vector(b, 1);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (tx->ReciprocalMultiply(1.0, *trowsum_, *tx, 0.0)) FOUR_C_THROW("thermo scaling failed");
@@ -2246,7 +2247,7 @@ void TSI::Monolithic::unscale_solution(Core::LinAlg::BlockSparseMatrixBase& mat,
     extractor()->insert_vector(*sx, 0, b);
     extractor()->insert_vector(*tx, 1, b);
 
-    Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
+    std::shared_ptr<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
     srowsum_->Reciprocal(*srowsum_);
     scolsum_->Reciprocal(*scolsum_);
     if ((A->LeftScale(*srowsum_)) or (A->RightScale(*scolsum_)) or
@@ -2572,9 +2573,9 @@ void TSI::Monolithic::calculate_necking_tsi_results()
 
   // ---------------------------------------------------------------- top force
   // nodal reaction force at outer edge for whole support area
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tension =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(newdofmap,  // map containing
-                                                                  // all DOFs at top surf with DBC
+  std::shared_ptr<Core::LinAlg::Vector<double>> tension =
+      std::make_shared<Core::LinAlg::Vector<double>>(newdofmap,  // map containing
+                                                                 // all DOFs at top surf with DBC
           false);
   // copy the structural reaction force to tension
   Core::LinAlg::export_to(*(structure_field()->freact()), *tension);
@@ -2763,7 +2764,7 @@ void TSI::Monolithic::prepare_contact_strategy()
 {
   TSI::Algorithm::prepare_contact_strategy();
 
-  if (contact_strategy_nitsche_ != Teuchos::null)
+  if (contact_strategy_nitsche_ != nullptr)
   {
     const auto& model_eval = structure_field()->model_evaluator(Inpar::Solid::model_structure);
     const auto cparams = model_eval.eval_data().contact_ptr();
@@ -2777,20 +2778,20 @@ void TSI::Monolithic::prepare_contact_strategy()
  |                                                                      |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::apply_struct_coupling_state(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel)
 {
   if (matchinggrid_)
   {
-    if (disp != Teuchos::null) thermo_field()->discretization()->set_state(1, "displacement", disp);
-    if (vel != Teuchos::null) thermo_field()->discretization()->set_state(1, "velocity", vel);
+    if (disp != nullptr) thermo_field()->discretization()->set_state(1, "displacement", disp);
+    if (vel != nullptr) thermo_field()->discretization()->set_state(1, "velocity", vel);
   }
   else
   {
-    if (disp != Teuchos::null)
+    if (disp != nullptr)
       thermo_field()->discretization()->set_state(
           1, "displacement", volcoupl_->apply_vector_mapping21(*disp));
-    if (vel != Teuchos::null)
+    if (vel != nullptr)
       thermo_field()->discretization()->set_state(
           1, "velocity", volcoupl_->apply_vector_mapping21(*vel));
   }
@@ -2851,16 +2852,16 @@ void TSI::Monolithic::fix_time_integration_params()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::apply_dbc()
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ss =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(0, 0).epetra_matrix(),
+  std::shared_ptr<Core::LinAlg::SparseMatrix> k_ss =
+      std::make_shared<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(0, 0).epetra_matrix(),
           Core::LinAlg::Copy, true, false, Core::LinAlg::SparseMatrix::CRS_MATRIX);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_st =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(0, 1));
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ts =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(1, 0));
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_tt =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(1, 1));
-  if (locsysman_ != Teuchos::null)
+  std::shared_ptr<Core::LinAlg::SparseMatrix> k_st =
+      std::make_shared<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(0, 1));
+  std::shared_ptr<Core::LinAlg::SparseMatrix> k_ts =
+      std::make_shared<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(1, 0));
+  std::shared_ptr<Core::LinAlg::SparseMatrix> k_tt =
+      std::make_shared<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(1, 1));
+  if (locsysman_ != nullptr)
   {
     {
       locsysman_->rotate_global_to_local(k_ss);
@@ -2892,9 +2893,9 @@ void TSI::Monolithic::apply_dbc()
   systemmatrix_->complete();
 
 
-  if (locsysman_ != Teuchos::null)
+  if (locsysman_ != nullptr)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> s_rhs, t_rhs;
+    std::shared_ptr<Core::LinAlg::Vector<double>> s_rhs, t_rhs;
     extract_field_vectors(rhs_, s_rhs, t_rhs);
     locsysman_->rotate_global_to_local(*s_rhs);
     Core::LinAlg::apply_dirichlet_to_system(

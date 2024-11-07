@@ -31,9 +31,9 @@ Airway::RedAirwayTissue::RedAirwayTissue(
   // into neumann orthopressure conditions
   std::vector<Core::Conditions::Condition*> surfneumcond;
   std::vector<int> tmp;
-  Teuchos::RCP<Core::FE::Discretization> structdis =
+  std::shared_ptr<Core::FE::Discretization> structdis =
       Global::Problem::instance()->get_dis("structure");
-  if (structdis == Teuchos::null) FOUR_C_THROW("no structure discretization available");
+  if (structdis == nullptr) FOUR_C_THROW("no structure discretization available");
 
   // First get all Neumann conditions on structure
   structdis->get_condition("SurfaceNeumann", surfneumcond);
@@ -66,9 +66,9 @@ Airway::RedAirwayTissue::RedAirwayTissue(
   }
 
   std::vector<Core::Conditions::Condition*> nodecond;
-  Teuchos::RCP<Core::FE::Discretization> redairwaydis =
+  std::shared_ptr<Core::FE::Discretization> redairwaydis =
       Global::Problem::instance()->get_dis("red_airway");
-  if (redairwaydis == Teuchos::null) FOUR_C_THROW("no redairway discretization available");
+  if (redairwaydis == nullptr) FOUR_C_THROW("no redairway discretization available");
 
   // First get all redairway prescribed conditions on structure
   redairwaydis->get_condition("RedAirwayPrescribedCond", nodecond);
@@ -97,23 +97,23 @@ Airway::RedAirwayTissue::RedAirwayTissue(
 
 
   Epetra_Map redundantmap(tmp.size(), tmp.size(), tmp.data(), 0, comm);
-  couppres_ip_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(redundantmap, true);
-  couppres_ip_tilde_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(redundantmap, true);
-  couppres_im_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(redundantmap, true);
-  couppres_im_tilde_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(redundantmap, true);
-  couppres_il_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(redundantmap, true);
-  omega_np_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(redundantmap, true);
-  coupflux_ip_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(redundantmap, true);
-  coupflux_im_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(redundantmap, true);
-  coupvol_ip_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(redundantmap, true);
-  coupvol_im_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(redundantmap, true);
+  couppres_ip_ = std::make_shared<Core::LinAlg::Vector<double>>(redundantmap, true);
+  couppres_ip_tilde_ = std::make_shared<Core::LinAlg::Vector<double>>(redundantmap, true);
+  couppres_im_ = std::make_shared<Core::LinAlg::Vector<double>>(redundantmap, true);
+  couppres_im_tilde_ = std::make_shared<Core::LinAlg::Vector<double>>(redundantmap, true);
+  couppres_il_ = std::make_shared<Core::LinAlg::Vector<double>>(redundantmap, true);
+  omega_np_ = std::make_shared<Core::LinAlg::Vector<double>>(redundantmap, true);
+  coupflux_ip_ = std::make_shared<Core::LinAlg::Vector<double>>(redundantmap, true);
+  coupflux_im_ = std::make_shared<Core::LinAlg::Vector<double>>(redundantmap, true);
+  coupvol_ip_ = std::make_shared<Core::LinAlg::Vector<double>>(redundantmap, true);
+  coupvol_im_ = std::make_shared<Core::LinAlg::Vector<double>>(redundantmap, true);
 
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
 
-  Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
-      Teuchos::make_rcp<Adapter::StructureBaseAlgorithm>(
+  std::shared_ptr<Adapter::StructureBaseAlgorithm> structure =
+      std::make_shared<Adapter::StructureBaseAlgorithm>(
           sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
-  structure_ = Teuchos::rcp_dynamic_cast<Adapter::StructureRedAirway>(structure->structure_field());
+  structure_ = std::dynamic_pointer_cast<Adapter::StructureRedAirway>(structure->structure_field());
   structure_->setup();
 
   setup_red_airways();
@@ -458,7 +458,7 @@ void Airway::RedAirwayTissue::update_and_output()
 void Airway::RedAirwayTissue::setup_red_airways()
 {
   // Access the discretization
-  Teuchos::RCP<Core::FE::Discretization> actdis = Teuchos::null;
+  std::shared_ptr<Core::FE::Discretization> actdis = nullptr;
   actdis = Global::Problem::instance()->get_dis("red_airway");
 
   // Set degrees of freedom in the discretization
@@ -468,7 +468,7 @@ void Airway::RedAirwayTissue::setup_red_airways()
   }
 
   // Context for output and restart
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->writer();
+  std::shared_ptr<Core::IO::DiscretizationWriter> output = actdis->writer();
   output->write_mesh(0, 0.0);
 
   // Set some pointers and variables
@@ -540,7 +540,7 @@ void Airway::RedAirwayTissue::setup_red_airways()
   // the only parameter from the list required here is the number of
   // velocity degrees of freedom
   //------------------------------------------------------------------
-  redairways_ = Teuchos::make_rcp<Airway::RedAirwayImplicitTimeInt>(
+  redairways_ = std::make_shared<Airway::RedAirwayImplicitTimeInt>(
       actdis, std::move(solver), airwaystimeparams, *output);
 
   redairways_->setup_for_coupling();

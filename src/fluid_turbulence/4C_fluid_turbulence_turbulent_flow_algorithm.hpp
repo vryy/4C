@@ -37,7 +37,7 @@ namespace FLD
     void read_restart(const int restart);
 
     /// do result check
-    Teuchos::RCP<Core::Utils::ResultTest> do_result_check()
+    std::shared_ptr<Core::Utils::ResultTest> do_result_check()
     {
       return fluidalgo_->fluid_field()->create_field_test();
     };
@@ -47,21 +47,21 @@ namespace FLD
     void transfer_inflow_velocity();
 
     /// discretization of the compete domain
-    Teuchos::RCP<Core::FE::Discretization> fluiddis_;
+    std::shared_ptr<Core::FE::Discretization> fluiddis_;
     /// discretization of the separate part
-    Teuchos::RCP<Core::FE::Discretization> inflowdis_;
+    std::shared_ptr<Core::FE::Discretization> inflowdis_;
     /// object for a redistributed evaluation of of the separated part
-    Teuchos::RCP<FluidDiscretExtractor> inflowgenerator_;
+    std::shared_ptr<FluidDiscretExtractor> inflowgenerator_;
     /// instance of fluid algorithm
-    Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluidalgo_;
+    std::shared_ptr<Adapter::FluidBaseAlgorithm> fluidalgo_;
     /// instance of fluid inflow algorithm
-    Teuchos::RCP<Adapter::FluidBaseAlgorithm> inflowfluidalgo_;
+    std::shared_ptr<Adapter::FluidBaseAlgorithm> inflowfluidalgo_;
     /// number of time steps
     int step_;
     /// number of development steps
     int numtimesteps_;
     /// velocity/pressure at time n+1 to be transferred to the complete fluid field
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp_;
   };
 
 }  // namespace FLD

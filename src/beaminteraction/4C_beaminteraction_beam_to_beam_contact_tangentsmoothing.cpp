@@ -28,7 +28,7 @@ BEAMINTERACTION::B3CNeighbor::B3CNeighbor(const Core::Elements::Element* left_ne
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::B3CNeighbor>
+std::shared_ptr<BEAMINTERACTION::B3CNeighbor>
 BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(const Core::Elements::Element* element1)
 {
   const Core::Elements::Element* left_neighbor = nullptr;
@@ -117,7 +117,7 @@ BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(const Core::Elements:
     }
   }
 
-  return Teuchos::make_rcp<BEAMINTERACTION::B3CNeighbor>(
+  return std::make_shared<BEAMINTERACTION::B3CNeighbor>(
       left_neighbor, right_neighbor, connecting_node_left, connecting_node_right);
 }
 

@@ -284,9 +284,9 @@ Mat::PAR::MuscleGiantesio::MuscleGiantesio(const Core::Mat::PAR::Parameter::Data
   if (density_ < 0.0) FOUR_C_THROW("DENS should be positive");
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleGiantesio::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::MuscleGiantesio::create_material()
 {
-  return Teuchos::make_rcp<Mat::MuscleGiantesio>(this);
+  return std::make_shared<Mat::MuscleGiantesio>(this);
 }
 
 Mat::MuscleGiantesioType Mat::MuscleGiantesioType::instance_;
@@ -305,7 +305,7 @@ Mat::MuscleGiantesio::MuscleGiantesio()
       omegaa_old_(-1.0),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
+          std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>(
               new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0})
 {
@@ -317,7 +317,7 @@ Mat::MuscleGiantesio::MuscleGiantesio(Mat::PAR::MuscleGiantesio* params)
       omegaa_old_(-1.0),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
+          std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>(
               new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0})
 {
@@ -364,7 +364,7 @@ void Mat::MuscleGiantesio::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
 
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {

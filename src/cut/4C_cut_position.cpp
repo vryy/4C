@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Position> Cut::Position::create(
+std::shared_ptr<Cut::Position> Cut::Position::create(
     const Element& element, const Point& point, Cut::CutFloatType floattype)
 {
   const PositionFactory factory;
@@ -24,7 +24,7 @@ Teuchos::RCP<Cut::Position> Cut::Position::create(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
-Teuchos::RCP<Cut::Position> Cut::Position::create(
+std::shared_ptr<Cut::Position> Cut::Position::create(
     const Element& element, const Core::LinAlg::Matrix<rdim, 1>& xyz, Cut::CutFloatType floattype)
 {
   const PositionFactory factory;
@@ -39,7 +39,7 @@ Teuchos::RCP<Cut::Position> Cut::Position::create(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim, unsigned cdim, unsigned rdim_2>
-Teuchos::RCP<Cut::Position> Cut::Position::create(const Core::LinAlg::Matrix<rdim, cdim>& xyze,
+std::shared_ptr<Cut::Position> Cut::Position::create(const Core::LinAlg::Matrix<rdim, cdim>& xyze,
     const Core::LinAlg::Matrix<rdim_2, 1>& xyz, const Core::FE::CellType& distype,
     Cut::CutFloatType floattype)
 {
@@ -76,7 +76,7 @@ Teuchos::RCP<Cut::Position> Cut::Position::create(const Core::LinAlg::Matrix<rdi
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
-Teuchos::RCP<Cut::Position> Cut::Position::create(const Core::LinAlg::SerialDenseMatrix& xyze,
+std::shared_ptr<Cut::Position> Cut::Position::create(const Core::LinAlg::SerialDenseMatrix& xyze,
     const Core::LinAlg::Matrix<rdim, 1>& xyz, const Core::FE::CellType& distype,
     Cut::CutFloatType floattype)
 {
@@ -114,7 +114,7 @@ Teuchos::RCP<Cut::Position> Cut::Position::create(const Core::LinAlg::SerialDens
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
-Teuchos::RCP<Cut::Position> Cut::Position::create(const std::vector<Node*> nodes,
+std::shared_ptr<Cut::Position> Cut::Position::create(const std::vector<Node*> nodes,
     const Core::LinAlg::Matrix<rdim, 1>& xyz, Core::FE::CellType distype,
     Cut::CutFloatType floattype)
 {
@@ -134,7 +134,7 @@ template <unsigned probdim, Core::FE::CellType eletype, unsigned num_nodes_eleme
 void Cut::PositionGeneric<probdim, eletype, num_nodes_element, dim,
     floattype>::construct_bounding_box()
 {
-  bbside_ = Teuchos::RCP(BoundingBox::create());
+  bbside_ = std::shared_ptr<BoundingBox>(BoundingBox::create());
 
   for (unsigned i = 0; i < num_nodes_element; ++i)
   {
@@ -273,7 +273,7 @@ Cut::PositionFactory::PositionFactory() : probdim_(Global::Problem::instance()->
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Position> Cut::PositionFactory::create_position(
+std::shared_ptr<Cut::Position> Cut::PositionFactory::create_position(
     const Element& element, const Point& point, Cut::CutFloatType floattype) const
 {
   Core::FE::CellType distype = element.shape();
@@ -312,7 +312,7 @@ Teuchos::RCP<Cut::Position> Cut::PositionFactory::create_position(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Position> Cut::PositionFactory::create_position(
+std::shared_ptr<Cut::Position> Cut::PositionFactory::create_position(
     const Element& element, const double* xyz, Cut::CutFloatType floattype) const
 {
   Core::FE::CellType distype = element.shape();
@@ -351,7 +351,7 @@ Teuchos::RCP<Cut::Position> Cut::PositionFactory::create_position(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Position> Cut::PositionFactory::create_position(const double* xyze,
+std::shared_ptr<Cut::Position> Cut::PositionFactory::create_position(const double* xyze,
     const double* xyz, const Core::FE::CellType& distype, Cut::CutFloatType floattype) const
 {
   switch (distype)
@@ -388,7 +388,7 @@ Teuchos::RCP<Cut::Position> Cut::PositionFactory::create_position(const double* 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Position> Cut::PositionFactory::create_position(
+std::shared_ptr<Cut::Position> Cut::PositionFactory::create_position(
     const std::vector<Cut::Node*> nodes, const double* xyz, Core::FE::CellType distype,
     Cut::CutFloatType floattype) const
 {
@@ -457,44 +457,44 @@ Cut::CutFloatType Cut::PositionFactory::use_dist_floattype(Cut::CutFloatType flo
 Cut::CutFloatType Cut::PositionFactory::general_pos_floattype_ = floattype_none;
 Cut::CutFloatType Cut::PositionFactory::general_dist_floattype_ = floattype_none;
 
-template Teuchos::RCP<Cut::Position> Cut::Position::create<2>(
+template std::shared_ptr<Cut::Position> Cut::Position::create<2>(
     const Element& element, const Core::LinAlg::Matrix<2, 1>& xyz, Cut::CutFloatType floattype);
-template Teuchos::RCP<Cut::Position> Cut::Position::create<3>(
+template std::shared_ptr<Cut::Position> Cut::Position::create<3>(
     const Element& element, const Core::LinAlg::Matrix<3, 1>& xyz, Cut::CutFloatType floattype);
 
-template Teuchos::RCP<Cut::Position> Cut::Position::create<3, 3, 3>(
+template std::shared_ptr<Cut::Position> Cut::Position::create<3, 3, 3>(
     const Core::LinAlg::Matrix<3, 3>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template Teuchos::RCP<Cut::Position> Cut::Position::create<3, 6, 3>(
+template std::shared_ptr<Cut::Position> Cut::Position::create<3, 6, 3>(
     const Core::LinAlg::Matrix<3, 6>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template Teuchos::RCP<Cut::Position> Cut::Position::create<3, 4, 3>(
+template std::shared_ptr<Cut::Position> Cut::Position::create<3, 4, 3>(
     const Core::LinAlg::Matrix<3, 4>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template Teuchos::RCP<Cut::Position> Cut::Position::create<3, 8, 3>(
+template std::shared_ptr<Cut::Position> Cut::Position::create<3, 8, 3>(
     const Core::LinAlg::Matrix<3, 8>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template Teuchos::RCP<Cut::Position> Cut::Position::create<3, 9, 3>(
+template std::shared_ptr<Cut::Position> Cut::Position::create<3, 9, 3>(
     const Core::LinAlg::Matrix<3, 9>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template Teuchos::RCP<Cut::Position> Cut::Position::create<3, 2, 3>(
+template std::shared_ptr<Cut::Position> Cut::Position::create<3, 2, 3>(
     const Core::LinAlg::Matrix<3, 2>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template Teuchos::RCP<Cut::Position> Cut::Position::create<2, 2, 2>(
+template std::shared_ptr<Cut::Position> Cut::Position::create<2, 2, 2>(
     const Core::LinAlg::Matrix<2, 2>& xyze, const Core::LinAlg::Matrix<2, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
 
-template Teuchos::RCP<Cut::Position> Cut::Position::create<3>(
+template std::shared_ptr<Cut::Position> Cut::Position::create<3>(
     const Core::LinAlg::SerialDenseMatrix& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template Teuchos::RCP<Cut::Position> Cut::Position::create<2>(
+template std::shared_ptr<Cut::Position> Cut::Position::create<2>(
     const Core::LinAlg::SerialDenseMatrix& xyze, const Core::LinAlg::Matrix<2, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
 
 
-template Teuchos::RCP<Cut::Position> Cut::Position::create<3>(const std::vector<Node*> nodes,
+template std::shared_ptr<Cut::Position> Cut::Position::create<3>(const std::vector<Node*> nodes,
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::FE::CellType distype, Cut::CutFloatType floattype);
-template Teuchos::RCP<Cut::Position> Cut::Position::create<2>(const std::vector<Node*> nodes,
+template std::shared_ptr<Cut::Position> Cut::Position::create<2>(const std::vector<Node*> nodes,
     const Core::LinAlg::Matrix<2, 1>& xyz, Core::FE::CellType distype, Cut::CutFloatType floattype);
 
 /* --- ComputeEmbeddedPosition --- */

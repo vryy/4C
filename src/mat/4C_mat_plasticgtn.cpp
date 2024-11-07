@@ -56,9 +56,9 @@ Mat::PAR::PlasticGTN::PlasticGTN(const Core::Mat::PAR::Parameter::Data& matdata)
         "HARDENING_FUNC or YIELD in MAT_Struct_PlasticGTN");
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticGTN::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::PlasticGTN::create_material()
 {
-  return Teuchos::make_rcp<Mat::PlasticGTN>(this);
+  return std::make_shared<Mat::PlasticGTN>(this);
 }
 Mat::PlasticGTNType Mat::PlasticGTNType::instance_;
 
@@ -104,7 +104,7 @@ void Mat::PlasticGTN::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {

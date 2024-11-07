@@ -32,11 +32,11 @@ namespace CONTACT
      public:
       /// standard constructor
       CubicConstitutiveLawParams(
-          const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container);
+          const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container);
 
 
       /// create ConstitutiveLaw instance of matching type with my parameters
-      Teuchos::RCP<ConstitutiveLaw> create_constitutive_law() override;
+      std::shared_ptr<ConstitutiveLaw> create_constitutive_law() override;
 
       /// @name get-functions for the parameters of a cubic polynomial
       double getdata() { return a_; }

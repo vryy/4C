@@ -633,7 +633,7 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& params,
-    std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces, bool& poroslave,
+    std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces, bool& poroslave,
     bool& poromaster) const
 {
   // start building interfaces
@@ -818,15 +818,14 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
     // ------------------------------------------------------------------------
     // create the desired interface object
     // ------------------------------------------------------------------------
-    const auto& non_owning_discret =
-        Teuchos::RCP<const Core::FE::Discretization>(&discret(), false);
+    const auto& non_owning_discret = Core::Utils::shared_ptr_from_ref(discret());
 
-    Teuchos::RCP<CONTACT::Interface> newinterface = create_interface(groupid1, get_comm(), n_dim(),
-        icparams, isself[0], Teuchos::null, contactconstitutivelaw_id);
+    std::shared_ptr<CONTACT::Interface> newinterface = create_interface(
+        groupid1, get_comm(), n_dim(), icparams, isself[0], nullptr, contactconstitutivelaw_id);
     interfaces.push_back(newinterface);
 
     // get it again
-    const Teuchos::RCP<CONTACT::Interface>& interface = interfaces.back();
+    const std::shared_ptr<CONTACT::Interface>& interface = interfaces.back();
 
     /* note that the nodal ids are unique because they come from
      * one global problem discretization containing all nodes of the
@@ -898,8 +897,8 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
          * and found for the second, third, ... time! */
         if (ftype != Inpar::CONTACT::friction_none)
         {
-          Teuchos::RCP<CONTACT::FriNode> cnode =
-              Teuchos::make_rcp<CONTACT::FriNode>(node->id(), node->x(), node->owner(),
+          std::shared_ptr<CONTACT::FriNode> cnode =
+              std::make_shared<CONTACT::FriNode>(node->id(), node->x(), node->owner(),
                   discret().dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus);
           //-------------------
           // get nurbs weight!
@@ -959,17 +958,17 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
         }
         else
         {
-          Teuchos::RCP<CONTACT::Node> cnode;
+          std::shared_ptr<CONTACT::Node> cnode;
           if (mircolaw == true)
           {
-            cnode = Teuchos::make_rcp<CONTACT::RoughNode>(node->id(), node->x(), node->owner(),
+            cnode = std::make_shared<CONTACT::RoughNode>(node->id(), node->x(), node->owner(),
                 discret().dof(0, node), isslave[j], isactive[j] + foundinitialactive,
                 hurstexponentfunction, initialtopologystddeviationfunction, resolution,
                 randomtopologyflag, randomseedflag, randomgeneratorseed);
           }
           else
           {
-            cnode = Teuchos::make_rcp<CONTACT::Node>(node->id(), node->x(), node->owner(),
+            cnode = std::make_shared<CONTACT::Node>(node->id(), node->x(), node->owner(),
                 discret().dof(0, node), isslave[j], isactive[j] + foundinitialactive);
           }
 
@@ -1042,7 +1041,8 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
     for (std::size_t j = 0; j < currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele = currentgroup[j]->geometry();
+      std::map<int, std::shared_ptr<Core::Elements::Element>>& currele =
+          currentgroup[j]->geometry();
 
       /* elements in a boundary condition have a unique id
        * but ids are not unique among 2 distinct conditions
@@ -1057,7 +1057,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
        * the element ids stay the same for more than one processor in use.
        * hiermeier 02/2016 */
       int lsize = 0;
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator fool;
+      std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator fool;
       for (fool = currele.begin(); fool != currele.end(); ++fool)
         if (fool->second->owner() == get_comm().MyPID()) ++lsize;
 
@@ -1069,7 +1069,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
 
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
-        Teuchos::RCP<Core::Elements::Element> ele = fool->second;
+        std::shared_ptr<Core::Elements::Element> ele = fool->second;
         if (Core::FE::is_nurbs_celltype(ele->shape()) != nurbs)
         {
           FOUR_C_THROW(
@@ -1083,17 +1083,17 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
         // the slave condition )
         if (dbc_slave_eles.find(ele.get()) != dbc_slave_eles.end()) continue;
 
-        Teuchos::RCP<CONTACT::Element> cele =
-            Teuchos::make_rcp<CONTACT::Element>(ele->id() + ggsize, ele->owner(), ele->shape(),
+        std::shared_ptr<CONTACT::Element> cele =
+            std::make_shared<CONTACT::Element>(ele->id() + ggsize, ele->owner(), ele->shape(),
                 ele->num_node(), ele->node_ids(), isslave[j], nurbs);
 
         if (isporo) set_poro_parent_element(slavetype, mastertype, *cele, ele, discret());
 
         if (algo == Inpar::Mortar::algorithm_gpts)
         {
-          Teuchos::RCP<Core::Elements::FaceElement> faceele =
-              Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
-          if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
+          std::shared_ptr<Core::Elements::FaceElement> faceele =
+              std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
+          if (faceele == nullptr) FOUR_C_THROW("Cast to FaceElement failed!");
           if (faceele->parent_element() == nullptr) FOUR_C_THROW("face parent does not exist");
           if (discret().element_col_map()->LID(faceele->parent_element()->id()) == -1)
             FOUR_C_THROW("vol dis does not have parent ele");
@@ -1134,7 +1134,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::fully_overlapping_interfaces(
-    std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces) const
+    std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces) const
 {
   int ocount = 0;
   for (auto it = interfaces.begin(); it != interfaces.end(); ++it, ++ocount)
@@ -1258,9 +1258,9 @@ int CONTACT::STRATEGY::Factory::identify_full_subset(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(const int id,
+std::shared_ptr<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(const int id,
     const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
-    const bool selfcontact, Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
+    const bool selfcontact, std::shared_ptr<CONTACT::InterfaceDataContainer> interfaceData_ptr,
     const int contactconstitutivelaw_id)
 {
   auto stype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(icparams, "STRATEGY");
@@ -1271,21 +1271,21 @@ Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(
+std::shared_ptr<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(
     const enum Inpar::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
     const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-    Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_ptr,
+    std::shared_ptr<CONTACT::InterfaceDataContainer> interface_data_ptr,
     const int contactconstitutivelaw_id)
 {
-  Teuchos::RCP<CONTACT::Interface> newinterface = Teuchos::null;
+  std::shared_ptr<CONTACT::Interface> newinterface = nullptr;
 
   auto wlaw = Teuchos::getIntegralValue<Inpar::Wear::WearLaw>(icparams, "WEARLAW");
 
   switch (stype)
   {
     case Inpar::CONTACT::solution_multiscale:
-      interface_data_ptr = Teuchos::make_rcp<CONTACT::InterfaceDataContainer>();
-      newinterface = Teuchos::make_rcp<CONTACT::ConstitutivelawInterface>(
+      interface_data_ptr = std::make_shared<CONTACT::InterfaceDataContainer>();
+      newinterface = std::make_shared<CONTACT::ConstitutivelawInterface>(
           interface_data_ptr, id, comm, dim, icparams, selfcontact, contactconstitutivelaw_id);
       break;
     // ------------------------------------------------------------------------
@@ -1293,21 +1293,21 @@ Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(
     // ------------------------------------------------------------------------
     default:
     {
-      interface_data_ptr = Teuchos::make_rcp<CONTACT::InterfaceDataContainer>();
+      interface_data_ptr = std::make_shared<CONTACT::InterfaceDataContainer>();
 
       if (wlaw != Inpar::Wear::wear_none)
       {
-        newinterface = Teuchos::make_rcp<Wear::WearInterface>(
+        newinterface = std::make_shared<Wear::WearInterface>(
             interface_data_ptr, id, comm, dim, icparams, selfcontact);
       }
       else if (icparams.get<int>("PROBTYPE") == Inpar::CONTACT::tsi &&
                stype == Inpar::CONTACT::solution_lagmult)
       {
-        newinterface = Teuchos::make_rcp<CONTACT::TSIInterface>(
+        newinterface = std::make_shared<CONTACT::TSIInterface>(
             interface_data_ptr, id, comm, dim, icparams, selfcontact);
       }
       else
-        newinterface = Teuchos::make_rcp<CONTACT::Interface>(
+        newinterface = std::make_shared<CONTACT::Interface>(
             interface_data_ptr, id, comm, dim, icparams, selfcontact);
       break;
     }
@@ -1320,22 +1320,22 @@ Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::set_poro_parent_element(
     enum Mortar::Element::PhysicalType& slavetype, enum Mortar::Element::PhysicalType& mastertype,
-    CONTACT::Element& cele, Teuchos::RCP<Core::Elements::Element>& ele,
+    CONTACT::Element& cele, std::shared_ptr<Core::Elements::Element>& ele,
     const Core::FE::Discretization& discret) const
 {
   // ints to communicate decision over poro bools between processors on every interface
   // safety check - because there may not be mixed interfaces and structural slave elements
-  Teuchos::RCP<Core::Elements::FaceElement> faceele =
-      Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
-  if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
+  std::shared_ptr<Core::Elements::FaceElement> faceele =
+      std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
+  if (faceele == nullptr) FOUR_C_THROW("Cast to FaceElement failed!");
   cele.phys_type() = Mortar::Element::other;
-  std::vector<Teuchos::RCP<Core::Conditions::Condition>> poroCondVec;
+  std::vector<std::shared_ptr<Core::Conditions::Condition>> poroCondVec;
   discret.get_condition("PoroCoupling", poroCondVec);
   if (!cele.is_slave())  // treat an element as a master element if it is no slave element
   {
     for (auto& poroCond : poroCondVec)
     {
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator eleitergeometry;
+      std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = poroCond->geometry().begin();
            eleitergeometry != poroCond->geometry().end(); ++eleitergeometry)
       {
@@ -1366,7 +1366,7 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(
   {
     for (auto& poroCond : poroCondVec)
     {
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator eleitergeometry;
+      std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = poroCond->geometry().begin();
            eleitergeometry != poroCond->geometry().end(); ++eleitergeometry)
       {
@@ -1505,14 +1505,14 @@ void CONTACT::STRATEGY::Factory::find_poro_interface_types(bool& poromaster, boo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strategy(
+std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strategy(
     const Teuchos::ParameterList& params, const bool& poroslave, const bool& poromaster,
-    const int& dof_offset, std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces,
+    const int& dof_offset, std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces,
     CONTACT::ParamsInterface* cparams_interface) const
 {
   const auto stype =
       Teuchos::getIntegralValue<enum Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY");
-  Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr = Teuchos::null;
+  std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr = nullptr;
 
   return build_strategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
       discret().dof_row_map(), discret().node_row_map(), n_dim(), comm_ptr(), data_ptr,
@@ -1521,12 +1521,13 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strate
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strategy(
+std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strategy(
     const Inpar::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
     const bool& poroslave, const bool& poromaster, const int& dof_offset,
-    std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces, const Epetra_Map* dof_row_map,
-    const Epetra_Map* node_row_map, const int dim, const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
-    Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr,
+    std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces, const Epetra_Map* dof_row_map,
+    const Epetra_Map* node_row_map, const int dim,
+    const std::shared_ptr<const Epetra_Comm>& comm_ptr,
+    std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr,
     CONTACT::ParamsInterface* cparams_interface)
 {
   if (comm_ptr->MyPID() == 0)
@@ -1534,7 +1535,7 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strate
     std::cout << "Building contact strategy object............";
     fflush(stdout);
   }
-  Teuchos::RCP<CONTACT::AbstractStrategy> strategy_ptr = Teuchos::null;
+  std::shared_ptr<CONTACT::AbstractStrategy> strategy_ptr = nullptr;
 
   // get input par.
   auto wlaw = Teuchos::getIntegralValue<Inpar::Wear::WearLaw>(params, "WEARLAW");
@@ -1550,8 +1551,8 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strate
   if (stype == Inpar::CONTACT::solution_lagmult && wlaw != Inpar::Wear::wear_none &&
       (wtype == Inpar::Wear::wear_intstate || wtype == Inpar::Wear::wear_primvar))
   {
-    data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
-    strategy_ptr = Teuchos::make_rcp<Wear::LagrangeStrategyWear>(
+    data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
+    strategy_ptr = std::make_shared<Wear::LagrangeStrategyWear>(
         data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset);
   }
   else if (stype == Inpar::CONTACT::solution_lagmult)
@@ -1573,15 +1574,15 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strate
     }
     else if (params.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)
     {
-      data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
-      strategy_ptr = Teuchos::make_rcp<LagrangeStrategyTsi>(data_ptr, dof_row_map, node_row_map,
+      data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
+      strategy_ptr = std::make_shared<LagrangeStrategyTsi>(data_ptr, dof_row_map, node_row_map,
           params, interfaces, dim, comm_ptr, dummy, dof_offset);
     }
     else
     {
-      data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
-      strategy_ptr = Teuchos::make_rcp<LagrangeStrategy>(data_ptr, dof_row_map, node_row_map,
-          params, interfaces, dim, comm_ptr, dummy, dof_offset);
+      data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
+      strategy_ptr = std::make_shared<LagrangeStrategy>(data_ptr, dof_row_map, node_row_map, params,
+          interfaces, dim, comm_ptr, dummy, dof_offset);
     }
   }
   else if (((stype == Inpar::CONTACT::solution_penalty or
@@ -1589,7 +1590,7 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strate
                algo != Inpar::Mortar::algorithm_gpts) &&
            stype != Inpar::CONTACT::solution_uzawa)
   {
-    strategy_ptr = Teuchos::make_rcp<PenaltyStrategy>(
+    strategy_ptr = std::make_shared<PenaltyStrategy>(
         dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset);
   }
   else if (stype == Inpar::CONTACT::solution_uzawa)
@@ -1609,26 +1610,26 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strate
   {
     if (params.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)
     {
-      data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
-      strategy_ptr = Teuchos::make_rcp<NitscheStrategyTsi>(
+      data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
+      strategy_ptr = std::make_shared<NitscheStrategyTsi>(
           data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset);
     }
     else if (params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi)
     {
-      data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
-      strategy_ptr = Teuchos::make_rcp<NitscheStrategySsi>(
+      data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
+      strategy_ptr = std::make_shared<NitscheStrategySsi>(
           data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset);
     }
     else if (params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi_elch)
     {
-      data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
-      strategy_ptr = Teuchos::make_rcp<NitscheStrategySsiElch>(
+      data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
+      strategy_ptr = std::make_shared<NitscheStrategySsiElch>(
           data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset);
     }
     else
     {
-      data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
-      strategy_ptr = Teuchos::make_rcp<NitscheStrategy>(
+      data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
+      strategy_ptr = std::make_shared<NitscheStrategy>(
           data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset);
     }
   }
@@ -1649,7 +1650,7 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strate
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::build_search_tree(
-    const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces) const
+    const std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces) const
 {
   // create binary search tree
   for (const auto& interface : interfaces) interface->create_search_tree();
@@ -1658,7 +1659,7 @@ void CONTACT::STRATEGY::Factory::build_search_tree(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::print(
-    const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces,
+    const std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces,
     CONTACT::AbstractStrategy& strategy_ptr, const Teuchos::ParameterList& params) const
 {
   // print friction information of interfaces

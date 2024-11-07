@@ -26,8 +26,8 @@ namespace
     void SetUp() override
     {
       // create a discretization, that creates node to element pointers and keeps the nodes alive
-      testdis_ = Teuchos::make_rcp<Core::FE::Discretization>(
-          "dummy", Teuchos::make_rcp<Epetra_SerialComm>(), 3);
+      testdis_ = std::make_shared<Core::FE::Discretization>(
+          "dummy", std::make_shared<Epetra_SerialComm>(), 3);
 
       // create 8 nodes
       const std::array<int, 8> nodeids = {0, 1, 2, 3, 4, 5, 6, 7};
@@ -35,23 +35,23 @@ namespace
           {1.20, 0.99, 0.5}, {-0.11, 1.20, 0.66}, {-0.10, -0.2, 1.9}, {1.00, 0.00, 1.90},
           {1.20, 0.99, 1.50}, {-0.11, -0.20, 1.66}};
       for (int lid = 0; lid < 8; ++lid)
-        testdis_->add_node(Teuchos::make_rcp<Core::Nodes::Node>(lid, coords[lid], 0));
+        testdis_->add_node(std::make_shared<Core::Nodes::Node>(lid, coords[lid], 0));
 
       // create 1 element
-      testele_ = Teuchos::make_rcp<Discret::Elements::SoHex8>(0, 0);
+      testele_ = std::make_shared<Discret::Elements::SoHex8>(0, 0);
       testele_->set_node_ids(8, nodeids.data());
       testdis_->add_element(testele_);
       testdis_->fill_complete(false, false, false);
 
-      copytestele_ = Teuchos::make_rcp<Discret::Elements::SoHex8>(*testele_);
+      copytestele_ = std::make_shared<Discret::Elements::SoHex8>(*testele_);
     }
 
     // Delete pointers.
     void TearDown() override
     {
-      copytestele_ = Teuchos::null;
-      testele_ = Teuchos::null;
-      testdis_ = Teuchos::null;
+      copytestele_ = nullptr;
+      testele_ = nullptr;
+      testdis_ = nullptr;
 
       // We need to make sure the Global::Problem instance created in setUp is deleted again. If
       // this is not done, some troubles arise where unit tests influence each other on some
@@ -59,11 +59,11 @@ namespace
       Global::Problem::done();
     }
     //! dummy discretization for holding element and node pointers
-    Teuchos::RCP<Core::FE::Discretization> testdis_;
+    std::shared_ptr<Core::FE::Discretization> testdis_;
     //! the hex8 element to be tested
-    Teuchos::RCP<Discret::Elements::SoHex8> testele_;
+    std::shared_ptr<Discret::Elements::SoHex8> testele_;
     //! a copy of the hex8 element to test the copy constructor
-    Teuchos::RCP<Discret::Elements::SoHex8> copytestele_;
+    std::shared_ptr<Discret::Elements::SoHex8> copytestele_;
   };
 
   /**

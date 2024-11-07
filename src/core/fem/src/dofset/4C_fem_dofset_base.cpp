@@ -57,7 +57,8 @@ void Core::DOFSets::DofSetBase::add_dof_setto_list()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetBase::replace_in_static_dofsets(Teuchos::RCP<DofSetInterface> olddofset)
+void Core::DOFSets::DofSetBase::replace_in_static_dofsets(
+    std::shared_ptr<DofSetInterface> olddofset)
 {
   std::list<Core::DOFSets::DofSetInterface*>::iterator iterold =
       std::find(static_dofsets_.begin(), static_dofsets_.end(), &(*olddofset));

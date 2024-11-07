@@ -46,26 +46,26 @@ FOUR_C_NAMESPACE_OPEN
 
 void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, const bool read_mesh)
 {
-  Teuchos::RCP<Core::FE::Discretization> structdis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> xfluiddis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> aledis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> structaledis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> thermdis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> lubricationdis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> scatradis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> scatra_micro_dis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> cellscatradis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> fluidscatradis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> structscatradis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> artscatradis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> arterydis = Teuchos::null;  //_1D_ARTERY_
-  Teuchos::RCP<Core::FE::Discretization> airwaydis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> optidis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> porofluiddis = Teuchos::null;  // fpsi, poroelast
-  Teuchos::RCP<Core::FE::Discretization> elemagdis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> celldis = Teuchos::null;
-  Teuchos::RCP<Core::FE::Discretization> pboxdis = Teuchos::null;
+  std::shared_ptr<Core::FE::Discretization> structdis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> fluiddis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> xfluiddis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> aledis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> structaledis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> thermdis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> lubricationdis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> scatradis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> scatra_micro_dis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> cellscatradis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> fluidscatradis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> structscatradis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> artscatradis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> arterydis = nullptr;  //_1D_ARTERY_
+  std::shared_ptr<Core::FE::Discretization> airwaydis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> optidis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> porofluiddis = nullptr;  // fpsi, poroelast
+  std::shared_ptr<Core::FE::Discretization> elemagdis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> celldis = nullptr;
+  std::shared_ptr<Core::FE::Discretization> pboxdis = nullptr;
 
   // decide which kind of spatial representation is required
   const Core::FE::ShapeFunctionType distype = problem.spatial_approximation_type();
@@ -85,48 +85,48 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     {
       if (distype == Core::FE::ShapeFunctionType::nurbs)
       {
-        structdis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+        structdis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
             "structure", comm, problem.n_dim());
         fluiddis =
-            Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>("fluid", comm, problem.n_dim());
+            std::make_shared<Core::FE::Nurbs::NurbsDiscretization>("fluid", comm, problem.n_dim());
         aledis =
-            Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>("ale", comm, problem.n_dim());
+            std::make_shared<Core::FE::Nurbs::NurbsDiscretization>("ale", comm, problem.n_dim());
       }
       else if (problem.fluid_dynamic_params().sublist("WALL MODEL").get<bool>("X_WALL"))
       {
-        structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
-        fluiddis = Teuchos::make_rcp<XFEM::DiscretizationXWall>("fluid", comm, problem.n_dim());
-        aledis = Teuchos::make_rcp<Core::FE::Discretization>("ale", comm, problem.n_dim());
+        structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
+        fluiddis = std::make_shared<XFEM::DiscretizationXWall>("fluid", comm, problem.n_dim());
+        aledis = std::make_shared<Core::FE::Discretization>("ale", comm, problem.n_dim());
       }
       else
       {
-        structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
-        fluiddis = Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+        structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
+        fluiddis = std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
         if (problem.x_fluid_dynamic_params().sublist("GENERAL").get<bool>("XFLUIDFLUID"))
-          xfluiddis = Teuchos::make_rcp<XFEM::DiscretizationXFEM>("xfluid", comm, problem.n_dim());
-        aledis = Teuchos::make_rcp<Core::FE::Discretization>("ale", comm, problem.n_dim());
+          xfluiddis = std::make_shared<XFEM::DiscretizationXFEM>("xfluid", comm, problem.n_dim());
+        aledis = std::make_shared<Core::FE::Discretization>("ale", comm, problem.n_dim());
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       fluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
-      if (xfluiddis != Teuchos::null)
+          std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+      if (xfluiddis != nullptr)
         xfluiddis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(xfluiddis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(xfluiddis, output_control, distype));
       aledis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("fluid", fluiddis);
-      if (xfluiddis != Teuchos::null) problem.add_dis("xfluid", xfluiddis);
+      if (xfluiddis != nullptr) problem.add_dis("xfluid", xfluiddis);
       problem.add_dis("ale", aledis);
 
       meshreader.add_element_reader(
           Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
 
-      if (xfluiddis != Teuchos::null)
+      if (xfluiddis != nullptr)
       {
         meshreader.add_element_reader(Core::IO::ElementReader(xfluiddis, input, "FLUID ELEMENTS"));
       }
@@ -150,28 +150,28 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
         default:
         {
           structdis =
-              Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
           fluiddis =
-              Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
-          aledis = Teuchos::make_rcp<Core::FE::Discretization>("ale", comm, problem.n_dim());
+              std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+          aledis = std::make_shared<Core::FE::Discretization>("ale", comm, problem.n_dim());
           fluidscatradis =
-              Teuchos::make_rcp<Core::FE::Discretization>("scatra1", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("scatra1", comm, problem.n_dim());
           structscatradis =
-              Teuchos::make_rcp<Core::FE::Discretization>("scatra2", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("scatra2", comm, problem.n_dim());
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       fluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
       aledis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
-      fluidscatradis->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+          std::make_shared<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
+      fluidscatradis->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
           fluidscatradis, output_control, distype));
-      structscatradis->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+      structscatradis->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
           structscatradis, output_control, distype));
 
       problem.add_dis("structure", structdis);
@@ -206,25 +206,25 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
         default:
         {
           structdis =
-              Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
           fluiddis =
-              Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
-          aledis = Teuchos::make_rcp<Core::FE::Discretization>("ale", comm, problem.n_dim());
+              std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+          aledis = std::make_shared<Core::FE::Discretization>("ale", comm, problem.n_dim());
           structaledis =
-              Teuchos::make_rcp<Core::FE::Discretization>("structale", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("structale", comm, problem.n_dim());
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       fluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
       aledis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
       structaledis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structaledis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structaledis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("fluid", fluiddis);
@@ -241,18 +241,17 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
 #endif
 
       // fluid scatra field
-      fluidscatradis =
-          Teuchos::make_rcp<Core::FE::Discretization>("scatra1", comm, problem.n_dim());
+      fluidscatradis = std::make_shared<Core::FE::Discretization>("scatra1", comm, problem.n_dim());
       // create discretization writer - in constructor set into and owned by corresponding discret
-      fluidscatradis->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+      fluidscatradis->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
           fluidscatradis, output_control, distype));
       problem.add_dis("scatra1", fluidscatradis);
 
       // structure scatra field
       structscatradis =
-          Teuchos::make_rcp<Core::FE::Discretization>("scatra2", comm, problem.n_dim());
+          std::make_shared<Core::FE::Discretization>("scatra2", comm, problem.n_dim());
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structscatradis->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+      structscatradis->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
           structscatradis, output_control, distype));
       problem.add_dis("scatra2", structscatradis);
 
@@ -261,10 +260,10 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::fsi_xfem:
     case Core::ProblemType::fluid_xfem:
     {
-      structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
+      structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       problem.add_dis("structure", structdis);
       meshreader.add_advanced_reader(structdis, input, "STRUCTURE",
           Teuchos::getIntegralValue<Core::IO::GeometryType>(
@@ -273,14 +272,14 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
 
       if (problem.x_fluid_dynamic_params().sublist("GENERAL").get<bool>("XFLUIDFLUID"))
       {
-        fluiddis = Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+        fluiddis = std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
         fluiddis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
         problem.add_dis("fluid", fluiddis);
 
-        xfluiddis = Teuchos::make_rcp<XFEM::DiscretizationXFEM>("xfluid", comm, problem.n_dim());
+        xfluiddis = std::make_shared<XFEM::DiscretizationXFEM>("xfluid", comm, problem.n_dim());
         xfluiddis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(xfluiddis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(xfluiddis, output_control, distype));
         problem.add_dis("xfluid", xfluiddis);
 
         meshreader.add_element_reader(
@@ -288,9 +287,9 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
       }
       else
       {
-        fluiddis = Teuchos::make_rcp<XFEM::DiscretizationXFEM>("fluid", comm, problem.n_dim());
+        fluiddis = std::make_shared<XFEM::DiscretizationXFEM>("fluid", comm, problem.n_dim());
         fluiddis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
         problem.add_dis("fluid", fluiddis);
 
         meshreader.add_advanced_reader(fluiddis, input, "FLUID",
@@ -299,30 +298,30 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
             nullptr);
       }
 
-      aledis = Teuchos::make_rcp<Core::FE::Discretization>("ale", comm, problem.n_dim());
+      aledis = std::make_shared<Core::FE::Discretization>("ale", comm, problem.n_dim());
       aledis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
       problem.add_dis("ale", aledis);
       meshreader.add_element_reader(Core::IO::ElementReader(aledis, input, "ALE ELEMENTS"));
       break;
     }
     case Core::ProblemType::fpsi_xfem:
     {
-      structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
-      fluiddis = Teuchos::make_rcp<XFEM::DiscretizationXFEM>("fluid", comm, problem.n_dim());
+      structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
+      fluiddis = std::make_shared<XFEM::DiscretizationXFEM>("fluid", comm, problem.n_dim());
       porofluiddis =
-          Teuchos::make_rcp<Core::FE::DiscretizationFaces>("porofluid", comm, problem.n_dim());
-      aledis = Teuchos::make_rcp<Core::FE::Discretization>("ale", comm, problem.n_dim());
+          std::make_shared<Core::FE::DiscretizationFaces>("porofluid", comm, problem.n_dim());
+      aledis = std::make_shared<Core::FE::Discretization>("ale", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       fluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
       porofluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
       aledis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("porofluid", porofluiddis);
@@ -348,19 +347,19 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
         case Core::FE::ShapeFunctionType::nurbs:
         {
           aledis =
-              Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>("ale", comm, problem.n_dim());
+              std::make_shared<Core::FE::Nurbs::NurbsDiscretization>("ale", comm, problem.n_dim());
           break;
         }
         default:
         {
-          aledis = Teuchos::make_rcp<Core::FE::Discretization>("ale", comm, problem.n_dim());
+          aledis = std::make_shared<Core::FE::Discretization>("ale", comm, problem.n_dim());
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       aledis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
 
       problem.add_dis("ale", aledis);
 
@@ -373,38 +372,38 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     {
       if (distype == Core::FE::ShapeFunctionType::hdg)
       {
-        fluiddis = Teuchos::make_rcp<Core::FE::DiscretizationHDG>("fluid", comm, problem.n_dim());
+        fluiddis = std::make_shared<Core::FE::DiscretizationHDG>("fluid", comm, problem.n_dim());
 
         // create discretization writer - in constructor set into and owned by corresponding discret
         fluiddis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
       }
       else if (distype == Core::FE::ShapeFunctionType::nurbs)
       {
         fluiddis =
-            Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>("fluid", comm, problem.n_dim());
+            std::make_shared<Core::FE::Nurbs::NurbsDiscretization>("fluid", comm, problem.n_dim());
 
         // create discretization writer - in constructor set ingto and owned by corresponding
         // discret
         fluiddis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
       }
       else if (problem.fluid_dynamic_params().sublist("WALL MODEL").get<bool>("X_WALL"))
       {
-        fluiddis = Teuchos::make_rcp<XFEM::DiscretizationXWall>("fluid", comm, problem.n_dim());
+        fluiddis = std::make_shared<XFEM::DiscretizationXWall>("fluid", comm, problem.n_dim());
 
         // create discretization writer - in constructor set into and owned by corresponding discret
         fluiddis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
       }
       else
       {
-        // fluiddis  = Teuchos::rcp(new Core::FE::Discretization("fluid",input.Comm()));
-        fluiddis = Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+        // fluiddis  = Teuchos::rcp(new Core::FE::Discretization("fluid",reader.Comm()));
+        fluiddis = std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
 
         // create discretization writer - in constructor set into and owned by corresponding discret
         fluiddis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
       }
 
       problem.add_dis("fluid", fluiddis);
@@ -420,10 +419,10 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     {
       // create empty discretizations
       lubricationdis =
-          Teuchos::make_rcp<Core::FE::Discretization>("lubrication", comm, problem.n_dim());
+          std::make_shared<Core::FE::Discretization>("lubrication", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      lubricationdis->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+      lubricationdis->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
           lubricationdis, output_control, distype));
 
       problem.add_dis("lubrication", lubricationdis);
@@ -440,34 +439,34 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
       {
         case Core::FE::ShapeFunctionType::nurbs:
         {
-          fluiddis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          fluiddis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "fluid", comm, problem.n_dim());
-          scatradis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          scatradis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "scatra", comm, problem.n_dim());
           break;
         }
         case Core::FE::ShapeFunctionType::hdg:
         {
           fluiddis =
-              Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+              std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
           scatradis =
-              Teuchos::make_rcp<Core::FE::DiscretizationHDG>("scatra", comm, problem.n_dim());
+              std::make_shared<Core::FE::DiscretizationHDG>("scatra", comm, problem.n_dim());
           break;
         }
         default:
         {
           fluiddis =
-              Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
-          scatradis = Teuchos::make_rcp<Core::FE::Discretization>("scatra", comm, problem.n_dim());
+              std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+          scatradis = std::make_shared<Core::FE::Discretization>("scatra", comm, problem.n_dim());
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       fluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
       scatradis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
 
 
       problem.add_dis("fluid", fluiddis);
@@ -486,14 +485,14 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
         FOUR_C_THROW("Scatra-thermo interaction does not work for nurbs discretizations yet!");
 
       // create empty discretizations for scalar and thermo fields
-      scatradis = Teuchos::make_rcp<Core::FE::Discretization>("scatra", comm, problem.n_dim());
-      thermdis = Teuchos::make_rcp<Core::FE::Discretization>("thermo", comm, problem.n_dim());
+      scatradis = std::make_shared<Core::FE::Discretization>("scatra", comm, problem.n_dim());
+      thermdis = std::make_shared<Core::FE::Discretization>("thermo", comm, problem.n_dim());
 
       // create discretization writers
       scatradis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
       thermdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(thermdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(thermdis, output_control, distype));
 
       // add empty discretizations to global problem
       problem.add_dis("scatra", scatradis);
@@ -509,50 +508,50 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     {
       if (distype == Core::FE::ShapeFunctionType::hdg)
       {
-        fluiddis = Teuchos::make_rcp<Core::FE::DiscretizationHDG>("fluid", comm, problem.n_dim());
-        aledis = Teuchos::make_rcp<Core::FE::Discretization>("ale", comm, problem.n_dim());
+        fluiddis = std::make_shared<Core::FE::DiscretizationHDG>("fluid", comm, problem.n_dim());
+        aledis = std::make_shared<Core::FE::Discretization>("ale", comm, problem.n_dim());
       }
       else if (distype == Core::FE::ShapeFunctionType::nurbs)
       {
         fluiddis =
-            Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>("fluid", comm, problem.n_dim());
+            std::make_shared<Core::FE::Nurbs::NurbsDiscretization>("fluid", comm, problem.n_dim());
         aledis =
-            Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>("ale", comm, problem.n_dim());
+            std::make_shared<Core::FE::Nurbs::NurbsDiscretization>("ale", comm, problem.n_dim());
       }
       else if (problem.fluid_dynamic_params().sublist("WALL MODEL").get<bool>("X_WALL"))
       {
-        fluiddis = Teuchos::make_rcp<XFEM::DiscretizationXWall>("fluid", comm, problem.n_dim());
-        aledis = Teuchos::make_rcp<Core::FE::Discretization>("ale", comm, problem.n_dim());
+        fluiddis = std::make_shared<XFEM::DiscretizationXWall>("fluid", comm, problem.n_dim());
+        aledis = std::make_shared<Core::FE::Discretization>("ale", comm, problem.n_dim());
       }
       else
       {
-        fluiddis = Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+        fluiddis = std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
         if (problem.x_fluid_dynamic_params().sublist("GENERAL").get<bool>("XFLUIDFLUID"))
-          xfluiddis = Teuchos::make_rcp<XFEM::DiscretizationXFEM>("xfluid", comm, problem.n_dim());
-        aledis = Teuchos::make_rcp<Core::FE::Discretization>("ale", comm, problem.n_dim());
+          xfluiddis = std::make_shared<XFEM::DiscretizationXFEM>("xfluid", comm, problem.n_dim());
+        aledis = std::make_shared<Core::FE::Discretization>("ale", comm, problem.n_dim());
       }
 
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       fluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
-      if (xfluiddis != Teuchos::null)
+          std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+      if (xfluiddis != nullptr)
       {
         xfluiddis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(xfluiddis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(xfluiddis, output_control, distype));
       }
       aledis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
 
 
       problem.add_dis("fluid", fluiddis);
-      if (xfluiddis != Teuchos::null)
+      if (xfluiddis != nullptr)
       {
         problem.add_dis("xfluid", xfluiddis);  // xfem discretization on slot 1
       }
       problem.add_dis("ale", aledis);
 
-      if (xfluiddis != Teuchos::null)
+      if (xfluiddis != nullptr)
       {
         meshreader.add_element_reader(Core::IO::ElementReader(xfluiddis, input, "FLUID ELEMENTS"));
       }
@@ -569,26 +568,26 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
       {
         case Core::FE::ShapeFunctionType::nurbs:
         {
-          structdis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          structdis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "structure", comm, problem.n_dim());
-          thermdis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          thermdis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "thermo", comm, problem.n_dim());
           break;
         }
         default:
         {
           structdis =
-              Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
-          thermdis = Teuchos::make_rcp<Core::FE::Discretization>("thermo", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
+          thermdis = std::make_shared<Core::FE::Discretization>("thermo", comm, problem.n_dim());
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       thermdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(thermdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(thermdis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("thermo", thermdis);
@@ -610,20 +609,20 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
       {
         case Core::FE::ShapeFunctionType::nurbs:
         {
-          thermdis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          thermdis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "thermo", comm, problem.n_dim());
           break;
         }
         default:
         {
-          thermdis = Teuchos::make_rcp<Core::FE::Discretization>("thermo", comm, problem.n_dim());
+          thermdis = std::make_shared<Core::FE::Discretization>("thermo", comm, problem.n_dim());
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       thermdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(thermdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(thermdis, output_control, distype));
 
       problem.add_dis("thermo", thermdis);
 
@@ -638,21 +637,21 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
       {
         case Core::FE::ShapeFunctionType::nurbs:
         {
-          structdis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          structdis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "structure", comm, problem.n_dim());
           break;
         }
         default:
         {
           structdis =
-              Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
 
       problem.add_dis("structure", structdis);
 
@@ -667,14 +666,14 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::polymernetwork:
     {
       // create empty discretizations
-      structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
-      pboxdis = Teuchos::make_rcp<Core::FE::Discretization>("boundingbox", comm, problem.n_dim());
+      structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
+      pboxdis = std::make_shared<Core::FE::Discretization>("boundingbox", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       pboxdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(pboxdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(pboxdis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("boundingbox", pboxdis);
@@ -690,14 +689,14 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::loma:
     {
       // create empty discretizations
-      fluiddis = Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
-      scatradis = Teuchos::make_rcp<Core::FE::Discretization>("scatra", comm, problem.n_dim());
+      fluiddis = std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+      scatradis = std::make_shared<Core::FE::Discretization>("scatra", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       fluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
       scatradis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
 
       problem.add_dis("fluid", fluiddis);
       problem.add_dis("scatra", scatradis);
@@ -712,20 +711,20 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::fluid_xfem_ls:
     {
       // create empty discretizations
-      structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
+      structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
       if (problem.get_problem_type() == Core::ProblemType::fluid_xfem_ls)
-        fluiddis = Teuchos::make_rcp<XFEM::DiscretizationXFEM>("fluid", comm, problem.n_dim());
+        fluiddis = std::make_shared<XFEM::DiscretizationXFEM>("fluid", comm, problem.n_dim());
       else
-        fluiddis = Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
-      scatradis = Teuchos::make_rcp<Core::FE::Discretization>("scatra", comm, problem.n_dim());
+        fluiddis = std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+      scatradis = std::make_shared<Core::FE::Discretization>("scatra", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       fluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
       scatradis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("fluid", fluiddis);
@@ -751,36 +750,36 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
       {
         case Core::FE::ShapeFunctionType::nurbs:
         {
-          fluiddis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          fluiddis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "fluid", comm, problem.n_dim());
-          scatradis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          scatradis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "scatra", comm, problem.n_dim());
           aledis =
-              Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>("ale", comm, problem.n_dim());
-          scatra_micro_dis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+              std::make_shared<Core::FE::Nurbs::NurbsDiscretization>("ale", comm, problem.n_dim());
+          scatra_micro_dis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "scatra_micro", comm, problem.n_dim());
           break;
         }
         default:
         {
           fluiddis =
-              Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
-          scatradis = Teuchos::make_rcp<Core::FE::Discretization>("scatra", comm, problem.n_dim());
-          aledis = Teuchos::make_rcp<Core::FE::Discretization>("ale", comm, problem.n_dim());
+              std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+          scatradis = std::make_shared<Core::FE::Discretization>("scatra", comm, problem.n_dim());
+          aledis = std::make_shared<Core::FE::Discretization>("ale", comm, problem.n_dim());
           scatra_micro_dis =
-              Teuchos::make_rcp<Core::FE::Discretization>("scatra_micro", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("scatra_micro", comm, problem.n_dim());
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       fluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
       scatradis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
       aledis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
-      scatra_micro_dis->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+          std::make_shared<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
+      scatra_micro_dis->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
           scatra_micro_dis, output_control, distype));
 
       problem.add_dis("fluid", fluiddis);
@@ -800,7 +799,7 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::art_net:  // _1D_ARTERY_
     {
       // create empty discretizations
-      arterydis = Teuchos::make_rcp<Core::FE::Discretization>("artery", comm, problem.n_dim());
+      arterydis = std::make_shared<Core::FE::Discretization>("artery", comm, problem.n_dim());
 
       // create empty discretizations
       switch (distype)
@@ -813,7 +812,7 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
         default:
         {
           scatradis =
-              Teuchos::make_rcp<Core::FE::Discretization>("artery_scatra", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("artery_scatra", comm, problem.n_dim());
           break;
         }
       }
@@ -823,9 +822,9 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       arterydis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
       scatradis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
 
       meshreader.add_element_reader(Core::IO::ElementReader(arterydis, input, "ARTERY ELEMENTS"));
       meshreader.add_element_reader(
@@ -836,11 +835,11 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::red_airways:  // _reduced D airways
     {
       // create empty discretizations
-      airwaydis = Teuchos::make_rcp<Core::FE::Discretization>("red_airway", comm, problem.n_dim());
+      airwaydis = std::make_shared<Core::FE::Discretization>("red_airway", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       airwaydis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(airwaydis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(airwaydis, output_control, distype));
 
       problem.add_dis("red_airway", airwaydis);
 
@@ -857,27 +856,27 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
       {
         case Core::FE::ShapeFunctionType::nurbs:
         {
-          structdis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          structdis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "structure", comm, problem.n_dim());
-          porofluiddis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          porofluiddis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "porofluid", comm, problem.n_dim());
           break;
         }
         default:
         {
           structdis =
-              Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
           porofluiddis =
-              Teuchos::make_rcp<Core::FE::Discretization>("porofluid", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("porofluid", comm, problem.n_dim());
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       porofluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("porofluid", porofluiddis);
@@ -888,9 +887,9 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
 
       if (problem.poro_multi_phase_dynamic_params().get<bool>("ARTERY_COUPLING"))
       {
-        arterydis = Teuchos::make_rcp<Core::FE::Discretization>("artery", comm, problem.n_dim());
+        arterydis = std::make_shared<Core::FE::Discretization>("artery", comm, problem.n_dim());
         arterydis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
         problem.add_dis("artery", arterydis);
         meshreader.add_element_reader(Core::IO::ElementReader(arterydis, input, "ARTERY ELEMENTS"));
       }
@@ -904,32 +903,32 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
       {
         case Core::FE::ShapeFunctionType::nurbs:
         {
-          structdis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          structdis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "structure", comm, problem.n_dim());
-          porofluiddis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          porofluiddis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "porofluid", comm, problem.n_dim());
-          scatradis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          scatradis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "scatra", comm, problem.n_dim());
           break;
         }
         default:
         {
           structdis =
-              Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
           porofluiddis =
-              Teuchos::make_rcp<Core::FE::Discretization>("porofluid", comm, problem.n_dim());
-          scatradis = Teuchos::make_rcp<Core::FE::Discretization>("scatra", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("porofluid", comm, problem.n_dim());
+          scatradis = std::make_shared<Core::FE::Discretization>("scatra", comm, problem.n_dim());
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       porofluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
       scatradis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("porofluid", porofluiddis);
@@ -943,15 +942,15 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
 
       if (problem.poro_multi_phase_scatra_dynamic_params().get<bool>("ARTERY_COUPLING"))
       {
-        arterydis = Teuchos::make_rcp<Core::FE::Discretization>("artery", comm, problem.n_dim());
+        arterydis = std::make_shared<Core::FE::Discretization>("artery", comm, problem.n_dim());
         arterydis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
         problem.add_dis("artery", arterydis);
         meshreader.add_element_reader(Core::IO::ElementReader(arterydis, input, "ARTERY ELEMENTS"));
 
         artscatradis =
-            Teuchos::make_rcp<Core::FE::Discretization>("artery_scatra", comm, problem.n_dim());
-        artscatradis->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+            std::make_shared<Core::FE::Discretization>("artery_scatra", comm, problem.n_dim());
+        artscatradis->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
             artscatradis, output_control, distype));
         problem.add_dis("artery_scatra", artscatradis);
         meshreader.add_element_reader(
@@ -967,21 +966,21 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
       {
         case Core::FE::ShapeFunctionType::nurbs:
         {
-          porofluiddis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(
+          porofluiddis = std::make_shared<Core::FE::Nurbs::NurbsDiscretization>(
               "porofluid", comm, problem.n_dim());
           break;
         }
         default:
         {
           porofluiddis =
-              Teuchos::make_rcp<Core::FE::Discretization>("porofluid", comm, problem.n_dim());
+              std::make_shared<Core::FE::Discretization>("porofluid", comm, problem.n_dim());
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       porofluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
 
       problem.add_dis("porofluid", porofluiddis);
 
@@ -989,9 +988,9 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
 
       if (problem.poro_fluid_multi_phase_dynamic_params().get<bool>("ARTERY_COUPLING"))
       {
-        arterydis = Teuchos::make_rcp<Core::FE::Discretization>("artery", comm, problem.n_dim());
+        arterydis = std::make_shared<Core::FE::Discretization>("artery", comm, problem.n_dim());
         arterydis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
         problem.add_dis("artery", arterydis);
         meshreader.add_element_reader(Core::IO::ElementReader(arterydis, input, "ARTERY ELEMENTS"));
       }
@@ -1000,21 +999,20 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::fpsi:
     {
       // create empty discretizations
-      structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
-      porofluiddis =
-          Teuchos::make_rcp<Core::FE::Discretization>("porofluid", comm, problem.n_dim());
-      fluiddis = Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
-      aledis = Teuchos::make_rcp<Core::FE::Discretization>("ale", comm, problem.n_dim());
+      structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
+      porofluiddis = std::make_shared<Core::FE::Discretization>("porofluid", comm, problem.n_dim());
+      fluiddis = std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+      aledis = std::make_shared<Core::FE::Discretization>("ale", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       porofluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
       fluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
       aledis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("porofluid", porofluiddis);
@@ -1030,14 +1028,14 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::fbi:
     {
       // create empty discretizations
-      structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
-      fluiddis = Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+      structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
+      fluiddis = std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       fluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("fluid", fluiddis);
@@ -1054,14 +1052,14 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::immersed_fsi:
     {
       // create empty discretizations
-      structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
-      fluiddis = Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+      structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
+      fluiddis = std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       fluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("fluid", fluiddis);
@@ -1075,21 +1073,20 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::fps3i:
     {
       // create empty discretizations
-      structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
-      porofluiddis =
-          Teuchos::make_rcp<Core::FE::Discretization>("porofluid", comm, problem.n_dim());
-      fluiddis = Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
-      aledis = Teuchos::make_rcp<Core::FE::Discretization>("ale", comm, problem.n_dim());
+      structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
+      porofluiddis = std::make_shared<Core::FE::Discretization>("porofluid", comm, problem.n_dim());
+      fluiddis = std::make_shared<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
+      aledis = std::make_shared<Core::FE::Discretization>("ale", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       porofluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
       fluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
       aledis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("porofluid", porofluiddis);
@@ -1102,18 +1099,17 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
           Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
 
       // fluid scatra field
-      fluidscatradis =
-          Teuchos::make_rcp<Core::FE::Discretization>("scatra1", comm, problem.n_dim());
+      fluidscatradis = std::make_shared<Core::FE::Discretization>("scatra1", comm, problem.n_dim());
       // create discretization writer - in constructor set into and owned by corresponding discret
-      fluidscatradis->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+      fluidscatradis->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
           fluidscatradis, output_control, distype));
       problem.add_dis("scatra1", fluidscatradis);
 
       // poro structure scatra field
       structscatradis =
-          Teuchos::make_rcp<Core::FE::Discretization>("scatra2", comm, problem.n_dim());
+          std::make_shared<Core::FE::Discretization>("scatra2", comm, problem.n_dim());
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structscatradis->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+      structscatradis->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
           structscatradis, output_control, distype));
       problem.add_dis("scatra2", structscatradis);
 
@@ -1122,18 +1118,17 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::poroscatra:
     {
       // create empty discretizations
-      structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
-      porofluiddis =
-          Teuchos::make_rcp<Core::FE::Discretization>("porofluid", comm, problem.n_dim());
-      scatradis = Teuchos::make_rcp<Core::FE::Discretization>("scatra", comm, problem.n_dim());
+      structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
+      porofluiddis = std::make_shared<Core::FE::Discretization>("porofluid", comm, problem.n_dim());
+      scatradis = std::make_shared<Core::FE::Discretization>("scatra", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       porofluiddis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(porofluiddis, output_control, distype));
       scatradis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("porofluid", porofluiddis);
@@ -1149,14 +1144,14 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::ehl:
     {
       // create empty discretizations
-      structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
+      structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
       lubricationdis =
-          Teuchos::make_rcp<Core::FE::Discretization>("lubrication", comm, problem.n_dim());
+          std::make_shared<Core::FE::Discretization>("lubrication", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
-      lubricationdis->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+      lubricationdis->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
           lubricationdis, output_control, distype));
 
       problem.add_dis("structure", structdis);
@@ -1173,14 +1168,14 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::ssti:
     {
       // create empty discretizations
-      structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
-      scatradis = Teuchos::make_rcp<Core::FE::Discretization>("scatra", comm, problem.n_dim());
+      structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
+      scatradis = std::make_shared<Core::FE::Discretization>("scatra", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       scatradis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("scatra", scatradis);
@@ -1189,8 +1184,8 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
       if (problem.ssi_control_params().sublist("MANIFOLD").get<bool>("ADD_MANIFOLD"))
       {
         auto scatra_manifold_dis =
-            Teuchos::make_rcp<Core::FE::Discretization>("scatra_manifold", comm, problem.n_dim());
-        scatra_manifold_dis->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+            std::make_shared<Core::FE::Discretization>("scatra_manifold", comm, problem.n_dim());
+        scatra_manifold_dis->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
             scatra_manifold_dis, output_control, distype));
         problem.add_dis("scatra_manifold", scatra_manifold_dis);
       }
@@ -1202,9 +1197,9 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
 
       if (problem.get_problem_type() == Core::ProblemType::ssti)
       {
-        thermdis = Teuchos::make_rcp<Core::FE::Discretization>("thermo", comm, problem.n_dim());
+        thermdis = std::make_shared<Core::FE::Discretization>("thermo", comm, problem.n_dim());
         thermdis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(thermdis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(thermdis, output_control, distype));
         problem.add_dis("thermo", thermdis);
         meshreader.add_element_reader(
             Core::IO::ElementReader(thermdis, input, "TRANSPORT ELEMENTS"));
@@ -1216,11 +1211,11 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::pasi:
     {
       // create empty discretizations
-      structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
+      structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
 
       problem.add_dis("structure", structdis);
 
@@ -1232,11 +1227,11 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::level_set:
     {
       // create empty discretizations
-      scatradis = Teuchos::make_rcp<Core::FE::Discretization>("scatra", comm, problem.n_dim());
+      scatradis = std::make_shared<Core::FE::Discretization>("scatra", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       scatradis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
 
       problem.add_dis("scatra", scatradis);
 
@@ -1252,11 +1247,11 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::elemag:
     {
       // create empty discretizations
-      elemagdis = Teuchos::make_rcp<Core::FE::DiscretizationHDG>("elemag", comm, problem.n_dim());
+      elemagdis = std::make_shared<Core::FE::DiscretizationHDG>("elemag", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       elemagdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(elemagdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(elemagdis, output_control, distype));
 
       problem.add_dis("elemag", elemagdis);
 
@@ -1272,14 +1267,14 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
     case Core::ProblemType::redairways_tissue:
     {
       // create empty discretizations
-      structdis = Teuchos::make_rcp<Core::FE::Discretization>("structure", comm, problem.n_dim());
-      airwaydis = Teuchos::make_rcp<Core::FE::Discretization>("red_airway", comm, problem.n_dim());
+      structdis = std::make_shared<Core::FE::Discretization>("structure", comm, problem.n_dim());
+      airwaydis = std::make_shared<Core::FE::Discretization>("red_airway", comm, problem.n_dim());
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       airwaydis->set_writer(
-          Teuchos::make_rcp<Core::IO::DiscretizationWriter>(airwaydis, output_control, distype));
+          std::make_shared<Core::IO::DiscretizationWriter>(airwaydis, output_control, distype));
 
       problem.add_dis("structure", structdis);
       problem.add_dis("red_airway", airwaydis);
@@ -1305,18 +1300,17 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
       if (distype == Core::FE::ShapeFunctionType::polynomial)
       {
         // create empty discretizations
-        arterydis = Teuchos::make_rcp<Core::FE::Discretization>("artery", comm, problem.n_dim());
+        arterydis = std::make_shared<Core::FE::Discretization>("artery", comm, problem.n_dim());
         // create discretization writer - in constructor set into and owned by corresponding discret
         arterydis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
         problem.add_dis("artery", arterydis);
         meshreader.add_element_reader(Core::IO::ElementReader(arterydis, input, "ARTERY ELEMENTS"));
 
-        airwaydis =
-            Teuchos::make_rcp<Core::FE::Discretization>("red_airway", comm, problem.n_dim());
+        airwaydis = std::make_shared<Core::FE::Discretization>("red_airway", comm, problem.n_dim());
         // create discretization writer - in constructor set into and owned by corresponding discret
         airwaydis->set_writer(
-            Teuchos::make_rcp<Core::IO::DiscretizationWriter>(airwaydis, output_control, distype));
+            std::make_shared<Core::IO::DiscretizationWriter>(airwaydis, output_control, distype));
         problem.add_dis("red_airway", airwaydis);
         meshreader.add_element_reader(
             Core::IO::ElementReader(airwaydis, input, "REDUCED D AIRWAYS ELEMENTS"));
@@ -1384,18 +1378,18 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
     macro_dis_name = "scatra";
 
   // fetch communicators
-  Teuchos::RCP<Epetra_Comm> lcomm = problem.get_communicators()->local_comm();
-  Teuchos::RCP<Epetra_Comm> gcomm = problem.get_communicators()->global_comm();
+  std::shared_ptr<Epetra_Comm> lcomm = problem.get_communicators()->local_comm();
+  std::shared_ptr<Epetra_Comm> gcomm = problem.get_communicators()->global_comm();
 
   Global::Problem* macro_problem = Global::Problem::instance();
-  Teuchos::RCP<Core::FE::Discretization> macro_dis = macro_problem->get_dis(macro_dis_name);
+  std::shared_ptr<Core::FE::Discretization> macro_dis = macro_problem->get_dis(macro_dis_name);
 
   // repartition macro problem for a good distribution of elements with micro material
   if (macro_dis_name == "structure")
   {
     // do weighted repartitioning to obtain new row/column maps
     const Teuchos::ParameterList rebalanceParams;
-    Teuchos::RCP<const Epetra_CrsGraph> nodeGraph = macro_dis->build_node_graph();
+    std::shared_ptr<const Epetra_CrsGraph> nodeGraph = macro_dis->build_node_graph();
     const auto& [nodeWeights, edgeWeights] = Core::Rebalance::build_weights(*macro_dis);
     const auto& [rownodes, colnodes] =
         Core::Rebalance::rebalance_node_maps(*nodeGraph, rebalanceParams, nodeWeights, edgeWeights);
@@ -1413,13 +1407,13 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
   for (int i = 0; i < macro_dis->element_col_map()->NumMyElements(); ++i)
   {
     Core::Elements::Element* actele = macro_dis->l_col_element(i);
-    Teuchos::RCP<Core::Mat::Material> actmat = actele->material();
+    std::shared_ptr<Core::Mat::Material> actmat = actele->material();
 
     if (id_elch != -1 and actmat->material_type() == Core::Materials::m_elchmat)
     {
       // extract wrapped material
-      auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(actmat);
-      auto elchphase = Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(
+      auto elchmat = std::dynamic_pointer_cast<const Mat::ElchMat>(actmat);
+      auto elchphase = std::dynamic_pointer_cast<const Mat::ElchPhase>(
           elchmat->phase_by_id(elchmat->phase_id(0)));
       actmat = elchphase->mat_by_id(elchphase->mat_id(0));
     }
@@ -1477,14 +1471,14 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
   // key
   // --> 0 is inserted here)
   MPI_Comm mpi_local_comm;
-  MPI_Comm_split((Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm, true)->GetMpiComm()), color,
+  MPI_Comm_split((std::dynamic_pointer_cast<Epetra_MpiComm>(gcomm)->GetMpiComm()), color,
       0 /*important here*/, &mpi_local_comm);
 
   // sort out macro procs that do not have micro material
   if (foundmicromat == 1)
   {
     // create the sub communicator that includes one macro proc and some supporting procs
-    Teuchos::RCP<Epetra_Comm> subgroupcomm = Teuchos::make_rcp<Epetra_MpiComm>(mpi_local_comm);
+    std::shared_ptr<Epetra_Comm> subgroupcomm = std::make_shared<Epetra_MpiComm>(mpi_local_comm);
     problem.get_communicators()->set_sub_comm(subgroupcomm);
 
     // find out how many micro problems have to be solved on this macro proc
@@ -1503,7 +1497,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
 
       if (my_multimat_IDs.find(matid) != my_multimat_IDs.end())
       {
-        Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(matid);
+        std::shared_ptr<Core::Mat::Material> mat = Mat::factory(matid);
 
         // initialize variables storing micro-scale information
         int microdisnum(-1);
@@ -1573,8 +1567,8 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
         // start with actual reading
         Core::IO::InputFile micro_reader(micro_inputfile_name, *subgroupcomm, 1);
 
-        Teuchos::RCP<Core::FE::Discretization> dis_micro =
-            Teuchos::make_rcp<Core::FE::Discretization>(
+        std::shared_ptr<Core::FE::Discretization> dis_micro =
+            std::make_shared<Core::FE::Discretization>(
                 micro_dis_name, subgroupcomm, problem.n_dim());
 
         // replace standard dofset inside micro discretization by independent dofset
@@ -1582,11 +1576,11 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
         // micro discretization
         if (problem.get_communicators()->np_type() ==
             Core::Communication::NestedParallelismType::no_nested_parallelism)
-          dis_micro->replace_dof_set(Teuchos::make_rcp<Core::DOFSets::IndependentDofSet>());
+          dis_micro->replace_dof_set(std::make_shared<Core::DOFSets::IndependentDofSet>());
 
         // create discretization writer - in constructor set into and owned by corresponding
         // discret
-        dis_micro->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(dis_micro,
+        dis_micro->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(dis_micro,
             micro_problem->output_control_file(), micro_problem->spatial_approximation_type()));
 
         micro_problem->add_dis(micro_dis_name, dis_micro);
@@ -1654,8 +1648,8 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
 /*----------------------------------------------------------------------*/
 void Global::read_microfields_np_support(Global::Problem& problem)
 {
-  Teuchos::RCP<Epetra_Comm> lcomm = problem.get_communicators()->local_comm();
-  Teuchos::RCP<Epetra_Comm> gcomm = problem.get_communicators()->global_comm();
+  std::shared_ptr<Epetra_Comm> lcomm = problem.get_communicators()->local_comm();
+  std::shared_ptr<Epetra_Comm> gcomm = problem.get_communicators()->global_comm();
 
   // receive number of procs that have micro material
   int nummicromat = 0;
@@ -1686,11 +1680,11 @@ void Global::read_microfields_np_support(Global::Problem& problem)
 
   // do the splitting of the communicator
   MPI_Comm mpi_local_comm;
-  MPI_Comm_split((Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm, true)->GetMpiComm()), color,
+  MPI_Comm_split((std::dynamic_pointer_cast<Epetra_MpiComm>(gcomm)->GetMpiComm()), color,
       gcomm->MyPID(), &mpi_local_comm);
 
   // create the sub communicator that includes one macro proc and some supporting procs
-  Teuchos::RCP<Epetra_Comm> subgroupcomm = Teuchos::make_rcp<Epetra_MpiComm>(mpi_local_comm);
+  std::shared_ptr<Epetra_Comm> subgroupcomm = std::make_shared<Epetra_MpiComm>(mpi_local_comm);
   problem.get_communicators()->set_sub_comm(subgroupcomm);
 
   // number of micro problems for this sub group
@@ -1715,11 +1709,11 @@ void Global::read_microfields_np_support(Global::Problem& problem)
     // start with actual reading
     Core::IO::InputFile micro_reader(micro_inputfile_name, *subgroupcomm, 1);
 
-    Teuchos::RCP<Core::FE::Discretization> structdis_micro =
-        Teuchos::make_rcp<Core::FE::Discretization>("structure", subgroupcomm, problem.n_dim());
+    std::shared_ptr<Core::FE::Discretization> structdis_micro =
+        std::make_shared<Core::FE::Discretization>("structure", subgroupcomm, problem.n_dim());
 
     // create discretization writer - in constructor set into and owned by corresponding discret
-    structdis_micro->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis_micro,
+    structdis_micro->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(structdis_micro,
         micro_problem->output_control_file(), micro_problem->spatial_approximation_type()));
 
     micro_problem->add_dis("structure", structdis_micro);
@@ -1769,7 +1763,8 @@ void Global::read_microfields_np_support(Global::Problem& problem)
 /*----------------------------------------------------------------------*/
 void Global::read_parameter(Global::Problem& problem, Core::IO::InputFile& input)
 {
-  Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::make_rcp<Teuchos::ParameterList>("DAT FILE");
+  std::shared_ptr<Teuchos::ParameterList> list =
+      std::make_shared<Teuchos::ParameterList>("DAT FILE");
 
   Core::IO::read_parameters_in_section(input, "DISCRETISATION", *list);
   Core::IO::read_parameters_in_section(input, "PROBLEM SIZE", *list);
@@ -2049,8 +2044,9 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::InputFile& input
 void Global::read_materials(Global::Problem& problem, Core::IO::InputFile& input)
 {
   // create list of known materials
-  Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> vm = Input::valid_materials();
-  std::vector<Teuchos::RCP<Mat::MaterialDefinition>>& matlist = *vm;
+  std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> vm =
+      Input::valid_materials();
+  std::vector<std::shared_ptr<Mat::MaterialDefinition>>& matlist = *vm;
 
   // test for each material definition (input file --MATERIALS section)
   // and store in #matmap_
@@ -2122,9 +2118,9 @@ void Global::read_materials(Global::Problem& problem, Core::IO::InputFile& input
 void Global::read_contact_constitutive_laws(Global::Problem& problem, Core::IO::InputFile& input)
 {
   // create list of known contact constitutive laws
-  Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
+  std::shared_ptr<std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
       Input::valid_contact_constitutive_laws();
-  std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist = *vm;
+  std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist = *vm;
 
   // test for each contact constitutive law definition (input file --CONTACT CONSTITUTIVE LAWS
   // section) and store it
@@ -2252,9 +2248,9 @@ void Global::read_conditions(Global::Problem& problem, Core::IO::InputFile& inpu
   nodeset[3] = &dvol_fenode;
 
   // create list of known conditions
-  Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> vc =
+  std::shared_ptr<std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>> vc =
       Input::valid_conditions();
-  std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist = *vc;
+  std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist = *vc;
 
   // test for each condition definition (input file condition section)
   // - read all conditions that match the definition
@@ -2264,13 +2260,13 @@ void Global::read_conditions(Global::Problem& problem, Core::IO::InputFile& inpu
   // Note that this will reset (un-fill_complete) the discretizations.
   for (auto& condition : condlist)
   {
-    std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>> cond;
+    std::multimap<int, std::shared_ptr<Core::Conditions::Condition>> cond;
 
     // read conditions from dat file
     condition->read(input, cond);
 
     // add nodes to conditions
-    std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>::const_iterator curr;
+    std::multimap<int, std::shared_ptr<Core::Conditions::Condition>>::const_iterator curr;
     for (curr = cond.begin(); curr != cond.end(); ++curr)
     {
       switch (curr->second->g_type())
@@ -2377,12 +2373,12 @@ void Global::read_knots(Global::Problem& problem, Core::IO::InputFile& input)
         FOUR_C_THROW("discretization %s is not a NurbsDiscretization! Panic.", dis->name().c_str());
 
       // define an empty knot vector object
-      Teuchos::RCP<Core::FE::Nurbs::Knotvector> disknots = Teuchos::null;
+      std::shared_ptr<Core::FE::Nurbs::Knotvector> disknots = nullptr;
 
       // read the knotvector data from the input
       Core::IO::read_knots(input, dis->name(), disknots);
 
-      if (disknots == Teuchos::null)
+      if (disknots == nullptr)
       {
         FOUR_C_THROW("Knotvector read failed in Nurbs discretisation\n");
       }

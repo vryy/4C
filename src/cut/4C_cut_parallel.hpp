@@ -49,7 +49,7 @@ namespace Cut
     /*!
     \brief Basic CUT parallel constructor
      */
-    explicit Parallel(const Teuchos::RCP<Core::FE::Discretization>& discret, Cut::Mesh& mesh,
+    explicit Parallel(const std::shared_ptr<Core::FE::Discretization>& discret, Cut::Mesh& mesh,
         Cut::ParentIntersection& parentintersection);
 
     /*!
@@ -157,7 +157,7 @@ namespace Cut
     // data accessing
 
     //! discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! current processor id
     const int myrank_;
@@ -178,7 +178,7 @@ namespace Cut
      */
     std::map<plain_int_set, int> curr_undecided_node_pos_shadow_;
 
-    std::vector<Teuchos::RCP<Cut::MeshIntersection::DofSetData>> dof_set_data_;
+    std::vector<std::shared_ptr<Cut::MeshIntersection::DofSetData>> dof_set_data_;
 
 
   };  // class PARALLEL

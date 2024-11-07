@@ -16,11 +16,11 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Discret::Elements::ElemagType::pre_evaluate(Core::FE::Discretization& dis,
-    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    Teuchos::ParameterList& p, std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
 {
   return;
 }
@@ -33,7 +33,7 @@ int Discret::Elements::Elemag::evaluate(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   if (dynamic_cast<const Discret::Elements::ElemagDiff*>(this))
     return Discret::Elements::ElemagFactory::provide_impl(shape(), "diff")

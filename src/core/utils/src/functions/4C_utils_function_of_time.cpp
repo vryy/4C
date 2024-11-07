@@ -19,14 +19,14 @@ FOUR_C_NAMESPACE_OPEN
 
 Core::Utils::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
     const std::vector<std::string>& expressions,
-    std::vector<Teuchos::RCP<FunctionVariable>> variables)
+    std::vector<std::shared_ptr<FunctionVariable>> variables)
     : variables_(std::move(variables))
 {
   for (const auto& expression : expressions)
   {
     {
       auto symbolicexpression =
-          Teuchos::make_rcp<Core::Utils::SymbolicExpression<double>>(expression);
+          std::make_shared<Core::Utils::SymbolicExpression<double>>(expression);
       expr_.push_back(symbolicexpression);
     }
   }
@@ -88,7 +88,7 @@ double Core::Utils::SymbolicFunctionOfTime::evaluate_derivative(
   return f_dt;
 }
 
-Teuchos::RCP<Core::Utils::FunctionOfTime> Core::Utils::try_create_function_of_time(
+std::shared_ptr<Core::Utils::FunctionOfTime> Core::Utils::try_create_function_of_time(
     const std::vector<Input::LineDefinition>& function_line_defs)
 {
   // Work around a design flaw in the input line for SymbolicFunctionOfTime.
@@ -119,7 +119,7 @@ Teuchos::RCP<Core::Utils::FunctionOfTime> Core::Utils::try_create_function_of_ti
       found_function_of_time = true;
   }
 
-  if (!found_function_of_time) return Teuchos::null;
+  if (!found_function_of_time) return nullptr;
 
   // evaluate the number of rows used for the definition of the variables
   std::size_t numrowsvar = function_line_defs.size() - maxcomp - 1;
@@ -142,7 +142,7 @@ Teuchos::RCP<Core::Utils::FunctionOfTime> Core::Utils::try_create_function_of_ti
     functstring[n] = functcomp.container().get<std::string>("SYMBOLIC_FUNCTION_OF_TIME");
   }
 
-  std::map<int, std::vector<Teuchos::RCP<FunctionVariable>>> variable_pieces;
+  std::map<int, std::vector<std::shared_ptr<FunctionVariable>>> variable_pieces;
 
   // read each row where the variables of the i-th function are defined
   for (std::size_t j = 1; j <= numrowsvar; ++j)
@@ -155,7 +155,7 @@ Teuchos::RCP<Core::Utils::FunctionOfTime> Core::Utils::try_create_function_of_ti
     ignore_errors_in([&]() { varid = line.container().get<int>("VARIABLE"); });
 
     const auto variable = std::invoke(
-        [&line]() -> Teuchos::RCP<Core::Utils::FunctionVariable>
+        [&line]() -> std::shared_ptr<Core::Utils::FunctionVariable>
         {
           // read the name of the variable
           std::string varname = line.container().get<std::string>("NAME");
@@ -191,7 +191,7 @@ Teuchos::RCP<Core::Utils::FunctionOfTime> Core::Utils::try_create_function_of_ti
                   description_vec.size());
             }
 
-            return Teuchos::make_rcp<ParsedFunctionVariable>(varname, description_vec.front());
+            return std::make_shared<ParsedFunctionVariable>(varname, description_vec.front());
           }
           else if (vartype == "linearinterpolation")
           {
@@ -201,7 +201,7 @@ Teuchos::RCP<Core::Utils::FunctionOfTime> Core::Utils::try_create_function_of_ti
             // read values
             auto values = line.container().get<std::vector<double>>("VALUES");
 
-            return Teuchos::make_rcp<LinearInterpolationVariable>(
+            return std::make_shared<LinearInterpolationVariable>(
                 varname, times, values, periodicdata);
           }
           else if (vartype == "multifunction")
@@ -218,7 +218,7 @@ Teuchos::RCP<Core::Utils::FunctionOfTime> Core::Utils::try_create_function_of_ti
             if (numtimes != numdescriptions + 1)
               FOUR_C_THROW("the number of TIMES and the number of DESCRIPTIONs must be consistent");
 
-            return Teuchos::make_rcp<MultiFunctionVariable>(
+            return std::make_shared<MultiFunctionVariable>(
                 varname, times, description_vec, periodicdata);
           }
           else if (vartype == "fourierinterpolation")
@@ -229,20 +229,20 @@ Teuchos::RCP<Core::Utils::FunctionOfTime> Core::Utils::try_create_function_of_ti
             // read values
             auto values = line.container().get<std::vector<double>>("VALUES");
 
-            return Teuchos::make_rcp<FourierInterpolationVariable>(
+            return std::make_shared<FourierInterpolationVariable>(
                 varname, times, values, periodicdata);
           }
           else
           {
             FOUR_C_THROW("unknown variable type");
-            return Teuchos::null;
+            return nullptr;
           }
         });
 
     variable_pieces[varid].emplace_back(variable);
   }
 
-  std::vector<Teuchos::RCP<FunctionVariable>> functvarvector;
+  std::vector<std::shared_ptr<FunctionVariable>> functvarvector;
 
   for (const auto& [id, pieces] : variable_pieces)
   {
@@ -258,11 +258,11 @@ Teuchos::RCP<Core::Utils::FunctionOfTime> Core::Utils::try_create_function_of_ti
       if (not names_of_all_pieces_equal)
         FOUR_C_THROW("Variable %d has a piece-wise definition with inconsistent names.", id);
 
-      functvarvector.emplace_back(Teuchos::make_rcp<PiecewiseVariable>(name, pieces));
+      functvarvector.emplace_back(std::make_shared<PiecewiseVariable>(name, pieces));
     }
   }
 
-  return Teuchos::make_rcp<SymbolicFunctionOfTime>(functstring, functvarvector);
+  return std::make_shared<SymbolicFunctionOfTime>(functstring, functvarvector);
 }
 
 FOUR_C_NAMESPACE_CLOSE

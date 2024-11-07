@@ -30,28 +30,28 @@ namespace Adapter
   {
    public:
     //! constructor
-    explicit AleWrapper(Teuchos::RCP<Ale> ale) : ale_(ale) {}
+    explicit AleWrapper(std::shared_ptr<Ale> ale) : ale_(ale) {}
 
     //! @name Vector access
     //@{
 
     //! initial guess of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() const override
     {
       return ale_->initial_guess();
     }
 
     //! right-hand-side of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const override { return ale_->rhs(); }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() const override { return ale_->rhs(); }
 
     //! unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp() const override
     {
       return ale_->dispnp();
     }
 
     //! known displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispn() const override
     {
       return ale_->dispn();
     }
@@ -62,46 +62,46 @@ namespace Adapter
     //@{
 
     //! dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const override { return ale_->dof_row_map(); }
+    std::shared_ptr<const Epetra_Map> dof_row_map() const override { return ale_->dof_row_map(); }
 
     //! direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override
     {
       return ale_->system_matrix();
     }
 
     //! direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
       return ale_->block_system_matrix();
     }
 
     //! access to locsys manager
-    Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() override
+    std::shared_ptr<Core::Conditions::LocsysManager> locsys_manager() override
     {
       return ale_->locsys_manager();
     }
 
     //! direct access to discretization
-    Teuchos::RCP<const Core::FE::Discretization> discretization() const override
+    std::shared_ptr<const Core::FE::Discretization> discretization() const override
     {
       return ale_->discretization();
     }
 
     /// writing access to discretization
-    Teuchos::RCP<Core::FE::Discretization> write_access_discretization() override
+    std::shared_ptr<Core::FE::Discretization> write_access_discretization() override
     {
       return ale_->write_access_discretization();
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor()
+    virtual std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor()
     {
       return ale_->get_dbc_map_extractor(ALE::Utils::MapExtractor::dbc_set_std);
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions in case of non-standard Dirichlet sets
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor(
+    std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor(
         ALE::Utils::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
         ) override
     {
@@ -158,16 +158,16 @@ namespace Adapter
     void prepare_time_step() override { ale_->prepare_time_step(); }
 
     //! update displacement and evaluate elements
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc =
-                              Teuchos::null  ///< step increment such that \f$ x_{n+1}^{k+1} =
-                                             ///< x_{n}^{converged}+ stepinc \f$
+    virtual void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> stepinc =
+                              nullptr  ///< step increment such that \f$ x_{n+1}^{k+1} =
+                                       ///< x_{n}^{converged}+ stepinc \f$
     )
     {
       evaluate(stepinc, ALE::Utils::MapExtractor::dbc_set_std);
     }
 
     //! update displacement and evaluate elements
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
                       stepinc,  ///< step increment such that \f$ x_{n+1}^{k+1}
                                 ///< = x_{n}^{converged}+ stepinc \f$
         ALE::Utils::MapExtractor::AleDBCSetType
@@ -200,12 +200,12 @@ namespace Adapter
     void setup_dbc_map_ex(
         ALE::Utils::MapExtractor::AleDBCSetType dbc_type =
             ALE::Utils::MapExtractor::dbc_set_std,  //!< application-specific type of Dirichlet set
-        Teuchos::RCP<const ALE::Utils::MapExtractor> interface =
-            Teuchos::null,  //!< interface for creation of additional, application-specific
-                            //!< Dirichlet map extractors
-        Teuchos::RCP<const ALE::Utils::XFluidFluidMapExtractor> xff_interface =
-            Teuchos::null  //!< interface for creation of a Dirichlet map extractor, taylored to
-                           //!< XFFSI
+        std::shared_ptr<const ALE::Utils::MapExtractor> interface =
+            nullptr,  //!< interface for creation of additional, application-specific
+                      //!< Dirichlet map extractors
+        std::shared_ptr<const ALE::Utils::XFluidFluidMapExtractor> xff_interface =
+            nullptr  //!< interface for creation of a Dirichlet map extractor, taylored to
+                     //!< XFFSI
         ) override
     {
       ale_->setup_dbc_map_ex(dbc_type, interface, xff_interface);
@@ -218,7 +218,7 @@ namespace Adapter
     int solve() override { return ale_->solve(); }
 
     //! Access to linear solver of ALE field
-    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override { return ale_->linear_solver(); }
+    std::shared_ptr<Core::LinAlg::Solver> linear_solver() override { return ale_->linear_solver(); }
 
     //@}
 
@@ -226,7 +226,7 @@ namespace Adapter
     //@{
 
     //! write access to extract displacements at \f$t^{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispnp() const override
+    std::shared_ptr<Core::LinAlg::Vector<double>> write_access_dispnp() const override
     {
       return ale_->write_access_dispnp();
     }
@@ -234,7 +234,7 @@ namespace Adapter
     //@}
 
     //! create result test for encapsulated structure algorithm
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test() override
     {
       return ale_->create_field_test();
     }
@@ -246,28 +246,28 @@ namespace Adapter
      *
      */
     void create_system_matrix(
-        Teuchos::RCP<const ALE::Utils::MapExtractor> interface =
-            Teuchos::null  ///< Blocksparsematrix if an interface is passed, SparseMatrix otherwise
+        std::shared_ptr<const ALE::Utils::MapExtractor> interface =
+            nullptr  ///< Blocksparsematrix if an interface is passed, SparseMatrix otherwise
         ) override
     {
       ale_->create_system_matrix(interface);
     }
 
     //! update slave dofs for fsi simulations with ale mesh tying
-    void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& a) override
+    void update_slave_dof(std::shared_ptr<Core::LinAlg::Vector<double>>& a) override
     {
       ale_->update_slave_dof(a);
     }
 
    private:
-    Teuchos::RCP<Ale> ale_;  //!< underlying ALE time integration
+    std::shared_ptr<Ale> ale_;  //!< underlying ALE time integration
   };
 
   //! Calculate increments from absolute values
   class AleNOXCorrectionWrapper : public AleWrapper  // ToDo (mayr) Do we really need this?
   {
    public:
-    explicit AleNOXCorrectionWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale) {}
+    explicit AleNOXCorrectionWrapper(std::shared_ptr<Ale> ale) : AleWrapper(ale) {}
 
     //! Prepare time step
     void prepare_time_step() override;
@@ -290,7 +290,7 @@ namespace Adapter
      *
      *  \author mayr.mt \date 10/2014
      */
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc  ///< step increment
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> stepinc  ///< step increment
         ) override;
 
    private:
@@ -301,7 +301,7 @@ namespace Adapter
     //! x^n+1_i+1 = x^n+1_i + stepinc  (also referred to as residual increment)
     //!
     //! x^n+1_i+1 = x^n     + disstepinc
-    Teuchos::RCP<Core::LinAlg::Vector<double>> stepinc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> stepinc_;
   };
 }  // namespace Adapter
 

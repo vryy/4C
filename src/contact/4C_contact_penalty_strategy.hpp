@@ -46,8 +46,8 @@ namespace CONTACT
     \param[in] maxdof Highest DOF number in global problem
     */
     PenaltyStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::Interface>> interface,
-        const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
+        Teuchos::ParameterList params, std::vector<std::shared_ptr<CONTACT::Interface>> interface,
+        const int spatialDim, const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
 
     /*!
@@ -63,10 +63,10 @@ namespace CONTACT
     \param[in] alphaf Mid-point for Generalized-alpha time integration
     \param[in] maxdof Highest DOF number in global problem
     */
-    PenaltyStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    PenaltyStrategy(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, const int spatialDim,
-        const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, const int spatialDim,
+        const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
     //! @name Access methods
 
@@ -109,7 +109,7 @@ namespace CONTACT
     for a penalty strategy since the weighted gap determines the lagrangian multipliers.
 
     */
-    void save_reference_state(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) override;
+    void save_reference_state(std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override;
 
     /*!
     \brief Evaluate relative movement of contact bodies in predictor
@@ -139,8 +139,8 @@ namespace CONTACT
     stiffness contributions to kteff and extra contact forces to feff.
 
     */
-    void evaluate_contact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff) override;
+    void evaluate_contact(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& feff) override;
 
     /*!
     \brief Evaluate frictional contact
@@ -148,8 +148,8 @@ namespace CONTACT
     This includes the evaluation of of the frictional contact forces.
 
     */
-    void evaluate_friction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff) override;
+    void evaluate_friction(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& feff) override;
 
     /*!
     \brief Reset penalty parameter to intial value
@@ -179,8 +179,8 @@ namespace CONTACT
     and finally evaluate().
 
     */
-    void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff) override;
+    void initialize_uzawa(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& feff) override;
 
     /*!
     \brief Compute L2-norm of active constraints
@@ -235,21 +235,21 @@ namespace CONTACT
 
     /*! \brief Return the desired right-hand-side block pointer (read-only)
      *
-     *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
+     *  \remark Please note, that a nullptr pointer is returned, if no active contact
      *  contributions are present.
      *
      *  \param bt (in): Desired vector block type, e.g. displ, constraint,*/
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;
 
     /*! \brief Return the desired matrix block pointer (read-only)
      *
-     *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
+     *  \remark Please note, that a nullptr pointer is returned, if no active contact
      *  contributions are present.
      *
      *  \param bt (in): Desired matrix block type, e.g. displ_displ, displ_lm, ...
      *  \param cparams (in): contact parameter interface (read-only) */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
@@ -259,31 +259,26 @@ namespace CONTACT
 
     // All these functions only have functionality in Lagrange contact simulations,
     // thus they are defined empty here in the case of Penalty contact.
-    Teuchos::RCP<const Epetra_Map> get_old_active_row_nodes() const override
-    {
-      return Teuchos::null;
-    };
-    Teuchos::RCP<const Epetra_Map> get_old_slip_row_nodes() const override
-    {
-      return Teuchos::null;
-    };
+    std::shared_ptr<const Epetra_Map> get_old_active_row_nodes() const override { return nullptr; };
+    std::shared_ptr<const Epetra_Map> get_old_slip_row_nodes() const override { return nullptr; };
     bool active_set_converged() const override { return true; }
     int active_set_steps() const override { return 0; }
     void reset_active_set() override {}
-    void recover(Teuchos::RCP<Core::LinAlg::Vector<double>> disi) override { return; };
-    void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fd,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& blocksol,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& blockrhs) override
+    void recover(std::shared_ptr<Core::LinAlg::Vector<double>> disi) override { return; };
+    void build_saddle_point_system(std::shared_ptr<Core::LinAlg::SparseOperator> kdd,
+        std::shared_ptr<Core::LinAlg::Vector<double>> fd,
+        std::shared_ptr<Core::LinAlg::Vector<double>> sold,
+        std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps,
+        std::shared_ptr<Epetra_Operator>& blockMat,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& blocksol,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& blockrhs) override
     {
       FOUR_C_THROW(
           "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
           "makes no sense here.");
     }
-    void update_displacements_and_l_mincrements(Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> blocksol) override
+    void update_displacements_and_l_mincrements(std::shared_ptr<Core::LinAlg::Vector<double>> sold,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> blocksol) override
     {
       FOUR_C_THROW(
           "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
@@ -322,19 +317,19 @@ namespace CONTACT
         const Core::LinAlg::Vector<double>& xnew) override
     {
     }
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier_n(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> lagrange_multiplier_n(
         const bool& redist) const override;
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier_np(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> lagrange_multiplier_np(
         const bool& redist) const override;
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier_old() const override;
-    Teuchos::RCP<const Epetra_Map> lm_dof_row_map_ptr(const bool& redist) const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> lagrange_multiplier_old() const override;
+    std::shared_ptr<const Epetra_Map> lm_dof_row_map_ptr(const bool& redist) const override;
 
    protected:
     //! derived
-    std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces() override { return interface_; }
+    std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces() override { return interface_; }
 
     //! derived
-    const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces() const override
+    const std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces() const override
     {
       return interface_;
     }
@@ -343,8 +338,8 @@ namespace CONTACT
     PenaltyStrategy operator=(const PenaltyStrategy& old) = delete;
     PenaltyStrategy(const PenaltyStrategy& old) = delete;
 
-    std::vector<Teuchos::RCP<Interface>> interface_;  // contact interfaces
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::vector<std::shared_ptr<Interface>> interface_;  // contact interfaces
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         linzmatrix_;            // global matrix LinZ with derivatives of LM
     double constrnorm_;         // L2-norm of normal contact constraints
     double constrnormtan_;      // L2-norm of tangential contact constraints
@@ -352,8 +347,8 @@ namespace CONTACT
     double initialpenaltytan_;  // initial tangential penalty parameter
     bool evalForceCalled_;      //< flag for evaluate force call
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fc_;  //< contact penalty force
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kc_;    //< contact penalty stiffness
+    std::shared_ptr<Core::LinAlg::Vector<double>> fc_;  //< contact penalty force
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kc_;    //< contact penalty stiffness
 
   };  // class PenaltyStrategy
 }  // namespace CONTACT

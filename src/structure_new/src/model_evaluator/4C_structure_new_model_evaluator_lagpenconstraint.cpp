@@ -28,11 +28,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Solid::ModelEvaluator::LagPenConstraint::LagPenConstraint()
-    : disnp_ptr_(Teuchos::null),
-      stiff_constr_ptr_(Teuchos::null),
-      fstrconstr_np_ptr_(Teuchos::null),
-      noxinterface_ptr_(Teuchos::null),
-      noxinterface_prec_ptr_(Teuchos::null)
+    : disnp_ptr_(nullptr),
+      stiff_constr_ptr_(nullptr),
+      fstrconstr_np_ptr_(nullptr),
+      noxinterface_ptr_(nullptr),
+      noxinterface_prec_ptr_(nullptr)
 {
   // empty
 }
@@ -44,31 +44,31 @@ void Solid::ModelEvaluator::LagPenConstraint::setup()
   check_init();
 
   // build the NOX::Nln::CONSTRAINT::Interface::Required object
-  noxinterface_ptr_ = Teuchos::make_rcp<LAGPENCONSTRAINT::NoxInterface>();
+  noxinterface_ptr_ = std::make_shared<LAGPENCONSTRAINT::NoxInterface>();
   noxinterface_ptr_->init(global_state_ptr());
   noxinterface_ptr_->setup();
 
   // build the NOX::Nln::CONSTRAINT::Interface::Preconditioner object
-  noxinterface_prec_ptr_ = Teuchos::make_rcp<LAGPENCONSTRAINT::NoxInterfacePrec>();
+  noxinterface_prec_ptr_ = std::make_shared<LAGPENCONSTRAINT::NoxInterfacePrec>();
   noxinterface_prec_ptr_->init(global_state_ptr());
   noxinterface_prec_ptr_->setup();
 
-  Teuchos::RCP<Core::FE::Discretization> dis = discret_ptr();
+  std::shared_ptr<Core::FE::Discretization> dis = discret_ptr();
 
   // setup the displacement pointer
   disnp_ptr_ = global_state().get_dis_np();
 
   // contributions of constraints to structural rhs and stiffness
   fstrconstr_np_ptr_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view());
-  stiff_constr_ptr_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view());
+  stiff_constr_ptr_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *global_state().dof_row_map_view(), 81, true, true);
 
   // ToDo: we do not want to hand in the structural dynamics parameter list
   // to the manager in the future! -> get rid of it as soon as old
   // time-integration dies ...
   // initialize constraint manager
-  constrman_ = Teuchos::make_rcp<CONSTRAINTS::ConstrManager>();
+  constrman_ = std::make_shared<CONSTRAINTS::ConstrManager>();
   constrman_->init(dis, Global::Problem::instance()->structural_dynamic_params());
   constrman_->setup(disnp_ptr_, Global::Problem::instance()->structural_dynamic_params());
 
@@ -97,11 +97,10 @@ bool Solid::ModelEvaluator::LagPenConstraint::evaluate_force()
 
   double time_np = global_state().get_time_np();
   Teuchos::ParameterList pcon;  // empty parameter list
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
 
   // only forces are evaluated!
-  constrman_->evaluate_force_stiff(
-      time_np, disn, disnp_ptr_, fstrconstr_np_ptr_, Teuchos::null, pcon);
+  constrman_->evaluate_force_stiff(time_np, disn, disnp_ptr_, fstrconstr_np_ptr_, nullptr, pcon);
 
   return true;
 }
@@ -114,11 +113,10 @@ bool Solid::ModelEvaluator::LagPenConstraint::evaluate_stiff()
 
   double time_np = global_state().get_time_np();
   Teuchos::ParameterList pcon;  // empty parameter list
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
 
   // only stiffnesses are evaluated!
-  constrman_->evaluate_force_stiff(
-      time_np, disn, disnp_ptr_, Teuchos::null, stiff_constr_ptr_, pcon);
+  constrman_->evaluate_force_stiff(time_np, disn, disnp_ptr_, nullptr, stiff_constr_ptr_, pcon);
 
   if (not stiff_constr_ptr_->filled()) stiff_constr_ptr_->complete();
 
@@ -133,7 +131,7 @@ bool Solid::ModelEvaluator::LagPenConstraint::evaluate_force_stiff()
 
   double time_np = global_state().get_time_np();
   Teuchos::ParameterList pcon;  // empty parameter list
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
 
   constrman_->evaluate_force_stiff(
       time_np, disn, disnp_ptr_, fstrconstr_np_ptr_, stiff_constr_ptr_, pcon);
@@ -149,7 +147,7 @@ bool Solid::ModelEvaluator::LagPenConstraint::evaluate_force_stiff()
 bool Solid::ModelEvaluator::LagPenConstraint::assemble_force(
     Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> block_vec_ptr = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> block_vec_ptr = nullptr;
 
   Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *fstrconstr_np_ptr_);
 
@@ -158,7 +156,7 @@ bool Solid::ModelEvaluator::LagPenConstraint::assemble_force(
     // assemble constraint rhs
     block_vec_ptr = constrman_->get_error();
 
-    if (block_vec_ptr.is_null())
+    if (!block_vec_ptr)
       FOUR_C_THROW(
           "The constraint model vector is a nullptr pointer, although \n"
           "the structural part indicates, that constraint contributions \n"
@@ -181,10 +179,10 @@ bool Solid::ModelEvaluator::LagPenConstraint::assemble_force(
 bool Solid::ModelEvaluator::LagPenConstraint::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> block_ptr = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> block_ptr = nullptr;
 
   // --- Kdd - block ---------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
   jac_dd_ptr->add(*stiff_constr_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_constr_ptr_->zero();
@@ -192,20 +190,19 @@ bool Solid::ModelEvaluator::LagPenConstraint::assemble_jacobian(
   if (noxinterface_prec_ptr_->is_saddle_point_system())
   {
     // --- Kdz - block - scale with time-integrator dependent value!-----
-    block_ptr = (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(
-        constrman_->get_constr_matrix(), true));
+    block_ptr =
+        (std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(constrman_->get_constr_matrix()));
     block_ptr->scale(timefac_np);
     global_state().assign_model_block(jac, *block_ptr, type(), Solid::MatBlockType::displ_lm);
     // reset the block pointer, just to be on the safe side
-    block_ptr = Teuchos::null;
+    block_ptr = nullptr;
 
     // --- Kzd - block - no scaling of this block (cf. diss Kloeppel p78)
-    block_ptr =
-        Core::LinAlg::matrix_transpose(*Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(
-            constrman_->get_constr_matrix(), true));
+    block_ptr = Core::LinAlg::matrix_transpose(
+        *std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(constrman_->get_constr_matrix()));
     global_state().assign_model_block(jac, *block_ptr, type(), Solid::MatBlockType::lm_displ);
     // reset the block pointer, just to be on the safe side
-    block_ptr = Teuchos::null;
+    block_ptr = nullptr;
   }
 
   return true;
@@ -252,9 +249,9 @@ void Solid::ModelEvaluator::LagPenConstraint::update_step_state(const double& ti
 
   // add the constraint force contributions to the old structural
   // residual state vector
-  if (not fstrconstr_np_ptr_.is_null())
+  if (fstrconstr_np_ptr_)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& fstructold_ptr =
+    std::shared_ptr<Core::LinAlg::Vector<double>>& fstructold_ptr =
         global_state().get_fstructure_old();
     fstructold_ptr->Update(timefac_n, *fstrconstr_np_ptr_, 1.0);
   }
@@ -308,7 +305,7 @@ void Solid::ModelEvaluator::LagPenConstraint::reset_step_state()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface>&
+const std::shared_ptr<LAGPENCONSTRAINT::NoxInterface>&
 Solid::ModelEvaluator::LagPenConstraint::nox_interface_ptr()
 {
   check_init_setup();
@@ -318,7 +315,7 @@ Solid::ModelEvaluator::LagPenConstraint::nox_interface_ptr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec>&
+const std::shared_ptr<LAGPENCONSTRAINT::NoxInterfacePrec>&
 Solid::ModelEvaluator::LagPenConstraint::nox_interface_prec_ptr()
 {
   check_init_setup();
@@ -329,8 +326,8 @@ Solid::ModelEvaluator::LagPenConstraint::nox_interface_prec_ptr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::LagPenConstraint::get_block_dof_row_map_ptr()
-    const
+std::shared_ptr<const Epetra_Map>
+Solid::ModelEvaluator::LagPenConstraint::get_block_dof_row_map_ptr() const
 {
   check_init_setup();
 
@@ -346,20 +343,20 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::LagPenConstraint::get_bloc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::LagPenConstraint::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::LagPenConstraint::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*

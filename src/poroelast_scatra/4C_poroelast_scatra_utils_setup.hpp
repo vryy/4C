@@ -40,9 +40,9 @@ namespace PoroElastScaTra
       Global::Problem* problem = Global::Problem::instance();
 
       // 1.-Initialization.
-      Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
-      Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("porofluid");
-      Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
+      std::shared_ptr<Core::FE::Discretization> structdis = problem->get_dis("structure");
+      std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis("porofluid");
+      std::shared_ptr<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
 
       // setup of the discretizations, including clone strategy (do not set material pointers, this
       // will be done here)
@@ -70,11 +70,13 @@ namespace PoroElastScaTra
         // discretization
 
         // build a proxy of the structure discretization for the scatra field
-        Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
+        std::shared_ptr<Core::DOFSets::DofSetInterface> structdofset =
+            structdis->get_dof_set_proxy();
         // build a proxy of the fluid discretization for the scatra field
-        Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->get_dof_set_proxy();
+        std::shared_ptr<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->get_dof_set_proxy();
         // build a proxy of the fluid discretization for the structure/fluid field
-        Teuchos::RCP<Core::DOFSets::DofSetInterface> scatradofset = scatradis->get_dof_set_proxy();
+        std::shared_ptr<Core::DOFSets::DofSetInterface> scatradofset =
+            scatradis->get_dof_set_proxy();
 
         // check if ScatraField has 2 discretizations, so that coupling is possible
         if (scatradis->add_dof_set(structdofset) != 1)
@@ -93,7 +95,7 @@ namespace PoroElastScaTra
       else
       {
         // create vector of discr.
-        std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
+        std::vector<std::shared_ptr<Core::FE::Discretization>> dis;
         dis.push_back(structdis);
         dis.push_back(fluiddis);
         dis.push_back(scatradis);
@@ -123,20 +125,20 @@ namespace PoroElastScaTra
         const int ndofpernode_scatra = scatradis->num_dof(0, scatradis->l_row_node(0));
         const int ndofperelement_scatra = 0;
 
-        Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-        dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+        std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux;
+        dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
             ndofpernode_scatra, ndofperelement_scatra, 0, true);
         if (structdis->add_dof_set(dofsetaux) != 2)
           FOUR_C_THROW("unexpected dof sets in structure field");
-        dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+        dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
             ndofpernode_scatra, ndofperelement_scatra, 0, true);
         if (fluiddis->add_dof_set(dofsetaux) != 2)
           FOUR_C_THROW("unexpected dof sets in fluid field");
-        dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+        dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
             ndofpernode_struct, ndofperelement_struct, 0, true);
         if (scatradis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");
-        dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+        dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
             ndofpernode_fluid, ndofperelement_fluid, 0, true);
         if (scatradis->add_dof_set(dofsetaux) != 2)
           FOUR_C_THROW("unexpected dof sets in scatra field");

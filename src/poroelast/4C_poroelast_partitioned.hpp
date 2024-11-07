@@ -24,7 +24,7 @@ namespace PoroElast
    public:
     //! create using a Epetra_Comm
     explicit Partitioned(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
+        std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! proceed one time step (prepare, solve, update)
     void do_time_step() override;
@@ -33,10 +33,10 @@ namespace PoroElast
     void setup_system() override;
 
     //! dof row map of Structure field
-    Teuchos::RCP<const Epetra_Map> dof_row_map_structure() override;
+    std::shared_ptr<const Epetra_Map> dof_row_map_structure() override;
 
     //! dof row map of Fluid field
-    Teuchos::RCP<const Epetra_Map> dof_row_map_fluid() override;
+    std::shared_ptr<const Epetra_Map> dof_row_map_fluid() override;
 
    protected:
     //! prepare new time step
@@ -58,16 +58,16 @@ namespace PoroElast
     bool convergence_check(int itnum);
 
     //! fluid increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluidincnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fluidincnp_;
     //! structure increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector<double>> structincnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> structincnp_;
 
     //! maximum iteration steps
     int itmax_;
     //! convergence tolerance
     double ittol_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         fluidveln_;  //!< global fluid velocities and pressures
   };
 

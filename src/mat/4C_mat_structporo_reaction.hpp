@@ -30,7 +30,7 @@ namespace Mat
       StructPoroReaction(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -145,9 +145,9 @@ namespace Mat
         ) override;
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<StructPoroReaction>(*this);
+      return std::make_shared<StructPoroReaction>(*this);
     }
 
     /// Initialize internal variables
@@ -186,7 +186,7 @@ namespace Mat
 
    protected:
     virtual void reaction(const double porosity, const double J,
-        Teuchos::RCP<std::vector<double>> scalars, Teuchos::ParameterList& params);
+        std::shared_ptr<std::vector<double>> scalars, Teuchos::ParameterList& params);
 
     /// my material parameters
     Mat::PAR::StructPoroReaction* params_;

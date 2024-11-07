@@ -36,7 +36,8 @@ namespace Cut
      *  \param nodes    (in) : vector of nodes defining the new edge
      *
      *  \author hiermeier \date 08/16 */
-    static Teuchos::RCP<Edge> create(Core::FE::CellType edgetype, const std::vector<Node*>& nodes);
+    static std::shared_ptr<Edge> create(
+        Core::FE::CellType edgetype, const std::vector<Node*>& nodes);
 
     /** \brief Create a new concrete edge object
      *
@@ -44,7 +45,7 @@ namespace Cut
      *  \param nodes     (in) : vector of nodes defining the new edge
      *
      *  \author hiermeier \date 08/16 */
-    static Teuchos::RCP<Edge> create(unsigned shardskey, const std::vector<Node*>& nodes);
+    static std::shared_ptr<Edge> create(unsigned shardskey, const std::vector<Node*>& nodes);
 
     /// constructor
     explicit Edge(const std::vector<Node*>& nodes)
@@ -392,7 +393,8 @@ namespace Cut
     }
 
    private:
-    Teuchos::RCP<Cut::IntersectionBase> intersection_ptr(const Core::FE::CellType& sidetype) const;
+    std::shared_ptr<Cut::IntersectionBase> intersection_ptr(
+        const Core::FE::CellType& sidetype) const;
 
   };  // class ConcreteEdge
 
@@ -407,7 +409,7 @@ namespace Cut
     virtual ~EdgeFactory() = default;
 
     /// create the concrete edge object
-    Teuchos::RCP<Edge> create_edge(
+    std::shared_ptr<Edge> create_edge(
         const Core::FE::CellType& edgetype, const std::vector<Node*>& nodes) const;
 
    private:

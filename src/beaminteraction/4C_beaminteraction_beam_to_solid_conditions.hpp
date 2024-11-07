@@ -14,8 +14,7 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <set>
 #include <unordered_map>
 #include <vector>
@@ -57,9 +56,9 @@ namespace BEAMINTERACTION
      * interacting with the beam.
      * @param beam_to_solid_params (in) Pointer to the beam-to-solid parameters.
      */
-    BeamToSolidCondition(const Teuchos::RCP<const Core::Conditions::Condition>& condition_line,
-        const Teuchos::RCP<const Core::Conditions::Condition>& condition_other,
-        const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params);
+    BeamToSolidCondition(const std::shared_ptr<const Core::Conditions::Condition>& condition_line,
+        const std::shared_ptr<const Core::Conditions::Condition>& condition_other,
+        const std::shared_ptr<const BeamToSolidParamsBase>& beam_to_solid_params);
 
 
     /**
@@ -75,14 +74,14 @@ namespace BEAMINTERACTION
     /**
      * \brief Create the beam to solid pairs needed for this condition (derived).
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair(
+    std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) override;
 
     /**
      * \brief Return a pointer to the condition of the other geometry (volume or surface).
      * @return
      */
-    Teuchos::RCP<const Core::Conditions::Condition> get_other_condition() const
+    std::shared_ptr<const Core::Conditions::Condition> get_other_condition() const
     {
       return condition_other_;
     }
@@ -91,13 +90,13 @@ namespace BEAMINTERACTION
      * \brief Create the indirect assembly manager for this condition.
      * @param discret (in) discretization.
      */
-    Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager> create_indirect_assembly_manager(
-        const Teuchos::RCP<const Core::FE::Discretization>& discret) override;
+    std::shared_ptr<SUBMODELEVALUATOR::BeamContactAssemblyManager> create_indirect_assembly_manager(
+        const std::shared_ptr<const Core::FE::Discretization>& discret) override;
 
     /**
      * \brief Return a pointer to the geometry evaluation data in this condition.
      */
-    Teuchos::RCP<const GEOMETRYPAIR::GeometryEvaluationDataBase> get_geometry_evaluation_data()
+    std::shared_ptr<const GEOMETRYPAIR::GeometryEvaluationDataBase> get_geometry_evaluation_data()
         const
     {
       return geometry_evaluation_data_;
@@ -118,21 +117,21 @@ namespace BEAMINTERACTION
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
      * @return Pointer to the created pair.
      */
-    virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
+    virtual std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) = 0;
 
    protected:
     //! Pointer to the geometry evaluation data for this condition.
-    Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase> geometry_evaluation_data_;
+    std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase> geometry_evaluation_data_;
 
     //! Pointer to the solid condition.
-    Teuchos::RCP<const Core::Conditions::Condition> condition_other_;
+    std::shared_ptr<const Core::Conditions::Condition> condition_other_;
 
     //! Vector containing all beam contact pairs created by this condition.
-    std::vector<Teuchos::RCP<BeamContactPair>> condition_contact_pairs_;
+    std::vector<std::shared_ptr<BeamContactPair>> condition_contact_pairs_;
 
     //! Pointer to the beam-to-solid parameters.
-    Teuchos::RCP<const BeamToSolidParamsBase> beam_to_solid_params_;
+    std::shared_ptr<const BeamToSolidParamsBase> beam_to_solid_params_;
   };
 
   /**
@@ -146,9 +145,9 @@ namespace BEAMINTERACTION
      * \brief Constructor (derived).
      */
     BeamToSolidConditionVolumeMeshtying(
-        const Teuchos::RCP<const Core::Conditions::Condition>& condition_line,
-        const Teuchos::RCP<const Core::Conditions::Condition>& condition_other,
-        const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params);
+        const std::shared_ptr<const Core::Conditions::Condition>& condition_line,
+        const std::shared_ptr<const Core::Conditions::Condition>& condition_other,
+        const std::shared_ptr<const BeamToSolidParamsBase>& beam_to_solid_params);
 
 
     /**
@@ -156,13 +155,14 @@ namespace BEAMINTERACTION
      *
      * The BuildIdSets method from the base class is called to build the beam IDs.
      */
-    void build_id_sets(const Teuchos::RCP<const Core::FE::Discretization>& discretization) override;
+    void build_id_sets(
+        const std::shared_ptr<const Core::FE::Discretization>& discretization) override;
 
    protected:
     /**
      * \brief Return the created beam contact pair for this condition. (derived)
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
+    std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) override;
 
     /**
@@ -190,9 +190,9 @@ namespace BEAMINTERACTION
      * \brief Constructor (derived).
      */
     BeamToSolidConditionSurface(
-        const Teuchos::RCP<const Core::Conditions::Condition>& condition_line,
-        const Teuchos::RCP<const Core::Conditions::Condition>& condition_other,
-        const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params,
+        const std::shared_ptr<const Core::Conditions::Condition>& condition_line,
+        const std::shared_ptr<const Core::Conditions::Condition>& condition_other,
+        const std::shared_ptr<const BeamToSolidParamsBase>& beam_to_solid_params,
         const bool is_mesh_tying_in);
 
 
@@ -200,7 +200,8 @@ namespace BEAMINTERACTION
      * \brief Build the surface ID sets for this condition. The BuildIdSets method from the base
      * class is called to build the beam IDs.
      */
-    void build_id_sets(const Teuchos::RCP<const Core::FE::Discretization>& discretization) override;
+    void build_id_sets(
+        const std::shared_ptr<const Core::FE::Discretization>& discretization) override;
 
     /**
      * \brief Here we get all face elements that are needed for the created pairs. This includes
@@ -208,20 +209,20 @@ namespace BEAMINTERACTION
      *
      * @param discret (in) discretization.
      */
-    void setup(const Teuchos::RCP<const Core::FE::Discretization>& discret) override;
+    void setup(const std::shared_ptr<const Core::FE::Discretization>& discret) override;
 
     /**
      * \brief Set the displacement state (derived).
      */
-    void set_state(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>&
+    void set_state(const std::shared_ptr<const Core::FE::Discretization>& discret,
+        const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>&
             beaminteraction_data_state) override;
 
    protected:
     /**
      * \brief Return the created beam contact pair for this condition. (derived)
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
+    std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) override;
 
     /**
@@ -249,7 +250,7 @@ namespace BEAMINTERACTION
 
     //! Map containing the global volume element IDs for each face element of the surface in this
     //! condition.
-    std::unordered_map<int, Teuchos::RCP<const Core::Elements::Element>> surface_ids_;
+    std::unordered_map<int, std::shared_ptr<const Core::Elements::Element>> surface_ids_;
   };
 
 
@@ -261,7 +262,7 @@ namespace BEAMINTERACTION
    * @return The created beam-to-solid pair
    */
   template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_shape(
+  std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_shape(
       const Core::FE::CellType shape);
 
   /**
@@ -275,7 +276,7 @@ namespace BEAMINTERACTION
    * @return The created beam-to-solid pair
    */
   template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_shape_no_nurbs(
+  std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_shape_no_nurbs(
       const Core::FE::CellType shape);
 
   /**
@@ -293,7 +294,7 @@ namespace BEAMINTERACTION
    */
   template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments,
       typename... BtsMortarShape>
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_mortar(
+  std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_mortar(
       const Core::FE::CellType shape,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
       BtsMortarShape... other_mortar_shape_function);
@@ -307,7 +308,7 @@ namespace BEAMINTERACTION
    * @return The created beam-to-solid pair
    */
   template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments>
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_mortar(
+  std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_mortar(
       const Core::FE::CellType shape);
 }  // namespace BEAMINTERACTION
 

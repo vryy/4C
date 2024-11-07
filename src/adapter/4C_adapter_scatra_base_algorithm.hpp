@@ -13,7 +13,7 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_result_test.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -64,14 +64,14 @@ namespace Adapter
     virtual void setup();
 
     /// access to the scalar transport field solver
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_field() { return scatra_; }
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> scatra_field() { return scatra_; }
 
     /// create result test for scalar transport field
-    Teuchos::RCP<Core::Utils::ResultTest> create_scatra_field_test();
+    std::shared_ptr<Core::Utils::ResultTest> create_scatra_field_test();
 
    private:
     /// scalar transport field solver
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_;
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> scatra_;
 
    private:
     //! flag indicating if class is setup

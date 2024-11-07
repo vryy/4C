@@ -18,7 +18,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 #define USE_PHIN_FOR_VEL  // TODO
 
@@ -37,11 +38,12 @@ namespace ScaTra
   {
    public:
     /// Standard Constructor
-    LevelSetAlgorithm(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    LevelSetAlgorithm(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
 
     // -----------------------------------------------------------------
@@ -61,17 +63,17 @@ namespace ScaTra
 
     /// read restart data
     void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override = 0;
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr) override = 0;
 
     //! set the velocity field (zero or field by function) (pure level-set problems)
     void set_velocity_field(bool init = false);
 
     /// set convective velocity field (+ pressure and acceleration field as
     /// well as fine-scale velocity field, if required) (function for coupled fluid problems)
-    void set_velocity_field(Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> acc,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvel, bool setpressure = false,
+    void set_velocity_field(std::shared_ptr<const Core::LinAlg::Vector<double>> convvel,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> acc,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fsvel, bool setpressure = false,
         bool init = false);
 
 
@@ -101,8 +103,8 @@ namespace ScaTra
 
    protected:
     virtual void get_initial_volume_of_minus_domain(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& phinp,
-        const Teuchos::RCP<const Core::FE::Discretization>& scatradis,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& phinp,
+        const std::shared_ptr<const Core::FE::Discretization>& scatradis,
         double& volumedomainminus) const;
 
     //! identify interface side due to phivalue value
@@ -139,11 +141,11 @@ namespace ScaTra
     /** \brief access nodal gradient-based values for reinitialization
      *
      * (reinit_eq() only; Sussman and Elliptic) */
-    inline Teuchos::RCP<Core::LinAlg::MultiVector<double>>& nodal_grad_based_value()
+    inline std::shared_ptr<Core::LinAlg::MultiVector<double>>& nodal_grad_based_value()
     {
       return nb_grad_val_;
     }
-    inline Teuchos::RCP<const Core::LinAlg::MultiVector<double>> nodal_grad_based_value() const
+    inline std::shared_ptr<const Core::LinAlg::MultiVector<double>> nodal_grad_based_value() const
     {
       return nb_grad_val_;
     }
@@ -157,16 +159,16 @@ namespace ScaTra
     // -----------------------------------------------------------------
     // Reconstructing nodal curvature
     // -----------------------------------------------------------------
-    void reconstructed_nodal_curvature(Teuchos::RCP<Core::LinAlg::Vector<double>> curvature,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> phi,
-        const Teuchos::RCP<const Core::LinAlg::MultiVector<double>> gradphi);
+    void reconstructed_nodal_curvature(std::shared_ptr<Core::LinAlg::Vector<double>> curvature,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> phi,
+        const std::shared_ptr<const Core::LinAlg::MultiVector<double>> gradphi);
 
     // -----------------------------------------------------------------
     // members
     // -----------------------------------------------------------------
 
     /// the parameter list for level-set problems
-    Teuchos::RCP<Teuchos::ParameterList> levelsetparams_;
+    std::shared_ptr<Teuchos::ParameterList> levelsetparams_;
 
     /// options for reinitialization of G-function;
     Inpar::ScaTra::ReInitialAction reinitaction_;
@@ -304,10 +306,10 @@ namespace ScaTra
     double initvolminus_;
 
     /// phinp before reinitialization (reinit_eq() only)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> initialphireinit_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> initialphireinit_;
 
     /// nodal gradient-based values for reinitialization (reinit_eq() only; Sussman and Elliptic)
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nb_grad_val_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> nb_grad_val_;
 
     /// interval for reinitialization (every 'reinitinterval_' time steps)
     int reinitinterval_;
@@ -332,10 +334,10 @@ namespace ScaTra
 
     // TODO:
     //    /// vector containing denominator of penalty parameter for each element (reinit_eq() only)
-    //    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_ele_denominator_;
+    //    std::shared_ptr<Core::LinAlg::Vector<double>> lambda_ele_denominator_;
     //
     //    /// vector containing smoothed haevyside function for each dof (reinit_eq() only)
-    //    Teuchos::RCP<Core::LinAlg::Vector<double>> node_deriv_smoothfunct_;
+    //    std::shared_ptr<Core::LinAlg::Vector<double>> node_deriv_smoothfunct_;
 
     /// tolerance for convergence check according to Sussman et al. 1994 (turned off negative)
     /// (reinit_eq() only)
@@ -345,7 +347,7 @@ namespace ScaTra
     bool reinitvolcorrection_;
 
     /// interface for elliptic reinitialization
-    Teuchos::RCP<std::map<int, Core::Geo::BoundaryIntCells>> interface_eleq_;
+    std::shared_ptr<std::map<int, Core::Geo::BoundaryIntCells>> interface_eleq_;
 
     // --------------
     // members related to transport and velocity fields from Navier-Stokes

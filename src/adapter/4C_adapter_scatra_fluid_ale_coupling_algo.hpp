@@ -54,40 +54,40 @@ namespace Adapter
         ) override = 0;
 
     /// solve fluid-ale
-    virtual void fluid_ale_nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel, const bool pseudotransient);
+    virtual void fluid_ale_nonlinear_solve(std::shared_ptr<Core::LinAlg::Vector<double>> idisp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel, const bool pseudotransient);
 
     /// access to ale field
-    const Teuchos::RCP<Adapter::AleFluidWrapper>& ale_field() { return ale_; }
+    const std::shared_ptr<Adapter::AleFluidWrapper>& ale_field() { return ale_; }
 
    protected:
     //! @name Transfer helpers
 
     /// field transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_field(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_fluid_field(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) const;
 
     /// field transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_field(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_fluid_field(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_ale(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_ale(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
 
    private:
     /// ALE-fluid wrapper
-    Teuchos::RCP<AleFluidWrapper> ale_;
+    std::shared_ptr<AleFluidWrapper> ale_;
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<Coupling::Adapter::Coupling> coupfa_;
+    std::shared_ptr<Coupling::Adapter::Coupling> coupfa_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfa_;
+    std::shared_ptr<Coupling::Adapter::Coupling> icoupfa_;
 
     /// condition name
     const std::string condname_;

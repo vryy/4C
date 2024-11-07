@@ -169,7 +169,7 @@ namespace Mortar
      integration always includes the Mortar matrices D/M and the gap g.
 
      */
-    virtual bool integrate_overlap(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+    virtual bool integrate_overlap(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
 
     //@}
    private:
@@ -256,7 +256,7 @@ namespace Mortar
      \brief Get coupling pairs
 
      */
-    virtual std::vector<Teuchos::RCP<Mortar::Coupling2d>>& coupling() { return coup_; }
+    virtual std::vector<std::shared_ptr<Mortar::Coupling2d>>& coupling() { return coup_; }
 
     /*!
      \brief Get type of quadratic LM interpolation
@@ -280,7 +280,7 @@ namespace Mortar
      \brief Evaluate coupling pairs
 
      */
-    virtual bool evaluate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+    virtual bool evaluate_coupling(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
 
     /*!
      \brief Get coupling type
@@ -303,7 +303,7 @@ namespace Mortar
      \brief Evaluate mortar coupling pairs
 
      */
-    virtual void integrate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+    virtual void integrate_coupling(const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
 
     /*!
      \brief Calculate consistent dual shape functions in boundary elements
@@ -322,7 +322,7 @@ namespace Mortar
     Teuchos::ParameterList& imortar_;     // containing contact input parameters
     Mortar::Element* sele_;               // slave element
     std::vector<Mortar::Element*> mele_;  // master elements
-    std::vector<Teuchos::RCP<Coupling2d>> coup_;  // coupling pairs
+    std::vector<std::shared_ptr<Coupling2d>> coup_;  // coupling pairs
   };
   // class Coupling2dManager
 }  // namespace Mortar

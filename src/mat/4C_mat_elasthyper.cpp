@@ -39,9 +39,9 @@ Mat::PAR::ElastHyper::ElastHyper(const Core::Mat::PAR::Parameter::Data& matdata)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ElastHyper::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ElastHyper::create_material()
 {
-  return Teuchos::make_rcp<Mat::ElastHyper>(this);
+  return std::make_shared<Mat::ElastHyper>(this);
 }
 
 /*----------------------------------------------------------------------*/
@@ -80,8 +80,8 @@ Mat::ElastHyper::ElastHyper(Mat::PAR::ElastHyper* params)
   for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+    std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
+    if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
     potsum_.push_back(sum);
     sum->register_anisotropy_extensions(anisotropy_);
   }
@@ -131,7 +131,7 @@ void Mat::ElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   // matid and recover params_
   int matid;
   extract_from_pack(buffer, matid);
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -158,8 +158,8 @@ void Mat::ElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
     for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
     {
       const int summand_matid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(summand_matid);
-      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+      std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(summand_matid);
+      if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
 
@@ -858,14 +858,14 @@ bool Mat::ElastHyper::vis_data(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Mat::Elastic::Summand> Mat::ElastHyper::get_pot_summand_ptr(
+std::shared_ptr<const Mat::Elastic::Summand> Mat::ElastHyper::get_pot_summand_ptr(
     const Core::Materials::MaterialType& materialtype) const
 {
   for (const auto& p : potsum_)
   {
     if (p->material_type() == materialtype) return p;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 FOUR_C_NAMESPACE_CLOSE

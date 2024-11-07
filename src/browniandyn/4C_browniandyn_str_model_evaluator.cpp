@@ -29,12 +29,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Solid::ModelEvaluator::BrownianDyn::BrownianDyn()
-    : eval_browniandyn_ptr_(Teuchos::null),
-      f_brown_np_ptr_(Teuchos::null),
-      f_ext_np_ptr_(Teuchos::null),
-      stiff_brownian_ptr_(Teuchos::null),
+    : eval_browniandyn_ptr_(nullptr),
+      f_brown_np_ptr_(nullptr),
+      f_ext_np_ptr_(nullptr),
+      stiff_brownian_ptr_(nullptr),
       maxrandnumelement_(0),
-      discret_ptr_(Teuchos::null)
+      discret_ptr_(nullptr)
 {
   // empty
 }
@@ -73,13 +73,13 @@ void Solid::ModelEvaluator::BrownianDyn::setup()
   // setup the brownian forces and the external force pointers
   // -------------------------------------------------------------------------
   f_brown_np_ptr_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
   f_ext_np_ptr_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
   // -------------------------------------------------------------------------
   // setup the brownian forces and the external force pointers
   // -------------------------------------------------------------------------
-  stiff_brownian_ptr_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  stiff_brownian_ptr_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *global_state().dof_row_map_view(), 81, true, true);
 
   // -------------------------------------------------------------------------
@@ -232,7 +232,7 @@ bool Solid::ModelEvaluator::BrownianDyn::assemble_jacobian(
 {
   check_init_setup();
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
   jac_dd_ptr->add(*stiff_brownian_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_brownian_ptr_->zero();
@@ -259,7 +259,7 @@ bool Solid::ModelEvaluator::BrownianDyn::apply_force_external()
   // -------------------------------------------------------------------------
   // Evaluate brownian specific neumann conditions
   // -------------------------------------------------------------------------
-  evaluate_neumann_brownian_dyn(f_ext_np_ptr_, Teuchos::null);
+  evaluate_neumann_brownian_dyn(f_ext_np_ptr_, nullptr);
 
   return ok;
 }
@@ -274,10 +274,9 @@ bool Solid::ModelEvaluator::BrownianDyn::apply_force_brownian()
   // currently a fixed number of matrix and vector pointers are supported
   // set default matrices and vectors
   // -------------------------------------------------------------------------
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
   // -------------------------------------------------------------------------
   // set brwonian force vector (gets filled on element level)
   // -------------------------------------------------------------------------
@@ -322,7 +321,7 @@ bool Solid::ModelEvaluator::BrownianDyn::apply_force_stiff_external()
   // -------------------------------------------------------------------------
   // Evaluate brownian specific neumann conditions
   // -------------------------------------------------------------------------
-  evaluate_neumann_brownian_dyn(f_ext_np_ptr_, Teuchos::null);
+  evaluate_neumann_brownian_dyn(f_ext_np_ptr_, nullptr);
 
   return ok;
 }
@@ -337,10 +336,9 @@ bool Solid::ModelEvaluator::BrownianDyn::apply_force_stiff_brownian()
   // currently a fixed number of matrix and vector pointers are supported
   // set default matrices and vectors
   // -------------------------------------------------------------------------
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
   // -------------------------------------------------------------------------
   // set jac matrix and brownian force vector (filled on element level)
   // -------------------------------------------------------------------------
@@ -366,14 +364,14 @@ bool Solid::ModelEvaluator::BrownianDyn::apply_force_stiff_brownian()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BrownianDyn::evaluate_brownian(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec)
+    std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+    std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec)
 {
   check_init_setup();
 
   // todo: just give params_interface to elements (not a parameter list)
   Teuchos::ParameterList p;
-  p.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
+  p.set<std::shared_ptr<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
   // -------------------------------------------------------------------------
   // Evaluate brownian (stochastic and damping) forces on element level
   // -------------------------------------------------------------------------
@@ -383,8 +381,8 @@ void Solid::ModelEvaluator::BrownianDyn::evaluate_brownian(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BrownianDyn::evaluate_brownian(Teuchos::ParameterList& p,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec)
+    std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+    std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec)
 {
   check_init_setup();
 
@@ -403,8 +401,8 @@ void Solid::ModelEvaluator::BrownianDyn::evaluate_brownian(Teuchos::ParameterLis
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BrownianDyn::evaluate_neumann_brownian_dyn(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> eval_vec,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> eval_mat)
+    std::shared_ptr<Core::LinAlg::Vector<double>> eval_vec,
+    std::shared_ptr<Core::LinAlg::SparseOperator> eval_mat)
 {
   (void)eval_vec;
   (void)eval_mat;
@@ -413,7 +411,7 @@ void Solid::ModelEvaluator::BrownianDyn::evaluate_neumann_brownian_dyn(
   // -------------------------------------------------------------------------
   // get interface pointer
   // -------------------------------------------------------------------------
-  Teuchos::RCP<Core::Elements::ParamsInterface> interface_ptr = eval_data_ptr();
+  std::shared_ptr<Core::Elements::ParamsInterface> interface_ptr = eval_data_ptr();
   // -------------------------------------------------------------------------
   // evaluate brownian specific Neumann boundary conditions
   // -------------------------------------------------------------------------
@@ -456,7 +454,8 @@ void Solid::ModelEvaluator::BrownianDyn::update_step_state(const double& timefac
   // add brownian force contributions to the old structural
   // residual state vector
   // -------------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector<double>>& fstructold_ptr = global_state().get_fstructure_old();
+  std::shared_ptr<Core::LinAlg::Vector<double>>& fstructold_ptr =
+      global_state().get_fstructure_old();
   fstructold_ptr->Update(timefac_n, *f_brown_np_ptr_, 1.0);
   fstructold_ptr->Update(-timefac_n, *f_ext_np_ptr_, 1.0);
 
@@ -513,7 +512,8 @@ void Solid::ModelEvaluator::BrownianDyn::output_step_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::BrownianDyn::get_block_dof_row_map_ptr() const
+std::shared_ptr<const Epetra_Map> Solid::ModelEvaluator::BrownianDyn::get_block_dof_row_map_ptr()
+    const
 {
   check_init_setup();
   return global_state().dof_row_map();
@@ -521,20 +521,20 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::BrownianDyn::get_block_dof
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::BrownianDyn::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::BrownianDyn::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -670,7 +670,7 @@ void Solid::ModelEvaluator::BrownianDyn::generate_gaussian_random_numbers()
   Global::Problem::instance()->random()->set_rand_range(0.0, 1.0);
 
   // multivector for stochastic forces evaluated by each element based on row map
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> randomnumbersrow =
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> randomnumbersrow =
       eval_browniandyn_ptr_->get_random_forces();
 
   int numele = randomnumbersrow->MyLength();

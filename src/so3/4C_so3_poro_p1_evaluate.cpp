@@ -195,7 +195,7 @@ void Discret::Elements::So3PoroP1<So3Ele, distype>::pre_evaluate(Teuchos::Parame
 
   if (discretization.has_state(0, "displacement") and (not is_init_porosity_))
   {
-    init_porosity_ = Teuchos::make_rcp<Core::LinAlg::Matrix<Base::numnod_, 1>>(true);
+    init_porosity_ = std::make_shared<Core::LinAlg::Matrix<Base::numnod_, 1>>(true);
     Base::extract_values_from_global_vector(
         discretization, 0, la[0].lm_, nullptr, &(*init_porosity_), "displacement");
     is_init_porosity_ = true;
@@ -610,8 +610,7 @@ void Discret::Elements::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1(
     double dW_dp = 0.0;
     double W = 0.0;
 
-    if (init_porosity_ == Teuchos::null)
-      FOUR_C_THROW("Failed to create vector of nodal intial porosity");
+    if (init_porosity_ == nullptr) FOUR_C_THROW("Failed to create vector of nodal intial porosity");
     double init_porosity = shapefct.dot(*init_porosity_);
     Base::struct_mat_->constitutive_derivatives(params, press, volchange, porosity, init_porosity,
         &dW_dp,  // dW_dp not needed

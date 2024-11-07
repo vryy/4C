@@ -80,7 +80,7 @@ namespace Mat
      */
     const CylinderCoordinateSystemProvider& get_cylinder_coordinate_system(int gp) const;
 
-    Teuchos::RCP<Mat::CoordinateSystemProvider> get_coordinate_system_provider(int gp) const;
+    std::shared_ptr<Mat::CoordinateSystemProvider> get_coordinate_system_provider(int gp) const;
 
    private:
     /*!

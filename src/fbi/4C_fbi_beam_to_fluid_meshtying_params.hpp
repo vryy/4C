@@ -120,7 +120,7 @@ namespace FBI
      * \brief Returns a pointer to the visualization output parameters.
      * @return Pointer to visualization output parameters.
      */
-    Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams>
+    std::shared_ptr<const FBI::BeamToFluidMeshtyingVtkOutputParams>
     get_visualization_ouput_params_ptr() const
     {
       return output_params_;
@@ -167,7 +167,7 @@ namespace FBI
     bool calcfluidweakdirichletforce_;
 
     /// Visualization output params. For now I see no reason to overload this
-    Teuchos::RCP<FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_;
+    std::shared_ptr<FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_;
 
     //! Shape function for the mortar Lagrange-multiplicators
     Inpar::FBI::BeamToFluidMeshtingMortarShapefunctions mortar_shape_function_;

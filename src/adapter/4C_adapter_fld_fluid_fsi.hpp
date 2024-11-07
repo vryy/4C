@@ -16,7 +16,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -51,16 +52,17 @@ namespace Adapter
   {
    public:
     /// Constructor
-    FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
+    FluidFSI(std::shared_ptr<Fluid> fluid, std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
     void init() override;
 
-    Teuchos::RCP<const Epetra_Map> dof_row_map() override;
+    std::shared_ptr<const Epetra_Map> dof_row_map() override;
 
-    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override;
+    std::shared_ptr<const Epetra_Map> dof_row_map(unsigned nds) override;
 
     /// Velocity-displacement conversion at the fsi interface
     double time_scaling() const override;
@@ -69,48 +71,51 @@ namespace Adapter
     void update() override;
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override;
+    std::shared_ptr<Core::LinAlg::Solver> linear_solver() override;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> relaxation_solve(
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel) override;
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override { return interface_; }
+    std::shared_ptr<FLD::Utils::MapExtractor> const& interface() const override
+    {
+      return interface_;
+    }
 
     /// update slave dofs for multifield simulations with fluid mesh tying
-    virtual void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& f);
+    virtual void update_slave_dof(std::shared_ptr<Core::LinAlg::Vector<double>>& f);
 
-    Teuchos::RCP<const Epetra_Map> inner_velocity_row_map() override;
+    std::shared_ptr<const Epetra_Map> inner_velocity_row_map() override;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_forces() override;
 
     /// Return interface velocity at new time level n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
 
     /// Return interface velocity at old time level n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_veln() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_veln() override;
 
-    void apply_interface_velocities(Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override;
+    void apply_interface_velocities(std::shared_ptr<Core::LinAlg::Vector<double>> ivel) override;
 
     /// Apply initial mesh displacement
     void apply_initial_mesh_displacement(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> initfluiddisp) override;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> initfluiddisp) override;
 
     void apply_mesh_displacement(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluiddisp) override;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fluiddisp) override;
 
     /// Update fluid griv velocity via FD approximation
     void update_gridv();
 
     void apply_mesh_displacement_increment(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispstepinc) override
+        std::shared_ptr<const Core::LinAlg::Vector<double>> dispstepinc) override
     {
       FOUR_C_THROW("not implemented!");
     };
 
-    void apply_mesh_velocity(Teuchos::RCP<const Core::LinAlg::Vector<double>> gridvel) override;
+    void apply_mesh_velocity(std::shared_ptr<const Core::LinAlg::Vector<double>> gridvel) override;
 
-    void set_mesh_map(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override;
+    void set_mesh_map(std::shared_ptr<const Epetra_Map> mm, const int nds_master = 0) override;
 
     //! @name Conversion between displacement and velocity at interface
 
@@ -118,21 +123,21 @@ namespace Adapter
     //! DBCs
     //!
     //! All input vectors have to live on the fluid field map.
-    void displacement_to_velocity(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fcx  ///< interface displacement step increment
+    void displacement_to_velocity(std::shared_ptr<Core::LinAlg::Vector<double>>
+            fcx  ///< interface displacement step increment
         ) override;
 
     //! Conversion of velocity to displacement at the interface without predictors or inhomogeneous
     //! DBCs
     //!
     //! All input vectors have to live on the fluid field map.
-    void velocity_to_displacement(Teuchos::RCP<Core::LinAlg::Vector<double>>
+    void velocity_to_displacement(std::shared_ptr<Core::LinAlg::Vector<double>>
             fcx  ///< interface velocity step increment at interface
         ) override;
 
     //@}
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
 
     void use_block_matrix(bool splitmatrix) override;
 
@@ -210,7 +215,7 @@ namespace Adapter
     //@}
 
     /// Calculate WSS vector
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> calculate_wall_shear_stresses();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> calculate_wall_shear_stresses();
 
    protected:
     /// create conditioned dof-map extractor for the fluid
@@ -226,28 +231,28 @@ namespace Adapter
     void build_inner_vel_map();
 
     /// A casted pointer to the fluid itself
-    Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpl_;
+    std::shared_ptr<FLD::FluidImplicitTimeInt> fluidimpl_;
 
     //! @name local copies of input parameters
-    Teuchos::RCP<Core::FE::Discretization> dis_;
-    Teuchos::RCP<Teuchos::ParameterList> params_;
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
+    std::shared_ptr<Core::FE::Discretization> dis_;
+    std::shared_ptr<Teuchos::ParameterList> params_;
+    std::shared_ptr<Core::IO::DiscretizationWriter> output_;
     bool dirichletcond_;
     //@}
 
     //! \brief interface map setup for fsi interface, interior translation
     //!
     //! Note: full map contains velocity AND pressure DOFs
-    Teuchos::RCP<FLD::Utils::MapExtractor> interface_;
+    std::shared_ptr<FLD::Utils::MapExtractor> interface_;
 
     /// interface force at old time level t_n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> interfaceforcen_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> interfaceforcen_;
 
     /// ALE dof map
-    Teuchos::RCP<Core::LinAlg::MapExtractor> meshmap_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> meshmap_;
 
     /// all velocity dofs not at the interface
-    Teuchos::RCP<Epetra_Map> innervelmap_;
+    std::shared_ptr<Epetra_Map> innervelmap_;
 
    private:
     //! Time step size adaptivity in monolithic FSI
@@ -318,7 +323,7 @@ namespace Adapter
     //! return leading error coefficient of velocity of auxiliary integrator
     double aux_method_lin_err_coeff_vel() const;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         locerrvelnp_;  ///< vector of temporal local discretization error
 
     Inpar::FSI::FluidMethod auxintegrator_;  ///< auxiliary time integrator in fluid field

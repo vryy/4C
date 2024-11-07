@@ -43,7 +43,7 @@ namespace
       Teuchos::ParameterList line_to_volume_params_list;
       Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(line_to_volume_params_list);
       evaluation_data_ =
-          Teuchos::make_rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(line_to_volume_params_list);
+          std::make_shared<GEOMETRYPAIR::LineTo3DEvaluationData>(line_to_volume_params_list);
     }
 
     /**
@@ -66,11 +66,11 @@ namespace
 
       // Create the elements.
       const int dummy_node_ids[2] = {0, 1};
-      Teuchos::RCP<Core::Elements::Element> beam_element =
-          Teuchos::make_rcp<Discret::Elements::Beam3eb>(0, 0);
+      std::shared_ptr<Core::Elements::Element> beam_element =
+          std::make_shared<Discret::Elements::Beam3eb>(0, 0);
       beam_element->set_node_ids(2, dummy_node_ids);
-      Teuchos::RCP<Discret::Elements::Fluid> fluid_element =
-          Teuchos::make_rcp<Discret::Elements::Fluid>(1, 0);
+      std::shared_ptr<Discret::Elements::Fluid> fluid_element =
+          std::make_shared<Discret::Elements::Fluid>(1, 0);
       fluid_element->set_dis_type(Core::FE::CellType::hex8);
 
       // Set up the beam element.
@@ -83,12 +83,12 @@ namespace
         }
       }
       // Cast beam element and set the geometry.
-      Teuchos::RCP<Discret::Elements::Beam3eb> beam_element_cast =
-          Teuchos::rcp_dynamic_cast<Discret::Elements::Beam3eb>(beam_element, true);
+      std::shared_ptr<Discret::Elements::Beam3eb> beam_element_cast =
+          std::dynamic_pointer_cast<Discret::Elements::Beam3eb>(beam_element);
       beam_element_cast->set_up_reference_geometry(xrefe);
 
-      Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> intersection_params =
-          Teuchos::make_rcp<FBI::BeamToFluidMeshtyingParams>();
+      std::shared_ptr<FBI::BeamToFluidMeshtyingParams> intersection_params =
+          std::make_shared<FBI::BeamToFluidMeshtyingParams>();
 
       // Call Init on the beam contact pair.
       std::vector<const Core::Elements::Element*> pair_elements;
@@ -148,7 +148,7 @@ namespace
 
    private:
     //! Evaluation data container for geometry pairs.
-    Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
+    std::shared_ptr<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
   };
 
   /**

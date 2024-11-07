@@ -16,8 +16,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <string>
 
 FOUR_C_NAMESPACE_OPEN
@@ -131,7 +131,8 @@ namespace Core::FE
     \param comm: Epetra comm object associated with this discretization
     \param n_dim: number of space dimensions of this discretization
     */
-    DiscretizationFaces(const std::string name, Teuchos::RCP<Epetra_Comm> comm, unsigned int n_dim);
+    DiscretizationFaces(
+        const std::string name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim);
 
 
 
@@ -335,13 +336,13 @@ namespace Core::FE
     bool extension_filled_;  ///< flag indicating whether faces extension has been filled
     bool doboundaryfaces_;   ///< flag set to true by derived HDG class for boundary face elements
 
-    Teuchos::RCP<Epetra_Map> facerowmap_;  ///< unique distribution of element ownerships
-    Teuchos::RCP<Epetra_Map> facecolmap_;  ///< distribution of elements including ghost elements
+    std::shared_ptr<Epetra_Map> facerowmap_;  ///< unique distribution of element ownerships
+    std::shared_ptr<Epetra_Map> facecolmap_;  ///< distribution of elements including ghost elements
     std::vector<Core::Elements::Element*>
         facerowptr_;  ///< vector of pointers to row elements for faster access
     std::vector<Core::Elements::Element*>
         facecolptr_;  ///< vector of pointers to column elements for faster access
-    std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>
+    std::map<int, std::shared_ptr<Core::Elements::FaceElement>>
         faces_;  ///< map of internal faces elements
 
 

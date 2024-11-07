@@ -20,10 +20,10 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  std::vector<Teuchos::RCP<Core::FE::Discretization>> find_dis_node(
+  std::vector<std::shared_ptr<Core::FE::Discretization>> find_dis_node(
       const std::vector<Core::IO::ElementReader>& element_readers, int global_node_id)
   {
-    std::vector<Teuchos::RCP<Core::FE::Discretization>> list_of_discretizations;
+    std::vector<std::shared_ptr<Core::FE::Discretization>> list_of_discretizations;
     for (const auto& element_reader : element_readers)
       if (element_reader.has_node(global_node_id))
         list_of_discretizations.emplace_back(element_reader.get_dis());
@@ -58,14 +58,14 @@ void Core::IO::read_nodes(Core::IO::InputFile& input, const std::string& node_se
 
       nodeid--;
       max_node_id = std::max(max_node_id, nodeid) + 1;
-      std::vector<Teuchos::RCP<Core::FE::Discretization>> dis =
+      std::vector<std::shared_ptr<Core::FE::Discretization>> dis =
           find_dis_node(element_readers, nodeid);
 
       for (const auto& di : dis)
       {
         // create node and add to discretization
-        Teuchos::RCP<Core::Nodes::Node> node =
-            Teuchos::make_rcp<Core::Nodes::Node>(nodeid, coords, myrank);
+        std::shared_ptr<Core::Nodes::Node> node =
+            std::make_shared<Core::Nodes::Node>(nodeid, coords, myrank);
         di->add_node(node);
       }
     }
@@ -79,14 +79,14 @@ void Core::IO::read_nodes(Core::IO::InputFile& input, const std::string& node_se
 
       nodeid--;
       max_node_id = std::max(max_node_id, nodeid) + 1;
-      std::vector<Teuchos::RCP<Core::FE::Discretization>> diss =
+      std::vector<std::shared_ptr<Core::FE::Discretization>> diss =
           find_dis_node(element_readers, nodeid);
 
       for (const auto& dis : diss)
       {
         // create node and add to discretization
-        Teuchos::RCP<Core::Nodes::Node> node =
-            Teuchos::make_rcp<Core::Nodes::ImmersedNode>(nodeid, coords, myrank);
+        std::shared_ptr<Core::Nodes::Node> node =
+            std::make_shared<Core::Nodes::ImmersedNode>(nodeid, coords, myrank);
         dis->add_node(node);
       }
     }
@@ -105,14 +105,14 @@ void Core::IO::read_nodes(Core::IO::InputFile& input, const std::string& node_se
         FOUR_C_THROW(
             "Reading of control points %d failed: They must be numbered consecutive!!", cpid);
       if (tmp != "COORD") FOUR_C_THROW("failed to read control point %d", cpid);
-      std::vector<Teuchos::RCP<Core::FE::Discretization>> diss =
+      std::vector<std::shared_ptr<Core::FE::Discretization>> diss =
           find_dis_node(element_readers, cpid);
 
       for (auto& dis : diss)
       {
         // create node/control point and add to discretization
-        Teuchos::RCP<Core::FE::Nurbs::ControlPoint> node =
-            Teuchos::make_rcp<Core::FE::Nurbs::ControlPoint>(cpid, coords, weight, myrank);
+        std::shared_ptr<Core::FE::Nurbs::ControlPoint> node =
+            std::make_shared<Core::FE::Nurbs::ControlPoint>(cpid, coords, weight, myrank);
         dis->add_node(node);
       }
     }
@@ -223,11 +223,11 @@ void Core::IO::read_nodes(Core::IO::InputFile& input, const std::string& node_se
       }
 
       // add fiber information to node
-      std::vector<Teuchos::RCP<Core::FE::Discretization>> discretizations =
+      std::vector<std::shared_ptr<Core::FE::Discretization>> discretizations =
           find_dis_node(element_readers, nodeid);
       for (auto& dis : discretizations)
       {
-        auto node = Teuchos::make_rcp<Core::Nodes::FiberNode>(
+        auto node = std::make_shared<Core::Nodes::FiberNode>(
             nodeid, coords, cosyDirections, fibers, angles, myrank);
         dis->add_node(node);
       }

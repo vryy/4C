@@ -15,11 +15,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 void Discret::Elements::FluidPoroEleType::pre_evaluate(Core::FE::Discretization& dis,
-    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    Teuchos::ParameterList& p, std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
 {
   const auto action = Teuchos::getIntegralValue<FLD::Action>(p, "action");
 
@@ -48,7 +48,7 @@ int Discret::Elements::FluidPoro::evaluate(Teuchos::ParameterList& params,
   const auto act = Teuchos::getIntegralValue<FLD::Action>(params, "action");
 
   // get material
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   // switch between different physical types as used below
   std::string impltype = "poro";

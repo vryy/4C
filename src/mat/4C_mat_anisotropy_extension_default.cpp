@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 template <unsigned int numfib>
 Mat::DefaultAnisotropyExtension<numfib>::DefaultAnisotropyExtension(const int init_mode,
     const double gamma, const bool adapt_angle,
-    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& stucturalTensorStrategy,
+    const std::shared_ptr<Elastic::StructuralTensorStrategyBase>& stucturalTensorStrategy,
     std::array<int, numfib> fiber_ids)
     : FiberAnisotropyExtension<numfib>(stucturalTensorStrategy),
       init_mode_(init_mode),

@@ -51,9 +51,9 @@ Mat::PAR::Robinson::Robinson(const Core::Mat::PAR::Parameter::Data& matdata)
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from read_materials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::Robinson::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::Robinson::create_material()
 {
-  return Teuchos::make_rcp<Mat::Robinson>(this);
+  return std::make_shared<Mat::Robinson>(this);
 }
 
 
@@ -77,20 +77,20 @@ Core::Communication::ParObject* Mat::RobinsonType::create(Core::Communication::U
 /*----------------------------------------------------------------------*
  | constructor (public) --> called in Create()               dano 11/11 |
  *----------------------------------------------------------------------*/
-Mat::Robinson::Robinson() : params_(nullptr), thermo_(Teuchos::null) {}
+Mat::Robinson::Robinson() : params_(nullptr), thermo_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
  | copy-constructor (public) --> called in create_material()  dano 11/11 |
  *----------------------------------------------------------------------*/
-Mat::Robinson::Robinson(Mat::PAR::Robinson* params) : params_(params), thermo_(Teuchos::null)
+Mat::Robinson::Robinson(Mat::PAR::Robinson* params) : params_(params), thermo_(nullptr)
 {
   const int thermoMatId = this->params_->thermomat_;
   if (thermoMatId != -1)
   {
     auto mat = Mat::factory(thermoMatId);
-    if (mat == Teuchos::null) FOUR_C_THROW("Failed to create thermo material, id=%d", thermoMatId);
-    thermo_ = Teuchos::rcp_dynamic_cast<Mat::Trait::Thermo>(mat);
+    if (mat == nullptr) FOUR_C_THROW("Failed to create thermo material, id=%d", thermoMatId);
+    thermo_ = std::dynamic_pointer_cast<Mat::Trait::Thermo>(mat);
   }
 }
 
@@ -155,7 +155,7 @@ void Mat::Robinson::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -176,17 +176,17 @@ void Mat::Robinson::unpack(Core::Communication::UnpackBuffer& buffer)
   if (numgp == 0) isinit_ = false;
 
   // unpack strain vectors
-  strainpllast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  strainplcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  strainpllast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  strainplcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
   // unpack back stress vectors (for kinematic hardening)
-  backstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  backstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  backstresslast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  backstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
   // unpack matrices needed for condensed system
-  kvarva_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<2 * NUM_STRESS_3D, 1>>>();
+  kvarva_ = std::make_shared<std::vector<Core::LinAlg::Matrix<2 * NUM_STRESS_3D, 1>>>();
   kvakvae_ =
-      Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<2 * NUM_STRESS_3D, NUM_STRESS_3D>>>();
+      std::make_shared<std::vector<Core::LinAlg::Matrix<2 * NUM_STRESS_3D, NUM_STRESS_3D>>>();
   strain_last_.resize(0);
 
   for (int var = 0; var < numgp; ++var)
@@ -231,14 +231,14 @@ void Mat::Robinson::setup(const int numgp, const Core::IO::InputParameterContain
   std::string buffer;
 
   // initialise history variables
-  strainpllast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
-  strainplcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
+  strainpllast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
+  strainplcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
 
-  backstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
-  backstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
+  backstresslast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
+  backstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
 
-  kvarva_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<2 * Mat::NUM_STRESS_3D, 1>>>();
-  kvakvae_ = Teuchos::make_rcp<
+  kvarva_ = std::make_shared<std::vector<Core::LinAlg::Matrix<2 * Mat::NUM_STRESS_3D, 1>>>();
+  kvakvae_ = std::make_shared<
       std::vector<Core::LinAlg::Matrix<2 * Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>>>();
 
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> emptymat(true);
@@ -285,8 +285,8 @@ void Mat::Robinson::update()
   // the matrices do not have to be updated. They are reset after each time step
 
   // empty vectors of current data
-  strainplcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
-  backstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
+  strainplcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
+  backstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
 
   // get size of the vector
   // (use the last vector, because it includes latest results, current is empty)
@@ -1502,16 +1502,16 @@ double Mat::Robinson::capacity_deriv_t() const { return thermo_->capacity_deriv_
 void Mat::Robinson::reinit(double temperature, unsigned gp)
 {
   current_temperature_ = temperature;
-  if (thermo_ != Teuchos::null) thermo_->reinit(temperature, gp);
+  if (thermo_ != nullptr) thermo_->reinit(temperature, gp);
 }
 void Mat::Robinson::reset_current_state()
 {
-  if (thermo_ != Teuchos::null) thermo_->reset_current_state();
+  if (thermo_ != nullptr) thermo_->reset_current_state();
 }
 
 void Mat::Robinson::commit_current_state()
 {
-  if (thermo_ != Teuchos::null) thermo_->commit_current_state();
+  if (thermo_ != nullptr) thermo_->commit_current_state();
 }
 
 /*----------------------------------------------------------------------*/

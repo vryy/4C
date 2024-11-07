@@ -93,16 +93,16 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
   // make sure we set up everything properly
   heterogeneous_reaction_sanity_check();
 
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(scatratimint_->discretization()->get_comm().Clone());
+  std::shared_ptr<Epetra_Comm> com(scatratimint_->discretization()->get_comm().Clone());
 
   // standard case
-  discret_ = Teuchos::make_rcp<Core::FE::Discretization>(
+  discret_ = std::make_shared<Core::FE::Discretization>(
       scatratimint_->discretization()->name(), com, Global::Problem::instance()->n_dim());
 
   // call complete without assigning degrees of freedom
   discret_->fill_complete(false, true, false);
 
-  Teuchos::RCP<Core::FE::Discretization> scatradis = scatratimint_->discretization();
+  std::shared_ptr<Core::FE::Discretization> scatradis = scatratimint_->discretization();
 
   // create scatra elements if the scatra discretization is empty
   {
@@ -135,8 +135,8 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
     //
     // slave side is supposed to be the surface discretization
     //
-    Teuchos::RCP<Core::DOFSets::DofSetMergedWrapper> newdofset =
-        Teuchos::make_rcp<Core::DOFSets::DofSetMergedWrapper>(scatradis->get_dof_set_proxy(),
+    std::shared_ptr<Core::DOFSets::DofSetMergedWrapper> newdofset =
+        std::make_shared<Core::DOFSets::DofSetMergedWrapper>(scatradis->get_dof_set_proxy(),
             scatradis, "ScatraHeteroReactionMaster", "ScatraHeteroReactionSlave");
 
     // assign the dofset to the reaction discretization
@@ -145,8 +145,8 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
     // add all secondary dofsets as proxies
     for (int ndofset = 1; ndofset < scatratimint_->discretization()->num_dof_sets(); ++ndofset)
     {
-      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> gidmatchingdofset =
-          Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(scatratimint_->discretization(),
+      std::shared_ptr<Core::DOFSets::DofSetGIDBasedWrapper> gidmatchingdofset =
+          std::make_shared<Core::DOFSets::DofSetGIDBasedWrapper>(scatratimint_->discretization(),
               scatratimint_->discretization()->get_dof_set_proxy(ndofset));
       discret_->add_dof_set(gidmatchingdofset);
     }
@@ -183,11 +183,11 @@ void ScaTra::HeterogeneousReactionStrategy::init_meshtying()
  | Evaluate conditioned elements                            rauch 08/16 |
  *----------------------------------------------------------------------*/
 void ScaTra::HeterogeneousReactionStrategy::evaluate_condition(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3, const std::string& condstring,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3, const std::string& condstring,
     const int condid)
 {
   check_is_init();
@@ -206,8 +206,8 @@ void ScaTra::HeterogeneousReactionStrategy::evaluate_condition(Teuchos::Paramete
 /*----------------------------------------------------------------------*
  | Set state on auxiliary discretization                    rauch 12/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::HeterogeneousReactionStrategy::set_state(
-    unsigned nds, const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector<double>> state)
+void ScaTra::HeterogeneousReactionStrategy::set_state(unsigned nds, const std::string& name,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> state)
 {
   discret_->set_state(nds, name, state);
   return;

@@ -21,7 +21,8 @@
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -34,14 +35,19 @@ namespace Core::LinAlg
    \param npr (in): estimated number of entries per row.
    (need not be exact, better should be too big rather then too small)
    */
-  Teuchos::RCP<Epetra_CrsMatrix> create_matrix(const Epetra_Map& rowmap, const int npr);
+  std::shared_ptr<Epetra_CrsMatrix> create_matrix(const Epetra_Map& rowmap, const int npr);
 
   /*!
    \brief Create a new sparse identity matrix and return RefcountPtr to it
 
    \param rowmap (in): row map of matrix
    */
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> create_identity_matrix(const Epetra_Map& map);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> create_identity_matrix(const Epetra_Map& map);
+
+  /**
+   * Same as create_identity_matrix() but fills an existing matrix @p mat.
+   */
+  void fill_identity_matrix(Core::LinAlg::SparseMatrix& mat);
 
   /*! \brief Create prolongation matrix using an external algebraic multigrid package
    *
@@ -59,7 +65,7 @@ namespace Core::LinAlg
    \param rowmap (in): row map of vector
    \param init (in): initialize vector to zero upon construction
    */
-  Teuchos::RCP<Core::LinAlg::Vector<double>> create_vector(
+  std::shared_ptr<Core::LinAlg::Vector<double>> create_vector(
       const Epetra_BlockMap& rowmap, const bool init = true);
 
   /*!
@@ -69,7 +75,7 @@ namespace Core::LinAlg
    \param rowmap (in): number of vectors
    \param init (in): initialize vector to zero upon construction
    */
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> create_multi_vector(
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> create_multi_vector(
       const Epetra_BlockMap& rowmap, const int numrows, const bool init = true);
 
   /*!
@@ -80,7 +86,7 @@ namespace Core::LinAlg
    \param gids The local gids of this map
    \param comm The map's communicator
    */
-  Teuchos::RCP<Epetra_Map> create_map(const std::set<int>& gids, const Epetra_Comm& comm);
+  std::shared_ptr<Epetra_Map> create_map(const std::set<int>& gids, const Epetra_Comm& comm);
 
   /*!
    \brief Create an Epetra_Map from a vector of gids
@@ -90,7 +96,7 @@ namespace Core::LinAlg
    \param gids The local gids of this map
    \param comm The map's communicator
    */
-  Teuchos::RCP<Epetra_Map> create_map(const std::vector<int>& gids, const Epetra_Comm& comm);
+  std::shared_ptr<Epetra_Map> create_map(const std::vector<int>& gids, const Epetra_Comm& comm);
 
   /*!
       \brief Creates MultiMapExtractor to split dofs at certain position

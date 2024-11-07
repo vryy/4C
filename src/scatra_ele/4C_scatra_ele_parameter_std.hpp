@@ -42,7 +42,7 @@ namespace Discret
       bool is_conservative() const { return is_conservative_; };
       bool spherical_coords() const { return sphericalcoords_; };
       Inpar::ScaTra::FluxType calc_flux_domain() const { return calcflux_domain_; };
-      Teuchos::RCP<std::vector<int>> write_flux_ids() const { return writefluxids_; };
+      std::shared_ptr<std::vector<int>> write_flux_ids() const { return writefluxids_; };
       Inpar::ScaTra::FdCheck fd_check() const { return fdcheck_; };
       double fd_check_eps() const { return fdcheckeps_; };
       double fd_check_tol() const { return fdchecktol_; };
@@ -110,7 +110,7 @@ namespace Discret
       Inpar::ScaTra::FluxType calcflux_domain_;
 
       //! ids of scalars for which flux vectors are written (starting with 1)
-      Teuchos::RCP<std::vector<int>> writefluxids_;
+      std::shared_ptr<std::vector<int>> writefluxids_;
 
       //! flag for finite difference check
       Inpar::ScaTra::FdCheck fdcheck_;

@@ -28,21 +28,21 @@ void Core::LinearSolver::IFPACKPreconditioner::setup(bool create, Epetra_Operato
 {
   if (create)
   {
-    Teuchos::RCP<Epetra_CrsMatrix> A_crs =
-        Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcpFromRef(*matrix));
+    std::shared_ptr<Epetra_CrsMatrix> A_crs =
+        std::dynamic_pointer_cast<Epetra_CrsMatrix>(Core::Utils::shared_ptr_from_ref(*matrix));
 
-    if (A_crs.is_null())
+    if (!A_crs)
     {
-      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
-          Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
-              Teuchos::rcpFromRef(*matrix));
+      std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> A =
+          std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(
+              Core::Utils::shared_ptr_from_ref(*matrix));
 
       std::cout
           << "\n WARNING: IFPACK preconditioner is merging matrix, this is very expensive! \n";
       A_crs = A->merge()->epetra_matrix();
     }
 
-    pmatrix_ = Teuchos::make_rcp<Epetra_CrsMatrix>(*A_crs);
+    pmatrix_ = std::make_shared<Epetra_CrsMatrix>(*A_crs);
 
     // get the type of ifpack preconditioner from solver parameter list
     std::string prectype = solverlist_.get("Preconditioner Type", "ILU");
@@ -50,9 +50,10 @@ void Core::LinearSolver::IFPACKPreconditioner::setup(bool create, Epetra_Operato
 
     // create the preconditioner
     Ifpack Factory;
-    prec_ = Teuchos::RCP(Factory.Create(prectype, pmatrix_.get(), overlap));
+    prec_ =
+        std::shared_ptr<Ifpack_Preconditioner>(Factory.Create(prectype, pmatrix_.get(), overlap));
 
-    if (prec_.is_null())
+    if (!prec_)
       FOUR_C_THROW("Creation of IFPACK preconditioner of type '%s' failed.", prectype.c_str());
 
     // setup

@@ -614,7 +614,7 @@ void ParticleInteraction::SPHDensityBase::continuity_equation_particle_wall_cont
     Core::LinAlg::SerialDenseVector funct(numnodes);
     std::vector<int> lmele;
 
-    if (walldatastate->get_vel_col() != Teuchos::null)
+    if (walldatastate->get_vel_col() != nullptr)
     {
       // evaluate shape functions of element at wall contact point
       Core::FE::shape_function_2d(
@@ -631,7 +631,7 @@ void ParticleInteraction::SPHDensityBase::continuity_equation_particle_wall_cont
     // velocity of wall contact point j
     std::array<double, 3> vel_j = {0.0, 0.0, 0.0};
 
-    if (walldatastate->get_vel_col() != Teuchos::null)
+    if (walldatastate->get_vel_col() != nullptr)
     {
       // get nodal velocities
       std::vector<double> nodal_vel(numnodes * 3);

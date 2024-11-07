@@ -11,8 +11,8 @@
 #include "4C_config.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -70,7 +70,7 @@ namespace Core::IO
     \param comm (i) our communicator
     \param sectionname (i) the section that contains the element lines
     */
-    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input,
+    ElementReader(std::shared_ptr<Core::FE::Discretization> dis, Core::IO::InputFile& input,
         std::string sectionname);
 
     /*!
@@ -83,7 +83,7 @@ namespace Core::IO
     \param sectionname (i) the section that contains the element lines
     \param elementtype (i) element type name to read in this discretization
     */
-    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input,
+    ElementReader(std::shared_ptr<Core::FE::Discretization> dis, Core::IO::InputFile& input,
         std::string sectionname, std::string elementtype);
 
     /*!
@@ -96,7 +96,7 @@ namespace Core::IO
     \param sectionname (i) the section that contains the element lines
     \param elementtypes (i) element type names to read in this discretization
     */
-    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input,
+    ElementReader(std::shared_ptr<Core::FE::Discretization> dis, Core::IO::InputFile& input,
         std::string sectionname, const std::set<std::string>& elementtypes);
 
     //! Destructor
@@ -105,10 +105,10 @@ namespace Core::IO
     std::set<int> get_unique_nodes() const { return nodes_; }
 
     /// give the discretization this reader fills
-    Teuchos::RCP<Core::FE::Discretization> get_dis() const { return dis_; }
+    std::shared_ptr<Core::FE::Discretization> get_dis() const { return dis_; }
 
     /// Return the list of row elements
-    Teuchos::RCP<Epetra_Map> get_row_elements() const { return roweles_; }
+    std::shared_ptr<Epetra_Map> get_row_elements() const { return roweles_; }
 
     /*! Read elements and partition the node graph
 
@@ -172,19 +172,19 @@ namespace Core::IO
     std::set<int> nodes_;
 
     /// my discretization
-    Teuchos::RCP<Core::FE::Discretization> dis_;
+    std::shared_ptr<Core::FE::Discretization> dis_;
 
     /// node row map
-    Teuchos::RCP<Epetra_Map> rownodes_;
+    std::shared_ptr<Epetra_Map> rownodes_;
 
     /// node col map
-    Teuchos::RCP<Epetra_Map> colnodes_;
+    std::shared_ptr<Epetra_Map> colnodes_;
 
     /// element row map
-    Teuchos::RCP<Epetra_Map> roweles_;
+    std::shared_ptr<Epetra_Map> roweles_;
 
     /// element col map
-    Teuchos::RCP<Epetra_Map> coleles_;
+    std::shared_ptr<Epetra_Map> coleles_;
 
     /// element type names to read
     std::set<std::string> elementtypes_;

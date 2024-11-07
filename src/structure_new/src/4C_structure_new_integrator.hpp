@@ -14,7 +14,8 @@
 #include "4C_solver_nonlin_nox_enum_lists.hpp"  // enumerators
 
 #include <NOX_Abstract_Vector.H>  // enumerators
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 // forward declarations
 
@@ -82,11 +83,11 @@ namespace Solid
      * \param[in] dpc_ptr Pointer to the dirichlet boundary condition object
      * \param[in] timint_ptr Pointer to the underlying time integrator (read-only)
      */
-    virtual void init(const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn>& sdyn_ptr,
-        const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
-        const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
-        const Teuchos::RCP<Solid::Dbc>& dbc_ptr,
-        const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr);
+    virtual void init(const std::shared_ptr<Solid::TimeInt::BaseDataSDyn>& sdyn_ptr,
+        const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+        const std::shared_ptr<Solid::TimeInt::BaseDataIO>& gio_ptr,
+        const std::shared_ptr<Solid::Dbc>& dbc_ptr,
+        const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr);
 
     //! Setup (has to be implemented by the derived classes)
     virtual void setup();
@@ -171,7 +172,7 @@ namespace Solid
 
     //! compute the scaling operator for element based scaling using PTC
     virtual void compute_jacobian_contributions_from_element_level_for_ptc(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr) = 0;
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr) = 0;
 
     //! Assemble the right hand side
     virtual bool assemble_force(Core::LinAlg::Vector<double>& f,
@@ -261,7 +262,7 @@ namespace Solid
 
     /// compute the current volumes of all elements
     bool determine_element_volumes(const Core::LinAlg::Vector<double>& x,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& ele_vols);
+        std::shared_ptr<Core::LinAlg::Vector<double>>& ele_vols);
 
     /*! \brief Output to file
      *
@@ -326,7 +327,7 @@ namespace Solid
 
     //! Return the model evaluator control object (read-only)
     const Solid::ModelEvaluatorManager& model_eval() const;
-    Teuchos::RCP<const Solid::ModelEvaluatorManager> model_eval_ptr() const;
+    std::shared_ptr<const Solid::ModelEvaluatorManager> model_eval_ptr() const;
 
     //! Return the model evaluator object for the given model type
     Solid::ModelEvaluator::Generic& evaluator(const Inpar::Solid::ModelType& mt);
@@ -423,7 +424,7 @@ namespace Solid
       double get_total() const;
 
       /// average quantities based on the used averaging type
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> average(
+      std::shared_ptr<const Core::LinAlg::Vector<double>> average(
           const Core::LinAlg::Vector<double>& state_np, const Core::LinAlg::Vector<double>& state_n,
           const double fac_n) const;
 
@@ -462,28 +463,28 @@ namespace Solid
 
    private:
     //! pointer to the model evaluator
-    Teuchos::RCP<Solid::ModelEvaluatorManager> modelevaluator_ptr_;
+    std::shared_ptr<Solid::ModelEvaluatorManager> modelevaluator_ptr_;
 
     //! pointer to model evaluator data
-    Teuchos::RCP<Solid::ModelEvaluator::Data> eval_data_ptr_;
+    std::shared_ptr<Solid::ModelEvaluator::Data> eval_data_ptr_;
 
     //! pointer to the structural dynamic data container
-    Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;
+    std::shared_ptr<Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;
 
     //! pointer to the global state data container
-    Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
+    std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
     //! pointer to the input/output data container
-    Teuchos::RCP<Solid::TimeInt::BaseDataIO> io_ptr_;
+    std::shared_ptr<Solid::TimeInt::BaseDataIO> io_ptr_;
 
     //! pointer to the dirichlet boundary condition object
-    Teuchos::RCP<Solid::Dbc> dbc_ptr_;
+    std::shared_ptr<Solid::Dbc> dbc_ptr_;
 
     //! pointer to the underlying time integrator (read-only)
-    Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
+    std::shared_ptr<const Solid::TimeInt::Base> timint_ptr_;
 
     //! pointer to the dirichlet boundary condition monitor
-    Teuchos::RCP<Solid::MonitorDbc> monitor_dbc_ptr_ = Teuchos::null;
+    std::shared_ptr<Solid::MonitorDbc> monitor_dbc_ptr_ = nullptr;
   };  // namespace Solid
 }  // namespace Solid
 

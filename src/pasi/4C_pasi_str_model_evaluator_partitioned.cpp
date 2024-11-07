@@ -31,27 +31,27 @@ void Solid::ModelEvaluator::PartitionedPASI::setup()
 {
   // pasi interface force at t_{n+1}
   interface_force_np_ptr_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
 
   // set flag
   issetup_ = true;
 }
 
-Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::PartitionedPASI::get_block_dof_row_map_ptr()
-    const
+std::shared_ptr<const Epetra_Map>
+Solid::ModelEvaluator::PartitionedPASI::get_block_dof_row_map_ptr() const
 {
   check_init_setup();
   return global_state().dof_row_map();
 }
 
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::PartitionedPASI::get_current_solution_ptr() const
 {
   check_init();
   return global_state().get_dis_np();
 }
 
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::PartitionedPASI::get_last_time_step_solution_ptr() const
 {
   check_init();

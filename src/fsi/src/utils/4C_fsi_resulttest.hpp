@@ -44,14 +44,14 @@ namespace FSI
   {
    public:
     //! constructor for standard FSI
-    FSIResultTest(Teuchos::RCP<FSI::Monolithic>&
+    FSIResultTest(std::shared_ptr<FSI::Monolithic>&
                       fsi,  ///< monolithic solver object that was used for the simulation
         const Teuchos::ParameterList& fsidyn  ///< FSI parameter list from input file
     );
 
     //! constructor for FSI implementation without NOX
     FSIResultTest(
-        Teuchos::RCP<FSI::MonolithicNoNOX>
+        std::shared_ptr<FSI::MonolithicNoNOX>
             fsi,  ///< monolithic solver object without NOX that was used for the simulation
         const Teuchos::ParameterList& fsidyn  ///< FSI parameter list from input file
     );
@@ -85,13 +85,13 @@ namespace FSI
 
    private:
     //! slave discretisation
-    Teuchos::RCP<Core::FE::Discretization> slavedisc_;
+    std::shared_ptr<Core::FE::Discretization> slavedisc_;
 
     //! Lagrange multiplier living on the slave discretization
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fsilambda_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fsilambda_;
 
     //! the monolithic solver object itself
-    Teuchos::RCP<FSI::Monolithic> fsi_;
+    std::shared_ptr<FSI::Monolithic> fsi_;
   };
 }  // namespace FSI
 FOUR_C_NAMESPACE_CLOSE

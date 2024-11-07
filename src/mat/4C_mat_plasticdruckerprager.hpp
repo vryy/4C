@@ -64,7 +64,7 @@ namespace Mat
       const int itermax_;
       //@}
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
     };
   }  // namespace PAR
   class PlasticDruckerPragerType : public Core::Communication::ParObjectType
@@ -100,9 +100,9 @@ namespace Mat
         FOUR_C_THROW(
             "The plastic Drucker Prager material model is only compatible with linear kinematics.");
     }
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<PlasticDruckerPrager>(*this);
+      return std::make_shared<PlasticDruckerPrager>(*this);
     }
     void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
     void update() override;

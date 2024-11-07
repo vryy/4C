@@ -37,36 +37,36 @@ namespace Adapter
   {
    public:
     /// constructor
-    explicit FBIStructureWrapper(Teuchos::RCP<Structure> structure);
+    explicit FBIStructureWrapper(std::shared_ptr<Structure> structure);
 
     /// extracts interface velocities at \f$t_{n}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_veln();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_veln();
 
     /// extracts interface velocities at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_velnp();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_velnp();
 
     /// Predictor for interface velocities
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> predict_interface_velnp();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> predict_interface_velnp();
 
     /** \brief linear structure solve with just a interface load
      *
      * Overloads RelaxationSolve of base class with an error message, because it is not implemented
      * for fluid-beam interaction yet
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce) override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> relaxation_solve(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iforce) override;
 
     /// switch structure field to block matrix in fsi simulations
     void use_block_matrix() override { FOUR_C_THROW("Not yet implemented\n"); };
 
     /// extract interface displacements at \f$t_{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_dispn() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_dispn() override;
 
     /// extract interface displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_dispnp() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_dispnp() override;
 
     /// Predictor for interface displacements
-    Teuchos::RCP<Core::LinAlg::Vector<double>> predict_interface_dispnp() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> predict_interface_dispnp() override;
 
     /** \brief Apply interface forces to structural solver
      *
@@ -74,7 +74,7 @@ namespace Adapter
      * step. This implementation overloads the base class function because we are not using a
      * condition for the interface, since we expect all beam elements to be immersed.
      */
-    void apply_interface_forces(Teuchos::RCP<Core::LinAlg::Vector<double>> iforce) override;
+    void apply_interface_forces(std::shared_ptr<Core::LinAlg::Vector<double>> iforce) override;
 
     /// rebuild FSI interface from structure side
     void rebuild_interface() override;
@@ -83,11 +83,11 @@ namespace Adapter
     virtual void setup_multi_map_extractor();
 
     /// Get Runtime Output data
-    virtual Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> get_io_data();
+    virtual std::shared_ptr<const Solid::TimeInt::ParamsRuntimeOutput> get_io_data();
 
    private:
     /// Map extractor seperating the beam elements from the structure elements
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> eletypeextractor_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> eletypeextractor_;
 
   };  // class FSIStructureWrapper
 }  // namespace Adapter

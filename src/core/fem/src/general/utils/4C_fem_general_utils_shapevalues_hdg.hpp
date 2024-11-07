@@ -125,13 +125,13 @@ namespace Core::FE
     unsigned int degree_;
 
     /// underlying polynomial space for element interior, created in constructor
-    Teuchos::RCP<Core::FE::PolynomialSpace<nsd_>> polySpace_;
+    std::shared_ptr<Core::FE::PolynomialSpace<nsd_>> polySpace_;
 
     /// scalar dofs per element
     unsigned int ndofs_;
 
     /// quadrature rule
-    Teuchos::RCP<Core::FE::GaussPoints> quadrature_;
+    std::shared_ptr<Core::FE::GaussPoints> quadrature_;
 
     /// complete poly
     bool usescompletepoly_;
@@ -217,13 +217,13 @@ namespace Core::FE
     unsigned int degree_;
 
     /// underlying polynomial space for faces
-    Teuchos::RCP<Core::FE::PolynomialSpace<nsd_ - 1>> polySpace_;
+    std::shared_ptr<Core::FE::PolynomialSpace<nsd_ - 1>> polySpace_;
 
     /// scalar dofs per face
     unsigned int nfdofs_;
 
     /// quadrature rule
-    Teuchos::RCP<Core::FE::GaussPoints> quadrature_;
+    std::shared_ptr<Core::FE::GaussPoints> quadrature_;
 
     /// number of integration points on face
     unsigned int nqpoints_;
@@ -291,13 +291,13 @@ namespace Core::FE
     static ShapeValuesFaceCache<distype> &instance();
 
     /// give pointer to corresponding shape values face
-    Teuchos::RCP<ShapeValuesFace<distype>> create(ShapeValuesFaceParams params);
+    std::shared_ptr<ShapeValuesFace<distype>> create(ShapeValuesFaceParams params);
 
    private:
     ShapeValuesFaceCache() = default;
 
     /// the actual cache; contains all pairs
-    std::map<std::size_t, Teuchos::RCP<ShapeValuesFace<distype>>> svf_cache_;
+    std::map<std::size_t, std::shared_ptr<ShapeValuesFace<distype>>> svf_cache_;
   };
 
   /*!
@@ -313,13 +313,13 @@ namespace Core::FE
     static ShapeValuesInteriorOnFaceCache &instance();
 
     /// give pointer to corresponding shape values face
-    Teuchos::RCP<ShapeValuesInteriorOnFace> create(ShapeValuesFaceParams params);
+    std::shared_ptr<ShapeValuesInteriorOnFace> create(ShapeValuesFaceParams params);
 
    private:
     ShapeValuesInteriorOnFaceCache() = default;
 
     /// the actual cache; contains all pairs
-    std::map<std::size_t, Teuchos::RCP<ShapeValuesInteriorOnFace>> cache_;
+    std::map<std::size_t, std::shared_ptr<ShapeValuesInteriorOnFace>> cache_;
   };
 
 }  // namespace Core::FE

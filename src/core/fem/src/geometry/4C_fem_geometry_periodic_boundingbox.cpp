@@ -27,14 +27,14 @@ FOUR_C_NAMESPACE_OPEN
 Core::Geo::MeshFree::BoundingBox::BoundingBox()
     : isinit_(false),
       issetup_(false),
-      boxdiscret_(Teuchos::null),
-      disn_row_(Teuchos::null),
-      disn_col_(Teuchos::null),
+      boxdiscret_(nullptr),
+      disn_row_(nullptr),
+      disn_col_(nullptr),
       empty_(true),
       haveperiodicbc_(false),
       havedirichletbc_(false),
       box_(true),
-      visualization_output_writer_ptr_(Teuchos::null)
+      visualization_output_writer_ptr_(nullptr)
 {
   // initialize arrays
   for (int idim = 0; idim < 3; ++idim)
@@ -137,7 +137,7 @@ void Core::Geo::MeshFree::BoundingBox::init(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Core::Geo::MeshFree::BoundingBox::setup(const Teuchos::ParameterList& io_params,
-    Teuchos::RCP<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
+    std::shared_ptr<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
     const int n_dim, const Core::IO::OutputControl& output_control)
 {
   throw_if_not_init();
@@ -162,19 +162,19 @@ void Core::Geo::MeshFree::BoundingBox::setup(const Teuchos::ParameterList& io_pa
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
 void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
-    Teuchos::RCP<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
+    std::shared_ptr<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
     const int n_dim)
 {
-  if (boundingbox_dis != Teuchos::null)
+  if (boundingbox_dis != nullptr)
   {
     boxdiscret_ = boundingbox_dis;
 
     if (boxdiscret_->filled() == false) boxdiscret_->fill_complete(true, false, false);
 
     // create fully overlapping boundingbox discret
-    Teuchos::RCP<Epetra_Map> rednodecolmap =
+    std::shared_ptr<Epetra_Map> rednodecolmap =
         Core::LinAlg::allreduce_e_map(*boxdiscret_->node_row_map());
-    Teuchos::RCP<Epetra_Map> redelecolmap =
+    std::shared_ptr<Epetra_Map> redelecolmap =
         Core::LinAlg::allreduce_e_map(*boxdiscret_->element_row_map());
 
     // do the fully overlapping ghosting of the bounding box element to have everything redundant
@@ -184,13 +184,13 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
     boxdiscret_->fill_complete(true, false, false);
   }
 
-  if (boundingbox_dis == Teuchos::null or boxdiscret_->num_my_col_elements() == 0)
+  if (boundingbox_dis == nullptr or boxdiscret_->num_my_col_elements() == 0)
   {
-    if (boundingbox_dis == Teuchos::null)
+    if (boundingbox_dis == nullptr)
     {
-      auto com = Teuchos::RCP(comm.Clone());
-      boxdiscret_ = Teuchos::make_rcp<Core::FE::Discretization>(
-          "boundingbox", Teuchos::RCP(comm.Clone()), n_dim);
+      std::shared_ptr<Epetra_Comm> com(comm.Clone());
+      boxdiscret_ = std::make_shared<Core::FE::Discretization>(
+          "boundingbox", std::shared_ptr<Epetra_Comm>(comm.Clone()), n_dim);
     }
     else
     {
@@ -205,21 +205,21 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
       undeformed_box_corner_point_position(corner_i, cornerpos);
       node_ids[corner_i] = corner_i;
 
-      Teuchos::RCP<Core::Nodes::Node> newnode =
-          Teuchos::make_rcp<Core::Nodes::Node>(corner_i, cornerpos, 0);
+      std::shared_ptr<Core::Nodes::Node> newnode =
+          std::make_shared<Core::Nodes::Node>(corner_i, cornerpos, 0);
       boxdiscret_->add_node(newnode);
     }
 
     // assign nodes to element
-    Teuchos::RCP<Core::Elements::Element> newele =
+    std::shared_ptr<Core::Elements::Element> newele =
         Core::Communication::factory("VELE3", "Polynomial", 0, 0);
     newele->set_node_ids(8, node_ids);
     boxdiscret_->add_element(newele);
   }
 
   // build independent dof set
-  Teuchos::RCP<Core::DOFSets::IndependentDofSet> independentdofset =
-      Teuchos::make_rcp<Core::DOFSets::IndependentDofSet>(true);
+  std::shared_ptr<Core::DOFSets::IndependentDofSet> independentdofset =
+      std::make_shared<Core::DOFSets::IndependentDofSet>(true);
   boxdiscret_->replace_dof_set(independentdofset);
   boxdiscret_->fill_complete();
 }
@@ -603,8 +603,7 @@ void Core::Geo::MeshFree::BoundingBox::apply_dirichlet(
 
   // disn_ then also holds prescribed new Dirichlet displacements
   boxdiscret_->clear_state();
-  boxdiscret_->evaluate_dirichlet(
-      p, disn_row_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  boxdiscret_->evaluate_dirichlet(p, disn_row_, nullptr, nullptr, nullptr, nullptr);
   boxdiscret_->clear_state();
 
   // export to col format
@@ -623,7 +622,7 @@ void Core::Geo::MeshFree::BoundingBox::init_runtime_output(
   const double restart_time(0.0);
 
   visualization_output_writer_ptr_ =
-      Teuchos::make_rcp<Core::IO::DiscretizationVisualizationWriterMesh>(
+      std::make_shared<Core::IO::DiscretizationVisualizationWriterMesh>(
           boxdiscret_, Core::IO::visualization_parameters_factory(
                            io_params.sublist("RUNTIME VTK OUTPUT"), output_control, restart_time));
 }
@@ -634,7 +633,7 @@ void Core::Geo::MeshFree::BoundingBox::runtime_output_step_state(double timen, i
 {
   throw_if_not_init_or_setup();
 
-  if (visualization_output_writer_ptr_ == Teuchos::null) return;
+  if (visualization_output_writer_ptr_ == nullptr) return;
 
   // reset the writer object
   visualization_output_writer_ptr_->reset();
@@ -669,7 +668,7 @@ Core::LinAlg::Matrix<3, 1> Core::Geo::MeshFree::BoundingBox::current_position_of
   // dof gids of node i (note: each proc just has one element and eight nodes,
   // therefore local numbering from 0 to 7 on each proc)
   Core::LinAlg::Matrix<3, 1> x(true);
-  if (boxdiscret_ != Teuchos::null)
+  if (boxdiscret_ != nullptr)
   {
     Core::Nodes::Node* node_i = boxdiscret_->l_col_node(i);
     std::vector<int> dofnode = boxdiscret_->dof(node_i);

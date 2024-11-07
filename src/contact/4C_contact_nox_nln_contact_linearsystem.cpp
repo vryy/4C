@@ -386,21 +386,26 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::extract_active_blocks(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> active_sparse_mat =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(p_jac_, true);
 
-      p_rhs_ = Core::LinAlg::extract_my_vector(rhs, active_sparse_mat->range_map());
-      p_lhs_ = Core::LinAlg::extract_my_vector(lhs, active_sparse_mat->domain_map());
+      p_rhs_ = Teuchos::rcp(
+          Core::LinAlg::extract_my_vector(rhs, active_sparse_mat->range_map()).release());
+      p_lhs_ = Teuchos::rcp(
+          Core::LinAlg::extract_my_vector(lhs, active_sparse_mat->domain_map()).release());
 
       break;
     }
     default:
     {
-      p_jac_ = block_mat.clone(Core::LinAlg::View, keep_row_col_index, keep_row_col_index);
+      p_jac_ = Teuchos::rcp(
+          block_mat.clone(Core::LinAlg::View, keep_row_col_index, keep_row_col_index).release());
       p_jac_->complete();
 
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> active_block_mat =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(p_jac_, true);
 
-      p_rhs_ = Core::LinAlg::extract_my_vector(rhs, active_block_mat->full_range_map());
-      p_lhs_ = Core::LinAlg::extract_my_vector(lhs, active_block_mat->full_domain_map());
+      p_rhs_ = Teuchos::rcp(
+          Core::LinAlg::extract_my_vector(rhs, active_block_mat->full_range_map()).release());
+      p_lhs_ = Teuchos::rcp(
+          Core::LinAlg::extract_my_vector(lhs, active_block_mat->full_domain_map()).release());
 
       break;
     }

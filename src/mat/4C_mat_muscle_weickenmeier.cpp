@@ -95,9 +95,9 @@ Mat::PAR::MuscleWeickenmeier::MuscleWeickenmeier(const Core::Mat::PAR::Parameter
   if (density_ < 0.0) FOUR_C_THROW("DENS should be positive");
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleWeickenmeier::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::MuscleWeickenmeier::create_material()
 {
-  return Teuchos::make_rcp<Mat::MuscleWeickenmeier>(this);
+  return std::make_shared<Mat::MuscleWeickenmeier>(this);
 }
 
 Mat::MuscleWeickenmeierType Mat::MuscleWeickenmeierType::instance_;
@@ -115,7 +115,7 @@ Mat::MuscleWeickenmeier::MuscleWeickenmeier()
       lambda_m_old_(1.0),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
+          std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>(
               new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0})
 {
@@ -126,7 +126,7 @@ Mat::MuscleWeickenmeier::MuscleWeickenmeier(Mat::PAR::MuscleWeickenmeier* params
       lambda_m_old_(1.0),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
+          std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>(
               new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0})
 {
@@ -171,7 +171,7 @@ void Mat::MuscleWeickenmeier::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
 
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {

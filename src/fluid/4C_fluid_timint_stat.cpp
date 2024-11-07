@@ -20,10 +20,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntStationary::TimIntStationary(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+FLD::TimIntStationary::TimIntStationary(const std::shared_ptr<Core::FE::Discretization>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid)
 {
   return;
@@ -165,11 +165,11 @@ void FLD::TimIntStationary::set_state_tim_int()
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntStationary::calculate_acceleration(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> veln,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> accn,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> accnp)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> velnp,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> veln,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> velnm,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> accn,
+    const std::shared_ptr<Core::LinAlg::Vector<double>> accnp)
 {
   accnp->PutScalar(0.0);
 
@@ -197,8 +197,9 @@ void FLD::TimIntStationary::sep_multiply()
 /*----------------------------------------------------------------------*
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
-void FLD::TimIntStationary::outputof_filtered_vel(Teuchos::RCP<Core::LinAlg::Vector<double>> outvec,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fsoutvec)
+void FLD::TimIntStationary::outputof_filtered_vel(
+    std::shared_ptr<Core::LinAlg::Vector<double>> outvec,
+    std::shared_ptr<Core::LinAlg::Vector<double>> fsoutvec)
 {
   // no output since subgrid-scale modeling does not make sense for stationary problems!!!
   return;
@@ -226,8 +227,7 @@ void FLD::TimIntStationary::set_element_time_parameter()
   eleparams.set("total time", time_);
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
   return;
 }
 

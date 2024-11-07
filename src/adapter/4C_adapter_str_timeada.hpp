@@ -57,13 +57,13 @@ namespace Adapter
     };
 
     /// constructor
-    explicit StructureTimeAda(Teuchos::RCP<Structure> structure);
+    explicit StructureTimeAda(std::shared_ptr<Structure> structure);
 
     /*! \brief Utility function to create the adaptive time integration structure wrapper
      */
-    static Teuchos::RCP<Structure> create(
+    static std::shared_ptr<Structure> create(
         const Teuchos::ParameterList& taflags,  //!< adaptive input flags
-        Teuchos::RCP<Solid::TimeInt::Base> ti_strategy);
+        std::shared_ptr<Solid::TimeInt::Base> ti_strategy);
 
     /// setup of the adaptive time integration
     void setup() override;
@@ -116,7 +116,7 @@ namespace Adapter
     virtual enum AdaEnum method_adapt_dis() const = 0;
 
    protected:
-    Teuchos::RCP<Solid::TimeInt::Base> stm_;  //!< marching time integrator
+    std::shared_ptr<Solid::TimeInt::Base> stm_;  //!< marching time integrator
 
     //! @name Plain time integration constants
     //@{
@@ -155,34 +155,34 @@ namespace Adapter
     //@{
     double stepsizepre_;  //!< previous time step size \f$\Delta t_{n-1}\f$
     double stepsize_;     //!< current time step size \f$\Delta t_n\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> locerrdisn_;  //!< current local disp. error
-                                                             //!< estimation \f$l_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> locerrveln_;  //!< current local vel. error
-                                                             //!< estimation \f$\dot{l}_{n+1}\f$
-    int adaptstep_;                                          //!< trial counter, cf. #adaptstepmax_
-                                                             //@}
+    std::shared_ptr<Core::LinAlg::Vector<double>> locerrdisn_;  //!< current local disp. error
+                                                                //!< estimation \f$l_{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> locerrveln_;  //!< current local vel. error
+                                                                //!< estimation \f$\dot{l}_{n+1}\f$
+    int adaptstep_;  //!< trial counter, cf. #adaptstepmax_
+                     //@}
 
     //! @name Output settings
     //@{
-    bool outsys_;                              //!< do it this step: write system to file
-    bool outstr_;                              //!< do it this step: write stress/strain to file
-    bool outene_;                              //!< do it this step: write energy to file
-    bool outrest_;                             //!< do it this step: write restart data to file
-    double outsysperiod_;                      //!< print system (dis,vel,acc,...)
-                                               //!< every given period of time
-    double outstrperiod_;                      //!< print stress/strain every given
-                                               //!< period of time
-    double outeneperiod_;                      //!< print energies every given
-                                               //!< period of time
-    double outrestperiod_;                     //!< print restart every given
-                                               //!< period of time
-    int outsizeevery_;                         //!< print step size every given step
-    double outsystime_;                        //!< next output time point for system
-    double outstrtime_;                        //!< next output time point for stress/strain
-    double outenetime_;                        //!< next output time point for energy
-    double outresttime_;                       //!< next output time point for restart
-    Teuchos::RCP<std::ofstream> outsizefile_;  //!< outputfile for step sizes
-                                               //@}
+    bool outsys_;                                 //!< do it this step: write system to file
+    bool outstr_;                                 //!< do it this step: write stress/strain to file
+    bool outene_;                                 //!< do it this step: write energy to file
+    bool outrest_;                                //!< do it this step: write restart data to file
+    double outsysperiod_;                         //!< print system (dis,vel,acc,...)
+                                                  //!< every given period of time
+    double outstrperiod_;                         //!< print stress/strain every given
+                                                  //!< period of time
+    double outeneperiod_;                         //!< print energies every given
+                                                  //!< period of time
+    double outrestperiod_;                        //!< print restart every given
+                                                  //!< period of time
+    int outsizeevery_;                            //!< print step size every given step
+    double outsystime_;                           //!< next output time point for system
+    double outstrtime_;                           //!< next output time point for stress/strain
+    double outenetime_;                           //!< next output time point for energy
+    double outresttime_;                          //!< next output time point for restart
+    std::shared_ptr<std::ofstream> outsizefile_;  //!< outputfile for step sizes
+                                                  //@}
 
    protected:
     /*! \brief Prepare repetition of current time step

@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<Core::FE::Discretization> discr,
+CONSTRAINTS::MPConstraint2::MPConstraint2(std::shared_ptr<Core::FE::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
     : MPConstraint(discr, conditionname, minID, maxID)
 {
@@ -34,13 +34,13 @@ CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<Core::FE::Discretization>
     // create constraint discretization and store it with label 0, within the map
     constraintdis_ = create_discretization_from_condition(
         actdisc_, constrcond_, "ConstrDisc", "CONSTRELE2", dummy);
-    Teuchos::RCP<Epetra_Map> newcolnodemap =
+    std::shared_ptr<Epetra_Map> newcolnodemap =
         Core::Rebalance::compute_node_col_map(*actdisc_, *constraintdis_.find(0)->second);
     actdisc_->redistribute(*(actdisc_->node_row_map()), *newcolnodemap);
-    Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
-        Teuchos::make_rcp<Core::DOFSets::TransparentDofSet>(actdisc_);
+    std::shared_ptr<Core::DOFSets::DofSet> newdofset =
+        std::make_shared<Core::DOFSets::TransparentDofSet>(actdisc_);
     (constraintdis_.find(0)->second)->replace_dof_set(newdofset);
-    newdofset = Teuchos::null;
+    newdofset = nullptr;
     (constraintdis_.find(0)->second)->fill_complete();
   }
 }
@@ -74,7 +74,7 @@ void CONSTRAINTS::MPConstraint2::initialize(const double& time)
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void CONSTRAINTS::MPConstraint2::initialize(
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector)
+    Teuchos::ParameterList& params, std::shared_ptr<Core::LinAlg::Vector<double>> systemvector)
 {
   const double time = params.get("total time", -1.0);
   // in case init is set to true we want to set systemvector1 to the amplitudes defined
@@ -117,11 +117,11 @@ void CONSTRAINTS::MPConstraint2::initialize(
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void CONSTRAINTS::MPConstraint2::evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
 {
   switch (type())
   {
@@ -141,16 +141,16 @@ void CONSTRAINTS::MPConstraint2::evaluate(Teuchos::ParameterList& params,
  |(private)                                                   tk 04/08    |
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
-std::map<int, Teuchos::RCP<Core::FE::Discretization>>
+std::map<int, std::shared_ptr<Core::FE::Discretization>>
 CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
-    Teuchos::RCP<Core::FE::Discretization> actdisc,
+    std::shared_ptr<Core::FE::Discretization> actdisc,
     std::vector<Core::Conditions::Condition*> constrcondvec, const std::string& discret_name,
     const std::string& element_name, int& startID)
 {
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(actdisc->get_comm().Clone());
+  std::shared_ptr<Epetra_Comm> com(actdisc->get_comm().Clone());
 
-  Teuchos::RCP<Core::FE::Discretization> newdis =
-      Teuchos::make_rcp<Core::FE::Discretization>(discret_name, com, actdisc->n_dim());
+  std::shared_ptr<Core::FE::Discretization> newdis =
+      std::make_shared<Core::FE::Discretization>(discret_name, com, actdisc->n_dim());
 
   if (!actdisc->filled())
   {
@@ -188,13 +188,13 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
       if (rownodeset.find(gid) != rownodeset.end())
       {
         const Core::Nodes::Node* standardnode = actdisc->l_row_node(i);
-        newdis->add_node(Teuchos::make_rcp<Core::Nodes::Node>(gid, standardnode->x(), myrank));
+        newdis->add_node(std::make_shared<Core::Nodes::Node>(gid, standardnode->x(), myrank));
       }
     }
 
     if (myrank == 0)
     {
-      Teuchos::RCP<Core::Elements::Element> constraintele =
+      std::shared_ptr<Core::Elements::Element> constraintele =
           Core::Communication::factory(element_name, "Polynomial", j, myrank);
       // set the same global node ids to the ale element
       constraintele->set_node_ids(ngid.size(), ngid.data());
@@ -223,7 +223,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
 
   newdis->redistribute(constraintnoderowmap, constraintnodecolmap);
 
-  std::map<int, Teuchos::RCP<Core::FE::Discretization>> newdismap;
+  std::map<int, std::shared_ptr<Core::FE::Discretization>> newdismap;
   newdismap[startID] = newdis;
   return newdismap;
 }
@@ -254,22 +254,22 @@ void CONSTRAINTS::MPConstraint2::reorder_constraint_nodes(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Discretization> disc,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+void CONSTRAINTS::MPConstraint2::evaluate_constraint(std::shared_ptr<Core::FE::Discretization> disc,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
 {
   if (!(disc->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!(disc->have_dofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // see what we have for input
-  bool assemblemat1 = systemmatrix1 != Teuchos::null;
-  bool assemblemat2 = systemmatrix2 != Teuchos::null;
-  bool assemblevec1 = systemvector1 != Teuchos::null;
-  bool assemblevec2 = systemvector2 != Teuchos::null;
-  bool assemblevec3 = systemvector3 != Teuchos::null;
+  bool assemblemat1 = systemmatrix1 != nullptr;
+  bool assemblemat2 = systemmatrix2 != nullptr;
+  bool assemblevec1 = systemvector1 != nullptr;
+  bool assemblevec2 = systemvector2 != nullptr;
+  bool assemblevec3 = systemvector3 != nullptr;
 
   // define element matrices and vectors
   Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -310,8 +310,8 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
       const int lindex = (systemvector3->Map()).LID(gindex);
 
       // Get the current lagrange multiplier value for this condition
-      const Teuchos::RCP<Core::LinAlg::Vector<double>> lagramul =
-          params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("LagrMultVector");
+      const std::shared_ptr<Core::LinAlg::Vector<double>> lagramul =
+          params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("LagrMultVector");
       const double lagraval = (*lagramul)[lindex];
 
       // get element location vector, dirichlet flags and ownerships
@@ -329,7 +329,8 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
       if (assemblevec3) elevector3.size(1);  // elevector3 always contains a scalar
 
       params.set("ConditionID", condID);
-      params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(cond));
+      params.set<std::shared_ptr<Core::Conditions::Condition>>(
+          "condition", Core::Utils::shared_ptr_from_ref(cond));
       // call the element evaluate method
       int err = actele->evaluate(
           params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
@@ -378,8 +379,8 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
         curvefac = Global::Problem::instance()
                        ->function_by_id<Core::Utils::FunctionOfTime>(curvenum)
                        .evaluate(time);
-      Teuchos::RCP<Core::LinAlg::Vector<double>> timefact =
-          params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("vector curve factors");
+      std::shared_ptr<Core::LinAlg::Vector<double>> timefact =
+          params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("vector curve factors");
       timefact->ReplaceGlobalValues(1, &curvefac, &gindex);
     }
   }

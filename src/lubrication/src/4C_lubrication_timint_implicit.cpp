@@ -33,10 +33,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                     (public) wirtz 11/15 |
  *----------------------------------------------------------------------*/
-Lubrication::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+Lubrication::TimIntImpl::TimIntImpl(std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver, std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     :  // call constructor for "nontrivial" objects
       solver_(solver),
       params_(params),
@@ -59,18 +59,18 @@ Lubrication::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdi
       iternum_(0),
       nsd_(Global::Problem::instance()->n_dim()),
       // Initialization of degrees of freedom variables
-      prenp_(Teuchos::null),
+      prenp_(nullptr),
       nds_disp_(-1),
       discret_(actdis),
       output_(output),
-      sysmat_(Teuchos::null),
-      zeros_(Teuchos::null),
-      dbcmaps_(Teuchos::null),
-      neumann_loads_(Teuchos::null),
-      residual_(Teuchos::null),
-      trueresidual_(Teuchos::null),
-      increment_(Teuchos::null),
-      prei_(Teuchos::null),
+      sysmat_(nullptr),
+      zeros_(nullptr),
+      dbcmaps_(nullptr),
+      neumann_loads_(nullptr),
+      residual_(nullptr),
+      trueresidual_(nullptr),
+      increment_(nullptr),
+      prei_(nullptr),
       // Initialization of
       upres_(params->get<int>("RESULTSEVRY")),
       uprestart_(params->get<int>("RESTARTEVRY")),
@@ -110,7 +110,7 @@ void Lubrication::TimIntImpl::init()
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
   sysmat_ =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27, false, true);
+      std::make_shared<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27, false, true);
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
@@ -125,15 +125,14 @@ void Lubrication::TimIntImpl::init()
   zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+  dbcmaps_ = std::make_shared<Core::LinAlg::MapExtractor>();
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
     eleparams.set<const Core::Utils::FunctionManager*>(
         "function_manager", &Global::Problem::instance()->function_manager());
-    discret_->evaluate_dirichlet(
-        eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
+    discret_->evaluate_dirichlet(eleparams, zeros_, nullptr, nullptr, nullptr, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
 
@@ -185,8 +184,7 @@ void Lubrication::TimIntImpl::set_element_general_parameters() const
   eleparams.set("roughnessdeviation", roughness_deviation_);
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 
   return;
 }
@@ -249,7 +247,7 @@ void Lubrication::TimIntImpl::prepare_time_step()
   // -------------------------------------------------------------------
   // TODO: Dirichlet auch im Fall von genalpha prenp
   // Neumann(n + alpha_f)
-  apply_dirichlet_bc(time_, prenp_, Teuchos::null);
+  apply_dirichlet_bc(time_, prenp_, nullptr);
   apply_neumann_bc(*neumann_loads_);
 
   return;
@@ -275,7 +273,7 @@ void Lubrication::TimIntImpl::set_height_field_pure_lub(const int nds)
   eleparams.set("total time", time_);
 
   // initialize height vectors
-  Teuchos::RCP<Core::LinAlg::Vector<double>> height =
+  std::shared_ptr<Core::LinAlg::Vector<double>> height =
       Core::LinAlg::create_vector(*discret_->dof_row_map(nds), true);
 
   int err(0);
@@ -320,7 +318,7 @@ void Lubrication::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
   eleparams.set("total time", time_);
 
   // initialize velocity vectors
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vel =
+  std::shared_ptr<Core::LinAlg::Vector<double>> vel =
       Core::LinAlg::create_vector(*discret_->dof_row_map(nds), true);
 
   int err(0);
@@ -381,10 +379,10 @@ void Lubrication::TimIntImpl::time_loop()
     }
     else
     {
-      set_height_field(1, Teuchos::null);
-      set_height_dot_field(1, Teuchos::null);
-      set_relative_velocity_field(1, Teuchos::null);
-      set_average_velocity_field(1, Teuchos::null);
+      set_height_field(1, nullptr);
+      set_height_dot_field(1, nullptr);
+      set_relative_velocity_field(1, nullptr);
+      set_average_velocity_field(1, nullptr);
     }
     // -------------------------------------------------------------------
     //                  solve nonlinear / linear equation
@@ -429,7 +427,7 @@ void Lubrication::TimIntImpl::solve()
  | apply moving mesh data                                     gjb 05/09 |
  *----------------------------------------------------------------------*/
 void Lubrication::TimIntImpl::apply_mesh_movement(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp, int nds)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp, int nds)
 {
   //---------------------------------------------------------------------------
   // only required in ALE case
@@ -439,7 +437,7 @@ void Lubrication::TimIntImpl::apply_mesh_movement(
     TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION: apply mesh movement");
 
     // check existence of displacement vector
-    if (dispnp == Teuchos::null) FOUR_C_THROW("Got null pointer for displacements!");
+    if (dispnp == nullptr) FOUR_C_THROW("Got null pointer for displacements!");
 
     // store number of dofset associated with displacement related dofs
     nds_disp_ = nds;
@@ -518,8 +516,8 @@ void Lubrication::TimIntImpl::output(const int num)
  | evaluate Dirichlet boundary conditions at t_{n+1}        wirtz 11/15 |
  *----------------------------------------------------------------------*/
 void Lubrication::TimIntImpl::apply_dirichlet_bc(const double time,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> prenp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> predt)
+    std::shared_ptr<Core::LinAlg::Vector<double>> prenp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> predt)
 {
   // time measurement: apply Dirichlet conditions
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:      + apply dirich cond.");
@@ -534,7 +532,7 @@ void Lubrication::TimIntImpl::apply_dirichlet_bc(const double time,
   // predicted Dirichlet values
   // \c  prenp then also holds prescribed new Dirichlet values
   discret_->clear_state();
-  discret_->evaluate_dirichlet(p, prenp, predt, Teuchos::null, Teuchos::null, dbcmaps_);
+  discret_->evaluate_dirichlet(p, prenp, predt, nullptr, nullptr, dbcmaps_);
   discret_->clear_state();
 
   return;
@@ -713,7 +711,7 @@ void Lubrication::TimIntImpl::nonlinear_solve()
 
       // additionally apply Dirichlet condition to unprojectable nodes
       // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)
-      if (inf_gap_toggle_lub_ != Teuchos::null)
+      if (inf_gap_toggle_lub_ != nullptr)
         Core::LinAlg::apply_dirichlet_to_system(
             *sysmat_, *increment_, *residual_, *zeros_, *inf_gap_toggle_lub_);
     }
@@ -851,9 +849,9 @@ bool Lubrication::TimIntImpl::abort_nonlin_iter(const int itnum, const int itema
  | Set the nodal film height at time n+1                    Seitz 12/17 |
  *----------------------------------------------------------------------*/
 void Lubrication::TimIntImpl::set_height_field(
-    const int nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> gap)
+    const int nds, std::shared_ptr<const Core::LinAlg::Vector<double>> gap)
 {
-  if (gap == Teuchos::null) FOUR_C_THROW("Gap vector is empty.");
+  if (gap == nullptr) FOUR_C_THROW("Gap vector is empty.");
   discret_->set_state(nds, "height", gap);
 
   return;
@@ -864,9 +862,9 @@ void Lubrication::TimIntImpl::set_height_field(
    at time n+1
  *----------------------------------------------------------------------*/
 void Lubrication::TimIntImpl::set_height_dot_field(
-    const int nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> heightdot)
+    const int nds, std::shared_ptr<const Core::LinAlg::Vector<double>> heightdot)
 {
-  if (heightdot == Teuchos::null) FOUR_C_THROW("hdot vector is empty.");
+  if (heightdot == nullptr) FOUR_C_THROW("hdot vector is empty.");
   discret_->set_state(nds, "heightdot", heightdot);
 
   return;
@@ -876,11 +874,11 @@ void Lubrication::TimIntImpl::set_height_dot_field(
  | Set nodal value of Relative Velocity at time n+1        Faraji 02/19 |
  *----------------------------------------------------------------------*/
 void Lubrication::TimIntImpl::set_relative_velocity_field(
-    const int nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> rel_vel)
+    const int nds, std::shared_ptr<const Core::LinAlg::Vector<double>> rel_vel)
 {
   if (nds >= discret_->num_dof_sets())
     FOUR_C_THROW("Too few dofsets on lubrication discretization!");
-  if (rel_vel == Teuchos::null) FOUR_C_THROW("no velocity provided.");
+  if (rel_vel == nullptr) FOUR_C_THROW("no velocity provided.");
   discret_->set_state(nds, "rel_tang_vel", rel_vel);
 }
 
@@ -888,11 +886,11 @@ void Lubrication::TimIntImpl::set_relative_velocity_field(
  | Set the nodal average tangential velocity at time n+1    Seitz 12/17 |
  *----------------------------------------------------------------------*/
 void Lubrication::TimIntImpl::set_average_velocity_field(
-    const int nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> av_vel)
+    const int nds, std::shared_ptr<const Core::LinAlg::Vector<double>> av_vel)
 {
   if (nds >= discret_->num_dof_sets())
     FOUR_C_THROW("Too few dofsets on lubrication discretization!");
-  if (av_vel == Teuchos::null) FOUR_C_THROW("no velocity provided");
+  if (av_vel == nullptr) FOUR_C_THROW("no velocity provided");
 
   discret_->set_state(nds, "av_tang_vel", av_vel);
 }
@@ -1003,10 +1001,9 @@ void Lubrication::TimIntImpl::output_state()
   // displacement field
   if (isale_)
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
         discret_->get_state(nds_disp_, "dispnp");
-    if (dispnp == Teuchos::null)
-      FOUR_C_THROW("Cannot extract displacement field from discretization");
+    if (dispnp == nullptr) FOUR_C_THROW("Cannot extract displacement field from discretization");
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Core::LinAlg::MultiVector<double> dispnp_multi(*discret_->node_row_map(), nsd_, true);
@@ -1076,8 +1073,8 @@ void Lubrication::TimIntImpl::evaluate_error_compared_to_analytical_sol()
   discret_->set_state("prenp", prenp_);
 
   // get (squared) error values
-  Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(4);
+  std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
+      std::make_shared<Core::LinAlg::SerialDenseVector>(4);
   discret_->evaluate_scalars(eleparams, errors);
   discret_->clear_state();
 
@@ -1175,8 +1172,8 @@ void Lubrication::TimIntImpl::output_mean_pressures(const int num)
     if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
     // evaluate integrals of pressure(s) and domain
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> pressures =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(2);
+    std::shared_ptr<Core::LinAlg::SerialDenseVector> pressures =
+        std::make_shared<Core::LinAlg::SerialDenseVector>(2);
     discret_->evaluate_scalars(eleparams, pressures);
     discret_->clear_state();  // clean up
 
@@ -1226,9 +1223,9 @@ void Lubrication::TimIntImpl::output_mean_pressures(const int num)
 /*----------------------------------------------------------------------*
  | return system matrix downcasted as sparse matrix         wirtz 01/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Lubrication::TimIntImpl::system_matrix()
+std::shared_ptr<Core::LinAlg::SparseMatrix> Lubrication::TimIntImpl::system_matrix()
 {
-  return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_);
+  return std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(sysmat_);
 }
 
 
@@ -1239,7 +1236,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Lubrication::TimIntImpl::system_matrix(
 void Lubrication::TimIntImpl::evaluate()
 {
   // put zero pressure value, where no gap is defined
-  if (inf_gap_toggle_lub_ != Teuchos::null)
+  if (inf_gap_toggle_lub_ != nullptr)
     Core::LinAlg::apply_dirichlet_to_system(*prenp_, *residual_, *zeros_, *inf_gap_toggle_lub_);
 
   // call elements to calculate system matrix and rhs and assemble
@@ -1252,7 +1249,7 @@ void Lubrication::TimIntImpl::evaluate()
 
   // additionally apply Dirichlet condition to unprojectable nodes
   // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)
-  if (inf_gap_toggle_lub_ != Teuchos::null)
+  if (inf_gap_toggle_lub_ != nullptr)
     Core::LinAlg::apply_dirichlet_to_system(
         *sysmat_, *increment_, *residual_, *zeros_, *inf_gap_toggle_lub_);
 }
@@ -1262,11 +1259,11 @@ void Lubrication::TimIntImpl::evaluate()
  | residual pressures                                                   |
  *----------------------------------------------------------------------*/
 void Lubrication::TimIntImpl::update_iter_incrementally(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> prei  //!< input residual pressures
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> prei  //!< input residual pressures
 )
 {
   // select residual pressures
-  if (prei != Teuchos::null)
+  if (prei != nullptr)
     // tempi_ = \f$\Delta{T}^{<k>}_{n+1}\f$
     prei_->Update(1.0, *prei, 0.0);  // set the new solution we just got
   else
@@ -1282,7 +1279,8 @@ void Lubrication::TimIntImpl::update_iter_incrementally(
 /*----------------------------------------------------------------------*
  | update Newton step                                       wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void Lubrication::TimIntImpl::update_newton(Teuchos::RCP<const Core::LinAlg::Vector<double>> prei)
+void Lubrication::TimIntImpl::update_newton(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> prei)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And

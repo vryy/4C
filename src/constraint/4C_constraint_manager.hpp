@@ -16,7 +16,8 @@
 
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -59,7 +60,8 @@ namespace CONSTRAINTS
 
 
     //! initialize this class
-    void init(Teuchos::RCP<Core::FE::Discretization> discr, const Teuchos::ParameterList& params);
+    void init(
+        std::shared_ptr<Core::FE::Discretization> discr, const Teuchos::ParameterList& params);
 
     /*! \brief Setup all class internal objects and members
 
@@ -83,7 +85,7 @@ namespace CONSTRAINTS
     \date 09/16
     \author rauch  */
     void setup(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp, Teuchos::ParameterList params);
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp, Teuchos::ParameterList params);
 
     /*!
       \brief Change stiffness matrix and force vector according to the constraints.
@@ -91,12 +93,12 @@ namespace CONSTRAINTS
       Difference between current and prescribed values is calculated and stored as well.
     */
     void evaluate_force_stiff(const double time,  ///< time at end of time step
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             displast,  ///< displacement at beginning of time step
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
-            disp,                                          ///< displacement at end of time step
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fint,   ///< vector of internal forces
-        Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,  ///< stiffness matrix
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
+            disp,                                             ///< displacement at end of time step
+        std::shared_ptr<Core::LinAlg::Vector<double>> fint,   ///< vector of internal forces
+        std::shared_ptr<Core::LinAlg::SparseOperator> stiff,  ///< stiffness matrix
         Teuchos::ParameterList scalelist);
 
     /*!
@@ -147,7 +149,8 @@ namespace CONSTRAINTS
        displacement
     */
     void compute_error(double time,  ///< time, at which the error is to compute at
-        Teuchos::RCP<Core::LinAlg::Vector<double>> disp  ///< displacement vector at the given time
+        std::shared_ptr<Core::LinAlg::Vector<double>>
+            disp  ///< displacement vector at the given time
     );
 
     /*!
@@ -160,16 +163,16 @@ namespace CONSTRAINTS
     }
 
     /// return vector of differences between prescribed and actual values
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_error() const { return constrainterr_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> get_error() const { return constrainterr_; }
 
     /*!
      \brief Return EpetraMap that determined distribution of constraints and lagrange
      multiplier over processors
     */
-    Teuchos::RCP<Epetra_Map> get_constraint_map() const { return constrmap_; };
+    std::shared_ptr<Epetra_Map> get_constraint_map() const { return constrmap_; };
 
     //! Return the additional rectangular matrix, constructed for lagrange multiplier evaluation
-    Teuchos::RCP<Core::LinAlg::SparseOperator> get_constr_matrix()  // const
+    std::shared_ptr<Core::LinAlg::SparseOperator> get_constr_matrix()  // const
     {
       return constr_matrix_;
     };
@@ -186,7 +189,7 @@ namespace CONSTRAINTS
     /*!
       \brief Return lagrange multiplier vector
     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_lagr_mult_vector() const
+    std::shared_ptr<Core::LinAlg::Vector<double>> get_lagr_mult_vector() const
     {
       return lagr_mult_vec_;
     };
@@ -194,7 +197,7 @@ namespace CONSTRAINTS
     /*!
       \brief Return lagrange multiplier of last converged step
     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_lagr_mult_vector_old() const
+    std::shared_ptr<Core::LinAlg::Vector<double>> get_lagr_mult_vector_old() const
     {
       return lagr_mult_vec_old_;
     };
@@ -242,14 +245,14 @@ namespace CONSTRAINTS
        \brief Compute values described by a monitor boundary condition
     */
     void compute_monitor_values(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> disp  ///< current displacement
+        std::shared_ptr<Core::LinAlg::Vector<double>> disp  ///< current displacement
     );
 
     /*!
        \brief Compute values described by a monitor boundary condition
     */
     void compute_monitor_values(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp  ///< current displacement
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp  ///< current displacement
     );
 
     /// Reset reference base values for restart computations
@@ -269,14 +272,14 @@ namespace CONSTRAINTS
     }
 
     /// Return Reference base values to write restart
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_ref_base_values() const
+    std::shared_ptr<Core::LinAlg::Vector<double>> get_ref_base_values() const
     {
       return refbasevalues_;
     }
 
     //! switch constraint matrix to block matrix
-    void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps);
+    void use_block_matrix(std::shared_ptr<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> rangemaps);
 
 
    private:
@@ -287,64 +290,67 @@ namespace CONSTRAINTS
     /// Build Monitor type Vector
     void build_moni_type();
 
-    Teuchos::RCP<Core::FE::Discretization>
+    std::shared_ptr<Core::FE::Discretization>
         actdisc_;  ///< discretization, elements to constraint live in
-    Teuchos::RCP<ConstraintDofSet> constrdofset_;  ///< degrees of freedom of lagrange multipliers
-    Teuchos::RCP<Epetra_Map> constrmap_;           ///< unique map of constraint values
-    Teuchos::RCP<Epetra_Map> redconstrmap_;        ///< fully redundant map of constraint values
-    Teuchos::RCP<Epetra_Export>
+    std::shared_ptr<ConstraintDofSet>
+        constrdofset_;                          ///< degrees of freedom of lagrange multipliers
+    std::shared_ptr<Epetra_Map> constrmap_;     ///< unique map of constraint values
+    std::shared_ptr<Epetra_Map> redconstrmap_;  ///< fully redundant map of constraint values
+    std::shared_ptr<Epetra_Export>
         conimpo_;  ///< importer for fully redundant constraint vector into distributed one
-    Teuchos::RCP<Epetra_Map> monitormap_;  ///< unique map of monitor values
-    Teuchos::RCP<Epetra_Map> redmonmap_;   ///< fully redundant map of monitor values
-    Teuchos::RCP<Epetra_Export>
+    std::shared_ptr<Epetra_Map> monitormap_;  ///< unique map of monitor values
+    std::shared_ptr<Epetra_Map> redmonmap_;   ///< fully redundant map of monitor values
+    std::shared_ptr<Epetra_Export>
         monimpo_;  ///< importer for fully redundant monitor vector into distributed one
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         referencevalues_;  ///< reference at current time step to constrain values to
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         refbasevalues_;  ///< reference base values at activation time of constrained structures
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         actvalues_;  ///< current values of constrained structures
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         constrainterr_;  ///< vector with deflection between reference and current values
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         monitorvalues_;  ///< current values of monitored structures
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         initialmonvalues_;  ///< initial values of monitored structures
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         monitortypes_;    ///< vector containing type of monitors
     int offset_id_;       ///< smallest constraint boundary condition ID
     int max_constr_id_;   ///< max number of constraints
     int num_constr_id_;   ///< number of constraint boundary conditions
     int num_monitor_id_;  ///< smallest monitor boundary condition ID
     int min_monitor_id_;  ///< number monitor boundary condition ID
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fact_;  ///< vector with current time curve values
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lagr_mult_vec_;      ///< lagrange multipliers
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lagr_mult_vec_old_;  ///< lagrange multipliers
-    Teuchos::RCP<Core::LinAlg::SparseOperator> constr_matrix_;  ///< additional rectangular matrix
-    bool haveconstraint_;                                       ///< are there constraints at all?
+    std::shared_ptr<Core::LinAlg::Vector<double>> fact_;  ///< vector with current time curve values
+    std::shared_ptr<Core::LinAlg::Vector<double>> lagr_mult_vec_;      ///< lagrange multipliers
+    std::shared_ptr<Core::LinAlg::Vector<double>> lagr_mult_vec_old_;  ///< lagrange multipliers
+    std::shared_ptr<Core::LinAlg::SparseOperator>
+        constr_matrix_;    ///< additional rectangular matrix
+    bool haveconstraint_;  ///< are there constraints at all?
     bool havelagrconstr_;  ///< are there constraints controlled by Lagrange multiplier?
     bool havepenaconstr_;  ///< are there constraints controlled by Penalty approach?
     bool havemonitor_;     ///< are there monitor conditions?
     double uzawaparam_;    ///< parameter of Uzawa algorithm (only for the case the linear uzawa is
                            ///< not used)
 
-    Teuchos::RCP<Constraint> volconstr3d_;   ///< 3d volume constraints defined on surfaces
-    Teuchos::RCP<Constraint> areaconstr3d_;  ///< 3d area constraints defined on surfaces
-    Teuchos::RCP<Constraint> areaconstr2d_;  ///< 2d area constraints defined on lines
-    Teuchos::RCP<ConstraintPenalty> volconstr3dpen_;
-    Teuchos::RCP<ConstraintPenalty> areaconstr3dpen_;
-    Teuchos::RCP<MPConstraint3> mpconplane3d_;  ///< 3d multipoint constraint prescribing the motion
-                                                ///< of a node relatively to a plane
-    Teuchos::RCP<MPConstraint3> mpcnormcomp3d_;  ///< 3d multipoint constraint prescribing the
-                                                 ///< motion of a node to a plane masternode
-    Teuchos::RCP<MPConstraint2> mpconline2d_;  ///< 2d multipoint constraint prescribing the motion
-                                               ///< of a node relatively to a straight line
-    Teuchos::RCP<MPConstraint3Penalty> mpcnormcomp3dpen_;
+    std::shared_ptr<Constraint> volconstr3d_;   ///< 3d volume constraints defined on surfaces
+    std::shared_ptr<Constraint> areaconstr3d_;  ///< 3d area constraints defined on surfaces
+    std::shared_ptr<Constraint> areaconstr2d_;  ///< 2d area constraints defined on lines
+    std::shared_ptr<ConstraintPenalty> volconstr3dpen_;
+    std::shared_ptr<ConstraintPenalty> areaconstr3dpen_;
+    std::shared_ptr<MPConstraint3> mpconplane3d_;   ///< 3d multipoint constraint prescribing the
+                                                    ///< motion of a node relatively to a plane
+    std::shared_ptr<MPConstraint3> mpcnormcomp3d_;  ///< 3d multipoint constraint prescribing the
+                                                    ///< motion of a node to a plane masternode
+    std::shared_ptr<MPConstraint2>
+        mpconline2d_;  ///< 2d multipoint constraint prescribing the motion
+                       ///< of a node relatively to a straight line
+    std::shared_ptr<MPConstraint3Penalty> mpcnormcomp3dpen_;
 
 
-    Teuchos::RCP<Monitor> volmonitor3d_;   ///< 3d volume monitors defined on surfaces
-    Teuchos::RCP<Monitor> areamonitor3d_;  ///< 3d area monitors defined on surfaces
-    Teuchos::RCP<Monitor> areamonitor2d_;  ///< 2d area monitors defined on lines
+    std::shared_ptr<Monitor> volmonitor3d_;   ///< 3d volume monitors defined on surfaces
+    std::shared_ptr<Monitor> areamonitor3d_;  ///< 3d area monitors defined on surfaces
+    std::shared_ptr<Monitor> areamonitor2d_;  ///< 2d area monitors defined on lines
 
 
    private:

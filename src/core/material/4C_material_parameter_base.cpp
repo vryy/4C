@@ -7,7 +7,7 @@
 
 #include "4C_material_parameter_base.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 

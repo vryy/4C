@@ -14,7 +14,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 // Forward declarations.
 class Epetra_Map;
@@ -86,10 +86,10 @@ namespace CONSTRAINTS::EMBEDDEDMESH
      * @params displacement_vector (in) global displacement vector.
      * @params start_value_lambda_gid (in) Start value for the Lagrange multiplier global IDs.
      */
-    SolidToSolidMortarManager(Teuchos::RCP<Core::FE::Discretization>& discret,
+    SolidToSolidMortarManager(std::shared_ptr<Core::FE::Discretization>& discret,
         const Core::LinAlg::Vector<double>& displacement_vector,
         CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& embedded_mesh_coupling_params,
-        Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager,
+        std::shared_ptr<Core::IO::VisualizationManager> visualization_manager,
         int start_value_lambda_gid);
 
     /**
@@ -121,23 +121,23 @@ namespace CONSTRAINTS::EMBEDDEDMESH
      */
     void add_global_force_stiffness_penalty_contributions(
         Solid::TimeInt::BaseDataGlobalState& data_state,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> force) const;
+        std::shared_ptr<Core::LinAlg::SparseMatrix> stiff,
+        std::shared_ptr<Core::LinAlg::Vector<double>> force) const;
 
     /**
      *
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> penalty_invert_kappa() const;
+    std::shared_ptr<Core::LinAlg::Vector<double>> penalty_invert_kappa() const;
 
     /**
      *
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_global_lambda() const;
+    std::shared_ptr<Core::LinAlg::Vector<double>> get_global_lambda() const;
 
     /**
      *
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_global_lambda_col() const;
+    std::shared_ptr<Core::LinAlg::Vector<double>> get_global_lambda_col() const;
 
     /**
      * \brief Sets the current position of the elements of the embedded mesh coupling pairs
@@ -218,7 +218,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     void set_local_maps(const Core::LinAlg::Vector<double>& displacement_vector);
 
     //! Pointer to the discretization containing the solid and beam elements.
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! Flag if setup was called.
     bool is_setup_ = false;
@@ -239,61 +239,61 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     std::vector<Core::Elements::Element*> cut_elements_vector_;
 
     //! Global constraint vector.
-    Teuchos::RCP<Epetra_FEVector> global_constraint_ = Teuchos::null;
+    std::shared_ptr<Epetra_FEVector> global_constraint_ = nullptr;
 
     //! Number of Lagrange multiplier DOFs on a node.
     unsigned int n_lambda_node_ = 0;
 
     //! Row map of the additional Lagrange multiplier DOFs.
-    Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_;
+    std::shared_ptr<Epetra_Map> lambda_dof_rowmap_;
 
     //! Column map of the additional Lagrange multiplier DOFs.
-    Teuchos::RCP<Epetra_Map> lambda_dof_colmap_;
+    std::shared_ptr<Epetra_Map> lambda_dof_colmap_;
 
     //! Row map of the solid boundary layer DOFs.
-    Teuchos::RCP<Epetra_Map> boundary_layer_interface_dof_rowmap_;
+    std::shared_ptr<Epetra_Map> boundary_layer_interface_dof_rowmap_;
 
     //! Row map of the solid background DOFs.
-    Teuchos::RCP<Epetra_Map> background_dof_rowmap_;
+    std::shared_ptr<Epetra_Map> background_dof_rowmap_;
 
     //! Multivector that connects the global node IDs with the Lagrange multiplier DOF IDs.
     //! The global row ID of the multi vector is the global ID of the node that a Lagrange
     //! multiplier is defined on. The columns hold the corresponding global IDs of the Lagrange
     //! multipliers.
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_;
 
     //! Standard map from global node ids to global Lagrange multiplier ids, for all
     //! nodes used on this rank.
     std::map<int, std::vector<int>> node_gid_to_lambda_gid_map_;
 
     //! Derivative of constraint vector w.r.t the solid boundary layer DOF.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_g_bl_ = Teuchos::null;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> global_g_bl_ = nullptr;
 
     //! Derivative of constraint vector w.r.t the solid background DOF.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_g_bg_ = Teuchos::null;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> global_g_bg_ = nullptr;
 
     //! Derivative of the solid boundary layer coupling forces w.r.t the Lagrange multipliers.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_fbl_l_ = Teuchos::null;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> global_fbl_l_ = nullptr;
 
     //! Derivative of the solid background coupling forces w.r.t the Lagrange multipliers.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_fbg_l_ = Teuchos::null;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> global_fbg_l_ = nullptr;
 
     //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
     //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.
     //! 37). With this scaling correct units and pass patch tests are achieved (in the penalty
     //! case).
-    Teuchos::RCP<Epetra_FEVector> global_kappa_ = Teuchos::null;
+    std::shared_ptr<Epetra_FEVector> global_kappa_ = nullptr;
 
     //! This vector keeps tack of all Lagrange multipliers that are active. This is needed when
     //! the kappa vector is inverted and some entries are zero, because no active contributions
     //! act on that Lagrange multiplier.
-    Teuchos::RCP<Epetra_FEVector> global_active_lambda_ = Teuchos::null;
+    std::shared_ptr<Epetra_FEVector> global_active_lambda_ = nullptr;
 
     //! Vector with all contact pairs to be evaluated by this mortar manager.
-    std::vector<Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>
+    std::vector<std::shared_ptr<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>
         embedded_mesh_solid_pairs_;
 
-    Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager_;
+    std::shared_ptr<Core::IO::VisualizationManager> visualization_manager_;
   };
 }  // namespace CONSTRAINTS::EMBEDDEDMESH
 

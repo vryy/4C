@@ -37,30 +37,31 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam, Sur
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam, Surface,
-    Mortar>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+    Mortar>::get_pair_visualization(std::shared_ptr<BeamToSolidVisualizationOutputWriterBase>
                                         visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
       visualization_writer->get_visualization_writer("btss-coupling-mortar");
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
       visualization_writer->get_visualization_writer("btss-coupling-mortar-continuous");
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_nodal_forces =
-      visualization_writer->get_visualization_writer("btss-coupling-nodal-forces");
-  if (visualization_discret.is_null() and visualization_continuous.is_null() and
-      visualization_nodal_forces.is_null())
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+      visualization_nodal_forces =
+          visualization_writer->get_visualization_writer("btss-coupling-nodal-forces");
+  if (!visualization_discret and !visualization_continuous and
+      visualization_nodal_forces == nullptr)
     return;
 
-  const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
-      visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
+  const std::shared_ptr<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
+      visualization_params.get<std::shared_ptr<const BeamToSolidSurfaceVisualizationOutputParams>>(
           "btss-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->get_write_unique_ids_flag();
 
-  if (visualization_discret != Teuchos::null or visualization_continuous != Teuchos::null or
-      visualization_nodal_forces != Teuchos::null)
+  if (visualization_discret != nullptr or visualization_continuous != nullptr or
+      visualization_nodal_forces != nullptr)
   {
     // Setup variables.
     Core::LinAlg::Matrix<3, 1, ScalarType> X;
@@ -71,11 +72,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
-    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
-        visualization_params.get<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+    std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
+        visualization_params.get<std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager>>(
             "mortar_manager");
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
-        visualization_params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("lambda");
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambda =
+        visualization_params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("lambda");
 
     // Get the lambda GIDs of this pair.
     auto q_lambda = GEOMETRYPAIR::InitializeElementData<Mortar, double>::initialize(nullptr);
@@ -86,11 +87,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
       q_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 
     // Add the discrete values of the Lagrange multipliers.
-    if (visualization_discret != Teuchos::null)
+    if (visualization_discret != nullptr)
     {
       // Check if data for this beam was already written.
-      Teuchos::RCP<std::unordered_set<int>> beam_tracker =
-          visualization_params.get<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker");
+      std::shared_ptr<std::unordered_set<int>> beam_tracker =
+          visualization_params.get<std::shared_ptr<std::unordered_set<int>>>("beam_tracker");
 
       auto it = beam_tracker->find(this->element1()->id());
       if (it == beam_tracker->end())
@@ -148,11 +149,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
 
 
     // Add the continuous values for the Lagrange multipliers.
-    if (visualization_continuous != Teuchos::null and this->line_to_3D_segments_.size() > 0)
+    if (visualization_continuous != nullptr and this->line_to_3D_segments_.size() > 0)
     {
       const unsigned int mortar_segments =
           visualization_params
-              .get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
+              .get<std::shared_ptr<const BeamToSolidSurfaceVisualizationOutputParams>>(
                   "btss-output_params_ptr")
               ->get_mortar_lambda_continuous_segments();
       double xi;
@@ -221,11 +222,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
 
 
     // Calculate the global moment of the coupling load.
-    if (visualization_nodal_forces != Teuchos::null)
+    if (visualization_nodal_forces != nullptr)
     {
       // Get the global moment vector.
       auto line_load_moment_origin =
-          visualization_params.get<Teuchos::RCP<Core::LinAlg::Matrix<3, 1, double>>>(
+          visualization_params.get<std::shared_ptr<Core::LinAlg::Matrix<3, 1, double>>>(
               "global_coupling_moment_origin");
 
       // Initialize variables for local values.

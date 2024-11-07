@@ -108,7 +108,7 @@ namespace FSI
     void linear_solve();
 
     /// create merged map with Dirichlet-constrained DOF from all fields
-    virtual Teuchos::RCP<Epetra_Map> combined_dbc_map() = 0;
+    virtual std::shared_ptr<Epetra_Map> combined_dbc_map() = 0;
 
     //! Extract the three field vectors from a given composed vector
     //!
@@ -123,16 +123,16 @@ namespace FSI
     //! \param sx (o) structural displacements
     //! \param fx (o) fluid velocities and pressure
     //! \param ax (o) ale displacements
-    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& ax) = 0;
+    virtual void extract_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& fx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& ax) = 0;
 
     /// compute the Lagrange multiplier (FSI stresses) for the current time step
     virtual void recover_lagrange_multiplier() = 0;
 
     /// Extract initial guess from fields
-    virtual void initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> ig) = 0;
+    virtual void initial_guess(std::shared_ptr<Core::LinAlg::Vector<double>> ig) = 0;
 
     //! @name Methods for infnorm-scaling of the system
 
@@ -165,7 +165,7 @@ namespace FSI
     //! @name Access methods for subclasses
 
     /// get full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.full_map(); }
+    std::shared_ptr<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.full_map(); }
 
     //@}
 
@@ -175,7 +175,7 @@ namespace FSI
       defines the number of blocks, their maps and the block order. The block
       maps must be row maps by themselves and must not contain identical GIDs.
      */
-    void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    void set_dof_row_maps(const std::vector<std::shared_ptr<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps
     const Core::LinAlg::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
@@ -202,14 +202,14 @@ namespace FSI
     virtual bool has_fluid_dof_map_changed(const Epetra_BlockMap& fluidincrementmap) = 0;
 
     /// access type-cast pointer to problem-specific ALE-wrapper
-    const Teuchos::RCP<Adapter::AleXFFsiWrapper>& ale_field() { return ale_; }
+    const std::shared_ptr<Adapter::AleXFFsiWrapper>& ale_field() { return ale_; }
 
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;  //!< block system matrix
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;  //!< block system matrix
 
     bool firstcall_;
 
     // sum of increments
-    Teuchos::RCP<Core::LinAlg::Vector<double>> x_sum_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> x_sum_;
 
     int iter_;     //!< iteration step
     int itermax_;  //!< maximally permitted iterations
@@ -257,14 +257,14 @@ namespace FSI
     double norminterfaceincInf_;  //!< norm of interface residual forces
     //--------------------------------------------------------------------------//
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
-        iterinc_;                                     //!< increment between Newton steps k and k+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;  //!< rhs of FSI system
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;         //!< linear algebraic solver
+    std::shared_ptr<Core::LinAlg::Vector<double>>
+        iterinc_;  //!< increment between Newton steps k and k+1
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_;    //!< rhs of FSI system
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
+    std::shared_ptr<Core::LinAlg::Solver> solver_;         //!< linear algebraic solver
 
     /// type-cast pointer to problem-specific fluid-wrapper
-    Teuchos::RCP<Adapter::FluidFluidFSI> fluid_;
+    std::shared_ptr<Adapter::FluidFluidFSI> fluid_;
 
    private:
     /*!
@@ -278,12 +278,12 @@ namespace FSI
     Core::LinAlg::MultiMapExtractor blockrowdofmap_;
 
     /// output stream
-    Teuchos::RCP<std::ofstream> log_;
+    std::shared_ptr<std::ofstream> log_;
 
     //! @name special debugging output
     //@{
-    Teuchos::RCP<Utils::DebugWriter> sdbg_;
-    Teuchos::RCP<Utils::DebugWriter> fdbg_;
+    std::shared_ptr<Utils::DebugWriter> sdbg_;
+    std::shared_ptr<Utils::DebugWriter> fdbg_;
 
     //@}
 
@@ -315,7 +315,7 @@ namespace FSI
     //@}
 
     /// type-cast pointer to problem-specific ALE-wrapper
-    Teuchos::RCP<Adapter::AleXFFsiWrapper> ale_;
+    std::shared_ptr<Adapter::AleXFFsiWrapper> ale_;
   };
 }  // namespace FSI
 

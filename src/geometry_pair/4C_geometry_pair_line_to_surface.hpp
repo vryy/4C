@@ -15,8 +15,7 @@
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 namespace
@@ -69,7 +68,7 @@ namespace GEOMETRYPAIR
      */
     GeometryPairLineToSurface(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
-        const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
+        const std::shared_ptr<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
             line_to_surface_evaluation_data);
 
 
@@ -127,7 +126,7 @@ namespace GEOMETRYPAIR
      * \brief Return the pointer to the evaluation data of this pair.
      * @return Pointer to the evaluation data.
      */
-    inline const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& get_evaluation_data()
+    inline const std::shared_ptr<GEOMETRYPAIR::LineToSurfaceEvaluationData>& get_evaluation_data()
         const
     {
       return line_to_surface_evaluation_data_;
@@ -185,7 +184,7 @@ namespace GEOMETRYPAIR
 
    protected:
     //! Link to the geometry evaluation container.
-    Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData> line_to_surface_evaluation_data_;
+    std::shared_ptr<GEOMETRYPAIR::LineToSurfaceEvaluationData> line_to_surface_evaluation_data_;
 
    private:
     //! Flag if the class is executed by unit tests. If this is the case, the line radius for
@@ -222,7 +221,8 @@ namespace GEOMETRYPAIR
      */
     GeometryPairLineToSurfaceFADWrapper(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
-        const Teuchos::RCP<GeometryPairLineToSurface<double, Line, Surface>>& double_geometry_pair)
+        const std::shared_ptr<GeometryPairLineToSurface<double, Line, Surface>>&
+            double_geometry_pair)
         : base_class(element1, element2, double_geometry_pair->get_evaluation_data()),
           geometry_pair_double_(double_geometry_pair){};
 
@@ -269,7 +269,7 @@ namespace GEOMETRYPAIR
 
    private:
     //! Pair to evaluate the intersections with the scalar type double.
-    Teuchos::RCP<GeometryPairLineToSurface<double, Line, Surface>> geometry_pair_double_;
+    std::shared_ptr<GeometryPairLineToSurface<double, Line, Surface>> geometry_pair_double_;
   };
 
   /**
