@@ -242,25 +242,6 @@ int main(int argc, char *argv[])
 
   gcomm->Barrier();
 
-  if (gcomm->MyPID() == 0)
-  {
-    printf(
-        "\n"
-        "**********************************************\n"
-        "*                                            *\n"
-        "*                     4C                     *\n"
-        "*                                            *\n"
-        "*                                            *\n"
-        "*             version (git SHA1)             *\n"
-        "*  %s  *\n"
-        "*                                            *\n"
-        "*                                            *\n"
-        "**********************************************\n\n",
-        VersionControl::git_hash);
-    printf("Trilinos Version %s (git SHA1 %s)\n", TrilinosVersion.c_str(), TrilinosGitHash.c_str());
-    printf("Total number of processors: %d\n", gcomm->NumProc());
-  }
-
   global_legacy_module_callbacks().RegisterParObjectTypes();
 
   if ((argc == 2) && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)))
@@ -276,9 +257,8 @@ int main(int argc, char *argv[])
   {
     if (lcomm->MyPID() == 0)
     {
-      printf("\n\n");
-      print_valid_parameters();
-      printf("\n\n");
+      auto valid_parameters = Input::valid_parameters();
+      Core::IO::InputFileUtils::print_metadata_yaml(std::cout, *valid_parameters);
     }
   }
   else if ((argc == 2) && ((strcmp(argv[1], "-d") == 0) || (strcmp(argv[1], "--datfile") == 0)))
@@ -305,6 +285,26 @@ int main(int argc, char *argv[])
   }
   else
   {
+    if (gcomm->MyPID() == 0)
+    {
+      printf(
+          "\n"
+          "**********************************************\n"
+          "*                                            *\n"
+          "*                     4C                     *\n"
+          "*                                            *\n"
+          "*                                            *\n"
+          "*             version (git SHA1)             *\n"
+          "*  %s  *\n"
+          "*                                            *\n"
+          "*                                            *\n"
+          "**********************************************\n\n",
+          VersionControl::git_hash);
+      printf(
+          "Trilinos Version %s (git SHA1 %s)\n", TrilinosVersion.c_str(), TrilinosGitHash.c_str());
+      printf("Total number of processors: %d\n", gcomm->NumProc());
+    }
+
     /* Here we turn the NaN and INF numbers off. No need to calculate
      * those. If those appear, the calculation needs much (!) more
      * time. Better stop immediately if some illegal operation occurs. */
@@ -358,21 +358,21 @@ int main(int argc, char *argv[])
     }
 #endif
     /*----------------------------------------------------------------------*/
-  }
 
-  get_memory_high_water_mark(*gcomm);
+    get_memory_high_water_mark(*gcomm);
 
-  lcomm->Barrier();
-  if (ngroups > 1)
-  {
-    printf("Global processor %d with local rank %d finished normally\n", gcomm->MyPID(),
-        lcomm->MyPID());
-    gcomm->Barrier();
-  }
-  else
-  {
-    gcomm->Barrier();
-    printf("processor %d finished normally\n", lcomm->MyPID());
+    lcomm->Barrier();
+    if (ngroups > 1)
+    {
+      printf("Global processor %d with local rank %d finished normally\n", gcomm->MyPID(),
+          lcomm->MyPID());
+      gcomm->Barrier();
+    }
+    else
+    {
+      gcomm->Barrier();
+      printf("processor %d finished normally\n", lcomm->MyPID());
+    }
   }
 
   Core::Utils::SingletonOwnerRegistry::finalize();

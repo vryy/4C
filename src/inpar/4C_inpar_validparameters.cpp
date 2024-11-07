@@ -119,7 +119,7 @@ void print_help_message()
             << "\t\tPrint this message.\n"
             << "\n"
             << "\t--parameters or -p\n"
-            << "\t\tPrint a list of all available parameters for use in a dat_file.\n"
+            << "\t\tDumps information about the parameters for consumption by additional tools.\n"
             << "\n"
             << "\t--datfile or -d\n"
             << "\t\tPrint example dat_file with all available parameters.\n"

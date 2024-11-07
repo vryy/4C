@@ -5,12 +5,15 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#include "4C_config_revision.hpp"
+
 #include "4C_io_input_file_utils.hpp"
 
 #include "4C_io_input_file.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StrUtils.hpp>
+#include <yaml-cpp/yaml.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -123,6 +126,7 @@ namespace
       stream << value.typeName() << "\n";
     }
   }
+
   void print_dat_impl(std::ostream& stream, const Teuchos::ParameterList& list,
       const std::string& parentname, bool comment)
   {
@@ -168,6 +172,92 @@ namespace
     }
     stream << std::endl;
   }
+
+
+  void recursively_determine_sublists(const Teuchos::ParameterList& list,
+      std::vector<std::pair<std::string, const Teuchos::ParameterList*>>& sublists,
+      const std::string& parent_section_name = "")
+  {
+    for (const auto& key_value : list)
+    {
+      const Teuchos::ParameterEntry& entry = key_value.second;
+      const std::string& name = key_value.first;
+      if (entry.isList())
+      {
+        const std::string current_section_full_name =
+            (parent_section_name == "") ? name : parent_section_name + "/" + name;
+
+        sublists.emplace_back(current_section_full_name, &list.sublist(name));
+        recursively_determine_sublists(list.sublist(name), sublists, current_section_full_name);
+      }
+    }
+  }
+
+
+  void print_metadata_yaml_impl(YAML::Emitter& yaml, const Teuchos::ParameterList& list,
+      const std::string& parent_section_name)
+  {
+    // prevent invalid ordering of parameters caused by alphabetical output:
+    // determine all sublists first to pull them out onto the same indentation level
+    std::vector<std::pair<std::string, const Teuchos::ParameterList*>> sublists;
+    recursively_determine_sublists(list, sublists);
+
+
+
+    const auto print_key_value = [&](const std::string& key, const Teuchos::ParameterEntry& entry)
+    {
+      const auto to_string = [](const Teuchos::any& any)
+      {
+        std::stringstream s;
+        s << any;
+        return s.str();
+      };
+
+      yaml << YAML::Key << key;
+      yaml << YAML::Value << YAML::BeginMap;
+
+      const Teuchos::any& v = entry.getAny(false);
+      yaml << YAML::Value << "type" << YAML::Value << v.typeName();
+
+      yaml << YAML::Value << "default" << YAML::Value << to_string(v);
+
+      std::string doc = entry.docString();
+      if (doc != "")
+      {
+        yaml << YAML::Key << "description" << YAML::Value << doc;
+      }
+
+      Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
+      if (validator != Teuchos::null)
+      {
+        Teuchos::RCP<const Teuchos::Array<std::string>> values = validator->validStringValues();
+        if (values != Teuchos::null)
+        {
+          yaml << YAML::Key << "valid options";
+          yaml << YAML::Value << YAML::BeginSeq;
+          for (int i = 0; i < (int)values->size(); ++i)
+          {
+            yaml << (*values)[i];
+          }
+          yaml << YAML::EndSeq;
+        }
+      }
+      yaml << YAML::EndMap;
+    };
+
+    yaml << YAML::BeginMap;
+    for (const auto& [name, sublist] : sublists)
+    {
+      yaml << YAML::Key << name;
+      yaml << YAML::Value << YAML::BeginMap;
+      for (const auto& key_value : *sublist)
+      {
+        if (!key_value.second.isList()) print_key_value(key_value.first, key_value.second);
+      }
+      yaml << YAML::EndMap;
+    }
+    yaml << YAML::EndMap;
+  }
 }  // namespace
 
 void Core::IO::InputFileUtils::print_section_header(std::ostream& out, const std::string& header)
@@ -200,6 +290,31 @@ void Core::IO::InputFileUtils::print_dat(
     std::ostream& stream, const Teuchos::ParameterList& list, bool comment)
 {
   print_dat_impl(stream, list, "", comment);
+}
+
+
+void Core::IO::InputFileUtils::print_metadata_yaml(
+    std::ostream& stream, const Teuchos::ParameterList& list)
+{
+  YAML::Emitter yaml(stream);
+  yaml << YAML::BeginMap;
+  {
+    // First write some metadata
+    yaml << YAML::Key << "metadata" << YAML::Value;
+    yaml << YAML::BeginMap;
+    {
+      yaml << YAML::Key << "commit_hash" << YAML::Value << VersionControl::git_hash;
+    }
+    yaml << YAML::EndMap;
+  }
+
+  {
+    // Then write the key-value parameters.
+    yaml << YAML::Key << "parameters" << YAML::Value;
+    print_metadata_yaml_impl(yaml, list, "");
+  }
+  yaml << YAML::EndMap;
+  yaml << YAML::Newline;
 }
 
 

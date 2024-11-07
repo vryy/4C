@@ -26,7 +26,7 @@ namespace Core::IO::InputFileUtils
   void print_section_header(std::ostream& out, const std::string& header);
 
   /**
-   * Print the values of parameter entries from a dat file based on the provided parameter list.
+   * Print the values of parameter entries for a dat file based on the provided parameter list.
    *
    * This function prints key-value pairs in the dat file format, including parameter names and
    * their values. It processes sublists and parameters, formatting them appropriately.
@@ -36,6 +36,14 @@ namespace Core::IO::InputFileUtils
    * @param comment     A flag indicating whether to print comments (default is true).
    */
   void print_dat(std::ostream& stream, const Teuchos::ParameterList& list, bool comment = true);
+
+
+  /**
+   * Print the metadata of what can be put into a ParameterList @p list. The result is formatted as
+   * YAML. This information can be useful for additional tools that generate schema files or
+   * documentation.
+   */
+  void print_metadata_yaml(std::ostream& stream, const Teuchos::ParameterList& list);
 
   /**
    * Return true if the @p list contains any parameter that has whitespace in the key name.
