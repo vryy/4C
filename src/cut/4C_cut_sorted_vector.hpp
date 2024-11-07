@@ -10,8 +10,6 @@
 
 #include "4C_config.hpp"
 
-#include <boost/operators.hpp>
-
 #include <algorithm>
 #include <functional>
 #include <stdexcept>
@@ -26,8 +24,7 @@ namespace Cut
   /// sorted vector that emulates a set (and is supposed to be much more efficient)
   template <class K, bool b_no_duplicates = true, class Pr = std::less<K>,
       class A = std::allocator<K>>
-  class SortedVector : public boost::less_than_comparable<SortedVector<K, b_no_duplicates, Pr, A>>,
-                       boost::equality_comparable<SortedVector<K, b_no_duplicates, Pr, A>>
+  class SortedVector
   {
    public:
     typedef SortedVector<K, b_no_duplicates, Pr, A> Myt_;
