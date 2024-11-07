@@ -1786,6 +1786,7 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::InputFile& input
   Core::IO::read_parameters_in_section(input, "IO/RUNTIME VTP OUTPUT STRUCTURE", *list);
   Core::IO::read_parameters_in_section(input, "STRUCTURAL DYNAMIC", *list);
   Core::IO::read_parameters_in_section(input, "STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCTURAL DYNAMIC/ERROR EVALUATION", *list);
   Core::IO::read_parameters_in_section(input, "STRUCTURAL DYNAMIC/GENALPHA", *list);
   Core::IO::read_parameters_in_section(input, "STRUCTURAL DYNAMIC/ONESTEPTHETA", *list);
   Core::IO::read_parameters_in_section(

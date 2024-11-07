@@ -21,12 +21,15 @@
 #include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_fem_nurbs_discretization_utils.hpp"
+#include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_solid_3D_ele_calc_lib_integration.hpp"
+#include "4C_utils_function.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -964,6 +967,75 @@ namespace Discret::Elements
 
       gp_evaluator(xi, shape_functions, jacobian_mapping, integration_factor, gp);
     }
+  }
+
+  // create a struct to store the error computation components
+  struct AnalyticalDisplacementErrorIntegrationResults
+  {
+    double integrated_squared_error = 0;
+    double integrated_squared_displacements = 0;
+    double integrated_volume = 0;
+  };
+
+  /*!
+   * @brief compute displacement error and displacement integral
+   *
+   * @tparam celltype : Cell type
+   * @param element  : element
+   * @param discretization : discretization object
+   * @param lm  : location vector
+   * @param analytical_displacements_function  : reference to function describing the analytical
+   * solution
+   */
+
+  template <Core::FE::CellType celltype>
+  AnalyticalDisplacementErrorIntegrationResults compute_analytical_displacement_error_integration(
+      Core::Elements::Element& element, const Core::FE::Discretization& discretization,
+      const std::vector<int>& lm,
+      const Core::Utils::FunctionOfSpaceTime& analytical_displacements_function)
+  {
+    constexpr auto numdim = Core::FE::dim<celltype>;
+    const ElementNodes<celltype> nodal_coordinates =
+        evaluate_element_nodes<celltype>(element, discretization, lm);
+    Core::FE::GaussIntegration gauss_integration = create_gauss_integration<celltype>(
+        Discret::Elements::get_gauss_rule_stiffness_matrix<celltype>());
+
+    AnalyticalDisplacementErrorIntegrationResults error_result;
+    Discret::Elements::for_each_gauss_point<celltype>(nodal_coordinates, gauss_integration,
+        [&](const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
+            const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+            const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
+        {
+          Core::LinAlg::Matrix<numdim, 1> gauss_point_reference_coordinates;
+          gauss_point_reference_coordinates.multiply_tn(
+              nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
+
+          Core::LinAlg::Matrix<numdim, 1> gauss_point_disp;
+          gauss_point_disp.multiply_tn(
+              nodal_coordinates.displacements, shape_functions.shapefunctions_);
+
+          Core::LinAlg::Matrix<3, 1> analytical_solution;
+          // Calculate the analytical solution for each dimension
+          for (int i_dim = 0; i_dim < 3; i_dim++)
+          {
+            analytical_solution(i_dim) = analytical_displacements_function.evaluate(
+                gauss_point_reference_coordinates.data(), 0.0, i_dim);
+          }
+
+          // The data that will be added to the element_force_vector will be summed up for all
+          // elements
+          Core::LinAlg::Matrix<3, 1> error_pointwise = analytical_solution;
+          error_pointwise -= gauss_point_disp;
+          // Calculate the error squared integral
+          error_result.integrated_squared_error +=
+              error_pointwise.dot(error_pointwise) * integration_factor;
+          // Calculate the L2 norm of displacements
+          error_result.integrated_squared_displacements +=
+              gauss_point_disp.dot(gauss_point_disp) * integration_factor;
+          // Calculate the domain integral
+          error_result.integrated_volume += integration_factor;
+        });
+    return error_result;
   }
 
   /*!

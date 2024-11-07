@@ -1,0 +1,2 @@
+step,time,displacement_error_l2_norm,displacement_integral,reference_volume
+0,0,1.3176156917369432e-02,3.3194583333333298e+01,9.9999999999999982e+00

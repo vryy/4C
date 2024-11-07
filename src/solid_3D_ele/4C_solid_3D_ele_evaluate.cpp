@@ -248,6 +248,29 @@ int Discret::Elements::Solid::evaluate(Teuchos::ParameterList& params,
       // do nothing for now
       return 0;
     }
+    case Core::Elements::struct_calc_analytical_error:
+    {
+      // Get the function ID for the analytical solution
+      const int analytical_function_id = params.get<int>("analytical_function_id");
+      const auto& analytical_displacements_function =
+          Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(
+              analytical_function_id);
+
+      Core::FE::cell_type_switch<Internal::ImplementedSolidCellTypes>(celltype_,
+          [&](auto celltype_t)
+          {
+            const auto error_result = compute_analytical_displacement_error_integration<celltype_t>(
+                *this, discretization, lm, analytical_displacements_function);
+
+            elevec1(0) = error_result.integrated_squared_error;
+            elevec1(1) = error_result.integrated_squared_displacements;
+            elevec1(2) = error_result.integrated_volume;
+          });
+
+
+      return 0;
+    }
+
     default:
       FOUR_C_THROW("The element action %s is not yet implemented for the new solid elements",
           action_type_to_string(action).c_str());

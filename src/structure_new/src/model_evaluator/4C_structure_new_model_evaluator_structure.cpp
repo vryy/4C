@@ -27,6 +27,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_discretization_runtime_output_params.hpp"
+#include "4C_structure_new_error_evaluator.hpp"
 #include "4C_structure_new_integrator.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_predict_generic.hpp"
@@ -117,6 +118,12 @@ void Solid::ModelEvaluator::Structure::setup()
           number_global_beam_elements > 0)
         init_output_runtime_beams();
     }
+  }
+
+  // setup error evaluator parameters
+  {
+    error_evaluator_parameters_ = ErrorEvaluator::error_evaluator_parameter_factory(
+        Global::Problem::instance()->structural_dynamic_params().sublist("ERROR EVALUATION"));
   }
 
   // set flag
@@ -857,6 +864,23 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
 
   // finalize everything and write all required files to filesystem
   vtu_writer_ptr_->write_to_disk(time, timestep_number);
+}
+
+void Solid::ModelEvaluator::Structure::evaluate_analytical_error()
+{
+  if (error_evaluator_parameters_.evaluate_error_analytical)
+  {
+    // Set vector values needed by elements
+    discret().clear_state();
+    discret().set_state(0, "displacement", global_state().get_dis_np());
+
+    // Call the error evaluator
+    Teuchos::ParameterList evaluation_parameters;
+    evaluation_parameters.set<Teuchos::RCP<Core::Elements::ParamsInterface>>(
+        "interface", eval_data_ptr());
+    ErrorEvaluator::evaluate_error(
+        error_evaluator_parameters_, evaluation_parameters, *discret_ptr());
+  }
 }
 
 /*----------------------------------------------------------------------------*

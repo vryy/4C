@@ -379,6 +379,15 @@ namespace Inpar
       Teuchos::ParameterList& onesteptheta = sdyn.sublist("ONESTEPTHETA", false, "");
 
       Core::Utils::double_parameter("THETA", 0.5, "One-step-theta factor in (0,1]", &onesteptheta);
+
+      /*----------------------------------------------------------------------*/
+      /* parameters for error evaluation */
+      Teuchos::ParameterList& errorevaluator = sdyn.sublist("ERROR EVALUATION", false, "");
+      Core::Utils::bool_parameter("EVALUATE_ERROR_ANALYTICAL_REFERENCE", "No",
+          "Calculate error with respect to analytical solution defined by a function",
+          &errorevaluator);
+      Core::Utils::int_parameter("ANALYTICAL_DISPLACEMENT_FUNCTION", -1,
+          "function ID of the analytical solution", &errorevaluator);
     }
 
 
