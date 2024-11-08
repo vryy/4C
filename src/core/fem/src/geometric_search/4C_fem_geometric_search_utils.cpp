@@ -180,13 +180,13 @@ namespace Core::GeometricSearch
           {
             coefficient_matrix(0, i_dir) =
                 ArborX::Details::GetKDOPDirections<kdop_directions>::directions()[i_direction]
-                    ._data[i_dir];
+                    ._coords[i_dir];
             coefficient_matrix(1, i_dir) =
                 ArborX::Details::GetKDOPDirections<kdop_directions>::directions()[index_1]
-                    ._data[i_dir];
+                    ._coords[i_dir];
             coefficient_matrix(2, i_dir) =
                 ArborX::Details::GetKDOPDirections<kdop_directions>::directions()[index_2]
-                    ._data[i_dir];
+                    ._coords[i_dir];
           }
           LinAlg::Matrix<3, 1> right_hand_side;
           right_hand_side(0) = get_kdop_value(i_direction, i_min_max);
@@ -205,12 +205,13 @@ namespace Core::GeometricSearch
             // The offset here is needed, since arborx only works with float and we work with
             // double, which can cause issues
             const auto inside_kdop =
-                kdop.intersects(ArborX::Box{{static_cast<float>(intersection_point(0) - eps),
-                                                static_cast<float>(intersection_point(1) - eps),
-                                                static_cast<float>(intersection_point(2) - eps)},
-                    {static_cast<float>(intersection_point(0) + eps),
-                        static_cast<float>(intersection_point(1) + eps),
-                        static_cast<float>(intersection_point(2) + eps)}});
+                intersects(ArborX::Box{{static_cast<float>(intersection_point(0) - eps),
+                                           static_cast<float>(intersection_point(1) - eps),
+                                           static_cast<float>(intersection_point(2) - eps)},
+                               {static_cast<float>(intersection_point(0) + eps),
+                                   static_cast<float>(intersection_point(1) + eps),
+                                   static_cast<float>(intersection_point(2) + eps)}},
+                    kdop);
             return std::make_pair(inside_kdop, intersection_point);
           }
         };
