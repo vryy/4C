@@ -76,10 +76,13 @@ void BEAMINTERACTION::BeamToBeamPointCouplingCondition::build_id_sets(
   for (auto node_id : node_ids)
   {
     i++;
-    Core::Nodes::Node* node = discretization->g_node(node_id);
+
     // This means that the node is not in the column map of this proc and the element pair will thus
     // be created on a different processor
-    if (node == nullptr) return;
+    if (!discretization->have_global_node(node_id)) return;
+
+    Core::Nodes::Node* node = discretization->g_node(node_id);
+
     Core::Elements::Element* element = node->elements()[0];
     element_ids[i - 1] = element->id();
     if (element->node_ids()[0] == node_id)
