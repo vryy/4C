@@ -4,8 +4,8 @@ test case for elliptic reinitialization equation
 //ELEMENTS    10000
 //NODES       20402
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Level_Set
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Level_Set
 RESTART                         0
 RANDSEED                        1
 ------------------------------------LEVEL-SET CONTROL

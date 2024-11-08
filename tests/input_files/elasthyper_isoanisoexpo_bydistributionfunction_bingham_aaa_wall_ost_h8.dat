@@ -52,8 +52,8 @@ yields structural tensor:
 //ELEMENTS    450
 //NODES       768
 DIM           3
--------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------------IO
 STRUCT_STRESS                   cauchy
 ------------------------------------------------------STRUCTURAL DYNAMIC

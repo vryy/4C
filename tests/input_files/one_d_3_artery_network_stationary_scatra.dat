@@ -11,8 +11,8 @@ not exact due to definition of element length for Exact_1D-stabilization
 ELEMENTS                        7
 NODES                           8
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      ArterialNetwork
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      ArterialNetwork
 RESTART                         0
 ------------------------------------------------------------ARTERIAL DYNAMIC
 LINEAR_SOLVER                   1

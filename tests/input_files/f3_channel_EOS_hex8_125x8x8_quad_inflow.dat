@@ -4,8 +4,8 @@ Test of Edge-based pressure stabilization (pEOS) for stretched hex8 elements, ra
 //ELEMENTS    8001
 //NODES       10214
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

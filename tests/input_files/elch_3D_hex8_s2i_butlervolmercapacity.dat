@@ -9,8 +9,8 @@ Simple academic test case consisting of 6 hex8 elements:
 //ELEMENTS    1560
 //NODES       533
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 NUMSTEP                         50

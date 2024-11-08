@@ -48,8 +48,8 @@ The required spatial resolution increases with the simulation time since the "sp
 //ELEMENTS    64
 //NODES       125
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 RESTART                         0
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1

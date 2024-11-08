@@ -12,8 +12,8 @@ NUMARTNETDIS                    0
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelasticity
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC

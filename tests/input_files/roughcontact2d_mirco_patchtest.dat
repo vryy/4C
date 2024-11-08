@@ -6,8 +6,8 @@ get the pressure response for the provided gap.
 //ELEMENTS    164
 //NODES       202
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

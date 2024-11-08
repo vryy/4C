@@ -54,8 +54,8 @@ SECONDORDER                     no
 CONTIPARTINT                    yes
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelasticity
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelasticity
 RESTART                         0
 //!RESTART                      40
 SHAPEFCT                        Polynomial

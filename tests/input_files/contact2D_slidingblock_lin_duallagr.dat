@@ -10,8 +10,8 @@
 //ELEMENTS                      41
 //NODES                         61
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

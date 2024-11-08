@@ -2,8 +2,8 @@
 Test for node-to-point (NTP) coupling (flow and scalar transport)
 between 1D arteries, 1D airways and corresponding phases in the
 3D PoroMultiphaseScatra-Framework with fixed structure.
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
 RESULTSEVRY                     2

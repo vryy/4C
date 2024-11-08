@@ -10,8 +10,8 @@ created by pre_exodus
 //ELEMENTS    35
 //NODES       91
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo_Structure_Interaction
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO

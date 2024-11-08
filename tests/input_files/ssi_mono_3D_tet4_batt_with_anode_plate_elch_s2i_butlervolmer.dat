@@ -22,8 +22,8 @@ as well as volumetric change of anode and cathode due to change of lithium conce
 //ELEMENTS    3493
 //NODES       1139
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
 STDOUTEVRY                      0
 ------------------------------------------------STRUCTURAL DYNAMIC

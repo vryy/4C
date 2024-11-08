@@ -14,8 +14,8 @@ NUMALEDIS                       0
 NUMARTNETDIS                    0
 NUMTHERMDIS                     0
 NUMAIRWAYSDIS                   0
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelasticity
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1

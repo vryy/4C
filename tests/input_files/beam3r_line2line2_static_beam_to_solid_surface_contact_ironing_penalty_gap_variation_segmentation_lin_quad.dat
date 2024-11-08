@@ -52,8 +52,8 @@ BIN_SIZE_LOWER_BOUND                  2.0
 DOMAINBOUNDINGBOX                     -10 -10 -10 10 10 10
 ----------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY                   everydt
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                            no

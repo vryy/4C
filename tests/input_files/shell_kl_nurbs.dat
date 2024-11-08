@@ -2,8 +2,8 @@
 Test the Kirchhoff-Love NURBS shell implementation
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                                   3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 SHAPEFCT                              Nurbs
 ------------------------------------------------------------------DISCRETISATION

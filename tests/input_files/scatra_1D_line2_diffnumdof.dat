@@ -13,8 +13,8 @@ degrees of freedom per node on the same discretization:
 //ELEMENTS    10
 //NODES       11
 DIM           1
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta

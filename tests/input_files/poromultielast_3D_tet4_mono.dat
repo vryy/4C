@@ -7,8 +7,8 @@ only with TET4 elements
 //ELEMENTS    500
 //NODES       1122
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Poroelasticity
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Multiphase_Poroelasticity
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard

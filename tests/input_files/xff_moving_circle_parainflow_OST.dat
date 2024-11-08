@@ -6,8 +6,8 @@ NODES                           266
 DIM                             3
 MATERIALS                       2
 NUMDF                           6
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Ale
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Ale
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0

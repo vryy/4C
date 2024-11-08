@@ -2,8 +2,8 @@
 First dynamic test for beam3sk elements with rotation vec. Dofs
 ------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

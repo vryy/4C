@@ -3,8 +3,8 @@ Monolithic xfsi with Nitsche including Solid Sided interface stress representati
 ALE-Fluid, matching grid on the interface
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Structure_Interaction_XFEM
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Structure_Interaction_XFEM
 RESTART                         0
 ---------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.0002

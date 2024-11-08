@@ -7,8 +7,8 @@ surface and block are inclined to 30 degrees
 DIM           3
 -----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 SHAPEFCT                        Polynomial
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      linear_incremental

@@ -6,8 +6,8 @@
 //ELEMENTS    35
 //NODES       91
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 -----------------------------------------------------------------IO
 FILESTEPS                       1000

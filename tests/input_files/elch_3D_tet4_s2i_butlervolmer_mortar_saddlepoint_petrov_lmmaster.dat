@@ -11,8 +11,8 @@ Test case for electrode-electrolyte interface coupling:
 //ELEMENTS    1276
 //NODES       421
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 MAXTIME                         20

@@ -3,8 +3,8 @@ Elastoplastic beam material test
 Testing curvature plasticity without torsional plasticity (helix)
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

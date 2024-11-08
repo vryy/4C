@@ -14,8 +14,8 @@ boundary condition to facilitate convergence.
 //ELEMENTS    60
 //NODES       84
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
 RESULTSEVRY                     1

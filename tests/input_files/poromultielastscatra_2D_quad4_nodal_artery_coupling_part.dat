@@ -14,8 +14,8 @@ Test of partitioned-sequential algorithm.
 //ELEMENTS    500
 //NODES       561
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
 RESULTSEVRY                     2

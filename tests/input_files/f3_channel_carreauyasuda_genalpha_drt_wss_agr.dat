@@ -71,8 +71,8 @@ STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No

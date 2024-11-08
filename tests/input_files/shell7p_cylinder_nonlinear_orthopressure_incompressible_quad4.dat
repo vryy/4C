@@ -14,8 +14,8 @@ References:
 [1] Implementation of a Nonlinear Membrane Finite Element (2015), S. Fuchs, Term Paper
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 ----------------------------------------------------------------------------IO

@@ -12,8 +12,8 @@ NUMALEDIS                       1
 NUMARTNETDIS                    1
 NUMTHERMDIS                     1
 NUMAIRWAYSDIS                   1
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1

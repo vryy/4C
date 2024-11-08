@@ -3,8 +3,8 @@
 // XFluid Mesh Neumann with Inflow Stabilization test
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_XFEM
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

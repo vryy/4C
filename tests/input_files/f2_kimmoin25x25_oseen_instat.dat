@@ -8,8 +8,8 @@ f2_kimmoin25x25_oseen_instat
 //ELEMENTS    625
 //NODES       676
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

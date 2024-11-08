@@ -10,8 +10,8 @@ STRUCTURE DIS structure NODE 90 QUANTITY dispz VALUE 1.34075634241178054e+00 TOL
 STRUCTURE DIS structure NODE 189 QUANTITY dispx VALUE -7.31222474126123401e-01 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 189 QUANTITY dispy VALUE 4.94358843441763951e-01 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 189 QUANTITY dispz VALUE 2.15000999655969949e+00 TOLERANCE 1e-10
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                            no

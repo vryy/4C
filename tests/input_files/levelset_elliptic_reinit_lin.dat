@@ -5,8 +5,8 @@ test case with analytical solution
 //ELEMENTS    5
 //NODES       24
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Level_Set
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Level_Set
 RANDSEED                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION

@@ -6,8 +6,8 @@ NODES                           11
 DIM                             1
 MATERIALS                       4
 NUMDF                           1
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Thermo
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     0

@@ -9,8 +9,8 @@ NODES                           2244
 DIM                             2
 MATERIALS                       3
 NUMDF                           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Structure_Interaction
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard

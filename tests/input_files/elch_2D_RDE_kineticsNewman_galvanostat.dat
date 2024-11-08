@@ -12,8 +12,8 @@ Journal of Electroanalytical Chemistry, 12-23, 2001
 //ELEMENTS                        100
 //NODES                           202
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ----------------------------------------------------------------ELCH CONTROL
 GALVANOSTATIC                   Yes
 GSTAT_APPROX_ELECT_RESIST       effective_length_with_initial_cond //relation_pot_cur effective_length_with_initial_cond

@@ -4,8 +4,8 @@ kimmoin test for wedge15 elements and full 2nd order gp stabilization
 //ELEMENTS    3442
 //NODES       13103
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_XFEM
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

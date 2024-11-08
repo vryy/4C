@@ -2,8 +2,8 @@
 beam-to-beam contact modeled via repulsive Lennard-Jones potential
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

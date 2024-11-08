@@ -6,8 +6,8 @@ NODES                            3
 DIM                              3
 MATERIALS                        1
 NUMDF                            3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                       Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                       Structure
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                      0
 NUMSTRUCDIS                      1

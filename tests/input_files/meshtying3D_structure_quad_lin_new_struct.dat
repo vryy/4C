@@ -2,8 +2,8 @@
 //ELEMENTS    35
 //NODES       468
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO

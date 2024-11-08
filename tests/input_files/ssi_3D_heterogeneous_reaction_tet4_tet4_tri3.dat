@@ -6,8 +6,8 @@ scatra uses advanced reactions framework
 //ELEMENTS    562
 //NODES       200
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 RESTART                         0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

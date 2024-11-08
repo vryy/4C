@@ -1,7 +1,7 @@
 --------------------------------------------------------------------TITLE
 Iterative prestressing with isochoric prestretch tensor
---------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 -----------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes

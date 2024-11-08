@@ -12,8 +12,8 @@ simple, academic test case for monolithic scalar-structure interaction:
 //ELEMENTS    1
 //NODES       8
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
 STDOUTEVRY                      0
 ------------------------------------------------STRUCTURAL DYNAMIC

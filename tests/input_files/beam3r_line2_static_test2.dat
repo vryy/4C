@@ -3,8 +3,8 @@ Convergence Test for BEAM3 Elements; Test based on M. Schulz and C. Filippou: In
 but beam rotated with +45 degree in the x-y-plane to check correct behaviour of our coupled rotations
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

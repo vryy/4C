@@ -41,8 +41,8 @@ RESULTSEVRY                           1
 LINEAR_SOLVER                   2
 SECONDORDER                     no
 CONTIPARTINT                    yes
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelastic_scalar_transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelastic_scalar_transport
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC

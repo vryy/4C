@@ -13,8 +13,8 @@ DISPLACEMENT                          yes
 ELEMENT_OWNER                         yes
 ELEMENT_GID                           yes
 VELOCITY                              yes
-----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 -------------------------------------------------------------------------IO
 OUTPUT_BIN                            yes
 STRUCT_DISP                           no

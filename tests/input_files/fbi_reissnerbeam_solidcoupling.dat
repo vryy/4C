@@ -4,8 +4,8 @@
 //ELEMENTS    64
 //NODES       729
 DIM           3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Fluid_Beam_Interaction
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Fluid_Beam_Interaction
 RESTART                               0
 SHAPEFCT                              Polynomial
 ----------------------------------FLUID BEAM INTERACTION

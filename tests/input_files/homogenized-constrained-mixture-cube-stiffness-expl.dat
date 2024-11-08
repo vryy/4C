@@ -1,7 +1,7 @@
 --------------------------------------------------------------------TITLE
 Growth simulation with isotropic growth law
---------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 -----------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes

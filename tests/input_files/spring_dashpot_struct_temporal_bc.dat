@@ -9,8 +9,8 @@
 //ELEMENTS    8
 //NODES       27
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1

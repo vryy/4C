@@ -4,8 +4,8 @@ Test of Edge-based pressure stabilization (pEOS) for tri6 elements
 //ELEMENTS    5770
 //NODES       11741
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

@@ -5,8 +5,8 @@ Bottom stress reaches a theoretical threshold of soil pressure capacity
 Reference:
 EA de Souza Neto, D Peric, DRJ Owen. Computational Methods of Plasticity: Theory and Applications,
 John Wiley & Sons, Ltd, 2008, Section 8.4.3
--------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes

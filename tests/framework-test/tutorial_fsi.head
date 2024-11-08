@@ -649,7 +649,7 @@ MAX_BALANCE_EVAL_TIME           2
 // Minimum no. of elements per processor for parallel redistribution
 MIN_ELEPROC                     0
 //
------------------------------------------------------------------PROBLEM TYP
+----------------------------------------------------------------PROBLEM TYPE
 //
 //
 //                              AeroCode_Thermo_Fluid_Structure_Interaction
@@ -683,7 +683,7 @@ MIN_ELEPROC                     0
 //                              Thermo
 //                              Thermo_Fluid_Structure_Interaction
 //                              Thermo_Structure_Interaction
-PROBLEMTYP                      Fluid_Structure_Interaction
+PROBLEMTYPE                     Fluid_Structure_Interaction
 //
 // Set the random seed. If < 0 use current time.
 RANDSEED                        -1

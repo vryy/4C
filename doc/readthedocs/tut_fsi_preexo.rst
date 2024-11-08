@@ -87,9 +87,9 @@ Find the following sections in ’default.head’ and edit as given:
 
    ::
 
-      -----PROBLEM TYP
+      -----PROBLEM TYPE
 
-   set ``PROBLEMTYP Structure``
+   set ``PROBLEMTYPE Structure``
 
    ::
 
@@ -224,9 +224,9 @@ Find the following sections in ’default.head’ and edit as given:
 
    ::
 
-      -----PROBLEM TYP
+      -----PROBLEM TYPE
 
-   set ``PROBLEMTYP Fluid``
+   set ``PROBLEMTYPE Fluid``
 
    ::
 

@@ -4,8 +4,8 @@ Description: Simulate a beam coupled to a solid via cross section integration po
 //ELEMENTS    16
 //NODES       225
 DIM                                   3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                            No

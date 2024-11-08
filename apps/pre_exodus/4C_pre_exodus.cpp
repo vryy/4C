@@ -319,7 +319,7 @@ int main(int argc, char** argv)
       if (size_section != std::string::npos)
       {
         size_t typ_section =
-            headstring.find("--------------------------------------------------------PROBLEM TYP");
+            headstring.find("--------------------------------------------------------PROBLEM TYPE");
         headstring.erase(size_section, typ_section - size_section);
       }
       defaulthead << headstring;

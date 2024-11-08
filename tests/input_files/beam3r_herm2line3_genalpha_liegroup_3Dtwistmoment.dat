@@ -7,8 +7,8 @@ dynamic test (only rotational inertia) for beam3r elements loaded with a tip mom
 //    since we neglect translational intertia terms (IT=0.0).
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                             3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 ------------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

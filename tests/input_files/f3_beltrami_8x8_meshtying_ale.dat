@@ -4,8 +4,8 @@ f3_beltrami_8x8_meshtying_ale
 //ELEMENTS    512
 //NODES       827
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Ale
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Ale
 RESTART                         0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

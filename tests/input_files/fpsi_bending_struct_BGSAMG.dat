@@ -137,8 +137,8 @@ PHYSICAL_TYPE                   Poro
 RESULTSEVRY                           1
 SECONDORDER                     yes
 CONTIPARTINT                    yes
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Porous_Structure_Interaction
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Porous_Structure_Interaction
 RANDSEED                        -1
 RESTART                         0
 SHAPEFCT                        Polynomial

@@ -2,8 +2,8 @@
 //ELEMENTS                      3
 //NODES                         16
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      RedAirways_Tissue
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      RedAirways_Tissue
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

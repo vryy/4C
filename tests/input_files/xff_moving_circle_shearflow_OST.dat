@@ -2,8 +2,8 @@
 shear flow with moving circular embedded fluid
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Ale
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Ale
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

@@ -203,7 +203,7 @@ Scalar_Transport
 **General**
 
 This problemtype considers the transport of a scalar variable through a domain.
-Such a scalar could be the temperature (which is usually treated by PROBLEMTYP Thermo),
+Such a scalar could be the temperature (which is usually treated by PROBLEMTYPE Thermo),
 but also any other field quantity.
 
 **Elements and Degrees of freedom**

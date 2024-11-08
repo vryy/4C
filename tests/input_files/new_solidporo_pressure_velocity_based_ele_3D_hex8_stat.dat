@@ -6,8 +6,8 @@ standard poro hex8 stationary
 DIM                             3
 //MATERIALS                     88
 //NUMDF                         6
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelasticity
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------DISCRETISATION

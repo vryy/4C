@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------TITLE
 This is a simple test that tests the extrapolation of stressees from Gauss points to nodes for a
 tet10 discretization
--------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes

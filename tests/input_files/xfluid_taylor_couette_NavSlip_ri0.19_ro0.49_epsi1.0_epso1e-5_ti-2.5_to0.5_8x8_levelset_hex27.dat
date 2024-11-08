@@ -4,8 +4,8 @@ Taylor-Couette flow (8x8) [-0.5,0.5]x[-0.5,0.5]
 //ELEMENTS                      81
 //NODES                         200
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_XFEM
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      No

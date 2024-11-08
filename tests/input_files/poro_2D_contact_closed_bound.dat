@@ -9,8 +9,8 @@ Test for poro-solid contact (2D)
 DIM           2
 ----------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelasticity
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------------IO

@@ -5,8 +5,8 @@ Simulate a 2d qube to check, if the vtk runtime output works for
 //ELEMENTS    16
 //NODES       25
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                          Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                          Structure
 RESTART                             0
 SHAPEFCT                            Polynomial
 -----------------------------------------------------DISCRETISATION

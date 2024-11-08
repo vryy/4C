@@ -2,8 +2,8 @@
 //ELEMENTS    32
 //NODES       40
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 -------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1

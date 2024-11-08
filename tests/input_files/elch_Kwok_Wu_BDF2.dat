@@ -10,8 +10,8 @@
 //ELEMENTS                        216
 //NODES                           343
 DIM                             3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear

@@ -22,8 +22,8 @@ STRUCT_COUPLING_STRESS          2PK
 THERM_HEATFLUX                  Current
 THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Current
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC

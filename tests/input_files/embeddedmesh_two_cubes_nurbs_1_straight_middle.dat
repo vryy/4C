@@ -3,8 +3,8 @@ Cut Cartesian background element with a NURBS cut element with a straight interf
 in the middle of the background element
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                                   3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 SHAPEFCT                              Nurbs
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT

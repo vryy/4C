@@ -5,8 +5,8 @@ beam-to-solid volume coupling.
 //ELEMENTS    10
 //NODES       44
 DIM                                   3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                            Yes

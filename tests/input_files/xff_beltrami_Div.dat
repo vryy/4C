@@ -6,8 +6,8 @@ boundary cell gauss points by Tessellation
 //ELEMENTS                      248
 //NODES                         396
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_XFEM
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0

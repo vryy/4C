@@ -12,8 +12,8 @@ DIM           2
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelasticity
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
 ---------------------------------------------------------------FLUID DYNAMIC

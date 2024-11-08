@@ -74,8 +74,8 @@ STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 -------------------------------------------------------------MORTAR COUPLING

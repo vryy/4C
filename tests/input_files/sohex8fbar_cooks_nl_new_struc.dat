@@ -31,8 +31,8 @@ EVERY_ITERATION                 no
 OUTPUT_STRUCTURE                yes
 DISPLACEMENT                    yes
 ELEMENT_OWNER                   yes
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard

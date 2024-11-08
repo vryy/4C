@@ -2,8 +2,8 @@
 Minimal Ventricular Model Myocard material test for HDG Tri elements
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Cardiac_Monodomain
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Cardiac_Monodomain
 SHAPEFCT                        HDG
 RESTART                         0
 --------------------------------------------------------------------------IO

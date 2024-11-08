@@ -3,8 +3,8 @@ Description: Simulate a beam coupled to a solid via penalty mortar coupling.
              The shape functions for the Lagrange multplicators are line2.
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                                   3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                            No

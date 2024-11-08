@@ -4,8 +4,8 @@ Fluid-structure interaction with contact and flow-dependent pressure conditions
 //ELEMENTS    19196
 //NODES       24062
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP       Fluid_Structure_Interaction
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE       Fluid_Structure_Interaction
 -----------------------------------------------------------------IO
 STRUCT_STRAIN    EA
 STRUCT_STRESS    Cauchy

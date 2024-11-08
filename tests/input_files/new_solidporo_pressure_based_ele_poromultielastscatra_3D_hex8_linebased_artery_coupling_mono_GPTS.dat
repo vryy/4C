@@ -2,8 +2,8 @@
 Test for line-based coupling between artery network (including
 scalar transport) and PoroMultiphaseScatra-Framework.
 Gauss-point-to-segment coupling method is employed
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
 RESULTSEVRY                     1

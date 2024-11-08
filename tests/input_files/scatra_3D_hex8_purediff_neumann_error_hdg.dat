@@ -2,8 +2,8 @@
 Test for ScatraHDG L2 errors
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 SHAPEFCT                        HDG
 RESTART                         0
 --------------------------------------------------------------------------IO

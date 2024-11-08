@@ -17,8 +17,8 @@ in alternating directions.
      Vu-Quoc et al.
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 ----------------------------------------------------------STRUCTURAL DYNAMIC

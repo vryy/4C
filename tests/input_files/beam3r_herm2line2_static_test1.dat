@@ -4,8 +4,8 @@ clamped 45 degrees ring segment subject to end force
 //  - linear Lagrange interpolation of triad field
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                             3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 ------------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

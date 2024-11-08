@@ -8,8 +8,8 @@ Test case for instationary diffusion in moving, curved surface.
 - SDC method to avoid ill-conditioning of the resulting matrices
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No

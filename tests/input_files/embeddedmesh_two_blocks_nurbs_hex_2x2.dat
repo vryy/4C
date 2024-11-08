@@ -2,8 +2,8 @@
 DIM                                   3
 ---------------------------------------------------------------------------TITLE
 Cut Cartesian background mesh with a NURBS cut mesh
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 SHAPEFCT                              Nurbs
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 INTERVAL_STEPS                        1

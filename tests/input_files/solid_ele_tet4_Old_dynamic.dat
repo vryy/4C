@@ -5,8 +5,8 @@ Time Integration: Old
 Shape: tet4
 Element-Technology:
 Fibers: none
--------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 ----------------------------------------------------------------------SOLVER 1

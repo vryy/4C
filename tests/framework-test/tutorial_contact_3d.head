@@ -9,9 +9,9 @@ MATERIALS                       2
 //
 NUMDF                           6
 //
---------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------------------PROBLEM TYPE
 // e.g. Fluid, Fluid_Ale, Fluid_XFEM, Ale, Structure, Fluid_Structure_Interaction, etc...
-PROBLEMTYP                      Structure
+PROBLEMTYPE                     Structure
 //
 RESTART                         0
 //

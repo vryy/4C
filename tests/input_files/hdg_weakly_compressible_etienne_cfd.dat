@@ -3,8 +3,8 @@ Weakly compressible flow with manufactured solution on a deformed
 domain solved with the HDG method
 ------------------------------------------------------PROBLEM SIZE
 DIM              2
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP       Fluid_Ale
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE       Fluid_Ale
 SHAPEFCT         HDG
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS      1

@@ -4,8 +4,8 @@ test case for heterogeneous reactions within scatra
 //ELEMENTS    275
 //NODES       368
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

@@ -5,8 +5,8 @@
 DIM           3
 -----------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO

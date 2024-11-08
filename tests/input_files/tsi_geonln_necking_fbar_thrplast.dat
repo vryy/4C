@@ -22,8 +22,8 @@ nightly test case uses reduced end time MAXTIME = 1.0
 
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Thermo_Structure_Interaction
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1

@@ -8,9 +8,9 @@
 //ELEMENTS    15
 //NODES       42
 DIM           3
------------------------------------------------------------------PROBLEM TYP
+-----------------------------------------------------------------PROBLEM TYPE
 RESTART                         0
-PROBLEMTYP                      Structure
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1

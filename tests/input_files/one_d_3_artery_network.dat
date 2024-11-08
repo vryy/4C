@@ -6,8 +6,8 @@ NODES                           3
 DIM                             1
 MATERIALS                       1
 NUMDF                           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      ArterialNetwork
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      ArterialNetwork
 RESTART                         0
 ------------------------------------------------------------ARTERIAL DYNAMIC
 LINEAR_SOLVER                   1

@@ -5,8 +5,8 @@ And summands: genmax, iso1pow, fract
 //ELEMENTS    8
 //NODES       27
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

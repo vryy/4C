@@ -7,8 +7,8 @@ FLUID_STRESS             Yes
 FLUID_WALL_SHEAR_STRESS  Yes
 -----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 RANDSEED                        -1
 ------------------------------------------------------FLUID DYNAMIC

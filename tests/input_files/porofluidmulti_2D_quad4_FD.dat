@@ -5,8 +5,8 @@ Minimal test also testing finite difference check
 //ELEMENTS    1
 //NODES       4
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Porous_Flow
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Multiphase_Porous_Flow
 RESTART                         0
 ---------------------------------------------POROFLUIDMULTIPHASE DYNAMIC
 LINEAR_SOLVER                   1

@@ -4,8 +4,8 @@ electrochemistry simulation in 2D using NURBS
 //ELEMENTS                        100
 //NODES                           144
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 SHAPEFCT                        Nurbs
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1

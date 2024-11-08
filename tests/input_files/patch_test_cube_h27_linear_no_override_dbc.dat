@@ -6,8 +6,8 @@ NODES                            1331
 DIM                              3
 MATERIALS                        1
 NUMDF                            6
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                       Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                       Structure
 RESTART                          0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                      0

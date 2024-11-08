@@ -5,8 +5,8 @@ Based on: Test of Edge-based pressure stabilization (pEOS) for hex8 elements
 //ELEMENTS    1001
 //NODES       1339
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

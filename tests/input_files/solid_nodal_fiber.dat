@@ -8,8 +8,8 @@ setup:
  - fibers interpolated using poisson lifting from DSURFACE1 (60 degrees) to DSURFACE2 (-60 degrees)
 --------------------------------------------------------------------------IO
 STRUCT_ELE                      No
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 --------------------------------------------------------------------SOLVER 1

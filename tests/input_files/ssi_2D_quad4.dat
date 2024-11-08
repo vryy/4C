@@ -4,8 +4,8 @@ minimal test for structure scalar interaction in 2D
 //ELEMENTS    1
 //NODES       4
 DIM           2
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 RESTART                         0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

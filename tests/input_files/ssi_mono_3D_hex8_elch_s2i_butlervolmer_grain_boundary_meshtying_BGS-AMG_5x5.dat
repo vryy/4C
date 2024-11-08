@@ -14,8 +14,8 @@ all overlapping manifold domains
 //ELEMENTS    32
 //NODES       99
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
 LINEAR_SOLVER                   1

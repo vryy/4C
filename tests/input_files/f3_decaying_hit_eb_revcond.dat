@@ -7,8 +7,8 @@ reverse order of master and slave PBC condition
 //ELEMENTS    512
 //NODES       729
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 RANDSEED                        1
 --------------------------------------------------------------DISCRETISATION

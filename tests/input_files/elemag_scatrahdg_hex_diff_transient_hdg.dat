@@ -4,8 +4,8 @@ Test for transiet Elemag with ScatraHDG initialization
 //ELEMENTS    125
 //NODES       216
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electromagnetics
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electromagnetics
 RESTART                         0
 SHAPEFCT                        HDG
 RANDSEED                        -1

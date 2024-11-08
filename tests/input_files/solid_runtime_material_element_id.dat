@@ -3,8 +3,8 @@ Simple testcase to check the runtime output of the element material id.
 Result should display two elements:
 - one element with ID 1
 - second element with ID 2
--------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes

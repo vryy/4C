@@ -4,8 +4,8 @@ test for scatra ECM material in poro
 //ELEMENTS    7026
 //NODES       7223
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelastic_scalar_transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelastic_scalar_transport
 RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------DISCRETISATION

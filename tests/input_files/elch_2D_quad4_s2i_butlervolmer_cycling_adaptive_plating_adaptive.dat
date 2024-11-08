@@ -18,8 +18,8 @@ Test case for periodic cycling of lithium-ion cells:
 //ELEMENTS    3
 //NODES       12
 DIM           2
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta

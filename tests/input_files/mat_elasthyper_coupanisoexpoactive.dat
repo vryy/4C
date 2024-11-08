@@ -2,8 +2,8 @@
 Checking the coup aniso active material with changing active stress after restart
 --------------------------------------------------------------------------IO
 STRUCT_ELE                      No
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 --------------------------------------------------------------------SOLVER 1

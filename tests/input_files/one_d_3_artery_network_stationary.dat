@@ -6,8 +6,8 @@ for this type of problem the solution is analytically known
 ELEMENTS                        7
 NODES                           8
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      ArterialNetwork
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      ArterialNetwork
 RESTART                         0
 ------------------------------------------------------------ARTERIAL DYNAMIC
 LINEAR_SOLVER                   1

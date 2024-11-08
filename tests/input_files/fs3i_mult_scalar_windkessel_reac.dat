@@ -11,8 +11,8 @@ NUMALEDIS                       1
 NUMARTNETDIS                    0
 NUMTHERMDIS                     0
 NUMAIRWAYSDIS                   0
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Gas_Fluid_Structure_Interaction
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Gas_Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1

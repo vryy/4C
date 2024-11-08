@@ -16,8 +16,8 @@ involving electrochemistry and electrode-electrolyte interface coupling:
 //ELEMENTS    3
 //NODES       24
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Thermo_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Thermo_Interaction
 ----------------------------------------------------------------IO
 STDOUTEVRY                      0
 ------------------------------------------------STRUCTURAL DYNAMIC

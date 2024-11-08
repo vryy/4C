@@ -17,8 +17,8 @@ MODELEVALUATOR                        Standard
 ----------------------------------------------------------------BINNING STRATEGY
 BIN_SIZE_LOWER_BOUND                  1.0
 DOMAINBOUNDINGBOX                     -10 -10 -10 10 10 10
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                            yes

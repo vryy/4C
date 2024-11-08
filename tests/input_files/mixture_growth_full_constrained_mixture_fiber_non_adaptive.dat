@@ -3,8 +3,8 @@ Growth simulation with a full constrained mixture fiber with Gauss point data ou
 to the nodes.
 
 Elements: HEX8
---------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 -----------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes

@@ -2,8 +2,8 @@
 //ELEMENTS    17337
 //NODES       12400
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Fluid
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE   Fluid
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1

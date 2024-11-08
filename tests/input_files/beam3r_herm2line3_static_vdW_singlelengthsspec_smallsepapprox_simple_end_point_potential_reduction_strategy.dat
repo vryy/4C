@@ -25,8 +25,8 @@ These tests assert the correctness of the interaction potential, resulting force
 correct implementation with multiprocessing.
 --------------------------------------------------PROBLEM SIZE
 DIM                             3
---------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 --------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

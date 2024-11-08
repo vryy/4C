@@ -4,8 +4,8 @@
 DIM           3
 -----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 RANDSEED                        -1
 ------------------------------------------------------FLUID DYNAMIC

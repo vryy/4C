@@ -2,8 +2,8 @@
 Test if periodic boundary conditions work correctly for 2D Problems
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
---------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1

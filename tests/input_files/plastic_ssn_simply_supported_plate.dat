@@ -5,9 +5,9 @@ Semi-smooth Newton type plasticity
 //ELEMENTS    64
 //NODES       162
 DIM           3
------------------------------------------------------------------PROBLEM TYP
+-----------------------------------------------------------------PROBLEM TYPE
 RESTART                         0
-PROBLEMTYP                      Structure
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1

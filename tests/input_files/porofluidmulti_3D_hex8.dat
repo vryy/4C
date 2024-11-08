@@ -5,8 +5,8 @@ Basically a copy of the 2D test porofluidmult_2D_quad4.dat
 //ELEMENTS    500
 //NODES       1122
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Porous_Flow
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Multiphase_Porous_Flow
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

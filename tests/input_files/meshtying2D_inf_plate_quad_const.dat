@@ -5,8 +5,8 @@ condensed linear system without any LM-dofs
 //ELEMENTS    26
 //NODES       110
 DIM           2
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE   Structure
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  0

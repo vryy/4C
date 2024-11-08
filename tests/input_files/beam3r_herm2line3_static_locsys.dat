@@ -2,8 +2,8 @@
 Test for LOCSYS conditions on beams
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------IO
 STDOUTEVRY                      0
 STRUCT_STRESS                   Cauchy

@@ -4,8 +4,8 @@ testing rotationally symmetric boundary conditons
 //ELEMENTS                        348
 //NODES                           630
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function

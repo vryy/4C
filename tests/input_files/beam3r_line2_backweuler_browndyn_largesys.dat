@@ -6,8 +6,8 @@ beam3r_line2_backweuler_browndyn_largesys.dat
 DIM                    3
 MATERIALS              1
 NUMDF                  6
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP             Structure
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE             Structure
 RESTART                0
 RANDSEED               1
 ----------------------------------------------------DISCRETISATION

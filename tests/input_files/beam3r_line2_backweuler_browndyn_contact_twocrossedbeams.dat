@@ -1,7 +1,7 @@
 ------------------------------------------------------PROBLEM SIZE
 DIM                    3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP             Structure
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE             Structure
 RANDSEED               1
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS            0

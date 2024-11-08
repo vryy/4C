@@ -5,8 +5,8 @@ The coupling terms are evaluated with the "displacement" option.
 //ELEMENTS    267
 //NODES       877
 DIM                                   3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                            yes

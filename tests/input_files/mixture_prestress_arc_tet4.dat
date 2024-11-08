@@ -5,8 +5,8 @@ This is an arc made out of 196 TET4 elements that is loaded with a orthopressure
 The prestress of the simulation if obtained iteratively in one constituent, while the other have a
 predefined prestress. The simulation stopps after the residual displacements to the reference
 configurations are below a certain tolerance.
--------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes

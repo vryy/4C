@@ -8,8 +8,8 @@ periodic boundary conditions are tested in xy plane which lead to a 2D problem
 //ELEMENTS    12
 //NODES       42
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Thermo_Structure_Interaction
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0

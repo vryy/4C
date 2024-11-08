@@ -31,8 +31,8 @@ THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Current
 WRITE_TO_SCREEN                 Yes
 VERBOSITY                       standard
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Thermo_Structure_Interaction
 RANDSEED                        -1
 RESTART                         0
 SHAPEFCT                        Polynomial

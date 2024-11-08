@@ -2,8 +2,8 @@
 Test the runtime output for nurbs solid elements
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                                   3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 SHAPEFCT                              Nurbs
 --------------------------------------------------------------STRUCTURAL DYNAMIC

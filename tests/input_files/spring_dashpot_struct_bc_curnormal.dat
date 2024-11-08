@@ -10,8 +10,8 @@ spring_dashpot_current_normal
 // - select closest reference surface
 --------------------------------------------------------------------------IO
 // OUTPUT_EVERY_ITER               Yes
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC

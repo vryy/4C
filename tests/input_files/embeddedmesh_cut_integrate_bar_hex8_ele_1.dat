@@ -12,8 +12,8 @@ present a straight interface. The number of element in the cut mesh is 1x1x1.
 The cut and background meshes ARE conforming.
 
 The forces in the background element are distributed in a mortar manner.
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 INTERVAL_STEPS                        1
 OUTPUT_DATA_FORMAT                    binary

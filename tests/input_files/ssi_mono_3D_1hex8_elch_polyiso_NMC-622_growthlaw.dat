@@ -11,8 +11,8 @@ simple, academic test case for monolithic scalar-structure interaction:
 - structure and scatra fields are coupled via MAT_MultiplicativeSplitDefgradElastHyper using:
 - MAT_InelasticDefgradPolyIntercalFracIso: isotropic strain dependent on lithiation X according to the following equation:
 - polynomial from Koerver[2018] for NMC-622 using a polynomial fit of 7th order for best approximation
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
 STDOUTEVRY                      0
 ------------------------------------------------STRUCTURAL DYNAMIC

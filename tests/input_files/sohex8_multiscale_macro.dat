@@ -25,8 +25,8 @@ NODES                           27
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 //!RESTART                      1
 --------------------------------------------------------------DISCRETISATION

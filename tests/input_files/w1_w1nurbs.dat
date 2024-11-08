@@ -1,7 +1,7 @@
 ---------------------------------------------------------------------------TITLE
 Test WALL and WALLNURBS in the same input file
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 SHAPEFCT                              Nurbs
 ------------------------------------------------------------------DISCRETISATION

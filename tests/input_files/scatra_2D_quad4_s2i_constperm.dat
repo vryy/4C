@@ -11,8 +11,8 @@ Academic test case for scatra-scatra interface coupling:
 DIM           2
 -----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 SHAPEFCT                        Polynomial
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear

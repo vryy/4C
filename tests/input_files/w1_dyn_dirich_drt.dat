@@ -6,8 +6,8 @@ NODES                           441
 DIM                             2
 MATERIALS                       1
 NUMDF                           6
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 //ENRONOFF                      no
 RESTART                         0
 ----------------------------------------------------DISCRETISATION

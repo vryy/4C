@@ -4,8 +4,8 @@ Flow threw interface (mixed normal and tangential direction)
 with Beavers-Joseph interface law between Fluid and Poro
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Poro_Structure_Interaction_XFEM
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Poro_Structure_Interaction_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

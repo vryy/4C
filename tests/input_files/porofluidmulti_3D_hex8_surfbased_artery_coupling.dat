@@ -11,8 +11,8 @@ Applied Sciences, 28(05):953-978, 2018. DOI: 10.1142/S0218202518500252.
 //ELEMENTS    65
 //NODES       164
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Porous_Flow
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Multiphase_Porous_Flow
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

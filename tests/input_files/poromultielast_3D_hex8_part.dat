@@ -6,8 +6,8 @@ Basically a 3D extension of the 2D input-file poromultielast_2D_quad4_mono.dat
 //ELEMENTS    500
 //NODES       1122
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Poroelasticity
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Multiphase_Poroelasticity
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard

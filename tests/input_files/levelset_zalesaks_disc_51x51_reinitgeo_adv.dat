@@ -6,8 +6,8 @@ note: compared to the original level-set in the combustion modul,
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS 2601
 //NODES    5408
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Level_Set
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Level_Set
 RESTART                         0
 ------------------------------------LEVEL-SET CONTROL
 NUMSTEP                         20

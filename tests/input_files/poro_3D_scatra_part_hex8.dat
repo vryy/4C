@@ -9,8 +9,8 @@ NODES                           216
 DIM                             3
 MATERIALS                       4
 //NUMDF                         6
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelastic_scalar_transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelastic_scalar_transport
 RESTART                         0
 //!RESTART                      5
 SHAPEFCT                        Polynomial

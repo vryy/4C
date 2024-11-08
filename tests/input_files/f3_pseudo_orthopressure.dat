@@ -7,8 +7,8 @@ NODES                           510
 DIM                             3
 MATERIALS                       4
 NUMDF                           6
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_RedModels
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_RedModels
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

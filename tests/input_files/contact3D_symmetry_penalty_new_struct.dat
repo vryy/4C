@@ -7,8 +7,8 @@
 //ELEMENTS    280
 //NODES       468
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE   Structure
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  0

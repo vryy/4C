@@ -1,7 +1,7 @@
 ---------------------------------------------------------------------------TITLE
 A block that is cut by an upper and lower curved NURBS interfaces
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 SHAPEFCT                              Nurbs
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 INTERVAL_STEPS                        1

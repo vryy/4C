@@ -21,8 +21,8 @@ STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC

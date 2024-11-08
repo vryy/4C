@@ -7,8 +7,8 @@ as a fit, with y=a/(x-b)+a/b with a = -0.02188, b = 3.854.
 //ELEMENTS    200
 //NODES       242
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

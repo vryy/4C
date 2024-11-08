@@ -7,8 +7,8 @@ Structure:                      One_Step_Theta
 //ELEMENTS    6513
 //NODES       13504
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Immersed_FSI
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Immersed_FSI
 RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1

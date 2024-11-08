@@ -1,7 +1,7 @@
 ---------------------------------------------------------------------------TITLE
 Cantiliver beam subjected under bending with embedded mesh coupling
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 INTERVAL_STEPS                        1
 OUTPUT_DATA_FORMAT                    binary

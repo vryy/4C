@@ -60,8 +60,8 @@ TOL_VEL_INC_INF                 1e-08
 TOL_VEL_INC_L2                  1e-10
 TOL_VEL_RES_INF                 1e-08
 TOL_VEL_RES_L2                  1e-10
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC

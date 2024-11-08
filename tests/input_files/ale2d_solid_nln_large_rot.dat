@@ -4,8 +4,8 @@ pure ale mesh motion problem in 2D using the nonlinear type
 //ELEMENTS    2480
 //NODES       2592
 DIM           2
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Ale
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Ale
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO

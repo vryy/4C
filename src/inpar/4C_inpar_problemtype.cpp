@@ -21,7 +21,7 @@ void Inpar::PROBLEMTYPE::set_valid_parameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& type = list.sublist("PROBLEM TYP", false, "");
+  Teuchos::ParameterList& type = list.sublist("PROBLEM TYPE", false, "");
 
   {
     using IntegerType = Core::ProblemType;
@@ -35,7 +35,7 @@ void Inpar::PROBLEMTYPE::set_valid_parameters(Teuchos::ParameterList& list)
     }
 
     setStringToIntegralParameter<IntegerType>(
-        "PROBLEMTYP", "Fluid_Structure_Interaction", "", name, label, &type);
+        "PROBLEMTYPE", "Fluid_Structure_Interaction", "", name, label, &type);
   }
 
   {

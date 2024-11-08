@@ -10,8 +10,8 @@ Simple academic test case consisting of 6 hex8 elements:
 //ELEMENTS    1560
 //NODES       533
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         50
 TIMESTEP                        0.1

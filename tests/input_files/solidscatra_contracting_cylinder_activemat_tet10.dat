@@ -11,8 +11,8 @@ Contracting Cylinder
 DIM                             3
 --------------------------------------------------------------------------IO
 FILESTEPS                       5
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Belos

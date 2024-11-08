@@ -8,11 +8,11 @@ The total input of |FOURC| is read from formatted input files that
 contain all data to define a problem. The file is divided in single
 blocks by horizontal lines which end with a key word specifying the
 following content. There must not be spaces in front of a keyword. An
-example is the ``PROBLEM TYP`` introductory line
+example is the ``PROBLEM TYPE`` introductory line
 
 ::
 
-   -------------------------------------PROBLEM TYP
+   -------------------------------------PROBLEM TYPE
 
 Plenty of keyword lines and blocks refere to special applications of the
 program (such as ``OPTIMIZATION`` , ``ALE DYNAMIC`` etc.). These

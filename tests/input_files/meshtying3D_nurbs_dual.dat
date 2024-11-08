@@ -9,8 +9,8 @@ NODES                             123
 DIM                               3
 MATERIALS                         2
 NUMDF                             3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE   Structure
 SHAPEFCT     Nurbs
 ----------------------------------------------------DISCRETISATION
 NUMSTRUCDIS  1

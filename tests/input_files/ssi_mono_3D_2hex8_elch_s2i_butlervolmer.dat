@@ -15,8 +15,8 @@ involving electrochemistry and scatra-scatra interface coupling:
 //ELEMENTS    2
 //NODES       16
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
 STDOUTEVRY                      0
 ---------------------------------------------IO/RUNTIME VTK OUTPUT

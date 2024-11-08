@@ -19,7 +19,7 @@ NUMTHERMDIS                     1
 // Number of meshes in reduced dimensional airways network field
 NUMAIRWAYSDIS                   1
 //
---------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYPE
 //     AeroCode_Thermo_Fluid_Structure_Interaction
 //     Ale
 //     ArterialNetwork
@@ -62,7 +62,7 @@ NUMAIRWAYSDIS                   1
 //     Thermo_Fluid_Structure_Interaction
 //     Thermo_Structure_Interaction
 //     UQ
-PROBLEMTYP                      Fluid_Structure_Interaction
+PROBLEMTYPE                     Fluid_Structure_Interaction
 //
 RESTART                         0
 //

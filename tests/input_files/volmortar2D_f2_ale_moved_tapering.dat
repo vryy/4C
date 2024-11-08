@@ -9,8 +9,8 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       1
 NUMTHERMDIS                     0
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Ale
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Ale
 RESTART                         0
 ------------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE                   Incompressible

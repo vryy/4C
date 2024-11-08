@@ -3,8 +3,8 @@ testing kinetic and internal energy of membrane finite elements (checked with an
 patch of 20x20 quad4 membrane finite elements (plane stress, incompressible) with
 dirichlet bc prescribing displacements of all nodes resulting in an uniaxial stretch
 in x-direction and a translation in y-direction
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 -----------------------------------------------------------------IO
 STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  Yes

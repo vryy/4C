@@ -4,8 +4,8 @@ Runs fine with serial revision 21886 (02.03.2016)
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS 2601
 //NODES    5408
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Level_Set
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Level_Set
 RESTART                         0
 ------------------------------------LEVEL-SET CONTROL
 NUMSTEP                         20

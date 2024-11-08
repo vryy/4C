@@ -1,8 +1,8 @@
 ---------------------------------------------------------------------------TITLE
 A block that is cut by an upper and lower inclined NURBS interfaces.
 The background mesh is made by hex8 elements.
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 SHAPEFCT                              Nurbs
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT

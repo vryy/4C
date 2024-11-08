@@ -1,7 +1,7 @@
 ------------------------------------------------------PROBLEM SIZE
 DIM                    3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP             Polymer_Network
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE             Polymer_Network
 RESTART                0
 RANDSEED               1
 ----------------------------------------------------DISCRETISATION

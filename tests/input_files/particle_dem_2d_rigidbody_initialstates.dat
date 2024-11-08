@@ -2,8 +2,8 @@
 A particle input file with DEM contact and initial conditions
 for the rigid phase
 ==================================================================
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Particle
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Particle
 --------------------------------------------------------------------------IO
 STDOUTEVRY                      50
 VERBOSITY                       standard

@@ -6,8 +6,8 @@ NODES                           1470
 DIM                             3
 MATERIALS                       3
 NUMDF                           6
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

@@ -9,8 +9,8 @@ NUMALEDIS                       0
 NUMARTNETDIS                    0
 NUMTHERMDIS                     0
 NUMAIRWAYSDIS                   0
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1

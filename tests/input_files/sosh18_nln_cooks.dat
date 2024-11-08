@@ -20,8 +20,8 @@ STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1

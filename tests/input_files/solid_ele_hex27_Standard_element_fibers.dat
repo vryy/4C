@@ -5,8 +5,8 @@ Time Integration: Standard
 Shape: hex27
 Element-Technology:
 Fibers: element
--------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 ----------------------------------------------------------------------SOLVER 1

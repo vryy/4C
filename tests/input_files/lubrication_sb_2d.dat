@@ -6,8 +6,8 @@ Reference: B. J. Hamrock. Fundamentals of fluid film lubrication. CRC Press, 200
 //ELEMENTS    8
 //NODES       18
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Lubrication
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Lubrication
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

@@ -2,8 +2,8 @@
 // Simulate a 2d cube to check, if the vtk runtime output works with a step offset
 ------------------------------------------------------PROBLEM SIZE
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                          Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                          Structure
 SHAPEFCT                            Polynomial
 -----------------------------------------------------DISCRETISATION
 NUMSTRUCDIS			     1

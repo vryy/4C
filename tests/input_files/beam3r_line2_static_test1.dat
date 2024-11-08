@@ -2,8 +2,8 @@
 Convergence Test for BEAM3 Elements; Test based on M. Schulz and C. Filippou: Int. J. Numer. Meth. Engng 2001; 50:781 figure 7
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

@@ -10,8 +10,8 @@
 //ELEMENTS    16374
 //NODES       5364
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 -----------------------------------------------------------------IO
 OUTPUT_BIN                      Yes

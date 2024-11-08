@@ -25,8 +25,8 @@ USE_ABSOLUTE_POSITIONS                yes
 TRIAD_VISUALIZATIONPOINT              yes
 STRAINS_GAUSSPOINT                    yes
 ELEMENT_GID                           yes
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                            yes

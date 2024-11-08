@@ -6,8 +6,8 @@
 ELEMENTS                         1
 NODES                            27
 DIM                              3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                       Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                       Structure
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                    1
 INT_STRATEGY                     Standard

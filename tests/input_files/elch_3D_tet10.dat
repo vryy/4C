@@ -5,8 +5,8 @@ Test case to test a diffusion process on a cube:
 - homogeneous Neumann boundary condition on all surfaces
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 NUMSTEP                         30
 MAXTIME                         30

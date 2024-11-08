@@ -27,8 +27,8 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Cardiac_Monodomain
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Cardiac_Monodomain
 SHAPEFCT                        HDG
 RESTART                         0
 --------------------------------------------------------------------SOLVER 1

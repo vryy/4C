@@ -1,5 +1,5 @@
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Particle_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Particle_Structure_Interaction
 --------------------------------------------------------------------------IO
 STDOUTEVRY                      1
 VERBOSITY                       standard

@@ -31,8 +31,8 @@ MAX_BALANCE_EVAL_TIME           2
 MIN_ELEPROC                     0
 PARALLEL_REDIST                 Dynamic
 GHOSTING_STRATEGY               redundant_master
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RANDSEED                        -1
 RESTART                         0
 SHAPEFCT                        Polynomial

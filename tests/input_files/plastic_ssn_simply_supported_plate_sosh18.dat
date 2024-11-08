@@ -3,9 +3,9 @@ Elasto-Plastic solid-shell sosh18 (EAS/DSG)
 Semi-smooth Newton type plasticity
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
+-----------------------------------------------------------------PROBLEM TYPE
 RESTART                         0
-PROBLEMTYP                      Structure
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1

@@ -9,8 +9,8 @@ Tesselation approach failes due to discarded integration cells, set VOLUME-tol t
 //ELEMENTS                      8640
 //NODES                         9590
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_XFEM
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

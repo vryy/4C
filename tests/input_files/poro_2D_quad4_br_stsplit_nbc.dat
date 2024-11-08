@@ -53,8 +53,8 @@ RESULTSEVRY                           1
 LINEAR_SOLVER                   1
 SECONDORDER                     no
 CONTIPARTINT                    yes
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelasticity
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelasticity
 RESTART                         0
 //!RESTART                      40
 SHAPEFCT                        Polynomial

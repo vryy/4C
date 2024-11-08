@@ -26,8 +26,8 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 WRITE_TO_FILE                   No
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RANDSEED                        -1
 RESTART                         0
 SHAPEFCT                        Polynomial

@@ -12,8 +12,8 @@ NUMALEDIS                       1
 NUMARTNETDIS                    1
 NUMTHERMDIS                     1
 NUMAIRWAYSDIS                   1
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Porous_Structure_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Porous_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1

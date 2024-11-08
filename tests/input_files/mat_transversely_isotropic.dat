@@ -4,8 +4,8 @@
 DIM           3
 -----------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYP                      Statics

@@ -4,8 +4,8 @@ straight beam subject to a sinusoidal lineload (x/y/z force)
 //  - tangent-based, weak Kirchhoff beam elements (WK-TAN)
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                             3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 ------------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

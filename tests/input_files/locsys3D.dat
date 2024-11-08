@@ -12,8 +12,8 @@ Simple test case for 3D LocSys Manager with structural mechanics
 //ELEMENTS    48
 //NODES       108
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------IO
 STDOUTEVRY                      0
 STRUCT_STRESS                   Cauchy

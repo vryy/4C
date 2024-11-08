@@ -14,8 +14,8 @@ STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard

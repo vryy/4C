@@ -64,7 +64,7 @@ Note that the value for ``step`` must be given in the file ``<output_basename>.c
 
 .. note::
 
-   - The parameters RESTART and RESTARTTIME in the PROBLEMTYP section
+   - The parameters RESTART and RESTARTTIME in the PROBLEM TYPE section
      are not needed anymore, and will probably vanish soon.
    - The parameter MAXTIME indicates the maximum time of all simulations,
      it is NOT a step time, so be aware that MAXTIME in the subsequent simulation

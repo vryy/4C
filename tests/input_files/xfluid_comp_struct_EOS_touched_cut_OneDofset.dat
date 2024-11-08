@@ -5,8 +5,8 @@ tests the ghost-penalty stabilization in case that an element is just touched at
 //ELEMENTS                      10544
 //NODES                         21524
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_XFEM
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

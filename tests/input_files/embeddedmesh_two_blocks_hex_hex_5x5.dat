@@ -4,8 +4,8 @@ General Data File BACI
 ---------------------------------------------------------------------------TITLE
 created by pre_exodus
 Cut Cartesian background mesh with a HEX cut mesh
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 INTERVAL_STEPS                        1
 OUTPUT_DATA_FORMAT                    binary

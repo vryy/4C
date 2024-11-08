@@ -4,8 +4,8 @@ Testing thermo-fluid-structure interaction (TFSI): flow past a plate with heatin
 //ELEMENTS    2100
 //NODES       2912
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo_Fluid_Structure_Interaction
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Thermo_Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO

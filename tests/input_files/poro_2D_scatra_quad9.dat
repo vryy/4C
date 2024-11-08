@@ -53,8 +53,8 @@ NORM_INC                        AbsGlobal
 NORM_RESF                       AbsGlobal
 TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-06
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelastic_scalar_transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelastic_scalar_transport
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC

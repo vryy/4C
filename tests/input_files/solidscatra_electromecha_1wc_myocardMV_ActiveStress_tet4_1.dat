@@ -6,8 +6,8 @@ Test for ssi problem with the option SCATRA_FROM_RESTART_FILE
 //ELEMENTS                      4153
 //NODES                         928
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Cardiac_Monodomain
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Cardiac_Monodomain
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2

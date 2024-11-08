@@ -8,8 +8,8 @@ should give same results as corresponding monolithic test
 //ELEMENTS                      130
 //NODES                         154
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelastic_scalar_transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelastic_scalar_transport
 RESTART                         0
 SHAPEFCT                        Polynomial
 ---------------------------------------------------------------FLUID DYNAMIC

@@ -6,8 +6,8 @@ MATERIALS                       2
 NUMDF                           6
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1

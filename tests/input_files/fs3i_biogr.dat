@@ -88,8 +88,8 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Biofilm_Fluid_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Biofilm_Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------------FS3I DYNAMIC

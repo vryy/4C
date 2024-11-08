@@ -4,8 +4,8 @@ compressible poroelastic media, solved monolithically via XFEM, tests the genera
 //ELEMENTS                      4736
 //NODES                         9732
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Poro_Structure_Interaction_XFEM
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Poro_Structure_Interaction_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

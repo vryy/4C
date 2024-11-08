@@ -3,8 +3,8 @@ Embedded mesh problem of a block under compression. Its surface is discretized
 using NURBS27 solid elements. The bulk is discretized with HEX8 elements. Both
 discretizations are coupled on a circular interface using the mortar method with
 penalty regularization.
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 SHAPEFCT                              Nurbs
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT

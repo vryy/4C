@@ -2,8 +2,8 @@
 //ELEMENTS                      708
 //NODES                         1592
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Ale
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Ale
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0

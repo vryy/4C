@@ -2,8 +2,8 @@
 Simple test that tests a HEX27 pressure based solid poro element.
 One fluid phase in elastic porous medium.
 Monolithic algorithm.
-------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Poroelasticity
+------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Multiphase_Poroelasticity
 RESTART                         0
 ------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard

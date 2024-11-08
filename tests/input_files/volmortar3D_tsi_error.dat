@@ -7,8 +7,8 @@ DIM           3
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC

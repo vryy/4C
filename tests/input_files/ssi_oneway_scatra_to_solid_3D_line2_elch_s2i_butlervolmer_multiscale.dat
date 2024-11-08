@@ -15,8 +15,8 @@ Academic test case for multi-scale electrochemistry:
 //ELEMENTS    29
 //NODES       30
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
 STRUCT_STRESS                   Cauchy
 ------------------------------------------------STRUCTURAL DYNAMIC

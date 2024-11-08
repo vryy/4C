@@ -9,8 +9,8 @@ NODES                           11
 DIM                             1
 MATERIALS                       4
 NUMDF                           1
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
