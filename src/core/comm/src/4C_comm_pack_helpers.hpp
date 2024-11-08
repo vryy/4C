@@ -71,36 +71,15 @@ namespace Core::Communication
   //! @name Routines to help pack stuff into a char vector
 
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to the PackBuffer.
    *
-   * This method is templated for all basic types int char double enum bool etc.
-   *
-   * \param[in,out] data char string stuff shall be added to
-   * \param[in] stuff basic data type (float int double char etc) that get's added to stuff
-   *
-   * \note To be more precise, you can use this template for types of data that sizeof(kind) works
-   * for. Do not use for classes or structs or stl containers!
+   * This function works for all trivially copyable types, i.e. types that can be copied with
+   * memcpy(). This includes all POD types, but also some user-defined types.
    */
-  inline void add_to_pack(PackBuffer& data, const int& stuff) { data.add_to_pack(stuff); }
-
-  inline void add_to_pack(PackBuffer& data, const unsigned& stuff) { data.add_to_pack(stuff); }
-
-  inline void add_to_pack(PackBuffer& data, const double& stuff) { data.add_to_pack(stuff); }
-
-  /*!
-   * \brief Add scoped enums to the end of a char vector data
-   *
-   * \param[in,out] data Pack buffer where stuff should be added
-   * \param[in] stuff scoped enum to be added to the data
-   *
-   * \note This method is template for scoped enums only. Unscoped enums are currently usually
-   * unpacked as ints and then converted, so they are excluded here.
-   */
-  template <class T,
-      typename Enable = typename std::enable_if<Internal::is_enum_class<T>::value, void>::type>
-  void add_to_pack(PackBuffer& data, const T& stuff)
+  template <typename T, std::enable_if_t<std::is_trivially_copyable_v<T>, int> = 0>
+  inline void add_to_pack(PackBuffer& data, const T& stuff)
   {
-    data.add_to_pack<T>(stuff);
+    data.add_to_pack(stuff);
   }
 
   /*!
@@ -111,8 +90,8 @@ namespace Core::Communication
    * \param[in] stuff  ptr to stuff that has length stuffsize (in byte)
    * \param[in] stuffsize length of stuff in byte
    */
-  template <typename Kind>
-  void add_to_pack(PackBuffer& data, const Kind* stuff, const int stuffsize)
+  template <typename T, std::enable_if_t<std::is_trivially_copyable_v<T>, int> = 0>
+  void add_to_pack(PackBuffer& data, const T* stuff, const int stuffsize)
   {
     data.add_to_pack(stuff, stuffsize);
   }
@@ -361,7 +340,7 @@ namespace Core::Communication
   /**
    * Template to forward to the implementation on UnpackBuffer.
    */
-  template <typename T, std::enable_if_t<std::is_pod_v<T>, int> = 0>
+  template <typename T, std::enable_if_t<std::is_trivially_copyable_v<T>, int> = 0>
   void extract_from_pack(UnpackBuffer& buffer, T& stuff)
   {
     buffer.extract_from_pack(stuff);
@@ -370,7 +349,7 @@ namespace Core::Communication
   /**
    * Template to forward to the implementation on UnpackBuffer.
    */
-  template <typename T, std::enable_if_t<std::is_pod_v<T>, int> = 0>
+  template <typename T, std::enable_if_t<std::is_trivially_copyable_v<T>, int> = 0>
   void extract_from_pack(UnpackBuffer& buffer, T* stuff, std::size_t stuff_size)
   {
     buffer.extract_from_pack(stuff, stuff_size);

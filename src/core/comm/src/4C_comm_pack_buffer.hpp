@@ -121,7 +121,7 @@ namespace Core::Communication
      * type T.
      */
     template <typename T>
-    std::enable_if_t<std::is_pod_v<T>, void> extract_from_pack(T& stuff)
+    std::enable_if_t<std::is_trivially_copyable_v<T>, void> extract_from_pack(T& stuff)
     {
       peek(stuff);
       position_ += sizeof(T);
@@ -143,7 +143,7 @@ namespace Core::Communication
      * Get @p stuff but also leave it in the buffer for the next extraction.
      */
     template <typename T>
-    std::enable_if_t<std::is_pod_v<T>, void> peek(T& stuff) const
+    std::enable_if_t<std::is_trivially_copyable_v<T>, void> peek(T& stuff) const
     {
       memcpy(&stuff, &data_[position_], sizeof(T));
     }
