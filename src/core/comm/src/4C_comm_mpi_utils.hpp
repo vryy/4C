@@ -17,6 +17,7 @@
 #include <Epetra_MpiComm.h>
 #include <mpi.h>
 
+#include <functional>
 #include <map>
 #include <numeric>
 #include <set>
@@ -30,38 +31,54 @@ namespace Core::Communication
   //! Merge map @p map_in (key of type @p T and value of type @p U) from all procs to a merged
   //! map (key of type @p T and value of type @p U). It is distributed to all procs.
   template <typename T, typename U>
-  std::map<T, U> all_gather(const std::map<T, U>& map_in, const Epetra_Comm& comm);
+  std::map<T, U> all_reduce(const std::map<T, U>& map_in, const Epetra_Comm& comm);
 
   //! Merge map @p unordered map_in (key of type @p T and value of type @p U) from all procs to a
   //! merged unordered map (key of type @p T and value of type @p U). It is distributed to all
   //! procs.
   template <typename T, typename U>
-  std::unordered_map<T, U> all_gather(
+  std::unordered_map<T, U> all_reduce(
       const std::unordered_map<T, U>& map_in, const Epetra_Comm& comm);
 
   //! Merge unordered multimap @p map_in (key of type @p T and value of type @p U) from all procs
   //! to a merged unordered multimap (key of type @p T and value of type @p U). It is distributed
   //! to all procs.
   template <typename T, typename U>
-  std::unordered_multimap<T, U> all_gather(
+  std::unordered_multimap<T, U> all_reduce(
       const std::unordered_multimap<T, U>& map_in, const Epetra_Comm& comm);
 
   //! Merge vector of pairs @p pairs_in (items of type @p T and @p U) from all procs to a merged
   //! vector (items of type @p T and @p U). The merged items are in an unspecified order. It is
   //! distributed to all procs.
   template <typename T, typename U>
-  std::vector<std::pair<T, U>> all_gather(
+  std::vector<std::pair<T, U>> all_reduce(
       const std::vector<std::pair<T, U>>& pairs_in, const Epetra_Comm& comm);
 
   //! Merge @p set_in (items of type @p T) from all procs to a merged set (items of type @p T). It
   //! is distributed to all procs.
   template <typename T>
-  std::set<T> all_gather(const std::set<T>& set_in, const Epetra_Comm& comm);
+  std::set<T> all_reduce(const std::set<T>& set_in, const Epetra_Comm& comm);
 
   //! Merge vector @p vec_in (items of type @p T) from all procs to a merged vector (items of type
   //! @p T). The items of are in an unspecified order. The result is distributed to all procs.
   template <typename T>
-  std::vector<T> all_gather(const std::vector<T>& vec_in, const Epetra_Comm& comm);
+  std::vector<T> all_reduce(const std::vector<T>& vec_in, const Epetra_Comm& comm);
+
+  /**
+   * Perform an all-reduce operation on a value @p value using the reduction operation @p
+   * reduction_op. The result is distributed to all procs.
+   */
+  template <typename T>
+  T all_reduce(const T& value, const std::function<T(const T&, const T&)>& reduction_op,
+      const Epetra_Comm& comm);
+
+  /**
+   * Gather a value @p value from all procs to a vector of values. The result is distributed to all
+   * procs.
+   */
+  template <typename T>
+  std::vector<T> all_gather(const T& value, const Epetra_Comm& comm);
+
 }  // namespace Core::Communication
 
 /*----------------------------------------------------------------------*/
@@ -70,7 +87,7 @@ namespace Core::Communication::Internal
 {
   //! Broadcast a map or vector<pair>
   template <typename T, typename U, typename M>
-  void all_gather_map_like_to_vectors(
+  void all_reduce_map_like_to_vectors(
       const M& map_in, std::vector<T>& vec_out1, std::vector<U>& vec_out2, const Epetra_Comm& comm)
   {
     // split map or std::vector<std::pair> into two vectors
@@ -81,8 +98,8 @@ namespace Core::Communication::Internal
       my_gid_vec1.emplace_back(pair.first);
       my_gid_vec2.emplace_back(pair.second);
     }
-    std::vector<T> vec1 = all_gather(my_gid_vec1, comm);
-    std::vector<U> vec2 = all_gather(my_gid_vec2, comm);
+    std::vector<T> vec1 = all_reduce(my_gid_vec1, comm);
+    std::vector<U> vec2 = all_reduce(my_gid_vec2, comm);
 
     FOUR_C_ASSERT(vec1.size() == vec2.size(), "Vectors must have the same length.");
 
@@ -98,12 +115,12 @@ namespace Core::Communication::Internal
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::map<T, U> Core::Communication::all_gather(
+std::map<T, U> Core::Communication::all_reduce(
     const std::map<T, U>& map_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
-  Internal::all_gather_map_like_to_vectors<T, U>(map_in, vec1, vec2, comm);
+  Internal::all_reduce_map_like_to_vectors<T, U>(map_in, vec1, vec2, comm);
   std::map<T, U> map_out;
   for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
   return map_out;
@@ -112,12 +129,12 @@ std::map<T, U> Core::Communication::all_gather(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::unordered_map<T, U> Core::Communication::all_gather(
+std::unordered_map<T, U> Core::Communication::all_reduce(
     const std::unordered_map<T, U>& map_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
-  Internal::all_gather_map_like_to_vectors<T, U>(map_in, vec1, vec2, comm);
+  Internal::all_reduce_map_like_to_vectors<T, U>(map_in, vec1, vec2, comm);
   std::unordered_map<T, U> map_out;
   for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
   return map_out;
@@ -126,12 +143,12 @@ std::unordered_map<T, U> Core::Communication::all_gather(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::unordered_multimap<T, U> Core::Communication::all_gather(
+std::unordered_multimap<T, U> Core::Communication::all_reduce(
     const std::unordered_multimap<T, U>& map_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
-  Internal::all_gather_map_like_to_vectors<T, U>(map_in, vec1, vec2, comm);
+  Internal::all_reduce_map_like_to_vectors<T, U>(map_in, vec1, vec2, comm);
   std::unordered_multimap<T, U> map_out;
   for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
   return map_out;
@@ -140,12 +157,12 @@ std::unordered_multimap<T, U> Core::Communication::all_gather(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::vector<std::pair<T, U>> Core::Communication::all_gather(
+std::vector<std::pair<T, U>> Core::Communication::all_reduce(
     const std::vector<std::pair<T, U>>& pairs_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
-  Internal::all_gather_map_like_to_vectors<T, U>(pairs_in, vec1, vec2, comm);
+  Internal::all_reduce_map_like_to_vectors<T, U>(pairs_in, vec1, vec2, comm);
   std::vector<std::pair<T, U>> pairs_out;
   for (unsigned i = 0; i < vec1.size(); ++i)
     pairs_out.emplace_back(std::make_pair(vec1[i], vec2[i]));
@@ -155,11 +172,11 @@ std::vector<std::pair<T, U>> Core::Communication::all_gather(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
-std::set<T> Core::Communication::all_gather(const std::set<T>& set_in, const Epetra_Comm& comm)
+std::set<T> Core::Communication::all_reduce(const std::set<T>& set_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec_in, vec_out;
   for (const auto& val : set_in) vec_in.emplace_back(val);
-  vec_out = all_gather(vec_in, comm);
+  vec_out = all_reduce(vec_in, comm);
   std::set<T> set_out;
   for (const auto& val : vec_out) set_out.insert(val);
   return set_out;
@@ -168,15 +185,40 @@ std::set<T> Core::Communication::all_gather(const std::set<T>& set_in, const Epe
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
-std::vector<T> Core::Communication::all_gather(
+std::vector<T> Core::Communication::all_reduce(
     const std::vector<T>& vec_in, const Epetra_Comm& comm)
+{
+  std::vector<std::vector<T>> gathered = all_gather(vec_in, comm);
+
+  // Merge the data from all processors into a single vector
+  std::vector<T> all_vectors;
+  for (auto& received : gathered)
+  {
+    all_vectors.insert(all_vectors.end(), received.begin(), received.end());
+  }
+
+  return all_vectors;
+}
+
+
+template <typename T>
+T Core::Communication::all_reduce(const T& value,
+    const std::function<T(const T&, const T&)>& reduction_op, const Epetra_Comm& comm)
+{
+  std::vector<T> all_values = all_gather(value, comm);
+  return std::accumulate(all_values.cbegin() + 1, all_values.cend(), all_values[0], reduction_op);
+}
+
+
+template <typename T>
+std::vector<T> Core::Communication::all_gather(const T& value, const Epetra_Comm& comm)
 {
   MPI_Comm mpi_comm = dynamic_cast<const Epetra_MpiComm&>(comm).Comm();
   const int n_procs = comm.NumProc();
 
   // Use PackBuffer to serialize the data into a vector<char>
   PackBuffer buffer;
-  add_to_pack(buffer, vec_in);
+  add_to_pack(buffer, value);
 
   int local_size = buffer().size();
   std::vector<int> size_all_data(n_procs, 0);
@@ -198,20 +240,18 @@ std::vector<T> Core::Communication::all_gather(
   FOUR_C_ASSERT(err == MPI_SUCCESS, "MPI_Allgatherv failed.");
 
   // Merge the data from all processors into a single vector
-  std::vector<T> all_vectors;
+  std::vector<T> all_data(n_procs);
   for (int i = 0; i < n_procs; ++i)
   {
     // Since UnpackBuffer cannot view data, we need to make a copy of the data.
     std::vector<char> local_buffer(combined_buffer.begin() + accumulated_offset[i],
         combined_buffer.begin() + accumulated_offset[i] + size_all_data[i]);
 
-    std::vector<T> received;
     UnpackBuffer unpack_buffer(local_buffer);
-    extract_from_pack(unpack_buffer, received);
-    all_vectors.insert(all_vectors.end(), received.begin(), received.end());
+    extract_from_pack(unpack_buffer, all_data[i]);
   }
 
-  return all_vectors;
+  return all_data;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -1195,7 +1195,7 @@ namespace Core::IO
       FOUR_C_ASSERT((comm_.MyPID() == 0 || excludepositions_.empty()), "Internal error.");
 
       // All-gather does the correct thing becuase the maps are empty on all ranks > 0
-      excludepositions_ = Core::Communication::all_gather(excludepositions_, comm_);
+      excludepositions_ = Core::Communication::all_reduce(excludepositions_, comm_);
     }
 
     // Now finally find the section names. We have to do this on all
