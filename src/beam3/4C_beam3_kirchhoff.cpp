@@ -395,8 +395,8 @@ void Discret::Elements::Beam3k::unpack(Core::Communication::UnpackBuffer& buffer
   Beam3Base::unpack(base_buffer);
 
   // extract all class variables of beam3k element
-  use_fad_ = extract_int(buffer);
-  isinit_ = extract_int(buffer);
+  extract_from_pack(buffer, use_fad_);
+  extract_from_pack(buffer, isinit_);
   extract_from_pack(buffer, Tref_);
   extract_from_pack(buffer, t_);
   extract_from_pack(buffer, theta0_);
@@ -408,8 +408,8 @@ void Discret::Elements::Beam3k::unpack(Core::Communication::UnpackBuffer& buffer
   extract_from_pack(buffer, jacobi2_);
   extract_from_pack(buffer, jacobi_cp_);
   extract_from_pack(buffer, jacobi2_cp_);
-  rotvec_ = extract_int(buffer);
-  weakkirchhoff_ = extract_int(buffer);
+  extract_from_pack(buffer, rotvec_);
+  extract_from_pack(buffer, weakkirchhoff_);
   extract_from_pack(buffer, eint_);
   extract_from_pack(buffer, ekin_);
   extract_from_pack(buffer, qconvmass_);

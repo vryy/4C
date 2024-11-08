@@ -124,11 +124,11 @@ void Discret::Elements::StructuralSurface::pack(Core::Communication::PackBuffer&
   // add base class Core::Elements::FaceElement
   Core::Elements::FaceElement::pack(data);
   // add distype_
-  add_to_pack(data, (int)distype_);
+  add_to_pack(data, distype_);
   // add numdofpernode_
   add_to_pack(data, numdofpernode_);
   // add gaussrule_
-  add_to_pack(data, (int)gaussrule_);
+  add_to_pack(data, gaussrule_);
   return;
 }
 
@@ -147,11 +147,11 @@ void Discret::Elements::StructuralSurface::unpack(Core::Communication::UnpackBuf
   Core::Elements::FaceElement::unpack(base_buffer);
 
   // distype_
-  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, distype_);
   // numdofpernode_
-  numdofpernode_ = extract_int(buffer);
+  extract_from_pack(buffer, numdofpernode_);
   // gaussrule_
-  gaussrule_ = static_cast<Core::FE::GaussRule2D>(extract_int(buffer));
+  extract_from_pack(buffer, gaussrule_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 

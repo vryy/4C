@@ -308,9 +308,6 @@ void Discret::Elements::ElemagDiffBoundary::unpack(Core::Communication::UnpackBu
   Core::Communication::UnpackBuffer base_buffer(basedata);
   Element::unpack(base_buffer);
 
-  // distype
-  // distype_ = static_cast<Core::FE::CellType>( extract_int(position,data) );
-
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;

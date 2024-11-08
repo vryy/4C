@@ -23,7 +23,7 @@ void Mat::CylinderCoordinateSystemManager::pack(Core::Communication::PackBuffer&
   add_to_pack(data, radial_);
   add_to_pack(data, axial_);
   add_to_pack(data, circumferential_);
-  add_to_pack(data, static_cast<int>(is_defined_));
+  add_to_pack(data, is_defined_);
 }
 
 void Mat::CylinderCoordinateSystemManager::unpack(Core::Communication::UnpackBuffer& buffer)
@@ -31,7 +31,7 @@ void Mat::CylinderCoordinateSystemManager::unpack(Core::Communication::UnpackBuf
   extract_from_pack(buffer, radial_);
   extract_from_pack(buffer, axial_);
   extract_from_pack(buffer, circumferential_);
-  is_defined_ = static_cast<bool>(extract_int(buffer));
+  extract_from_pack(buffer, is_defined_);
 }
 
 void Mat::CylinderCoordinateSystemManager::read_from_element_line_definition(

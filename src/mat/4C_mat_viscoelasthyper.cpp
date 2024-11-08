@@ -163,12 +163,12 @@ void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
   if (viscofract_)
   {
     // check if history exists
-    add_to_pack(data, (int)(histfractartstresslastall_ != nullptr));
+    add_to_pack(data, (histfractartstresslastall_ != nullptr));
     if (!(int)(histfractartstresslastall_ != nullptr))
       FOUR_C_THROW("Something got wrong with your history data.");
 
     // pack stepsize
-    add_to_pack(data, (int)histfractartstresslastall_->at(0).size());
+    add_to_pack(data, histfractartstresslastall_->at(0).size());
     // pack history values
     for (int gp = 0; gp < (int)histfractartstresslastall_->size(); ++gp)
       for (int step = 0; step < (int)histfractartstresslastall_->at(gp).size(); ++step)
@@ -215,10 +215,10 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   }
 
   summandProperties_.unpack(buffer);
-  isovisco_ = (bool)extract_int(buffer);
-  viscogenmax_ = (bool)extract_int(buffer);
-  viscogeneralizedgenmax_ = (bool)extract_int(buffer);
-  viscofract_ = (bool)extract_int(buffer);
+  extract_from_pack(buffer, isovisco_);
+  extract_from_pack(buffer, viscogenmax_);
+  extract_from_pack(buffer, viscogeneralizedgenmax_);
+  extract_from_pack(buffer, viscofract_);
 
   anisotropy_.unpack_anisotropy(buffer);
 
@@ -301,13 +301,15 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
     if (viscofract_)
     {
       // check if history data is saved
-      bool have_historyalldata = (bool)extract_int(buffer);
+      bool have_historyalldata;
+      extract_from_pack(buffer, have_historyalldata);
       if (!have_historyalldata) FOUR_C_THROW("Something got wrong with your history data.");
 
       histfractartstresscurr_ =
           std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
 
-      int histfractartstressall_stepsize = extract_int(buffer);
+      int histfractartstressall_stepsize;
+      extract_from_pack(buffer, histfractartstressall_stepsize);
       histfractartstresslastall_ =
           std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<6, 1>>>>(
               histsize, std::vector<Core::LinAlg::Matrix<6, 1>>(histfractartstressall_stepsize));

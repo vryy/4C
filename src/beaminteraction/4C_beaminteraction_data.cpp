@@ -240,7 +240,7 @@ void BEAMINTERACTION::Data::UnBindEventData::unpack(Core::Communication::UnpackB
 
   extract_from_pack(buffer, eletoupdate_);
 
-  linkertype_ = static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(extract_int(buffer));
+  extract_from_pack(buffer, linkertype_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 

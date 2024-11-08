@@ -96,23 +96,23 @@ void Mixture::MixtureRule::pack_mixture_rule(Core::Communication::PackBuffer& da
   add_to_pack(data, numgp_);
 
   // Add flag whether it has already read the element
-  add_to_pack(data, static_cast<int>(has_read_element_));
+  add_to_pack(data, has_read_element_);
 
   // Add flags whether it is setup
-  add_to_pack(data, static_cast<int>(is_setup_));
+  add_to_pack(data, is_setup_);
 }
 
 // Unpack the mixture rule
 void Mixture::MixtureRule::unpack_mixture_rule(Core::Communication::UnpackBuffer& buffer)
 {
   // Read initialized flag
-  numgp_ = extract_int(buffer);
+  extract_from_pack(buffer, numgp_);
 
   // Read element read flag
-  has_read_element_ = (bool)extract_int(buffer);
+  extract_from_pack(buffer, has_read_element_);
 
   // Read is setup flag
-  is_setup_ = (bool)extract_int(buffer);
+  extract_from_pack(buffer, is_setup_);
 }
 
 // reads the element definition and set up all quantities

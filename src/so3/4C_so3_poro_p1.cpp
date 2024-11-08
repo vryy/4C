@@ -46,7 +46,7 @@ void Discret::Elements::So3PoroP1<So3Ele, distype>::pack(
   int type = unique_par_object_id();
   add_to_pack(data, type);
 
-  data.add_to_pack<int>(is_init_porosity_);
+  data.add_to_pack(is_init_porosity_);
 
   if (is_init_porosity_) add_to_pack(data, *init_porosity_);
 
@@ -60,7 +60,7 @@ void Discret::Elements::So3PoroP1<So3Ele, distype>::unpack(
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
-  is_init_porosity_ = extract_int(buffer);
+  extract_from_pack(buffer, is_init_porosity_);
 
   if (is_init_porosity_)
   {

@@ -280,7 +280,7 @@ void Discret::Elements::PoroFluidMultiPhase::unpack(Core::Communication::UnpackB
   Element::unpack(base_buffer);
 
   // extract internal data
-  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, distype_);
   extract_from_pack(buffer, numdofpernode_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");

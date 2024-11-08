@@ -184,7 +184,7 @@ void Discret::Elements::SoTet4::pack(Core::Communication::PackBuffer& data) cons
   add_to_pack(data, V_);
 
   // Pack prestress
-  add_to_pack(data, static_cast<int>(pstype_));
+  add_to_pack(data, pstype_);
   add_to_pack(data, pstime_);
   add_to_pack(data, time_);
   if (Prestress::is_mulf(pstype_))
@@ -215,7 +215,7 @@ void Discret::Elements::SoTet4::unpack(Core::Communication::UnpackBuffer& buffer
   extract_from_pack(buffer, V_);
 
   // Extract prestress
-  pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(buffer));
+  extract_from_pack(buffer, pstype_);
   extract_from_pack(buffer, pstime_);
   extract_from_pack(buffer, time_);
   if (Prestress::is_mulf(pstype_))

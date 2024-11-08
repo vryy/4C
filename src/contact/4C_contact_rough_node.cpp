@@ -126,12 +126,12 @@ void CONTACT::RoughNode::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   CONTACT::Node::unpack(basedata_buffer);
 
-  hurstexponentfunction_ = extract_int(buffer);
-  initialtopologystddeviationfunction_ = extract_int(buffer);
-  resolution_ = extract_int(buffer);
-  randomtopologyflag_ = extract_int(buffer);
-  randomseedflag_ = extract_int(buffer);
-  randomgeneratorseed_ = extract_int(buffer);
+  extract_from_pack(buffer, hurstexponentfunction_);
+  extract_from_pack(buffer, initialtopologystddeviationfunction_);
+  extract_from_pack(buffer, resolution_);
+  extract_from_pack(buffer, randomtopologyflag_);
+  extract_from_pack(buffer, randomseedflag_);
+  extract_from_pack(buffer, randomgeneratorseed_);
 
   hurstExponent_ = extract_double(buffer);
   initialTopologyStdDeviation_ = extract_double(buffer);

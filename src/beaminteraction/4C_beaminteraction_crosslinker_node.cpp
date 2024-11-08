@@ -163,7 +163,8 @@ void CrossLinking::CrosslinkerNode::unpack(Core::Communication::UnpackBuffer& bu
   Core::Nodes::Node::unpack(basedata_buffer);
 
   // mat
-  bool hasmat = extract_int(buffer);
+  bool hasmat;
+  extract_from_pack(buffer, hasmat);
   if (hasmat)
   {
     std::vector<char> tmp;

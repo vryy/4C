@@ -132,7 +132,7 @@ void Discret::Elements::So3Poro<So3Ele, distype>::unpack(Core::Communication::Un
   for (int i = 0; i < size; ++i) extract_from_pack(buffer, xsi_[i]);
 
   // isNurbs_
-  isNurbs_ = static_cast<bool>(extract_int(buffer));
+  extract_from_pack(buffer, isNurbs_);
 
   // anisotropic_permeability_directions_
   size = 0;

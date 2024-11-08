@@ -593,8 +593,8 @@ void Discret::Elements::Transport::unpack(Core::Communication::UnpackBuffer& buf
   extract_from_pack(buffer, name_);
   extract_from_pack(buffer, vis_map_);
   extract_from_pack(buffer, numdofpernode_);
-  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
-  impltype_ = static_cast<Inpar::ScaTra::ImplType>(extract_int(buffer));
+  extract_from_pack(buffer, distype_);
+  extract_from_pack(buffer, impltype_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }

@@ -203,7 +203,7 @@ void Discret::Elements::Elemag::unpack(Core::Communication::UnpackBuffer& buffer
   Element::unpack(base_buffer);
 
   // distype
-  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, distype_);
   int val = 0;
   extract_from_pack(buffer, val);
   FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
@@ -376,9 +376,6 @@ void Discret::Elements::ElemagBoundary::unpack(Core::Communication::UnpackBuffer
   extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer base_buffer(basedata);
   Element::unpack(base_buffer);
-
-  // distype
-  // distype_ = static_cast<Core::FE::CellType>( extract_int(position,data) );
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 

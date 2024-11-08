@@ -231,21 +231,21 @@ void Mortar::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Core::Nodes::Node::unpack(basedata_buffer);
   // isslave_
-  isslave_ = extract_int(buffer);
+  extract_from_pack(buffer, isslave_);
   // istiedslave_
-  istiedslave_ = extract_int(buffer);
+  extract_from_pack(buffer, istiedslave_);
   // isonbound_
-  isonbound_ = extract_int(buffer);
+  extract_from_pack(buffer, isonbound_);
   // isonedge_
-  isonedge_ = extract_int(buffer);
+  extract_from_pack(buffer, isonedge_);
   // isoncorner_
-  isoncorner_ = extract_int(buffer);
+  extract_from_pack(buffer, isoncorner_);
   // isdbc_
-  isdbc_ = extract_int(buffer);
+  extract_from_pack(buffer, isdbc_);
   // dbcdofs_
-  dbcdofs_[0] = extract_int(buffer);
-  dbcdofs_[1] = extract_int(buffer);
-  dbcdofs_[2] = extract_int(buffer);
+  extract_from_pack(buffer, dbcdofs_[0]);
+  extract_from_pack(buffer, dbcdofs_[1]);
+  extract_from_pack(buffer, dbcdofs_[2]);
   // dentries_
   extract_from_pack(buffer, dentries_);
   // dofs_
@@ -255,14 +255,15 @@ void Mortar::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   // uold_
   extract_from_pack(buffer, uold_, 3 * sizeof(double));
   // hasproj_
-  hasproj_ = extract_int(buffer);
+  extract_from_pack(buffer, hasproj_);
   // hassegment_
-  hassegment_ = extract_int(buffer);
+  extract_from_pack(buffer, hassegment_);
   // nurbsw_
   nurbsw_ = extract_double(buffer);
 
   // data_
-  bool hasdata = extract_int(buffer);
+  bool hasdata;
+  extract_from_pack(buffer, hasdata);
   if (hasdata)
   {
     modata_ = std::make_shared<Mortar::NodeDataContainer>();

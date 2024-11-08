@@ -176,7 +176,7 @@ void Discret::Elements::SoHex27::pack(Core::Communication::PackBuffer& data) con
   for (int i = 0; i < size; ++i) add_to_pack(data, invJ_[i]);
 
   // Pack prestress_
-  add_to_pack(data, static_cast<int>(pstype_));
+  add_to_pack(data, pstype_);
   add_to_pack(data, pstime_);
   add_to_pack(data, time_);
   if (Prestress::is_mulf(pstype_))
@@ -210,7 +210,7 @@ void Discret::Elements::SoHex27::unpack(Core::Communication::UnpackBuffer& buffe
   for (int i = 0; i < size; ++i) extract_from_pack(buffer, invJ_[i]);
 
   // prestress_
-  pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(buffer));
+  extract_from_pack(buffer, pstype_);
   extract_from_pack(buffer, pstime_);
   extract_from_pack(buffer, time_);
   if (Prestress::is_mulf(pstype_))

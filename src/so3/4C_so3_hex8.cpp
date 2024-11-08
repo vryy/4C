@@ -218,7 +218,7 @@ void Discret::Elements::SoHex8::pack(Core::Communication::PackBuffer& data) cons
   // line search
   add_to_pack(data, old_step_length_);
   // Pack prestress type
-  add_to_pack(data, static_cast<int>(pstype_));
+  add_to_pack(data, pstype_);
   add_to_pack(data, pstime_);
   add_to_pack(data, time_);
   if (Prestress::is_mulf(pstype_))
@@ -252,17 +252,17 @@ void Discret::Elements::SoHex8::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   SoBase::unpack(basedata_buffer);
   // eastype_
-  eastype_ = static_cast<EASType>(extract_int(buffer));
+  extract_from_pack(buffer, eastype_);
   // neas_
   extract_from_pack(buffer, neas_);
   // analyticalmaterialtangent_
-  analyticalmaterialtangent_ = extract_int(buffer);
+  extract_from_pack(buffer, analyticalmaterialtangent_);
   // eas data
   unpack_eas_data(buffer);
   // line search
   extract_from_pack(buffer, old_step_length_);
   // Extract prestress
-  pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(buffer));
+  extract_from_pack(buffer, pstype_);
   extract_from_pack(buffer, pstime_);
   extract_from_pack(buffer, time_);
   if (Prestress::is_mulf(pstype_))

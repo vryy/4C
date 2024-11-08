@@ -142,7 +142,7 @@ void Discret::Elements::RedInterAcinarDep::pack(Core::Communication::PackBuffer&
 
   std::map<std::string, double>::const_iterator it;
 
-  add_to_pack(data, (int)(elem_params_.size()));
+  add_to_pack(data, (elem_params_.size()));
   for (it = elem_params_.begin(); it != elem_params_.end(); it++)
   {
     add_to_pack(data, it->first);

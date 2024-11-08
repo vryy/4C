@@ -105,7 +105,7 @@ void Mat::Damage::pack(Core::Communication::PackBuffer& data) const
     add_to_pack(data, strainbarpllast_.at(var));
     add_to_pack(data, isohardvarlast_.at(var));
     add_to_pack(data, damagelast_.at(var));
-    add_to_pack(data, static_cast<int>(failedlast_.at(var)));
+    add_to_pack(data, failedlast_.at(var));
   }
 
   add_to_pack(data, plastic_step_);

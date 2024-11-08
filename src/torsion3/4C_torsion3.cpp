@@ -146,7 +146,7 @@ void Discret::Elements::Torsion3::unpack(Core::Communication::UnpackBuffer& buff
   extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer base_buffer(basedata);
   Element::unpack(base_buffer);
-  bendingpotential_ = static_cast<BendingPotential>(extract_int(buffer));
+  extract_from_pack(buffer, bendingpotential_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }

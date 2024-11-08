@@ -225,7 +225,7 @@ void Discret::Elements::Shell7p::pack(Core::Communication::PackBuffer& data) con
   // add base class Element
   Core::Elements::Element::pack(data);
   // discretization type
-  add_to_pack(data, (int)distype_);
+  add_to_pack(data, distype_);
   // element technology
   add_to_pack(data, eletech_);
   // thickness in reference frame
@@ -251,7 +251,7 @@ void Discret::Elements::Shell7p::unpack(Core::Communication::UnpackBuffer& buffe
   Core::Communication::UnpackBuffer base_buffer(basedata);
   Element::unpack(base_buffer);
   // discretization type
-  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, distype_);
   // element technology
   extract_from_pack(buffer, eletech_);
   // thickness in reference frame

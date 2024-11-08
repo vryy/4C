@@ -128,9 +128,9 @@ void BEAMINTERACTION::BeamLink::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // isinit_
-  isinit_ = extract_int(buffer);
+  extract_from_pack(buffer, isinit_);
   // issetup
-  issetup_ = extract_int(buffer);
+  extract_from_pack(buffer, issetup_);
   // id_
   extract_from_pack(buffer, id_);
 
@@ -141,7 +141,7 @@ void BEAMINTERACTION::BeamLink::unpack(Core::Communication::UnpackBuffer& buffer
   // bspotpos2
   extract_from_pack(buffer, bspotpos2_);
   // linkertype
-  linkertype_ = static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(extract_int(buffer));
+  extract_from_pack(buffer, linkertype_);
   // timelinkwasset
   extract_from_pack(buffer, timelinkwasset_);
   // reflength

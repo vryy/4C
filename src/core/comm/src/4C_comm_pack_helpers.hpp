@@ -119,8 +119,9 @@ namespace Core::Communication
     add_to_pack(data, numele);
 
     // If T is trivially copyable, we can just copy the bytes. Otherwise, recursively call the
-    // pack function for every element.
-    if constexpr (std::is_trivially_copyable_v<T>)
+    // pack function for every element. Note that vector<bool> is a special case, as it does not
+    // provide the data() method.
+    if constexpr (std::is_trivially_copyable_v<T> && !std::is_same_v<T, bool>)
     {
       add_to_pack(data, stuff.data(), numele * sizeof(T));
     }
@@ -355,8 +356,6 @@ namespace Core::Communication
     buffer.extract_from_pack(stuff, stuff_size);
   }
 
-  int extract_int(UnpackBuffer& buffer);
-
   double extract_double(UnpackBuffer& buffer);
 
   /**
@@ -385,7 +384,17 @@ namespace Core::Communication
     buffer.extract_from_pack(dim);
     stuff.resize(dim);
 
-    if constexpr (std::is_trivially_copyable_v<T>)
+    if constexpr (std::is_same_v<T, bool>)
+    {
+      // Note: this loop cannot be range-based due to the quirks of std::vector<bool>.
+      for (int i = 0; i < dim; ++i)
+      {
+        bool value;
+        extract_from_pack(buffer, value);
+        stuff[i] = value;
+      }
+    }
+    else if constexpr (std::is_trivially_copyable_v<T>)
     {
       extract_from_pack(buffer, stuff.data(), dim * sizeof(T));
     }

@@ -149,7 +149,7 @@ void Discret::Elements::Artery::unpack(Core::Communication::UnpackBuffer& buffer
   Element::unpack(base_buffer);
   // Gaussrule
   extract_from_pack(buffer, gaussrule_);
-  impltype_ = static_cast<Inpar::ArtDyn::ImplType>(extract_int(buffer));
+  extract_from_pack(buffer, impltype_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;

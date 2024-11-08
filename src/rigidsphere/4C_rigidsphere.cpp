@@ -175,7 +175,7 @@ void Discret::Elements::Rigidsphere::pack(Core::Communication::PackBuffer& data)
   add_to_pack(data, radius_);
   add_to_pack(data, rho_);
 
-  add_to_pack(data, static_cast<int>(mybondstobeams_.size()));
+  add_to_pack(data, mybondstobeams_.size());
   for (auto const& iter : mybondstobeams_) iter.second->pack(data);
 
   return;
@@ -200,7 +200,8 @@ void Discret::Elements::Rigidsphere::unpack(Core::Communication::UnpackBuffer& b
   extract_from_pack(buffer, radius_);
   extract_from_pack(buffer, rho_);
 
-  int unsigned numbonds = extract_int(buffer);
+  std::size_t numbonds;
+  extract_from_pack(buffer, numbonds);
   for (int unsigned i = 0; i < numbonds; ++i)
   {
     std::vector<char> tmp;

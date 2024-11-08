@@ -3232,7 +3232,7 @@ void XFEM::XfluidStd::export_start_data()
     add_to_pack(dataSend, data->searchedProcs_);
     add_to_pack(dataSend, data->counter_);
     add_to_pack(dataSend, data->dMin_);
-    add_to_pack(dataSend, (int)data->type_);
+    add_to_pack(dataSend, data->type_);
   }
 
   std::vector<char> dataRecv;

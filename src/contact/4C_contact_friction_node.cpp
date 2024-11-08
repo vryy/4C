@@ -108,9 +108,9 @@ void CONTACT::FriNodeDataContainer::unpack(Core::Communication::UnpackBuffer& bu
   // jump_
   extract_from_pack(buffer, jump_, 3 * sizeof(double));
   // slip_
-  slip_ = extract_int(buffer);
+  extract_from_pack(buffer, slip_);
   // slipold_
-  slipold_ = extract_int(buffer);
+  extract_from_pack(buffer, slipold_);
   // traction_
   extract_from_pack(buffer, traction_, 3 * sizeof(double));
   // tractionold_
@@ -126,7 +126,8 @@ void CONTACT::FriNodeDataContainer::unpack(Core::Communication::UnpackBuffer& bu
 
   if (hasdata != 0)
   {
-    int dentries = extract_int(buffer);
+    int dentries;
+    extract_from_pack(buffer, dentries);
 
     drowsold_.resize(dentries);
     extract_from_pack(buffer, drowsold_);
@@ -140,7 +141,8 @@ void CONTACT::FriNodeDataContainer::unpack(Core::Communication::UnpackBuffer& bu
 
   if (hasdata2 != 0)
   {
-    int dentries = extract_int(buffer);
+    int dentries;
+    extract_from_pack(buffer, dentries);
 
     drowsoldLTL_.resize(dentries);
     extract_from_pack(buffer, drowsoldLTL_);
@@ -307,7 +309,8 @@ void CONTACT::FriNode::unpack(Core::Communication::UnpackBuffer& buffer)
 
   // **************************
   // FriData
-  bool hasdata = extract_int(buffer);
+  bool hasdata;
+  extract_from_pack(buffer, hasdata);
   if (hasdata)
   {
     fridata_ = std::make_shared<CONTACT::FriNodeDataContainer>();
@@ -318,7 +321,8 @@ void CONTACT::FriNode::unpack(Core::Communication::UnpackBuffer& buffer)
 
   // **************************
   // FriDataPlus
-  bool hasdataplus = extract_int(buffer);
+  bool hasdataplus;
+  extract_from_pack(buffer, hasdataplus);
   if (hasdataplus)
   {
     weardata_ = std::make_shared<CONTACT::FriNodeWearDataContainer>();

@@ -135,9 +135,9 @@ void Core::Nodes::ImmersedNode::unpack(Core::Communication::UnpackBuffer& buffer
   Node::unpack(basedata_buffer);
 
   // isimersedboundary_
-  IsBoundaryImmersed_ = extract_int(buffer);
+  extract_from_pack(buffer, IsBoundaryImmersed_);
   // ismatched_
-  ismatched_ = extract_int(buffer);
+  extract_from_pack(buffer, ismatched_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;

@@ -888,7 +888,8 @@ void Core::GeometricSearch::ElementMatchingOctree::unpack_entity(
     Communication::UnpackBuffer& buffer, std::vector<char>& data)
 {
   nodes_.clear();
-  int numnode = extract_int(buffer);
+  int numnode;
+  extract_from_pack(buffer, numnode);
   extract_from_pack(buffer, data);
 
   for (int node = 0; node < numnode; node++)

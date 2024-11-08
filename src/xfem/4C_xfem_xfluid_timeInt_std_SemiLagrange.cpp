@@ -1846,7 +1846,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
         add_to_pack(dataSend, data->initialpoint_);
         add_to_pack(dataSend, data->initial_eid_);
         add_to_pack(dataSend, data->initial_ele_owner_);
-        add_to_pack(dataSend, (int)data->type_);
+        add_to_pack(dataSend, data->type_);
       }
     }
 
@@ -1924,7 +1924,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
   {
     Core::Communication::PackBuffer dataSend;
 
-    add_to_pack(dataSend, static_cast<int>(procDone));
+    add_to_pack(dataSend, procDone);
 
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
@@ -1967,7 +1967,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
         add_to_pack(dataSend, data->startpoint_);
         add_to_pack(dataSend, data->searchedProcs_);
         add_to_pack(dataSend, data->counter_);
-        add_to_pack(dataSend, (int)data->type_);
+        add_to_pack(dataSend, data->type_);
       }
     }
 

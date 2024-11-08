@@ -1169,9 +1169,9 @@ void Core::Elements::FaceElement::unpack(Core::Communication::UnpackBuffer& buff
   Core::Elements::Element::unpack(base_buffer);
 
   // lface_master_
-  lface_master_ = extract_int(buffer);
+  extract_from_pack(buffer, lface_master_);
   // Parent Id
-  parent_id_ = extract_int(buffer);
+  extract_from_pack(buffer, parent_id_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }

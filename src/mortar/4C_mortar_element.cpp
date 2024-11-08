@@ -216,7 +216,7 @@ void Mortar::Element::pack(Core::Communication::PackBuffer& data) const
   if (hasdata) modata_->pack(data);
 
   // add physicaltype
-  add_to_pack(data, static_cast<int>(physicaltype_));
+  add_to_pack(data, physicaltype_);
 
   // mesh size
   add_to_pack(data, traceHE_);
@@ -240,11 +240,11 @@ void Mortar::Element::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::UnpackBuffer base_buffer(basedata);
   Core::Elements::FaceElement::unpack(base_buffer);
   // shape_
-  shape_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, shape_);
   // isslave_
-  isslave_ = extract_int(buffer);
+  extract_from_pack(buffer, isslave_);
   // nurbs_
-  nurbs_ = extract_int(buffer);
+  extract_from_pack(buffer, nurbs_);
 
   // for nurbs:
   if (nurbs_)
@@ -252,7 +252,7 @@ void Mortar::Element::unpack(Core::Communication::UnpackBuffer& buffer)
     // normalfac_
     normalfac_ = extract_double(buffer);
     // zero_sized_
-    zero_sized_ = extract_int(buffer);
+    extract_from_pack(buffer, zero_sized_);
     // knots
     int nr;
     extract_from_pack(buffer, nr);
@@ -265,7 +265,8 @@ void Mortar::Element::unpack(Core::Communication::UnpackBuffer& buffer)
   }
 
   // modata_
-  bool hasdata = extract_int(buffer);
+  bool hasdata;
+  extract_from_pack(buffer, hasdata);
   if (hasdata)
   {
     modata_ = std::make_shared<Mortar::MortarEleDataContainer>();
@@ -277,7 +278,7 @@ void Mortar::Element::unpack(Core::Communication::UnpackBuffer& buffer)
   }
 
   // physical type
-  physicaltype_ = (PhysicalType)(extract_int(buffer));
+  extract_from_pack(buffer, physicaltype_);
 
   // mesh size
   traceHE_ = extract_double(buffer);

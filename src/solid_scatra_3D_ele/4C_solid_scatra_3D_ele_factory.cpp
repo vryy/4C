@@ -74,7 +74,7 @@ namespace
 void Discret::Elements::add_to_pack(Core::Communication::PackBuffer& data,
     const Discret::Elements::SolidScatraElementProperties& properties)
 {
-  add_to_pack(data, static_cast<int>(properties.impltype));
+  add_to_pack(data, properties.impltype);
 
   Discret::Elements::add_to_pack(data, properties.solid);
 }
@@ -82,7 +82,7 @@ void Discret::Elements::add_to_pack(Core::Communication::PackBuffer& data,
 void Discret::Elements::extract_from_pack(Core::Communication::UnpackBuffer& buffer,
     Discret::Elements::SolidScatraElementProperties& properties)
 {
-  properties.impltype = static_cast<Inpar::ScaTra::ImplType>(extract_int(buffer));
+  extract_from_pack(buffer, properties.impltype);
 
   Discret::Elements::extract_from_pack(buffer, properties.solid);
 }

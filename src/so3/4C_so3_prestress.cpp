@@ -86,7 +86,7 @@ void Discret::Elements::PreStress::unpack(Core::Communication::UnpackBuffer& buf
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract isinit_
-  isinit_ = extract_int(buffer);
+  extract_from_pack(buffer, isinit_);
 
   // extract numnode_
   extract_from_pack(buffer, numnode_);

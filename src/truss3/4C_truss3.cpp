@@ -175,7 +175,7 @@ void Discret::Elements::Truss3::unpack(Core::Communication::UnpackBuffer& buffer
   extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer base_buffer(basedata);
   Element::unpack(base_buffer);
-  isinit_ = extract_int(buffer);
+  extract_from_pack(buffer, isinit_);
   extract_from_pack(buffer, x_);
   extract_from_pack(buffer, diff_disp_ref_);
   extract_from_pack(buffer, material_);
@@ -185,7 +185,7 @@ void Discret::Elements::Truss3::unpack(Core::Communication::UnpackBuffer& buffer
   extract_from_pack(buffer, crosssec_);
   extract_from_pack(buffer, gaussrule_);
   // kinematic type
-  kintype_ = static_cast<KinematicType>(extract_int(buffer));
+  extract_from_pack(buffer, kintype_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }

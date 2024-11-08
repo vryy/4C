@@ -45,7 +45,7 @@ void Mat::DefaultAnisotropyExtension<numfib>::pack_anisotropy(
   // Call base packing
   Mat::FiberAnisotropyExtension<numfib>::pack_anisotropy(data);
 
-  add_to_pack(data, static_cast<int>(initialized_));
+  add_to_pack(data, initialized_);
 }
 
 template <unsigned int numfib>
@@ -55,7 +55,7 @@ void Mat::DefaultAnisotropyExtension<numfib>::unpack_anisotropy(
   // Call base unpacking
   Mat::FiberAnisotropyExtension<numfib>::unpack_anisotropy(buffer);
 
-  initialized_ = static_cast<bool>(extract_int(buffer));
+  extract_from_pack(buffer, initialized_);
 }
 
 template <unsigned int numfib>

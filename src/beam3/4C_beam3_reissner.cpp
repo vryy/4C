@@ -487,9 +487,9 @@ void Discret::Elements::Beam3r::unpack(Core::Communication::UnpackBuffer& buffer
   Beam3Base::unpack(base_buffer);
 
   // extract all class variables of beam3r element
-  use_fad_ = extract_int(buffer);
-  centerline_hermite_ = extract_int(buffer);
-  isinit_ = extract_int(buffer);
+  extract_from_pack(buffer, use_fad_);
+  extract_from_pack(buffer, centerline_hermite_);
+  extract_from_pack(buffer, isinit_);
   extract_from_pack(buffer, reflength_);
   extract_from_pack(buffer, theta0node_);
   extract_from_pack(buffer, Tref_);

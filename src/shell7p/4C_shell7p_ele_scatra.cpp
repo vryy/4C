@@ -249,7 +249,7 @@ void Discret::Elements::Shell7pScatra::pack(Core::Communication::PackBuffer& dat
   // add base class Element
   Core::Elements::Element::pack(data);
   // discretization type
-  add_to_pack(data, (int)distype_);
+  add_to_pack(data, distype_);
   // element technology
   add_to_pack(data, eletech_);
   // thickness in reference frame
@@ -275,7 +275,7 @@ void Discret::Elements::Shell7pScatra::unpack(Core::Communication::UnpackBuffer&
   Core::Communication::UnpackBuffer base_buffer(basedata);
   Element::unpack(base_buffer);
   // discretization type
-  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, distype_);
   // element technology
   extract_from_pack(buffer, eletech_);
   // thickness in reference frame
@@ -285,7 +285,7 @@ void Discret::Elements::Shell7pScatra::unpack(Core::Communication::UnpackBuffer&
   // Setup flag for material post setup
   extract_from_pack(buffer, material_post_setup_);
   // extract impltype
-  impltype_ = static_cast<Inpar::ScaTra::ImplType>(extract_int(buffer));
+  extract_from_pack(buffer, impltype_);
   // reset shell calculation interface
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
 

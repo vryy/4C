@@ -185,7 +185,7 @@ void Discret::Elements::Lubrication::unpack(Core::Communication::UnpackBuffer& b
   Element::unpack(base_buffer);
 
   // extract internal data
-  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, distype_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 

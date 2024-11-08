@@ -184,7 +184,7 @@ void Discret::Elements::SolidScatra::pack(Core::Communication::PackBuffer& data)
   // add base class Element
   Core::Elements::Element::pack(data);
 
-  add_to_pack(data, (int)celltype_);
+  add_to_pack(data, celltype_);
   Discret::Elements::add_to_pack(data, properties_);
 
   data.add_to_pack(material_post_setup_);
@@ -195,7 +195,7 @@ void Discret::Elements::SolidScatra::pack(Core::Communication::PackBuffer& data)
 
 void Discret::Elements::SolidScatra::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  if (extract_int(buffer) != unique_par_object_id()) FOUR_C_THROW("wrong instance type data");
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -203,7 +203,7 @@ void Discret::Elements::SolidScatra::unpack(Core::Communication::UnpackBuffer& b
   Core::Communication::UnpackBuffer base_buffer(basedata);
   Core::Elements::Element::unpack(base_buffer);
 
-  celltype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, celltype_);
 
   Discret::Elements::extract_from_pack(buffer, properties_);
 

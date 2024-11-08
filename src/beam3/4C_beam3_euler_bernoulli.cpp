@@ -384,7 +384,7 @@ void Discret::Elements::Beam3eb::unpack(Core::Communication::UnpackBuffer& buffe
 
   // extract all class variables of beam3 element
   extract_from_pack(buffer, jacobi_);
-  isinit_ = extract_int(buffer);
+  extract_from_pack(buffer, isinit_);
   extract_from_pack(buffer, ekin_);
   extract_from_pack(buffer, eint_);
   extract_from_pack(buffer, Tref_);

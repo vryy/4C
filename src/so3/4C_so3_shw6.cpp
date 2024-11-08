@@ -168,14 +168,14 @@ void Discret::Elements::SoShw6::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Discret::Elements::SoWeg6::unpack(basedata_buffer);
   // eastype_
-  eastype_ = static_cast<EASType>(extract_int(buffer));
+  extract_from_pack(buffer, eastype_);
   // neas_
   extract_from_pack(buffer, neas_);
   // easdata_
   unpack_eas_data(buffer);
   // reordering
-  optimal_parameterspace_map_ = extract_int(buffer);
-  nodes_rearranged_ = extract_int(buffer);
+  extract_from_pack(buffer, optimal_parameterspace_map_);
+  extract_from_pack(buffer, nodes_rearranged_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;

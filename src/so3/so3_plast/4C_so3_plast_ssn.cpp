@@ -281,16 +281,16 @@ void Discret::Elements::So3Plast<distype>::pack(Core::Communication::PackBuffer&
   add_to_pack(data, wgt_);
 
   // parameters
-  add_to_pack(data, (int)fbar_);
+  add_to_pack(data, fbar_);
 
   // plastic spin type
-  add_to_pack(data, (int)plspintype_);
+  add_to_pack(data, plspintype_);
 
   // tsi
-  add_to_pack(data, (int)tsi_);
+  add_to_pack(data, tsi_);
   if (tsi_)
   {
-    add_to_pack(data, (int)KbT_->size());
+    add_to_pack(data, KbT_->size());
     for (unsigned i = 0; i < KbT_->size(); i++)
     {
       add_to_pack(data, (*dFintdT_)[i]);
@@ -300,7 +300,7 @@ void Discret::Elements::So3Plast<distype>::pack(Core::Communication::PackBuffer&
   }
 
   // EAS element technology
-  add_to_pack(data, (int)eastype_);
+  add_to_pack(data, eastype_);
   add_to_pack(data, neas_);
   if (eastype_ != soh8p_easnone)
   {
@@ -316,7 +316,7 @@ void Discret::Elements::So3Plast<distype>::pack(Core::Communication::PackBuffer&
     for (int i = 0; i < histsize; i++) add_to_pack(data, dDp_last_iter_[i]);
 
   // nitsche contact
-  add_to_pack(data, (int)is_nitsche_contact_);
+  add_to_pack(data, is_nitsche_contact_);
   if (is_nitsche_contact_)
   {
     add_to_pack(data, cauchy_);
@@ -341,27 +341,29 @@ void Discret::Elements::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
   SoBase::unpack(basedata_buffer);
 
   // Gauss points and weights
-  int size2 = extract_int(buffer);
+  int size2;
+  extract_from_pack(buffer, size2);
   xsi_.resize(size2, Core::LinAlg::Matrix<nsd_, 1>(true));
   for (int i = 0; i < size2; ++i) extract_from_pack(buffer, xsi_[i]);
   extract_from_pack(buffer, wgt_);
   numgpt_ = wgt_.size();
 
   // paramters
-  fbar_ = (bool)extract_int(buffer);
+  extract_from_pack(buffer, fbar_);
 
   // plastic spin type
-  plspintype_ = static_cast<PlSpinType>(extract_int(buffer));
+  extract_from_pack(buffer, plspintype_);
 
   // tsi
-  tsi_ = (bool)extract_int(buffer);
+  extract_from_pack(buffer, tsi_);
   if (tsi_)
   {
     dFintdT_ = std::make_shared<std::vector<Core::LinAlg::Matrix<numdofperelement_, 1>>>(numgpt_);
     KbT_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseVector>>(
         numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true));
     temp_last_ = std::make_shared<std::vector<double>>(numgpt_);
-    int size = extract_int(buffer);
+    int size;
+    extract_from_pack(buffer, size);
     for (int i = 0; i < size; i++)
     {
       extract_from_pack(buffer, (*dFintdT_)[i]);
@@ -371,7 +373,7 @@ void Discret::Elements::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
   }
 
   // EAS element technology
-  eastype_ = static_cast<Discret::Elements::So3PlastEasType>(extract_int(buffer));
+  extract_from_pack(buffer, eastype_);
   extract_from_pack(buffer, neas_);
 
   // no EAS
@@ -420,11 +422,12 @@ void Discret::Elements::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
     extract_from_pack(buffer, (*alpha_eas_delta_over_last_timestep_));
   }
 
-  int size = extract_int(buffer);
+  int size;
+  extract_from_pack(buffer, size);
   for (int i = 0; i < size; i++) extract_from_pack(buffer, dDp_last_iter_[i]);
 
   // Nitsche contact stuff
-  is_nitsche_contact_ = (bool)extract_int(buffer);
+  extract_from_pack(buffer, is_nitsche_contact_);
   if (is_nitsche_contact_)
   {
     extract_from_pack(buffer, cauchy_);

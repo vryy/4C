@@ -82,7 +82,7 @@ void Discret::Elements::Beam3Base::unpack(Core::Communication::UnpackBuffer& buf
   // bspotposxi_
   extract_from_pack(buffer, bspotposxi_);
   // filamenttype_
-  filamenttype_ = static_cast<Inpar::BEAMINTERACTION::FilamentType>(extract_int(buffer));
+  extract_from_pack(buffer, filamenttype_);
 
   return;
 }

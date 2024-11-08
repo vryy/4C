@@ -34,19 +34,19 @@ Mat::Anisotropy::Anisotropy()
 void Mat::Anisotropy::pack_anisotropy(Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, numgp_);
-  add_to_pack(data, static_cast<int>(element_fibers_initialized_));
-  add_to_pack(data, static_cast<int>(gp_fibers_initialized_));
+  add_to_pack(data, element_fibers_initialized_);
+  add_to_pack(data, gp_fibers_initialized_);
   add_to_pack(data, element_fibers_);
   pack_fiber_vector<Core::LinAlg::Matrix<3, 1>>(data, gp_fibers_);
 
   if (element_cylinder_coordinate_system_manager_)
   {
-    add_to_pack(data, static_cast<int>(true));
+    add_to_pack(data, true);
     element_cylinder_coordinate_system_manager_->pack(data);
   }
   else
   {
-    add_to_pack(data, static_cast<int>(false));
+    add_to_pack(data, false);
   }
 
   for (const auto& gpCylinderCoordinateSystemManager : gp_cylinder_coordinate_system_managers_)
@@ -58,12 +58,14 @@ void Mat::Anisotropy::pack_anisotropy(Core::Communication::PackBuffer& data) con
 void Mat::Anisotropy::unpack_anisotropy(Core::Communication::UnpackBuffer& buffer)
 {
   extract_from_pack(buffer, numgp_);
-  element_fibers_initialized_ = static_cast<bool>(extract_int(buffer));
-  gp_fibers_initialized_ = static_cast<bool>(extract_int(buffer));
+  extract_from_pack(buffer, element_fibers_initialized_);
+  extract_from_pack(buffer, gp_fibers_initialized_);
   extract_from_pack(buffer, element_fibers_);
   unpack_fiber_vector<Core::LinAlg::Matrix<3, 1>>(buffer, gp_fibers_);
 
-  if (static_cast<bool>(extract_int(buffer)))
+  bool have_element_cylinder_coordinate_system_manager;
+  extract_from_pack(buffer, have_element_cylinder_coordinate_system_manager);
+  if (have_element_cylinder_coordinate_system_manager)
   {
     element_cylinder_coordinate_system_manager_ = CylinderCoordinateSystemManager();
     element_cylinder_coordinate_system_manager_->unpack(buffer);

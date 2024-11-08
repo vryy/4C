@@ -231,7 +231,7 @@ void Discret::Elements::Bele3::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::UnpackBuffer base_buffer(basedata);
   Element::unpack(base_buffer);
   // numdofpernode_
-  numdofpernode_ = extract_int(buffer);
+  extract_from_pack(buffer, numdofpernode_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }

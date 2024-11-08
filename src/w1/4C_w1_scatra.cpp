@@ -121,7 +121,7 @@ void Discret::Elements::Wall1Scatra::unpack(Core::Communication::UnpackBuffer& b
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract scalar transport impltype
-  impltype_ = static_cast<Inpar::ScaTra::ImplType>(extract_int(buffer));
+  extract_from_pack(buffer, impltype_);
 
   // extract base class Element
   std::vector<char> basedata(0);

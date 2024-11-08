@@ -120,7 +120,7 @@ void Discret::Elements::Wall1Poro<distype>::unpack(Core::Communication::UnpackBu
   for (int i = 0; i < size; ++i) extract_from_pack(buffer, xsi_[i]);
 
   // scatra_coupling_
-  scatra_coupling_ = static_cast<bool>(extract_int(buffer));
+  extract_from_pack(buffer, scatra_coupling_);
 
   // anisotropic_permeability_directions_
   size = 0;

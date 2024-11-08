@@ -414,13 +414,13 @@ namespace Mat
      */
     void unpack(Core::Communication::UnpackBuffer& buffer)
     {
-      isoprinc = (bool)extract_int(buffer);
-      isomod = (bool)extract_int(buffer);
-      anisoprinc = (bool)extract_int(buffer);
-      anisomod = (bool)extract_int(buffer);
-      coeffStretchesPrinc = (bool)extract_int(buffer);
-      coeffStretchesMod = (bool)extract_int(buffer);
-      viscoGeneral = (bool)extract_int(buffer);
+      extract_from_pack(buffer, isoprinc);
+      extract_from_pack(buffer, isomod);
+      extract_from_pack(buffer, anisoprinc);
+      extract_from_pack(buffer, anisomod);
+      extract_from_pack(buffer, coeffStretchesPrinc);
+      extract_from_pack(buffer, coeffStretchesMod);
+      extract_from_pack(buffer, viscoGeneral);
     }
 
     /**

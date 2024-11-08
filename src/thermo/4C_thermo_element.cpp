@@ -239,9 +239,9 @@ void Thermo::Element::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::UnpackBuffer base_buffer(basedata);
   Core::Elements::Element::unpack(base_buffer);
   // kintype_
-  kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(buffer));
+  extract_from_pack(buffer, kintype_);
   // distype
-  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, distype_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;

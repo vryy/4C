@@ -173,10 +173,10 @@ void Discret::Elements::SoSh8::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Discret::Elements::SoHex8::unpack(basedata_buffer);
   // thickdir
-  thickdir_ = static_cast<ThicknessDirection>(extract_int(buffer));
+  extract_from_pack(buffer, thickdir_);
   extract_from_pack(buffer, thickvec_);
-  anstype_ = static_cast<ANSType>(extract_int(buffer));
-  nodes_rearranged_ = extract_int(buffer);
+  extract_from_pack(buffer, anstype_);
+  extract_from_pack(buffer, nodes_rearranged_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;

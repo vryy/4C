@@ -262,12 +262,13 @@ void Discret::Elements::Fluid::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::UnpackBuffer base_buffer(basedata);
   Element::unpack(base_buffer);
   // is_ale_
-  is_ale_ = extract_int(buffer);
+  extract_from_pack(buffer, is_ale_);
   // distype
-  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, distype_);
 
   // time-dependent subgrid scales
-  bool is_tds = extract_int(buffer);
+  bool is_tds;
+  extract_from_pack(buffer, is_tds);
   if (is_tds)
   {
     tds_ = std::make_shared<FLD::TDSEleData>();

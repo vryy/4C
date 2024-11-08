@@ -796,9 +796,9 @@ namespace Immersed
         // ---- unpack data -----
 
         Core::Communication::UnpackBuffer buffer(rdata);
-        matched = extract_int(buffer);
-        owner = extract_int(buffer);
-        datalength = extract_int(buffer);
+        extract_from_pack(buffer, matched);
+        extract_from_pack(buffer, owner);
+        extract_from_pack(buffer, datalength);
 
         for (int i = 0; i < globdim; ++i) xvec[i] = extract_double(buffer);
 
@@ -1119,9 +1119,9 @@ namespace Immersed
         // ---- unpack data -----
 
         Core::Communication::UnpackBuffer buffer(rdata);
-        matched = extract_int(buffer);
-        owner = extract_int(buffer);
-        datalength = extract_int(buffer);
+        extract_from_pack(buffer, matched);
+        extract_from_pack(buffer, owner);
+        extract_from_pack(buffer, datalength);
 
         for (int i = 0; i < globdim; ++i) xvec[i] = extract_double(buffer);
 
@@ -1522,9 +1522,9 @@ namespace Immersed
         // ---- unpack data -----
 
         Core::Communication::UnpackBuffer buffer(rdata);
-        matched = extract_int(buffer);
-        owner = extract_int(buffer);
-        datalength = extract_int(buffer);
+        extract_from_pack(buffer, matched);
+        extract_from_pack(buffer, owner);
+        extract_from_pack(buffer, datalength);
 
         for (int i = 0; i < globdim; ++i) fluid_node_glob_coord[i] = extract_double(buffer);
 

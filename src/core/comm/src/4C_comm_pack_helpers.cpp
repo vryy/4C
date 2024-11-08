@@ -82,13 +82,6 @@ int Core::Communication::extract_and_assert_id(UnpackBuffer& buffer, const int d
   return type_id;
 }
 
-int Core::Communication::extract_int(Core::Communication::UnpackBuffer& buffer)
-{
-  int i;
-  extract_from_pack(buffer, i);
-  return i;
-}
-
 double Core::Communication::extract_double(Core::Communication::UnpackBuffer& buffer)
 {
   double f;

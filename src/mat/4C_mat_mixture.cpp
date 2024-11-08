@@ -111,7 +111,7 @@ void Mat::Mixture::pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
 
   // pack setup flag
-  add_to_pack(data, static_cast<int>(setup_));
+  add_to_pack(data, setup_);
 
   // Pack isPreEvaluated flag
   std::vector<int> isPreEvaluatedInt;
@@ -171,7 +171,7 @@ void Mat::Mixture::unpack(Core::Communication::UnpackBuffer& buffer)
     }
 
     // Extract setup flag
-    setup_ = (bool)extract_int(buffer);
+    extract_from_pack(buffer, setup_);
 
 
     // Extract is isPreEvaluated

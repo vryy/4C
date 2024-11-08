@@ -175,8 +175,8 @@ void Mat::FiberAnisotropyExtension<numfib>::pack_anisotropy(
   pack_fiber_array<Core::LinAlg::Matrix<3, 1>, numfib>(data, fibers_);
   pack_fiber_array<Core::LinAlg::Matrix<6, 1>, numfib>(data, fiber_structural_tensors_stress_);
   pack_fiber_array<Core::LinAlg::Matrix<3, 3>, numfib>(data, fiber_structural_tensors_);
-  add_to_pack(data, static_cast<int>(tensor_flags_));
-  add_to_pack(data, static_cast<int>(fiber_location_));
+  add_to_pack(data, tensor_flags_);
+  add_to_pack(data, fiber_location_);
 }
 
 template <unsigned int numfib>
@@ -186,8 +186,8 @@ void Mat::FiberAnisotropyExtension<numfib>::unpack_anisotropy(
   unpack_fiber_array<Core::LinAlg::Matrix<3, 1>, numfib>(buffer, fibers_);
   unpack_fiber_array<Core::LinAlg::Matrix<6, 1>, numfib>(buffer, fiber_structural_tensors_stress_);
   unpack_fiber_array<Core::LinAlg::Matrix<3, 3>, numfib>(buffer, fiber_structural_tensors_);
-  tensor_flags_ = static_cast<uint_fast8_t>(extract_int(buffer));
-  fiber_location_ = static_cast<FiberLocation>(extract_int(buffer));
+  extract_from_pack(buffer, tensor_flags_);
+  extract_from_pack(buffer, fiber_location_);
 }
 
 template <unsigned int numfib>

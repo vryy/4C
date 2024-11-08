@@ -128,7 +128,7 @@ void Discret::Elements::FluidPoro::unpack(Core::Communication::UnpackBuffer& buf
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // kintype_
-  kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(buffer));
+  extract_from_pack(buffer, kintype_);
 
   // anisotropic_permeability_directions_
   int size = 0;

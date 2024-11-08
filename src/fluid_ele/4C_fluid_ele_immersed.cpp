@@ -124,11 +124,11 @@ void Discret::Elements::FluidImmersed::unpack(Core::Communication::UnpackBuffer&
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Discret::Elements::Fluid::unpack(basedata_buffer);
   // Part of immersion domain?
-  is_immersed_ = extract_int(buffer);
+  extract_from_pack(buffer, is_immersed_);
   // Part of immersion domain for immersed boundary?
-  is_immersed_bdry_ = extract_int(buffer);
+  extract_from_pack(buffer, is_immersed_bdry_);
   // has dirichletvals projected?
-  has_projected_dirichletvalues_ = extract_int(buffer);
+  extract_from_pack(buffer, has_projected_dirichletvalues_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 

@@ -185,22 +185,18 @@ void Mat::PlasticElastHyper::pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, last_alpha_isotropic_);
   add_to_pack(data, last_alpha_kinematic_);
 
-  add_to_pack(data, (int)activity_state_.size());
-  for (int i = 0; i < (int)activity_state_.size(); ++i)
-    add_to_pack(data, (int)activity_state_.at(i));
-
-  add_to_pack(data, (int)delta_alpha_i_.size());
-  for (int i = 0; i < (int)delta_alpha_i_.size(); ++i) add_to_pack(data, delta_alpha_i_.at(i));
+  add_to_pack(data, activity_state_);
+  add_to_pack(data, delta_alpha_i_);
 
   // tsi data
   bool tsi = HepDiss_ != nullptr;
-  add_to_pack(data, (int)tsi);
+  add_to_pack(data, tsi);
   bool tsi_eas = dHepDissdTeas_ != nullptr;
-  add_to_pack(data, (int)tsi_eas);
-  if (tsi) add_to_pack(data, (int)dHepDissdd_->at(0).numRows());
+  add_to_pack(data, tsi_eas);
+  if (tsi) add_to_pack(data, dHepDissdd_->at(0).numRows());
 
   // dissipation mode
-  add_to_pack(data, (int)dis_mode());
+  add_to_pack(data, dis_mode());
 
   add_to_pack(data, cpl());
   add_to_pack(data, s());
@@ -273,16 +269,14 @@ void Mat::PlasticElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   extract_from_pack(buffer, last_alpha_isotropic_);
   extract_from_pack(buffer, last_alpha_kinematic_);
 
-  activity_state_.resize(extract_int(buffer));
-  for (int i = 0; i < (int)activity_state_.size(); ++i)
-    activity_state_.at(i) = (bool)extract_int(buffer);
+  extract_from_pack(buffer, activity_state_);
 
-  delta_alpha_i_.resize(extract_int(buffer));
-  for (int i = 0; i < (int)delta_alpha_i_.size(); ++i)
-    delta_alpha_i_.at(i) = extract_double(buffer);
+  extract_from_pack(buffer, delta_alpha_i_);
 
-  bool tsi = (bool)extract_int(buffer);
-  bool tsi_eas = (bool)extract_int(buffer);
+  bool tsi;
+  extract_from_pack(buffer, tsi);
+  bool tsi_eas;
+  extract_from_pack(buffer, tsi_eas);
   if (!tsi)
   {
     HepDiss_ = nullptr;
@@ -294,7 +288,8 @@ void Mat::PlasticElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   {
     int ngp = last_alpha_isotropic_.size();
     HepDiss_ = std::make_shared<std::vector<double>>(ngp, 0.0);
-    int numdofperelement = extract_int(buffer);
+    int numdofperelement;
+    extract_from_pack(buffer, numdofperelement);
     dHepDissdd_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseVector>>(
         ngp, Core::LinAlg::SerialDenseVector(numdofperelement));
     dHepDissdT_ = std::make_shared<std::vector<double>>(ngp, 0.0);
@@ -304,7 +299,8 @@ void Mat::PlasticElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   }
 
   // dissipation mode
-  Inpar::TSI::DissipationMode mode = (Inpar::TSI::DissipationMode)extract_int(buffer);
+  Inpar::TSI::DissipationMode mode;
+  extract_from_pack(buffer, mode);
   set_dissipation_mode(mode);
 
   double cpl = extract_double(buffer);

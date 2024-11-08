@@ -59,7 +59,7 @@ void Discret::Elements::SoBase::pack(Core::Communication::PackBuffer& data) cons
   add_to_pack(data, kintype_);
 
   // material post setup routine
-  add_to_pack(data, static_cast<int>(material_post_setup_));
+  add_to_pack(data, material_post_setup_);
 }
 
 
@@ -77,10 +77,10 @@ void Discret::Elements::SoBase::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::UnpackBuffer base_buffer(basedata);
   Element::unpack(base_buffer);
   // kintype_
-  kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(buffer));
+  extract_from_pack(buffer, kintype_);
 
   // material post setup routine
-  material_post_setup_ = (extract_int(buffer) != 0);
+  extract_from_pack(buffer, material_post_setup_);
 }
 
 /*----------------------------------------------------------------------*
