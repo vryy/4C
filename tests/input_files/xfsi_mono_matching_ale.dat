@@ -10,7 +10,7 @@ RESTART                         0
 TIMESTEP                        0.0002
 LINEAR_SOLVER                   4
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 NLNSOL                          fullnewton
 NUMSTEP                         2
 PREDICT                         ConstDis

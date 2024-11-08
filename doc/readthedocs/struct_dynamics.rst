@@ -26,7 +26,7 @@ Users may give the time step size, the maximum time at the end of the simulation
 
 Note that the simulation stops after NUMSTEP steps or at time=MAXTIME, whatever comes first.
 
-The main decision in a simulation is whether to account for inertia and other time dependent effects, that is, conducting a dynamic simulation, or ignoring these effects and conducting a static simulation. Several options exist for dynamic simulations, while there is only a single option for statics. For the concrete input, see :ref:`DYNAMICTYP<structuraldynamic_dynamictyp>`.
+The main decision in a simulation is whether to account for inertia and other time dependent effects, that is, conducting a dynamic simulation, or ignoring these effects and conducting a static simulation. Several options exist for dynamic simulations, while there is only a single option for statics. For the concrete input, see :ref:`DYNAMICTYPE<structuraldynamic_dynamictype>`.
 
 Time stepping in dynamic simulations
 ------------------------------------

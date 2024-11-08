@@ -58,7 +58,7 @@ PROBLEMTYPE                      Structure
 STRUCT_STRESS                   cauchy
 ------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     0
 TIMESTEP                        0.1

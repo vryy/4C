@@ -19,7 +19,7 @@ PROBLEMTYPE                      Structure
 NUMSTRUCDIS                     1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 TIMESTEP                        0.1
 NUMSTEP                         10
 MAXTIME                         1

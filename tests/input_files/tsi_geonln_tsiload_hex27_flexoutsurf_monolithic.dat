@@ -37,7 +37,7 @@ RESTART                         0
 INT_STRATEGY                    Standard
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 ITERNORM                        L2
 K_DAMP                          -1
 LINEAR_SOLVER                   1
@@ -78,7 +78,7 @@ GENAVG                          TrLike
 THETA                           0.5
 ----------------------------------------------------THERMAL DYNAMIC
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 ITERNORM                        L2

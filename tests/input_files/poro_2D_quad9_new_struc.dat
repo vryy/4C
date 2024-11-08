@@ -71,7 +71,7 @@ SOLVER                          UMFPACK
 ------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DAMPING                         Material
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   1
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA

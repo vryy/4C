@@ -15,7 +15,7 @@ SOLVER                          UMFPACK
 ------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Old
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 NLNSOL                          fullnewton
 PREDICT                         ConstDis
 TIMESTEP                        0.5

@@ -64,7 +64,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       printiter_(true),  // ADD INPUT PARAMETER
       zeros_(nullptr),
       strmethodname_(
-          Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP")),
+          Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYPE")),
       ehldyn_(Global::Problem::instance()->elasto_hydro_dynamic_params()),
       ehldynmono_(
           (Global::Problem::instance()->elasto_hydro_dynamic_params()).sublist("MONOLITHIC")),
@@ -436,7 +436,7 @@ void EHL::Monolithic::setup_system_matrix()
 
   // Time integration specific parameters..
   double alphaf = -1.;
-  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn_, "DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn_, "DYNAMICTYPE"))
   {
     case Inpar::Solid::dyna_genalpha:
     {

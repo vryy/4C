@@ -6,7 +6,7 @@ DIM                             3
 PROBLEMTYPE                      Structure
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.01

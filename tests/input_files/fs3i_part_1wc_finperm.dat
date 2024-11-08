@@ -155,7 +155,7 @@ SUGRVEL                         no
 -------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no

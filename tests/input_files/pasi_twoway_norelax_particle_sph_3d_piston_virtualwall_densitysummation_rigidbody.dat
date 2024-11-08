@@ -22,7 +22,7 @@ MAXTIME                         0.25
 COUPLING                        partitioned_twowaycoup
 CONVTOLSCALEDDISP               1.0e-4
 ------------------------------------------------------------PARTICLE DYNAMIC
-DYNAMICTYP                      VelocityVerlet
+DYNAMICTYPE                      VelocityVerlet
 INTERACTION                     SPH
 PHASE_TO_DYNLOADBALFAC          phase1 1.0 rigidphase 1.0
 PHASE_TO_MATERIAL_ID            phase1 1 rigidphase 2
@@ -48,7 +48,7 @@ RIGIDPARTICLECONTACTDAMP        0.01
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ---------------------------------------------------------STRUCT NOX/Printing

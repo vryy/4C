@@ -20,7 +20,7 @@ THERM_TEMPGRAD                  Initial
 FILESTEPS                       1000
 -------------------------------------------------------------THERMAL DYNAMIC
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 ITERNORM                        L2
 INITFUNCNO                      1
 INITIALFIELD                    zero_field

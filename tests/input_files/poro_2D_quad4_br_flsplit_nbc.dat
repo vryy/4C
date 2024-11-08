@@ -78,7 +78,7 @@ SOLVER                          UMFPACK
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 PREDICT                         ConstVel
 LINEAR_SOLVER                   1
 --------------------------------------------------------CLONING MATERIAL MAP

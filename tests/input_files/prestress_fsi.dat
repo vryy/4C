@@ -26,7 +26,7 @@ FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 PRESTRESS                       mulf
 PRESTRESSTIME                   0.00101
 RESULTSEVRY                     1

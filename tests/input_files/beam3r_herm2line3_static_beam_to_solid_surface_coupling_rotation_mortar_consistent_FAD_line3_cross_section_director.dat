@@ -13,7 +13,7 @@ VERBOSITY                             Standard
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                         1
 INT_STRATEGY                          Standard
-DYNAMICTYP                            Statics
+DYNAMICTYPE                            Statics
 RESULTSEVRY                           1
 NLNSOL                                fullnewton
 PREDICT                               ConstDis

@@ -21,7 +21,7 @@ DIM           3
 PROBLEMTYPE                      Structure
 ------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     200
 TIMESTEP                        0.05

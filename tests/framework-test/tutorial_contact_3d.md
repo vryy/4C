@@ -120,7 +120,7 @@ concerning the simulation of fluids, etc. can be left out). If they are not spec
 parameters take on default values. Some sections that are required by all problem types
 include `PROBLEM SIZE`, `PROBLEM TYPE`, `DISCRETIZATION`, `IO` (Input/Output), at least one `SOLVER` section (for
 contact problems we need to specify two solvers: one for the state, where not contact is active, and one for the state
-with active contact) and a `MATERIALS` section. The time integration method `DYNAMICTYP` (Generalized alpha method),
+with active contact) and a `MATERIALS` section. The time integration method `DYNAMICTYPE` (Generalized alpha method),
 time step size `TIMESTEP` and final time `MAXTIME` are also specified for structural dynamics. An important parameter
 is `RESULTSEVRY`, which specifies how often output is written and thus directly controles the size of the output file.
 
@@ -149,6 +149,3 @@ created files, plus a list of all nodes and structure elements.
 Again, following the instructions from the [README.md](https://gitlab.lrz.de/baci/baci/blob/main/README.md), the 4C
 executable can be invoked with the `tutorial_contact_3d.dat` input file. Since we chose the binary output option in
 our `.head` file (section `IO`), we also have to run a post processing tool before visualizing the results in Paraview.
-
-
-

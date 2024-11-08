@@ -86,7 +86,7 @@ GHOSTING_STRATEGY               redundant_all
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 PREDICT                         TangDis
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 RHO_INF                         1.0

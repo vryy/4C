@@ -6,7 +6,7 @@ DIM           3
 PROBLEMTYPE                      Structure
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Old
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.1

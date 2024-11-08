@@ -40,7 +40,7 @@ MATERIAL_FORCES_GAUSSPOINT      Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 RESULTSEVRY                     10
 RESTARTEVRY                     10
 NLNSOL                          fullnewton

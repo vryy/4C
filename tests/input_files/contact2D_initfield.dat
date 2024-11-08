@@ -27,7 +27,7 @@ FLUID_STRESS                    No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     10
 NLNSOL                          fullnewton

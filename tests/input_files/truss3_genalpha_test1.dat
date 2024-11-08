@@ -18,7 +18,7 @@ STRUCT_STRESS                   Cauchy
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton

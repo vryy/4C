@@ -16,7 +16,7 @@ SOLVER                          UMFPACK
 SOLVER                          UMFPACK
 ------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Rayleigh
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 INT_STRATEGY                    Old
 ITERNORM                        Inf
 K_DAMP                          0.5

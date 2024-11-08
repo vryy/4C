@@ -83,7 +83,7 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 PREDICT                         ConstDisVelAcc
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 RHO_INF                         1.0

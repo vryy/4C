@@ -22,7 +22,7 @@ AZTOL                           1e-06
 AZCONV                          AZ_r0
 AZREUSE                         5
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 INT_STRATEGY                    Old
 ITERNORM                        Inf
 LINEAR_SOLVER                   1

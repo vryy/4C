@@ -144,7 +144,7 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 NLNSOL                          fullnewton
 LINEAR_SOLVER                   1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA

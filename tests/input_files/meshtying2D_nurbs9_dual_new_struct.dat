@@ -18,7 +18,7 @@ RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 INT_STRATEGY                    Standard
 ITERNORM                        L2
 K_DAMP                          0.5

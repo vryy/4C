@@ -32,7 +32,7 @@ TRANSIENT                       no_transient
 VSTAB                           no_vstab
 ------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA

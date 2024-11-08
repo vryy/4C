@@ -130,7 +130,7 @@ void SSTI::SSTIAlgorithm::init(const Epetra_Comm& comm,
     if (Teuchos::getIntegralValue<Inpar::Solid::TimAdaKind>(
             structparams.sublist("TIMEADAPTIVITY"), "KIND") != Inpar::Solid::timada_kind_none)
       FOUR_C_THROW("Adaptive time stepping in SSI currently just from ScaTra");
-    if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP") ==
+    if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYPE") ==
         Inpar::Solid::dyna_ab2)
       FOUR_C_THROW("Currently, only one step methods are allowed for adaptive time stepping");
   }

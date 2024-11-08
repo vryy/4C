@@ -20,7 +20,7 @@ RESTART                         0
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 LINEAR_SOLVER                   1
 MAXTIME                         0.2123077
 NORMCOMBI_RESFDISP              Or

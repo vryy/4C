@@ -62,7 +62,7 @@ std::shared_ptr<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_implicit_st
   std::shared_ptr<Solid::TimeInt::Base> ti_strategy = nullptr;
 
   // get the dynamic type
-  const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
+  const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE");
 
   const bool is_prestress = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
                                 Global::Problem::instance()->structural_dynamic_params(),
@@ -90,7 +90,7 @@ std::shared_ptr<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_explicit_st
       probtype == Core::ProblemType::thermo_fsi)
     FOUR_C_THROW("No explicit time integration with fsi");
 
-  const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
+  const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE");
 
   if (dyntype == Inpar::Solid::dyna_expleuler or dyntype == Inpar::Solid::dyna_centrdiff or
       dyntype == Inpar::Solid::dyna_ab2 or dyntype == Inpar::Solid::dyna_ab4)
@@ -106,7 +106,7 @@ std::shared_ptr<Solid::TimeInt::BaseDataSDyn> Solid::TimeInt::Factory::build_dat
 {
   std::shared_ptr<Solid::TimeInt::BaseDataSDyn> sdyndata_ptr = nullptr;
 
-  const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
+  const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE");
 
   switch (dyntype)
   {

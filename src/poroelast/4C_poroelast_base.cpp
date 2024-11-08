@@ -148,7 +148,7 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
           "no Poro Coupling Condition defined for porous media problem. Fix your input file!");
 
     // check time integration algo -> currently only one-step-theta scheme supported
-    auto structtimealgo = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
+    auto structtimealgo = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE");
     auto fluidtimealgo =
         Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
 

@@ -15,7 +15,7 @@ OUTPUT_BIN        Yes
 STRUCT_DISP       Yes
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER 1
-DYNAMICTYP   Statics
+DYNAMICTYPE   Statics
 RESULTSEVRY  1
 RESTARTEVRY  1
 NLNSOL       fullnewton

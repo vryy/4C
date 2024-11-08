@@ -95,7 +95,7 @@ NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
 DAMPING                         No
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 K_DAMP                          0.001
 MAXITER                         50
 M_DAMP                          0.001

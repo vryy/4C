@@ -52,7 +52,7 @@ void SSI::SSIPart2WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList
   // do some checks
   {
     auto structtimealgo =
-        Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP");
+        Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYPE");
     if (structtimealgo == Inpar::Solid::dyna_statics)
     {
       FOUR_C_THROW(

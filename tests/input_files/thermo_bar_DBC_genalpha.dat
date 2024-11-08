@@ -40,7 +40,7 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------THERMAL DYNAMIC
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 INITFUNCNO                      -1
 INITIALFIELD                    zero_field
 ITERNORM                        L2

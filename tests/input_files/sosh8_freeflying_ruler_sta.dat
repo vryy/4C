@@ -27,7 +27,7 @@ PROBLEMTYPE                      Structure
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 TOLRES                          1.0E-5
 TOLDISP                         1.0E-6
 NORM_RESF                       Abs

@@ -48,7 +48,7 @@ PROBLEMTYPE                      Structure
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     10
 RESTARTEVRY                     10
 NLNSOL                          fullnewton

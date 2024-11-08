@@ -24,7 +24,7 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 -------------------------------------------------------------THERMAL DYNAMIC
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 ITERNORM                        L2
 LINEAR_SOLVER                   1
 MAXITER                         50

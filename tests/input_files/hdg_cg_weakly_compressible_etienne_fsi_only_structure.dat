@@ -20,7 +20,7 @@ MAXITER          10
 ITERNORM         Inf
 TOLRES           1.0E-10
 TOLDISP          1.0E-10
-DYNAMICTYP       GenAlpha
+DYNAMICTYPE       GenAlpha
 MAXTIME          0.125
 NUMSTEP          10
 TIMESTEP         0.0125

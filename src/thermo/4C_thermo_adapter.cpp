@@ -42,7 +42,7 @@ void Thermo::BaseAlgorithm::setup_thermo(
   const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
 
   // major switch to different time integrators
-  auto timinttype = Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP");
+  auto timinttype = Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYPE");
   switch (timinttype)
   {
     case Inpar::Thermo::dyna_statics:
@@ -53,7 +53,7 @@ void Thermo::BaseAlgorithm::setup_thermo(
       break;
     default:
       FOUR_C_THROW("unknown time integration scheme '%s'",
-          Teuchos::getStringValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP").c_str());
+          Teuchos::getStringValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYPE").c_str());
   }
 
 }  // setup_thermo()

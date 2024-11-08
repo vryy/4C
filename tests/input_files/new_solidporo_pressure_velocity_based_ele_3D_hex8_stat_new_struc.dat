@@ -68,7 +68,7 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA

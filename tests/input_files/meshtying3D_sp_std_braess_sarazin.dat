@@ -33,7 +33,7 @@ RESTARTEVRY                     -1
 IMBALANCE_TOL                   1.03
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Old
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1000

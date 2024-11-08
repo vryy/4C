@@ -33,7 +33,7 @@ SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 ITERNORM                        L2
 LINEAR_SOLVER                   3
 MAXITER                         50
@@ -55,7 +55,7 @@ TOLRES                          1e-03
 THETA                           1.0
 -------------------------------------------------------------THERMAL DYNAMIC
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 ITERNORM                        L2

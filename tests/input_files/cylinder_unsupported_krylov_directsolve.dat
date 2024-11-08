@@ -8,7 +8,7 @@ PROBLEMTYPE                      Structure
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 MAXITER                         50
 MAXTIME                         5000
 NLNSOL                          fullnewton

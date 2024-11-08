@@ -17,7 +17,7 @@ NUMALEDIS                       0
 NUMTHERMDIS                     0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   3
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 NLNSOL                          fullnewton
 DAMPING                         No
 TOLRES                          1.0E-2

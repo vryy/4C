@@ -74,7 +74,7 @@ AZTOL                           1.0E-9
 AZCONV                          AZ_r0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA

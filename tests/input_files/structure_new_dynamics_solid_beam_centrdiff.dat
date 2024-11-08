@@ -24,7 +24,7 @@ FILESTEPS                        1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                    1
 INT_STRATEGY                     Standard
-DYNAMICTYP                       CentrDiff
+DYNAMICTYPE                       CentrDiff
 PREDICT                          ConstDis
 LUMPMASS                         Yes
 RESULTSEVRY                      100

@@ -33,7 +33,7 @@ RESTARTWALLTIMEINTERVAL         -1
 RESTARTEVRY                     -1
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     0

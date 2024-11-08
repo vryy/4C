@@ -1005,7 +1005,7 @@ DIVERCONT                       stop
 //                              ExplicitEuler
 //                              CentrDiff
 //                              AdamsBashforth2
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 //
 // type of norm to be applied to residuals
 ITERNORM                        L2

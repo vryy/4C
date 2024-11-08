@@ -38,7 +38,7 @@ WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     20

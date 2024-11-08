@@ -29,7 +29,7 @@ NAME                            Structure_Solver
 SOLVER                          Superlu
 ------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.1

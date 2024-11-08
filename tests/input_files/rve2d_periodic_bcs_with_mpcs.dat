@@ -21,7 +21,7 @@ PENALTY_PARAM			1.0E08
 RVE_REFERENCE_POINTS		manual
 --------------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton

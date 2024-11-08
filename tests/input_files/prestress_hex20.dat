@@ -37,7 +37,7 @@ SOLVER                          Superlu
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 ITERNORM                        L2
 K_DAMP                          0.0005
 LINEAR_SOLVER                   1

@@ -761,11 +761,11 @@ void FLD::XWall::setup_l2_projection()
         std::cout
             << "\nUse Belos as solver because it can handle several right hand sides at once!\n"
             << std::endl;
-      const auto prectyp =
+      const auto prectype =
           Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(solverparams, "AZPREC");
       // watch out: only ILU might work right now because of compute nullspace might not work...?
       // ... test!
-      switch (prectyp)
+      switch (prectype)
       {
         case Core::LinearSolver::PreconditionerType::multigrid_muelu:
         {

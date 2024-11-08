@@ -22,7 +22,7 @@ FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DAMPING                         No
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no

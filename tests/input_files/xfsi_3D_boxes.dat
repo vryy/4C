@@ -17,7 +17,7 @@ NUMSTRUCDIS                     1
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 TIMESTEP                        0.05
 LINEAR_SOLVER                   2
 GEOMETRY                        box

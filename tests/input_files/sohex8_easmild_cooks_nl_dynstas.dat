@@ -35,7 +35,7 @@ NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
 DAMPING                         No
-DYNAMICTYP Statics
+DYNAMICTYPE Statics
 K_DAMP                          0.5
 MAXITER                         50
 MAXTIME                         1000.0

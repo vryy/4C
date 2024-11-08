@@ -26,7 +26,7 @@ SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 ITERNORM                        L2
 LINEAR_SOLVER                   2
 MAXITER                         50
@@ -46,7 +46,7 @@ TOLDISP                         1e-10
 TOLRES                          1e-08
 -------------------------------------------------------------THERMAL DYNAMIC
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 ITERNORM                        L2
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function

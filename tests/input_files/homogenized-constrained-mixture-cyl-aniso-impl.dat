@@ -4,7 +4,7 @@ DIM                             3
 PROBLEMTYPE                      Structure
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     3
 RESTARTEVRY                     3
 TIMESTEP                        10.0

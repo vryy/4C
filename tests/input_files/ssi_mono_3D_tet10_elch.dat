@@ -9,7 +9,7 @@ PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
 STDOUTEVRY                      0
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA

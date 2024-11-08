@@ -18,7 +18,7 @@ FLUID_STRESS                    No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 RESULTSEVRY                     10
 RESTARTEVRY                     100
 NLNSOL                          fullnewton
@@ -52,7 +52,7 @@ TIMESTEP                        0.002
 RELAXTYPE                       Aitken
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 LINEAR_SOLVER                   2
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 NUMSTEP                         750
 TIMESTEP                        0.002
 RESTARTEVRY                     100

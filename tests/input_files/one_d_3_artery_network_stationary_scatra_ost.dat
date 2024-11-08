@@ -13,7 +13,7 @@ PROBLEMTYPE                      ArterialNetwork
 RESTART                         0
 ------------------------------------------------------------ARTERIAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Stationary
+DYNAMICTYPE                      Stationary
 SOLVESCATRA                     yes
 NUMSTEP                         10
 TIMESTEP                        0.1

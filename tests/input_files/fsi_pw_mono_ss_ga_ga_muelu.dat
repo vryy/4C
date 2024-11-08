@@ -22,7 +22,7 @@ NUMALEDIS                       1
 NUMTHERMDIS                     0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 PREDICT                         ConstDisVelAcc
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike

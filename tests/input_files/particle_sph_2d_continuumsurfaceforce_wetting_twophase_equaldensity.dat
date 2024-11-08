@@ -7,7 +7,7 @@ VERBOSITY                       standard
 BIN_SIZE_LOWER_BOUND            0.1
 DOMAINBOUNDINGBOX               -1.1 -0.1 -0.0001 1.1 1.1 0.0001
 ------------------------------------------------------------PARTICLE DYNAMIC
-DYNAMICTYP                      VelocityVerlet
+DYNAMICTYPE                      VelocityVerlet
 INTERACTION                     SPH
 RESULTSEVRY                     100
 RESTARTEVRY                     400

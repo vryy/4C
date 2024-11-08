@@ -19,7 +19,7 @@ STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 TIMESTEP                        1.0
 NUMSTEP                         6
 MAXTIME                         6.0

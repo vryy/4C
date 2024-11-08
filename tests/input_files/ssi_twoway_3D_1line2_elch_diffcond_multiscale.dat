@@ -39,7 +39,7 @@ SCATRATIMINTTYPE                Elch
 ------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 NLNSOL                          fullnewton
 PREDICT                         ConstDis
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA

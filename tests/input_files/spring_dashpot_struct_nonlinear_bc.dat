@@ -5,7 +5,7 @@ DIM                             3
 -------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Structure
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
 TIMESTEP                        1

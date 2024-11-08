@@ -86,7 +86,7 @@ namespace Inpar
           "global type of the used integration strategy", tuple<std::string>("Standard"),
           tuple<Inpar::Solid::IntegrationStrategy>(int_standard), &jep);
 
-      setStringToIntegralParameter<Inpar::Solid::DynamicType>("DYNAMICTYP", "CentrDiff",
+      setStringToIntegralParameter<Inpar::Solid::DynamicType>("DYNAMICTYPE", "CentrDiff",
           "type of the specific auxiliary dynamic time integration scheme",
           tuple<std::string>("ExplicitEuler", "CentrDiff", "AdamsBashforth2", "AdamsBashforth4"),
           tuple<Inpar::Solid::DynamicType>(dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_ab4),
@@ -124,7 +124,7 @@ namespace Inpar
       Core::Utils::bool_parameter(
           "TIME_ADAPTIVITY", "No", "Enable adaptive time integration", &sdyn);
 
-      setStringToIntegralParameter<Solid::DynamicType>("DYNAMICTYP", "GenAlpha",
+      setStringToIntegralParameter<Solid::DynamicType>("DYNAMICTYPE", "GenAlpha",
           "type of the specific dynamic time integration scheme",
           tuple<std::string>("Statics", "GenAlpha", "GenAlphaLieGroup", "OneStepTheta",
               "ExplicitEuler", "CentrDiff", "AdamsBashforth2", "AdamsBashforth4"),

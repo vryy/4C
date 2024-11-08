@@ -27,7 +27,7 @@ SOLVER                          UMFPACK
 ------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 NLNSOL                          fullnewton
 PREDICT                         ConstDis
 TIMESTEP                        0.5

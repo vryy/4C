@@ -18,7 +18,7 @@ SHAPEFCT                        Polynomial
 OUTPUT_GMSH                     no
 OUTPUT_BIN                      yes
 -------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     10
 NUMSTEP                         7

@@ -31,7 +31,7 @@ ELEMENT_OWNER                   yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     5
 NLNSOL                          fullnewton

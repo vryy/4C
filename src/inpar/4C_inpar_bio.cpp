@@ -22,7 +22,7 @@ void Inpar::ArtDyn::set_valid_parameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
   Teuchos::ParameterList& andyn = list.sublist("ARTERIAL DYNAMIC", false, "");
 
-  setStringToIntegralParameter<TimeIntegrationScheme>("DYNAMICTYP", "ExpTaylorGalerkin",
+  setStringToIntegralParameter<TimeIntegrationScheme>("DYNAMICTYPE", "ExpTaylorGalerkin",
       "Explicit Taylor Galerkin Scheme", tuple<std::string>("ExpTaylorGalerkin", "Stationary"),
       tuple<TimeIntegrationScheme>(tay_gal, stationary), &andyn);
 
@@ -348,7 +348,7 @@ void Inpar::ReducedLung::set_valid_parameters(Teuchos::ParameterList& list)
 
   Teuchos::ParameterList& redawdyn = list.sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC", false, "");
 
-  setStringToIntegralParameter<RedAirwaysDyntype>("DYNAMICTYP", "OneStepTheta",
+  setStringToIntegralParameter<RedAirwaysDyntype>("DYNAMICTYPE", "OneStepTheta",
       "OneStepTheta Scheme", tuple<std::string>("OneStepTheta"),
       tuple<RedAirwaysDyntype>(one_step_theta), &redawdyn);
 

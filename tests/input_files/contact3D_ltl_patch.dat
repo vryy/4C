@@ -22,7 +22,7 @@ STRUCT_DISP                     Yes
 FILESTEPS                       1000
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     2
 TIMESTEP                        0.01

@@ -24,7 +24,7 @@ void Inpar::Thermo::set_valid_parameters(Teuchos::ParameterList& list)
 
   Teuchos::ParameterList& tdyn = list.sublist("THERMAL DYNAMIC", false, "");
 
-  setStringToIntegralParameter<DynamicType>("DYNAMICTYP", "OneStepTheta",
+  setStringToIntegralParameter<DynamicType>("DYNAMICTYPE", "OneStepTheta",
       "type of time integration control",
       tuple<std::string>("Statics", "OneStepTheta", "GenAlpha", "ExplicitEuler"),
       tuple<DynamicType>(dyna_statics, dyna_onesteptheta, dyna_genalpha, dyna_expleuler), &tdyn);

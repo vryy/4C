@@ -25,7 +25,7 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 TIMESTEP                        1
 NUMSTEP                         200
 MAXTIME                         5.0

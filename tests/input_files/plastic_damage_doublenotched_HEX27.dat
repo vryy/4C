@@ -64,7 +64,7 @@ RESTART                         0
 INT_STRATEGY                    Standard
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 ITERNORM                        L2
 K_DAMP                          -1
 LINEAR_SOLVER                   1

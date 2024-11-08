@@ -30,7 +30,7 @@ PARALLEL_REDIST      No
 ----------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 DIVERCONT                       continue
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 ITERNORM                        L2
 LINEAR_SOLVER                   1
 MAXITER                         5

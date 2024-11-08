@@ -68,7 +68,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   // if structure field is quasi-static --> calc_velocity
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   // major switch to different time integrators
-  quasistatic_ = (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") ==
+  quasistatic_ = (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE") ==
                   Inpar::Solid::dyna_statics);
 
   // initialise internal variables with values

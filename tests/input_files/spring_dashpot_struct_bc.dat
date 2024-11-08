@@ -37,7 +37,7 @@ SOLVER                          Superlu
 -------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 ITERNORM                        L2
 K_DAMP                          0.0
 LINEAR_SOLVER                   1

@@ -17,7 +17,7 @@ SHAPEFCT                        Nurbs
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DIVERCONT                       continue
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 ITERNORM                        L2
 LOADLIN                         no
 MAXITER                         20

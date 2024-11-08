@@ -13,7 +13,7 @@ PROBLEMTYPE                      ReducedDimensionalAirWays
 RESTART                         0
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 NUMSTEP                         1000
 TIMESTEP                        1.0e-3
 RESTARTEVRY                     1000

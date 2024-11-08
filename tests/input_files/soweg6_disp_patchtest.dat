@@ -21,7 +21,7 @@ STRUCT_STRESS                   Cauchy
 FLUID_STRESS                    No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     20
 NLNSOL                          fullnewton

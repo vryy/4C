@@ -5,7 +5,7 @@ PROBLEMTYPE                      Structure
 RESTART                         0
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 RESULTSEVRY                     2
 RESTARTEVRY                     20
 NLNSOL                          fullnewton

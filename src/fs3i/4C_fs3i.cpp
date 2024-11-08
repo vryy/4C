@@ -170,7 +170,7 @@ void FS3I::FS3IBase::check_f_s3_i_inputs()
   auto fluidtimealgo =
       Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fluiddynparams, "TIMEINTEGR");
   auto structtimealgo =
-      Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structdynparams, "DYNAMICTYP");
+      Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structdynparams, "DYNAMICTYPE");
 
   if (fluidtimealgo == Inpar::FLUID::timeint_one_step_theta)
   {
@@ -240,7 +240,7 @@ void FS3I::FS3IBase::check_f_s3_i_inputs()
   auto pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
       Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
   // is structure calculated dynamic when not prestressing?
-  if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structdynparams, "DYNAMICTYP") ==
+  if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structdynparams, "DYNAMICTYPE") ==
           Inpar::Solid::dyna_statics and
       pstype != Inpar::Solid::PreStress::mulf)
     FOUR_C_THROW(

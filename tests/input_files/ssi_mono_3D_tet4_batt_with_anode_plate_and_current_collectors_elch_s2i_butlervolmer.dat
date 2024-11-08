@@ -28,7 +28,7 @@ PROBLEMTYPE                      Structure_Scalar_Interaction
 STDOUTEVRY                      0
 ELEMENT_MAT_ID                  yes
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA

@@ -89,7 +89,7 @@ SOLVER                          UMFPACK
 INT_STRATEGY                    Standard
 DAMPING                         Material
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA

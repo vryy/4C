@@ -18,7 +18,7 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 PREDICT                         ConstDis
 LINEAR_SOLVER                   1
 ---------------------------------------------------------------FLUID DYNAMIC

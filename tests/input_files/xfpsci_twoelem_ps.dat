@@ -20,7 +20,7 @@ SHAPEFCT                        Polynomial
 OUTPUT_GMSH                     no
 OUTPUT_BIN                      yes
 -------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 DAMPING                         Material
 RESULTSEVRY                     1
 RESTARTEVRY                     10

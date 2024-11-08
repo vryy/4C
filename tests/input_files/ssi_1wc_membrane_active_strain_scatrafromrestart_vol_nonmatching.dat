@@ -15,7 +15,7 @@ RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 INT_STRATEGY                    Standard
 ITERNORM                        L2
 NLNSOL                          fullnewton

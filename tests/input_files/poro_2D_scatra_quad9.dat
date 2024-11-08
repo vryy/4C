@@ -90,7 +90,7 @@ SOLVER                          Belos
 AZTOL                           1.0E-11
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA

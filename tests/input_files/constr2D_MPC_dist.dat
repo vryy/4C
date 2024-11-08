@@ -29,7 +29,7 @@ NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
 DAMPING                         No
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 K_DAMP                          0.5
 MAXITER                         50
 MAXTIME                         5

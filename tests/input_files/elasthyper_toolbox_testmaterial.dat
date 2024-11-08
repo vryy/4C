@@ -23,7 +23,7 @@ STRUCT_STRESS                   Yes
 STRUCT_STRAIN                   Yes
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     0

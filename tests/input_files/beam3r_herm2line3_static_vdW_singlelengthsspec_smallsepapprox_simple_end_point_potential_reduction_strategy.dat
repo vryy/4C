@@ -60,7 +60,7 @@ INTERNAL_ENERGY_ELEMENT         Yes
 --------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     100
 RESEVRYERGY                     1
 RESTARTEVRY                     100

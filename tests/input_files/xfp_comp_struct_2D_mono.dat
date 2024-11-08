@@ -23,7 +23,7 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no

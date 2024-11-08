@@ -14,7 +14,7 @@ NUMSTEP                         50
 MAXTIME                         0.025
 COUPLING                        partitioned_onewaycoup
 ------------------------------------------------------------PARTICLE DYNAMIC
-DYNAMICTYP                      VelocityVerlet
+DYNAMICTYPE                      VelocityVerlet
 INTERACTION                     DEM
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
 PHASE_TO_DYNLOADBALFAC          phase1 1.0
@@ -34,7 +34,7 @@ POISSON_RATIO                   0.3
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
 LOADLIN                         yes
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 DAMPING                         Yes
 M_DAMP                          1.0
 K_DAMP                          1.0

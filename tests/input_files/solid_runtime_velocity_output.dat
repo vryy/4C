@@ -27,7 +27,7 @@ NLNSOL                                fullnewton
 TIMESTEP                              0.1
 NUMSTEP                               10
 MAXTIME                               1
-DYNAMICTYP                            GenAlpha
+DYNAMICTYPE                            GenAlpha
 MAXITER                               20
 TOLRES                                1.0e-8
 TOLDISP                               1.0e-8

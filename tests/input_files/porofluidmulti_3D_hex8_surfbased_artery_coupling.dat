@@ -49,7 +49,7 @@ NUMPATCH_AXI                    1
 NUMPATCH_RAD                    5
 ------------------------------------------------------------ARTERIAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Stationary
+DYNAMICTYPE                      Stationary
 NUMSTEP                         10
 TIMESTEP                        0.1
 RESTARTEVRY                     20

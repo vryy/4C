@@ -29,7 +29,7 @@ PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
 WRITE_INITIAL_STATE             No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 PRESTRESS                       None
 PRESTRESSTIME                   40.0
 RESULTSEVRY                     3

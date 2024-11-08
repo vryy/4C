@@ -76,7 +76,7 @@ std::shared_ptr<Solid::TimIntImpl> Solid::tim_int_impl_create(
   }
 
   // create specific time integrator
-  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE"))
   {
     // Static analysis
     case Inpar::Solid::dyna_statics:
@@ -108,7 +108,7 @@ std::shared_ptr<Solid::TimIntImpl> Solid::tim_int_impl_create(
       // do nothing
       break;
     }
-  }  // end of switch(sdyn->Typ)
+  }  // end of switch(sdyn->Type)
 
   // return the integrator
   return sti;
@@ -137,7 +137,7 @@ std::shared_ptr<Solid::TimIntExpl> Solid::tim_int_expl_create(
   }
 
   // create specific time integrator
-  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE"))
   {
     // forward Euler time integration
     case Inpar::Solid::dyna_expleuler:
@@ -167,7 +167,7 @@ std::shared_ptr<Solid::TimIntExpl> Solid::tim_int_expl_create(
       // do nothing
       break;
     }
-  }  // end of switch(sdyn->Typ)
+  }  // end of switch(sdyn->Type)
 
   // return the integrator
   return sti;

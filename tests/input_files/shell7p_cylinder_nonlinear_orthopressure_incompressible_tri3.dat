@@ -21,7 +21,7 @@ NUMSTRUCDIS                     1
 STRUCT_DISP                     Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 TIMESTEP                        0.1
 NUMSTEP                         10
 MAXTIME                         1

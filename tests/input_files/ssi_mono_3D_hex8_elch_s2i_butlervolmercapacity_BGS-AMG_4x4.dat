@@ -25,7 +25,7 @@ ABSTOLRES                       0.0
 --------------------------------------------------SSI CONTROL/ELCH
 INITPOTCALC                     yes
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 LINEAR_SOLVER                   3
 INT_STRATEGY                    Standard
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA

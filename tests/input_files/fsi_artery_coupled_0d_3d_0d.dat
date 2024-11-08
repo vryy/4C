@@ -10,7 +10,7 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 NUMSTEP                         40000
 TIMESTEP                        0.00025
 RESTARTEVRY                     1
@@ -21,7 +21,7 @@ TOLERANCE                       1E-4
 SOLVESCATRA                     no
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 PREDICT                         ConstDisVelAcc
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike

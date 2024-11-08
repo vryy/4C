@@ -35,7 +35,7 @@ STRESS_STRAIN                   Yes
 GAUSS_POINT_DATA_OUTPUT_TYPE    nodes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.0625

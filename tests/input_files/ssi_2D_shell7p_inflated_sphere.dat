@@ -15,7 +15,7 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 FILESTEPS                       1000
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
 -----------------------------------------------STRUCT NOX/Printing

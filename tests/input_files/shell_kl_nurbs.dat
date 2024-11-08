@@ -26,7 +26,7 @@ ELEMENT_GID                           yes
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                         1
 INT_STRATEGY                          Standard
-DYNAMICTYP                            Statics
+DYNAMICTYPE                            Statics
 RESULTSEVRY                           1
 RESTARTEVRY                           1
 NLNSOL                                fullnewton

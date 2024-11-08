@@ -8,7 +8,7 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 PRESTRESS                       none
 PRESTRESSTIME                   0
 RESULTSEVRY                     1

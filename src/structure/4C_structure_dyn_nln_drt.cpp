@@ -38,7 +38,7 @@ void caldyn_drt()
   // get input lists
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   // major switch to different time integrators
-  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE"))
   {
     case Inpar::Solid::dyna_statics:
     case Inpar::Solid::dyna_genalpha:
@@ -52,7 +52,7 @@ void caldyn_drt()
       break;
     default:
       FOUR_C_THROW(
-          "unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+          "unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYPE").c_str());
       break;
   }
 

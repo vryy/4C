@@ -51,7 +51,7 @@ namespace Mortar
         const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
         const Core::Utils::FunctionManager& function_manager,
         std::shared_ptr<Core::IO::OutputControl> output_control,
-        Core::FE::ShapeFunctionType shape_function_typ, int ndim);
+        Core::FE::ShapeFunctionType shape_function_type, int ndim);
 
     /// Perform condensation in all blocks of the matrix
     void condense_matrix(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>& mat);

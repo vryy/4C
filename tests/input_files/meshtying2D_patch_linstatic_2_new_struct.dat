@@ -25,7 +25,7 @@ STRUCT_STRESS                   Cauchy
 STRUCT_STRAIN                   Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     10
 NLNSOL                          fullnewton

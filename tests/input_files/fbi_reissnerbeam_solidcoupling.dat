@@ -31,7 +31,7 @@ PREDICTOR                             d(n)
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                          Standard
 LINEAR_SOLVER                         1
-DYNAMICTYP                            GenAlphaLieGroup
+DYNAMICTYPE                            GenAlphaLieGroup
 DAMPING                               no
 NLNSOL                                fullnewton
 PREDICT                               ConstDis

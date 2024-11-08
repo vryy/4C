@@ -48,7 +48,7 @@ NITSCHE_METHOD_TSI              substitution
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 ITERNORM                        L2
 LOADLIN                         no
 MAXITER                         50
@@ -89,7 +89,7 @@ Outer Iteration StatusTest = no
 XML File                        = contact3D_nitsche_so3plast_nonsym_fbar_plast.xml
 ----------------------------------------------------THERMAL DYNAMIC
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 ITERNORM                        L2

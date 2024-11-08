@@ -21,7 +21,7 @@ STRUCT_STRESS                   Cauchy
 STRUCT_STRAIN                   Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     0
 NLNSOL                          fullnewton

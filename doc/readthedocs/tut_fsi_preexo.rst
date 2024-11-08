@@ -95,7 +95,7 @@ Find the following sections in ’default.head’ and edit as given:
 
       -----STRUCTURAL DYNAMIC
 
-   set ``DYNAMICTYP     GenAlpha``
+   set ``DYNAMICTYPE     GenAlpha``
 
    set ``LINEAR_SOLVER 1``
 
@@ -462,7 +462,7 @@ Find the following sections in ’default.head’ and edit as given:
 
          -----STRUCTURAL DYNAMIC
 
-   set ``DYNAMICTYP     GenAlpha``
+   set ``DYNAMICTYPE     GenAlpha``
 
    set ``LINEAR_SOLVER 3``
 

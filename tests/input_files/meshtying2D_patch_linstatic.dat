@@ -23,7 +23,7 @@ STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 STRUCT_STRAIN                   Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     10
 NLNSOL                          fullnewton

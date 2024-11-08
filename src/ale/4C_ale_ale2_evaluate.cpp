@@ -706,12 +706,12 @@ void Discret::Elements::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 
 ///*----------------------------------------------------------------------------*/
 ///*----------------------------------------------------------------------------*/
-// static void ale2_min_jaco(Core::FE::CellType distyp,
+// static void ale2_min_jaco(Core::FE::CellType distype,
 //    Core::LinAlg::SerialDenseMatrix xyz, double *min_detF)
 //{
 //  double  detF[4]; // Jacobian determinant at nodes
 //
-//  switch (distyp)
+//  switch (distype)
 //  {
 //    case Core::FE::CellType::quad4:
 //    case Core::FE::CellType::quad8:
@@ -748,7 +748,7 @@ void Discret::Elements::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 //      if (*min_detF <= 0.0) FOUR_C_THROW("Negative JACOBIAN ");
 //      break;
 //    default:
-//      FOUR_C_THROW("minimal Jacobian determinant for this distyp not implemented");
+//      FOUR_C_THROW("minimal Jacobian determinant for this distype not implemented");
 //      break;
 //  }
 //  return;

@@ -27,7 +27,7 @@ TRIAD_VISUALIZATIONPOINT        Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton

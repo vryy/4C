@@ -13,7 +13,7 @@ RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         no
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no

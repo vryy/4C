@@ -56,7 +56,7 @@ namespace FSI
     explicit DirichletNeumann(const Epetra_Comm &comm);
 
     /// Creates the appropriate DirichletNeumann algortihm
-    //    std::shared_ptr<DirichletNeumann> FSI::DirichletNeumann::Factory(_PROBLEM_TYP type);
+    //    std::shared_ptr<DirichletNeumann> FSI::DirichletNeumann::Factory(_PROBLEM_TYPE type);
     //    \FIXME
 
     /// setup this object

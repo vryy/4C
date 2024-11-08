@@ -38,7 +38,7 @@ WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 PRESTRESS                       none
 PRESTRESSTIME                   0
 RESULTSEVRY                     1

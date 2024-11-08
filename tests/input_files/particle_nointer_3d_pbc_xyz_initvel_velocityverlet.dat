@@ -9,7 +9,7 @@ PERIODICONOFF                   1 1 1
 DOMAINBOUNDINGBOX               -0.4 -0.4 -0.4 0.4 0.4 0.4
 WRITEBINS                       none
 ------------------------------------------------------------PARTICLE DYNAMIC
-DYNAMICTYP                      VelocityVerlet
+DYNAMICTYPE                      VelocityVerlet
 INTERACTION                     None
 RESULTSEVRY                     10
 RESTARTEVRY                     100

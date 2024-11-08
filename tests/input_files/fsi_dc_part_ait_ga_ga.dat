@@ -21,7 +21,7 @@ GRIDVELOCITY                          Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 TOLDISP                         1.0E-10
 MAXITER                         50
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA

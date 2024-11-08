@@ -15,7 +15,7 @@ RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And

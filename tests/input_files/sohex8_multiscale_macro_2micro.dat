@@ -48,7 +48,7 @@ WRITE_INITIAL_STATE             No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 RESULTSEVRY                     1
 NLNSOL                          fullnewton
 TIMESTEP                        0.5

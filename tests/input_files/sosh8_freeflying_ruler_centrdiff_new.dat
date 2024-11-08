@@ -27,7 +27,7 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
 DAMPING                         No
 LUMPMASS                        Yes
-DYNAMICTYP                      CentrDiff
+DYNAMICTYPE                      CentrDiff
 K_DAMP                          0.5
 MAXITER                         50
 MAXTIME                         100E3

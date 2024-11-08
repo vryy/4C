@@ -546,7 +546,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     contact_strategy_lagrange_->inttime_init();
     contact_strategy_lagrange_->set_time_integration_info(structure_field()->tim_int_param(),
         Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(
-            Global::Problem::instance()->structural_dynamic_params(), "DYNAMICTYP"));
+            Global::Problem::instance()->structural_dynamic_params(), "DYNAMICTYPE"));
     contact_strategy_lagrange_->redistribute_contact(
         structure_field()->dispn(), structure_field()->veln());
 
