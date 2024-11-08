@@ -32,3 +32,14 @@ add_custom_command(
     ${CMAKE_BINARY_DIR}/${FOUR_C_EXECUTABLE_NAME_LEGACY}
   COMMENT "Creating symbolic link"
   )
+
+# Create a json schema file for the input
+add_custom_command(
+  TARGET ${FOUR_C_EXECUTABLE_NAME}
+  POST_BUILD
+  COMMAND "$<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}>" -p > ${CMAKE_BINARY_DIR}/4C_metadata.yaml
+  COMMAND
+    ${FOUR_C_PYTHON_VENV_BUILD}/bin/python ${PROJECT_SOURCE_DIR}/utilities/create_json_schema.py
+    ${CMAKE_BINARY_DIR}/4C_metadata.yaml ${CMAKE_BINARY_DIR}/4C_schema.json
+  COMMENT "Creating schema file for input"
+  )
