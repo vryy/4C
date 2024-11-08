@@ -16,7 +16,7 @@
 #include "4C_inpar_validconditions.hpp"
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_inpar_validparameters.hpp"
-#include "4C_io_dat_file_utils.hpp"
+#include "4C_io_input_file_utils.hpp"
 #include "4C_pre_exodus_readbc.hpp"
 #include "4C_pre_exodus_reader.hpp"
 #include "4C_pre_exodus_validate.hpp"
@@ -312,7 +312,7 @@ int main(int argc, char** argv)
 
       // write default .dat header into file
       std::stringstream prelimhead;
-      Input::print_dat_header(prelimhead, *list);
+      Core::IO::InputFileUtils::print_dat(prelimhead, *list);
       std::string headstring = prelimhead.str();
       size_t size_section =
           headstring.find("-------------------------------------------------------PROBLEM SIZE");
@@ -333,7 +333,7 @@ int main(int argc, char** argv)
 
       // print cloning material map default lines (right after the materials)
       const auto lines = Core::FE::valid_cloning_material_map_lines();
-      Core::IO::DatFileUtils::print_section(defaulthead, "CLONING MATERIAL MAP", lines);
+      Core::IO::InputFileUtils::print_section(defaulthead, "CLONING MATERIAL MAP", lines);
 
       // print spatial functions
       defaulthead << "-------------------------------------------------------------FUNCT1"
@@ -349,7 +349,7 @@ int main(int argc, char** argv)
         Core::Utils::FunctionManager functionmanager;
         global_legacy_module_callbacks().AttachFunctionDefinitions(functionmanager);
         const std::vector<Input::LineDefinition> flines = functionmanager.valid_function_lines();
-        Core::IO::DatFileUtils::print_section(tmp, "FUNCT", flines);
+        Core::IO::InputFileUtils::print_section(tmp, "FUNCT", flines);
         std::string tmpstring = tmp.str();
         std::string removeit =
             "--------------------------------------------------------------FUNCT\n";
@@ -364,7 +364,7 @@ int main(int argc, char** argv)
       // default result-test lines
       {
         const auto lines = global_legacy_module_callbacks().valid_result_description_lines();
-        Core::IO::DatFileUtils::print_section(defaulthead, "RESULT DESCRIPTION", lines);
+        Core::IO::InputFileUtils::print_section(defaulthead, "RESULT DESCRIPTION", lines);
       }
 
       // close default header file

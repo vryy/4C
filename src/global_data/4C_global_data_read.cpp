@@ -20,10 +20,10 @@
 #include "4C_inpar_validcontactconstitutivelaw.hpp"
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_io.hpp"
-#include "4C_io_dat_file_utils.hpp"
 #include "4C_io_elementreader.hpp"
 #include "4C_io_geometry_type.hpp"
 #include "4C_io_input_file.hpp"
+#include "4C_io_input_file_utils.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_meshreader.hpp"
 #include "4C_mat_elchmat.hpp"
@@ -2170,7 +2170,7 @@ void Global::read_cloning_material_map(Global::Problem& problem, Core::IO::Input
 
   // perform the actual reading and extract the input parameters
   std::vector<Input::LineDefinition> input_line_vec =
-      Core::IO::DatFileUtils::read_all_lines_in_section(input, "CLONING MATERIAL MAP", lines);
+      Core::IO::InputFileUtils::read_all_lines_in_section(input, "CLONING MATERIAL MAP", lines);
   for (const auto& input_line : input_line_vec)
   {
     // extract what was read from the input file
@@ -2206,7 +2206,7 @@ void Global::read_result(Global::Problem& problem, Core::IO::InputFile& input)
   problem.get_result_test_manager().set_node_set(nodeset);
 
   problem.get_result_test_manager().set_parsed_lines(
-      Core::IO::DatFileUtils::read_all_lines_in_section(input, "RESULT DESCRIPTION", lines));
+      Core::IO::InputFileUtils::read_all_lines_in_section(input, "RESULT DESCRIPTION", lines));
 }
 
 /*----------------------------------------------------------------------*/

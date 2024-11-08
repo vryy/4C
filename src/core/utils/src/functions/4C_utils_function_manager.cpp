@@ -7,8 +7,8 @@
 
 #include "4C_utils_function_manager.hpp"
 
-#include "4C_io_dat_file_utils.hpp"
 #include "4C_io_input_file.hpp"
+#include "4C_io_input_file_utils.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
@@ -155,7 +155,7 @@ void Core::Utils::FunctionManager::read_input(Core::IO::InputFile& input)
           for (auto& [possible_lines, function_factory] : attached_function_data_)
           {
             auto [parsed_lines, unparsed_lines] =
-                Core::IO::DatFileUtils::read_matching_lines_in_section(
+                Core::IO::InputFileUtils::read_matching_lines_in_section(
                     input, "FUNCT" + std::to_string(funct_suffix), possible_lines);
 
             // A convoluted way of saying that there are no lines in the section, thus, stop

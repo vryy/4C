@@ -9,7 +9,7 @@
 
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
 #include "4C_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
-#include "4C_io_dat_file_utils.hpp"
+#include "4C_io_input_file_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -20,7 +20,7 @@ void Input::print_empty_contact_constitutive_law_definitions(std::ostream& strea
         contactconstitutivlawlist)
 {
   const std::string sectionname = "Contact Constitutive Law";
-  Core::IO::DatFileUtils::print_section_header(stream, sectionname);
+  Core::IO::InputFileUtils::print_section_header(stream, sectionname);
 
   for (unsigned i = 0; i < contactconstitutivlawlist.size(); ++i)
   {
