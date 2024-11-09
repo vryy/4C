@@ -219,8 +219,6 @@ Core::Elements::Element* Discret::Elements::Fluid::clone() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::Fluid::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -243,8 +241,6 @@ void Discret::Elements::Fluid::pack(Core::Communication::PackBuffer& data) const
   {
     add_to_pack(data, is_tds);
   }
-
-  return;
 }
 
 
@@ -257,10 +253,7 @@ void Discret::Elements::Fluid::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Element::unpack(base_buffer);
+  Element::unpack(buffer);
   // is_ale_
   extract_from_pack(buffer, is_ale_);
   // distype
@@ -272,17 +265,10 @@ void Discret::Elements::Fluid::unpack(Core::Communication::UnpackBuffer& buffer)
   if (is_tds)
   {
     tds_ = std::make_shared<FLD::TDSEleData>();
-    std::vector<char> pbtest;
-    extract_from_pack(buffer, pbtest);
-    if (pbtest.size() == 0) FOUR_C_THROW("Seems no TDS data available");
-    Core::Communication::UnpackBuffer pbtest_buffer(pbtest);
-    tds_->unpack(pbtest_buffer);
+    tds_->unpack(buffer);
   }
   else
     tds_ = nullptr;
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-  return;
 }
 
 

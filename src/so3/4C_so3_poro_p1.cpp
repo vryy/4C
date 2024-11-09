@@ -40,8 +40,6 @@ template <class So3Ele, Core::FE::CellType distype>
 void Discret::Elements::So3PoroP1<So3Ele, distype>::pack(
     Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -70,12 +68,7 @@ void Discret::Elements::So3PoroP1<So3Ele, distype>::unpack(
 
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Base::unpack(basedata_buffer);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+  Base::unpack(buffer);
 }
 
 template <class So3Ele, Core::FE::CellType distype>

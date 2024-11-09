@@ -70,8 +70,6 @@ Mat::NewmanMultiScale::NewmanMultiScale(Mat::PAR::NewmanMultiScale* params)
  *--------------------------------------------------------------------*/
 void Mat::NewmanMultiScale::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -112,13 +110,7 @@ void Mat::NewmanMultiScale::unpack(Core::Communication::UnpackBuffer& buffer)
   }
 
   // extract base class material
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Newman::unpack(basedata_buffer);
-
-  // final safety check
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+  Newman::unpack(buffer);
 }
 
 /*--------------------------------------------------------------------*

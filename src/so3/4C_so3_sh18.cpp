@@ -128,8 +128,6 @@ Core::Elements::Element* Discret::Elements::SoSh18::clone() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::SoSh18::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -162,10 +160,7 @@ void Discret::Elements::SoSh18::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  SoBase::unpack(basedata_buffer);
+  SoBase::unpack(buffer);
 
   // detJ_
   extract_from_pack(buffer, detJ_);
@@ -182,7 +177,7 @@ void Discret::Elements::SoSh18::unpack(Core::Communication::UnpackBuffer& buffer
   extract_from_pack(buffer, eas_);
   setup_dsg();
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   return;
 }
 

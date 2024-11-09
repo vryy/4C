@@ -76,7 +76,6 @@ Mat::PlasticGTN::PlasticGTN(Mat::PAR::PlasticGTN* params) : params_(params) {}
 
 void Mat::PlasticGTN::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
   int type = unique_par_object_id();
   add_to_pack(data, type);
   int matid = -1;
@@ -158,7 +157,6 @@ void Mat::PlasticGTN::unpack(Core::Communication::UnpackBuffer& buffer)
       epbar_n_.push_back(tmp_scalar);
       epbar_n1_.push_back(tmp_scalar);
     }
-    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   }
 }
 

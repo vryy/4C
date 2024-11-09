@@ -200,8 +200,6 @@ Core::FE::CellType Discret::Elements::SoHex8::shape() const { return Core::FE::C
  *----------------------------------------------------------------------*/
 void Discret::Elements::SoHex8::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -247,10 +245,7 @@ void Discret::Elements::SoHex8::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  SoBase::unpack(basedata_buffer);
+  SoBase::unpack(buffer);
   // eastype_
   extract_from_pack(buffer, eastype_);
   // neas_
@@ -289,7 +284,7 @@ void Discret::Elements::SoHex8::unpack(Core::Communication::UnpackBuffer& buffer
   invJ_.resize(size, Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>(true));
   for (int i = 0; i < size; ++i) extract_from_pack(buffer, invJ_[i]);
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   return;
 }
 

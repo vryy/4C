@@ -1424,11 +1424,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
     Core::Communication::UnpackBuffer buffer(*linkercharvec);
     while (!buffer.at_end())
     {
-      std::vector<char> data;
-      extract_from_pack(buffer, data);
-      Core::Communication::UnpackBuffer data_buffer(data);
-      std::shared_ptr<Core::Communication::ParObject> object(
-          Core::Communication::factory(data_buffer));
+      std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::factory(buffer));
       std::shared_ptr<BEAMINTERACTION::BeamLink> beamtobeamlink =
           std::dynamic_pointer_cast<BEAMINTERACTION::BeamLink>(object);
       if (beamtobeamlink == nullptr) FOUR_C_THROW("Failed to build a node from the node data");
@@ -1454,14 +1450,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   while (!buffer.at_end())
   {
     // unpack
-    std::vector<char> recv_singlecontainer_data;
-    extract_from_pack(buffer, recv_singlecontainer_data);
-
-
-    Core::Communication::UnpackBuffer recv_singlecontainer_buffer(recv_singlecontainer_data);
     std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cl_data(
         BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
-            recv_singlecontainer_buffer));
+            buffer));
 
     int const cl_gid = cl_data->get_id();
     read_node_ids.push_back(cl_gid);
@@ -1488,17 +1479,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   crosslinker_data_.resize(bin_discret().num_my_col_nodes());
   for (auto& iter : cl_datapacks)
   {
-    // this needs to done
-    // Fixme
-
     Core::Communication::UnpackBuffer cl_buffer(iter.second);
-    std::vector<char> data;
-    extract_from_pack(cl_buffer, data);
-
-    Core::Communication::UnpackBuffer data_buffer(data);
     std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cl_data(
         BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
-            data_buffer));
+            cl_buffer));
     crosslinker_data_[bin_discret().node_col_map()->LID(cl_data->get_id())] = cl_data;
   }
 
@@ -1517,13 +1501,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   while (!beamdata_buffer.at_end())
   {
     // unpack
-    std::vector<char> recv_singlecontainer_data;
-    extract_from_pack(beamdata_buffer, recv_singlecontainer_data);
-
-    Core::Communication::UnpackBuffer recv_singlecontainer_buffer(recv_singlecontainer_data);
     std::shared_ptr<BEAMINTERACTION::Data::BeamData> beam_data(
         BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(
-            recv_singlecontainer_buffer));
+            beamdata_buffer));
 
     int const beam_gid = beam_data->get_id();
     read_ele_ids.push_back(beam_gid);
@@ -1549,13 +1529,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   beam_data_.resize(discret().num_my_col_elements());
   for (auto& iter : beam_datapacks)
   {
-    std::vector<char> data;
     Core::Communication::UnpackBuffer buffer(iter.second);
-    extract_from_pack(buffer, data);
-
-    Core::Communication::UnpackBuffer data_buffer(data);
     std::shared_ptr<BEAMINTERACTION::Data::BeamData> beam_data(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(data_buffer));
+        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(buffer));
     beam_data_[discret().element_col_map()->LID(beam_data->get_id())] = beam_data;
   }
 
@@ -2090,15 +2066,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
   crosslinker_data_.resize(bin_discret().num_my_col_nodes());
   for (auto& iter : allpacks)
   {
-    std::vector<char> data;
-
-    Core::Communication::UnpackBuffer buffer1(iter.second);
-    extract_from_pack(buffer1, data);
-
-    Core::Communication::UnpackBuffer buffer2(data);
+    Core::Communication::UnpackBuffer buffer(iter.second);
     std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cl_data(
         BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
-            buffer2));
+            buffer));
     crosslinker_data_[bin_discret().node_col_map()->LID(cl_data->get_id())] = cl_data;
   }
 }
@@ -2195,13 +2166,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
   beam_data_.resize(discret().num_my_col_elements());
   for (auto& iter : allpacks)
   {
-    std::vector<char> data;
-    Core::Communication::UnpackBuffer buffer1(iter.second);
-    extract_from_pack(buffer1, data);
-
-    Core::Communication::UnpackBuffer buffer2(data);
+    Core::Communication::UnpackBuffer buffer(iter.second);
     std::shared_ptr<BEAMINTERACTION::Data::BeamData> beam_data(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(buffer2));
+        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(buffer));
     beam_data_[discret().element_col_map()->LID(beam_data->get_id())] = beam_data;
   }
 }
@@ -4022,13 +3989,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
     Core::Communication::UnpackBuffer buffer(rdata);
     while (!buffer.at_end())
     {
-      std::vector<char> data;
-      extract_from_pack(buffer, data);
-      // this Teuchos::rcp holds the memory
-      Core::Communication::UnpackBuffer data_buffer(data);
       std::shared_ptr<Core::Communication::ParObject> object =
-          std::shared_ptr<Core::Communication::ParObject>(
-              Core::Communication::factory(data_buffer));
+          std::shared_ptr<Core::Communication::ParObject>(Core::Communication::factory(buffer));
       std::shared_ptr<BEAMINTERACTION::BeamLink> beamtobeamlink =
           std::dynamic_pointer_cast<BEAMINTERACTION::BeamLink>(object);
       if (beamtobeamlink == nullptr) FOUR_C_THROW("Received object is not a beam to beam linkage");
@@ -4150,12 +4112,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
     Core::Communication::UnpackBuffer buffer(rdata);
     while (!buffer.at_end())
     {
-      std::vector<char> data;
-      extract_from_pack(buffer, data);
-
-      Core::Communication::UnpackBuffer data_buffer(data);
-      std::shared_ptr<T> data_container(
-          BEAMINTERACTION::Data::create_data_container<T>(data_buffer));
+      std::shared_ptr<T> data_container(BEAMINTERACTION::Data::create_data_container<T>(buffer));
 
       // add received data to list
       recv.push_back(data_container);

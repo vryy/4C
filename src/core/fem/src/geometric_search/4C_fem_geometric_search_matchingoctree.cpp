@@ -770,7 +770,10 @@ void Core::GeometricSearch::NodeMatchingOctree::pack_entity(
   // get the slavenode
   Core::Nodes::Node* actnode = dis->g_node(id);
   // Add node to list of nodes which will be sent to the next proc
-  add_to_pack(data, *actnode);
+  Core::Communication::PackBuffer dummy;
+  add_to_pack(dummy, *actnode);
+  add_to_pack(data, dummy());
+
 }  // NodeMatchingOctree::PackEntity
 
 /*----------------------------------------------------------------------*/
@@ -878,7 +881,14 @@ void Core::GeometricSearch::ElementMatchingOctree::pack_entity(
   Core::Nodes::Node** nodes = actele->nodes();
   // Add node to list of nodes which will be sent to the next proc
   add_to_pack(data, actele->num_node());
-  add_to_pack(data, *actele);
+
+  {
+    Core::Communication::PackBuffer dummy_buffer;
+    add_to_pack(dummy_buffer, *actele);
+
+    add_to_pack(data, dummy_buffer());
+  }
+
   for (int node = 0; node < actele->num_node(); node++) add_to_pack(data, *nodes[node]);
 }  // ElementMatchingOctree::PackEntity
 
@@ -894,10 +904,7 @@ void Core::GeometricSearch::ElementMatchingOctree::unpack_entity(
 
   for (int node = 0; node < numnode; node++)
   {
-    std::vector<char> nodedata;
-    extract_from_pack(buffer, nodedata);
-    Communication::UnpackBuffer nodedatabuffer(nodedata);
-    std::shared_ptr<Core::Communication::ParObject> o(Core::Communication::factory(nodedatabuffer));
+    std::shared_ptr<Core::Communication::ParObject> o(Core::Communication::factory(buffer));
     std::shared_ptr<Core::Nodes::Node> actnode = std::dynamic_pointer_cast<Core::Nodes::Node>(o);
     if (actnode == nullptr) FOUR_C_THROW("cast from ParObject to Node failed");
     nodes_.insert(std::pair<int, std::shared_ptr<Core::Nodes::Node>>(actnode->id(), actnode));

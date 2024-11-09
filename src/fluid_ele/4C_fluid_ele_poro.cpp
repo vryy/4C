@@ -100,8 +100,6 @@ Core::Elements::Element* Discret::Elements::FluidPoro::clone() const
 
 void Discret::Elements::FluidPoro::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -144,12 +142,7 @@ void Discret::Elements::FluidPoro::unpack(Core::Communication::UnpackBuffer& buf
     extract_from_pack(buffer, anisotropic_permeability_nodal_coeffs_[i]);
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Fluid::unpack(basedata_buffer);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+  Fluid::unpack(buffer);
 }
 
 std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::FluidPoro::lines()

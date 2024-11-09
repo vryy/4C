@@ -152,7 +152,7 @@ void Cut::Parallel::export_communication_finished(bool& procDone)
     send_data(dataSend, dest, source, dataRecv);
 
     // pointer to current position of group of cells in global std::string (counts bytes)
-    int allProcsDone = 0;
+    bool allProcsDone = 0;
 
     Core::Communication::UnpackBuffer data_recv_buffer(dataRecv);
     // unpack received data
@@ -533,7 +533,7 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
       {
         // unpack volumecell
         int set_index = -1;                                         // set index for Volumecell
-        int inside_cell = false;                                    // inside or outside cell
+        bool inside_cell = false;                                   // inside or outside cell
         std::vector<Core::LinAlg::Matrix<3, 1>> cut_points_coords;  // coordinates of cut points
         int peid = -1;                             // parent element id for volume cell
         std::map<int, int> node_dofsetnumber_map;  // map <nid, current dofset number>

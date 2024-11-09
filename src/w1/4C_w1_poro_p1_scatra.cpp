@@ -53,8 +53,6 @@ template <Core::FE::CellType distype>
 void Discret::Elements::Wall1PoroP1Scatra<distype>::pack(
     Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -80,12 +78,9 @@ void Discret::Elements::Wall1PoroP1Scatra<distype>::unpack(
   extract_from_pack(buffer, impltype_);
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  my::unpack(basedata_buffer);
+  my::unpack(buffer);
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
 
   return;
 }

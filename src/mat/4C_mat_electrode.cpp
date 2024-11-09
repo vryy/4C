@@ -258,8 +258,6 @@ Mat::Electrode::Electrode(Mat::PAR::Electrode* params) : params_(params) {}
  *----------------------------------------------------------------------*/
 void Mat::Electrode::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -293,8 +291,6 @@ void Mat::Electrode::unpack(Core::Communication::UnpackBuffer& buffer)
             material_type());
     }
   }
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

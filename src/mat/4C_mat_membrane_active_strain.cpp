@@ -85,8 +85,6 @@ Mat::MembraneActiveStrain::MembraneActiveStrain(Mat::PAR::MembraneActiveStrain* 
  *----------------------------------------------------------------------*/
 void Mat::MembraneActiveStrain::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -102,7 +100,12 @@ void Mat::MembraneActiveStrain::pack(Core::Communication::PackBuffer& data) cons
   // data of passive elastic material
   if (matpassive_ != nullptr)
   {
+    add_to_pack(data, true);
     matpassive_->pack(data);
+  }
+  else
+  {
+    add_to_pack(data, false);
   }
 
   // pack internal variables
@@ -156,13 +159,11 @@ void Mat::MembraneActiveStrain::unpack(Core::Communication::UnpackBuffer& buffer
   extract_from_pack(buffer, fibervecs_);
 
   // unpack data of passive material
-  std::vector<char> matpassive_data;
-  extract_from_pack(buffer, matpassive_data);
-  if (matpassive_data.size() > 0)
+  bool matpassive_exists;
+  extract_from_pack(buffer, matpassive_exists);
+  if (matpassive_exists)
   {
-    Core::Communication::UnpackBuffer buffer_matpassive(matpassive_data);
-    Core::Communication::ParObject* o =
-        Core::Communication::factory(buffer_matpassive);  // Unpack is done here
+    Core::Communication::ParObject* o = Core::Communication::factory(buffer);
     Mat::So3Material* matpassive = dynamic_cast<Mat::So3Material*>(o);
     if (matpassive == nullptr) FOUR_C_THROW("failed to unpack passive material");
 
@@ -179,7 +180,7 @@ void Mat::MembraneActiveStrain::unpack(Core::Communication::UnpackBuffer& buffer
   if (numgp == 0)  // no internal data to unpack
   {
     isinit_ = false;
-    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
     return;
   }
 

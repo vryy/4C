@@ -133,8 +133,6 @@ Core::Elements::Element* Discret::Elements::SoShw6::clone() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::SoShw6::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -163,10 +161,7 @@ void Discret::Elements::SoShw6::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class So_weg6 Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Discret::Elements::SoWeg6::unpack(basedata_buffer);
+  Discret::Elements::SoWeg6::unpack(buffer);
   // eastype_
   extract_from_pack(buffer, eastype_);
   // neas_
@@ -177,7 +172,7 @@ void Discret::Elements::SoShw6::unpack(Core::Communication::UnpackBuffer& buffer
   extract_from_pack(buffer, optimal_parameterspace_map_);
   extract_from_pack(buffer, nodes_rearranged_);
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   return;
 }
 

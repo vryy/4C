@@ -118,12 +118,7 @@ void Mixture::MixtureConstituentSolidMaterial::unpack_constituent(
     material_ = std::dynamic_pointer_cast<Mat::So3Material>(so3mat);
     if (!(so3mat)) FOUR_C_THROW("Failed to allocate");
 
-    // solid material packed: 1. the data size, 2. the packed data of size sm
-    // extract_from_pack extracts a sub_vec of size sm from data and updates the position vector
-    std::vector<char> sub_vec;
-    extract_from_pack(buffer, sub_vec);
-    Core::Communication::UnpackBuffer sub_vec_buffer(sub_vec);
-    material_->unpack(sub_vec_buffer);
+    material_->unpack(buffer);
   }
 }
 

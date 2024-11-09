@@ -87,8 +87,6 @@ Mat::Myocard::Myocard(Mat::PAR::Myocard* params)
  *----------------------------------------------------------------------*/
 void Mat::Myocard::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -175,8 +173,6 @@ void Mat::Myocard::unpack(Core::Communication::UnpackBuffer& buffer)
             extract_from_pack(buffer, val);
             myocard_mat_->set_internal_state(k, val, i);
           }
-
-        FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
       }
     }
   }
@@ -231,8 +227,6 @@ void Mat::Myocard::unpack_material(Core::Communication::UnpackBuffer& buffer)
           extract_from_pack(buffer, val);
           myocard_mat_->set_internal_state(k, val, i);
         }
-
-      FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
     }
   }
 }

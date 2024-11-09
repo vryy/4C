@@ -46,7 +46,7 @@ void Core::Communication::extract_from_pack(
   extract_from_pack(buffer, n);
   stuff.reshape(m, n);
   double* a = stuff.values();
-  if (m * n > 0) extract_from_pack(buffer, a, n * m * sizeof(double));
+  extract_from_pack(buffer, a, n * m * sizeof(double));
 }
 
 void Core::Communication::extract_from_pack(
@@ -56,7 +56,7 @@ void Core::Communication::extract_from_pack(
   extract_from_pack(buffer, m);
   stuff.resize(m);
   double* a = stuff.values();
-  if (m > 0) extract_from_pack(buffer, a, m * sizeof(double));
+  extract_from_pack(buffer, a, m * sizeof(double));
 }
 
 void Core::Communication::extract_from_pack(

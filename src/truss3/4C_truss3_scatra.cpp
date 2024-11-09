@@ -105,8 +105,6 @@ Core::Elements::Element* Discret::Elements::Truss3Scatra::clone() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::Truss3Scatra::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -122,14 +120,9 @@ void Discret::Elements::Truss3Scatra::unpack(Core::Communication::UnpackBuffer& 
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Truss3::unpack(basedata_buffer);
+  Truss3::unpack(buffer);
 
   extract_from_pack(buffer, impltype_);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

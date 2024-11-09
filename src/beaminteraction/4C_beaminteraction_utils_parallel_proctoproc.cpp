@@ -86,7 +86,6 @@ void Discret::Utils::i_send_receive_any(Core::FE::Discretization& discret,
         extract_from_pack(buffer, pair);
         recvdata.push_back(pair);
       }
-      FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not empty after unpacking");
     }
   }
 

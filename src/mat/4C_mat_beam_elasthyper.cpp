@@ -95,8 +95,6 @@ void Mat::BeamElastHyperMaterial<T>::compute_constitutive_parameter(
 template <typename T>
 void Mat::BeamElastHyperMaterial<T>::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -141,8 +139,6 @@ void Mat::BeamElastHyperMaterial<T>::unpack(Core::Communication::UnpackBuffer& b
         FOUR_C_THROW("Type of material parameter %d does not fit to type of material law %d",
             mat->type(), material_type());
     }
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*-----------------------------------------------------------------------------------------------*

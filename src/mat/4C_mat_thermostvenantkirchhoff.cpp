@@ -92,8 +92,6 @@ void Mat::ThermoStVenantKirchhoff::create_thermo_material_if_set()
  *----------------------------------------------------------------------*/
 void Mat::ThermoStVenantKirchhoff::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -131,7 +129,7 @@ void Mat::ThermoStVenantKirchhoff::unpack(Core::Communication::UnpackBuffer& buf
       create_thermo_material_if_set();
     }
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
 }  // unpack()
 
 

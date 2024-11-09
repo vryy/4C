@@ -10,7 +10,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_utils_exceptions.hpp"
+
 #include <cstring>
+#include <typeinfo>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -28,31 +31,7 @@ namespace Core::Communication
    */
   class PackBuffer
   {
-    friend class SizeMarker;
-
    public:
-    /**
-     * This class is used to mark the size of an object in the buffer. The class uses RAII to
-     * automatically prepend the size of the object in the buffer when an instance goes out of
-     * scope. An instance of this class should be created when entering a `pack` method of a class.
-     */
-    class SizeMarker
-    {
-     public:
-      SizeMarker(PackBuffer& data) : data_(data)
-      {
-        // add dummy object size, will be filled later
-        data_.add_to_pack(-1);
-        old_size_ = data_().size();
-      }
-
-      ~SizeMarker() { data_.set_object_size(old_size_); }
-
-     private:
-      PackBuffer& data_;
-      std::size_t old_size_{};
-    };
-
     PackBuffer() = default;
 
     std::vector<char>& operator()() { return buf_; }
@@ -63,6 +42,14 @@ namespace Core::Communication
     template <typename T, typename = std::enable_if_t<std::is_trivially_copyable_v<T>>>
     void add_to_pack(const T& stuff)
     {
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      // Write the type into the buffer
+      const std::size_t hash = typeid(T).hash_code();
+      scratch_buffer_.resize(sizeof(hash));
+      std::memcpy(scratch_buffer_.data(), &hash, sizeof(hash));
+      buf_.insert(buf_.end(), scratch_buffer_.begin(), scratch_buffer_.end());
+#endif
+
       // Convert stuff into a vector of chars via a separate buffer.
       scratch_buffer_.resize(sizeof(T));
       std::memcpy(scratch_buffer_.data(), &stuff, sizeof(T));
@@ -76,6 +63,16 @@ namespace Core::Communication
     template <typename T, typename = std::enable_if_t<std::is_trivially_copyable_v<T>>>
     void add_to_pack(const T* stuff, std::size_t stuff_size)
     {
+      FOUR_C_ASSERT(stuff_size % sizeof(T) == 0, "Size of stuff must be a multiple of sizeof(T).");
+
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      // Write the type into the buffer
+      const std::size_t hash = typeid(T).hash_code();
+      scratch_buffer_.resize(sizeof(hash));
+      std::memcpy(scratch_buffer_.data(), &hash, sizeof(hash));
+      buf_.insert(buf_.end(), scratch_buffer_.begin(), scratch_buffer_.end());
+#endif
+
       // Convert stuff into a vector of chars via a separate buffer.
       scratch_buffer_.resize(stuff_size);
       std::memcpy(scratch_buffer_.data(), stuff, stuff_size);
@@ -85,13 +82,6 @@ namespace Core::Communication
     }
 
    private:
-    /// set size of a ParObject after it has been inserted
-    void set_object_size(std::size_t oldsize)
-    {
-      int osize = buf_.size() - oldsize;
-      std::memcpy(&buf_[oldsize - sizeof(int)], &osize, sizeof(int));
-    }
-
     //! The actual buffer containing the packed data.
     std::vector<char> buf_;
 
@@ -123,7 +113,16 @@ namespace Core::Communication
     template <typename T>
     std::enable_if_t<std::is_trivially_copyable_v<T>, void> extract_from_pack(T& stuff)
     {
-      peek(stuff);
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      // Check that the type matches the type that was packed.
+      std::size_t hash;
+      std::memcpy(&hash, &data_[position_], sizeof(hash));
+      position_ += sizeof(hash);
+      FOUR_C_ASSERT(hash == typeid(T).hash_code(),
+          "Type mismatch during unpacking. Tried to extract type %s", typeid(T).name());
+#endif
+
+      memcpy(&stuff, &data_[position_], sizeof(T));
       position_ += sizeof(T);
     }
 
@@ -132,9 +131,21 @@ namespace Core::Communication
      *
      * Same as the other method but extracts @p stuff_size entries into the array @p stuff.
      */
-    template <typename Kind>
-    void extract_from_pack(Kind* stuff, const std::size_t stuff_size)
+    template <typename T>
+    void extract_from_pack(T* stuff, const std::size_t stuff_size)
     {
+      FOUR_C_ASSERT(stuff_size % sizeof(T) == 0, "Size of stuff must be a multiple of sizeof(T).");
+
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      // Check that the type matches the type that was packed.
+      std::size_t hash;
+      std::memcpy(&hash, &data_[position_], sizeof(hash));
+      position_ += sizeof(hash);
+      FOUR_C_ASSERT(hash == typeid(T).hash_code(),
+          "Type mismatch during unpacking. Tried to extract type %s", typeid(T).name());
+#endif
+
+
       memcpy(stuff, &data_[position_], stuff_size);
       position_ += stuff_size;
     }
@@ -145,7 +156,17 @@ namespace Core::Communication
     template <typename T>
     std::enable_if_t<std::is_trivially_copyable_v<T>, void> peek(T& stuff) const
     {
-      memcpy(&stuff, &data_[position_], sizeof(T));
+      std::size_t position = position_;
+
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      // Check that the type matches the type that was packed.
+      std::size_t hash;
+      std::memcpy(&hash, &data_[position_], sizeof(hash));
+      position += sizeof(hash);
+      FOUR_C_ASSERT(hash == typeid(T).hash_code(), "Type mismatch during unpacking.");
+#endif
+
+      memcpy(&stuff, &data_[position], sizeof(T));
     }
 
     /**

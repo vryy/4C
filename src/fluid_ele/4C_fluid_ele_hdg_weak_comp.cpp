@@ -135,8 +135,6 @@ Core::Elements::Element* Discret::Elements::FluidHDGWeakComp::clone() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::FluidHDGWeakComp::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -158,10 +156,7 @@ void Discret::Elements::FluidHDGWeakComp::unpack(Core::Communication::UnpackBuff
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Fluid::unpack(basedata_buffer);
+  Fluid::unpack(buffer);
 
   int val = 0;
   extract_from_pack(buffer, val);
@@ -169,8 +164,6 @@ void Discret::Elements::FluidHDGWeakComp::unpack(Core::Communication::UnpackBuff
   degree_ = val;
   extract_from_pack(buffer, val);
   completepol_ = val;
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

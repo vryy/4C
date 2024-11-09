@@ -210,8 +210,6 @@ Core::FE::CellType Thermo::Element::shape() const { return distype_; }  // Shape
  *----------------------------------------------------------------------*/
 void Thermo::Element::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -234,16 +232,13 @@ void Thermo::Element::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Core::Elements::Element::unpack(base_buffer);
+  Core::Elements::Element::unpack(buffer);
   // kintype_
   extract_from_pack(buffer, kintype_);
   // distype
   extract_from_pack(buffer, distype_);
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   return;
 }  // unpack()
 

@@ -169,8 +169,6 @@ Core::Elements::Element* Discret::Elements::Elemag::clone() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::Elemag::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -180,11 +178,8 @@ void Discret::Elements::Elemag::pack(Core::Communication::PackBuffer& data) cons
 
   // Discretisation type
   add_to_pack(data, distype_);
-  int degree = degree_;
-  add_to_pack(data, degree);
+  add_to_pack(data, degree_);
   add_to_pack(data, completepol_);
-
-  return;
 }
 
 
@@ -197,22 +192,12 @@ void Discret::Elements::Elemag::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Element::unpack(base_buffer);
+  Element::unpack(buffer);
 
   // distype
   extract_from_pack(buffer, distype_);
-  int val = 0;
-  extract_from_pack(buffer, val);
-  FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
-  degree_ = val;
-  extract_from_pack(buffer, val);
-  completepol_ = val;
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-  return;
+  extract_from_pack(buffer, degree_);
+  extract_from_pack(buffer, completepol_);
 }
 
 
@@ -348,8 +333,6 @@ Core::FE::CellType Discret::Elements::ElemagBoundary::shape() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::ElemagBoundary::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -372,12 +355,9 @@ void Discret::Elements::ElemagBoundary::unpack(Core::Communication::UnpackBuffer
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Element::unpack(base_buffer);
+  Element::unpack(buffer);
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
 
   return;
 }

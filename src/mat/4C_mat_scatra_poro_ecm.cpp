@@ -57,8 +57,6 @@ Mat::ScatraMatPoroECM::ScatraMatPoroECM(Mat::PAR::ScatraMatPoroECM* params)
 /*----------------------------------------------------------------------*/
 void Mat::ScatraMatPoroECM::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -102,10 +100,7 @@ void Mat::ScatraMatPoroECM::unpack(Core::Communication::UnpackBuffer& buffer)
   extract_from_pack(buffer, reaccoeff_);
 
   // extract base class material
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  ScatraReactionMat::unpack(basedata_buffer);
+  ScatraReactionMat::unpack(buffer);
 }
 
 /*----------------------------------------------------------------------*/

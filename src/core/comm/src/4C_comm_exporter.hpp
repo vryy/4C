@@ -549,11 +549,7 @@ namespace Core::Communication
 
       void unpack_object(int gid, UnpackBuffer& buffer) override
       {
-        std::vector<char> object_data;
-        extract_from_pack(buffer, object_data);
-
-        UnpackBuffer object_buffer(object_data);
-        ParObject* o = factory(object_buffer);
+        ParObject* o = factory(buffer);
         T* ptr = dynamic_cast<T*>(o);
         if (!ptr)
           FOUR_C_THROW("typename T in template does not implement ParObject (dynamic_cast failed)");

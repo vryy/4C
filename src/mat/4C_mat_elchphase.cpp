@@ -115,8 +115,6 @@ void Mat::ElchPhase::clear()
 /*----------------------------------------------------------------------*/
 void Mat::ElchPhase::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -181,15 +179,12 @@ void Mat::ElchPhase::unpack(Core::Communication::UnpackBuffer& buffer)
       // loop map of associated local materials
       for (n = params_->mat_ids().begin(); n != params_->mat_ids().end(); n++)
       {
-        std::vector<char> pbtest;
-        extract_from_pack(buffer, pbtest);
-        Core::Communication::UnpackBuffer buffer_pbtest(pbtest);
-        (mat_.find(*n))->second->unpack(buffer_pbtest);
+        (mat_.find(*n))->second->unpack(buffer);
       }
     }
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
-    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   }  // if (params_ != nullptr)
 }
 

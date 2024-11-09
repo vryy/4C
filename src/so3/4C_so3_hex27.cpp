@@ -159,8 +159,6 @@ Core::FE::CellType Discret::Elements::SoHex27::shape() const { return Core::FE::
  *----------------------------------------------------------------------*/
 void Discret::Elements::SoHex27::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -196,10 +194,7 @@ void Discret::Elements::SoHex27::unpack(Core::Communication::UnpackBuffer& buffe
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  SoBase::unpack(basedata_buffer);
+  SoBase::unpack(buffer);
 
   // detJ_
   extract_from_pack(buffer, detJ_);
@@ -223,7 +218,7 @@ void Discret::Elements::SoHex27::unpack(Core::Communication::UnpackBuffer& buffe
     prestress_->unpack(tmpprestress_buffer);
   }
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   return;
 }
 

@@ -131,8 +131,6 @@ void Mat::MatList::clear()
 /*----------------------------------------------------------------------*/
 void Mat::MatList::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -203,15 +201,12 @@ void Mat::MatList::unpack(Core::Communication::UnpackBuffer& buffer)
       // loop map of associated local materials
       for (m = params_->mat_ids()->begin(); m != params_->mat_ids()->end(); m++)
       {
-        std::vector<char> pbtest;
-        extract_from_pack(buffer, pbtest);
-        Core::Communication::UnpackBuffer buffer_pbtest(pbtest);
-        (mat_.find(*m))->second->unpack(buffer_pbtest);
+        (mat_.find(*m))->second->unpack(buffer);
       }
     }
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
-    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   }  // if (params_ != nullptr)
 }
 

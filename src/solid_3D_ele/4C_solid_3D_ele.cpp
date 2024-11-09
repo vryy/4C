@@ -172,8 +172,6 @@ const Core::FE::GaussIntegration& Discret::Elements::Solid::get_gauss_rule() con
 
 void Discret::Elements::Solid::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   add_to_pack(data, unique_par_object_id());
 
   // add base class Element
@@ -193,10 +191,7 @@ void Discret::Elements::Solid::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Core::Elements::Element::unpack(base_buffer);
+  Core::Elements::Element::unpack(buffer);
 
   extract_from_pack(buffer, celltype_);
 
@@ -208,8 +203,6 @@ void Discret::Elements::Solid::unpack(Core::Communication::UnpackBuffer& buffer)
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
 
   Discret::Elements::unpack(solid_calc_variant_, buffer);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 void Discret::Elements::Solid::set_params_interface_ptr(const Teuchos::ParameterList& p)

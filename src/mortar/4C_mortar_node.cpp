@@ -174,8 +174,6 @@ void Mortar::Node::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 void Mortar::Node::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -226,10 +224,7 @@ void Mortar::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Core::Nodes::Node
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Core::Nodes::Node::unpack(basedata_buffer);
+  Core::Nodes::Node::unpack(buffer);
   // isslave_
   extract_from_pack(buffer, isslave_);
   // istiedslave_
@@ -273,8 +268,6 @@ void Mortar::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   {
     modata_ = nullptr;
   }
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

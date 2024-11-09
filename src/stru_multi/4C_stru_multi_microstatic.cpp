@@ -1133,8 +1133,6 @@ void MultiScale::stop_np_multiscale()
 
 void MultiScale::MicroStaticParObject::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   add_to_pack(data, unique_par_object_id());
 
   const auto* micro_data = MultiScale::MicroStaticParObject::get_micro_static_data_ptr();
@@ -1160,8 +1158,6 @@ void MultiScale::MicroStaticParObject::unpack(Core::Communication::UnpackBuffer&
   extract_from_pack(buffer, micro_data.stress_);
   extract_from_pack(buffer, micro_data.cmat_);
   set_micro_static_data(micro_data);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 MultiScale::MicroStaticParObjectType MultiScale::MicroStaticParObjectType::instance_;

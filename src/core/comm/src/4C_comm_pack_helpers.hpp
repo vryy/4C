@@ -141,7 +141,16 @@ namespace Core::Communication
   template <typename T, std::size_t numentries>
   void add_to_pack(PackBuffer& data, const std::array<T, numentries>& stuff)
   {
-    add_to_pack(data, stuff.data(), numentries * sizeof(T));
+    // If T is trivially copyable, we can just copy the bytes. Otherwise, recursively call the
+    // pack function for every element.
+    if constexpr (std::is_trivially_copyable_v<T>)
+    {
+      add_to_pack(data, stuff.data(), numentries * sizeof(T));
+    }
+    else
+    {
+      for (const auto& elem : stuff) add_to_pack(data, elem);
+    }
   }
 
   /*!
@@ -308,30 +317,6 @@ namespace Core::Communication
   /*!
    * \brief Add stuff to the end of a char vector data
    *
-   * This method is an overload of the above template for an STL vector containing matrices
-   * \param[in,out] data char string stuff shall be added to
-   * \param[in] stuff vector of matrices that get's added to data
-   */
-  template <unsigned i, unsigned j>
-  void add_to_pack(PackBuffer& data, const std::vector<Core::LinAlg::Matrix<i, j>>& stuff)
-  {
-    // add length of vector to be packed so that later the vector can be restored with correct
-    // length when unpacked
-    int vectorlength = stuff.size();
-    add_to_pack(data, vectorlength);
-
-    for (int p = 0; p < vectorlength; ++p)
-    {
-      const double* A = stuff[p].data();
-
-      // add all data in vector to pack
-      add_to_pack(data, A, i * j * sizeof(double));
-    }
-  }
-
-  /*!
-   * \brief Add stuff to the end of a char vector data
-   *
    * This method is an overload of the above template for string
    * \param[in,out] data char string stuff shall be added to
    * \param[in] stuff string that get's added to stuff
@@ -415,8 +400,14 @@ namespace Core::Communication
   template <typename T, std::size_t numentries>
   void extract_from_pack(UnpackBuffer& buffer, std::array<T, numentries>& stuff)
   {
-    int size = numentries * sizeof(T);
-    extract_from_pack(buffer, stuff.data(), size);
+    if constexpr (std::is_trivially_copyable_v<T>)
+    {
+      extract_from_pack(buffer, stuff.data(), numentries * sizeof(T));
+    }
+    else
+    {
+      for (auto& elem : stuff) extract_from_pack(buffer, elem);
+    }
   }
 
   /*!
@@ -654,43 +645,13 @@ namespace Core::Communication
   template <unsigned int i, unsigned int j>
   void extract_from_pack(UnpackBuffer& buffer, Core::LinAlg::Matrix<i, j>& stuff)
   {
-    int m = 0;
+    unsigned int m = 0;
     extract_from_pack(buffer, m);
     if (m != i) FOUR_C_THROW("first dimension mismatch");
-    int n = 0;
+    unsigned int n = 0;
     extract_from_pack(buffer, n);
     if (n != j) FOUR_C_THROW("second dimension mismatch");
     extract_from_pack(buffer, stuff.data(), stuff.m() * stuff.n() * sizeof(double));
-  }
-
-  /*!
-   * \brief Extract stuff from a char vector data and increment position
-   *
-   * This method is an overload of the above template for stuff of type STL vector of matrices
-   *
-   * \param[in,out] position place in data where to extract stuff. Position will be incremented
-   * by this method
-   * \param[in] data char vector where stuff is extracted from
-   * \param[out] stuff STL vector of matrices to extract from data
-   */
-  template <unsigned int i, unsigned int j>
-  void extract_from_pack(UnpackBuffer& buffer, std::vector<Core::LinAlg::Matrix<i, j>>& stuff)
-  {
-    // get length of vector to be extracted and allocate according amount of memory for all
-    // extracted data
-    int vectorlength;
-    extract_from_pack(buffer, vectorlength);
-
-    // resize vector stuff appropriately
-    stuff.resize(vectorlength);
-
-    for (int p = 0; p < vectorlength; ++p)
-    {
-      double* A = stuff[p].data();
-
-      // actual extraction of data
-      buffer.extract_from_pack(A, i * j * sizeof(double));
-    }
   }
 
   /*!

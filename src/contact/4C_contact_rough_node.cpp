@@ -89,8 +89,6 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
  *----------------------------------------------------------------------*/
 void CONTACT::RoughNode::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -121,10 +119,7 @@ void CONTACT::RoughNode::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class CONTACT::Node
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  CONTACT::Node::unpack(basedata_buffer);
+  CONTACT::Node::unpack(buffer);
 
   extract_from_pack(buffer, hurstexponentfunction_);
   extract_from_pack(buffer, initialtopologystddeviationfunction_);
@@ -139,7 +134,7 @@ void CONTACT::RoughNode::unpack(Core::Communication::UnpackBuffer& buffer)
   extract_from_pack(buffer, maxTopologyHeight_);
 
   // Check
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   return;
 }
 

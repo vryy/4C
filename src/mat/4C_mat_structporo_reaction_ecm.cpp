@@ -93,8 +93,6 @@ void Mat::StructPoroReactionECM::setup(
 /*----------------------------------------------------------------------*/
 void Mat::StructPoroReactionECM::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -146,10 +144,7 @@ void Mat::StructPoroReactionECM::unpack(Core::Communication::UnpackBuffer& buffe
   extract_from_pack(buffer, chempot_);
 
   // extract base class material
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  StructPoroReaction::unpack(basedata_buffer);
+  StructPoroReaction::unpack(buffer);
 }
 
 

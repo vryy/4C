@@ -61,8 +61,6 @@ Mat::NewtonianFluid::NewtonianFluid(Mat::PAR::NewtonianFluid* params) : params_(
 /*----------------------------------------------------------------------*/
 void Mat::NewtonianFluid::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -96,8 +94,6 @@ void Mat::NewtonianFluid::unpack(Core::Communication::UnpackBuffer& buffer)
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
             material_type());
     }
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

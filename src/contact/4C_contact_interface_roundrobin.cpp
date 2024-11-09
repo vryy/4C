@@ -130,9 +130,8 @@ void CONTACT::Interface::round_robin_change_ownership()
 
     mele->pack(dataeles);
 
-    // check for ghosting
-    const int ghost = (mele->owner() == myrank) ? 1 : 0;
-    add_to_pack(dataeles, ghost);
+    const bool locally_owned = mele->owner() == myrank;
+    add_to_pack(dataeles, locally_owned);
   }
   std::swap(sdataeles, dataeles());
 
@@ -170,21 +169,16 @@ void CONTACT::Interface::round_robin_change_ownership()
     Core::Communication::UnpackBuffer buffer(rdataeles);
     while (!buffer.at_end())
     {
-      std::vector<char> data;
-      int ghost = -1;
-      extract_from_pack(buffer, data);
-      extract_from_pack(buffer, ghost);
-      if (ghost == -1) FOUR_C_THROW("Unpack error.");
-
       // this Teuchos::rcp holds the memory of the ele
-      Core::Communication::UnpackBuffer data_buffer(data);
-      std::shared_ptr<Core::Communication::ParObject> object(
-          Core::Communication::factory(data_buffer));
+      std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::factory(buffer));
       std::shared_ptr<Mortar::Element> ele = std::dynamic_pointer_cast<Mortar::Element>(object);
       if (ele == nullptr) FOUR_C_THROW("Received object is not an ele");
 
+      bool locally_owned;
+      extract_from_pack(buffer, locally_owned);
+
       // add whether its a row ele
-      if (ghost == 1)
+      if (locally_owned)
       {
         ele->set_owner(myrank);
         idiscret_->add_element(ele);
@@ -287,17 +281,10 @@ void CONTACT::Interface::round_robin_change_ownership()
     Core::Communication::UnpackBuffer buffer(rdatanodes);
     while (!buffer.at_end())
     {
-      std::vector<char> data;
+      std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::factory(buffer));
 
-      int ghost = -1;
-      extract_from_pack(buffer, data);
+      int ghost;
       extract_from_pack(buffer, ghost);
-      if (ghost == -1) FOUR_C_THROW("UNPACK ERROR!!!!!!!!!");
-
-      // this Teuchos::rcp holds the memory of the node
-      Core::Communication::UnpackBuffer data_buffer(data);
-      std::shared_ptr<Core::Communication::ParObject> object(
-          Core::Communication::factory(data_buffer));
 
       if (ftype == Inpar::CONTACT::friction_none)
       {

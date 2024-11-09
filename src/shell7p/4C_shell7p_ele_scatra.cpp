@@ -241,8 +241,6 @@ Core::Elements::Element* Discret::Elements::Shell7pScatra::clone() const
 
 void Discret::Elements::Shell7pScatra::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -270,10 +268,7 @@ void Discret::Elements::Shell7pScatra::unpack(Core::Communication::UnpackBuffer&
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Element::unpack(base_buffer);
+  Element::unpack(buffer);
   // discretization type
   extract_from_pack(buffer, distype_);
   // element technology
@@ -290,7 +285,6 @@ void Discret::Elements::Shell7pScatra::unpack(Core::Communication::UnpackBuffer&
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
 
   try_unpack_interface(shell_interface_, buffer);
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 std::shared_ptr<Mat::So3Material> Discret::Elements::Shell7pScatra::solid_material(int nummat) const

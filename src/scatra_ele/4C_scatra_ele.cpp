@@ -557,8 +557,6 @@ Core::FE::CellType Discret::Elements::Transport::shape() const { return distype_
  *----------------------------------------------------------------------*/
 void Discret::Elements::Transport::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -584,10 +582,7 @@ void Discret::Elements::Transport::unpack(Core::Communication::UnpackBuffer& buf
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Element::unpack(base_buffer);
+  Element::unpack(buffer);
 
   // extract internal data
   extract_from_pack(buffer, name_);
@@ -595,8 +590,6 @@ void Discret::Elements::Transport::unpack(Core::Communication::UnpackBuffer& buf
   extract_from_pack(buffer, numdofpernode_);
   extract_from_pack(buffer, distype_);
   extract_from_pack(buffer, impltype_);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

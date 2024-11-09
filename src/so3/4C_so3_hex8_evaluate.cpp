@@ -437,21 +437,27 @@ int Discret::Elements::SoHex8::evaluate(Teuchos::ParameterList& params,
       {
         Core::Communication::PackBuffer data;
 
-        add_to_pack(data, stress);
+        Core::LinAlg::SerialDenseMatrix stress_view(
+            Teuchos::View, stress.values(), NUMGPT_SOH8, NUMGPT_SOH8, Mat::NUM_STRESS_3D);
+        add_to_pack(data, stress_view);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
 
       {
         Core::Communication::PackBuffer data;
 
-        add_to_pack(data, strain);
+        Core::LinAlg::SerialDenseMatrix strain_view(
+            Teuchos::View, strain.values(), NUMGPT_SOH8, NUMGPT_SOH8, Mat::NUM_STRESS_3D);
+        add_to_pack(data, strain_view);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
 
       {
         Core::Communication::PackBuffer data;
 
-        add_to_pack(data, plstrain);
+        Core::LinAlg::SerialDenseMatrix plstrain_view(
+            Teuchos::View, plstrain.values(), NUMGPT_SOH8, NUMGPT_SOH8, Mat::NUM_STRESS_3D);
+        add_to_pack(data, plstrain_view);
         std::copy(data().begin(), data().end(), std::back_inserter(*plstraindata));
       }
     }

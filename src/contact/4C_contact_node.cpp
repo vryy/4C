@@ -280,8 +280,6 @@ void CONTACT::Node::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::Node::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -325,10 +323,7 @@ void CONTACT::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Mortar::Node
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Mortar::Node::unpack(basedata_buffer);
+  Mortar::Node::unpack(buffer);
 
   // active_
   extract_from_pack(buffer, active_);
@@ -376,7 +371,7 @@ void CONTACT::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   else
     cTSIdata_ = nullptr;
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   return;
 }
 

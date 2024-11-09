@@ -72,8 +72,6 @@ Mat::ViscoNeoHooke::ViscoNeoHooke(Mat::PAR::ViscoNeoHooke* params) : params_(par
  *----------------------------------------------------------------------*/
 void Mat::ViscoNeoHooke::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -151,7 +149,7 @@ void Mat::ViscoNeoHooke::unpack(Core::Communication::UnpackBuffer& buffer)
     artstresslast_->push_back(tmp);
   }
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
 
   return;
 }

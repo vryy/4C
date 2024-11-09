@@ -257,13 +257,17 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       // add data to pack
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, stress);
+        Core::LinAlg::SerialDenseMatrix stress_view(
+            Teuchos::View, stress.values(), numgpt_post_, numgpt_post_, 6);
+        add_to_pack(data, stress_view);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
 
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, strain);
+        Core::LinAlg::SerialDenseMatrix strain_view(
+            Teuchos::View, strain.values(), numgpt_post_, numgpt_post_, 6);
+        add_to_pack(data, strain_view);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
     }

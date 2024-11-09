@@ -65,8 +65,6 @@ Mat::MembraneElastHyper::MembraneElastHyper(Mat::PAR::MembraneElastHyper* params
  *----------------------------------------------------------------------*/
 void Mat::MembraneElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -87,10 +85,7 @@ void Mat::MembraneElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Mat::ElastHyper::unpack(basedata_buffer);
+  Mat::ElastHyper::unpack(buffer);
 
   extract_from_pack(buffer, fibervecs_);
 

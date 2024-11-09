@@ -126,12 +126,8 @@ namespace Core::Binstrategy::Utils
         Communication::UnpackBuffer buffer(rdata);
         while (!buffer.at_end())
         {
-          std::vector<char> data;
-          extract_from_pack(buffer, data);
-          Communication::UnpackBuffer data_buffer(data);
-          // this Teuchos::rcp holds the memory of the node
-          auto object = std::shared_ptr<Core::Communication::ParObject>(
-              Core::Communication::factory(data_buffer));
+          auto object =
+              std::shared_ptr<Core::Communication::ParObject>(Core::Communication::factory(buffer));
           std::shared_ptr<Core::Elements::Element> element =
               std::dynamic_pointer_cast<Core::Elements::Element>(object);
           if (element == nullptr) FOUR_C_THROW("Received object is not a element");

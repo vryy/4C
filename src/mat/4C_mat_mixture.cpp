@@ -99,8 +99,6 @@ Mat::Mixture::Mixture(Mat::PAR::Mixture* params)
 // Pack data
 void Mat::Mixture::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -214,7 +212,6 @@ void Mat::Mixture::unpack(Core::Communication::UnpackBuffer& buffer)
       mixture_rule_->register_anisotropy_extensions(anisotropy_);
 
       // position checking is not available in post processing mode
-      FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
     }
   }
 }

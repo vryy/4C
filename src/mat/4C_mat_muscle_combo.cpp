@@ -179,8 +179,6 @@ Mat::MuscleCombo::MuscleCombo(Mat::PAR::MuscleCombo* params)
 
 void Mat::MuscleCombo::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -223,8 +221,6 @@ void Mat::MuscleCombo::unpack(Core::Communication::UnpackBuffer& buffer)
   }
 
   anisotropy_extension_.unpack_anisotropy(buffer);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 void Mat::MuscleCombo::setup(int numgp, const Core::IO::InputParameterContainer& container)

@@ -134,8 +134,6 @@ Core::Elements::Element* Discret::Elements::KirchhoffLoveShellNurbs::clone() con
  */
 void Discret::Elements::KirchhoffLoveShellNurbs::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -156,16 +154,12 @@ void Discret::Elements::KirchhoffLoveShellNurbs::unpack(Core::Communication::Unp
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Core::Elements::Element::unpack(base_buffer);
+  Core::Elements::Element::unpack(buffer);
   // material_
   extract_from_pack(buffer, material_);
   // gaussrule_
   extract_from_pack(buffer, gaussrule_[0]);
   extract_from_pack(buffer, gaussrule_[1]);
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /**

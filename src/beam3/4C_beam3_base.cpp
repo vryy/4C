@@ -50,8 +50,6 @@ Discret::Elements::Beam3Base::Beam3Base(const Discret::Elements::Beam3Base& old)
  *----------------------------------------------------------------------*/
 void Discret::Elements::Beam3Base::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -74,10 +72,7 @@ void Discret::Elements::Beam3Base::unpack(Core::Communication::UnpackBuffer& buf
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Element::unpack(base_buffer);
+  Element::unpack(buffer);
 
   // bspotposxi_
   extract_from_pack(buffer, bspotposxi_);

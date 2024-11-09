@@ -180,8 +180,6 @@ void Mortar::Element::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 void Mortar::Element::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -235,10 +233,7 @@ void Mortar::Element::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Core::Elements::FaceElement
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Core::Elements::FaceElement::unpack(base_buffer);
+  Core::Elements::FaceElement::unpack(buffer);
   // shape_
   extract_from_pack(buffer, shape_);
   // isslave_

@@ -263,7 +263,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::pack(
 {
   check_init_setup();
 
-  Core::Communication::PackBuffer::SizeMarker sm(data);
+
 
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
@@ -285,10 +285,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::unpack(
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  BeamLinkPinJointed::unpack(basedata_buffer);
+  BeamLinkPinJointed::unpack(buffer);
 
   // Unpack data of sub material (these lines are copied from element.cpp)
   std::vector<char> dataele;

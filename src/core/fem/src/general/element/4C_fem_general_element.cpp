@@ -251,8 +251,6 @@ int Core::Elements::Element::add_material(std::shared_ptr<Core::Mat::Material> m
  *----------------------------------------------------------------------*/
 void Core::Elements::Element::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -265,13 +263,13 @@ void Core::Elements::Element::pack(Core::Communication::PackBuffer& data) const
   // add material
   if (mat_[0] != nullptr)
   {
+    add_to_pack(data, true);
     // pack only first material
     mat_[0]->pack(data);
   }
   else
   {
-    int size = 0;
-    add_to_pack(data, size);
+    add_to_pack(data, false);
   }
 }
 
@@ -291,12 +289,11 @@ void Core::Elements::Element::unpack(Core::Communication::UnpackBuffer& buffer)
   // nodeid_
   extract_from_pack(buffer, nodeid_);
   // mat_
-  std::vector<char> tmp;
-  extract_from_pack(buffer, tmp);
-  if (!tmp.empty())
+  bool have_mat;
+  extract_from_pack(buffer, have_mat);
+  if (have_mat)
   {
-    Communication::UnpackBuffer mat_buffer(tmp);
-    Core::Communication::ParObject* o = Core::Communication::factory(mat_buffer);
+    Core::Communication::ParObject* o = Core::Communication::factory(buffer);
     auto* mat = dynamic_cast<Core::Mat::Material*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack material");
     // unpack only first material
@@ -314,8 +311,6 @@ void Core::Elements::Element::unpack(Core::Communication::UnpackBuffer& buffer)
     std::vector<std::shared_ptr<Core::Elements::FaceElement>> empty;
     std::swap(face_, empty);
   }
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 
@@ -1140,8 +1135,6 @@ Core::Elements::FaceElement::FaceElement(const Core::Elements::FaceElement& old)
  *----------------------------------------------------------------------*/
 void Core::Elements::FaceElement::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -1163,17 +1156,12 @@ void Core::Elements::FaceElement::unpack(Core::Communication::UnpackBuffer& buff
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Core::Elements::Element::unpack(base_buffer);
+  Core::Elements::Element::unpack(buffer);
 
   // lface_master_
   extract_from_pack(buffer, lface_master_);
   // Parent Id
   extract_from_pack(buffer, parent_id_);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

@@ -256,8 +256,6 @@ Mat::So3Material& Discret::Elements::SolidPoroPressureVelocityBased::solid_poro_
 void Discret::Elements::SolidPoroPressureVelocityBased::pack(
     Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   add_to_pack(data, unique_par_object_id());
 
   // add base class Element
@@ -292,10 +290,7 @@ void Discret::Elements::SolidPoroPressureVelocityBased::unpack(
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Core::Elements::Element::unpack(base_buffer);
+  Core::Elements::Element::unpack(buffer);
 
   extract_from_pack(buffer, celltype_);
 
@@ -327,8 +322,6 @@ void Discret::Elements::SolidPoroPressureVelocityBased::unpack(
 
   Discret::Elements::unpack(solid_calc_variant_, buffer);
   Discret::Elements::unpack(solidporo_press_vel_based_calc_variant_, buffer);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 void Discret::Elements::SolidPoroPressureVelocityBased::vis_names(std::map<std::string, int>& names)

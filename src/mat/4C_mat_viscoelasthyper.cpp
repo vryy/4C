@@ -105,8 +105,6 @@ Mat::ViscoElastHyper::ViscoElastHyper(Mat::PAR::ViscoElastHyper* params)
 /*----------------------------------------------------------------------*/
 void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -308,18 +306,17 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
       histfractartstresscurr_ =
           std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
 
-      int histfractartstressall_stepsize;
+      std::size_t histfractartstressall_stepsize;
       extract_from_pack(buffer, histfractartstressall_stepsize);
       histfractartstresslastall_ =
           std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<6, 1>>>>(
               histsize, std::vector<Core::LinAlg::Matrix<6, 1>>(histfractartstressall_stepsize));
       for (int gp = 0; gp < histsize; ++gp)
-        for (int step = 0; step < histfractartstressall_stepsize; ++step)
+        for (std::size_t step = 0; step < histfractartstressall_stepsize; ++step)
           extract_from_pack(buffer, histfractartstresslastall_->at(gp).at(step));
     }
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
-    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   }
 }
 

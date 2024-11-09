@@ -163,8 +163,6 @@ Core::FE::CellType Discret::Elements::Rigidsphere::shape() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::Rigidsphere::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -190,10 +188,7 @@ void Discret::Elements::Rigidsphere::unpack(Core::Communication::UnpackBuffer& b
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Element::unpack(base_buffer);
+  Element::unpack(buffer);
 
 
   // extract all class variables
@@ -204,18 +199,14 @@ void Discret::Elements::Rigidsphere::unpack(Core::Communication::UnpackBuffer& b
   extract_from_pack(buffer, numbonds);
   for (int unsigned i = 0; i < numbonds; ++i)
   {
-    std::vector<char> tmp;
-    extract_from_pack(buffer, tmp);
-    Core::Communication::UnpackBuffer tmp_buffer(tmp);
-    std::shared_ptr<Core::Communication::ParObject> object(
-        Core::Communication::factory(tmp_buffer));
+    std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::factory(buffer));
     std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> link =
         std::dynamic_pointer_cast<BEAMINTERACTION::BeamLinkPinJointed>(object);
     if (link == nullptr) FOUR_C_THROW("Received object is not a beam to beam linkage");
     mybondstobeams_[link->id()] = link;
   }
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   return;
 }
 

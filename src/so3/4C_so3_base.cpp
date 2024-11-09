@@ -48,8 +48,6 @@ Discret::Elements::SoBase::SoBase(const Discret::Elements::SoBase& old)
  *----------------------------------------------------------------------*/
 void Discret::Elements::SoBase::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -72,10 +70,7 @@ void Discret::Elements::SoBase::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Element::unpack(base_buffer);
+  Element::unpack(buffer);
   // kintype_
   extract_from_pack(buffer, kintype_);
 

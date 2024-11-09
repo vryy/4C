@@ -144,8 +144,6 @@ Core::Elements::Element* Discret::Elements::SoSh18Plast::clone() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::SoSh18Plast::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -155,8 +153,6 @@ void Discret::Elements::SoSh18Plast::pack(Core::Communication::PackBuffer& data)
 
   // add base class So3_sh18
   Discret::Elements::SoSh18::pack(data);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -167,18 +163,10 @@ void Discret::Elements::SoSh18Plast::unpack(Core::Communication::UnpackBuffer& b
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class So_hex8 Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Discret::Elements::So3Plast<Core::FE::CellType::hex18>::unpack(basedata_buffer);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer2(basedata);
-  Discret::Elements::SoSh18::unpack(basedata_buffer2);
+  Discret::Elements::So3Plast<Core::FE::CellType::hex18>::unpack(buffer);
+  Discret::Elements::SoSh18::unpack(buffer);
 
   sync_eas();
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-  return;
 }
 
 void Discret::Elements::SoSh18Plast::print(std::ostream& os) const

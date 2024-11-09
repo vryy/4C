@@ -265,8 +265,6 @@ Discret::Elements::So3Plast<distype>::surfaces()
 template <Core::FE::CellType distype>
 void Discret::Elements::So3Plast<distype>::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -275,9 +273,7 @@ void Discret::Elements::So3Plast<distype>::pack(Core::Communication::PackBuffer&
   SoBase::pack(data);
 
   // Gauss points and weights
-  const auto size2 = (int)xsi_.size();
-  add_to_pack(data, size2);
-  for (int i = 0; i < size2; ++i) add_to_pack(data, xsi_[i]);
+  add_to_pack(data, xsi_);
   add_to_pack(data, wgt_);
 
   // parameters
@@ -290,13 +286,9 @@ void Discret::Elements::So3Plast<distype>::pack(Core::Communication::PackBuffer&
   add_to_pack(data, tsi_);
   if (tsi_)
   {
-    add_to_pack(data, KbT_->size());
-    for (unsigned i = 0; i < KbT_->size(); i++)
-    {
-      add_to_pack(data, (*dFintdT_)[i]);
-      add_to_pack(data, (*KbT_)[i]);
-      add_to_pack(data, (*temp_last_)[i]);
-    }
+    add_to_pack(data, *dFintdT_);
+    add_to_pack(data, *KbT_);
+    add_to_pack(data, *temp_last_);
   }
 
   // EAS element technology
@@ -310,10 +302,7 @@ void Discret::Elements::So3Plast<distype>::pack(Core::Communication::PackBuffer&
   }
 
   // history at each Gauss point
-  int histsize = dDp_last_iter_.size();
-  add_to_pack(data, histsize);
-  if (histsize != 0)
-    for (int i = 0; i < histsize; i++) add_to_pack(data, dDp_last_iter_[i]);
+  add_to_pack(data, dDp_last_iter_);
 
   // nitsche contact
   add_to_pack(data, is_nitsche_contact_);
@@ -335,16 +324,10 @@ void Discret::Elements::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  SoBase::unpack(basedata_buffer);
+  SoBase::unpack(buffer);
 
   // Gauss points and weights
-  int size2;
-  extract_from_pack(buffer, size2);
-  xsi_.resize(size2, Core::LinAlg::Matrix<nsd_, 1>(true));
-  for (int i = 0; i < size2; ++i) extract_from_pack(buffer, xsi_[i]);
+  extract_from_pack(buffer, xsi_);
   extract_from_pack(buffer, wgt_);
   numgpt_ = wgt_.size();
 
@@ -362,14 +345,10 @@ void Discret::Elements::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
     KbT_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseVector>>(
         numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true));
     temp_last_ = std::make_shared<std::vector<double>>(numgpt_);
-    int size;
-    extract_from_pack(buffer, size);
-    for (int i = 0; i < size; i++)
-    {
-      extract_from_pack(buffer, (*dFintdT_)[i]);
-      extract_from_pack(buffer, (*KbT_)[i]);
-      extract_from_pack(buffer, (*temp_last_)[i]);
-    }
+
+    extract_from_pack(buffer, (*dFintdT_));
+    extract_from_pack(buffer, (*KbT_));
+    extract_from_pack(buffer, (*temp_last_));
   }
 
   // EAS element technology
@@ -422,9 +401,7 @@ void Discret::Elements::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
     extract_from_pack(buffer, (*alpha_eas_delta_over_last_timestep_));
   }
 
-  int size;
-  extract_from_pack(buffer, size);
-  for (int i = 0; i < size; i++) extract_from_pack(buffer, dDp_last_iter_[i]);
+  extract_from_pack(buffer, dDp_last_iter_);
 
   // Nitsche contact stuff
   extract_from_pack(buffer, is_nitsche_contact_);
@@ -444,7 +421,7 @@ void Discret::Elements::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
     cauchy_deriv_T_.resize(0);
   }
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
 }  // unpack()
 
 
