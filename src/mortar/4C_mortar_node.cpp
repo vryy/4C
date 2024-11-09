@@ -259,7 +259,7 @@ void Mortar::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   // hassegment_
   extract_from_pack(buffer, hassegment_);
   // nurbsw_
-  nurbsw_ = extract_double(buffer);
+  extract_from_pack(buffer, nurbsw_);
 
   // data_
   bool hasdata;

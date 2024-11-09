@@ -800,14 +800,14 @@ namespace Immersed
         extract_from_pack(buffer, owner);
         extract_from_pack(buffer, datalength);
 
-        for (int i = 0; i < globdim; ++i) xvec[i] = extract_double(buffer);
+        for (int i = 0; i < globdim; ++i) extract_from_pack(buffer, xvec[i]);
 
         if (matched == 1)
         {
-          for (int dim = 0; dim < datalength; ++dim) (vectofill)(dim) = extract_double(buffer);
+          for (int dim = 0; dim < datalength; ++dim) extract_from_pack(buffer, (vectofill)(dim));
         }
 
-        for (int i = 0; i < globdim; ++i) normal_vec[i] = extract_double(buffer);
+        for (int i = 0; i < globdim; ++i) extract_from_pack(buffer, normal_vec[i]);
 
         // wait for all communication to finish
         exporter.wait(request);
@@ -1123,11 +1123,11 @@ namespace Immersed
         extract_from_pack(buffer, owner);
         extract_from_pack(buffer, datalength);
 
-        for (int i = 0; i < globdim; ++i) xvec[i] = extract_double(buffer);
+        for (int i = 0; i < globdim; ++i) extract_from_pack(buffer, xvec[i]);
 
         if (matched == 1)
         {
-          for (int dim = 0; dim < datalength; ++dim) (vectofill)(dim) = extract_double(buffer);
+          for (int dim = 0; dim < datalength; ++dim) extract_from_pack(buffer, (vectofill)(dim));
         }
 
         // wait for all communication to finish
@@ -1526,12 +1526,12 @@ namespace Immersed
         extract_from_pack(buffer, owner);
         extract_from_pack(buffer, datalength);
 
-        for (int i = 0; i < globdim; ++i) fluid_node_glob_coord[i] = extract_double(buffer);
+        for (int i = 0; i < globdim; ++i) extract_from_pack(buffer, fluid_node_glob_coord[i]);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (velnp_at_struct_point)(dim) = extract_double(buffer);
+            extract_from_pack(buffer, (velnp_at_struct_point)(dim));
         }
 
         // wait for all communication to finish

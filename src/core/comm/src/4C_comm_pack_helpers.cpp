@@ -82,10 +82,4 @@ int Core::Communication::extract_and_assert_id(UnpackBuffer& buffer, const int d
   return type_id;
 }
 
-double Core::Communication::extract_double(Core::Communication::UnpackBuffer& buffer)
-{
-  double f;
-  extract_from_pack(buffer, f);
-  return f;
-}
 FOUR_C_NAMESPACE_CLOSE

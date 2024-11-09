@@ -133,10 +133,10 @@ void CONTACT::RoughNode::unpack(Core::Communication::UnpackBuffer& buffer)
   extract_from_pack(buffer, randomseedflag_);
   extract_from_pack(buffer, randomgeneratorseed_);
 
-  hurstExponent_ = extract_double(buffer);
-  initialTopologyStdDeviation_ = extract_double(buffer);
+  extract_from_pack(buffer, hurstExponent_);
+  extract_from_pack(buffer, initialTopologyStdDeviation_);
   extract_from_pack(buffer, topology_);
-  maxTopologyHeight_ = extract_double(buffer);
+  extract_from_pack(buffer, maxTopologyHeight_);
 
   // Check
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");

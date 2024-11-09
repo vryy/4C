@@ -250,7 +250,7 @@ void Mortar::Element::unpack(Core::Communication::UnpackBuffer& buffer)
   if (nurbs_)
   {
     // normalfac_
-    normalfac_ = extract_double(buffer);
+    extract_from_pack(buffer, normalfac_);
     // zero_sized_
     extract_from_pack(buffer, zero_sized_);
     // knots
@@ -281,12 +281,8 @@ void Mortar::Element::unpack(Core::Communication::UnpackBuffer& buffer)
   extract_from_pack(buffer, physicaltype_);
 
   // mesh size
-  traceHE_ = extract_double(buffer);
-  traceHCond_ = extract_double(buffer);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-
-  return;
+  extract_from_pack(buffer, traceHE_);
+  extract_from_pack(buffer, traceHCond_);
 }
 
 /*----------------------------------------------------------------------*

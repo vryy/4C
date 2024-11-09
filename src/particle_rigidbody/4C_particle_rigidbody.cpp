@@ -947,7 +947,8 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_mass_quantities(
     {
       int rigidbody_k;
       extract_from_pack(buffer, rigidbody_k);
-      double mass_k = extract_double(buffer);
+      double mass_k;
+      extract_from_pack(buffer, mass_k);
 
       std::vector<double> inertia_k(6);
       for (int i = 0; i < 6; ++i) extract_from_pack(buffer, inertia_k[i]);

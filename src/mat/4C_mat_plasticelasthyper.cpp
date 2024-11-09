@@ -303,8 +303,10 @@ void Mat::PlasticElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   extract_from_pack(buffer, mode);
   set_dissipation_mode(mode);
 
-  double cpl = extract_double(buffer);
-  double s = extract_double(buffer);
+  double cpl;
+  double s;
+  extract_from_pack(buffer, cpl);
+  extract_from_pack(buffer, s);
   get_params(s, cpl);
 
   anisotropy_.unpack_anisotropy(buffer);

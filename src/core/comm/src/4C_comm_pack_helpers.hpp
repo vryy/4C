@@ -356,8 +356,6 @@ namespace Core::Communication
     buffer.extract_from_pack(stuff, stuff_size);
   }
 
-  double extract_double(UnpackBuffer& buffer);
-
   /**
    * Extract an object that implements an `unpack()` method from the buffer.
    */
