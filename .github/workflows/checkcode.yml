@@ -12,6 +12,8 @@ on:
 jobs:
   checkcode:
     runs-on: ubuntu-20.04
+    env:
+      SKIP: no-commit-to-branch
     steps:
       - uses: actions/checkout@v4
       - name: Run pre-commit
