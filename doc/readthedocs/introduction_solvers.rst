@@ -163,12 +163,12 @@ The current recommendation is the trilinos ML preconditioner, for further inform
 *Theory:*
 
 The trick is to apply a cheap transfer method to get from the complete system to a smaller one (coarsening/aggregation of the system).
-The method to be used is given in :ref:`ML_COARSEN <solver1_ml_coarsen>`.
+The method to be used is given in `ML_COARSEN`.
 In order to get a preconditioner matrix of the same size as the original matrix, of course,
 the aggregation must be used in the opposite direction afterwards.
 The default method is UC (uncoupled), which is a good choice as well.
 
-The coarsening reduces the size by a factor :ref:`ML_AGG_SIZE <solver1_ml_agg_size>`.
+The coarsening reduces the size by a factor `ML_AGG_SIZE`.
 It defines how many lines are comprised to one (good choices are 27 for 3D, 9 for 2D, and 3 for 1D problems).
 
 A smoother is used twice (pre- and post-smoother) for each level of aggregation to reduce the error frequencies in your solution vector.
@@ -176,37 +176,37 @@ Multiple transfer operations are applied in sequence, since only high frequency 
 while the low frequency errors are still there.
 The restriction operator restricts the current error to the coarser grid.
 At some point (let say if 10000 dofs are left) the system has a size where one can apply the direct solver.
-This number is given by :ref:`ML_MAXCOARSESIZE <solver1_ml_maxcoarsesize>`.
-That is, when the number of remaining dofs is smaller than ML_MAXCOARSESIZE, no more coarsening is conducted.
+This number is given by `ML_MAXCOARSESIZE`.
+That is, when the number of remaining dofs is smaller than `ML_MAXCOARSESIZE`, no more coarsening is conducted.
 It should be larger than the default of 1000, let say, 5000-10000.
-Also, the maximum number of coarsenings is given by :ref:`ML_MAXLEVEL <solver1_ml_maxlevel>` (maxlevel should always be high enough).
+Also, the maximum number of coarsenings is given by `ML_MAXLEVEL` (maxlevel should always be high enough).
 
 One may define three different smoothers:
-:ref:`ML_SMOOTHERFINE <solver1_ml_smootherfine>` (for the first / fine level);
-:ref:`Ml_SMOOTHERMED <solver1_ml_smoothermed>` (for all intermediate levels);
-:ref:`ML_SMOOTHERCOARSE <solver1_ml_smoothercoarse>` (probably always a direct solver like UMFPACK).
+`ML_SMOOTHERFINE` (for the first / fine level);
+`Ml_SMOOTHERMED` (for all intermediate levels);
+`Ml_SMOOTHERMED` (probably always a direct solver like UMFPACK).
 
 While many solvers can be used, five of them are most popular: SGS (symmetric Gauss Seidel), Jacobi, Chebychev, ILU, MLS.
 Besides that, particularly for the coarsest smoother, a direct solver can be used, as (Umfpack, SuperLU, KLU).
 
 *Chebychev smoother:*
-   This is a polynomial smoother. The degree of the polynomial is given by :ref:`ML_SMOTIMES <solver1_ml_smotimes>`.
+   This is a polynomial smoother. The degree of the polynomial is given by `ML_SMOTIMES`.
    A lower degree is faster (not much), but higher is more accurate; one may use 3, 6 or even 9 [very high])
 
 *Relaxation method (e.g. SGS):*
-   For this kind of smoothers, :ref:`ML_SMOTIMES <solver1_ml_smotimes>` is providing the number of sweeps for each smoothening.
+   For this kind of smoothers, `ML_SMOTIMES` is providing the number of sweeps for each smoothening.
    This one is rather for fluid dynamics problems.
 
 *ILU:*
-   Here, :ref:`ML_SMOTIMES <solver1_ml_smotimes>` will be interpreted as the FILL level.
+   Here, `ML_SMOTIMES` will be interpreted as the FILL level.
 
 Damping helps with convergence, and it can be appliedto any of the smoothers,
-see :ref:`ML_DAMPFINE <solver1_ml_dampfine>`, :ref:`ML_DAMPMED <solver1_ml_dampmed>`, :ref:`ML_DAMPCOARSE <solver1_ml_dampcoarse>`.
+see `ML_DAMPFINE`, `ML_DAMPMED`, `ML_DAMPCOARSE`.
 A value of 1 cancels damping, 0 means maximum damping.
 Too much damping increases the iterations, thus, usually it should be between 1 and 0.5.
 A little bit of damping will probably improve convergence (also from the beginning).
 
-:ref:`ML_PROLONG_SMO <solver1_ml_prolong_smo>` is the main parameter to control the prolongation.
+`ML_PROLONG_SMO` is the main parameter to control the prolongation.
 Transfer operator from coarse to fine
 (a tentative prolongator is created by constant interpolation, then try to improve the constant to linear interpolation).
 ``ML_PROLONG_SMO 1.33`` is a good value for structural, scatra, thermo problems. Different choice would be 1 (maybe for fluids).

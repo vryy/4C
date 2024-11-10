@@ -7,7 +7,7 @@ given (contact) problem. It is assumed that 4C has been built on your machine ac
 passed the tests without error messages. For further information on how to build 4C and to test the build, please refer
 to the [README.md](https://gitlab.lrz.de/baci/baci/blob/main/README.md).
 
-### Overview
+## Overview
 
 1. [Problem description](#problem-description)
 1. [Create files](#create-files)

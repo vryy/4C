@@ -46,7 +46,7 @@ if(FOUR_C_BUILD_READTHEDOCS)
       cmake ${PROJECT_SOURCE_DIR} --list-presets >
       ${READTHEDOCS_OUT_DIR}/reference_docs/4C-cmake-presets.txt
     COMMAND
-      ${SPHINX_EXECUTABLE} -q -b html # -W turns warnings into errors!
+      ${SPHINX_EXECUTABLE} -W -n -q -b html # warnings are errors and be nit-picky
       -i "${CMAKE_CURRENT_SOURCE_DIR}" -i "${READTHEDOCS_OUT_DIR}/reference_docs" -i
       "${PROJECT_SOURCE_DIR}/tests/framework-test" -i "${READTHEDOCS_TPLDEPEND_DIR}" -o
       "${READTHEDOCS_HTML_DIR}" -c "${READTHEDOCS_OUT_DIR}" -s "${PROJECT_BINARY_DIR}/doc/tmp"
