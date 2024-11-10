@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 jobs:
-  gcc9:
+  gcc9_build:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/ppraegla/4c-dependencies:latest
@@ -45,16 +45,50 @@ jobs:
         with:
           build-targets: full
           build-directory: ${{ github.workspace }}/build
+      - name: Package build directory
+        run: tar -cvf $GITHUB_WORKSPACE/4C_build.tar $GITHUB_WORKSPACE/build
+      - name: Upload build folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: 4C-build
+          path: |
+            ${{ github.workspace }}/4C_build.tar
+          retention-days: 1
+  gcc9_test:
+    needs: gcc9_build
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/ppraegla/4c-dependencies:latest
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup developer environment for testing
+        run: |
+          cd $GITHUB_WORKSPACE
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          ./utilities/set_up_dev_env.sh
+      - uses: actions/download-artifact@v4
+        with:
+          name: 4C-build
+          path: ${{ github.workspace }}
+      - name: Extract 4C build
+        run: |
+          tar -xvf $GITHUB_WORKSPACE/4C_build.tar -C /
       - name: Test
         run: |
           cd $GITHUB_WORKSPACE/build
           time ctest -L minimal -j `nproc` --output-on-failure --output-junit $GITHUB_WORKSPACE/junit_test_summary.xml
-      - name: Upload build and test logs
+      - name: Upload test summary
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: build-and-test-logs
+          name: test-summary
           path: |
             junit_test_summary.xml
           retention-days: 1
-
