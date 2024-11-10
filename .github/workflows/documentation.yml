@@ -1,0 +1,74 @@
+name: documentation
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+  push:
+    branches:
+      - 'main'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: 4c-dependencies
+  FOUR_C_DOCKER_DEPENDENCIES_HASH: 7a6ad12e
+
+permissions:
+  contents: read
+
+jobs:
+  doxygen:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/ppraegla/4c-dependencies:latest
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/configure_4C
+        with:
+          cmake-preset: docker
+          build-directory: ${{ github.workspace }}/build
+      - uses: ./.github/actions/build_4C
+        with:
+          build-targets: doxygen
+          build-directory: ${{ github.workspace }}/build
+      - name: Upload doxygen
+        uses: actions/upload-artifact@v4
+        with:
+          name: doxygen
+          path: ${{ github.workspace }}/build/doc/doxygen/html/
+          retention-days: 1
+  readthedocs:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/ppraegla/4c-dependencies:latest
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/configure_4C
+        with:
+          cmake-preset: docker
+          build-directory: ${{ github.workspace }}/build
+      - uses: ./.github/actions/build_4C
+        with:
+          build-targets: readthedocs
+          build-directory: ${{ github.workspace }}/build
+      - name: Upload readthedocs
+        uses: actions/upload-artifact@v4
+        with:
+          name: readthedocs
+          path: ${{ github.workspace }}/build/doc/readthedocs/html/
+          retention-days: 1
+
