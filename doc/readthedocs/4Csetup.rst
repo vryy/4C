@@ -64,7 +64,7 @@ Graph and domain partitioner:
 Miscellaneous:
 
 - Qhull (recommended version: 2012.1, :download:`install script <qhull/install.sh>`
-- CLN (recommened version: 1.3.4) , :download:`install script <cln/install.sh>`
+- CLN (recommened version: 1.3.4),
 - FFTW
 - HDF5
 - ArborX (optional)

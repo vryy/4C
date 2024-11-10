@@ -201,7 +201,7 @@ SHELL7PSCATRA
 | TYPE            |  1 x string |
 +-----------------+-------------+
 
-.. _structuresolid
+.. _structuresolid:
 
 SOLID
 ^^^^^
@@ -248,7 +248,7 @@ SOLID
 .. _structuresolidh18:
 
 SOLIDH18_DEPRECATED
-^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 *Shapes:*
 
@@ -285,7 +285,7 @@ SOLIDH18_DEPRECATED
 .. _structuresolidh20:
 
 SOLIDH20_DEPRECATED
-^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 *Shapes:*
 
@@ -324,7 +324,7 @@ SOLIDH20_DEPRECATED
 .. _structuresolidh27:
 
 SOLIDH27_DEPRECATED
-^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 *Shapes:*
 
@@ -441,7 +441,7 @@ SOLIDH27PLAST
 .. _structuresonurbs27:
 
 SONURBS27_DEPRECATED
-^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 *Shapes:*
 
@@ -460,7 +460,7 @@ SONURBS27_DEPRECATED
 .. _structuresolidh8:
 
 SOLIDH8_DEPRECATED
-^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 *Shapes:*
 
@@ -501,7 +501,7 @@ SOLIDH8_DEPRECATED
 .. _structuresolidh8fbar:
 
 SOLIDH8FBAR_DEPRECATED
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 
 *Shapes:*
 
@@ -796,7 +796,7 @@ SOLIDH8PLAST
 .. _structuresolidscatra:
 
 SOLIDSCATRA
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
 
 *Shapes:*
 
@@ -1188,7 +1188,7 @@ SOLIDT4PORO
 .. _structuresolidw6:
 
 SOLIDW6_DEPRECATED
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 Note: This element is deprecated and should not be used. Use SOLIDSCATRA instead.
 
