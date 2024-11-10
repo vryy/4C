@@ -28,37 +28,29 @@ jobs:
     defaults:
       run:
         shell: bash
-    env:
-      CMAKE_PRESET: docker
-      BUILD_TARGETS: full
     steps:
       - run: echo ${{ github.repository }}
       # Due to a bug in runner action the variables $GITHUB_WORKSPACE and ${{ github.workspace }} are different inside a container. https://github.com/actions/runner/issues/2058
       # The repo gets cloned to `/__w/4C/4C` ($GITHUB_WORKSPACE) while ${{ github.workspace }} points to `/home/runner/work/4C/4C`.`
       # Use $GITHUB_WORKSPACE instead of ${{ github.workspace }}
       - uses: actions/checkout@v4
-      - name: Fix git
-        run: git config --global --add safe.directory $GITHUB_WORKSPACE
       - name: info
         run: |
           pwd; ls -l
-      - name: Build
-        run: |
-          echo ${{ github.workspace }}
-          echo $GITHUB_WORKSPACE
-          cmake --version; echo ${{ env.CMAKE_PRESET }}
-          mkdir -p $GITHUB_WORKSPACE/../build
-          cd $GITHUB_WORKSPACE
-          ./utilities/set_up_dev_env.sh
-          cd $GITHUB_WORKSPACE/../build
-          cmake $GITHUB_WORKSPACE --fresh --preset=${{ env.CMAKE_PRESET }}
-          echo Building the following targets ${{ env.BUILD_TARGETS }}
-          time cmake --build . --target ${{ env.BUILD_TARGETS }} -- -j `nproc` 2>&1
+      - uses: ./.github/actions/configure_4C
+        with:
+          cmake-preset: docker
+          build-directory: ${{ github.workspace }}/build
+      - uses: ./.github/actions/build_4C
+        with:
+          build-targets: full
+          build-directory: ${{ github.workspace }}/build
       - name: Test
         run: |
-          cd $GITHUB_WORKSPACE/../build
+          cd $GITHUB_WORKSPACE/build
           time ctest -L minimal -j `nproc` --output-on-failure --output-junit $GITHUB_WORKSPACE/junit_test_summary.xml
       - name: Upload build and test logs
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: build-and-test-logs

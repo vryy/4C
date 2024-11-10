@@ -1,0 +1,20 @@
+name: Build 4C
+description: Build a specified 4C target
+inputs:
+  build-directory:
+    description: Path to the build directory
+    required: true
+  build-targets:
+    description: Targets to build
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Build 4C with targets ${{ inputs.build-targets }}
+      run: |
+        cd $BUILD_DIRECTORY
+        time cmake --build . --target $BUILD_TARGETS -- -j `nproc` 2>&1
+      shell: bash
+      env:
+        BUILD_DIRECTORY: ${{ inputs.build-directory }}
+        BUILD_TARGETS: ${{ inputs.build-targets }}
