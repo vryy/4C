@@ -84,7 +84,10 @@
       ],
       "cacheVariables": {
         "FOUR_C_ENABLE_WARNINGS_AS_ERRORS": "OFF",
-        "FOUR_C_ENABLE_ASSERTIONS": "ON"
+        "FOUR_C_ENABLE_ASSERTIONS": "ON",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "FOUR_C_BUILD_READTHEDOCS": "OFF",
+        "CMAKE_UNITY_BUILD": "ON"
       }
     },
     {

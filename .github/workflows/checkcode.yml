@@ -22,4 +22,27 @@ jobs:
           source ./utilities/python-venv/bin/activate
           pre-commit clean
           pre-commit run --all-files --show-diff-on-failure
+  clang-tidy:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/ppraegla/4c-dependencies:latest
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/configure_4C
+        with:
+          cmake-preset: docker_codeclimate
+          build-directory: ${{ github.workspace }}/../clang-tidy-build
+      - name: Run Clang-tidy on codebase
+        run: |
+          cd $GITHUB_WORKSPACE/../clang-tidy-build
+          mkdir -p clang-tidy-issues
+          ESCAPED_PROJECT_DIR=$(echo "${GITHUB_WORKSPACE}" | sed 's/\//\\\//g')
+          run-clang-tidy -j `nproc` -config-file ${GITHUB_WORKSPACE}/.clang-tidy -use-color -p . -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*" 2>&1 | python ${GITHUB_WORKSPACE}/utilities/code_climate/filter_clang_tidy_output.py
 
