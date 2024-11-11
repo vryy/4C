@@ -9,6 +9,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fem_geometric_search_bounding_volume.hpp"
+#include "4C_fem_geometric_search_utils.hpp"
+
 #ifdef FOUR_C_WITH_ARBORX
 
 #include "4C_fem_geometric_search_bvh.hpp"
@@ -126,6 +129,43 @@ namespace
     const auto pairs = Core::GeometricSearch::get_pairs(indices, offsets);
 
     EXPECT_EQ(pairs.size(), 0);
+  }
+
+  /**
+   * Check that the tolerance mechanism in the kDOP visualization works. The present values are
+   * taken from a previously failing kDOP.
+   */
+  TEST_F(GeometricSearch, KdopVisualizationTolerances)
+  {
+    Core::GeometricSearch::BoundingVolume kdop;
+    kdop.bounding_volume_._min_values[0] = -16.185886383056640625;
+    kdop.bounding_volume_._max_values[0] = -15.878487586975097656;
+    kdop.bounding_volume_._min_values[1] = -204.102142333984375;
+    kdop.bounding_volume_._max_values[1] = -203.7178497314453125;
+    kdop.bounding_volume_._min_values[2] = -178.448272705078125;
+    kdop.bounding_volume_._max_values[2] = -178.121795654296875;
+    kdop.bounding_volume_._min_values[3] = -220.28802490234375;
+    kdop.bounding_volume_._max_values[3] = -219.78900146484375;
+    kdop.bounding_volume_._min_values[4] = -194.6182403564453125;
+    kdop.bounding_volume_._max_values[4] = -194.192138671875;
+    kdop.bounding_volume_._min_values[5] = -382.412689208984375;
+    kdop.bounding_volume_._max_values[5] = -381.9063720703125;
+    kdop.bounding_volume_._min_values[6] = 187.547882080078125;
+    kdop.bounding_volume_._max_values[6] = 188.1065521240234375;
+    kdop.bounding_volume_._min_values[7] = 161.9359130859375;
+    kdop.bounding_volume_._max_values[7] = 162.5491485595703125;
+    kdop.bounding_volume_._min_values[8] = -25.9803466796875;
+    kdop.bounding_volume_._max_values[8] = -25.2695770263671875;
+    kdop.bounding_volume_._min_values[9] = -398.409820556640625;
+    kdop.bounding_volume_._max_values[9] = -397.9437255859375;
+    kdop.bounding_volume_._min_values[10] = 9.099609375;
+    kdop.bounding_volume_._max_values[10] = 9.794464111328125;
+    kdop.bounding_volume_._min_values[11] = -42.166229248046875;
+    kdop.bounding_volume_._max_values[11] = -41.4358978271484375;
+    kdop.bounding_volume_._min_values[12] = 365.86895751953125;
+    kdop.bounding_volume_._max_values[12] = 366.5341796875;
+
+    get_k_dop_polyhedron_representation(kdop);
   }
 }  // namespace
 

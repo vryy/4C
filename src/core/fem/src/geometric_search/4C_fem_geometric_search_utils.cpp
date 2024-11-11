@@ -66,9 +66,18 @@ namespace Core::GeometricSearch
         "To use it, enable ArborX during the configure process.");
 #else
     // This value is used for comparison of point coordinates. ArborX only uses float, so this value
-    // has to be rather high. TODO: check if we want to use a combination of absolute/relative
-    // tolerance here
+    // has to be rather high.
     const double eps = 1e-5;
+
+    // Later on we need to create an AABB to check if a point intersects a kdop. This function is
+    // used to get the AABB dimensions, which are extended from the point dimensions such that we
+    // account for absolute and relative tolerances in the comparison
+    const auto get_atol_rtol_dimension = [&](const auto& value, const auto& factor)
+    {
+      const double atol = eps;
+      const double rtol = eps;
+      return value + abs(value) * factor * rtol + factor * atol;
+    };
 
     // The k-dop visualization is based on polygons defined which are defined by intersections
     // of the k-dop planes. This pre-computed array (see the Mathematica scrip in the scrips/
@@ -204,14 +213,15 @@ namespace Core::GeometricSearch
           {
             // The offset here is needed, since arborx only works with float and we work with
             // double, which can cause issues
-            const auto inside_kdop =
-                intersects(ArborX::Box{{static_cast<float>(intersection_point(0) - eps),
-                                           static_cast<float>(intersection_point(1) - eps),
-                                           static_cast<float>(intersection_point(2) - eps)},
-                               {static_cast<float>(intersection_point(0) + eps),
-                                   static_cast<float>(intersection_point(1) + eps),
-                                   static_cast<float>(intersection_point(2) + eps)}},
-                    kdop);
+            const auto inside_kdop = intersects(
+                ArborX::Box{
+                    {static_cast<float>(get_atol_rtol_dimension(intersection_point(0), -1.0)),
+                        static_cast<float>(get_atol_rtol_dimension(intersection_point(1), -1.0)),
+                        static_cast<float>(get_atol_rtol_dimension(intersection_point(2), -1.0))},
+                    {static_cast<float>(get_atol_rtol_dimension(intersection_point(0), 1.0)),
+                        static_cast<float>(get_atol_rtol_dimension(intersection_point(1), 1.0)),
+                        static_cast<float>(get_atol_rtol_dimension(intersection_point(2), 1.0))}},
+                kdop);
             return std::make_pair(inside_kdop, intersection_point);
           }
         };
