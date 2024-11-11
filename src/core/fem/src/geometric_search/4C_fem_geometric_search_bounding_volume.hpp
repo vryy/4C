@@ -18,16 +18,39 @@
 #endif
 
 #ifdef FOUR_C_WITH_ARBORX
+FOUR_C_NAMESPACE_OPEN
+namespace Core::GeometricSearch
+{
+  //! kdop_directions is the number of directions defining the possible faces of the k-DOP. In this
+  //! case 13 means that we have the (3) Cartesian basis vectors, all vectors pointing to the edges
+  //! of a unit cube (6) and all vectors pointing to corners of the unit cube (4). For more details
+  //! have a look in ArborX_KDOP.hpp.
+  constexpr int kdop_directions = 13;
+
+  //! kdop_k is the number of bounding slabs for the k-DOP, i.e., the resulting polytope can have a
+  //! maximum of kdop_k faces
+  constexpr int kdop_k = 2 * kdop_directions;
+
+  //! At the moment we consider all k-dops in R3
+  constexpr int kdop_dim = 3;
+}  // namespace Core::GeometricSearch
+FOUR_C_NAMESPACE_CLOSE
+#endif
+
+
+#ifdef FOUR_C_WITH_ARBORX
 namespace ArborX::Details
 {
   /*! \brief  This struct helps to get access to the protected static member directions from ArborX.
    */
   template <int n_directions>
-  struct GetKDOPDirections : private KDOP_Directions<2 * n_directions>
+  struct GetKDOPDirections
+      : private KDOP_Directions<FourC::Core::GeometricSearch::kdop_dim, 2 * n_directions, float>
   {
-    static KOKKOS_FUNCTION Kokkos::Array<Direction, n_directions> const &directions()
+    static KOKKOS_FUNCTION auto const &directions()
     {
-      return KDOP_Directions<2 * n_directions>::directions();
+      return KDOP_Directions<FourC::Core::GeometricSearch::kdop_dim, 2 * n_directions,
+          float>::directions();
     }
   };
 }  // namespace ArborX::Details
@@ -38,18 +61,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::GeometricSearch
 {
-#ifdef FOUR_C_WITH_ARBORX
-  //! kdop_directions is the number of directions defining the possible faces of the k-DOP. In this
-  //! case 13 means that we have the (3) Cartesian basis vectors, all vectors pointing to the edges
-  //! of a unit cube (6) and all vectors pointing to corners of the unit cube (4). For more details
-  //! have a look in ArborX_KDOP.hpp.
-  constexpr int kdop_directions = 13;
-
-  //! kdop_k is the number of bounding slabs for the k-DOP, i.e., the resulting polytope can have a
-  //! maximum of kdop_k faces
-  constexpr int kdop_k = 2 * kdop_directions;
-#endif
-
   /*!
    * \brief Class representing a bounding volume of a set of points.
    *
@@ -80,8 +91,8 @@ namespace Core::GeometricSearch
      */
     inline void add_point(const Core::LinAlg::Matrix<3, 1, double>& point)
     {
-      bounding_volume_ += ArborX::Point{
-          static_cast<float>(point(0)), static_cast<float>(point(1)), static_cast<float>(point(2))};
+      expand(bounding_volume_, ArborX::Point{static_cast<float>(point(0)),
+                                   static_cast<float>(point(1)), static_cast<float>(point(2))});
     }
 
     /*! \brief Extends the bounding volume based on a scalar value.
@@ -95,9 +106,10 @@ namespace Core::GeometricSearch
       {
         const auto& direction =
             ArborX::Details::GetKDOPDirections<kdop_directions>::directions()[i_dir];
-        const auto direction_scaling_factor = std::sqrt(direction._data[0] * direction._data[0] +
-                                                        direction._data[1] * direction._data[1] +
-                                                        direction._data[2] * direction._data[2]);
+        const auto direction_scaling_factor =
+            std::sqrt(direction._coords[0] * direction._coords[0] +
+                      direction._coords[1] * direction._coords[1] +
+                      direction._coords[2] * direction._coords[2]);
         const auto scaled_offset = offset * direction_scaling_factor;
         bounding_volume_._min_values[i_dir] -= static_cast<float>(scaled_offset);
         bounding_volume_._max_values[i_dir] += static_cast<float>(scaled_offset);
@@ -105,7 +117,7 @@ namespace Core::GeometricSearch
     }
 
     //! Use an ArborX geometry as internal storage.
-    ArborX::Experimental::KDOP<kdop_k> bounding_volume_;
+    ArborX::Experimental::KDOP<kdop_dim, kdop_k> bounding_volume_;
 #endif
   };
 }  // namespace Core::GeometricSearch

@@ -11,7 +11,7 @@ set(ARBORX_ENABLE_MPI "ON")
 fetchcontent_declare(
   arborx
   GIT_REPOSITORY https://github.com/arborx/ArborX.git
-  GIT_TAG 10440a4a5e42c90a847800c5664934f7042febc9 #v1.4
+  GIT_TAG d7a0cf08baf4346659fa2746d5685be8f097471c #v1.7
   )
 fetchcontent_makeavailable(arborx)
 
