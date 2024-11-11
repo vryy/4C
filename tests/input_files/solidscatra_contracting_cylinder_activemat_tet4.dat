@@ -10,12 +10,12 @@ Contracting Cylinder
 DIM                             3
 --------------------------------------------------------------------------IO
 FILESTEPS                       5
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 INT_STRATEGY                    Old
 ITERNORM                        Inf
 LINEAR_SOLVER                   1

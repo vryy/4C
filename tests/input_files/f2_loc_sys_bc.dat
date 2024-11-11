@@ -8,8 +8,8 @@ The fluid_bc is split into fluid_bc_half_{1,2} to have a test for multiple condi
 DIM           2
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 ---------------------------------------------------------------FLUID DYNAMIC
 CALCERROR                       no

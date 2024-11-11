@@ -9,8 +9,8 @@
 //ELEMENTS    543
 //NODES       1522
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP           Structure
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE           Structure
 RESTART              0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS          0
@@ -24,7 +24,7 @@ STRUCT_STRESS        Cauchy
 FILESTEPS            1000
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER        1
-DYNAMICTYP           Statics
+DYNAMICTYPE           Statics
 RESULTSEVRY          1
 RESTARTEVRY          1
 NLNSOL               fullnewton

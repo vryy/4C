@@ -5,8 +5,8 @@ more than one Gauss points
 //ELEMENTS    12
 //NODES       12
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Cardiac_Monodomain
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Cardiac_Monodomain
 RESTART                         0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes

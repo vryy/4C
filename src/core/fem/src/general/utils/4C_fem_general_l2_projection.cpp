@@ -216,15 +216,15 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_proj
   if (solvertype != Core::LinearSolver::SolverType::umfpack and
       solvertype != Core::LinearSolver::SolverType::superlu)
   {
-    const auto prectyp =
+    const auto prectype =
         Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(solverparams, "AZPREC");
-    switch (prectyp)
+    switch (prectype)
     {
       case Core::LinearSolver::PreconditionerType::multigrid_muelu:
       {
         Teuchos::ParameterList *preclist_ptr = nullptr;
         // Parameter for MueLu
-        if (prectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu)
+        if (prectype == Core::LinearSolver::PreconditionerType::multigrid_muelu)
           preclist_ptr = &((solver.params()).sublist("MueLu Parameters"));
         else
           FOUR_C_THROW("please add correct parameter list");

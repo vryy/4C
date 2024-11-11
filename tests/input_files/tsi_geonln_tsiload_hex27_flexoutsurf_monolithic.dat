@@ -29,15 +29,15 @@ THERM_HEATFLUX                  Current
 THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Current
 WRITE_TO_SCREEN                 Yes
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo_Structure_Interaction
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Thermo_Structure_Interaction
 RANDSEED                        -1
 RESTART                         0
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 ITERNORM                        L2
 K_DAMP                          -1
 LINEAR_SOLVER                   1
@@ -78,7 +78,7 @@ GENAVG                          TrLike
 THETA                           0.5
 ----------------------------------------------------THERMAL DYNAMIC
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 ITERNORM                        L2

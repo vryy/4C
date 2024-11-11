@@ -2,8 +2,8 @@
 //ELEMENTS    312
 //NODES       626
 DIM           2
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta

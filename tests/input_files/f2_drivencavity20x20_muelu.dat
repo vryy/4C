@@ -6,12 +6,12 @@ NODES                           441
 DIM                             2
 MATERIALS                       1
 NUMDF                           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 //!RESTART                      5
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 RESULTSEVRY                     10
 RESTARTEVRY                     20
 TIMESTEP                        0.05

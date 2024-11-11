@@ -38,12 +38,12 @@ Resultscheck:
     Cube 1: stresses in z-direction of top surface nodes
     Cube 2: displacements of top surface nodes
 
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     10
 RESTARTEVRY                     10
 NLNSOL                          fullnewton

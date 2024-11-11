@@ -10,8 +10,8 @@ NODES                           184
 DIM                             3
 MATERIALS                       5
 NUMDF                           6
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Structure_Interaction_XFEM
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Structure_Interaction_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -66,7 +66,7 @@ TOL_PRES_RES	  1.0E-13
 TOL_PRES_INC	  1.0E-13
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 TIMESTEP                        0.1
 NUMSTEP                         2
 MAXTIME                         5.0

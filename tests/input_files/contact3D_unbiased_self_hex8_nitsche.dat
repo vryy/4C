@@ -9,15 +9,15 @@
 //ELEMENTS    328
 //NODES       770
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 -----------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 -------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 TIMESTEP                        1.0
 NUMSTEP                         5
 NORM_DISP                       Abs

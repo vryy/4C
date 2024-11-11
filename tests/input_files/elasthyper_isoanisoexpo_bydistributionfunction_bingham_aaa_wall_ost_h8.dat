@@ -52,13 +52,13 @@ yields structural tensor:
 //ELEMENTS    450
 //NODES       768
 DIM           3
--------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------------IO
 STRUCT_STRESS                   cauchy
 ------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     0
 TIMESTEP                        0.1

@@ -33,8 +33,8 @@ MORTAR_LAMBDA_CONTINUOUS_SEGMENTS     5
 SEGMENTATION                          yes
 INTEGRATION_POINTS                    yes
 AVERAGED_NORMALS                      yes
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                            Yes
@@ -44,7 +44,7 @@ VERBOSITY                             Standard
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                         1
 INT_STRATEGY                          Standard
-DYNAMICTYP                            GenAlphaLieGroup
+DYNAMICTYPE                            GenAlphaLieGroup
 RESULTSEVRY                           1
 NLNSOL                                fullnewton
 PREDICT                               TangDis

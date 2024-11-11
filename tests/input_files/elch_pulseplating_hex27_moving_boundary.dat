@@ -4,8 +4,8 @@ pulse-reverse plating on RDE with electrode surface growth
 //ELEMENTS                        50
 //NODES                           909
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 ALPHA_F                         1

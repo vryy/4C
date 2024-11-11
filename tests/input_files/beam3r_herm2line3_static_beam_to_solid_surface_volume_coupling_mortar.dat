@@ -5,8 +5,8 @@ This tests the ability to use multiple mortar managers.
 //ELEMENTS    27
 //NODES       96
 DIM                                   3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                            No
@@ -16,7 +16,7 @@ VERBOSITY                             Standard
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                         1
 INT_STRATEGY                          Standard
-DYNAMICTYP                            Statics
+DYNAMICTYPE                            Statics
 RESULTSEVRY                           1
 NLNSOL                                fullnewton
 PREDICT                               TangDis

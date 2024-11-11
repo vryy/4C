@@ -1,8 +1,8 @@
 ---------------------------------------------------------------------------TITLE
 Description: Two beams are coupled to a hollow cylinder modelled with
              nurbs27 elements.
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 SHAPEFCT                              Nurbs
 ------------------------------------------------------------------------------IO
@@ -13,7 +13,7 @@ VERBOSITY                             Standard
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                         1
 INT_STRATEGY                          Standard
-DYNAMICTYP                            Statics
+DYNAMICTYPE                            Statics
 RESULTSEVRY                           1
 NLNSOL                                fullnewton
 PREDICT                               TangDis

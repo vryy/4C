@@ -5,8 +5,8 @@ condensed linear system without any LM-dofs
 //ELEMENTS    26
 //NODES       110
 DIM           2
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE   Structure
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  0
@@ -21,7 +21,7 @@ FILESTEPS         0
 OUTPUT_EVERY_ITER no
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER         1
-DYNAMICTYP            Statics
+DYNAMICTYPE            Statics
 RESULTSEVRY           1
 RESTARTEVRY           1
 NLNSOL                fullnewton

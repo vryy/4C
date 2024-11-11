@@ -17,8 +17,8 @@ Elements:
 - HEX8
 - HEX8FBAR
 - TET10
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 --------------------------------------------------------------------------IO
@@ -39,7 +39,7 @@ STRESS_STRAIN                   yes
 NODE_GID                        yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1

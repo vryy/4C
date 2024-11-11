@@ -8,8 +8,8 @@ Prescribes a small ALE displacement in x-direction (FUNCT 2).
 DIM           2
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Ale
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Ale
 RESTART                         0
 -----------------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        solid

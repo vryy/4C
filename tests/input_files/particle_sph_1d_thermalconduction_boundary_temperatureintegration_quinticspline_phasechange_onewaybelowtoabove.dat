@@ -1,5 +1,5 @@
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Particle
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Particle
 --------------------------------------------------------------------------IO
 STDOUTEVRY                      500
 VERBOSITY                       standard
@@ -7,7 +7,7 @@ VERBOSITY                       standard
 BIN_SIZE_LOWER_BOUND            0.012
 DOMAINBOUNDINGBOX               -0.12 -0.001 -0.001 0.12 0.001 0.001
 ------------------------------------------------------------PARTICLE DYNAMIC
-DYNAMICTYP                      VelocityVerlet
+DYNAMICTYPE                      VelocityVerlet
 INTERACTION                     SPH
 RESULTSEVRY                     100
 RESTARTEVRY                     500

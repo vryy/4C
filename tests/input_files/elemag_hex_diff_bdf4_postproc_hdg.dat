@@ -4,9 +4,9 @@ Test for Elemag postprocessing
 //ELEMENTS    64
 //NODES       125
 DIM           3
---------------------------------------------------------PROBLEM TYP
+--------------------------------------------------------PROBLEM TYPE
 
-PROBLEMTYP                      Electromagnetics
+PROBLEMTYPE                      Electromagnetics
 RESTART                         0
 SHAPEFCT                        HDG
 RANDSEED                        -1

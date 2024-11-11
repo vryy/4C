@@ -5,8 +5,8 @@ tests the Nitsche based on a scaling hk~vol_equivalent
 //ELEMENTS                      20480
 //NODES                         22130
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_XFEM
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

@@ -12,8 +12,8 @@ University of Stuttgart,
 ELEMENTS                        356
 NODES                           765
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 INITIALFIELD                    zero_field

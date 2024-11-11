@@ -7,8 +7,8 @@ tests linearity of stokes problem and edge-based stabilization - should give exa
 //NODES                         121
 DIM                             2
 MATERIALS                       1
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0

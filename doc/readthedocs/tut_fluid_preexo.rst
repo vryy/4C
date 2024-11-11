@@ -110,9 +110,9 @@ Adapting the *header-file*
 Open the previously created *header-file* ’default.head’ and edit the
 following entries as shown below.
 
--  ``PROBLEM TYP``
+-  ``PROBLEM TYPE``
 
-   ``PROBLEMTYP Fluid``
+   ``PROBLEMTYPE Fluid``
 
 -  ``FLUID DYNAMIC``
 

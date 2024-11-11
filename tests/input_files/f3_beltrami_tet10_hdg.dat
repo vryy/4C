@@ -4,8 +4,8 @@ f3_beltrami_tet10_hdg
 //ELEMENTS    587
 //NODES       974
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 SHAPEFCT                        HDG
 --------------------------------------------------------------DISCRETISATION

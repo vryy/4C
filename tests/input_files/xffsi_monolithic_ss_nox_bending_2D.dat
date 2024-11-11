@@ -6,8 +6,8 @@ Stabilization: face-oriented on intersected elements, residual based elsewhere
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 NODES                           3198
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Structure_Interaction
 RESTART                         0
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         8
@@ -73,7 +73,7 @@ NUM_INITSTEP                    0
 ALE_TYPE                        solid
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 TIMESTEP                        1
 NUMSTEP                         200
 MAXTIME                         5.0

@@ -12,8 +12,8 @@ constant initial lithium concentrations, electric potentials, and temperatures
 //ELEMENTS    2500
 //NODES       2909
 DIM           2
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Thermo_Interaction
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Thermo_Interaction
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta

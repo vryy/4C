@@ -11,14 +11,14 @@ NODES                           144
 DIM                             2
 MATERIALS                       1
 NUMDF                           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 SHAPEFCT                        Nurbs
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 INT_STRATEGY                    Standard
 ITERNORM                        L2
 K_DAMP                          0.5

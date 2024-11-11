@@ -5,8 +5,8 @@ The coupling terms are evaluated with the "reference_forced" option.
 //ELEMENTS    267
 //NODES       877
 DIM                                   3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                            yes
@@ -16,7 +16,7 @@ VERBOSITY                             Standard
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                         1
 INT_STRATEGY                          Standard
-DYNAMICTYP                            Statics
+DYNAMICTYPE                            Statics
 RESULTSEVRY                           1
 RESEVRYERGY                           1
 NLNSOL                                fullnewton

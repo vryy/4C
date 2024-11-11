@@ -4,8 +4,8 @@ Test of Edge-based pressure stabilization (pEOS) for quad4 stretched elements, r
 //ELEMENTS    10000
 //NODES       11011
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

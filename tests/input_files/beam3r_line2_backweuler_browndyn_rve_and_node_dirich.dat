@@ -3,8 +3,8 @@ beam3r_line2_singlefil_periodic_uniaxial_stretch.dat
 ----------------------------------------------------------PROBLEM SIZE
 DIM                             3
 NUMDF                           6
-----------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Polymer_Network
+----------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Polymer_Network
 RESTART                         0
 RANDSEED                        1
 ----------------------------------------------------------DISCRETISATION
@@ -21,7 +21,7 @@ VERBOSITY                       standard
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 RESULTSEVRY                     1000
 RESTARTEVRY                     50
 RESEVRYERGY                     1

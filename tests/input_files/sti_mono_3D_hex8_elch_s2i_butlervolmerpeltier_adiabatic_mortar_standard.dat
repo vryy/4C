@@ -9,8 +9,8 @@ Test case for scatra-thermo interaction involving electrochemistry and electrode
 //ELEMENTS    36
 //NODES       99
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Thermo_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Thermo_Interaction
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 TIMESTEP                        5.0

@@ -8,8 +8,8 @@ STRUCT_VEL_ACC                  Yes
 STRUCT_STRAIN                   gl
 STRUCT_STRESS                   Cauchy
 WRITE_INITIAL_STATE             No
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          Superlu
 ----------------------------------------CARDIOVASCULAR 0D-STRUCTURE COUPLING
@@ -17,7 +17,7 @@ TOL_CARDVASC0D_RES              1e-06
 TOL_CARDVASC0D_DOFINCR          1e-06
 LINEAR_COUPLED_SOLVER           1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 DAMPING                         Rayleigh
 K_DAMP                          0.0001
 M_DAMP                          0.0

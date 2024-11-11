@@ -61,8 +61,8 @@ LINEAR_SOLVER                   1
 SECONDORDER                     no
 CONTIPARTINT                    yes
 TRANSIENT_TERMS                 continuity
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelasticity
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
@@ -74,7 +74,7 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   1
 --------------------------------------------------------CLONING MATERIAL MAP

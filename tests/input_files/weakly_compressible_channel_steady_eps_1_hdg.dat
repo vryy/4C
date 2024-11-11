@@ -11,8 +11,8 @@ Test of the HDG formulation with:
 BCs: analytical velocity and average pressure in 1st element.
 ------------------------------------------------------PROBLEM SIZE
 DIM              2
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP       Fluid
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE       Fluid
 SHAPEFCT         HDG
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS      1

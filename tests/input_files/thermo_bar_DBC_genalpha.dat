@@ -33,14 +33,14 @@ THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Current
 WRITE_TO_FILE                   No
 WRITE_TO_SCREEN                 Yes
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Thermo
 RANDSEED                        -1
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------THERMAL DYNAMIC
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 INITFUNCNO                      -1
 INITIALFIELD                    zero_field
 ITERNORM                        L2

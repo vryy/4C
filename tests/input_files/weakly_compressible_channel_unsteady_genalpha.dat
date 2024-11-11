@@ -3,8 +3,8 @@ Unsteady, weakly compressible isothermal flow of a Newtonian fluid
 with pressure-dependent density according to Murnaghan-Tait law.
 ------------------------------------------------------PROBLEM SIZE
 DIM                   2
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP            Fluid
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE            Fluid
 RESTART               0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS           1

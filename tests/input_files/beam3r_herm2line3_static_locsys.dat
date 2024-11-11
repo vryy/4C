@@ -2,13 +2,13 @@
 Test for LOCSYS conditions on beams
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------IO
 STDOUTEVRY                      0
 STRUCT_STRESS                   Cauchy
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
 TIMESTEP                        0.1

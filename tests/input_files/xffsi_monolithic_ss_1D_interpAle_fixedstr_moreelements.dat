@@ -8,8 +8,8 @@ Fluid-fluid coupling: background fluid-sided, stress-based
 Monolithic XFFSI approach: fixed ALE
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Structure_Interaction
 RESTART                         0
 ---------------------------------------------------------------FLUID DYNAMIC
 CONVFORM                        convective
@@ -33,7 +33,7 @@ CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 NLNSOL                          fullnewton
 PREDICT                         ConstDisVelAcc
 LINEAR_SOLVER                   1

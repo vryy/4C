@@ -27,8 +27,8 @@ THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 WRITE_TO_FILE                   No
 WRITE_TO_SCREEN                 Yes
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RANDSEED                        -1
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -37,7 +37,7 @@ SOLVER                          Superlu
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 ITERNORM                        L2
 K_DAMP                          0.0005
 LINEAR_SOLVER                   1

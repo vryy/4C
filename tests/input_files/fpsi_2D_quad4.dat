@@ -12,13 +12,13 @@ NUMALEDIS                       0
 NUMARTNETDIS                    0
 NUMTHERMDIS                     0
 NUMAIRWAYSDIS                   0
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Porous_Structure_Interaction
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Porous_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1
 -------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 DAMPING                         Material
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2

@@ -1,7 +1,7 @@
 ------------------------------------------------------PROBLEM SIZE
 DIM                    3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP             Structure
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE             Structure
 RANDSEED               1
 RESTART                0
 ----------------------------------------------------DISCRETISATION
@@ -39,7 +39,7 @@ VERBOSITY              Standard
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     5
 NLNSOL                          fullnewton

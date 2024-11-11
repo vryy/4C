@@ -6,12 +6,12 @@
 ELEMENTS                         1
 NODES                            27
 DIM                              3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                       Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                       Structure
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                    1
 INT_STRATEGY                     Standard
-DYNAMICTYP                       GenAlpha
+DYNAMICTYPE                       GenAlpha
 TIMESTEP                         0.1
 NUMSTEP                          10
 NEGLECTINERTIA                   yes

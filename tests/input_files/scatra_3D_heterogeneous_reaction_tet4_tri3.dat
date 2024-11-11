@@ -7,8 +7,8 @@ this test is an adaption of test ssi_3D_tet4_tet4_tri3.dat
 //ELEMENTS    562
 //NODES       200
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

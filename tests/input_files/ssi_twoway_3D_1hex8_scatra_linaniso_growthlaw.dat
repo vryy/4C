@@ -12,12 +12,12 @@ simple, academic test case for partitioned scalar-structure interaction:
 //ELEMENTS    1
 //NODES       8
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
 STDOUTEVRY                      0
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
 PREDICT                         TangDis

@@ -433,7 +433,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_rigid_body()
 void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_time_integration()
 {
   // get particle time integration scheme
-  auto timinttype = Teuchos::getIntegralValue<Inpar::PARTICLE::DynamicType>(params_, "DYNAMICTYP");
+  auto timinttype = Teuchos::getIntegralValue<Inpar::PARTICLE::DynamicType>(params_, "DYNAMICTYPE");
 
   // create particle time integration
   switch (timinttype)

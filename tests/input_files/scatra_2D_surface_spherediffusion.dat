@@ -4,8 +4,8 @@ Diffusion on unit sphere (tested with analytical solution funct1)
 //ELEMENTS    600
 //NODES       602
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

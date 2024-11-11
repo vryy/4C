@@ -12,8 +12,8 @@ Journal of Electroanalytical Chemistry, 12-23, 2001
 //ELEMENTS                        100
 //NODES                           202
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ----------------------------------------------------------------ELCH CONTROL
 TEMPERATURE                     298
 EQUPOT                          ENC

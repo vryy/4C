@@ -7,8 +7,8 @@ NODES                           1513
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_RedModels
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_RedModels
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -25,7 +25,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ------------------------------------------------------------ARTERIAL DYNAMIC
-DYNAMICTYP                      ExpTaylorGalerkin
+DYNAMICTYPE                      ExpTaylorGalerkin
 NUMSTEP                         50000
 TIMESTEP                        1.0e-3
 RESTARTEVRY                     50

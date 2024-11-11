@@ -6,12 +6,12 @@ Tests:
 
 Elements:
 - HEX8
---------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 -------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Old
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton

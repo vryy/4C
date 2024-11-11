@@ -4,8 +4,8 @@ natural convection in a electrochemical cell (2-D problem)
 //ELEMENTS                        1360
 //NODES                           1435
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function

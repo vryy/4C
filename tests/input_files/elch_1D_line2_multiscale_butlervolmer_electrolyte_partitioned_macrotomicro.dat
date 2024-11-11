@@ -11,8 +11,8 @@ Academic test case for multi-scale electrochemistry:
 //ELEMENTS    29
 //NODES       30
 DIM           1
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear_multiscale_macrotomicro
 NUMSTEP                         50

@@ -1280,7 +1280,7 @@ void Solid::TimInt::update_step_contact_vum()
       double alpham = 0.0;
       double beta = 0.0;
       double gamma = 0.0;
-      if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP") ==
+      if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYPE") ==
           Inpar::Solid::dyna_genalpha)
       {
         auto* genAlpha = dynamic_cast<Solid::TimIntGenAlpha*>(this);
@@ -2873,7 +2873,7 @@ void Solid::TimInt::nonlinear_mass_sanity_check(
   if (sdynparams != nullptr)
   {
     if (have_nonlinear_mass() == Inpar::Solid::ml_rotations and
-        Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(*sdynparams, "DYNAMICTYP") !=
+        Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(*sdynparams, "DYNAMICTYPE") !=
             Inpar::Solid::dyna_genalpha)
     {
       FOUR_C_THROW(

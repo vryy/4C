@@ -4,8 +4,8 @@ f3_beltrami_8x8_nonMatchingMesh
 //ELEMENTS         512
 //NODES            827
 DIM                3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Fluid
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE   Fluid
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1

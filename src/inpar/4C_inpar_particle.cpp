@@ -28,7 +28,7 @@ void Inpar::PARTICLE::set_valid_parameters(Teuchos::ParameterList& list)
       list.sublist("PARTICLE DYNAMIC", false, "control parameters for particle simulations\n");
 
   // type of particle time integration
-  setStringToIntegralParameter<DynamicType>("DYNAMICTYP", "VelocityVerlet",
+  setStringToIntegralParameter<DynamicType>("DYNAMICTYPE", "VelocityVerlet",
       "type of particle time integration",
       tuple<std::string>("SemiImplicitEuler", "VelocityVerlet"),
       tuple<DynamicType>(

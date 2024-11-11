@@ -7,8 +7,8 @@ and Roeland which can be selected in material section
 //ELEMENTS    150
 //NODES       500
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Elastohydrodynamic_Lubrication
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Elastohydrodynamic_Lubrication
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -17,7 +17,7 @@ NUMALEDIS                       0
 NUMTHERMDIS                     0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   3
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 NLNSOL                          fullnewton
 DAMPING                         No
 TOLRES                          1.0E-2

@@ -9,8 +9,8 @@ Comput. Methods Appl. Mech. Engrg. 245-246 (2012) 22-35
 //ELEMENTS                      13824
 //NODES                         15625
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 PHYSICAL_TYPE                   Incompressible

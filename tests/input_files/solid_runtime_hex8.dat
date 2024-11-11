@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------TITLE
 This is a simple test that tests the extrapolation of stressees from Gauss points to nodes for a
 hex8 discretization
--------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes
@@ -27,7 +27,7 @@ NAME                            Structure_Solver
 SOLVER                          Superlu
 ------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 PRESTRESSTOLDISP                1e-9
 RESULTSEVRY                     1
 RESTARTEVRY                     1

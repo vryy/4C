@@ -9,8 +9,8 @@ of cutting the element on the tip of a discretized bar subjected to tension.
 The background element (element of the bar) is cut with a HEX8 element and
 present a straight interface. The number of element in the cut mesh is 1x1x1.
 The cut and background meshes are conforming.
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 INTERVAL_STEPS                        1
 OUTPUT_DATA_FORMAT                    binary
@@ -28,7 +28,7 @@ STRESS_STRAIN                         no
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                          Standard
 LINEAR_SOLVER                         1
-DYNAMICTYP                            Statics
+DYNAMICTYPE                            Statics
 RESULTSEVRY                           1
 RESTARTEVRY                           1
 NLNSOL                                fullnewton

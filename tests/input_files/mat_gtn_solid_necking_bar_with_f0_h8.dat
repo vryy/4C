@@ -6,8 +6,8 @@ NODES                            1196
 DIM                              3
 MATERIALS                        1
 NUMDF                            3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                       Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                       Structure
 RESTART                          0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                      0
@@ -23,7 +23,7 @@ FILESTEPS                        1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                    1
 INT_STRATEGY                     Standard
-DYNAMICTYP                       Statics
+DYNAMICTYPE                       Statics
 PREDICT                          TangDis
 RESULTSEVRY                      1
 RESTARTEVRY                      1

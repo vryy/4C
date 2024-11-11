@@ -10,8 +10,8 @@ Academic test case for scatra-scatra interface coupling:
 //ELEMENTS    2735
 //NODES       922
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta

@@ -14,8 +14,8 @@ NUMALEDIS                       0
 NUMARTNETDIS                    0
 NUMTHERMDIS                     0
 NUMAIRWAYSDIS                   0
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Immersed_FSI
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Immersed_FSI
 RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1
@@ -27,7 +27,7 @@ STRUCT_STRESS                   no
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 PREDICT                         ConstDisVelAcc
 NORM_DISP                       Abs
 NORM_RESF                       Abs

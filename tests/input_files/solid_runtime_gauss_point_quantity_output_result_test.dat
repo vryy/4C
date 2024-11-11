@@ -1,8 +1,8 @@
 --------------------------------------------------------------------TITLE
 Growth simulation with output of Gauss points data postprocessed to the nodes tested in the
 result test section of the input file
---------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 -----------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes
@@ -27,7 +27,7 @@ NAME                            Structure_Solver
 SOLVER                          Superlu
 -------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 PRESTRESSTIME                   100
 PRESTRESSTOLDISP                1e-9
 RESULTSEVRY                     1

@@ -5,8 +5,8 @@ Basically a copy of the test porofluidmult_3D_tet4.dat with TET10 elements
 //ELEMENTS    500
 //NODES       1122
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Porous_Flow
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Multiphase_Porous_Flow
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

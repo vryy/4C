@@ -11,11 +11,11 @@ MATERIALS                       3
 NUMDF                           3
 --------------------------------------------------------------------------IO
 VERBOSITY                       standard
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Structure_Interaction
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 PREDICT                         ConstDisVelAcc
 LINEAR_SOLVER                   1
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA

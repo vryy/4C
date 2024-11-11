@@ -4,8 +4,8 @@ straight beam subject to a sinusoidal lineload (x/y/z force)
 //  - torsion-free Kirchhoff beam elements
 ------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -29,7 +29,7 @@ STRAINS_GAUSSPOINT              Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 RESULTSEVRY                     1
 RESEVRYERGY                     2
 RESTARTEVRY                     50

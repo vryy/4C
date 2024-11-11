@@ -2,8 +2,8 @@
 Minimal Ventricular Model Myocard material test for HDG elements with centered stabilization scheme
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Cardiac_Monodomain
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Cardiac_Monodomain
 SHAPEFCT                        HDG
 RESTART                         0
 --------------------------------------------------------------------------IO

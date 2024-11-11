@@ -130,7 +130,7 @@ std::shared_ptr<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   auto timintscheme =
-      Teuchos::getIntegralValue<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
+      Teuchos::getIntegralValue<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYPE");
 
   // build art net time integrator
   std::shared_ptr<Adapter::ArtNet> artnettimint = Arteries::Utils::create_algorithm(

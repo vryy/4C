@@ -12,15 +12,15 @@ DIM           3
 -----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Poro_Structure_Interaction_XFEM
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Poro_Structure_Interaction_XFEM
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO
 OUTPUT_GMSH                     no
 OUTPUT_BIN                      yes
 -------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 DAMPING                         Material
 RESULTSEVRY                     1
 RESTARTEVRY                     10

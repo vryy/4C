@@ -9,8 +9,8 @@ Test for space-charge layer formation in a polarization experiment:
   Statics and Dynamics of Space-Charge-Layers in Polarized Inorganic Solid Electrolytes. 2021)
 -----------------------------------------------------------------PROBLEM SIZE
 DIM                             1
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear

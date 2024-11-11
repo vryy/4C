@@ -5,8 +5,8 @@
 DIM           3
 -----------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO
@@ -33,7 +33,7 @@ RESTARTWALLTIMEINTERVAL         -1
 RESTARTEVRY                     -1
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     0

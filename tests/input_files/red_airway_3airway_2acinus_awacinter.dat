@@ -11,12 +11,12 @@ NODES                           6
 DIM                             3
 MATERIALS                       1
 NUMDF                           1
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      ReducedDimensionalAirWays
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      ReducedDimensionalAirWays
 RESTART                         0
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 NUMSTEP                         5000
 TIMESTEP                        0.01
 RESULTSEVRY                     10000

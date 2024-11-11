@@ -3,8 +3,8 @@ Framework test for multiphase flow through deformable porous medium.
 3 fluid phases, 2 volume fraction phases, 2 scalars
 Minimal test for monolithic framework also testing finite difference check
 of monolithic system matrix
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
 RESULTSEVRY                     10
@@ -23,7 +23,7 @@ LINEAR_SOLVER                   1
 FDCHECK                         global
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 LINEAR_SOLVER                   1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66

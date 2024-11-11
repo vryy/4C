@@ -8,9 +8,9 @@
 //ELEMENTS    15
 //NODES       42
 DIM           3
------------------------------------------------------------------PROBLEM TYP
+-----------------------------------------------------------------PROBLEM TYPE
 RESTART                         0
-PROBLEMTYP                      Structure
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
@@ -22,7 +22,7 @@ STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.5

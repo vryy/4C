@@ -313,7 +313,7 @@ class PostField
   std::string name() const { return field_name_; }
 
   //! returns the type of this field
-  // FIELDTYP type() const { return type_; }
+  // FIELDTYPE type() const { return type_; }
 
   //! returns the number of nodes
   int num_nodes() const { return numnd_; }

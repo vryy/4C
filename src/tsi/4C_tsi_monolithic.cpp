@@ -62,7 +62,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       printiter_(true),  // ADD INPUT PARAMETER
       zeros_(nullptr),
       strmethodname_(
-          Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP")),
+          Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYPE")),
       tsidyn_(Global::Problem::instance()->tsi_dynamic_params()),
       tsidynmono_((Global::Problem::instance()->tsi_dynamic_params()).sublist("MONOLITHIC")),
       blockrowdofmap_(nullptr),
@@ -1948,11 +1948,11 @@ void TSI::Monolithic::apply_thr_coupl_matrix(
 
   // create specific time integrator
   const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
-  tparams.set<Inpar::Thermo::DynamicType>(
-      "time integrator", Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP"));
+  tparams.set<Inpar::Thermo::DynamicType>("time integrator",
+      Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYPE"));
   tparams.set<Inpar::Solid::DynamicType>("structural time integrator", strmethodname_);
   double timefac = -1.;
-  switch (Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYPE"))
   {
     // static analysis
     case Inpar::Thermo::dyna_statics:
@@ -2071,9 +2071,9 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
     // create specific time integrator
     const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
     tparams.set<Inpar::Thermo::DynamicType>("time integrator",
-        Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP"));
+        Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYPE"));
     tparams.set<Inpar::Solid::DynamicType>("structural time integrator", strmethodname_);
-    switch (Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP"))
+    switch (Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYPE"))
     {
       // static analysis
       case Inpar::Thermo::dyna_statics:
@@ -2805,7 +2805,7 @@ void TSI::Monolithic::apply_struct_coupling_state(
 void TSI::Monolithic::fix_time_integration_params()
 {
   if (Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(
-          Global::Problem::instance()->thermal_dynamic_params(), "DYNAMICTYP") ==
+          Global::Problem::instance()->thermal_dynamic_params(), "DYNAMICTYPE") ==
       Inpar::Thermo::dyna_genalpha)
   {
     Teuchos::ParameterList& ga = const_cast<Teuchos::ParameterList&>(
@@ -2825,7 +2825,7 @@ void TSI::Monolithic::fix_time_integration_params()
   }
 
   if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(
-          Global::Problem::instance()->structural_dynamic_params(), "DYNAMICTYP") ==
+          Global::Problem::instance()->structural_dynamic_params(), "DYNAMICTYPE") ==
       Inpar::Solid::dyna_genalpha)
   {
     Teuchos::ParameterList& ga = const_cast<Teuchos::ParameterList&>(

@@ -7,8 +7,8 @@ Poiseuille flows with pressure-dependent viscosity"
 Kostas D. Housiadas, Georgios C. Georgiou
 ------------------------------------------------------PROBLEM SIZE
 DIM                   2
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP            Fluid
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE            Fluid
 RESTART               0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS           1

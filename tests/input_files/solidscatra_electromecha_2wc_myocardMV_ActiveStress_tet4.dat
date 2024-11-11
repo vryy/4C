@@ -7,15 +7,15 @@ Test for SolidScatra Material with Tet4 Elements
 DIM                             3
 ----------------------------------------------------------------IO
 FILESTEPS                       5
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 ------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Rayleigh
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 INT_STRATEGY                    Old
 ITERNORM                        Inf
 K_DAMP                          0.5

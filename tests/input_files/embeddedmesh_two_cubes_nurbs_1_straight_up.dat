@@ -2,8 +2,8 @@
 Cut Cartesian background element with a NURBS cut element with a straight interface
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                                   3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 SHAPEFCT                              Nurbs
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
@@ -22,7 +22,7 @@ ELEMENT_GHOSTING                      yes
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                          Standard
 LINEAR_SOLVER                         1
-DYNAMICTYP                            Statics
+DYNAMICTYPE                            Statics
 RESULTSEVRY                           1
 RESTARTEVRY                           1
 NLNSOL                                fullnewton

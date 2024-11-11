@@ -3,8 +3,8 @@ Minimal Ventricular Model Myocard material test for HDG elements with centered s
 with a p-adaptive method and explicit evaluation of the reaction term
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Cardiac_Monodomain
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Cardiac_Monodomain
 SHAPEFCT                        HDG
 RESTART                         0
 --------------------------------------------------------------------------IO

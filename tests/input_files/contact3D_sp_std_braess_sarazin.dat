@@ -12,8 +12,8 @@ NUMALEDIS                       1
 NUMARTNETDIS                    1
 NUMTHERMDIS                     1
 NUMAIRWAYSDIS                   1
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1
@@ -34,7 +34,7 @@ RESTARTEVRY                     -1
 IMBALANCE_TOL                   1.03
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Old
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1000

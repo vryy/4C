@@ -5,8 +5,8 @@ Allen-Cahn equation (instationary diffusion reaction equation) on surface of tor
 //ELEMENTS    4352
 //NODES       4352
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

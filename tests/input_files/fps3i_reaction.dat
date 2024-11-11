@@ -5,8 +5,8 @@ ELEMENTS    3200
 NODES       4430
 DIM         3
 NUMDF       6
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Porous_Structure_Scalar_Scalar_Interaction
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Porous_Structure_Scalar_Scalar_Interaction
 RANDSEED                        -1
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -221,7 +221,7 @@ TOLINC_GLOBAL                   1e-10
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no

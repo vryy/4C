@@ -5,8 +5,8 @@ transport on structural boundary
 //ELEMENTS    1617
 //NODES       2232
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 RESTART                         0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -23,7 +23,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
 -----------------------------------------------STRUCT NOX/Printing

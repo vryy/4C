@@ -16,14 +16,14 @@ FILESTEPS                       1000
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
 TIME_ADAPTIVITY                 Yes
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 TOLRES                          1.0E-5
 TOLDISP                         1.0E-6
 NORM_RESF                       Abs
@@ -57,7 +57,7 @@ LOCERRTOL                       1.0e-3
 ADAPTSTEPMAX                    3
 ----------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY/JOINT EXPLICIT
 LINEAR_SOLVER                   1
-DYNAMICTYP                      CentrDiff
+DYNAMICTYPE                      CentrDiff
 LUMPMASS                        Yes
 DAMPING                         No
 K_DAMP                          0.5

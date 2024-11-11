@@ -4,8 +4,8 @@ Fluid-structure interaction with contact and flow-dependent pressure conditions
 //ELEMENTS    19196
 //NODES       24062
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP       Fluid_Structure_Interaction
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE       Fluid_Structure_Interaction
 -----------------------------------------------------------------IO
 STRUCT_STRAIN    EA
 STRUCT_STRESS    Cauchy
@@ -59,7 +59,7 @@ LOMA_CONTI_CROSS_STRESS     no_cross
 LOMA_CONTI_REYNOLDS_STRESS  no_reynolds
 -------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 MAXTIME                         3.0
 TIMESTEP                        0.02
 NUMSTEP                         150

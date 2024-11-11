@@ -5,8 +5,8 @@ only one ion species (convection-diffusion), no electric potential
 //ELEMENTS                        1360
 //NODES                           1435
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

@@ -4,8 +4,8 @@ integration based on model equation and Gauss point data output postprocessed
 to the nodes.
 
 Elements: HEX8
---------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 -----------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes
@@ -30,7 +30,7 @@ NAME                            Structure_Solver
 SOLVER                          Superlu
 -------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 PRESTRESSTIME                   100
 PRESTRESSTOLDISP                1e-9
 RESULTSEVRY                     1

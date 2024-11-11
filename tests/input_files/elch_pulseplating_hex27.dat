@@ -5,8 +5,8 @@ Journal of the Electrochemical Society, 149, C229 - C236, 2002)
 //ELEMENTS                        50
 //NODES                           909
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 FSSUGRDIFF                      No

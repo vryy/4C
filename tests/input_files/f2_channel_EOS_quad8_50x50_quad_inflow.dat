@@ -4,8 +4,8 @@ Test of Edge-based pressure stabilization (pEOS) for quad8 elements
 //ELEMENTS    2500
 //NODES       7701
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

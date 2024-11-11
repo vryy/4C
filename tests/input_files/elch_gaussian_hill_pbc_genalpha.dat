@@ -9,8 +9,8 @@ Convection-Diffusion of a Gaussian Hill - Electrochemistry version
 //ELEMENTS                        750
 //NODES                           1812
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear

@@ -3,8 +3,8 @@
 //NODES       745
 DIM           3
 
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Fluid_Beam_Interaction
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Fluid_Beam_Interaction
 RESTART                               0
 SHAPEFCT                              Polynomial
 ----------------------------------FLUID BEAM INTERACTION
@@ -35,7 +35,7 @@ PREDICTOR                             d(n)
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                          Standard
 LINEAR_SOLVER                         1
-DYNAMICTYP                            GenAlpha
+DYNAMICTYPE                            GenAlpha
 DAMPING                               No
 NLNSOL                                fullnewton
 PREDICT                               TangDis

@@ -1768,7 +1768,7 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::InputFile& input
 
   Core::IO::read_parameters_in_section(input, "DISCRETISATION", *list);
   Core::IO::read_parameters_in_section(input, "PROBLEM SIZE", *list);
-  Core::IO::read_parameters_in_section(input, "PROBLEM TYP", *list);
+  Core::IO::read_parameters_in_section(input, "PROBLEM TYPE", *list);
   Core::IO::read_parameters_in_section(input, "BINNING STRATEGY", *list);
   Core::IO::read_parameters_in_section(input, "BOUNDINGVOLUME STRATEGY", *list);
   Core::IO::read_parameters_in_section(input, "IO", *list);
@@ -1995,7 +1995,7 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::InputFile& input
 
   // 1) get the problem type
   const Teuchos::ParameterList& type = problem.problem_type_params();
-  problem.set_problem_type(Teuchos::getIntegralValue<Core::ProblemType>(type, "PROBLEMTYP"));
+  problem.set_problem_type(Teuchos::getIntegralValue<Core::ProblemType>(type, "PROBLEMTYPE"));
 
   // 2) get the spatial approximation type
   problem.set_spatial_approximation_type(

@@ -2,8 +2,8 @@
 //ELEMENTS    64
 //NODES       150
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Thermo_Structure_Interaction
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE   Thermo_Structure_Interaction
 RESTART      0
 SHAPEFCT     Polynomial
 ----------------------------------------------------DISCRETISATION
@@ -16,7 +16,7 @@ OUTPUT_BIN        Yes
 STRUCT_DISP       Yes
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER 1
-DYNAMICTYP   OneStepTheta
+DYNAMICTYPE   OneStepTheta
 RESULTSEVRY  1
 RESTARTEVRY  1
 NLNSOL       fullnewton
@@ -42,7 +42,7 @@ Outer Iteration StatusTest = no
 XML File                        = contact3D_nitsche_hex8_sym_coulomb_new_struc.xml
 ----------------------------------------------------THERMAL DYNAMIC
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function
 ITERNORM                        L2

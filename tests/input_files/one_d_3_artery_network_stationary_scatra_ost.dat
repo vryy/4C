@@ -8,12 +8,12 @@ with velocity magnitude = 5
 ELEMENTS                        10
 NODES                           11
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      ArterialNetwork
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      ArterialNetwork
 RESTART                         0
 ------------------------------------------------------------ARTERIAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Stationary
+DYNAMICTYPE                      Stationary
 SOLVESCATRA                     yes
 NUMSTEP                         10
 TIMESTEP                        0.1

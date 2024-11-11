@@ -6,8 +6,8 @@ NODES                           2002
 DIM                             3
 MATERIALS                       1
 NUMDF                           4
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Ale
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Ale
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

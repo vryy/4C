@@ -2,8 +2,8 @@
 A particle input file with DEM contact and initial conditions
 for the rigid phase
 ==================================================================
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Particle
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Particle
 --------------------------------------------------------------------------IO
 STDOUTEVRY                      50
 VERBOSITY                       standard
@@ -11,7 +11,7 @@ VERBOSITY                       standard
 BIN_SIZE_LOWER_BOUND            5.0
 DOMAINBOUNDINGBOX               -20.0 -20.0 -0.01 20.0 20.0 0.01
 ------------------------------------------------------------PARTICLE DYNAMIC
-DYNAMICTYP                      VelocityVerlet
+DYNAMICTYPE                      VelocityVerlet
 INTERACTION                     DEM
 RESULTSEVRY                     50
 RESTARTEVRY                     800

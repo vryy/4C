@@ -1,7 +1,7 @@
 ---------------------------------------------------------------------------TITLE
 Test WALL and WALLNURBS in the same input file
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 RESTART                               0
 SHAPEFCT                              Nurbs
 ------------------------------------------------------------------DISCRETISATION
@@ -14,7 +14,7 @@ OUTPUT_BIN                            Yes
 STRUCT_DISP                           Yes
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                         1
-DYNAMICTYP                            Statics
+DYNAMICTYPE                            Statics
 RESULTSEVRY                           1
 RESTARTEVRY                           1
 NLNSOL                                fullnewton

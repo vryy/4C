@@ -1,7 +1,7 @@
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          Superlu
 ----------------------------------------CARDIOVASCULAR 0D-STRUCTURE COUPLING
@@ -67,7 +67,7 @@ V_ven_pul_u                     93000.0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Rayleigh
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 ITERNORM                        L2
 K_DAMP                          0.0001
 LINEAR_SOLVER                   1

@@ -6,8 +6,8 @@ beam3r_line2_backweuler_browndyn_crosslinking_beam3rline2_largesys.dat
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
----------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Polymer_Network
+---------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Polymer_Network
 RESTART                         0
 RANDSEED                        1
 ---------------------------------------------------------DISCRETISATION
@@ -24,7 +24,7 @@ VERBOSITY                       standard
 ---------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     100
 RESEVRYERGY                     0

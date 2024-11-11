@@ -2,8 +2,8 @@
 DIM                                   3
 ---------------------------------------------------------------------------TITLE
 Cut Cartesian background mesh with a NURBS cut mesh
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                            Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                            Structure
 SHAPEFCT                              Nurbs
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 INTERVAL_STEPS                        1
@@ -20,7 +20,7 @@ ELEMENT_GHOSTING                      yes
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                          Standard
 LINEAR_SOLVER                         1
-DYNAMICTYP                            Statics
+DYNAMICTYPE                            Statics
 RESULTSEVRY                           1
 RESTARTEVRY                           1
 NLNSOL                                fullnewton

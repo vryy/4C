@@ -9,12 +9,12 @@ simple, academic test case for monolithic scalar-structure interaction:
 //ELEMENTS    27
 //NODES       64
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
 STDOUTEVRY                      0
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 LINEAR_SOLVER                   2
 INT_STRATEGY                    Standard
 ------------------------------------------SCALAR TRANSPORT DYNAMIC

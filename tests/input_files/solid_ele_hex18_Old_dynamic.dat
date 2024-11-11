@@ -5,8 +5,8 @@ Time Integration: Old
 Shape: hex18
 Element-Technology:
 Fibers: none
--------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 ----------------------------------------------------------------------SOLVER 1
@@ -15,7 +15,7 @@ SOLVER                          UMFPACK
 ------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Old
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 NLNSOL                          fullnewton
 PREDICT                         ConstDis
 TIMESTEP                        0.5

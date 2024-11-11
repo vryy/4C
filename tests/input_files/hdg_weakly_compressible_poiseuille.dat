@@ -4,8 +4,8 @@ From: "A superconvergent HDG method for weakly compressible
 Fluid-Structure Interaction", Andrea La Spina et al.
 ------------------------------------------------------PROBLEM SIZE
 DIM              2
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP       Fluid
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE       Fluid
 SHAPEFCT         HDG
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS      1

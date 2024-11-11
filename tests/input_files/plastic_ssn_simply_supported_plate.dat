@@ -5,9 +5,9 @@ Semi-smooth Newton type plasticity
 //ELEMENTS    64
 //NODES       162
 DIM           3
------------------------------------------------------------------PROBLEM TYP
+-----------------------------------------------------------------PROBLEM TYPE
 RESTART                         0
-PROBLEMTYP                      Structure
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
@@ -23,7 +23,7 @@ THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     40
 RESTARTEVRY                     40
 TIMESTEP                        0.025

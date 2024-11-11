@@ -5,8 +5,8 @@ Based on: Test of Edge-based pressure stabilization (pEOS) for wedge15 elements
 //ELEMENTS    3442
 //NODES       13103
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

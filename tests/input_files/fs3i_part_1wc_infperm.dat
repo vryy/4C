@@ -87,8 +87,8 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 VERBOSITY                       standard
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Gas_Fluid_Structure_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Gas_Fluid_Structure_Interaction
 RESTART                         0
 //!RESTART                      10
 SHAPEFCT                        Polynomial
@@ -150,7 +150,7 @@ SUGRVEL                         no
 ------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no

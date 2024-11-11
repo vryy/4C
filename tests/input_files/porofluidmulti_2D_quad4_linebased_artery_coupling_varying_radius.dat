@@ -10,8 +10,8 @@ radius of artery elements follows function
 //ELEMENTS    38
 //NODES       49
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Multiphase_Porous_Flow
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Multiphase_Porous_Flow
 RESTART                         0
 ---------------------------------------------POROFLUIDMULTIPHASE DYNAMIC
 TIMEINTEGR                      One_Step_Theta
@@ -39,7 +39,7 @@ SCALEREAC_CONT                  0 0 0
 REACFUNCT_CONT                  0 0 0
 ------------------------------------------------------------ARTERIAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Stationary
+DYNAMICTYPE                      Stationary
 NUMSTEP                         1
 TIMESTEP                        0.1
 RESTARTEVRY                     20

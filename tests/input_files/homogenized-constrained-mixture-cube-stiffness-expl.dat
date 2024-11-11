@@ -1,7 +1,7 @@
 --------------------------------------------------------------------TITLE
 Growth simulation with isotropic growth law
---------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 -----------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes
@@ -26,7 +26,7 @@ NAME                            Structure_Solver
 SOLVER                          Superlu
 -------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 PRESTRESSTOLDISP                1e-9
 RESULTSEVRY                     5
 RESTARTEVRY                     5

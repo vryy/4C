@@ -9,8 +9,8 @@ NUMALEDIS                       1
 NUMARTNETDIS                    0
 NUMTHERMDIS                     0
 NUMAIRWAYSDIS                   0
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Ale
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Ale
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO

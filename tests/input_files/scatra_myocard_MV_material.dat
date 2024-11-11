@@ -4,8 +4,8 @@ Minimal Ventricular Model Myocard material test
 ELEMENTS                        1
 NODES                           8
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Cardiac_Monodomain
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Cardiac_Monodomain
 RESTART                         0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes

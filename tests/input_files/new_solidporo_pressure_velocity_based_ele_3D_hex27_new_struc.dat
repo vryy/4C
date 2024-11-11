@@ -6,8 +6,8 @@ for using the new time integration
 //ELEMENTS                      27
 //NODES                         343
 DIM                             3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelasticity
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------DISCRETISATION
@@ -89,7 +89,7 @@ SOLVER                          UMFPACK
 INT_STRATEGY                    Standard
 DAMPING                         Material
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA

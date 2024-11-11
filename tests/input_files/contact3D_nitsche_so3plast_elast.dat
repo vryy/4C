@@ -2,8 +2,8 @@
 //ELEMENTS    64
 //NODES       150
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE   Structure
 RESTART      0
 SHAPEFCT     Polynomial
 ----------------------------------------------------DISCRETISATION
@@ -16,7 +16,7 @@ OUTPUT_BIN        Yes
 STRUCT_DISP       Yes
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER      1
-DYNAMICTYP         Statics
+DYNAMICTYPE         Statics
 RESULTSEVRY        1
 RESTARTEVRY        1
 NLNSOL             fullnewton

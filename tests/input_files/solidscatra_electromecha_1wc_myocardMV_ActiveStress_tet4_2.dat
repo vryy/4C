@@ -6,8 +6,8 @@ Test for ssi problem with the option SCATRA_FROM_RESTART_FILE
 //ELEMENTS                      4171
 //NODES                         928
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
@@ -16,7 +16,7 @@ SOLVER                          UMFPACK
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Rayleigh
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 INT_STRATEGY                    Old
 ITERNORM                        Inf
 K_DAMP                          0.5

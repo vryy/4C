@@ -7,8 +7,8 @@ Electrochemistry problem for testing the stabilization parameter
 //ELEMENTS                        1000
 //NODES                           1331
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Electrochemistry
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function

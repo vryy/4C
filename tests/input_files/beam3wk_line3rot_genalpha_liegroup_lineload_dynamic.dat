@@ -4,8 +4,8 @@ straight beam subject to a sinusoidal lineload (x/y/z force)
 //  - rotation-vector-based, weak Kirchhoff beam elements (WK-ROT)
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                             3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 ------------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -24,7 +24,7 @@ FILESTEPS                       1000
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlphaLieGroup
+DYNAMICTYPE                      GenAlphaLieGroup
 RESULTSEVRY                     1
 RESTARTEVRY                     50
 NLNSOL                          fullnewton

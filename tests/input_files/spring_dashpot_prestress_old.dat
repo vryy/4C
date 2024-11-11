@@ -15,8 +15,8 @@ Elements:
 - HEX8
 - HEX8FBAR
 - TET10
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 --------------------------------------------------------------------------IO
@@ -27,7 +27,7 @@ STRUCT_STRAIN                   Yes
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Old
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 PRESTRESS                       Mulf
 PRESTRESSTIME                   3.0001
 RESULTSEVRY                     1

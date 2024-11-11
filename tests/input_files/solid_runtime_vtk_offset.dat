@@ -2,8 +2,8 @@
 // Simulate a 2d cube to check, if the vtk runtime output works with a step offset
 ------------------------------------------------------PROBLEM SIZE
 DIM           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                          Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                          Structure
 SHAPEFCT                            Polynomial
 -----------------------------------------------------DISCRETISATION
 NUMSTRUCDIS			     1
@@ -26,7 +26,7 @@ STRUCT_STRESS                       Cauchy
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                        Standard
 LINEAR_SOLVER                       1
-DYNAMICTYP                          GenAlpha
+DYNAMICTYPE                          GenAlpha
 RESULTSEVRY                         2
 RESTARTEVRY                         2
 OUTPUT_STEP_OFFSET                  1

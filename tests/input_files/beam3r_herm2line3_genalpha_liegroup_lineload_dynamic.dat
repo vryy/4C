@@ -5,8 +5,8 @@ straight beam subject to a sinusoidal lineload (x/y/z force)
 //  - quadratic Lagrange interpolation of triad field
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                             3
----------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+---------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 ------------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -33,7 +33,7 @@ KINETIC_ENERGY_ELEMENT          Yes
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlphaLieGroup
+DYNAMICTYPE                      GenAlphaLieGroup
 RESULTSEVRY                     1
 RESEVRYERGY                     1
 RESTARTEVRY                     50

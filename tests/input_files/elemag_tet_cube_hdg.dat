@@ -2,9 +2,9 @@
 //ELEMENTS    452
 //NODES       143
 DIM           3
---------------------------------------------------------PROBLEM TYP
+--------------------------------------------------------PROBLEM TYPE
 
-PROBLEMTYP                      Electromagnetics
+PROBLEMTYPE                      Electromagnetics
 RESTART                         0
 SHAPEFCT                        HDG
 RANDSEED                        -1

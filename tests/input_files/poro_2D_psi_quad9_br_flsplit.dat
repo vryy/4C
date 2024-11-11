@@ -7,8 +7,8 @@
 //ELEMENTS                      130
 //NODES                         567
 DIM                             2
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP Poroelasticity
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------FLUID DYNAMIC
@@ -64,7 +64,7 @@ SOLVER                          UMFPACK
 SOLVER                          UMFPACK
 ------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA

@@ -6,8 +6,8 @@ NODES                           11
 DIM                             1
 MATERIALS                       4
 NUMDF                           1
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Thermo
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     0
@@ -20,7 +20,7 @@ THERM_TEMPGRAD                  Initial
 FILESTEPS                       1000
 -------------------------------------------------------------THERMAL DYNAMIC
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 ITERNORM                        L2
 INITFUNCNO                      1
 INITIALFIELD                    zero_field

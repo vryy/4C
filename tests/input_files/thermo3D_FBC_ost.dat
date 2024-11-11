@@ -18,14 +18,14 @@ OUTPUT_BIN                      Yes
 THERM_HEATFLUX                  Initial
 THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Initial
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Thermo
 RESTART                         0
 SHAPEFCT                        Polynomial
 -------------------------------------------------------------THERMAL DYNAMIC
 LINEAR_SOLVER                   1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 ITERNORM                        L2
 MAXITER                         50
 MAXTIME                         5

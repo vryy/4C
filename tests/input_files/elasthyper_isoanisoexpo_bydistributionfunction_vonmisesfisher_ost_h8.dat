@@ -29,11 +29,11 @@ Matrix<6,1>[0.00199266 0.00199526 0.996128 0 0 0]
 //ELEMENTS    27
 //NODES       64
 DIM           3
--------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     200
 TIMESTEP                        0.05

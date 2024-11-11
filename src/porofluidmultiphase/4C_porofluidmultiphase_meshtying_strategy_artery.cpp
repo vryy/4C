@@ -40,7 +40,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
   if (!arterydis_->filled()) arterydis_->fill_complete();
 
   auto timintscheme =
-      Teuchos::getIntegralValue<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
+      Teuchos::getIntegralValue<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYPE");
 
   std::shared_ptr<Core::IO::DiscretizationWriter> artery_output = arterydis_->writer();
   artery_output->write_mesh(0, 0.0);

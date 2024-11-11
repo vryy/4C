@@ -11,13 +11,13 @@ NODES                           276
 DIM                             3
 MATERIALS                       1
 NUMDF                           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 SHAPEFCT                        Nurbs
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DIVERCONT                       continue
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 ITERNORM                        L2
 LOADLIN                         no
 MAXITER                         20

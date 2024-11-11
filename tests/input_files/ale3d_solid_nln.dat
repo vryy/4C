@@ -18,8 +18,8 @@ WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
 VERBOSITY                       standard
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Ale
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Ale
 RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1

@@ -6,8 +6,8 @@ Test linear coupled equation conditions.
 //ELEMENTS    45
 //NODES       64
 DIM           2
---------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 
 --------------------------------------------------------------------DISCRETISATION
@@ -21,7 +21,7 @@ PENALTY_PARAM			1.0E08
 RVE_REFERENCE_POINTS		manual
 --------------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton

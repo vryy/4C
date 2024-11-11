@@ -414,9 +414,9 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
             Core::ProblemType::fsi_redmodels == probtype))
     {
       FOUR_C_THROW(
-          "ERROR: Given Volumetric Womersly infow condition only works with Problemtyp "
+          "ERROR: Given Volumetric Womersly infow condition only works with Problemtype "
           "Fluid_RedModels or Fluid_Structure_Interaction_RedModels. \n"
-          " --> If you want to use this conditions change Problemtyp to Fluid_RedModels or "
+          " --> If you want to use this conditions change Problemtype to Fluid_RedModels or "
           "Fluid_Structure_Interaction_RedModels. \n"
           " --> If you don't want to use this condition comment the respective bcFluid section.");
     }

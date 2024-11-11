@@ -6,8 +6,8 @@
 //ELEMENTS    35
 //NODES       91
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 -----------------------------------------------------------------IO
 FILESTEPS                       1000
@@ -34,7 +34,7 @@ GHOSTING_STRATEGY               redundant_all
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 NLNSOL                          fullnewton
 NUMSTEP                         1
 PREDICT                         ConstDis

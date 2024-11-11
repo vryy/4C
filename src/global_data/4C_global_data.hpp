@@ -466,7 +466,7 @@ namespace Global
 
     const Teuchos::ParameterList& problem_type_params() const
     {
-      return parameters_->sublist("PROBLEM TYP");
+      return parameters_->sublist("PROBLEM TYPE");
     }
 
     const Teuchos::ParameterList& problem_size_params() const

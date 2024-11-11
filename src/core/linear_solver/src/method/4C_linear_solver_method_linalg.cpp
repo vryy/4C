@@ -345,10 +345,10 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList &i
   }
 
   // set type of preconditioner
-  const auto azprectyp =
+  const auto azprectype =
       Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(inparams, "AZPREC");
 
-  switch (azprectyp)
+  switch (azprectype)
   {
     case Core::LinearSolver::PreconditionerType::ilu:
       beloslist.set("Preconditioner Type", "ILU");
@@ -371,29 +371,29 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList &i
   }
 
   // set parameters for Ifpack if used
-  if (azprectyp == Core::LinearSolver::PreconditionerType::ilu)
+  if (azprectype == Core::LinearSolver::PreconditionerType::ilu)
   {
     Teuchos::ParameterList &ifpacklist = outparams.sublist("IFPACK Parameters");
     ifpacklist = translate_four_c_to_ifpack(inparams);
   }
 
   // set parameters for ML if used
-  if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu)
+  if (azprectype == Core::LinearSolver::PreconditionerType::multigrid_muelu)
   {
     Teuchos::ParameterList &muelulist = outparams.sublist("MueLu Parameters");
     muelulist = translate_four_c_to_muelu(inparams, &beloslist);
   }
-  if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
+  if (azprectype == Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
   {
     Teuchos::ParameterList &muelulist = outparams.sublist("MueLu (Contact) Parameters");
     muelulist = translate_four_c_to_muelu(inparams, &beloslist);
   }
-  if (azprectyp == Core::LinearSolver::PreconditionerType::block_teko)
+  if (azprectype == Core::LinearSolver::PreconditionerType::block_teko)
   {
     Teuchos::ParameterList &tekolist = outparams.sublist("Teko Parameters");
     tekolist = translate_four_c_to_teko(inparams, &beloslist);
   }
-  if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_nxn)
+  if (azprectype == Core::LinearSolver::PreconditionerType::multigrid_nxn)
   {
     Teuchos::ParameterList &amgnxnlist = outparams.sublist("AMGnxn Parameters");
     std::string amgnxn_xml = inparams.get<std::string>("AMGNXN_XML_FILE");

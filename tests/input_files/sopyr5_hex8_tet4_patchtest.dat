@@ -1,7 +1,7 @@
 -------------------------------------------------------------TITLE
 Testing: homogeneous stress state for pyr5, hex8 and tet4 elements
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -17,7 +17,7 @@ STRUCT_STRAIN                   gl
 FLUID_STRESS                    No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     20
 NLNSOL                          fullnewton

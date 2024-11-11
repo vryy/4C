@@ -5,8 +5,8 @@ with ale mesh tying included
 //ELEMENTS    3128
 //NODES       3456
 DIM           2
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Ale
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Ale
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO

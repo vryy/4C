@@ -6,8 +6,8 @@ NODES                           144
 DIM                             2
 MATERIALS                       1
 NUMDF                           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelasticity
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelasticity
 SHAPEFCT                        Nurbs
 RESTART                         0
 -----------------------------------------------------FLUID DYNAMIC
@@ -32,7 +32,7 @@ TRANSIENT                       no_transient
 VSTAB                           no_vstab
 ------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA

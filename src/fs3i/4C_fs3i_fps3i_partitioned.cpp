@@ -247,7 +247,7 @@ void FS3I::PartFPS3I::init()
   auto fluidtimealgo =
       Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fluiddyn, "TIMEINTEGR");
   auto structtimealgo =
-      Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structdyn, "DYNAMICTYP");
+      Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structdyn, "DYNAMICTYPE");
 
   if (fluidtimealgo == Inpar::FLUID::timeint_one_step_theta)
   {

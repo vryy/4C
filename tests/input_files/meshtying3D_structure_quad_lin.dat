@@ -2,8 +2,8 @@
 //ELEMENTS    35
 //NODES       468
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO
@@ -26,7 +26,7 @@ OUTPUT_INTERFACES               Yes
 -------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 ITERNORM                        L2
 LOADLIN                         no
 MAXITER                         50

@@ -6,8 +6,8 @@ NODES                           510
 DIM                             3
 MATERIALS                       4
 NUMDF                           6
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_RedModels
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_RedModels
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -23,7 +23,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       50
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 PRESTRESS                       mulf
 PRESTRESSTIME                   2.1395
 RESULTSEVRY                     5
@@ -81,7 +81,7 @@ TOL_PRES_INC	  1e-04
 ALE_TYPE                        solid
 RESULTSEVRY                     1
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 NUMSTEP                         100
 TIMESTEP                        1.0e-2
 RESTARTEVRY                     5

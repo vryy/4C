@@ -23,10 +23,10 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn, std::string condname)
 {
-  const Core::ProblemType probtyp = Global::Problem::instance()->get_problem_type();
+  const Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
 
   // switch between moving domain fluid implementations
-  switch (probtyp)
+  switch (probtype)
   {
     case Core::ProblemType::fsi:
     case Core::ProblemType::fluid_ale:

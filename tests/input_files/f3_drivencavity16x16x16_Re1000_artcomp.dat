@@ -4,8 +4,8 @@ Flow at Re=1000 in non-leaky 3D driven cavity with 16x16x16 elements
 //ELEMENTS    4096
 //NODES       4913
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid
 RESTART                         0
 ------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1

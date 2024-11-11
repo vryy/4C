@@ -1,7 +1,7 @@
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RANDSEED                        -1
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -84,7 +84,7 @@ ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.001
 DAMPING                         Rayleigh
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 ITERNORM                        L2
 K_DAMP                          0.0001
 LINEAR_SOLVER                   2

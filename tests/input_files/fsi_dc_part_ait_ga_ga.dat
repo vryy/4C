@@ -9,8 +9,8 @@ NODES                           2244
 DIM                             2
 MATERIALS                       3
 NUMDF                           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Structure_Interaction
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_Structure_Interaction
 RESTART                         0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
@@ -21,7 +21,7 @@ GRIDVELOCITY                          Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 TOLDISP                         1.0E-10
 MAXITER                         50
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA

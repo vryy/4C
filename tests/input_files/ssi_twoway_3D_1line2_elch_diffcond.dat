@@ -8,8 +8,8 @@ simple, academic test case for partitioned scalar-structure interaction:
 //ELEMENTS    1
 //NODES       2
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure_Scalar_Interaction
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 INITIALFIELD                    field_by_condition
@@ -35,7 +35,7 @@ SCATRATIMINTTYPE                Elch
 ------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 NLNSOL                          fullnewton
 PREDICT                         ConstDis
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA

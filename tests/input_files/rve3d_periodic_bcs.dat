@@ -2,8 +2,8 @@
 Test if periodic boundary conditions work correctly for 2D Problems
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
---------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
@@ -23,7 +23,7 @@ ENFORCEMENT                     penalty_method
 PENALTY_PARAM                   10000000
 --------------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton

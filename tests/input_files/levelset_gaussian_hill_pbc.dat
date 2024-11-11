@@ -13,8 +13,8 @@ NODES                           1812
 DIM                             3
 MATERIALS                       4
 NUMDF                           2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Level_Set
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Level_Set
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

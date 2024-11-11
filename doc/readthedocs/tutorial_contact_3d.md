@@ -149,7 +149,7 @@ Some sections that are required by all problem types include `PROBLEM SIZE`, `PR
 Input/Output),
 at least one `SOLVER` section (for contact problems we need to specify two solvers:
 one for the state, where not contact is active, and one for the state with active contact) and a `MATERIALS` section.
-The time integration method `DYNAMICTYP` (Generalized alpha method), time step size `TIMESTEP` and final time `MAXTIME`
+The time integration method `DYNAMICTYPE` (Generalized alpha method), time step size `TIMESTEP` and final time `MAXTIME`
 are also specified for structural dynamics.
 An important parameter is `RESULTSEVRY`, which specifies how often output is written and thus directly controles the
 size of the output file.

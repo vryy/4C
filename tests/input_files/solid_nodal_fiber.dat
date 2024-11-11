@@ -8,8 +8,8 @@ setup:
  - fibers interpolated using poisson lifting from DSURFACE1 (60 degrees) to DSURFACE2 (-60 degrees)
 --------------------------------------------------------------------------IO
 STRUCT_ELE                      No
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 --------------------------------------------------------------------SOLVER 1
@@ -17,7 +17,7 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 NLNSOL                          fullnewton
 PREDICT                         ConstDis
 TIMESTEP                        0.001

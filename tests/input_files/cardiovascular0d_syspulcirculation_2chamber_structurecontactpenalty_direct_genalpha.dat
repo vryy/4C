@@ -31,8 +31,8 @@ MAX_BALANCE_EVAL_TIME           2
 MIN_ELEPROC                     0
 PARALLEL_REDIST                 Dynamic
 GHOSTING_STRATEGY               redundant_master
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RANDSEED                        -1
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -101,7 +101,7 @@ V_ven_pul_u                     93000.0
 -------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Rayleigh
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha
+DYNAMICTYPE                      GenAlpha
 ITERNORM                        L2
 K_DAMP                          0.0001
 LINEAR_SOLVER                   1

@@ -4,8 +4,8 @@ low-Mach-number 2D heated channel 30x100 elements
 ELEMENTS                        3000
 NODES                           3131
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Low_Mach_Number_Flow
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Low_Mach_Number_Flow
 --------------------------------------------------------------------------IO
 VERBOSITY                       standard
 ---------------------------------------------------------------FLUID DYNAMIC

@@ -12,8 +12,8 @@ each with constant initial lithium concentrations, electric potentials, and temp
 //ELEMENTS    818
 //NODES       728
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Thermo_Interaction
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Thermo_Interaction
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 TIMESTEP                        1.0

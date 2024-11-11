@@ -126,7 +126,7 @@ void Solid::TimeInt::BaseDataSDyn::init(const std::shared_ptr<Core::FE::Discreti
 
     timer_ = std::make_shared<Teuchos::Time>("", true);
 
-    dyntype_ = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
+    dyntype_ = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYPE");
 
     stcscale_ = Teuchos::getIntegralValue<Inpar::Solid::StcScale>(sdynparams, "STC_SCALING");
 

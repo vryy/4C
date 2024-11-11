@@ -350,7 +350,7 @@ namespace Core::FE
         break;
       }
       default:
-        FOUR_C_THROW("distyp unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     } /* end switch(distype) */
     return;
@@ -1003,7 +1003,7 @@ namespace Core::FE
         break;
       }
       default:
-        FOUR_C_THROW("distyp unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     } /* end switch(distype) */
     return;
@@ -1978,7 +1978,7 @@ namespace Core::FE
         break;
       }
       default:
-        FOUR_C_THROW("distyp unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     } /* end switch(distype) */
     return;

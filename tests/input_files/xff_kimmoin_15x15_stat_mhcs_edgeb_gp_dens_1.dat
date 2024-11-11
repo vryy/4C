@@ -4,8 +4,8 @@ stationary Kim-Moin with density 5 and dyn.viscosity 0.01, full eos, MHCS
 //ELEMENTS                      1868
 //NODES                         3509
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_XFEM
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

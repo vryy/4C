@@ -4,8 +4,8 @@ Description
 //ELEMENTS    140
 //NODES       202
 DIM           3
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Scalar_Transport
 RESTART                         0
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 CONVFORM                        conservative

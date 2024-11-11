@@ -2,8 +2,8 @@
 //ELEMENTS    321
 //NODES       494
 DIM           3
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Elastohydrodynamic_Lubrication
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Elastohydrodynamic_Lubrication
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -21,7 +21,7 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton

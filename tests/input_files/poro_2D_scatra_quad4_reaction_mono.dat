@@ -8,8 +8,8 @@ should give same results as corresponding partitioned test
 //ELEMENTS                      130
 //NODES                         154
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelastic_scalar_transport
+-----------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Poroelastic_scalar_transport
 RESTART                         0
 SHAPEFCT                        Polynomial
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -75,7 +75,7 @@ AZTOL                           1.0E-9
 AZCONV                          AZ_r0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYPE                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
