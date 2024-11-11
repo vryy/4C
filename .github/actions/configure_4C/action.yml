@@ -28,7 +28,8 @@ runs:
         cd $GITHUB_WORKSPACE
         ./utilities/set_up_dev_env.sh
         cd $BUILD_DIRECTORY
-        cmake $GITHUB_WORKSPACE --fresh --preset=$CMAKE_PRESET $ADDITIONAL_CMAKE_FLAGS
+        # use xargs as $ADDITIONAL_CMAKE_FLAGS can contain multiple flags
+        echo $GITHUB_WORKSPACE --fresh --preset=$CMAKE_PRESET $ADDITIONAL_CMAKE_FLAGS | xargs cmake
         cd $GITHUB_WORKSPACE
       shell: bash
       env:
