@@ -71,4 +71,29 @@ jobs:
           name: readthedocs
           path: ${{ github.workspace }}/build/doc/readthedocs/html/
           retention-days: 1
+  deploy:
+    runs-on: ubuntu-20.04
+    if: success() && github.ref == 'refs/heads/main'
+    needs: [doxygen, readthedocs]
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: doxygen
+          path: ${{ github.workspace }}/doxygen
+      - uses: actions/download-artifact@v4
+        with:
+          name: readthedocs
+          path: ${{ github.workspace }}/readthedocs
+      - uses: actions/upload-pages-artifact@v3
+        id: deployment
+        with:
+          path: ${{ github.workspace }}
+          retention-days: 1
+      - uses: actions/deploy-pages@v4
 
