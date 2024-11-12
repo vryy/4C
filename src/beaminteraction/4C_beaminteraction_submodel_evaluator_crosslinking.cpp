@@ -23,6 +23,7 @@
 #include "4C_fem_geometry_intersection_math.hpp"
 #include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_global_data.hpp"
+#include "4C_inpar_beaminteraction.hpp"
 #include "4C_io.hpp"
 #include "4C_io_discretization_visualization_writer_nodes.hpp"
 #include "4C_io_pstream.hpp"
@@ -328,6 +329,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
 
     BEAMINTERACTION::Data::BeamData const* beamdata_i = beam_data_[beamele->lid()].get();
 
+    // exclude current element/filament if filtype_none
+    if (beamele->get_filament_type() == Inpar::BEAMINTERACTION::filtype_none) continue;
+
     // loop over all binding spot types of current filament
     for (auto const& iter : beamdata_i->get_b_spot_status())
     {
@@ -367,6 +371,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
 
           // exclude linking of touching elements
           if (BEAMINTERACTION::Utils::do_beam_elements_share_nodes(beamele, nb_beamele)) continue;
+
+          // exclude neighbor element/filament if filtype_none
+          if (nb_beamele->get_filament_type() == Inpar::BEAMINTERACTION::filtype_none) continue;
 
           // loop over binding spots of neighboring element
           for (unsigned int nb_locbspot_i = 0;

@@ -68,7 +68,8 @@ namespace Inpar
     {
       filtype_arbitrary,  ///< no special type
       filtype_actin,      ///< actin type
-      filtype_collagen    ///< collagen type
+      filtype_collagen,   ///< collagen type
+      filtype_none        ///< filament which does not bind
     };
 
     /// type of crosslinker
@@ -125,6 +126,8 @@ namespace Inpar
         type = filtype_actin;
       else if (name == "collagen")
         type = filtype_collagen;
+      else if (name == "none")
+        type = filtype_none;
       else
         FOUR_C_THROW("invalid filament type std::string ");
 
