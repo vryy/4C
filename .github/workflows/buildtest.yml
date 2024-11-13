@@ -18,6 +18,8 @@ permissions:
 
 jobs:
   gcc9_build:
+    env:
+      CMAKE_PRESET: docker
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/ppraegla/4c-dependencies:latest
@@ -34,13 +36,18 @@ jobs:
       # The repo gets cloned to `/__w/4C/4C` ($GITHUB_WORKSPACE) while ${{ github.workspace }} points to `/home/runner/work/4C/4C`.`
       # Use $GITHUB_WORKSPACE instead of ${{ github.workspace }}
       - uses: actions/checkout@v4
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.job }}-${{ env.CMAKE_PRESET }}
       - name: info
         run: |
           pwd; ls -l
       - uses: ./.github/actions/configure_4C
         with:
-          cmake-preset: docker
+          cmake-preset: ${{ env.CMAKE_PRESET }}
           build-directory: ${{ github.workspace }}/build
+          additional-cmake-flags: -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
       - uses: ./.github/actions/build_4C
         with:
           build-targets: full
