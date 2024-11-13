@@ -74,7 +74,7 @@ int Core::FE::DiscretizationHDG::fill_complete(
           {
             nodes[i] = oldnodes[j];
           }
-        FOUR_C_ASSERT(nodes[i] != 0, "Could not find node.");
+        FOUR_C_ASSERT(nodes[i] != nullptr, "Could not find node.");
       }
       f->second->build_nodal_pointers(nodes.data());
     }
