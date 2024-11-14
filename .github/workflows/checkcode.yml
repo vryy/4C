@@ -44,7 +44,7 @@ jobs:
           cd $GITHUB_WORKSPACE/../clang-tidy-build
           mkdir -p clang-tidy-issues
           ESCAPED_PROJECT_DIR=$(echo "${GITHUB_WORKSPACE}" | sed 's/\//\\\//g')
-          run-clang-tidy -j `nproc` -config-file ${GITHUB_WORKSPACE}/.clang-tidy -use-color -p . -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*" 2>&1 | python ${GITHUB_WORKSPACE}/utilities/code_climate/filter_clang_tidy_output.py
+          run-clang-tidy -j `nproc` -config-file ${GITHUB_WORKSPACE}/utilities/code_climate/clang-tidy-config -use-color -p . -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*" 2>&1 | python ${GITHUB_WORKSPACE}/utilities/code_climate/filter_clang_tidy_output.py
   verify-headers:
     runs-on: ubuntu-latest
     container:
