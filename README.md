@@ -123,7 +123,7 @@ The [user guide](https://baci.pages.gitlab.lrz.de/baci/readthedocs/index.html) o
 If you need help with 4C, feel free to ask questions
 by [creating a GitHub issue](https://github.com/4C-multiphysics/4C/issues). Use an issue template to pre-populate the *Description* field, giving you instructions on submitting the issue.
 
-For more general questions, we operate a informal communication channel at ...
+For more general questions, you can reach us on the [4C Slack workspace](https://join.slack.com/t/4c-multiphysics/shared_invite/zt-1oi61jgdd-5tZuHku3Tb_BH5UBgojbpQ).
 
 ## Contributing
 
@@ -137,7 +137,7 @@ All people and activities in and around 4C are subject to our [Code of Conduct](
 
 ## How to cite 4C
 
-Whenever you mention or use 4C in some sort of scientific document/publication/presentation, please cite 4C as follows:
+Please cite 4C as follows:
 
 ```
 4C: A Comprehensive Multi-Physics Simulation Framework, https://www.4c-multiphysics.org
@@ -155,14 +155,7 @@ You could use the following BibTeX entry:
 }
 ```
 
-_Note:_ You might need to adapt the BibTeX entry depending on the citation style.
-
-Remember: It is good scientific practice to include the date, when you've visited that website, into the citation. It's
-up to you (and your advisor) to include the date, depending on the type of publication.
-
-Every publication presenting results obtained with the help of 4C
-or building on top of existing methods in 4C must cite appropriate
-4C references of the methods used. Consult the [4C homepage](https://4c-multiphysics.org) for a comprehensive list of papers on the methods, that are available in 4C.
-
-If you would like to publish work based on recent yet unpublished work,
-ask for explicit permission from the original authors.
+We kindly ask you to also give credit to the individual methods and algorithms used in 4C.
+References to the relevant publications can be found on the [4C website](https://4c-multiphysics.org) or throughout the source code.
+If you need any assistance with finding suitable references,
+please feel free to reach out in the [4C Slack workspace](https://join.slack.com/t/4c-multiphysics/shared_invite/zt-1oi61jgdd-5tZuHku3Tb_BH5UBgojbpQ).
