@@ -45,7 +45,7 @@ General software development:
 - Git. Please see :ref:`here <git>` for setting up your personalized version
 - c++ compiler with c++17 compatibility (e.g. gcc 11)
 - MPI installation
-- CMake (mandatory version: >= 3.25.x)
+- CMake
 - Ninja
 
 External solver and linear algebra:
@@ -346,7 +346,7 @@ In the source directory, execute::
 
 |FOURC| enforces an out-of-source build, i.e. your build directory may not be located inside the source code directory.
 
-|FOURC| uses ``cmake`` with appropriate presets (**this is why cmake version 3.25 is needed!**) for the build process.
+|FOURC| uses ``cmake`` with appropriate presets for the build process.
 The command to run is
 
 ::
