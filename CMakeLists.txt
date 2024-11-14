@@ -152,6 +152,10 @@ add_subdirectory(apps)
 add_subdirectory(doc/doxygen EXCLUDE_FROM_ALL)
 add_subdirectory(doc/readthedocs EXCLUDE_FROM_ALL)
 
+###-------------------------------------------Set up Python build/test venv
+
+include(cmake/python/set_up_python.cmake)
+
 ###------------------------------------------------------------------ Tests
 
 add_subdirectory(unittests)

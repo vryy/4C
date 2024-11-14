@@ -1,15 +1,10 @@
-# Python modules that will be installed into the python virtual environment
-pyyaml==6.0.1
-lxml==4.9.4
-numpy
-scipy
-vtk
-dataclasses
-typing
-pre-commit==3.5.0
+# for pre-commit:
 -e utilities/four_c_utils
+pre-commit==3.5.0
 # for readthedocs:
-sphinx-multibuild
-sphinx-rtd-theme
+matplotlib
 myst-parser
 nbsphinx
+scipy
+sphinx-multibuild
+sphinx-rtd-theme

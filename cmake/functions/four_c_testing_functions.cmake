@@ -384,7 +384,7 @@ function(four_c_test)
     # serial run
     set(name_of_ensight_test "${name_of_test}-post_ensight_serial")
     set(ensight_command
-        "${FOUR_C_ENABLE_ADDRESS_SANITIZER_TEST_OPTIONS}\ ./post_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_serial\ --outputtype=bin\ --stress=ndxyz && ${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${source_file} ${test_directory}/xxx_serial_structure.case"
+        "${FOUR_C_ENABLE_ADDRESS_SANITIZER_TEST_OPTIONS}\ ./post_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_serial\ --outputtype=bin\ --stress=ndxyz && ${FOUR_C_PYTHON_VENV_BUILD}/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${source_file} ${test_directory}/xxx_serial_structure.case"
         )
     _add_test_with_options(
       NAME_OF_TEST
@@ -402,7 +402,7 @@ function(four_c_test)
     # parallel run
     set(name_of_ensight_test "${name_of_test}-post_ensight_parallel")
     set(ensight_command
-        "${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${_parsed_NP}\ ./post_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_parallel --outputtype=bin\ --stress=ndxyz && ${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${source_file} ${test_directory}/xxx_parallel_structure.case"
+        "${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${_parsed_NP}\ ./post_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_parallel --outputtype=bin\ --stress=ndxyz && ${FOUR_C_PYTHON_VENV_BUILD}/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${source_file} ${test_directory}/xxx_parallel_structure.case"
         )
     _add_test_with_options(
       NAME_OF_TEST
@@ -438,7 +438,7 @@ function(four_c_test)
       )
       set(name_of_csv_comparison_test "${name_of_test}-csv_comparison-${result_file}")
       set(csv_comparison_command
-          "${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${test_directory}/${result_file} ${PROJECT_SOURCE_DIR}/tests/input_files/${reference_file} ${tol_r} ${tol_a}"
+          "${FOUR_C_PYTHON_VENV_BUILD}/bin/python3 ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${test_directory}/${result_file} ${PROJECT_SOURCE_DIR}/tests/input_files/${reference_file} ${tol_r} ${tol_a}"
           )
       _add_test_with_options(
         NAME_OF_TEST
@@ -696,7 +696,7 @@ function(
   add_test(
     NAME "${name_of_test}-p${num_proc_base_run}"
     COMMAND
-      ${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3
+      ${FOUR_C_PYTHON_VENV_BUILD}/bin/python3
       ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py ${test_directory}
       ${PROJECT_SOURCE_DIR}/tests/input_files/${pvd_referencefilename} ${tolerance}
       ${num_extra_args} ${extra_macro_args}
