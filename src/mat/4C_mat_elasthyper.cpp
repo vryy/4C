@@ -103,6 +103,8 @@ void Mat::ElastHyper::pack(Core::Communication::PackBuffer& data) const
 
   anisotropy_.pack_anisotropy(data);
 
+  Core::Communication::PotentiallyUnusedBufferScope potsum_scope(data);
+
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -148,6 +150,8 @@ void Mat::ElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
 
   // Pack anisotropy
   anisotropy_.unpack_anisotropy(buffer);
+
+  Core::Communication::PotentiallyUnusedBufferScope potsum_scope(buffer);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {

@@ -20,6 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Communication
 {
+  class PotentiallyUnusedBufferScope;
+
   /**
    * @brief A class to pack data into a buffer.
    *
@@ -87,6 +89,8 @@ namespace Core::Communication
 
     //! Scratch buffer used during packing to avoid reallocations.
     std::vector<char> scratch_buffer_;
+
+    friend class PotentiallyUnusedBufferScope;
   };
 
 
@@ -177,6 +181,64 @@ namespace Core::Communication
    private:
     const std::vector<char>& data_;
     std::vector<char>::size_type position_{0};
+
+    friend class PotentiallyUnusedBufferScope;
+  };
+
+  /**
+   * Using this class marks all data added/extracted within a scope as potentially unused. An object
+   * of this class should symmetrically appear in a pack() and unpack() method. In the pack() method
+   * it will remember how much data is potentially unused. In the unpack() method it will
+   * discard all the unused data from the buffer at the end of the scope.
+   */
+  class [[nodiscard]] PotentiallyUnusedBufferScope
+  {
+   public:
+    PotentiallyUnusedBufferScope(PackBuffer& pack_buffer)
+        : pack_buffer_(&pack_buffer), offset_(pack_buffer_->buf_.size())
+    {
+      // Add an entry which stores the amount of potentially unused data.
+      // Note: use raw memory operations to not write metadata
+      pack_buffer_->buf_.insert(pack_buffer_->buf_.end(), sizeof(std::size_t), 0);
+    }
+
+    PotentiallyUnusedBufferScope(UnpackBuffer& unpack_buffer) : unpack_buffer_(&unpack_buffer)
+    {
+      // Read the size of the potentially unused data.
+      std::memcpy(&offset_, &unpack_buffer.data_[unpack_buffer.position_], sizeof(offset_));
+      unpack_buffer.position_ += sizeof(offset_);
+
+      // This is the position where the potentially unused data ends in the buffer.
+      offset_ += unpack_buffer.position_;
+    }
+
+    ~PotentiallyUnusedBufferScope()
+    {
+      if (pack_buffer_ != nullptr)
+      {
+        std::size_t size_of_unused_data = pack_buffer_->buf_.size() - offset_ - sizeof(std::size_t);
+        // Overwrite the special entry with the size of the unused data
+        std::memcpy(
+            &pack_buffer_->buf_[offset_], &size_of_unused_data, sizeof(size_of_unused_data));
+      }
+      else
+      {
+        FOUR_C_ASSERT(
+            unpack_buffer_->position_ <= offset_, "Potentially unused data exceeds buffer size.");
+        // Now simply skip the unused data.
+        unpack_buffer_->position_ = offset_;
+      }
+    }
+
+    PotentiallyUnusedBufferScope(const PotentiallyUnusedBufferScope&) = delete;
+    PotentiallyUnusedBufferScope& operator=(const PotentiallyUnusedBufferScope&) = delete;
+    PotentiallyUnusedBufferScope(PotentiallyUnusedBufferScope&&) = delete;
+    PotentiallyUnusedBufferScope& operator=(PotentiallyUnusedBufferScope&&) = delete;
+
+   private:
+    PackBuffer* pack_buffer_{nullptr};
+    UnpackBuffer* unpack_buffer_{nullptr};
+    std::size_t offset_;
   };
 
 }  // namespace Core::Communication

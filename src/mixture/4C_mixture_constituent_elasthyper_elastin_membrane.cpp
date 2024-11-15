@@ -164,6 +164,7 @@ void Mixture::MixtureConstituentElastHyperElastinMembrane::pack_constituent(
 
   anisotropy_extension_.pack_anisotropy(data);
 
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope{data};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -184,7 +185,9 @@ void Mixture::MixtureConstituentElastHyperElastinMembrane::unpack_constituent(
   anisotropy_extension_.unpack_anisotropy(buffer);
 
   // loop map of associated potential summands
-  for (auto& summand : potsum_membrane_) summand->unpack_summand(buffer);
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope{buffer};
+  if (params_ != nullptr)  // summands are not accessible in postprocessing mode
+    for (auto& summand : potsum_membrane_) summand->unpack_summand(buffer);
 }
 
 void Mixture::MixtureConstituentElastHyperElastinMembrane::register_anisotropy_extensions(

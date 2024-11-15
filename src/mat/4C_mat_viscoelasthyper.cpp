@@ -120,6 +120,7 @@ void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
 
   anisotropy_.pack_anisotropy(data);
 
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope{data};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -127,50 +128,51 @@ void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
     {
       potsum_[p]->pack_summand(data);
     }
-  }
 
-  //  pack history data 09/13
-  int histsize;
-  if (!initialized())
-  {
-    histsize = 0;
-  }
-  else
-  {
-    histsize = histscglast_->size();
-  }
-  add_to_pack(data, histsize);  // Length of history vector(s)
-  for (int var = 0; var < histsize; ++var)
-  {
-    add_to_pack(data, histscglast_->at(var));
-    add_to_pack(data, histmodrcglast_->at(var));
-    add_to_pack(data, histstresslast_->at(var));
-    add_to_pack(data, histartstresslast_->at(var));
-  }
 
-  if (viscogeneralizedgenmax_)
-  {
+    //  pack history data 09/13
+    int histsize;
+    if (!initialized())
+    {
+      histsize = 0;
+    }
+    else
+    {
+      histsize = histscglast_->size();
+    }
+    add_to_pack(data, histsize);  // Length of history vector(s)
     for (int var = 0; var < histsize; ++var)
     {
-      add_to_pack(data, histbranchstresslast_->at(var));
-      add_to_pack(data, histbranchelaststresslast_->at(var));
+      add_to_pack(data, histscglast_->at(var));
+      add_to_pack(data, histmodrcglast_->at(var));
+      add_to_pack(data, histstresslast_->at(var));
+      add_to_pack(data, histartstresslast_->at(var));
     }
-  }
 
-  // pack history of FSLS-model
-  if (viscofract_)
-  {
-    // check if history exists
-    add_to_pack(data, (histfractartstresslastall_ != nullptr));
-    if (!(int)(histfractartstresslastall_ != nullptr))
-      FOUR_C_THROW("Something got wrong with your history data.");
+    if (viscogeneralizedgenmax_)
+    {
+      for (int var = 0; var < histsize; ++var)
+      {
+        add_to_pack(data, histbranchstresslast_->at(var));
+        add_to_pack(data, histbranchelaststresslast_->at(var));
+      }
+    }
 
-    // pack stepsize
-    add_to_pack(data, histfractartstresslastall_->at(0).size());
-    // pack history values
-    for (int gp = 0; gp < (int)histfractartstresslastall_->size(); ++gp)
-      for (int step = 0; step < (int)histfractartstresslastall_->at(gp).size(); ++step)
-        add_to_pack(data, histfractartstresslastall_->at(gp).at(step));
+    // pack history of FSLS-model
+    if (viscofract_)
+    {
+      // check if history exists
+      add_to_pack(data, (histfractartstresslastall_ != nullptr));
+      if (!(int)(histfractartstresslastall_ != nullptr))
+        FOUR_C_THROW("Something got wrong with your history data.");
+
+      // pack stepsize
+      add_to_pack(data, histfractartstresslastall_->at(0).size());
+      // pack history values
+      for (int gp = 0; gp < (int)histfractartstresslastall_->size(); ++gp)
+        for (int step = 0; step < (int)histfractartstresslastall_->at(gp).size(); ++step)
+          add_to_pack(data, histfractartstresslastall_->at(gp).at(step));
+    }
   }
 }
 
@@ -220,6 +222,7 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
 
   anisotropy_.unpack_anisotropy(buffer);
 
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope{buffer};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
@@ -315,8 +318,6 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
         for (std::size_t step = 0; step < histfractartstressall_stepsize; ++step)
           extract_from_pack(buffer, histfractartstresslastall_->at(gp).at(step));
     }
-    // in the postprocessing mode, we do not unpack everything we have packed
-    // -> position check cannot be done in this case
   }
 }
 

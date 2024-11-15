@@ -238,6 +238,7 @@ void Mat::GrowthRemodelElastHyper::pack(Core::Communication::PackBuffer& data) c
 
   anisotropy_.pack_anisotropy(data);
 
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope{data};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -311,6 +312,7 @@ void Mat::GrowthRemodelElastHyper::unpack(Core::Communication::UnpackBuffer& buf
 
   anisotropy_.unpack_anisotropy(buffer);
 
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope{buffer};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters

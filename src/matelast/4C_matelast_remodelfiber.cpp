@@ -81,6 +81,7 @@ void Mat::Elastic::RemodelFiber::pack_summand(Core::Communication::PackBuffer& d
 
   add_to_pack(data, init_rho_col_);
 
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope(data);
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
     for (const auto& k : potsumfiber_) k->fiber->pack_summand(data);
 }
@@ -128,7 +129,10 @@ void Mat::Elastic::RemodelFiber::unpack_summand(Core::Communication::UnpackBuffe
   extract_from_pack(buffer, init_rho_col_);
 
   // loop map of associated potential summands
-  for (auto& k : potsumfiber_) k->fiber->unpack_summand(buffer);
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope(buffer);
+
+  if (params_ != nullptr)  // summands are not accessible in postprocessing mode
+    for (auto& k : potsumfiber_) k->fiber->unpack_summand(buffer);
 }
 
 void Mat::Elastic::RemodelFiber::register_anisotropy_extensions(Anisotropy& anisotropy)

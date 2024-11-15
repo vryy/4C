@@ -182,9 +182,6 @@ void Mat::ElchPhase::unpack(Core::Communication::UnpackBuffer& buffer)
         (mat_.find(*n))->second->unpack(buffer);
       }
     }
-    // in the postprocessing mode, we do not unpack everything we have packed
-    // -> position check cannot be done in this case
-
   }  // if (params_ != nullptr)
 }
 

@@ -124,6 +124,7 @@ void Mat::Mixture::pack(Core::Communication::PackBuffer& data) const
 
   // pack all constituents
   // constituents are not accessible during post processing
+  Core::Communication::PotentiallyUnusedBufferScope consitutent_scope{data};
   if (params_ != nullptr)
   {
     for (const auto& constituent : *constituents_)
@@ -185,6 +186,7 @@ void Mat::Mixture::unpack(Core::Communication::UnpackBuffer& buffer)
 
     // extract constituents
     // constituents are not accessible during post processing
+    Core::Communication::PotentiallyUnusedBufferScope consitutent_scope{buffer};
     if (params_ != nullptr)
     {
       // create instances of constituents

@@ -73,7 +73,12 @@ void Mixture::MixtureConstituentSolidMaterial::pack_constituent(
   add_to_pack(data, matid);
 
   // pack data of the solid material
-  material_->pack(data);
+
+  Core::Communication::PotentiallyUnusedBufferScope solid_scope{data};
+  if (params_ != nullptr)
+  {
+    material_->pack(data);
+  }
 }
 
 void Mixture::MixtureConstituentSolidMaterial::unpack_constituent(
@@ -112,6 +117,7 @@ void Mixture::MixtureConstituentSolidMaterial::unpack_constituent(
   }
 
   // unpack the data of the solid material
+  Core::Communication::PotentiallyUnusedBufferScope solid_scope{buffer};
   if (params_ != nullptr)
   {
     auto so3mat = Mat::factory(params_->matid_);
