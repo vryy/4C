@@ -7,15 +7,10 @@
 
 include(FindPackageHandleStandardArgs)
 
-# using the general python venv
-set(ENV{VIRTUAL_ENV} "${FOUR_C_VENV_DIR}")
-set(Python_FIND_VIRTUALENV ONLY)
-find_package(Python COMPONENTS Interpreter Development)
-
 ## We are likely to find Sphinx near the Python interpreter
 find_program(
   SPHINX_EXECUTABLE
-  NAMES "${FOUR_C_VENV_DIR}/bin/sphinx-multibuild"
+  NAMES "${FOUR_C_PYTHON_VENV_BUILD}/bin/sphinx-multibuild"
   DOC "Sphinx documentation generator"
   )
 
