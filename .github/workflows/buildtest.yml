@@ -110,3 +110,13 @@ jobs:
           path: |
             junit_test_summary-${{ matrix.test-chunk }}.xml
           retention-days: 1
+  ensure_all_tests_pass:
+    needs: [gcc9_test, gcc9_build]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check for successful builds and tests
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
+
