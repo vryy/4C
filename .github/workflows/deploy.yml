@@ -22,12 +22,12 @@ jobs:
     steps:
       - uses: dawidd6/action-download-artifact@v6
         with:
-          workflow: documentation
+          workflow: documentation.yml
           name: doxygen
           path: ${{ github.workspace }}/doxygen
       - uses: dawidd6/action-download-artifact@v6
         with:
-          workflow: documentation
+          workflow: documentation.yml
           name: readthedocs
           path: ${{ github.workspace }}/readthedocs
       - uses: actions/upload-pages-artifact@v3
