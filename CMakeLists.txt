@@ -148,6 +148,9 @@ target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE four_c_private_compile_inte
 add_subdirectory(src)
 add_subdirectory(apps)
 
+# Set up Python build/test venv
+include(cmake/python/set_up_python.cmake)
+
 # Process documentation
 add_subdirectory(doc/doxygen EXCLUDE_FROM_ALL)
 add_subdirectory(doc/readthedocs EXCLUDE_FROM_ALL)

@@ -14,7 +14,6 @@ if(FOUR_C_BUILD_READTHEDOCS)
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
   # set input and output files and directories
-  set(FOUR_C_VENV_DIR ${PROJECT_SOURCE_DIR}/utilities/python-venv)
   set(READTHEDOCS_SOURCE_DIR ${PROJECT_SOURCE_DIR}/doc/readthedocs)
   set(READTHEDOCS_CONFIG_DIR ${PROJECT_SOURCE_DIR}/doc/readthedocs-config)
   set(READTHEDOCS_TPLDEPEND_DIR ${PROJECT_SOURCE_DIR}/dependencies/current)
