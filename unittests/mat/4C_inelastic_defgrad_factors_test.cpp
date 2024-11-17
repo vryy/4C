@@ -309,6 +309,8 @@ namespace
 
       // manually create vector of elastic potentials
       std::vector<std::shared_ptr<Mat::Elastic::Summand>> pot_sum_el;
+      std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>>
+          pot_sum_el_transv_iso;  // keep empty
       // we only look at a single CoupNeoHooke component
       Core::IO::InputParameterContainer elast_pot_coup_neo_hooke_data;
       elast_pot_coup_neo_hooke_data.add("YOUNG", 200.0e3);
@@ -375,12 +377,13 @@ namespace
       transv_isotrop_elast_viscoplast_ =
           std::make_shared<Mat::InelasticDefgradTransvIsotropElastViscoplast>(
               params_transv_isotrop_elast_viscoplast_.get(),
-              viscoplastic_law_reformulated_Johnson_Cook, fiber_reader_, pot_sum_el);
+              viscoplastic_law_reformulated_Johnson_Cook, fiber_reader_, pot_sum_el,
+              pot_sum_el_transv_iso);
 
       isotrop_elast_viscoplast_ =
           std::make_shared<Mat::InelasticDefgradTransvIsotropElastViscoplast>(
               params_isotrop_elast_viscoplast_.get(), viscoplastic_law_reformulated_Johnson_Cook,
-              fiber_reader_, pot_sum_el);
+              fiber_reader_, pot_sum_el, pot_sum_el_transv_iso);
 
       // define setup parameter for InelasticDefGradTransvIsotropElastViscoplast
       Core::IO::InputParameterContainer setup_transv_isotrop_elast_viscoplast;

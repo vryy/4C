@@ -703,10 +703,10 @@ Core::LinAlg::Matrix<3, 3> Core::LinAlg::SecondOrderTensorInterpolator<1>::get_i
 
   // pack reference locations to matrices
   std::vector<Core::LinAlg::Matrix<1, 1>> converted_ref_locs;
-  for (unsigned int i = 0; i < ref_locs.size(); ++i)
+  for (auto ref_loc : ref_locs)
   {
     // save scalar to 1x1 matrix
-    temp_matrix(0) = ref_locs[i];
+    temp_matrix(0) = ref_loc;
 
     // add 1x1 matrix to its corresponding vector
     converted_ref_locs.push_back(temp_matrix);

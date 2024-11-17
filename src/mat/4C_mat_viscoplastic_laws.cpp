@@ -24,21 +24,8 @@ Mat::PAR::ViscoplasticLawReformulatedJohnsonCook::ViscoplasticLawReformulatedJoh
       strain_rate_exp_fac_(matdata.parameters.get<double>("STRAIN_RATE_EXP_FAC")),
       init_yield_strength_(matdata.parameters.get<double>("INIT_YIELD_STRENGTH")),
       isotrop_harden_prefac_(matdata.parameters.get<double>("ISOTROP_HARDEN_PREFAC")),
-      isotrop_harden_exp_(matdata.parameters.get<double>("ISOTROP_HARDEN_EXP")),
-      sim_temperature_(matdata.parameters.get<double>("SIM_TEMPERATURE")),
-      ref_temperature_(matdata.parameters.get<double>("REF_TEMPERATURE")),
-      melt_temperature_(matdata.parameters.get<double>("MELT_TEMPERATURE")),
-      temperature_exp_(matdata.parameters.get<double>("TEMPERATURE_EXP"))
+      isotrop_harden_exp_(matdata.parameters.get<double>("ISOTROP_HARDEN_EXP"))
 {
-  // temperature dependence factor
-  const double DT = 1 - (std::pow(sim_temperature_, temperature_exp_) -
-                            std::pow(ref_temperature_, temperature_exp_)) /
-                            (std::pow(melt_temperature_, temperature_exp_) -
-                                std::pow(ref_temperature_, temperature_exp_));
-
-  // scale temperature dependent yield strength and hardening prefactor
-  set_init_yield_strength(init_yield_strength_ * DT);
-  set_isotrop_harden_prefac(isotrop_harden_prefac_ * DT);
 }
 
 /*--------------------------------------------------------------------*
@@ -132,23 +119,22 @@ double Mat::ViscoplasticLawReformulatedJohnsonCook::evaluate_plastic_strain_rate
   // compute the viscoplastic strain rate; first we set it to 0
   double equiv_plastic_strain_rate = 0.0;
 
+  // stress ratio
+  double stress_ratio = evaluate_stress_ratio(equiv_stress, equiv_plastic_strain);
+
   // then we check the yield condition
-  if (evaluate_stress_ratio(equiv_stress, equiv_plastic_strain) >= 1.0)
+  if (stress_ratio >= 1.0)
   {
     // check if characteristic term too large, throw error overflow error if so
-    if (std::log(dt) + std::log(p) +
-            e * (evaluate_stress_ratio(equiv_stress, equiv_plastic_strain) - 1.0) >
-        std::log(10.0 + p * dt))
+    if (std::log(dt) + std::log(p) + e * (stress_ratio - 1.0) > std::log(10.0 + p * dt))
     {
       throw std::overflow_error(
           "ERROR 2: Overflow error of the viscoplastic strain rate evaluation: exponent too "
           "high: " +
-          std::to_string(std::log(dt) + std::log(p) +
-                         e * (evaluate_stress_ratio(equiv_stress, equiv_plastic_strain) - 1.0)));
+          std::to_string(std::log(dt) + std::log(p) + e * (stress_ratio - 1.0)));
     }
 
-    equiv_plastic_strain_rate =
-        p * (std::exp(e * (evaluate_stress_ratio(equiv_stress, equiv_plastic_strain) - 1.0)) - 1.0);
+    equiv_plastic_strain_rate = p * (std::exp(e * (stress_ratio - 1.0)) - 1.0);
   }
 
   return equiv_plastic_strain_rate;

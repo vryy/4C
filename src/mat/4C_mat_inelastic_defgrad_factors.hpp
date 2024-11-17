@@ -320,7 +320,7 @@ namespace Mat
       const int viscoplastic_law_id_;
 
       //! global ID of the material used for fiber reading (transversely isotropic)
-      int fiber_reader_gid_;
+      const int fiber_reader_gid_;
 
       //! yield condition parameter \f[ A \f]
       const double yield_cond_a_;
@@ -338,7 +338,7 @@ namespace Mat
 
       //! maximum number of times the given time step can be halved before reaching the minimum
       //! allowed substep length
-      int max_halve_number_;
+      const int max_halve_number_;
     };
   }  // namespace PAR
 
@@ -1281,13 +1281,17 @@ namespace Mat
      *                             model
      * @param[in] fiber_reader dummy hyperelastic model utilized to read the fiber direction for
      * transverse isotropy
-     * @param[in] pot_sum_el elastic components / potential summands
+     * @param[in] pot_sum_el elastic components / potential summands (only isotropic)
+     * @param[in] pot_sum_el_transv_iso elastic components / potential summands (only transversely
+     * isotropic)
      */
 
     explicit InelasticDefgradTransvIsotropElastViscoplast(Core::Mat::PAR::Parameter *params,
         std::shared_ptr<Mat::ViscoplasticLaws> viscoplastic_law,
         Mat::Elastic::CoupTransverselyIsotropic fiber_reader,
-        std::vector<std::shared_ptr<Mat::Elastic::Summand>> pot_sum_el);
+        std::vector<std::shared_ptr<Mat::Elastic::Summand>> pot_sum_el,
+        std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>>
+            pot_sum_el_transv_iso);
 
     Core::Materials::MaterialType material_type() const override
     {
@@ -1400,11 +1404,11 @@ namespace Mat
     //! current element ID
     int ele_gid_;
 
-    //! parameter list
-    Teuchos::ParameterList param_list_;
-
-    //! map to elastic materials/potential summands
+    //! map to elastic materials/potential summands (only isotropic)
     std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsumel_;
+
+    //! map to elastic materials/potential summands (only transversely isotropic)
+    std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>> potsumel_transviso_;
 
     //! viscoplastic law
     std::shared_ptr<Mat::ViscoplasticLaws> viscoplastic_law_;

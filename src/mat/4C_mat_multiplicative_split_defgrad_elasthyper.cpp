@@ -10,6 +10,7 @@
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ssi.hpp"
+#include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
@@ -18,9 +19,12 @@
 #include "4C_mat_inelastic_defgrad_factors.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_par_bundle.hpp"
+#include "4C_matelast_couptransverselyisotropic.hpp"
 #include "4C_structure_new_enum_lists.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -147,7 +151,8 @@ Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
     : anisotropy_(std::make_shared<Mat::Anisotropy>()),
       inelastic_(std::make_shared<Mat::InelasticFactorsHandler>()),
       params_(nullptr),
-      potsumel_(0)
+      potsumel_(0),
+      potsumel_transviso_(0)
 {
 }
 
@@ -158,14 +163,23 @@ Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
     : anisotropy_(std::make_shared<Mat::Anisotropy>()),
       inelastic_(std::make_shared<Mat::InelasticFactorsHandler>()),
       params_(params),
-      potsumel_(0)
+      potsumel_(0),
+      potsumel_transviso_(0)
 {
   // elastic materials
   for (int matid_elastic : params_->matids_elast_)
   {
     auto elastic_summand = Mat::Elastic::Summand::factory(matid_elastic);
     if (elastic_summand == nullptr) FOUR_C_THROW("Failed to allocate");
-    potsumel_.push_back(elastic_summand);
+    if (elastic_summand->material_type() == Core::Materials::mes_couptransverselyisotropic)
+    {
+      potsumel_transviso_.push_back(
+          std::dynamic_pointer_cast<Mat::Elastic::CoupTransverselyIsotropic>(elastic_summand));
+    }
+    else
+    {
+      potsumel_.push_back(elastic_summand);
+    }
     elastic_summand->register_anisotropy_extensions(*anisotropy_);
   }
 
@@ -194,6 +208,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::pack(Core::Communication::PackBu
 
     // loop map of associated potential summands
     for (const auto& p : potsumel_) p->pack_summand(data);
+    for (const std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>& p : potsumel_transviso_)
+      p->pack_summand(data);
   }
 }
 
@@ -204,6 +220,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(Core::Communication::Unpa
   // make sure we have a pristine material
   params_ = nullptr;
   potsumel_.clear();
+  potsumel_transviso_.clear();
 
 
 
@@ -240,13 +257,26 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(Core::Communication::Unpa
     {
       auto elastic_summand = Mat::Elastic::Summand::factory(matid_elastic);
       if (elastic_summand == nullptr) FOUR_C_THROW("Failed to allocate");
-      potsumel_.push_back(elastic_summand);
+      if (elastic_summand->material_type() == Core::Materials::mes_couptransverselyisotropic)
+      {
+        potsumel_transviso_.push_back(
+            std::dynamic_pointer_cast<Mat::Elastic::CoupTransverselyIsotropic>(elastic_summand));
+      }
+      else
+      {
+        potsumel_.push_back(elastic_summand);
+      }
     }
     // loop map of associated potential summands
     for (const auto& elastic_summand : potsumel_)
     {
       elastic_summand->unpack_summand(buffer);
       elastic_summand->register_anisotropy_extensions(*anisotropy_);
+    }
+    for (const std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>& elastic_summand :
+        potsumel_transviso_)
+    {
+      elastic_summand->unpack_summand(buffer);
     }
   }
 }
@@ -274,9 +304,12 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
       kinematic_quantities.iCinCiCinV, kinematic_quantities.gamma, kinematic_quantities.delta,
       kinematic_quantities.detFin, *stress, kinematic_quantities.cmatiso);
   // separate update coming from the transversely isotropic components
-  evaluate_transv_iso_quantities(kinematic_quantities.iFinM, CM, kinematic_quantities.dCedC,
-      kinematic_quantities.dCediFin, params, gp, eleGID, kinematic_quantities.dSdiFin, *stress,
-      kinematic_quantities.cmatiso);
+  if (!(potsumel_transviso_.empty()))
+  {
+    evaluate_transv_iso_quantities(kinematic_quantities.iFinM, CM, kinematic_quantities.dCedC,
+        kinematic_quantities.dCediFin, params, gp, eleGID, kinematic_quantities.dSdiFin, *stress,
+        kinematic_quantities.cmatiso);
+  }
   cmat->update(1.0, kinematic_quantities.cmatiso, 0.0);
 
   // evaluate additional terms for the elasticity tensor
@@ -639,12 +672,9 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_invariant_derivatives(
 
   // loop over map of associated potential summands
   // derivatives of strain energy function w.r.t. principal invariants
-  for (const auto& p : potsumel_)
+  for (const auto& p : potsumel_)  // only for isotropic components
   {
-    if (p->material_type() != Core::Materials::mes_couptransverselyisotropic)
-    {
-      p->add_derivatives_principal(dPI, ddPII, prinv, gp, eleGID);
-    }
+    p->add_derivatives_principal(dPI, ddPII, prinv, gp, eleGID);
   }
 }
 
@@ -737,12 +767,9 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_transv_iso_quantities(
 
   // loop through all transversely isotropic parts, and compute the total elastic stress and elastic
   // stiffness
-  for (const auto& p : potsumel_)
+  for (const auto& p : potsumel_transviso_)
   {
-    if (p->material_type() == Core::Materials::mes_couptransverselyisotropic)
-    {
-      p->add_stress_aniso_principal(CeV, elast_stiffness, elast_stress, params, gp, eleGID);
-    }
+    p->add_stress_aniso_principal(CeV, elast_stiffness, elast_stress, params, gp, eleGID);
   }
 
   // convert stiffness to stress-strain notation
@@ -756,6 +783,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_transv_iso_quantities(
   Core::LinAlg::Matrix<3, 3> SM(true);
   temp3x3.multiply_nn(1.0, iFinM, SeM, 0.0);
   SM.multiply_nt(1.0, temp3x3, iFinM, 0.0);
+  SM.scale(iFinM.determinant());
   Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::stress>::matrix_to_vector(
       SM, temp6x1);
   stress.update(1.0, temp6x1, 1.0);
@@ -778,12 +806,14 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_transv_iso_quantities(
   Core::LinAlg::FourTensor<3> dSedC_FourTensor(true);
   Core::LinAlg::Voigt::setup_four_tensor_from_6x6_voigt_matrix(dSedC_FourTensor, dSedC);
 
-  // [F_{in}^{-1} (F_{in}^{-1} \frac{\partial S_{e}}{\partial F^{-1}_{in}})^T_{12}  ]^T_{12}
+  // F_{in}^{-1} \frac{\partial S_{e}}{\partial F^{-1}_{in}}
   Core::LinAlg::FourTensor<3> iFindSediFin_FourTensor(true);
   Core::LinAlg::Tensor::multiply_matrix_four_tensor<3>(
       iFindSediFin_FourTensor, iFinM, dSediFin_FourTensor, true);
+  // (F_{in}^{-1} \frac{\partial S_{e}}{\partial F^{-1}_{in}})^{T_{12}}
   Core::LinAlg::FourTensor<3> iFindSediFin_FourTensor_T12(true);
   iFindSediFin_FourTensor_T12.transpose_12(iFindSediFin_FourTensor);
+  // [F_{in}^{-1} (F_{in}^{-1} \frac{\partial S_{e}}{\partial F^{-1}_{in}})^T_{12}]
   Core::LinAlg::FourTensor<3> iFin_iFindSediFin_T12_FourTensor(true);
   Core::LinAlg::Tensor::multiply_matrix_four_tensor<3>(
       iFin_iFindSediFin_T12_FourTensor, iFinM, iFindSediFin_FourTensor_T12, true);
@@ -909,6 +939,9 @@ void Mat::MultiplicativeSplitDefgradElastHyper::setup(
 
   // elastic materials
   for (const auto& summand : potsumel_) summand->setup(numgp, container);
+  for (const std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>& summand :
+      potsumel_transviso_)
+    summand->setup(numgp, container);
 
   // setup inelastic materials
   inelastic_->setup(numgp, container);
@@ -920,6 +953,9 @@ void Mat::MultiplicativeSplitDefgradElastHyper::update()
 {
   // loop map of associated potential summands
   for (const auto& summand : potsumel_) summand->update();
+  for (const std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>& summand :
+      potsumel_transviso_)
+    summand->update();
 
   // update inelastic materials
   inelastic_->update();
@@ -1113,9 +1149,9 @@ void Mat::InelasticFactorsHandler::evaluate_inverse_inelastic_def_grad(
 void Mat::InelasticFactorsHandler::update()
 {
   // loop over all inelastic contributions
-  for (int i = 0; i < num_inelastic_def_grad(); ++i)
+  for (const auto& [_, inelastic_defgrad_factor] : facdefgradin_)
   {
-    facdefgradin_[i].second->update();
+    inelastic_defgrad_factor->update();
   }
 }
 

@@ -13,8 +13,8 @@ Reformulated Johnson-Cook law, as shown in:
 	(Master's Thesis, Chair of Computational Mechanics, TU Munich, 2024)
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+-------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------IO
 STRUCT_STRESS                   cauchy
 STRUCT_STRAIN                   log
@@ -27,7 +27,7 @@ OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  1
 ------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     30
 TIMESTEP                        1.00e-6
@@ -43,7 +43,7 @@ SOLVER                          UMFPACK
 MAT 1 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 2 NUMFACINEL 1 INELDEFGRADFACIDS 3 DENS 7830.0
 MAT 2 ELAST_CoupNeoHooke YOUNG 200.0e3 NUE 0.29
 MAT 3 MAT_InelasticDefgradTransvIsotropElastViscoplast VISCOPLAST_LAW_ID 4 FIBER_READER_ID 5 YIELD_COND_A 0.0 YIELD_COND_B 0.0 YIELD_COND_F 0.0 TRANSV_ISOTROPY False LOG_SUBSTEP True MAX_HALVE_NUM_SUBSTEP 10
-MAT 4 MAT_ViscoplasticLawReformulatedJohnsonCook SIM_TEMPERATURE 293.0 MELT_TEMPERATURE 1793.0 REF_TEMPERATURE 293.0 TEMPERATURE_EXP 1.03 STRAIN_RATE_PREFAC 1.0e0 STRAIN_RATE_EXP_FAC 0.014 INIT_YIELD_STRENGTH 792.0e-0 ISOTROP_HARDEN_PREFAC 510.0e-0 ISOTROP_HARDEN_EXP 0.26
+MAT 4 MAT_ViscoplasticLawReformulatedJohnsonCook STRAIN_RATE_PREFAC 1.0e0 STRAIN_RATE_EXP_FAC 0.014 INIT_YIELD_STRENGTH 792.0e-0 ISOTROP_HARDEN_PREFAC 510.0e-0 ISOTROP_HARDEN_EXP 0.26
 MAT 5 ELAST_CoupTransverselyIsotropic ALPHA 1.0 BETA 1.0 GAMMA 1.0 ANGLE 0 STR_TENS_ID 100
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ------------------------------------------------------------FUNCT1

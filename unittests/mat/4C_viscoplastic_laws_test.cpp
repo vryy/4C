@@ -12,6 +12,8 @@
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_viscoplastic_laws.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
+
+#include <memory>
 namespace
 {
   using namespace FourC;
@@ -42,14 +44,15 @@ namespace
                   Core::Materials::MaterialType::mvl_reformulated_Johnson_Cook,
                   viscoplastic_law_reformulated_JC_data)));
       viscoplastic_law_reformulated_JC_ =
-          Teuchos::make_rcp<Mat::ViscoplasticLawReformulatedJohnsonCook>(
+          std::make_shared<Mat::ViscoplasticLawReformulatedJohnsonCook>(
               params_viscoplastic_law_reformulated_JC_.get());
 
       // define setup parameter for InelasticDefGradTransvIsotropElastViscoplast
       Core::IO::InputParameterContainer setup_viscoplastic_law_reformulated_JC;  // can stay empty
 
       // call setup method for ViscoplasticLawReformulatedJohnsonCook
-      viscoplastic_law_reformulated_JC_->setup(8, setup_viscoplastic_law_reformulated_JC);
+      int numgp = 8;  // HEX8 element, although not really relevant for the tested methods
+      viscoplastic_law_reformulated_JC_->setup(numgp, setup_viscoplastic_law_reformulated_JC);
 
       // call pre_evaluate
       viscoplastic_law_reformulated_JC_->pre_evaluate(0);
@@ -75,7 +78,7 @@ namespace
     // plastic strain (ViscoplasticLawReformulatedJohnsonCook)
     Core::LinAlg::Matrix<2, 1> deriv_plastic_strain_rate_reformulated_JC_solution_;
     // pointer to ViscoplasticLawReformulatedJohnsonCook
-    Teuchos::RCP<Mat::ViscoplasticLawReformulatedJohnsonCook> viscoplastic_law_reformulated_JC_;
+    std::shared_ptr<Mat::ViscoplasticLawReformulatedJohnsonCook> viscoplastic_law_reformulated_JC_;
     // pointer to parameters of ViscoplasticLawReformulatedJohnsonCook
     std::shared_ptr<Mat::PAR::ViscoplasticLawReformulatedJohnsonCook>
         params_viscoplastic_law_reformulated_JC_;

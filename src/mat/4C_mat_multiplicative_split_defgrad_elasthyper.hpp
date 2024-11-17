@@ -14,6 +14,7 @@
 #include "4C_mat_anisotropy.hpp"
 #include "4C_mat_monolithic_solid_scalar_material.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_matelast_couptransverselyisotropic.hpp"
 #include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -304,7 +305,7 @@ namespace Mat
      * @param[out] dSdiFin      derivative of 2nd Piola Kirchhoff stresses w.r.t. inverse inelastic
      *                          deformation gradient (Voigt stress-notation)
      * @param[out] stress   2nd Piola--Kirchhoff stress tensor
-     * @param[out] cmatiso  part of the elasticity tensor as shown above
+     * @param[out] cmatiso  part of the elasticity tensor as shown in evaluate_stress_cmat_iso
      */
     void evaluate_transv_iso_quantities(const Core::LinAlg::Matrix<3, 3>& iFinM,
         const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<6, 6>& dCedC,
@@ -453,8 +454,11 @@ namespace Mat
     /// My material parameters
     Mat::PAR::MultiplicativeSplitDefgradElastHyper* params_;
 
-    /// map to elastic materials/potential summands
+    /// map to elastic materials/potential summands (only isotropic)
     std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsumel_;
+
+    /// map to elastic materials/potential summands (only transversely isotropic)
+    std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>> potsumel_transviso_;
   };
 
 }  // namespace Mat

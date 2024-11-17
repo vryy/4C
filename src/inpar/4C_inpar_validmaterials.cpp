@@ -2418,19 +2418,13 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
         "MAT ID of the used fiber direction reader for transversely isotropic behavior");
     add_named_real(m, "YIELD_COND_A",
         "transversely isotropic version of the Hill(1948) yield condition: parameter A, following "
-        "the notation in "
-        "Dafalias 1989, International Journal of "
-        "Plasticity, Vol. 5");
+        "the notation in Dafalias 1989, International Journal of Plasticity, Vol. 5");
     add_named_real(m, "YIELD_COND_B",
         "transversely isotropic version of the Hill(1948) yield condition: parameter B, following "
-        "the notation in "
-        "Dafalias 1989, International Journal of "
-        "Plasticity, Vol. 5");
+        "the notation in Dafalias 1989, International Journal of Plasticity, Vol. 5");
     add_named_real(m, "YIELD_COND_F",
         "transversely isotropic version of the Hill(1948) yield condition: parameter F, following "
-        "the notation in "
-        "Dafalias 1989, International Journal of "
-        "Plasticity, Vol. 5");
+        "the notation in Dafalias 1989, International Journal of Plasticity, Vol. 5");
     add_named_bool(m, "TRANSV_ISOTROPY",
         "boolean: transversely isotropic (True) or isotropic (False) material behavior?");
     add_named_bool(m, "LOG_SUBSTEP",
@@ -2446,9 +2440,7 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
   {
     auto m = std::make_shared<Mat::MaterialDefinition>("MAT_ViscoplasticLawReformulatedJohnsonCook",
         "Reformulation of the Johnson-Cook viscoplastic law (comprising flow rule and hardening "
-        "law), as shown in Mareau et "
-        "al. (Mechanics of "
-        "Materials 143, 2020)",
+        "law), as shown in Mareau et al. (Mechanics of Materials 143, 2020)",
         Core::Materials::mvl_reformulated_Johnson_Cook);
 
     add_named_real(m, "STRAIN_RATE_PREFAC", "plastic strain rate prefactor $\\dot{P}_0$");
@@ -2456,12 +2448,6 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
     add_named_real(m, "INIT_YIELD_STRENGTH", "initial yield strength of the material $A_0$");
     add_named_real(m, "ISOTROP_HARDEN_PREFAC", "prefactor of the isotropic hardening stress $B_0$");
     add_named_real(m, "ISOTROP_HARDEN_EXP", "exponent of the isotropic hardening stress $n$");
-    add_named_real(m, "SIM_TEMPERATURE", "temperature [K] of the isothermal simulation $T$");
-    add_named_real(m, "MELT_TEMPERATURE", "melting temperature [K] of the material $T_M$");
-    add_named_real(m, "REF_TEMPERATURE",
-        "reference temperature [K], for which the viscoplasticity parameters are determined $T_0$");
-    add_named_real(
-        m, "TEMPERATURE_EXP", "exponent for the temperature dependence of the yield strength $m$");
 
     Mat::append_material_definition(matlist, m);
   }

@@ -54,27 +54,6 @@ namespace Mat
       [[nodiscard]] double isotrop_harden_prefac() const { return isotrop_harden_prefac_; };
       //! get exponent of the isotropic hardening stress \f$ n \f$
       [[nodiscard]] double isotrop_harden_exp() const { return isotrop_harden_exp_; };
-      //! get operating temperature (isothermal simulation)
-      [[nodiscard]] double sim_temperature() const { return sim_temperature_; };
-      //! get reference temperature \f$ T_0 \f$
-      [[nodiscard]] double ref_temperature() const { return ref_temperature_; };
-      //! get melting temperature of the material  \f$ T_M \f$
-      [[nodiscard]] double melt_temperature() const { return melt_temperature_; };
-      //! get temperature exponent \f$ m \f$
-      [[nodiscard]] double temperature_exp() const { return temperature_exp_; };
-
-      // setter methods
-      //! set initial yield strength (\f$ A_0 \f$ scaled by the temperature dependence factor)
-      void set_init_yield_strength(double init_yield_strength)
-      {
-        init_yield_strength_ = init_yield_strength;
-      };
-      //! set prefactor of the isotropic hardening stress (\f$ B_0 \f$ scaled by the temperature
-      //! dependence factor)
-      void set_isotrop_harden_prefac(double isotrop_harden_prefac)
-      {
-        isotrop_harden_prefac_ = isotrop_harden_prefac;
-      };
 
      private:
       //! strain rate prefactor \f$ \dot{P}_0 \f$
@@ -92,18 +71,6 @@ namespace Mat
 
       //! exponent of the isotropic hardening stress \f$ n \f$
       const double isotrop_harden_exp_;
-
-      //! operating temperature (isothermal simulation)
-      const double sim_temperature_;
-
-      //! reference temperature \f$ T_0 \f$
-      const double ref_temperature_;
-
-      //! melting temperature of the material  \f$ T_M \f$
-      const double melt_temperature_;
-
-      //! temperature exponent \f$ m \f$
-      const double temperature_exp_;
     };
   }  // namespace PAR
 
