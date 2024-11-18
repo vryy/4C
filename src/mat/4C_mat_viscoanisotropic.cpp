@@ -76,8 +76,6 @@ Mat::ViscoAnisotropic::ViscoAnisotropic(Mat::PAR::ViscoAnisotropic* params) : pa
  *----------------------------------------------------------------------*/
 void Mat::ViscoAnisotropic::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -150,7 +148,7 @@ void Mat::ViscoAnisotropic::unpack(Core::Communication::UnpackBuffer& buffer)
   if (numgp == 0)
   {  // no history data to unpack
     isinit_ = false;
-    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
     return;
   }
   // unpack fiber internal variables
@@ -192,9 +190,6 @@ void Mat::ViscoAnisotropic::unpack(Core::Communication::UnpackBuffer& buffer)
     extract_from_pack(buffer, tmp);
     artstresslast_->push_back(tmp);
   }
-
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

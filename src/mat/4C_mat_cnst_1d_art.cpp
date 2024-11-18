@@ -94,8 +94,6 @@ Mat::Cnst1dArt::Cnst1dArt(Mat::PAR::Cnst1dArt* params)
 /*----------------------------------------------------------------------*/
 void Mat::Cnst1dArt::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -137,8 +135,6 @@ void Mat::Cnst1dArt::unpack(Core::Communication::UnpackBuffer& buffer)
   extract_from_pack(buffer, diam_init_);
   extract_from_pack(buffer, diam_);
   extract_from_pack(buffer, diam_previous_time_step_);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*/

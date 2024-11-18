@@ -86,8 +86,6 @@ void Core::Nodes::Node::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 void Core::Nodes::Node::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -112,8 +110,6 @@ void Core::Nodes::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   extract_from_pack(buffer, owner_);
   // x_
   extract_from_pack(buffer, x_);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

@@ -66,8 +66,6 @@ void BEAMINTERACTION::BeamLinkPinJointed::setup(const int matnum)
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkPinJointed::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -84,12 +82,9 @@ void BEAMINTERACTION::BeamLinkPinJointed::unpack(Core::Communication::UnpackBuff
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  BeamLink::unpack(basedata_buffer);
+  BeamLink::unpack(buffer);
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
 
   return;
 }

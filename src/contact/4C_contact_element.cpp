@@ -98,8 +98,6 @@ void CONTACT::Element::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::Element::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -117,12 +115,7 @@ void CONTACT::Element::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Mortar::Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Mortar::Element::unpack(base_buffer);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+  Mortar::Element::unpack(buffer);
 }
 
 /*----------------------------------------------------------------------*

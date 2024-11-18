@@ -56,8 +56,6 @@ template <class So3Ele, Core::FE::CellType distype>
 void Discret::Elements::So3Thermo<So3Ele, distype>::pack(
     Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -65,17 +63,11 @@ void Discret::Elements::So3Thermo<So3Ele, distype>::pack(
   add_to_pack(data, detJ_);
 
   // invJ_
-  const auto size = (int)invJ_.size();
-  add_to_pack(data, size);
-  for (int i = 0; i < size; ++i) add_to_pack(data, invJ_[i]);
+  add_to_pack(data, invJ_);
 
   // add base class Element
   So3Ele::pack(data);
-
-  return;
-
-}  // pack()
-
+}
 
 /*----------------------------------------------------------------------*
  | unpack data (public)                                      dano 08/12 |
@@ -89,21 +81,11 @@ void Discret::Elements::So3Thermo<So3Ele, distype>::unpack(
   // detJ_
   extract_from_pack(buffer, detJ_);
   // invJ_
-  int size = 0;
-  extract_from_pack(buffer, size);
-  invJ_.resize(size, Core::LinAlg::Matrix<nsd_, nsd_>(true));
-  for (int i = 0; i < size; ++i) extract_from_pack(buffer, invJ_[i]);
+  extract_from_pack(buffer, invJ_);
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  So3Ele::unpack(basedata_buffer);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-  return;
-
-}  // unpack()
+  So3Ele::unpack(buffer);
+}
 
 
 /*----------------------------------------------------------------------*

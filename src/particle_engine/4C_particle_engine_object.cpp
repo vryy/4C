@@ -39,8 +39,6 @@ PARTICLEENGINE::ParticleObject::ParticleObject(
 
 void PARTICLEENGINE::ParticleObject::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -84,8 +82,6 @@ void PARTICLEENGINE::ParticleObject::unpack(Core::Communication::UnpackBuffer& b
 
   // containerindex_
   extract_from_pack(buffer, index_);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

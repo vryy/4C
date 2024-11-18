@@ -139,8 +139,6 @@ void Mat::MatListReactions::clear()
  *----------------------------------------------------------------------*/
 void Mat::MatListReactions::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -201,10 +199,7 @@ void Mat::MatListReactions::unpack(Core::Communication::UnpackBuffer& buffer)
     }
 
   // extract base class material
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Mat::MatList::unpack(basedata_buffer);
+  Mat::MatList::unpack(buffer);
 
   if (paramsreac_ != nullptr)  // paramsreac_ are not accessible in postprocessing mode
   {
@@ -224,15 +219,11 @@ void Mat::MatListReactions::unpack(Core::Communication::UnpackBuffer& buffer)
       // loop map of associated local materials
       for (m = paramsreac_->reac_ids()->begin(); m != paramsreac_->reac_ids()->end(); m++)
       {
-        std::vector<char> pbtest;
-        extract_from_pack(buffer, pbtest);
-        Core::Communication::UnpackBuffer buffer_pbtest(pbtest);
-        (material_map_write()->find(*m))->second->unpack(buffer_pbtest);
+        (material_map_write()->find(*m))->second->unpack(buffer);
       }
     }
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
-    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   }
 }
 

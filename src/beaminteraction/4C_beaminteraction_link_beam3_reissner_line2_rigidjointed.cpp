@@ -138,7 +138,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::pack(
 {
   check_init_setup();
 
-  Core::Communication::PackBuffer::SizeMarker sm(data);
+
 
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
@@ -147,9 +147,13 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::pack(
   BeamLinkRigidJointed::pack(data);
 
   // pack linker element
-  if (linkele_ != nullptr) linkele_->pack(data);
-
-  return;
+  if (linkele_ != nullptr)
+  {
+    add_to_pack(data, true);
+    linkele_->pack(data);
+  }
+  else
+    add_to_pack(data, false);
 }
 
 /*----------------------------------------------------------------------*
@@ -160,19 +164,15 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::unpack(
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  BeamLinkRigidJointed::unpack(basedata_buffer);
+  BeamLinkRigidJointed::unpack(buffer);
 
   // Unpack data of sub material (these lines are copied from element.cpp)
-  std::vector<char> dataele;
-  extract_from_pack(buffer, dataele);
-  if (dataele.size() > 0)
+  bool dataele_exists;
+  Core::Communication::extract_from_pack(buffer, dataele_exists);
+  if (dataele_exists)
   {
-    Core::Communication::UnpackBuffer dataele_buffer(dataele);
     Core::Communication::ParObject* object =
-        Core::Communication::factory(dataele_buffer);  // Unpack is done here
+        Core::Communication::factory(buffer);  // Unpack is done here
     Discret::Elements::Beam3r* linkele = dynamic_cast<Discret::Elements::Beam3r*>(object);
     if (linkele == nullptr)
       FOUR_C_THROW("failed to unpack Beam3r object within BeamLinkBeam3rLine2RigidJointed");
@@ -180,8 +180,6 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::unpack(
   }
   else
     linkele_ = nullptr;
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

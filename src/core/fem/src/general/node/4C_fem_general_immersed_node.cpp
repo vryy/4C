@@ -102,8 +102,6 @@ void Core::Nodes::ImmersedNode::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 void Core::Nodes::ImmersedNode::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -129,18 +127,12 @@ void Core::Nodes::ImmersedNode::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Core::Nodes::Node
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Communication::UnpackBuffer basedata_buffer(basedata);
-  Node::unpack(basedata_buffer);
+  Node::unpack(buffer);
 
   // isimersedboundary_
-  IsBoundaryImmersed_ = extract_int(buffer);
+  extract_from_pack(buffer, IsBoundaryImmersed_);
   // ismatched_
-  ismatched_ = extract_int(buffer);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-  return;
+  extract_from_pack(buffer, ismatched_);
 }
 
 

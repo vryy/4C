@@ -212,14 +212,12 @@ Mat::So3Material& Discret::Elements::SolidPoroPressureBased::solid_poro_material
 
 void Discret::Elements::SolidPoroPressureBased::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   add_to_pack(data, unique_par_object_id());
 
   // add base class Element
   Core::Elements::Element::pack(data);
 
-  add_to_pack(data, (int)celltype_);
+  add_to_pack(data, celltype_);
 
   Discret::Elements::add_to_pack(data, solid_ele_property_);
 
@@ -234,19 +232,16 @@ void Discret::Elements::SolidPoroPressureBased::pack(Core::Communication::PackBu
 
 void Discret::Elements::SolidPoroPressureBased::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  if (extract_int(buffer) != unique_par_object_id()) FOUR_C_THROW("wrong instance type data");
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Core::Elements::Element::unpack(base_buffer);
+  Core::Elements::Element::unpack(buffer);
 
-  celltype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, celltype_);
 
   Discret::Elements::extract_from_pack(buffer, solid_ele_property_);
 
-  poro_ele_property_.impltype = static_cast<Inpar::ScaTra::ImplType>(extract_int(buffer));
+  extract_from_pack(buffer, poro_ele_property_.impltype);
 
   extract_from_pack(buffer, material_post_setup_);
 
@@ -257,8 +252,6 @@ void Discret::Elements::SolidPoroPressureBased::unpack(Core::Communication::Unpa
 
   Discret::Elements::unpack(solid_calc_variant_, buffer);
   Discret::Elements::unpack(solidporo_press_based_calc_variant_, buffer);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 void Discret::Elements::SolidPoroPressureBased::vis_names(std::map<std::string, int>& names)

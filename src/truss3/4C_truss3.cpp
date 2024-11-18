@@ -142,8 +142,6 @@ Core::FE::CellType Discret::Elements::Truss3::shape() const { return Core::FE::C
  *----------------------------------------------------------------------*/
 void Discret::Elements::Truss3::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -171,11 +169,8 @@ void Discret::Elements::Truss3::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Element::unpack(base_buffer);
-  isinit_ = extract_int(buffer);
+  Element::unpack(buffer);
+  extract_from_pack(buffer, isinit_);
   extract_from_pack(buffer, x_);
   extract_from_pack(buffer, diff_disp_ref_);
   extract_from_pack(buffer, material_);
@@ -185,9 +180,7 @@ void Discret::Elements::Truss3::unpack(Core::Communication::UnpackBuffer& buffer
   extract_from_pack(buffer, crosssec_);
   extract_from_pack(buffer, gaussrule_);
   // kinematic type
-  kintype_ = static_cast<KinematicType>(extract_int(buffer));
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+  extract_from_pack(buffer, kintype_);
 }
 
 /*----------------------------------------------------------------------*

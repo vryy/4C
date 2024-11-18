@@ -217,15 +217,13 @@ int Discret::Elements::Shell7p::num_surface() const { return 1; }
 
 void Discret::Elements::Shell7p::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Core::Elements::Element::pack(data);
   // discretization type
-  add_to_pack(data, (int)distype_);
+  add_to_pack(data, distype_);
   // element technology
   add_to_pack(data, eletech_);
   // thickness in reference frame
@@ -246,12 +244,9 @@ void Discret::Elements::Shell7p::unpack(Core::Communication::UnpackBuffer& buffe
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Element::unpack(base_buffer);
+  Element::unpack(buffer);
   // discretization type
-  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, distype_);
   // element technology
   extract_from_pack(buffer, eletech_);
   // thickness in reference frame
@@ -265,8 +260,6 @@ void Discret::Elements::Shell7p::unpack(Core::Communication::UnpackBuffer& buffe
   std::shared_ptr<Shell::Serializable> serializable_interface =
       std::dynamic_pointer_cast<Shell::Serializable>(shell_interface_);
   if (serializable_interface != nullptr) serializable_interface->unpack(buffer);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

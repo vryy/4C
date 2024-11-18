@@ -354,13 +354,17 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       nln_stiffmass(mydisp, myvel, mytempnp, nullptr, nullptr, nullptr, &stress, &strain, params,
           iostress, iostrain);
       {
+        Core::LinAlg::SerialDenseMatrix stress_view(
+            Teuchos::View, stress.values(), numgpt_post, numgpt_post, numstr_);
         Core::Communication::PackBuffer data;
-        add_to_pack(data, stress);
+        add_to_pack(data, stress_view);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
       {
+        Core::LinAlg::SerialDenseMatrix strain_view(
+            Teuchos::View, strain.values(), numgpt_post, numgpt_post, numstr_);
         Core::Communication::PackBuffer data;
-        add_to_pack(data, strain);
+        add_to_pack(data, strain_view);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
 

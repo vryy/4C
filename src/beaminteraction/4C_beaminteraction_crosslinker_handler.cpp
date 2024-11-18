@@ -126,12 +126,8 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
       Core::Communication::UnpackBuffer buffer(rdata);
       while (!buffer.at_end())
       {
-        std::vector<char> data;
-        extract_from_pack(buffer, data);
-        // this Teuchos::rcp holds the memory of the node
-        Core::Communication::UnpackBuffer data_buffer(data);
-        auto object = std::shared_ptr<Core::Communication::ParObject>(
-            Core::Communication::factory(data_buffer));
+        auto object =
+            std::shared_ptr<Core::Communication::ParObject>(Core::Communication::factory(buffer));
         std::shared_ptr<Core::Nodes::Node> node =
             std::dynamic_pointer_cast<Core::Nodes::Node>(object);
         if (node == nullptr) FOUR_C_THROW("Received object is not a node");
@@ -404,12 +400,8 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::receive_linker_and_fill_them_in_bi
       Core::Communication::UnpackBuffer buffer(rdata);
       while (!buffer.at_end())
       {
-        std::vector<char> data;
-        extract_from_pack(buffer, data);
-        // this Teuchos::rcp holds the memory of the node
-        Core::Communication::UnpackBuffer data_buffer(data);
-        auto object = std::shared_ptr<Core::Communication::ParObject>(
-            Core::Communication::factory(data_buffer));
+        auto object =
+            std::shared_ptr<Core::Communication::ParObject>(Core::Communication::factory(buffer));
         std::shared_ptr<Core::Nodes::Node> node =
             std::dynamic_pointer_cast<Core::Nodes::Node>(object);
         if (node == nullptr) FOUR_C_THROW("Received object is not a node");

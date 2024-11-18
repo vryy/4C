@@ -71,7 +71,7 @@ template <typename T>
 void Mat::pack_fiber_vector(
     Core::Communication::PackBuffer& buffer, const std::vector<std::vector<T>>& vct)
 {
-  add_to_pack(buffer, static_cast<int>(vct.size()));
+  add_to_pack(buffer, vct.size());
 
   for (const auto& list : vct)
   {
@@ -83,7 +83,7 @@ template <typename T, unsigned int numfib>
 void Mat::pack_fiber_array(
     Core::Communication::PackBuffer& buffer, const std::vector<std::array<T, numfib>>& vct)
 {
-  add_to_pack(buffer, static_cast<int>(vct.size()));
+  add_to_pack(buffer, vct.size());
 
   for (const auto& list : vct)
   {
@@ -99,8 +99,9 @@ void Mat::unpack_fiber_vector(
     Core::Communication::UnpackBuffer& buffer, std::vector<std::vector<T>>& vct)
 {
   vct.clear();
-  int numgps = extract_int(buffer);
-  for (int i = 0; i < numgps; ++i)
+  std::size_t numgps;
+  extract_from_pack(buffer, numgps);
+  for (std::size_t i = 0; i < numgps; ++i)
   {
     std::vector<T> mat(0);
     extract_from_pack(buffer, mat);
@@ -113,8 +114,9 @@ void Mat::unpack_fiber_array(
     Core::Communication::UnpackBuffer& buffer, std::vector<std::array<T, numfib>>& vct)
 {
   vct.clear();
-  int numgps = extract_int(buffer);
-  for (int i = 0; i < numgps; ++i)
+  std::size_t numgps;
+  extract_from_pack(buffer, numgps);
+  for (std::size_t i = 0; i < numgps; ++i)
   {
     std::array<T, numfib> mat;
     for (unsigned int j = 0; j < numfib; ++j)

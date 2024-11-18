@@ -143,8 +143,6 @@ Core::Elements::Element* Discret::Elements::SoSh8::clone() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::SoSh8::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -168,17 +166,14 @@ void Discret::Elements::SoSh8::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class So_hex8 Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Discret::Elements::SoHex8::unpack(basedata_buffer);
+  Discret::Elements::SoHex8::unpack(buffer);
   // thickdir
-  thickdir_ = static_cast<ThicknessDirection>(extract_int(buffer));
+  extract_from_pack(buffer, thickdir_);
   extract_from_pack(buffer, thickvec_);
-  anstype_ = static_cast<ANSType>(extract_int(buffer));
-  nodes_rearranged_ = extract_int(buffer);
+  extract_from_pack(buffer, anstype_);
+  extract_from_pack(buffer, nodes_rearranged_);
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   return;
 }
 

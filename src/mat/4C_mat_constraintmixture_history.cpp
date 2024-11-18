@@ -27,8 +27,6 @@ Core::Communication::ParObject* Mat::ConstraintMixtureHistoryType::create(
  *----------------------------------------------------------------------*/
 void Mat::ConstraintMixtureHistory::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -38,26 +36,22 @@ void Mat::ConstraintMixtureHistory::pack(Core::Communication::PackBuffer& data) 
   add_to_pack(data, dt_);
   add_to_pack(data, numgp_);
   add_to_pack(data, expvar_);
-  for (int gp = 0; gp < numgp_; ++gp)
-  {
-    add_to_pack(data, collagenstretch1_->at(gp));
-    add_to_pack(data, collagenstretch2_->at(gp));
-    add_to_pack(data, collagenstretch3_->at(gp));
-    add_to_pack(data, collagenstretch4_->at(gp));
-    add_to_pack(data, massprod1_->at(gp));
-    add_to_pack(data, massprod2_->at(gp));
-    add_to_pack(data, massprod3_->at(gp));
-    add_to_pack(data, massprod4_->at(gp));
-    if (expvar_)
-    {
-      add_to_pack(data, vardegrad1_->at(gp));
-      add_to_pack(data, vardegrad2_->at(gp));
-      add_to_pack(data, vardegrad3_->at(gp));
-      add_to_pack(data, vardegrad4_->at(gp));
-    }
-  }
 
-  return;
+  add_to_pack(data, *collagenstretch1_);
+  add_to_pack(data, *collagenstretch2_);
+  add_to_pack(data, *collagenstretch3_);
+  add_to_pack(data, *collagenstretch4_);
+  add_to_pack(data, *massprod1_);
+  add_to_pack(data, *massprod2_);
+  add_to_pack(data, *massprod3_);
+  add_to_pack(data, *massprod4_);
+  if (expvar_)
+  {
+    add_to_pack(data, *vardegrad1_);
+    add_to_pack(data, *vardegrad2_);
+    add_to_pack(data, *vardegrad3_);
+    add_to_pack(data, *vardegrad4_);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -68,16 +62,10 @@ void Mat::ConstraintMixtureHistory::unpack(Core::Communication::UnpackBuffer& bu
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // unpack internal variables
-  double a;
-  extract_from_pack(buffer, a);
-  depositiontime_ = a;
-  extract_from_pack(buffer, a);
-  dt_ = a;
-  int b;
-  extract_from_pack(buffer, b);
-  numgp_ = b;
-  extract_from_pack(buffer, b);
-  expvar_ = b;
+  extract_from_pack(buffer, depositiontime_);
+  extract_from_pack(buffer, dt_);
+  extract_from_pack(buffer, numgp_);
+  extract_from_pack(buffer, expvar_);
 
   collagenstretch1_ = std::make_shared<std::vector<double>>(numgp_);
   collagenstretch2_ = std::make_shared<std::vector<double>>(numgp_);
@@ -95,40 +83,22 @@ void Mat::ConstraintMixtureHistory::unpack(Core::Communication::UnpackBuffer& bu
     vardegrad4_ = std::make_shared<std::vector<double>>(numgp_);
   }
 
-  for (int gp = 0; gp < numgp_; ++gp)
+  extract_from_pack(buffer, *collagenstretch1_);
+  extract_from_pack(buffer, *collagenstretch2_);
+  extract_from_pack(buffer, *collagenstretch3_);
+  extract_from_pack(buffer, *collagenstretch4_);
+  extract_from_pack(buffer, *massprod1_);
+  extract_from_pack(buffer, *massprod2_);
+  extract_from_pack(buffer, *massprod3_);
+  extract_from_pack(buffer, *massprod4_);
+
+  if (expvar_)
   {
-    extract_from_pack(buffer, a);
-    collagenstretch1_->at(gp) = a;
-    extract_from_pack(buffer, a);
-    collagenstretch2_->at(gp) = a;
-    extract_from_pack(buffer, a);
-    collagenstretch3_->at(gp) = a;
-    extract_from_pack(buffer, a);
-    collagenstretch4_->at(gp) = a;
-    extract_from_pack(buffer, a);
-    massprod1_->at(gp) = a;
-    extract_from_pack(buffer, a);
-    massprod2_->at(gp) = a;
-    extract_from_pack(buffer, a);
-    massprod3_->at(gp) = a;
-    extract_from_pack(buffer, a);
-    massprod4_->at(gp) = a;
-    if (expvar_)
-    {
-      extract_from_pack(buffer, a);
-      vardegrad1_->at(gp) = a;
-      extract_from_pack(buffer, a);
-      vardegrad2_->at(gp) = a;
-      extract_from_pack(buffer, a);
-      vardegrad3_->at(gp) = a;
-      extract_from_pack(buffer, a);
-      vardegrad4_->at(gp) = a;
-    }
+    extract_from_pack(buffer, *vardegrad1_);
+    extract_from_pack(buffer, *vardegrad2_);
+    extract_from_pack(buffer, *vardegrad3_);
+    extract_from_pack(buffer, *vardegrad4_);
   }
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

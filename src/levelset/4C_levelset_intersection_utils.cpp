@@ -569,11 +569,9 @@ void ScaTra::LevelSet::Intersection::unpack_boundary_int_cells(
       //--------------------------------------------------------------------
       // distype of cell
       Core::FE::CellType distype;
-      int distypeint = -1;
-      extract_from_pack(buffer, distypeint);
-      distype = (Core::FE::CellType)distypeint;
+      extract_from_pack(buffer, distype);
       if (!(distype == Core::FE::CellType::tri3 || distype == Core::FE::CellType::quad4))
-        FOUR_C_THROW("unexpected distype %d", distypeint);
+        FOUR_C_THROW("unexpected distype %d", distype);
 
       Core::LinAlg::SerialDenseMatrix vertices_xi;
       extract_from_pack(buffer, vertices_xi);

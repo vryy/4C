@@ -64,8 +64,6 @@ Mat::Maxwell0dAcinusDoubleExponential::Maxwell0dAcinusDoubleExponential(
 /*----------------------------------------------------------------------*/
 void Mat::Maxwell0dAcinusDoubleExponential::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // Pack type of this instance of ParObject
   int type = unique_par_object_id();
 
@@ -121,8 +119,6 @@ void Mat::Maxwell0dAcinusDoubleExponential::unpack(Core::Communication::UnpackBu
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
             material_type());
     }
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

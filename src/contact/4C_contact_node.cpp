@@ -95,7 +95,7 @@ void CONTACT::NodeDataContainer::unpack(Core::Communication::UnpackBuffer& buffe
   // kappa_
   extract_from_pack(buffer, kappa_);
   // activeold_
-  activeold_ = extract_int(buffer);
+  extract_from_pack(buffer, activeold_);
   // n_old_
   extract_from_pack(buffer, n_old_, 3 * sizeof(double));
 
@@ -280,8 +280,6 @@ void CONTACT::Node::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::Node::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -309,7 +307,7 @@ void CONTACT::Node::pack(Core::Communication::PackBuffer& data) const
 
   // add tsidata
   bool hasTSIdata = (cTSIdata_ != nullptr);
-  add_to_pack(data, (int)hasTSIdata);
+  add_to_pack(data, hasTSIdata);
   if (hasTSIdata) cTSIdata_->pack(data);
 
   return;
@@ -325,22 +323,20 @@ void CONTACT::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Mortar::Node
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Mortar::Node::unpack(basedata_buffer);
+  Mortar::Node::unpack(buffer);
 
   // active_
-  active_ = extract_int(buffer);
+  extract_from_pack(buffer, active_);
   // isslave_
-  initactive_ = extract_int(buffer);
+  extract_from_pack(buffer, initactive_);
   // isslave_
-  involvedm_ = extract_int(buffer);
+  extract_from_pack(buffer, involvedm_);
   // isslave_
-  linsize_ = extract_int(buffer);
+  extract_from_pack(buffer, linsize_);
 
   // data_
-  bool hasdata = extract_int(buffer);
+  bool hasdata;
+  extract_from_pack(buffer, hasdata);
   if (hasdata)
   {
     codata_ = std::make_shared<CONTACT::NodeDataContainer>();
@@ -352,7 +348,8 @@ void CONTACT::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   }
 
   // porodata_
-  bool hasdataporo = extract_int(buffer);
+  bool hasdataporo;
+  extract_from_pack(buffer, hasdataporo);
   if (hasdataporo)
   {
     coporodata_ = std::make_shared<CONTACT::NodePoroDataContainer>();
@@ -364,7 +361,8 @@ void CONTACT::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   }
 
   // TSI data
-  bool hasTSIdata = (bool)extract_int(buffer);
+  bool hasTSIdata;
+  extract_from_pack(buffer, hasTSIdata);
   if (hasTSIdata)
   {
     cTSIdata_ = std::make_shared<CONTACT::NodeTSIDataContainer>();
@@ -373,7 +371,7 @@ void CONTACT::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   else
     cTSIdata_ = nullptr;
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   return;
 }
 

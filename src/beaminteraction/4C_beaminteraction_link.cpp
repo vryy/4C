@@ -93,8 +93,6 @@ void BEAMINTERACTION::BeamLink::setup(const int matnum)
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLink::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -117,8 +115,6 @@ void BEAMINTERACTION::BeamLink::pack(Core::Communication::PackBuffer& data) cons
   add_to_pack(data, timelinkwasset_);
   // reflength
   add_to_pack(data, reflength_);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -128,9 +124,9 @@ void BEAMINTERACTION::BeamLink::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // isinit_
-  isinit_ = extract_int(buffer);
+  extract_from_pack(buffer, isinit_);
   // issetup
-  issetup_ = extract_int(buffer);
+  extract_from_pack(buffer, issetup_);
   // id_
   extract_from_pack(buffer, id_);
 
@@ -141,15 +137,11 @@ void BEAMINTERACTION::BeamLink::unpack(Core::Communication::UnpackBuffer& buffer
   // bspotpos2
   extract_from_pack(buffer, bspotpos2_);
   // linkertype
-  linkertype_ = static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(extract_int(buffer));
+  extract_from_pack(buffer, linkertype_);
   // timelinkwasset
   extract_from_pack(buffer, timelinkwasset_);
   // reflength
   extract_from_pack(buffer, reflength_);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

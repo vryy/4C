@@ -36,7 +36,7 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::unpack_anisotropy(
   extract_from_pack(buffer, scalar_products_);
   extract_from_pack(buffer, structural_tensors_stress_);
   extract_from_pack(buffer, structural_tensors_);
-  is_initialized_ = static_cast<bool>(extract_int(buffer));
+  extract_from_pack(buffer, is_initialized_);
 }
 
 double Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::get_scalar_product(int gp) const

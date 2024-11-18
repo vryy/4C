@@ -97,8 +97,6 @@ void Mat::MatListChemoReac::clear()
  *----------------------------------------------------------------------*/
 void Mat::MatListChemoReac::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -150,19 +148,8 @@ void Mat::MatListChemoReac::unpack(Core::Communication::UnpackBuffer& buffer)
     }
 
   // extract base class material
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Mat::MatListReactions::unpack(basedata_buffer);
-
-  std::vector<char> basedata2(0);
-  extract_from_pack(buffer, basedata2);
-  Core::Communication::UnpackBuffer basedata2_buffer(basedata);
-  Mat::MatListChemotaxis::unpack(basedata2_buffer);
-
-  // in the postprocessing mode, we do not unpack everything we have packed
-  // -> position check cannot be done in this case
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+  Mat::MatListReactions::unpack(buffer);
+  Mat::MatListChemotaxis::unpack(buffer);
 }
 
 FOUR_C_NAMESPACE_CLOSE

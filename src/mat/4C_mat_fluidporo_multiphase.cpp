@@ -245,8 +245,6 @@ void Mat::FluidPoroMultiPhase::initialize()
  *----------------------------------------------------------------------*/
 void Mat::FluidPoroMultiPhase::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -295,14 +293,10 @@ void Mat::FluidPoroMultiPhase::unpack(Core::Communication::UnpackBuffer& buffer)
     }
 
   // extract base class material
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Mat::MatList::unpack(basedata_buffer);
+  Mat::MatList::unpack(buffer);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

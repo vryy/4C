@@ -124,8 +124,6 @@ Core::FE::CellType Discret::Elements::Torsion3::shape() const { return Core::FE:
  *----------------------------------------------------------------------*/
 void Discret::Elements::Torsion3::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -142,13 +140,8 @@ void Discret::Elements::Torsion3::unpack(Core::Communication::UnpackBuffer& buff
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Element::unpack(base_buffer);
-  bendingpotential_ = static_cast<BendingPotential>(extract_int(buffer));
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+  Element::unpack(buffer);
+  extract_from_pack(buffer, bendingpotential_);
 }
 
 /*----------------------------------------------------------------------*

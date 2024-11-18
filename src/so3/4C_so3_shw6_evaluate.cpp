@@ -193,13 +193,17 @@ int Discret::Elements::SoShw6::evaluate(Teuchos::ParameterList& params,
       {
         Core::Communication::PackBuffer data;
 
-        add_to_pack(data, stress);
+        Core::LinAlg::SerialDenseMatrix stress_view(
+            Teuchos::View, stress.values(), NUMGPT_WEG6, NUMGPT_WEG6, Mat::NUM_STRESS_3D);
+        add_to_pack(data, stress_view);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
       {
         Core::Communication::PackBuffer data;
 
-        add_to_pack(data, strain);
+        Core::LinAlg::SerialDenseMatrix strain_view(
+            Teuchos::View, strain.values(), NUMGPT_WEG6, NUMGPT_WEG6, Mat::NUM_STRESS_3D);
+        add_to_pack(data, strain_view);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
     }

@@ -249,9 +249,7 @@ namespace Discret::Elements
     {
       extract_from_pack(buffer, history_data.inverse_jacobian);
       extract_from_pack(buffer, history_data.deformation_gradient);
-      int is_setup_int;
-      extract_from_pack(buffer, is_setup_int);
-      history_data.is_setup = static_cast<bool>(is_setup_int);
+      extract_from_pack(buffer, history_data.is_setup);
     }
 
     static inline void update_prestress(const Core::Elements::Element& ele,

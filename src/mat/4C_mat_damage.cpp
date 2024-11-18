@@ -80,8 +80,6 @@ Mat::Damage::Damage(Mat::PAR::Damage* params) : params_(params), plastic_step_(f
  *----------------------------------------------------------------------*/
 void Mat::Damage::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -92,26 +90,16 @@ void Mat::Damage::pack(Core::Communication::PackBuffer& data) const
   if (params_ != nullptr) matid = params_->id();
   add_to_pack(data, matid);
 
-  // pack history data
-  int histsize = initialized() ? strainpllast_.size() : 0;
+  add_to_pack(data, strainpllast_);
+  add_to_pack(data, backstresslast_);
 
-  add_to_pack(data, histsize);  // Length of history vector(s)
-  for (int var = 0; var < histsize; ++var)
-  {
-    // insert history vectors to AddtoPack
-    add_to_pack(data, strainpllast_.at(var));
-    add_to_pack(data, backstresslast_.at(var));
-
-    add_to_pack(data, strainbarpllast_.at(var));
-    add_to_pack(data, isohardvarlast_.at(var));
-    add_to_pack(data, damagelast_.at(var));
-    add_to_pack(data, static_cast<int>(failedlast_.at(var)));
-  }
+  add_to_pack(data, strainbarpllast_);
+  add_to_pack(data, isohardvarlast_);
+  add_to_pack(data, damagelast_);
+  add_to_pack(data, failedlast_);
 
   add_to_pack(data, plastic_step_);
-
-  return;
-}  // pack()
+}
 
 
 /*----------------------------------------------------------------------*
@@ -142,57 +130,22 @@ void Mat::Damage::unpack(Core::Communication::UnpackBuffer& buffer)
     }
 
   // history data
-  int histsize;
-  extract_from_pack(buffer, histsize);
+  extract_from_pack(buffer, strainpllast_);
+  extract_from_pack(buffer, backstresslast_);
+  extract_from_pack(buffer, strainbarpllast_);
+  extract_from_pack(buffer, isohardvarlast_);
+  extract_from_pack(buffer, damagelast_);
+  extract_from_pack(buffer, failedlast_);
 
-  // if system is not yet initialised, the history vectors have to be intialised
-  if (histsize == 0) isinit_ = false;
+  strainplcurr_ = strainpllast_;
+  backstresscurr_ = backstresslast_;
+  strainbarplcurr_ = strainbarpllast_;
+  isohardvarcurr_ = isohardvarlast_;
+  damagecurr_ = damagelast_;
+  failedcurr_ = failedlast_;
 
-  // initialise
-  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> tmp_vect(true);
-  double tmp_scalar = 0.0;
-  int tmp_int_scalar = 0;
-
-  for (int var = 0; var < histsize; ++var)
-  {
-    // vectors of last converged state are unpacked
-    extract_from_pack(buffer, tmp_vect);
-    strainpllast_.push_back(tmp_vect);
-    strainplcurr_.push_back(tmp_vect);
-
-    extract_from_pack(buffer, tmp_vect);
-    backstresslast_.push_back(tmp_vect);
-    backstresscurr_.push_back(tmp_vect);
-
-    // scalar-valued vector of last converged state are unpacked
-    extract_from_pack(buffer, tmp_scalar);
-    strainbarpllast_.push_back(tmp_scalar);
-    strainbarplcurr_.push_back(tmp_scalar);
-
-    extract_from_pack(buffer, tmp_scalar);
-    isohardvarlast_.push_back(tmp_scalar);
-    isohardvarcurr_.push_back(tmp_scalar);
-
-    extract_from_pack(buffer, tmp_scalar);
-    damagelast_.push_back(tmp_scalar);
-    damagecurr_.push_back(tmp_scalar);
-
-    extract_from_pack(buffer, tmp_int_scalar);
-    failedlast_.push_back(static_cast<bool>(tmp_int_scalar));
-    failedcurr_.push_back(static_cast<bool>(tmp_int_scalar));
-  }
-
-  int plastic_step;
-  extract_from_pack(buffer, plastic_step);
-
-  // if it was already plastic before, set true
-  plastic_step_ = (plastic_step != 0);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-
-  return;
-
-}  // unpack()
+  extract_from_pack(buffer, plastic_step_);
+}
 
 
 /*---------------------------------------------------------------------*

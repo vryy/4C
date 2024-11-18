@@ -699,10 +699,7 @@ void Core::FE::Discretization::unpack_my_elements(std::vector<char>& e)
   Communication::UnpackBuffer buffer(e);
   while (!buffer.at_end())
   {
-    std::vector<char> data;
-    extract_from_pack(buffer, data);
-    Communication::UnpackBuffer data_buffer(data);
-    Core::Communication::ParObject* o = Core::Communication::factory(data_buffer);
+    Core::Communication::ParObject* o = Core::Communication::factory(buffer);
     auto* ele = dynamic_cast<Core::Elements::Element*>(o);
     FOUR_C_THROW_UNLESS(ele != nullptr,
         "Failed to build an element from the element data for discretization %s", name_.c_str());
@@ -720,10 +717,7 @@ void Core::FE::Discretization::unpack_my_nodes(std::vector<char>& e)
   Communication::UnpackBuffer buffer(e);
   while (!buffer.at_end())
   {
-    std::vector<char> data;
-    extract_from_pack(buffer, data);
-    Communication::UnpackBuffer data_buffer(data);
-    Core::Communication::ParObject* o = Core::Communication::factory(data_buffer);
+    Core::Communication::ParObject* o = Core::Communication::factory(buffer);
     auto* node = dynamic_cast<Core::Nodes::Node*>(o);
     FOUR_C_THROW_UNLESS(node != nullptr,
         "Failed to build a node from the node data for discretization %s", name_.c_str());

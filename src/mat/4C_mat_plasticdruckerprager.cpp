@@ -63,7 +63,6 @@ Mat::PlasticDruckerPrager::PlasticDruckerPrager(Mat::PAR::PlasticDruckerPrager* 
 
 void Mat::PlasticDruckerPrager::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
   int type = unique_par_object_id();
   add_to_pack(data, type);
   int matid = -1;
@@ -125,7 +124,6 @@ void Mat::PlasticDruckerPrager::unpack(Core::Communication::UnpackBuffer& buffer
       strainplcurr_.push_back(tmp_vect);
       strainbarplcurr_.push_back(tmp_scalar);
     }
-    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   }
 }
 void Mat::PlasticDruckerPrager::setup(int numgp, const Core::IO::InputParameterContainer& container)

@@ -74,8 +74,10 @@ void Mixture::TimestepAdaptivityInfo::unpack(Core::Communication::UnpackBuffer& 
   list_.reserve(size_of_adaptivity_info);
   for (std::size_t i = 0; i < size_of_adaptivity_info; ++i)
   {
-    const unsigned int level = extract_int(buffer);
-    const unsigned int num_intervals = extract_int(buffer);
+    unsigned int level;
+    extract_from_pack(buffer, level);
+    unsigned int num_intervals;
+    extract_from_pack(buffer, num_intervals);
     list_.emplace_back(level, num_intervals);
   }
 }

@@ -86,8 +86,6 @@ Mat::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface(
  *----------------------------------------------------------------------*/
 void Mat::ViscoPlasticNoYieldSurface::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -135,8 +133,6 @@ void Mat::ViscoPlasticNoYieldSurface::unpack(Core::Communication::UnpackBuffer& 
   // no need to unpack this, just resize the data members
   current_flowres_isotropic_.resize(last_flowres_isotropic_.size(), 0.0);
   current_plastic_defgrd_inverse_.resize(last_plastic_defgrd_inverse_.size());
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*---------------------------------------------------------------------*

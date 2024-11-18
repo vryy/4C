@@ -36,7 +36,7 @@ namespace
       add_to_pack(buffer, inputData.top_corner_point_);
       add_to_pack(buffer, inputData.interval_);
       add_to_pack(buffer, inputData.rotation_angle_);
-      add_to_pack(buffer, static_cast<int>(inputData.autopartition_));
+      add_to_pack(buffer, inputData.autopartition_);
       add_to_pack(buffer, inputData.elementtype_);
       add_to_pack(buffer, inputData.distype_);
       add_to_pack(buffer, inputData.elearguments_);
@@ -55,9 +55,7 @@ namespace
       extract_from_pack(buffer, inputData.top_corner_point_);
       extract_from_pack(buffer, inputData.interval_);
       extract_from_pack(buffer, inputData.rotation_angle_);
-      int autopartitionInteger;
-      extract_from_pack(buffer, autopartitionInteger);
-      inputData.autopartition_ = autopartitionInteger;
+      extract_from_pack(buffer, inputData.autopartition_);
       extract_from_pack(buffer, inputData.elementtype_);
       extract_from_pack(buffer, inputData.distype_);
       extract_from_pack(buffer, inputData.elearguments_);

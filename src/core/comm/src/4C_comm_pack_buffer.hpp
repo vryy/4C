@@ -10,13 +10,18 @@
 
 #include "4C_config.hpp"
 
+#include "4C_utils_exceptions.hpp"
+
 #include <cstring>
+#include <typeinfo>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Communication
 {
+  class PotentiallyUnusedBufferScope;
+
   /**
    * @brief A class to pack data into a buffer.
    *
@@ -28,31 +33,7 @@ namespace Core::Communication
    */
   class PackBuffer
   {
-    friend class SizeMarker;
-
    public:
-    /**
-     * This class is used to mark the size of an object in the buffer. The class uses RAII to
-     * automatically prepend the size of the object in the buffer when an instance goes out of
-     * scope. An instance of this class should be created when entering a `pack` method of a class.
-     */
-    class SizeMarker
-    {
-     public:
-      SizeMarker(PackBuffer& data) : data_(data)
-      {
-        // add dummy object size, will be filled later
-        data_.add_to_pack(-1);
-        old_size_ = data_().size();
-      }
-
-      ~SizeMarker() { data_.set_object_size(old_size_); }
-
-     private:
-      PackBuffer& data_;
-      std::size_t old_size_{};
-    };
-
     PackBuffer() = default;
 
     std::vector<char>& operator()() { return buf_; }
@@ -63,6 +44,14 @@ namespace Core::Communication
     template <typename T, typename = std::enable_if_t<std::is_trivially_copyable_v<T>>>
     void add_to_pack(const T& stuff)
     {
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      // Write the type into the buffer
+      const std::size_t hash = typeid(T).hash_code();
+      scratch_buffer_.resize(sizeof(hash));
+      std::memcpy(scratch_buffer_.data(), &hash, sizeof(hash));
+      buf_.insert(buf_.end(), scratch_buffer_.begin(), scratch_buffer_.end());
+#endif
+
       // Convert stuff into a vector of chars via a separate buffer.
       scratch_buffer_.resize(sizeof(T));
       std::memcpy(scratch_buffer_.data(), &stuff, sizeof(T));
@@ -76,6 +65,16 @@ namespace Core::Communication
     template <typename T, typename = std::enable_if_t<std::is_trivially_copyable_v<T>>>
     void add_to_pack(const T* stuff, std::size_t stuff_size)
     {
+      FOUR_C_ASSERT(stuff_size % sizeof(T) == 0, "Size of stuff must be a multiple of sizeof(T).");
+
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      // Write the type into the buffer
+      const std::size_t hash = typeid(T).hash_code();
+      scratch_buffer_.resize(sizeof(hash));
+      std::memcpy(scratch_buffer_.data(), &hash, sizeof(hash));
+      buf_.insert(buf_.end(), scratch_buffer_.begin(), scratch_buffer_.end());
+#endif
+
       // Convert stuff into a vector of chars via a separate buffer.
       scratch_buffer_.resize(stuff_size);
       std::memcpy(scratch_buffer_.data(), stuff, stuff_size);
@@ -85,18 +84,13 @@ namespace Core::Communication
     }
 
    private:
-    /// set size of a ParObject after it has been inserted
-    void set_object_size(std::size_t oldsize)
-    {
-      int osize = buf_.size() - oldsize;
-      std::memcpy(&buf_[oldsize - sizeof(int)], &osize, sizeof(int));
-    }
-
     //! The actual buffer containing the packed data.
     std::vector<char> buf_;
 
     //! Scratch buffer used during packing to avoid reallocations.
     std::vector<char> scratch_buffer_;
+
+    friend class PotentiallyUnusedBufferScope;
   };
 
 
@@ -121,9 +115,18 @@ namespace Core::Communication
      * type T.
      */
     template <typename T>
-    std::enable_if_t<std::is_pod_v<T>, void> extract_from_pack(T& stuff)
+    std::enable_if_t<std::is_trivially_copyable_v<T>, void> extract_from_pack(T& stuff)
     {
-      peek(stuff);
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      // Check that the type matches the type that was packed.
+      std::size_t hash;
+      std::memcpy(&hash, &data_[position_], sizeof(hash));
+      position_ += sizeof(hash);
+      FOUR_C_ASSERT(hash == typeid(T).hash_code(),
+          "Type mismatch during unpacking. Tried to extract type %s", typeid(T).name());
+#endif
+
+      memcpy(&stuff, &data_[position_], sizeof(T));
       position_ += sizeof(T);
     }
 
@@ -132,9 +135,21 @@ namespace Core::Communication
      *
      * Same as the other method but extracts @p stuff_size entries into the array @p stuff.
      */
-    template <typename Kind>
-    void extract_from_pack(Kind* stuff, const std::size_t stuff_size)
+    template <typename T>
+    void extract_from_pack(T* stuff, const std::size_t stuff_size)
     {
+      FOUR_C_ASSERT(stuff_size % sizeof(T) == 0, "Size of stuff must be a multiple of sizeof(T).");
+
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      // Check that the type matches the type that was packed.
+      std::size_t hash;
+      std::memcpy(&hash, &data_[position_], sizeof(hash));
+      position_ += sizeof(hash);
+      FOUR_C_ASSERT(hash == typeid(T).hash_code(),
+          "Type mismatch during unpacking. Tried to extract type %s", typeid(T).name());
+#endif
+
+
       memcpy(stuff, &data_[position_], stuff_size);
       position_ += stuff_size;
     }
@@ -143,9 +158,19 @@ namespace Core::Communication
      * Get @p stuff but also leave it in the buffer for the next extraction.
      */
     template <typename T>
-    std::enable_if_t<std::is_pod_v<T>, void> peek(T& stuff) const
+    std::enable_if_t<std::is_trivially_copyable_v<T>, void> peek(T& stuff) const
     {
-      memcpy(&stuff, &data_[position_], sizeof(T));
+      std::size_t position = position_;
+
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      // Check that the type matches the type that was packed.
+      std::size_t hash;
+      std::memcpy(&hash, &data_[position_], sizeof(hash));
+      position += sizeof(hash);
+      FOUR_C_ASSERT(hash == typeid(T).hash_code(), "Type mismatch during unpacking.");
+#endif
+
+      memcpy(&stuff, &data_[position], sizeof(T));
     }
 
     /**
@@ -156,6 +181,64 @@ namespace Core::Communication
    private:
     const std::vector<char>& data_;
     std::vector<char>::size_type position_{0};
+
+    friend class PotentiallyUnusedBufferScope;
+  };
+
+  /**
+   * Using this class marks all data added/extracted within a scope as potentially unused. An object
+   * of this class should symmetrically appear in a pack() and unpack() method. In the pack() method
+   * it will remember how much data is potentially unused. In the unpack() method it will
+   * discard all the unused data from the buffer at the end of the scope.
+   */
+  class [[nodiscard]] PotentiallyUnusedBufferScope
+  {
+   public:
+    PotentiallyUnusedBufferScope(PackBuffer& pack_buffer)
+        : pack_buffer_(&pack_buffer), offset_(pack_buffer_->buf_.size())
+    {
+      // Add an entry which stores the amount of potentially unused data.
+      // Note: use raw memory operations to not write metadata
+      pack_buffer_->buf_.insert(pack_buffer_->buf_.end(), sizeof(std::size_t), 0);
+    }
+
+    PotentiallyUnusedBufferScope(UnpackBuffer& unpack_buffer) : unpack_buffer_(&unpack_buffer)
+    {
+      // Read the size of the potentially unused data.
+      std::memcpy(&offset_, &unpack_buffer.data_[unpack_buffer.position_], sizeof(offset_));
+      unpack_buffer.position_ += sizeof(offset_);
+
+      // This is the position where the potentially unused data ends in the buffer.
+      offset_ += unpack_buffer.position_;
+    }
+
+    ~PotentiallyUnusedBufferScope()
+    {
+      if (pack_buffer_ != nullptr)
+      {
+        std::size_t size_of_unused_data = pack_buffer_->buf_.size() - offset_ - sizeof(std::size_t);
+        // Overwrite the special entry with the size of the unused data
+        std::memcpy(
+            &pack_buffer_->buf_[offset_], &size_of_unused_data, sizeof(size_of_unused_data));
+      }
+      else
+      {
+        FOUR_C_ASSERT(
+            unpack_buffer_->position_ <= offset_, "Potentially unused data exceeds buffer size.");
+        // Now simply skip the unused data.
+        unpack_buffer_->position_ = offset_;
+      }
+    }
+
+    PotentiallyUnusedBufferScope(const PotentiallyUnusedBufferScope&) = delete;
+    PotentiallyUnusedBufferScope& operator=(const PotentiallyUnusedBufferScope&) = delete;
+    PotentiallyUnusedBufferScope(PotentiallyUnusedBufferScope&&) = delete;
+    PotentiallyUnusedBufferScope& operator=(PotentiallyUnusedBufferScope&&) = delete;
+
+   private:
+    PackBuffer* pack_buffer_{nullptr};
+    UnpackBuffer* unpack_buffer_{nullptr};
+    std::size_t offset_;
   };
 
 }  // namespace Core::Communication

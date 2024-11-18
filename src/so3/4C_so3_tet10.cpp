@@ -183,8 +183,6 @@ Core::FE::CellType Discret::Elements::SoTet10::shape() const { return Core::FE::
  *----------------------------------------------------------------------*/
 void Discret::Elements::SoTet10::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -204,7 +202,7 @@ void Discret::Elements::SoTet10::pack(Core::Communication::PackBuffer& data) con
   for (int i = 0; i < size_mass; ++i) add_to_pack(data, invJ_mass_[i]);
 
   // Pack prestress
-  add_to_pack(data, static_cast<int>(pstype_));
+  add_to_pack(data, pstype_);
   add_to_pack(data, pstime_);
   add_to_pack(data, time_);
   if (Prestress::is_mulf(pstype_))
@@ -225,10 +223,7 @@ void Discret::Elements::SoTet10::unpack(Core::Communication::UnpackBuffer& buffe
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  SoBase::unpack(basedata_buffer);
+  SoBase::unpack(buffer);
 
   // detJ_
   extract_from_pack(buffer, detJ_);
@@ -245,7 +240,7 @@ void Discret::Elements::SoTet10::unpack(Core::Communication::UnpackBuffer& buffe
   for (int i = 0; i < size_mass; ++i) extract_from_pack(buffer, invJ_mass_[i]);
 
   // Unpack prestress
-  pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(buffer));
+  extract_from_pack(buffer, pstype_);
   extract_from_pack(buffer, pstime_);
   extract_from_pack(buffer, time_);
   if (Prestress::is_mulf(pstype_))
@@ -258,7 +253,7 @@ void Discret::Elements::SoTet10::unpack(Core::Communication::UnpackBuffer& buffe
     prestress_->unpack(tmpprestress_buffer);
   }
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   return;
 }
 

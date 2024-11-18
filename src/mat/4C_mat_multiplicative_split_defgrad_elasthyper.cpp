@@ -172,8 +172,6 @@ Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
  *--------------------------------------------------------------------*/
 void Mat::MultiplicativeSplitDefgradElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -184,6 +182,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::pack(Core::Communication::PackBu
 
   anisotropy_->pack_anisotropy(data);
 
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope{data};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -222,6 +221,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(Core::Communication::Unpa
 
   anisotropy_->unpack_anisotropy(buffer);
 
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope{buffer};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // elastic materials

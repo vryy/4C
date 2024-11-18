@@ -141,8 +141,6 @@ Core::FE::CellType Discret::Elements::RedAirway::shape() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::RedAirway::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -182,10 +180,7 @@ void Discret::Elements::RedAirway::unpack(Core::Communication::UnpackBuffer& buf
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Element::unpack(base_buffer);
+  Element::unpack(buffer);
 
   extract_from_pack(buffer, elem_type_);
   extract_from_pack(buffer, resistance_);
@@ -207,8 +202,6 @@ void Discret::Elements::RedAirway::unpack(Core::Communication::UnpackBuffer& buf
   extract_from_pack(buffer, airway_params_.p_crit_open);
   extract_from_pack(buffer, airway_params_.p_crit_close);
   extract_from_pack(buffer, airway_params_.open_init);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

@@ -336,8 +336,6 @@ Mat::MuscleGiantesio::MuscleGiantesio(Mat::PAR::MuscleGiantesio* params)
 
 void Mat::MuscleGiantesio::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -383,8 +381,6 @@ void Mat::MuscleGiantesio::unpack(Core::Communication::UnpackBuffer& buffer)
   extract_from_pack(buffer, omegaa_old_);
 
   anisotropy_extension_.unpack_anisotropy(buffer);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 void Mat::MuscleGiantesio::setup(int numgp, const Core::IO::InputParameterContainer& container)

@@ -52,8 +52,6 @@ Mat::LinElast1D::LinElast1D(Mat::PAR::LinElast1D* params) : params_(params) {}
  *----------------------------------------------------------------------*/
 void Mat::LinElast1D::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -88,8 +86,6 @@ void Mat::LinElast1D::unpack(Core::Communication::UnpackBuffer& buffer)
             material_type());
     }
   }
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*
@@ -137,8 +133,6 @@ Mat::LinElast1DGrowth::LinElast1DGrowth(Mat::PAR::LinElast1DGrowth* params)
  *----------------------------------------------------------------------*/
 void Mat::LinElast1DGrowth::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -158,10 +152,7 @@ void Mat::LinElast1DGrowth::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Mat::LinElast1D::unpack(basedata_buffer);
+  Mat::LinElast1D::unpack(buffer);
 
   // matid and recover params_
   int matid;
@@ -181,8 +172,6 @@ void Mat::LinElast1DGrowth::unpack(Core::Communication::UnpackBuffer& buffer)
             material_type());
     }
   }
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

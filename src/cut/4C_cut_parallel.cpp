@@ -146,13 +146,13 @@ void Cut::Parallel::export_communication_finished(bool& procDone)
   {
     Core::Communication::PackBuffer dataSend;
 
-    add_to_pack(dataSend, static_cast<int>(procDone));
+    add_to_pack(dataSend, procDone);
 
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
 
     // pointer to current position of group of cells in global std::string (counts bytes)
-    int allProcsDone = 0;
+    bool allProcsDone = 0;
 
     Core::Communication::UnpackBuffer data_recv_buffer(dataRecv);
     // unpack received data
@@ -516,7 +516,7 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
            data != dof_set_data_.end(); data++)
       {
         add_to_pack(dataSend, (*data)->set_index_);
-        add_to_pack(dataSend, (int)(*data)->inside_cell_);
+        add_to_pack(dataSend, (*data)->inside_cell_);
         pack_points(dataSend, (*data)->cut_points_coords_);
         add_to_pack(dataSend, (*data)->peid_);
         add_to_pack(dataSend, (*data)->node_dofsetnumber_map_);
@@ -533,7 +533,7 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
       {
         // unpack volumecell
         int set_index = -1;                                         // set index for Volumecell
-        int inside_cell = false;                                    // inside or outside cell
+        bool inside_cell = false;                                   // inside or outside cell
         std::vector<Core::LinAlg::Matrix<3, 1>> cut_points_coords;  // coordinates of cut points
         int peid = -1;                             // parent element id for volume cell
         std::map<int, int> node_dofsetnumber_map;  // map <nid, current dofset number>
@@ -1115,17 +1115,8 @@ void Cut::Parallel::replace_nds_vectors(ElementHandle* e,
 void Cut::Parallel::pack_points(Core::Communication::PackBuffer& dataSend,
     std::vector<Core::LinAlg::Matrix<3, 1>>& points_coords) const
 {
-  // pack number of points for current volumecell
-  add_to_pack(dataSend, (int)points_coords.size());
-
-  for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator p = points_coords.begin();
-       p != points_coords.end(); p++)
-  {
-    // pack xyz-coordinates
-    add_to_pack(dataSend, *p);
-  }
-
-}  // end packNodes
+  add_to_pack(dataSend, points_coords);
+}
 
 
 
@@ -1136,26 +1127,7 @@ void Cut::Parallel::pack_points(Core::Communication::PackBuffer& dataSend,
 void Cut::Parallel::unpack_points(Core::Communication::UnpackBuffer& buffer,
     std::vector<Core::LinAlg::Matrix<3, 1>>& points_coords) const
 {
-  const int nsd = 3;  // dimension
-
-  int num_points = 0;
-
-  // unpack number of points for current volumecell
-  extract_from_pack(buffer, num_points);
-
-
-  Core::LinAlg::Matrix<nsd, 1> coords(true);
-
-  for (int i = 0; i < num_points; i++)
-  {
-    coords.clear();
-
-    // pack xyz-coordinates for point
-    extract_from_pack(buffer, coords);
-
-    points_coords.push_back(coords);
-  }
-
+  extract_from_pack(buffer, points_coords);
 }  // end function unpackNodes
 
 

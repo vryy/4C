@@ -73,7 +73,12 @@ void Mixture::MixtureConstituentSolidMaterial::pack_constituent(
   add_to_pack(data, matid);
 
   // pack data of the solid material
-  material_->pack(data);
+
+  Core::Communication::PotentiallyUnusedBufferScope solid_scope{data};
+  if (params_ != nullptr)
+  {
+    material_->pack(data);
+  }
 }
 
 void Mixture::MixtureConstituentSolidMaterial::unpack_constituent(
@@ -112,18 +117,14 @@ void Mixture::MixtureConstituentSolidMaterial::unpack_constituent(
   }
 
   // unpack the data of the solid material
+  Core::Communication::PotentiallyUnusedBufferScope solid_scope{buffer};
   if (params_ != nullptr)
   {
     auto so3mat = Mat::factory(params_->matid_);
     material_ = std::dynamic_pointer_cast<Mat::So3Material>(so3mat);
     if (!(so3mat)) FOUR_C_THROW("Failed to allocate");
 
-    // solid material packed: 1. the data size, 2. the packed data of size sm
-    // extract_from_pack extracts a sub_vec of size sm from data and updates the position vector
-    std::vector<char> sub_vec;
-    extract_from_pack(buffer, sub_vec);
-    Core::Communication::UnpackBuffer sub_vec_buffer(sub_vec);
-    material_->unpack(sub_vec_buffer);
+    material_->unpack(buffer);
   }
 }
 

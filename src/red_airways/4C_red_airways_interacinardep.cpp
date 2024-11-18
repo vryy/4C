@@ -131,8 +131,6 @@ Core::FE::CellType Discret::Elements::RedInterAcinarDep::shape() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::RedInterAcinarDep::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -140,18 +138,9 @@ void Discret::Elements::RedInterAcinarDep::pack(Core::Communication::PackBuffer&
   // add base class Element
   Element::pack(data);
 
-  std::map<std::string, double>::const_iterator it;
-
-  add_to_pack(data, (int)(elem_params_.size()));
-  for (it = elem_params_.begin(); it != elem_params_.end(); it++)
-  {
-    add_to_pack(data, it->first);
-    add_to_pack(data, it->second);
-  }
+  add_to_pack(data, elem_params_);
 
   add_to_pack(data, generation_);
-
-  return;
 }
 
 
@@ -164,31 +153,11 @@ void Discret::Elements::RedInterAcinarDep::unpack(Core::Communication::UnpackBuf
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Element::unpack(base_buffer);
+  Element::unpack(buffer);
 
-  std::map<std::string, double> it;
-  int n = 0;
+  extract_from_pack(buffer, elem_params_);
 
-  extract_from_pack(buffer, n);
-
-  for (int i = 0; i < n; i++)
-  {
-    std::string name;
-    double val;
-    extract_from_pack(buffer, name);
-    extract_from_pack(buffer, val);
-    elem_params_[name] = val;
-  }
-
-  // extract generation
   extract_from_pack(buffer, generation_);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-
-  return;
 }
 
 

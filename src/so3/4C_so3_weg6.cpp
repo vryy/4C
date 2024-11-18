@@ -163,8 +163,6 @@ Core::FE::CellType Discret::Elements::SoWeg6::shape() const { return Core::FE::C
  *----------------------------------------------------------------------*/
 void Discret::Elements::SoWeg6::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -172,7 +170,7 @@ void Discret::Elements::SoWeg6::pack(Core::Communication::PackBuffer& data) cons
   SoBase::pack(data);
 
   // Pack prestress
-  add_to_pack(data, static_cast<int>(pstype_));
+  add_to_pack(data, pstype_);
   add_to_pack(data, pstime_);
   add_to_pack(data, time_);
   if (Prestress::is_mulf(pstype_))
@@ -184,11 +182,7 @@ void Discret::Elements::SoWeg6::pack(Core::Communication::PackBuffer& data) cons
   add_to_pack(data, detJ_);
 
   // invJ_
-  const unsigned int size = invJ_.size();
-  add_to_pack(data, size);
-  for (unsigned int i = 0; i < size; ++i) add_to_pack(data, invJ_[i]);
-
-  return;
+  add_to_pack(data, invJ_);
 }
 
 
@@ -201,38 +195,22 @@ void Discret::Elements::SoWeg6::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  SoBase::unpack(basedata_buffer);
+  SoBase::unpack(buffer);
   // prestress_
-  pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(buffer));
+  extract_from_pack(buffer, pstype_);
   extract_from_pack(buffer, pstime_);
   extract_from_pack(buffer, time_);
   if (Prestress::is_mulf(pstype_))
   {
-    std::vector<char> tmpprestress(0);
-    extract_from_pack(buffer, tmpprestress);
     if (prestress_ == nullptr)
       prestress_ = std::make_shared<Discret::Elements::PreStress>(NUMNOD_WEG6, NUMGPT_WEG6);
-    Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);
-    prestress_->unpack(tmpprestress_buffer);
+    prestress_->unpack(buffer);
   }
 
   // detJ_
   extract_from_pack(buffer, detJ_);
   // invJ_
-  int size = 0;
-  extract_from_pack(buffer, size);
-  invJ_.resize(size);
-  for (int i = 0; i < size; ++i)
-  {
-    invJ_[i] = Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>(true);
-    extract_from_pack(buffer, invJ_[i]);
-  }
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-  return;
+  extract_from_pack(buffer, invJ_);
 }
 
 

@@ -1846,7 +1846,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
         add_to_pack(dataSend, data->initialpoint_);
         add_to_pack(dataSend, data->initial_eid_);
         add_to_pack(dataSend, data->initial_ele_owner_);
-        add_to_pack(dataSend, (int)data->type_);
+        add_to_pack(dataSend, data->type_);
       }
     }
 
@@ -1870,7 +1870,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
       Core::LinAlg::Matrix<nsd, 1> initialpoint;
       int initial_eid;
       int initial_ele_owner;
-      int newtype;
+      TimeIntData::Type newtype;
 
       unpack_node(buffer, node);
       extract_from_pack(buffer, nds_np);
@@ -1885,8 +1885,8 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
 
       timeIntData_->push_back(TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp,
           initialpoint, initial_eid, initial_ele_owner,
-          (TimeIntData::Type)newtype));  // startOwner is current proc
-    }                                    // end loop over number of nodes to get
+          newtype));  // startOwner is current proc
+    }                 // end loop over number of nodes to get
 
     // processors wait for each other
     discret_->get_comm().Barrier();
@@ -1924,19 +1924,19 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
   {
     Core::Communication::PackBuffer dataSend;
 
-    add_to_pack(dataSend, static_cast<int>(procDone));
+    add_to_pack(dataSend, procDone);
 
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
 
     // pointer to current position of group of cells in global std::string (counts bytes)
-    int allProcsDone;
+    bool allProcsDone;
 
     // unpack received data
     Core::Communication::UnpackBuffer buffer(dataRecv);
     extract_from_pack(buffer, allProcsDone);
 
-    if (allProcsDone == 0) procDone = 0;
+    if (allProcsDone == false) procDone = false;
 
     // processors wait for each other
     discret_->get_comm().Barrier();
@@ -1967,7 +1967,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
         add_to_pack(dataSend, data->startpoint_);
         add_to_pack(dataSend, data->searchedProcs_);
         add_to_pack(dataSend, data->counter_);
-        add_to_pack(dataSend, (int)data->type_);
+        add_to_pack(dataSend, data->type_);
       }
     }
 
@@ -1994,7 +1994,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
       Core::LinAlg::Matrix<nsd, 1> startpoint;
       int searchedProcs;
       int iter;
-      int newtype;
+      TimeIntData::Type newtype;
 
       unpack_node(buffer, node);
       extract_from_pack(buffer, nds_np);
@@ -2010,9 +2010,8 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
       extract_from_pack(buffer, iter);
       extract_from_pack(buffer, newtype);
 
-      timeIntData_->push_back(
-          TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp, initialpoint, initial_eid,
-              initial_ele_owner, startpoint, searchedProcs, iter, (TimeIntData::Type)newtype));
+      timeIntData_->push_back(TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp,
+          initialpoint, initial_eid, initial_ele_owner, startpoint, searchedProcs, iter, newtype));
     }  // end loop over number of points to get
 
     // processors wait for each other

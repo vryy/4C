@@ -116,19 +116,17 @@ Core::FE::CellType Discret::Elements::StructuralSurface::shape() const { return 
  *----------------------------------------------------------------------*/
 void Discret::Elements::StructuralSurface::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Core::Elements::FaceElement
   Core::Elements::FaceElement::pack(data);
   // add distype_
-  add_to_pack(data, (int)distype_);
+  add_to_pack(data, distype_);
   // add numdofpernode_
   add_to_pack(data, numdofpernode_);
   // add gaussrule_
-  add_to_pack(data, (int)gaussrule_);
+  add_to_pack(data, gaussrule_);
   return;
 }
 
@@ -141,21 +139,14 @@ void Discret::Elements::StructuralSurface::unpack(Core::Communication::UnpackBuf
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Core::Elements::FaceElement
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Core::Elements::FaceElement::unpack(base_buffer);
+  Core::Elements::FaceElement::unpack(buffer);
 
   // distype_
-  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, distype_);
   // numdofpernode_
-  numdofpernode_ = extract_int(buffer);
+  extract_from_pack(buffer, numdofpernode_);
   // gaussrule_
-  gaussrule_ = static_cast<Core::FE::GaussRule2D>(extract_int(buffer));
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-
-  return;
+  extract_from_pack(buffer, gaussrule_);
 }
 
 

@@ -92,8 +92,6 @@ Mat::ElastHyper::ElastHyper(Mat::PAR::ElastHyper* params)
 /*----------------------------------------------------------------------*/
 void Mat::ElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -104,6 +102,8 @@ void Mat::ElastHyper::pack(Core::Communication::PackBuffer& data) const
   summandProperties_.pack(data);
 
   anisotropy_.pack_anisotropy(data);
+
+  Core::Communication::PotentiallyUnusedBufferScope potsum_scope(data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -151,6 +151,8 @@ void Mat::ElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   // Pack anisotropy
   anisotropy_.unpack_anisotropy(buffer);
 
+  Core::Communication::PotentiallyUnusedBufferScope potsum_scope(buffer);
+
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
@@ -169,10 +171,6 @@ void Mat::ElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
       p->unpack_summand(buffer);
       p->register_anisotropy_extensions(anisotropy_);
     }
-
-    // in the postprocessing mode, we do not unpack everything we have packed
-    // -> position check cannot be done in this case
-    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   }
 }
 

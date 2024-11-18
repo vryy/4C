@@ -46,7 +46,7 @@ void Core::Communication::extract_from_pack(
   extract_from_pack(buffer, n);
   stuff.reshape(m, n);
   double* a = stuff.values();
-  if (m * n > 0) extract_from_pack(buffer, a, n * m * sizeof(double));
+  extract_from_pack(buffer, a, n * m * sizeof(double));
 }
 
 void Core::Communication::extract_from_pack(
@@ -56,7 +56,7 @@ void Core::Communication::extract_from_pack(
   extract_from_pack(buffer, m);
   stuff.resize(m);
   double* a = stuff.values();
-  if (m > 0) extract_from_pack(buffer, a, m * sizeof(double));
+  extract_from_pack(buffer, a, m * sizeof(double));
 }
 
 void Core::Communication::extract_from_pack(
@@ -82,17 +82,4 @@ int Core::Communication::extract_and_assert_id(UnpackBuffer& buffer, const int d
   return type_id;
 }
 
-int Core::Communication::extract_int(Core::Communication::UnpackBuffer& buffer)
-{
-  int i;
-  extract_from_pack(buffer, i);
-  return i;
-}
-
-double Core::Communication::extract_double(Core::Communication::UnpackBuffer& buffer)
-{
-  double f;
-  extract_from_pack(buffer, f);
-  return f;
-}
 FOUR_C_NAMESPACE_CLOSE

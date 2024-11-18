@@ -116,13 +116,7 @@ void PARTICLEENGINE::ParticleEngine::read_restart(
   Core::Communication::UnpackBuffer buffer(*particledata);
   while (!buffer.at_end())
   {
-    std::vector<char> data;
-    extract_from_pack(buffer, data);
-
-    // this std::shared_ptr holds the memory
-    Core::Communication::UnpackBuffer data_buffer(data);
-    std::shared_ptr<Core::Communication::ParObject> object(
-        Core::Communication::factory(data_buffer));
+    std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::factory(buffer));
     ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
     if (particleobject == nullptr) FOUR_C_THROW("received object is not a particle object!");
 
@@ -1201,7 +1195,7 @@ void PARTICLEENGINE::ParticleEngine::determine_ghosting_dependent_maps_and_sets(
   COMMUNICATION::immediate_recv_blocking_send(comm_, sdata, rdata);
 
   // init receiving vector
-  std::vector<int> receivedbins;
+  std::set<int> receivedbins;
 
   // unpack and store received data
   for (const auto& p : rdata)
@@ -1737,13 +1731,7 @@ void PARTICLEENGINE::ParticleEngine::communicate_particles(
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
-      std::vector<char> data;
-      extract_from_pack(buffer, data);
-
-      // this std::shared_ptr holds the memory
-      Core::Communication::UnpackBuffer data_buffer(data);
-      std::shared_ptr<Core::Communication::ParObject> object(
-          Core::Communication::factory(data_buffer));
+      std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::factory(buffer));
       ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
       if (particleobject == nullptr) FOUR_C_THROW("received object is not a particle object!");
 

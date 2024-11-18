@@ -327,8 +327,6 @@ Core::FE::CellType Discret::Elements::Beam3k::shape() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::Beam3k::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -389,14 +387,11 @@ void Discret::Elements::Beam3k::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Beam3Base::unpack(base_buffer);
+  Beam3Base::unpack(buffer);
 
   // extract all class variables of beam3k element
-  use_fad_ = extract_int(buffer);
-  isinit_ = extract_int(buffer);
+  extract_from_pack(buffer, use_fad_);
+  extract_from_pack(buffer, isinit_);
   extract_from_pack(buffer, Tref_);
   extract_from_pack(buffer, t_);
   extract_from_pack(buffer, theta0_);
@@ -408,8 +403,8 @@ void Discret::Elements::Beam3k::unpack(Core::Communication::UnpackBuffer& buffer
   extract_from_pack(buffer, jacobi2_);
   extract_from_pack(buffer, jacobi_cp_);
   extract_from_pack(buffer, jacobi2_cp_);
-  rotvec_ = extract_int(buffer);
-  weakkirchhoff_ = extract_int(buffer);
+  extract_from_pack(buffer, rotvec_);
+  extract_from_pack(buffer, weakkirchhoff_);
   extract_from_pack(buffer, eint_);
   extract_from_pack(buffer, ekin_);
   extract_from_pack(buffer, qconvmass_);
@@ -437,7 +432,7 @@ void Discret::Elements::Beam3k::unpack(Core::Communication::UnpackBuffer& buffer
   extract_from_pack(buffer, bending_moment_2_gp_);
   extract_from_pack(buffer, bending_moment_3_gp_);
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
   return;
 }
 

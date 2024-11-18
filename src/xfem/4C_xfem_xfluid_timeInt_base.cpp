@@ -3232,7 +3232,7 @@ void XFEM::XfluidStd::export_start_data()
     add_to_pack(dataSend, data->searchedProcs_);
     add_to_pack(dataSend, data->counter_);
     add_to_pack(dataSend, data->dMin_);
-    add_to_pack(dataSend, (int)data->type_);
+    add_to_pack(dataSend, data->type_);
   }
 
   std::vector<char> dataRecv;
@@ -3354,7 +3354,7 @@ void XFEM::XfluidStd::export_final_data()
       Core::LinAlg::Matrix<nsd, 1> startpoint;              // startpoint
       std::vector<Core::LinAlg::Matrix<nsd, 1>> velValues;  // velocity values
       std::vector<double> presValues;                       // pressure values
-      int newtype;                                          // type of the data
+      TimeIntData::Type newtype;                            // type of the data
 
       extract_from_pack(buffer, gid);
       extract_from_pack(buffer, nds_np);
@@ -3378,8 +3378,8 @@ void XFEM::XfluidStd::export_final_data()
         extract_nodal_values_from_vector<1>(nodedispnp, nodepredummy, dispnp_, lm);
       }
 
-      timeIntData_->push_back(TimeIntData(*discret_->g_node(gid), nds_np, nodedispnp, startpoint,
-          velValues, presValues, (TimeIntData::Type)newtype));
+      timeIntData_->push_back(TimeIntData(
+          *discret_->g_node(gid), nds_np, nodedispnp, startpoint, velValues, presValues, newtype));
     }  // end loop over number of nodes to get
 
     // processors wait for each other

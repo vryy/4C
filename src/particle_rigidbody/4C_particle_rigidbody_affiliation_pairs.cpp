@@ -154,8 +154,10 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::unpack_affiliation_pairs(
   while (!data.at_end())
   {
     // get affiliation pair
-    const int globalid = extract_int(data);
-    const int rigidbody = extract_int(data);
+    int globalid;
+    extract_from_pack(data, globalid);
+    int rigidbody;
+    extract_from_pack(data, rigidbody);
 
     // add affiliation pair
     affiliationdata_[globalid] = rigidbody;

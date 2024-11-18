@@ -174,8 +174,6 @@ void Mat::ScalarDepInterp::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 /*----------------------------------------------------------------------*/
 void Mat::ScalarDepInterp::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -188,7 +186,6 @@ void Mat::ScalarDepInterp::pack(Core::Communication::PackBuffer& data) const
   if (isinit_)
   {
     numgp = lambda_.size();
-    ;  // size is number of gausspoints
   }
   add_to_pack(data, numgp);
 
@@ -200,11 +197,14 @@ void Mat::ScalarDepInterp::pack(Core::Communication::PackBuffer& data) const
   // Pack data of both elastic materials
   if (lambda_zero_mat_ != nullptr and lambda_unit_mat_ != nullptr)
   {
+    add_to_pack(data, true);
     lambda_zero_mat_->pack(data);
     lambda_unit_mat_->pack(data);
   }
-
-  return;
+  else
+  {
+    add_to_pack(data, false);
+  }
 }
 
 
@@ -249,38 +249,29 @@ void Mat::ScalarDepInterp::unpack(Core::Communication::UnpackBuffer& buffer)
   }
 
   // Unpack data of elastic material (these lines are copied from element.cpp)
-  std::vector<char> dataelastic;
-  extract_from_pack(buffer, dataelastic);
-  if (dataelastic.size() > 0)
+  bool have_extra_materials;
+  extract_from_pack(buffer, have_extra_materials);
+  if (have_extra_materials)
   {
-    Core::Communication::UnpackBuffer buffer_dataelastic(dataelastic);
-    Core::Communication::ParObject* o =
-        Core::Communication::factory(buffer_dataelastic);  // Unpack is done here
-    Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
-    if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
-    lambda_zero_mat_ = std::shared_ptr<So3Material>(matel);
+    {
+      Core::Communication::ParObject* o = Core::Communication::factory(buffer);
+      Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
+      if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
+      lambda_zero_mat_ = std::shared_ptr<So3Material>(matel);
+    }
+
+    {
+      Core::Communication::ParObject* o = Core::Communication::factory(buffer);
+      Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
+      if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
+      lambda_unit_mat_ = std::shared_ptr<So3Material>(matel);
+    }
   }
   else
+  {
     lambda_zero_mat_ = nullptr;
-
-  // Unpack data of elastic material (these lines are copied from element.cpp)
-  std::vector<char> dataelastic2;
-  extract_from_pack(buffer, dataelastic2);
-  if (dataelastic2.size() > 0)
-  {
-    Core::Communication::UnpackBuffer buffer_dataelastic(dataelastic2);
-    Core::Communication::ParObject* o =
-        Core::Communication::factory(buffer_dataelastic);  // Unpack is done here
-    Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
-    if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
-    lambda_unit_mat_ = std::shared_ptr<So3Material>(matel);
-  }
-  else
     lambda_unit_mat_ = nullptr;
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-
-  return;
+  }
 }
 
 /*----------------------------------------------------------------------------*/

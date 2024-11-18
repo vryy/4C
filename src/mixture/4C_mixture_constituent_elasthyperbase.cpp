@@ -80,6 +80,7 @@ void Mixture::MixtureConstituentElastHyperBase::pack_constituent(
 
   if (prestress_strategy_ != nullptr) prestress_strategy_->pack(data);
 
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope{data};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -127,6 +128,7 @@ void Mixture::MixtureConstituentElastHyperBase::unpack_constituent(
 
   cosy_anisotropy_extension_.unpack_anisotropy(buffer);
 
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope{buffer};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     if (params_->get_prestressing_mat_id() > 0)

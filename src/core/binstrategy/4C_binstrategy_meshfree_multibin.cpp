@@ -87,8 +87,6 @@ void Core::FE::MeshFree::MeshfreeMultiBin::remove_all_associated_eles() { associ
  *--------------------------------------------------------------------------*/
 void Core::FE::MeshFree::MeshfreeMultiBin::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -104,10 +102,7 @@ void Core::FE::MeshFree::MeshfreeMultiBin::unpack(Core::Communication::UnpackBuf
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Core::Elements::Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Core::Elements::Element::unpack(base_buffer);
+  Core::Elements::Element::unpack(buffer);
 }
 
 FOUR_C_NAMESPACE_CLOSE

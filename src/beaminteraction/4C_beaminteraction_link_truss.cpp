@@ -130,7 +130,7 @@ void BEAMINTERACTION::BeamLinkTruss::pack(Core::Communication::PackBuffer& data)
 {
   check_init_setup();
 
-  Core::Communication::PackBuffer::SizeMarker sm(data);
+
 
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
@@ -139,9 +139,13 @@ void BEAMINTERACTION::BeamLinkTruss::pack(Core::Communication::PackBuffer& data)
   BeamLinkPinJointed::pack(data);
 
   // pack linker element
-  if (linkele_ != nullptr) linkele_->pack(data);
-
-  return;
+  if (linkele_ != nullptr)
+  {
+    add_to_pack(data, true);
+    linkele_->pack(data);
+  }
+  else
+    add_to_pack(data, false);
 }
 
 /*----------------------------------------------------------------------*
@@ -151,27 +155,20 @@ void BEAMINTERACTION::BeamLinkTruss::unpack(Core::Communication::UnpackBuffer& b
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  BeamLinkPinJointed::unpack(basedata_buffer);
+  BeamLinkPinJointed::unpack(buffer);
 
   // Unpack data of sub material (these lines are copied from element.cpp)
-  std::vector<char> dataele;
-  extract_from_pack(buffer, dataele);
-  if (dataele.size() > 0)
+  bool dataele_exists;
+  Core::Communication::extract_from_pack(buffer, dataele_exists);
+  if (dataele_exists)
   {
-    Core::Communication::UnpackBuffer elebuffer(dataele);
-    Core::Communication::ParObject* object =
-        Core::Communication::factory(elebuffer);  // Unpack is done here
+    Core::Communication::ParObject* object = Core::Communication::factory(buffer);
     Discret::Elements::Truss3* linkele = dynamic_cast<Discret::Elements::Truss3*>(object);
     if (linkele == nullptr) FOUR_C_THROW("failed to unpack Truss3 object within BeamLinkTruss");
     linkele_ = std::shared_ptr<Discret::Elements::Truss3>(linkele);
   }
   else
     linkele_ = nullptr;
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

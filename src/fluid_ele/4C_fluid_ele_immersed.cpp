@@ -92,8 +92,6 @@ Core::Elements::Element* Discret::Elements::FluidImmersed::clone() const
  *----------------------------------------------------------------------*/
 void Discret::Elements::FluidImmersed::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -119,18 +117,15 @@ void Discret::Elements::FluidImmersed::unpack(Core::Communication::UnpackBuffer&
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Discret::Elements::Fluid::unpack(basedata_buffer);
+  Discret::Elements::Fluid::unpack(buffer);
   // Part of immersion domain?
-  is_immersed_ = extract_int(buffer);
+  extract_from_pack(buffer, is_immersed_);
   // Part of immersion domain for immersed boundary?
-  is_immersed_bdry_ = extract_int(buffer);
+  extract_from_pack(buffer, is_immersed_bdry_);
   // has dirichletvals projected?
-  has_projected_dirichletvalues_ = extract_int(buffer);
+  extract_from_pack(buffer, has_projected_dirichletvalues_);
 
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+
 
   return;
 }

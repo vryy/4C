@@ -71,36 +71,15 @@ namespace Core::Communication
   //! @name Routines to help pack stuff into a char vector
 
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to the PackBuffer.
    *
-   * This method is templated for all basic types int char double enum bool etc.
-   *
-   * \param[in,out] data char string stuff shall be added to
-   * \param[in] stuff basic data type (float int double char etc) that get's added to stuff
-   *
-   * \note To be more precise, you can use this template for types of data that sizeof(kind) works
-   * for. Do not use for classes or structs or stl containers!
+   * This function works for all trivially copyable types, i.e. types that can be copied with
+   * memcpy(). This includes all POD types, but also some user-defined types.
    */
-  inline void add_to_pack(PackBuffer& data, const int& stuff) { data.add_to_pack(stuff); }
-
-  inline void add_to_pack(PackBuffer& data, const unsigned& stuff) { data.add_to_pack(stuff); }
-
-  inline void add_to_pack(PackBuffer& data, const double& stuff) { data.add_to_pack(stuff); }
-
-  /*!
-   * \brief Add scoped enums to the end of a char vector data
-   *
-   * \param[in,out] data Pack buffer where stuff should be added
-   * \param[in] stuff scoped enum to be added to the data
-   *
-   * \note This method is template for scoped enums only. Unscoped enums are currently usually
-   * unpacked as ints and then converted, so they are excluded here.
-   */
-  template <class T,
-      typename Enable = typename std::enable_if<Internal::is_enum_class<T>::value, void>::type>
-  void add_to_pack(PackBuffer& data, const T& stuff)
+  template <typename T, std::enable_if_t<std::is_trivially_copyable_v<T>, int> = 0>
+  inline void add_to_pack(PackBuffer& data, const T& stuff)
   {
-    data.add_to_pack<T>(stuff);
+    data.add_to_pack(stuff);
   }
 
   /*!
@@ -111,8 +90,8 @@ namespace Core::Communication
    * \param[in] stuff  ptr to stuff that has length stuffsize (in byte)
    * \param[in] stuffsize length of stuff in byte
    */
-  template <typename Kind>
-  void add_to_pack(PackBuffer& data, const Kind* stuff, const int stuffsize)
+  template <typename T, std::enable_if_t<std::is_trivially_copyable_v<T>, int> = 0>
+  void add_to_pack(PackBuffer& data, const T* stuff, const int stuffsize)
   {
     data.add_to_pack(stuff, stuffsize);
   }
@@ -140,8 +119,9 @@ namespace Core::Communication
     add_to_pack(data, numele);
 
     // If T is trivially copyable, we can just copy the bytes. Otherwise, recursively call the
-    // pack function for every element.
-    if constexpr (std::is_trivially_copyable_v<T>)
+    // pack function for every element. Note that vector<bool> is a special case, as it does not
+    // provide the data() method.
+    if constexpr (std::is_trivially_copyable_v<T> && !std::is_same_v<T, bool>)
     {
       add_to_pack(data, stuff.data(), numele * sizeof(T));
     }
@@ -161,7 +141,16 @@ namespace Core::Communication
   template <typename T, std::size_t numentries>
   void add_to_pack(PackBuffer& data, const std::array<T, numentries>& stuff)
   {
-    add_to_pack(data, stuff.data(), numentries * sizeof(T));
+    // If T is trivially copyable, we can just copy the bytes. Otherwise, recursively call the
+    // pack function for every element.
+    if constexpr (std::is_trivially_copyable_v<T>)
+    {
+      add_to_pack(data, stuff.data(), numentries * sizeof(T));
+    }
+    else
+    {
+      for (const auto& elem : stuff) add_to_pack(data, elem);
+    }
   }
 
   /*!
@@ -328,30 +317,6 @@ namespace Core::Communication
   /*!
    * \brief Add stuff to the end of a char vector data
    *
-   * This method is an overload of the above template for an STL vector containing matrices
-   * \param[in,out] data char string stuff shall be added to
-   * \param[in] stuff vector of matrices that get's added to data
-   */
-  template <unsigned i, unsigned j>
-  void add_to_pack(PackBuffer& data, const std::vector<Core::LinAlg::Matrix<i, j>>& stuff)
-  {
-    // add length of vector to be packed so that later the vector can be restored with correct
-    // length when unpacked
-    int vectorlength = stuff.size();
-    add_to_pack(data, vectorlength);
-
-    for (int p = 0; p < vectorlength; ++p)
-    {
-      const double* A = stuff[p].data();
-
-      // add all data in vector to pack
-      add_to_pack(data, A, i * j * sizeof(double));
-    }
-  }
-
-  /*!
-   * \brief Add stuff to the end of a char vector data
-   *
    * This method is an overload of the above template for string
    * \param[in,out] data char string stuff shall be added to
    * \param[in] stuff string that get's added to stuff
@@ -361,7 +326,7 @@ namespace Core::Communication
   /**
    * Template to forward to the implementation on UnpackBuffer.
    */
-  template <typename T, std::enable_if_t<std::is_pod_v<T>, int> = 0>
+  template <typename T, std::enable_if_t<std::is_trivially_copyable_v<T>, int> = 0>
   void extract_from_pack(UnpackBuffer& buffer, T& stuff)
   {
     buffer.extract_from_pack(stuff);
@@ -370,15 +335,11 @@ namespace Core::Communication
   /**
    * Template to forward to the implementation on UnpackBuffer.
    */
-  template <typename T, std::enable_if_t<std::is_pod_v<T>, int> = 0>
+  template <typename T, std::enable_if_t<std::is_trivially_copyable_v<T>, int> = 0>
   void extract_from_pack(UnpackBuffer& buffer, T* stuff, std::size_t stuff_size)
   {
     buffer.extract_from_pack(stuff, stuff_size);
   }
-
-  int extract_int(UnpackBuffer& buffer);
-
-  double extract_double(UnpackBuffer& buffer);
 
   /**
    * Extract an object that implements an `unpack()` method from the buffer.
@@ -406,7 +367,17 @@ namespace Core::Communication
     buffer.extract_from_pack(dim);
     stuff.resize(dim);
 
-    if constexpr (std::is_trivially_copyable_v<T>)
+    if constexpr (std::is_same_v<T, bool>)
+    {
+      // Note: this loop cannot be range-based due to the quirks of std::vector<bool>.
+      for (int i = 0; i < dim; ++i)
+      {
+        bool value;
+        extract_from_pack(buffer, value);
+        stuff[i] = value;
+      }
+    }
+    else if constexpr (std::is_trivially_copyable_v<T>)
     {
       extract_from_pack(buffer, stuff.data(), dim * sizeof(T));
     }
@@ -429,8 +400,14 @@ namespace Core::Communication
   template <typename T, std::size_t numentries>
   void extract_from_pack(UnpackBuffer& buffer, std::array<T, numentries>& stuff)
   {
-    int size = numentries * sizeof(T);
-    extract_from_pack(buffer, stuff.data(), size);
+    if constexpr (std::is_trivially_copyable_v<T>)
+    {
+      extract_from_pack(buffer, stuff.data(), numentries * sizeof(T));
+    }
+    else
+    {
+      for (auto& elem : stuff) extract_from_pack(buffer, elem);
+    }
   }
 
   /*!
@@ -668,43 +645,13 @@ namespace Core::Communication
   template <unsigned int i, unsigned int j>
   void extract_from_pack(UnpackBuffer& buffer, Core::LinAlg::Matrix<i, j>& stuff)
   {
-    int m = 0;
+    unsigned int m = 0;
     extract_from_pack(buffer, m);
     if (m != i) FOUR_C_THROW("first dimension mismatch");
-    int n = 0;
+    unsigned int n = 0;
     extract_from_pack(buffer, n);
     if (n != j) FOUR_C_THROW("second dimension mismatch");
     extract_from_pack(buffer, stuff.data(), stuff.m() * stuff.n() * sizeof(double));
-  }
-
-  /*!
-   * \brief Extract stuff from a char vector data and increment position
-   *
-   * This method is an overload of the above template for stuff of type STL vector of matrices
-   *
-   * \param[in,out] position place in data where to extract stuff. Position will be incremented
-   * by this method
-   * \param[in] data char vector where stuff is extracted from
-   * \param[out] stuff STL vector of matrices to extract from data
-   */
-  template <unsigned int i, unsigned int j>
-  void extract_from_pack(UnpackBuffer& buffer, std::vector<Core::LinAlg::Matrix<i, j>>& stuff)
-  {
-    // get length of vector to be extracted and allocate according amount of memory for all
-    // extracted data
-    int vectorlength;
-    extract_from_pack(buffer, vectorlength);
-
-    // resize vector stuff appropriately
-    stuff.resize(vectorlength);
-
-    for (int p = 0; p < vectorlength; ++p)
-    {
-      double* A = stuff[p].data();
-
-      // actual extraction of data
-      buffer.extract_from_pack(A, i * j * sizeof(double));
-    }
   }
 
   /*!

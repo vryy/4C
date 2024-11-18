@@ -127,8 +127,6 @@ Mat::FluidPoroSinglePhase::FluidPoroSinglePhase(Mat::PAR::FluidPoroSinglePhase* 
  *----------------------------------------------------------------------*/
 void Mat::FluidPoroSinglePhase::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -162,8 +160,6 @@ void Mat::FluidPoroSinglePhase::unpack(Core::Communication::UnpackBuffer& buffer
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
             material_type());
     }
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*
@@ -351,8 +347,6 @@ Mat::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(Mat::PAR::FluidPoroSingleVol
  *----------------------------------------------------------------------*/
 void Mat::FluidPoroSingleVolFrac::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -386,8 +380,6 @@ void Mat::FluidPoroSingleVolFrac::unpack(Core::Communication::UnpackBuffer& buff
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
             material_type());
     }
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*
@@ -476,8 +468,6 @@ Mat::FluidPoroVolFracPressure::FluidPoroVolFracPressure(Mat::PAR::FluidPoroVolFr
  *----------------------------------------------------------------------*/
 void Mat::FluidPoroVolFracPressure::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -511,8 +501,6 @@ void Mat::FluidPoroVolFracPressure::unpack(Core::Communication::UnpackBuffer& bu
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
             material_type());
     }
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

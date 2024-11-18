@@ -10,6 +10,7 @@ set(TESTNAME unittests_comm)
 set(SOURCE_LIST
     # cmake-format: sortable
     4C_comm_mpi_utils_test.cpp
+    4C_comm_pack_unpack_test.cpp
     4C_comm_utils_test.cpp
     )
 

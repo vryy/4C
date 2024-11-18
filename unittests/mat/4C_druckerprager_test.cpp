@@ -84,7 +84,6 @@ namespace
     druckprag_->pack(data);
     std::vector<char> dataSend;
     swap(dataSend, data());
-    for (int i = 0; i < 4; i++) dataSend.erase(dataSend.begin());
     FourC::Mat::PlasticDruckerPrager plastic;
     Core::Communication::UnpackBuffer buffer(dataSend);
     plastic.unpack(buffer);

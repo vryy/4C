@@ -727,8 +727,6 @@ Mat::FluidPoro::FluidPoro(Mat::PAR::FluidPoro* params) : params_(params)
 
 void Mat::FluidPoro::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -765,8 +763,6 @@ void Mat::FluidPoro::unpack(Core::Communication::UnpackBuffer& buffer)
   // Only execute if not in post-process mode
   if (params_ != nullptr)
     anisotropy_strategy_ = Mat::FLUIDPORO::create_anisotropy_strategy(params_);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 double Mat::FluidPoro::compute_reaction_coeff() const

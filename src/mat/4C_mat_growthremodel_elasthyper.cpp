@@ -208,8 +208,6 @@ Mat::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Mat::PAR::GrowthRemodelEla
 /*----------------------------------------------------------------------*/
 void Mat::GrowthRemodelElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -240,6 +238,7 @@ void Mat::GrowthRemodelElastHyper::pack(Core::Communication::PackBuffer& data) c
 
   anisotropy_.pack_anisotropy(data);
 
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope{data};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -313,6 +312,7 @@ void Mat::GrowthRemodelElastHyper::unpack(Core::Communication::UnpackBuffer& buf
 
   anisotropy_.unpack_anisotropy(buffer);
 
+  Core::Communication::PotentiallyUnusedBufferScope summand_scope{buffer};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
@@ -391,7 +391,6 @@ void Mat::GrowthRemodelElastHyper::unpack(Core::Communication::UnpackBuffer& buf
 
       // in the postprocessing mode, we do not unpack everything we have packed
       // -> position check cannot be done in this case
-      FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
     }
   }
 }

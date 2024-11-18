@@ -842,8 +842,7 @@ void Core::FE::Nurbs::Knotvector::unpack(Core::Communication::UnpackBuffer& buff
   {
     for (int rr = 0; rr < dim_; ++rr)
     {
-      (interpolation_[np])[rr] =
-          static_cast<Core::FE::Nurbs::Knotvector::KnotvectorType>(extract_int(buffer));
+      extract_from_pack(buffer, (interpolation_[np])[rr]);
     }
   }
 

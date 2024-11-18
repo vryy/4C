@@ -114,8 +114,6 @@ void Mat::ElchMat::clear()
 /*----------------------------------------------------------------------*/
 void Mat::ElchMat::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -124,6 +122,7 @@ void Mat::ElchMat::pack(Core::Communication::PackBuffer& data) const
   if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
+  Core::Communication::PotentiallyUnusedBufferScope mat_scope{data};
   if (params_ != nullptr and params_->local_)
   {
     // loop map of associated local materials
@@ -131,8 +130,6 @@ void Mat::ElchMat::pack(Core::Communication::PackBuffer& data) const
     for (n = params_->phase_ids().begin(); n != params_->phase_ids().end(); n++)
       (mat_.find(*n))->second->pack(data);
   }
-
-  return;
 }
 
 
@@ -164,9 +161,9 @@ void Mat::ElchMat::unpack(Core::Communication::UnpackBuffer& buffer)
             material_type());
     }
 
-  if (params_ != nullptr)  // params_ are not accessible in postprocessing mode
+  Core::Communication::PotentiallyUnusedBufferScope mat_scope{buffer};
+  if (params_ != nullptr && params_->local_)  // params_ are not accessible in postprocessing mode
   {
-    // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator n;
     for (n = params_->phase_ids().begin(); n != params_->phase_ids().end(); n++)
     {
@@ -181,16 +178,10 @@ void Mat::ElchMat::unpack(Core::Communication::UnpackBuffer& buffer)
       // loop map of associated local materials
       for (n = params_->phase_ids().begin(); n != params_->phase_ids().end(); n++)
       {
-        std::vector<char> pbtest;
-        extract_from_pack(buffer, pbtest);
-        Core::Communication::UnpackBuffer buffer_pbtest(pbtest);
-        (mat_.find(*n))->second->unpack(buffer_pbtest);
+        (mat_.find(*n))->second->unpack(buffer);
       }
     }
-    // in the postprocessing mode, we do not unpack everything we have packed
-    // -> position check cannot be done in this case
-    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-  }  // if (params_ != nullptr)
+  }
 }
 
 FOUR_C_NAMESPACE_CLOSE

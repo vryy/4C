@@ -62,8 +62,6 @@ Mat::ScatraMatMultiPoroFluid::ScatraMatMultiPoroFluid(Mat::PAR::ScatraMatMultiPo
 /*----------------------------------------------------------------------*/
 void Mat::ScatraMatMultiPoroFluid::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -101,10 +99,7 @@ void Mat::ScatraMatMultiPoroFluid::unpack(Core::Communication::UnpackBuffer& buf
     }
 
   // extract base class material
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  ScatraMat::unpack(basedata_buffer);
+  ScatraMat::unpack(buffer);
 }
 
 /*----------------------------------------------------------------------*/
@@ -152,8 +147,6 @@ Mat::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac(
 /*----------------------------------------------------------------------*/
 void Mat::ScatraMatMultiPoroVolFrac::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -191,10 +184,7 @@ void Mat::ScatraMatMultiPoroVolFrac::unpack(Core::Communication::UnpackBuffer& b
     }
 
   // extract base class material
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  ScatraMat::unpack(basedata_buffer);
+  ScatraMat::unpack(buffer);
 }
 
 /*----------------------------------------------------------------------*/
@@ -236,8 +226,6 @@ Mat::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid(Mat::PAR::ScatraMatMultiPo
 /*----------------------------------------------------------------------*/
 void Mat::ScatraMatMultiPoroSolid::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -275,10 +263,7 @@ void Mat::ScatraMatMultiPoroSolid::unpack(Core::Communication::UnpackBuffer& buf
     }
 
   // extract base class material
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  ScatraMat::unpack(basedata_buffer);
+  ScatraMat::unpack(buffer);
 }
 
 /*----------------------------------------------------------------------*/
@@ -329,8 +314,6 @@ Mat::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature(
 /*----------------------------------------------------------------------*/
 void Mat::ScatraMatMultiPoroTemperature::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -368,10 +351,7 @@ void Mat::ScatraMatMultiPoroTemperature::unpack(Core::Communication::UnpackBuffe
     }
 
   // extract base class material
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  ScatraMat::unpack(basedata_buffer);
+  ScatraMat::unpack(buffer);
 }
 
 FOUR_C_NAMESPACE_CLOSE

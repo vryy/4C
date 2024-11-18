@@ -63,8 +63,6 @@ Core::Elements::Element* Discret::Elements::Wall1Poro<distype>::clone() const
 template <Core::FE::CellType distype>
 void Discret::Elements::Wall1Poro<distype>::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -120,7 +118,7 @@ void Discret::Elements::Wall1Poro<distype>::unpack(Core::Communication::UnpackBu
   for (int i = 0; i < size; ++i) extract_from_pack(buffer, xsi_[i]);
 
   // scatra_coupling_
-  scatra_coupling_ = static_cast<bool>(extract_int(buffer));
+  extract_from_pack(buffer, scatra_coupling_);
 
   // anisotropic_permeability_directions_
   size = 0;
@@ -136,13 +134,7 @@ void Discret::Elements::Wall1Poro<distype>::unpack(Core::Communication::UnpackBu
     extract_from_pack(buffer, anisotropic_permeability_nodal_coeffs_[i]);
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Discret::Elements::Wall1::unpack(basedata_buffer);
-
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
+  Discret::Elements::Wall1::unpack(buffer);
 
   init_ = true;
 }

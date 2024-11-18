@@ -136,8 +136,6 @@ void Mat::StructPoro::pack(Core::Communication::PackBuffer& data) const
 {
   if (not is_initialized_) FOUR_C_THROW("poro material not initialized. Not a poro element?");
 
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -148,26 +146,19 @@ void Mat::StructPoro::pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
 
   // porosity_
-  int size = static_cast<int>(porosity_->size());
-  add_to_pack(data, size);
-  for (int i = 0; i < size; ++i)
-  {
-    add_to_pack(data, (*porosity_)[i]);
-  }
-
-  // surf_porosity_
-  size = static_cast<int>(surf_porosity_->size());
-  add_to_pack(data, size);
-  // iterator
-  std::map<int, std::vector<double>>::const_iterator iter;
-  for (iter = surf_porosity_->begin(); iter != surf_porosity_->end(); ++iter)
-  {
-    add_to_pack(data, iter->first);
-    add_to_pack(data, iter->second);
-  }
+  add_to_pack(data, *porosity_);
+  add_to_pack(data, *surf_porosity_);
 
   // Pack data of underlying material
-  if (mat_ != nullptr) mat_->pack(data);
+  if (mat_ != nullptr)
+  {
+    add_to_pack(data, true);
+    mat_->pack(data);
+  }
+  else
+  {
+    add_to_pack(data, false);
+  }
 }
 
 void Mat::StructPoro::unpack(Core::Communication::UnpackBuffer& buffer)
@@ -194,38 +185,20 @@ void Mat::StructPoro::unpack(Core::Communication::UnpackBuffer& buffer)
   }
 
   // porosity_
-  int size = 0;
-  extract_from_pack(buffer, size);
   porosity_ = std::make_shared<std::vector<double>>();
-  double tmp = 0.0;
-  for (int i = 0; i < size; ++i)
-  {
-    extract_from_pack(buffer, tmp);
-    porosity_->push_back(tmp);
-  }
+  extract_from_pack(buffer, *porosity_);
 
   // surface porosity (i think it is not necessary to pack/unpack this...)
-  extract_from_pack(buffer, size);
   surf_porosity_ = std::make_shared<std::map<int, std::vector<double>>>();
-  for (int i = 0; i < size; i++)
-  {
-    int dof;
-    std::vector<double> value;
-    extract_from_pack(buffer, dof);
-    extract_from_pack(buffer, value);
-
-    // add to map
-    surf_porosity_->insert(std::pair<int, std::vector<double>>(dof, value));
-  }
+  extract_from_pack(buffer, *surf_porosity_);
 
   // Unpack data of sub material (these lines are copied from element.cpp)
-  std::vector<char> datamat;
-  extract_from_pack(buffer, datamat);
-  if (datamat.size() > 0)
+  bool mat_exists;
+  extract_from_pack(buffer, mat_exists);
+  if (mat_exists)
   {
-    Core::Communication::UnpackBuffer buffer_datamat(datamat);
     Core::Communication::ParObject* o =
-        Core::Communication::factory(buffer_datamat);  // Unpack is done here
+        Core::Communication::factory(buffer);  // Unpack is done here
     auto* mat = dynamic_cast<Mat::So3Material*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     mat_ = std::shared_ptr<Mat::So3Material>(mat);

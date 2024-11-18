@@ -99,8 +99,6 @@ Mat::Mixture::Mixture(Mat::PAR::Mixture* params)
 // Pack data
 void Mat::Mixture::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
@@ -111,7 +109,7 @@ void Mat::Mixture::pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
 
   // pack setup flag
-  add_to_pack(data, static_cast<int>(setup_));
+  add_to_pack(data, setup_);
 
   // Pack isPreEvaluated flag
   std::vector<int> isPreEvaluatedInt;
@@ -126,6 +124,7 @@ void Mat::Mixture::pack(Core::Communication::PackBuffer& data) const
 
   // pack all constituents
   // constituents are not accessible during post processing
+  Core::Communication::PotentiallyUnusedBufferScope consitutent_scope{data};
   if (params_ != nullptr)
   {
     for (const auto& constituent : *constituents_)
@@ -171,7 +170,7 @@ void Mat::Mixture::unpack(Core::Communication::UnpackBuffer& buffer)
     }
 
     // Extract setup flag
-    setup_ = (bool)extract_int(buffer);
+    extract_from_pack(buffer, setup_);
 
 
     // Extract is isPreEvaluated
@@ -187,6 +186,7 @@ void Mat::Mixture::unpack(Core::Communication::UnpackBuffer& buffer)
 
     // extract constituents
     // constituents are not accessible during post processing
+    Core::Communication::PotentiallyUnusedBufferScope consitutent_scope{buffer};
     if (params_ != nullptr)
     {
       // create instances of constituents
@@ -214,7 +214,6 @@ void Mat::Mixture::unpack(Core::Communication::UnpackBuffer& buffer)
       mixture_rule_->register_anisotropy_extensions(anisotropy_);
 
       // position checking is not available in post processing mode
-      FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
     }
   }
 }

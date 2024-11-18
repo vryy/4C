@@ -590,7 +590,7 @@ namespace Discret
         add_to_pack(data, easdata_.Kda);
         add_to_pack(data, easdata_.Kad);
         add_to_pack(data, easdata_.eas_inc);
-      };
+      }
 
       void unpack_eas_data(Core::Communication::UnpackBuffer& buffer)
       {
@@ -601,7 +601,7 @@ namespace Discret
         extract_from_pack(buffer, easdata_.Kda);
         extract_from_pack(buffer, easdata_.Kad);
         extract_from_pack(buffer, easdata_.eas_inc);
-      };
+      }
       //@}
 
       /// @name Material matters

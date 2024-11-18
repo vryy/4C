@@ -123,8 +123,8 @@ void Mixture::MixtureConstituent::setup(Teuchos::ParameterList& params, const in
 void Mixture::MixtureConstituent::pack_constituent(Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, numgp_);
-  add_to_pack(data, static_cast<int>(has_read_element_));
-  add_to_pack(data, static_cast<int>(is_setup_));
+  add_to_pack(data, has_read_element_);
+  add_to_pack(data, is_setup_);
 }
 
 // Unpack base constituent data, need to be called by every derived class
@@ -137,8 +137,8 @@ void Mixture::MixtureConstituent::unpack_constituent(Core::Communication::Unpack
 
   extract_from_pack(buffer, numgp_);
 
-  has_read_element_ = (bool)extract_int(buffer);
-  is_setup_ = (bool)extract_int(buffer);
+  extract_from_pack(buffer, has_read_element_);
+  extract_from_pack(buffer, is_setup_);
 }
 
 void Mixture::MixtureConstituent::evaluate_elastic_part(const Core::LinAlg::Matrix<3, 3>& F,

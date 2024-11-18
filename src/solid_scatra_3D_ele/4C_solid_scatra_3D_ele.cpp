@@ -177,14 +177,12 @@ bool Discret::Elements::SolidScatra::read_element(const std::string& eletype,
 
 void Discret::Elements::SolidScatra::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::PackBuffer::SizeMarker sm(data);
-
   add_to_pack(data, unique_par_object_id());
 
   // add base class Element
   Core::Elements::Element::pack(data);
 
-  add_to_pack(data, (int)celltype_);
+  add_to_pack(data, celltype_);
   Discret::Elements::add_to_pack(data, properties_);
 
   data.add_to_pack(material_post_setup_);
@@ -195,15 +193,12 @@ void Discret::Elements::SolidScatra::pack(Core::Communication::PackBuffer& data)
 
 void Discret::Elements::SolidScatra::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  if (extract_int(buffer) != unique_par_object_id()) FOUR_C_THROW("wrong instance type data");
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
-  std::vector<char> basedata(0);
-  extract_from_pack(buffer, basedata);
-  Core::Communication::UnpackBuffer base_buffer(basedata);
-  Core::Elements::Element::unpack(base_buffer);
+  Core::Elements::Element::unpack(buffer);
 
-  celltype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  extract_from_pack(buffer, celltype_);
 
   Discret::Elements::extract_from_pack(buffer, properties_);
 
@@ -214,8 +209,6 @@ void Discret::Elements::SolidScatra::unpack(Core::Communication::UnpackBuffer& b
       create_solid_scatra_calculation_interface(celltype_, properties_.solid);
 
   Discret::Elements::unpack(solid_scatra_calc_variant_, buffer);
-
-  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 void Discret::Elements::SolidScatra::vis_names(std::map<std::string, int>& names)
