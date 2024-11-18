@@ -98,17 +98,17 @@ CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface, Back
 
 template <typename Interface, typename Background, typename Mortar>
 void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface, Background,
-    Mortar>::get_pair_visualization(const Core::IO::VisualizationData&
+    Mortar>::get_pair_visualization(Core::IO::VisualizationData&
                                         lagrange_multipliers_visualization_data,
     std::shared_ptr<Core::LinAlg::Vector<double>> lambda,
     const CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager* mortar_manager,
     std::shared_ptr<std::unordered_set<int>> interface_tracker)
 {
   // Get the visualization vectors.
-  std::vector<double>& point_coordinates = const_cast<std::vector<double>&>(
-      lagrange_multipliers_visualization_data.get_point_coordinates());
-  std::vector<double>& lambda_vis = const_cast<std::vector<double>&>(
-      lagrange_multipliers_visualization_data.get_point_data<double>("lambda"));
+  std::vector<double>& point_coordinates =
+      lagrange_multipliers_visualization_data.get_point_coordinates();
+  std::vector<double>& lambda_vis =
+      lagrange_multipliers_visualization_data.get_point_data<double>("lambda");
 
   // Setup variables.
   Core::LinAlg::Matrix<Mortar::n_dof_, 1, double> q_lambda;
@@ -270,10 +270,21 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
   for (auto it_boundarycell = boundary_cells.begin(); it_boundarycell != boundary_cells.end();
        ++it_boundarycell)
   {
+    // Check if the shape of the boundary cell is CellType::tri3
+    FOUR_C_ASSERT(it_boundarycell->get()->shape() == Core::FE::CellType::tri3,
+        "The current implementation only works for boundary cells with shape "
+        "Core::FE::CellType::tri3.");
+
     // Project the gauss points of the boundary cell segment to the interface
     const std::shared_ptr<Core::FE::GaussPoints> gps_boundarycell =
         project_boundary_cell_gauss_rule_on_interface<Interface, Core::FE::CellType::tri3>(
             it_boundarycell->get(), ele1pos_);
+
+    // Save the number of gauss points per boundary cell. The check is done only in
+    // the first boundary cell since all the boundary cells have the same cubature
+    // degree and have the same shape (tri3)
+    if (it_boundarycell == boundary_cells.begin())
+      num_gauss_points_boundary_cell_ = gps_boundarycell->num_points();
 
     // Add the gauss points of the boundary cell to interface_integration_points
     interface_integration_points_.resize(current_numpoints + gps_boundarycell->num_points());
@@ -327,16 +338,16 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
 
 template <typename Interface, typename Background, typename Mortar>
 void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface, Background,
-    Mortar>::get_projected_gauss_rule_in_cut_element(const Core::IO::VisualizationData&
+    Mortar>::get_projected_gauss_rule_in_cut_element(Core::IO::VisualizationData&
         cut_element_integration_points_visualization_data)
 {
   // Get the vectors to be filled related to the integration of cut elements
-  std::vector<double>& cutelement_point_coordinates = const_cast<std::vector<double>&>(
-      cut_element_integration_points_visualization_data.get_point_coordinates());
-  std::vector<double>& cutelement_weights = const_cast<std::vector<double>&>(
-      cut_element_integration_points_visualization_data.get_point_data<double>("weights"));
-  std::vector<int>& cutelement_integration_cell_id = const_cast<std::vector<int>&>(
-      cut_element_integration_points_visualization_data.get_point_data<int>("integration_cell_id"));
+  std::vector<double>& cutelement_point_coordinates =
+      cut_element_integration_points_visualization_data.get_point_coordinates();
+  std::vector<double>& cutelement_weights =
+      cut_element_integration_points_visualization_data.get_point_data<double>("weights");
+  std::vector<int>& cutelement_integration_cell_id =
+      cut_element_integration_points_visualization_data.get_point_data<int>("integration_cell_id");
 
   // Get the gauss rule of the background cut element
   std::vector<Core::FE::GaussIntegration> gp_intpoints_cut;
@@ -377,25 +388,40 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
 
 template <typename Interface, typename Background, typename Mortar>
 void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface, Background,
-    Mortar>::get_projected_gauss_rule_on_interface(int num_segment,
-    const Core::IO::VisualizationData& background_integration_points_visualization_data,
-    const Core::IO::VisualizationData& interface_integration_points_visualization_data)
+    Mortar>::
+    get_projected_gauss_rule_on_interface(
+        Core::IO::VisualizationData& background_integration_points_visualization_data,
+        Core::IO::VisualizationData& interface_integration_points_visualization_data)
 {
   // Get the vectors to be filled related to the background integration rule
-  std::vector<double>& background_point_coordinates = const_cast<std::vector<double>&>(
-      background_integration_points_visualization_data.get_point_coordinates());
-  std::vector<double>& background_weights = const_cast<std::vector<double>&>(
-      background_integration_points_visualization_data.get_point_data<double>("weights"));
-  std::vector<int>& background_integration_cell_id = const_cast<std::vector<int>&>(
-      background_integration_points_visualization_data.get_point_data<int>("integration_cell_id"));
+  std::vector<double>& background_point_coordinates =
+      background_integration_points_visualization_data.get_point_coordinates();
+  std::vector<double>& background_weights =
+      background_integration_points_visualization_data.get_point_data<double>("weights");
+  std::vector<int>& background_integration_interface_id =
+      background_integration_points_visualization_data.get_point_data<int>("interface_id");
+  std::vector<int>& background_integration_background_id =
+      background_integration_points_visualization_data.get_point_data<int>("background_id");
+  std::vector<int>& background_integration_boundarycell_id =
+      background_integration_points_visualization_data.get_point_data<int>("boundary_cell_id");
 
   // Get the vectors to be filled related to the interface integration rule
-  std::vector<double>& interface_point_coordinates = const_cast<std::vector<double>&>(
-      interface_integration_points_visualization_data.get_point_coordinates());
-  std::vector<double>& interface_weights = const_cast<std::vector<double>&>(
-      interface_integration_points_visualization_data.get_point_data<double>("weights"));
-  std::vector<int>& interface_integration_cell_id = const_cast<std::vector<int>&>(
-      interface_integration_points_visualization_data.get_point_data<int>("integration_cell_id"));
+  std::vector<double>& interface_point_coordinates =
+      interface_integration_points_visualization_data.get_point_coordinates();
+  std::vector<double>& interface_weights =
+      interface_integration_points_visualization_data.get_point_data<double>("weights");
+  std::vector<int>& interface_integration_interface_id =
+      interface_integration_points_visualization_data.get_point_data<int>("interface_id");
+  std::vector<int>& interface_integration_background_id =
+      interface_integration_points_visualization_data.get_point_data<int>("background_id");
+  std::vector<int>& interface_integration_boundarycell_id =
+      interface_integration_points_visualization_data.get_point_data<int>("boundary_cell_id");
+
+  // The interface_integration_points_ are stored in a sequential order for each boundary cell.
+  // To know from which boundary cell they were generated, we create an id for each boundary cell
+  // generated by counting the gauss points in the following loop.
+  int id_boundary_cell = 0;
+  int gps_count = 0;
 
   // Start with the loop of the interface gauss points
   for (size_t it_gp = 0; it_gp < interface_integration_points_.size(); it_gp++)
@@ -441,14 +467,27 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
     // Write the weight of the gauss point
     background_weights.push_back(weight);
 
-    // Write an id() for this point for the background and the interface gauss
-    // points
+    // For the obtained Gauss points, write the global ids of the background and the interface
+    // elements they come from and the number of their boundary cell
     const auto* face_element = dynamic_cast<const Core::Elements::FaceElement*>(&this->element_1());
     if (!face_element) FOUR_C_THROW("Cast to FaceElement failed!");
 
-    int id = 1000000 * face_element->parent_element_id() + 1000 * element_2().id() + num_segment;
-    interface_integration_cell_id.push_back(id);
-    background_integration_cell_id.push_back(id);
+    background_integration_interface_id.push_back(face_element->parent_element_id());
+    background_integration_background_id.push_back(element_2().id());
+    background_integration_boundarycell_id.push_back(id_boundary_cell);
+
+    interface_integration_interface_id.push_back(face_element->parent_element_id());
+    interface_integration_background_id.push_back(element_2().id());
+    interface_integration_boundarycell_id.push_back(id_boundary_cell);
+
+    // Increase the gauss point count. If it's bigger than the number of gauss
+    // points per boundary cell, increase the boundary cell id.
+    gps_count += 1;
+    if (gps_count == num_gauss_points_boundary_cell_)
+    {
+      gps_count = 0;
+      id_boundary_cell += 1;
+    }
   }
 }
 

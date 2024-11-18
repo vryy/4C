@@ -90,20 +90,20 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     \brief Get the Gauss points of element2_ after cut for visualization.
     */
     virtual void get_projected_gauss_rule_in_cut_element(
-        const Core::IO::VisualizationData& cut_element_integration_points_visualization_data) = 0;
+        Core::IO::VisualizationData& cut_element_integration_points_visualization_data) = 0;
 
     /*!
     \brief Get the Gauss points of element1_ and element2_ for the evaluation of mortar matrices.
     */
-    virtual void get_projected_gauss_rule_on_interface(int num_segment,
-        const Core::IO::VisualizationData& background_integration_points_visualization_data,
-        const Core::IO::VisualizationData& interface_integration_points_visualization_data) = 0;
+    virtual void get_projected_gauss_rule_on_interface(
+        Core::IO::VisualizationData& background_integration_points_visualization_data,
+        Core::IO::VisualizationData& interface_integration_points_visualization_data) = 0;
 
     /*!
     \brief Get the Lagrange multiplier field evaluated on the interface nodes for visualization.
     */
     virtual void get_pair_visualization(
-        const Core::IO::VisualizationData& lagrange_multipliers_visualization_data,
+        Core::IO::VisualizationData& lagrange_multipliers_visualization_data,
         std::shared_ptr<Core::LinAlg::Vector<double>> lambda,
         const CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager* mortar_manager,
         std::shared_ptr<std::unordered_set<int>> interface_tracker) = 0;
@@ -153,6 +153,9 @@ namespace CONSTRAINTS::EMBEDDEDMESH
    protected:
     //! embedded mesh parameter data container
     CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams params_;
+
+    //! number of gauss points in the boundary cell
+    int num_gauss_points_boundary_cell_ = 0;
 
    private:
     //! @name member variables

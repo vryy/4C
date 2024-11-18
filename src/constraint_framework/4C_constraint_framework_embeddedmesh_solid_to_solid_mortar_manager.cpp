@@ -63,14 +63,16 @@ CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::SolidToSolidMortarManager(
   auto& background_integration_points_visualization_data =
       visualization_manager_->get_visualization_data("background_integration_points");
   background_integration_points_visualization_data.register_point_data<double>("weights", 1);
-  background_integration_points_visualization_data.register_point_data<int>(
-      "integration_cell_id", 1);
+  background_integration_points_visualization_data.register_point_data<int>("interface_id", 1);
+  background_integration_points_visualization_data.register_point_data<int>("background_id", 1);
+  background_integration_points_visualization_data.register_point_data<int>("boundary_cell_id", 1);
 
   auto& interface_integration_points_visualization_data =
       visualization_manager_->get_visualization_data("interface_integration_points");
   interface_integration_points_visualization_data.register_point_data<double>("weights", 1);
-  interface_integration_points_visualization_data.register_point_data<int>(
-      "integration_cell_id", 1);
+  interface_integration_points_visualization_data.register_point_data<int>("interface_id", 1);
+  interface_integration_points_visualization_data.register_point_data<int>("background_id", 1);
+  interface_integration_points_visualization_data.register_point_data<int>("boundary_cell_id", 1);
 
   auto& cut_element_integration_points_visualization_data =
       visualization_manager_->get_visualization_data("cut_element_integration_points");
@@ -560,13 +562,9 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::collect_output_integr
   // Loop over pairs
   for (auto& elepairptr : embedded_mesh_solid_pairs_)
   {
-    unsigned int n_segments = elepairptr->get_num_segments();
-    for (size_t iter_segments = 0; iter_segments < n_segments; iter_segments++)
-    {
-      elepairptr->get_projected_gauss_rule_on_interface(iter_segments,
-          background_integration_points_visualization_data,
-          interface_integration_points_visualization_data);
-    }
+    elepairptr->get_projected_gauss_rule_on_interface(
+        background_integration_points_visualization_data,
+        interface_integration_points_visualization_data);
 
     elepairptr->get_projected_gauss_rule_in_cut_element(
         cut_element_integration_points_visualization_data);

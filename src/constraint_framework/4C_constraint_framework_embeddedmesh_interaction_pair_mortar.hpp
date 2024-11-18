@@ -42,16 +42,14 @@ namespace CONSTRAINTS::EMBEDDEDMESH
 
     //! @name Visualization methods
     void get_projected_gauss_rule_in_cut_element(
-        const Core::IO::VisualizationData& cut_element_integration_points_visualization_data)
-        override;
+        Core::IO::VisualizationData& cut_element_integration_points_visualization_data) override;
 
-    void get_projected_gauss_rule_on_interface(int num_segment,
-        const Core::IO::VisualizationData& background_integration_points_visualization_data,
-        const Core::IO::VisualizationData& interface_integration_points_visualization_data)
-        override;
+    void get_projected_gauss_rule_on_interface(
+        Core::IO::VisualizationData& background_integration_points_visualization_data,
+        Core::IO::VisualizationData& interface_integration_points_visualization_data) override;
 
     void get_pair_visualization(
-        const Core::IO::VisualizationData& lagrange_multipliers_visualization_data,
+        Core::IO::VisualizationData& lagrange_multipliers_visualization_data,
         std::shared_ptr<Core::LinAlg::Vector<double>> lambda,
         const CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager* mortar_manager,
         std::shared_ptr<std::unordered_set<int>> interface_tracker) override;
