@@ -144,12 +144,12 @@ add_library(${FOUR_C_LIBRARY_NAME})
 set_target_properties(${FOUR_C_LIBRARY_NAME} PROPERTIES PREFIX "")
 target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE four_c_private_compile_interface)
 
+# Set up Python build/test venv
+include(cmake/python/set_up_python.cmake)
+
 # Read in the source directory which defines all modules
 add_subdirectory(src)
 add_subdirectory(apps)
-
-# Set up Python build/test venv
-include(cmake/python/set_up_python.cmake)
 
 # Process documentation
 add_subdirectory(doc/doxygen EXCLUDE_FROM_ALL)
