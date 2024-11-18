@@ -77,6 +77,23 @@ namespace Core::IO
 namespace Core::FE
 {
   /*!
+    \brief Options for parallel (re)distribution
+  */
+  struct OptionsRedistribution
+  {
+    bool assign_degrees_of_freedom = true;  //  if true, resets existing dofsets and performs
+                                            // assigning of degrees of freedoms
+                                            //  to nodes and elements.
+    bool init_elements = true;              // if true, build element register classes and call
+                                            // initialize() on each type of finite element present
+    bool do_boundary_conditions = true;     // if true, build geometry of boundary conditions
+                                            // present.
+    bool kill_dofs = true;                  // if true, reset existing dofsets in discretization
+    bool kill_cond = true;                  // if true, reset existing conditions in discretization
+    bool do_extended_ghosting = false;      // if true, extended ghosting is applied
+  };
+
+  /*!
   \brief A class to manage a discretization in parallel
 
   A discretization describes a discretized physical domain including any
@@ -1233,21 +1250,12 @@ namespace Core::FE
 
     \param noderowmap (in): new node map the discretization shall have on exit
     \param nodecolmap (in): new column map the discretization shall have on exit
-
-    \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
-                                         assigning of degrees of freedoms to nodes and
-                                         elements.
-    \param initelements           (in) : if true, build element register classes and
-                                         call initialize() on each type of finite element
-                                         present
-    \param doboundaryconditions   (in) : if true, build geometry of boundary conditions
-                                         present.
+    \param options_redistribution (in): options for redistribution
 
     \note Filled()==true is a prerequisite, Filled()==true on exit
     */
     virtual void redistribute(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
-        bool assigndegreesoffreedom = true, bool initelements = true,
-        bool doboundaryconditions = true, bool killdofs = true, bool killcond = true);
+        OptionsRedistribution options_redistribution = {});
 
     /*!
     \brief Redistribute the discretization according to provided maps

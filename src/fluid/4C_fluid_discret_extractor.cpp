@@ -254,7 +254,10 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
       printf("| Distribute inflow discretization according to the initial nodemaps");
     }
 
-    childdiscret_->redistribute(*newrownodemap, *newcolnodemap, false, false, false);
+    childdiscret_->redistribute(*newrownodemap, *newcolnodemap,
+        {.assign_degrees_of_freedom = false,
+            .init_elements = false,
+            .do_boundary_conditions = false});
 
     if (childdiscret_->get_comm().MyPID() == 0)
     {
@@ -349,7 +352,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
         parentdiscret_, true));  // true: parallel
     // and assign the dofs to nodes
     // remark: nothing is redistributed here
-    childdiscret_->redistribute(*newrownodemap, *newcolnodemap, true, true, true);
+    childdiscret_->redistribute(*newrownodemap, *newcolnodemap,
+        {.assign_degrees_of_freedom = true, .init_elements = true, .do_boundary_conditions = true});
 
     if (childdiscret_->get_comm().MyPID() == 0)
     {
@@ -384,7 +388,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
       std::cout << "| Redistributing .";
     }
     // redistribute accordingly to the adapted rowmap
-    childdiscret_->redistribute(*sepcondrownodes, *sepcondcolnodes, false, false);
+    childdiscret_->redistribute(*sepcondrownodes, *sepcondcolnodes,
+        {.assign_degrees_of_freedom = false, .init_elements = false});
 
     if (childdiscret_->get_comm().MyPID() == 0)
     {

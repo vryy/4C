@@ -168,7 +168,10 @@ void Core::IO::MeshReader::rebalance()
           colmap = std::make_shared<Epetra_Map>(-1, graph_[i]->ColMap().NumMyElements(),
               graph_[i]->ColMap().MyGlobalElements(), 0, comm_);
 
-          discret->redistribute(*rowmap, *colmap, false, false, false);
+          discret->redistribute(*rowmap, *colmap,
+              {.assign_degrees_of_freedom = false,
+                  .init_elements = false,
+                  .do_boundary_conditions = false});
 
           std::shared_ptr<Core::LinAlg::MultiVector<double>> coordinates =
               discret->build_node_coordinates();
@@ -187,7 +190,8 @@ void Core::IO::MeshReader::rebalance()
           colmap = std::make_shared<Epetra_Map>(-1, graph_[i]->ColMap().NumMyElements(),
               graph_[i]->ColMap().MyGlobalElements(), 0, comm_);
 
-          discret->redistribute(*rowmap, *colmap, true, true, false);
+          discret->redistribute(
+              *rowmap, *colmap, {.do_boundary_conditions = false, .do_extended_ghosting = true});
 
           std::shared_ptr<const Epetra_CrsGraph> enriched_graph =
               Core::Rebalance::build_monolithic_node_graph(*discret,
@@ -208,7 +212,10 @@ void Core::IO::MeshReader::rebalance()
       rowmap = colmap = std::make_shared<Epetra_Map>(-1, 0, nullptr, 0, comm_);
     }
 
-    discret->redistribute(*rowmap, *colmap, false, false, false);
+    discret->redistribute(*rowmap, *colmap,
+        {.assign_degrees_of_freedom = false,
+            .init_elements = false,
+            .do_boundary_conditions = false});
 
     Core::Rebalance::Utils::print_parallel_distribution(*discret);
   }

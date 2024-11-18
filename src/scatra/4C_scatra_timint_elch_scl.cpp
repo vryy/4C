@@ -1082,7 +1082,7 @@ void ScaTra::ScaTraTimIntElchSCL::redistribute_micro_discretization()
   Epetra_Map new_node_col_map(
       -1, static_cast<int>(my_col_nodes.size()), &my_col_nodes[0], 0, micro_dis->get_comm());
 
-  micro_dis->redistribute(new_node_row_map, new_node_col_map, true, true, true);
+  micro_dis->redistribute(new_node_row_map, new_node_col_map);
 }
 
 /*----------------------------------------------------------------------*
