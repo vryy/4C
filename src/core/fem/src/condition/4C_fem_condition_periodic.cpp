@@ -1573,7 +1573,7 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
           newnodegraph->ColMap().MyGlobalElements(), 0, discret_->get_comm());
 
       // do the redistribution without assigning dofs
-      discret_->redistribute(newnoderowmap, newnodecolmap, false, true, true);
+      discret_->redistribute(newnoderowmap, newnodecolmap, {.assign_degrees_of_freedom = false});
 
       if (discret_->get_comm().MyPID() == 0 && verbose_)
       {

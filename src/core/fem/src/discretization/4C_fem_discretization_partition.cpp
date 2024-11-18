@@ -599,20 +599,23 @@ Core::FE::Discretization::build_element_row_column(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::redistribute(const Epetra_Map& noderowmap,
-    const Epetra_Map& nodecolmap, bool assigndegreesoffreedom, bool initelements,
-    bool doboundaryconditions, bool killdofs, bool killcond)
+    const Epetra_Map& nodecolmap, OptionsRedistribution options_redistribution)
 {
   // build the overlapping and non-overlapping element maps
   const auto& [elerowmap, elecolmap] = build_element_row_column(noderowmap, nodecolmap);
 
   // export nodes and elements to the new maps
-  export_row_nodes(noderowmap, killdofs, killcond);
-  export_column_nodes(nodecolmap, killdofs, killcond);
-  export_row_elements(*elerowmap, killdofs, killcond);
-  export_column_elements(*elecolmap, killdofs, killcond);
+  export_row_nodes(noderowmap, options_redistribution.kill_dofs, options_redistribution.kill_cond);
+  export_column_nodes(
+      nodecolmap, options_redistribution.kill_dofs, options_redistribution.kill_cond);
+  export_row_elements(
+      *elerowmap, options_redistribution.kill_dofs, options_redistribution.kill_cond);
+  export_column_elements(
+      *elecolmap, options_redistribution.kill_dofs, options_redistribution.kill_cond);
 
   // these exports have set Filled()=false as all maps are invalid now
-  int err = fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
+  int err = fill_complete(options_redistribution.assign_degrees_of_freedom,
+      options_redistribution.init_elements, options_redistribution.do_boundary_conditions);
 
   if (err) FOUR_C_THROW("fill_complete() returned err=%d", err);
 }
@@ -863,8 +866,10 @@ void Core::FE::Discretization::setup_ghosting(
   graph = nullptr;
 
   // Redistribute discretization to match the new maps.
-
-  redistribute(noderowmap, nodecolmap, assigndegreesoffreedom, initelements, doboundaryconditions);
+  redistribute(noderowmap, nodecolmap,
+      {.assign_degrees_of_freedom = assigndegreesoffreedom,
+          .init_elements = initelements,
+          .do_boundary_conditions = doboundaryconditions});
 }
 
 FOUR_C_NAMESPACE_CLOSE
