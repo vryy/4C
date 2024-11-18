@@ -16,7 +16,7 @@ or for an application in association with physical products in particular.
 
 ## Required development tools
 
-- **CMake:** 4C supports CMake configuration through CMake presets. Therefore, the CMake version needs to be at least v3.25.
+- **CMake:** 4C supports CMake configuration through CMake presets.
 - **Ninja:** We strongly encourage to work with `ninja` (instead of `make`) for faster compile times.
 
 ## External dependencies
@@ -25,7 +25,7 @@ or for an application in association with physical products in particular.
 
 Some further third-party libraries (TPLs) are mandatory, e.g.
 
-- CMake (minimum version: 3.30.5)
+- CMake (minimum version: 3.30)
 - ParMETIS (recommended version: 4.0.3)
 - SuiteSparse (recommended version: 5.4.0)
 - SuperLUDist (recommended version: 7.2)
