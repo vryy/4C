@@ -2,7 +2,10 @@
 A simple test file with long and short section, empty lines and comments to exercise the reader.
 
 --SECTION WITH SPACES
-line in section with spaces
+line in section with spaces // a comment
+
+
+
 --SECTION/WITH/SLASHES
 line in section with slashes
 --EMPTY
@@ -20,10 +23,10 @@ line in long section
 line in long section
 line in long section
 line in long section
-line in long section
-line in long section
-line in long section
-line in long section
+line in long section // a comment
+line in long section// a comment
+line in long section//a comment
+line in long section//acomment
 line in long section
 line in long section
 line in long section

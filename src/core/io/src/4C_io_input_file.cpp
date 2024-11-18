@@ -431,6 +431,7 @@ namespace Core::IO
       {
         if (line_number_ < max_reads_ && std::getline(*stream_, line_))
         {
+          line_ = Core::Utils::strip_comment(line_);
           line_number_++;
         }
         else

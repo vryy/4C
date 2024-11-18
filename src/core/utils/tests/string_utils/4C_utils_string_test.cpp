@@ -26,4 +26,25 @@ namespace
     std::vector<std::string> expected_str = {"1.1", "2.2", "3.3", "4.4", "5.5"};
     EXPECT_EQ(splitted_string, expected_str);
   }
+
+  TEST(StringUtils, StripComment)
+  {
+    const std::string& line = "abc//def";
+    auto res = strip_comment(line);
+    EXPECT_EQ(res, "abc");
+  }
+
+  TEST(StringUtils, StripCommentWithSpaceAfter)
+  {
+    const std::string& line = "abc// def";
+    auto res = strip_comment(line);
+    EXPECT_EQ(res, "abc");
+  }
+
+  TEST(StringUtils, StripCommentWithSpaceBefore)
+  {
+    const std::string& line = "abc //def";
+    auto res = strip_comment(line);
+    EXPECT_EQ(res, "abc");
+  }
 }  // namespace

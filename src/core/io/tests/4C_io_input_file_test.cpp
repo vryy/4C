@@ -201,9 +201,6 @@ namespace
     EXPECT_FALSE(input.has_section("EMPTY"));
     EXPECT_FALSE(input.has_section("NONEXISTENT SECTION"));
 
-    input.dump(std::cout, Core::IO::InputFile::Format::yaml);
-    input.dump(std::cout, Core::IO::InputFile::Format::dat);
-
     check_section(input, "SECTION WITH LINES", {"first line", "second line", "third line"});
   }
 
@@ -214,7 +211,6 @@ namespace
 
     Epetra_MpiComm comm(MPI_COMM_WORLD);
     Core::IO::InputFile input{input_file_name, comm};
-    input.dump(std::cout, Core::IO::InputFile::Format::yaml);
 
     check_section(input, "INCLUDED SECTION 1", std::vector<std::string>(2, "line"));
 
