@@ -38,11 +38,9 @@ namespace Core::Elements
     struct_calc_eleload,
     struct_calc_fsiload,
     struct_calc_update_istep,
-    struct_calc_reset_istep,    //!< reset elementwise internal variables, during iteration to last
-                                //!< converged state
-    struct_calc_store_istep,    //!< store internal information in history
-    struct_calc_recover_istep,  //!< recover internal information from history
-    struct_calc_energy,         //!< compute internal energy
+    struct_calc_reset_istep,  //!< reset elementwise internal variables, during iteration to last
+                              //!< converged state
+    struct_calc_energy,       //!< compute internal energy
     struct_postprocess_thickness,         //!< postprocess thickness of membrane finite elements
     struct_init_gauss_point_data_output,  //!< initialize quantities for output of gauss point
                                           //!< data
@@ -109,10 +107,6 @@ namespace Core::Elements
       return struct_calc_update_istep;
     else if (action == "calc_struct_reset_istep")
       return struct_calc_reset_istep;
-    else if (action == "calc_struct_store_istep")
-      return struct_calc_store_istep;
-    else if (action == "calc_struct_recover_istep")
-      return struct_calc_recover_istep;
     else if (action == "calc_struct_energy")
       return struct_calc_energy;
     else if (action == "multi_eas_init")
@@ -186,10 +180,6 @@ namespace Core::Elements
         return "struct_calc_update_istep";
       case struct_calc_reset_istep:
         return "struct_calc_reset_istep";
-      case struct_calc_store_istep:
-        return "struct_calc_store_istep";
-      case struct_calc_recover_istep:
-        return "struct_calc_recover_istep";
       case struct_calc_energy:
         return "struct_calc_energy";
       case struct_postprocess_thickness:
