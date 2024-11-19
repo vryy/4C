@@ -7,6 +7,7 @@
 
 #include "4C_post_monitor.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_gauss_point_postprocess.hpp"
@@ -27,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
     int node)
-    : myrank_(problem.get_comm()->MyPID())  // get my processor id
+    : myrank_(Core::Communication::my_mpi_rank(*problem.get_comm()))  // get my processor id
 {
   using namespace FourC;
 

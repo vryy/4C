@@ -346,7 +346,7 @@ void Utils::Cardiovascular0D4ElementWindkessel::initialize(Teuchos::ParameterLis
     }
   }
 
-  if (actdisc_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(actdisc_->get_comm()) == 0)
   {
     std::cout << "===== Welcome to monolithic coupling of 3D structural dynamics to 0D "
                  "cardiovascular flow models ====="

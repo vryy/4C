@@ -24,7 +24,7 @@ void Core::FE::Discretization::export_row_nodes(
   if (!newmap.UniqueGIDs()) FOUR_C_THROW("new map not unique");
 
   // destroy all ghosted nodes
-  const int myrank = get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(get_comm());
   std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end();)
   {
@@ -57,7 +57,7 @@ void Core::FE::Discretization::export_column_nodes(
     const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // destroy all ghosted nodes
-  const int myrank = get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(get_comm());
   std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end();)
   {
@@ -94,7 +94,7 @@ void Core::FE::Discretization::export_column_nodes(
 void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
     Epetra_Map& target, std::vector<int>& gidlist)
 {
-  const int myrank = get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(get_comm());
 
   // proc 0 looks for elements that are to be send to other procs
   int size = (int)gidlist.size();
@@ -189,7 +189,7 @@ void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
 {
-  const int myrank = get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(get_comm());
 
   // proc 0 looks for nodes that are to be distributed
   reset();
@@ -297,7 +297,7 @@ void Core::FE::Discretization::export_row_elements(
   if (!newmap.UniqueGIDs()) FOUR_C_THROW("new map not unique");
 
   // destroy all ghosted elements
-  const int myrank = get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(get_comm());
   std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
   for (curr = element_.begin(); curr != element_.end();)
   {
@@ -329,7 +329,7 @@ void Core::FE::Discretization::export_column_elements(
     const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // destroy all ghosted elements
-  const int myrank = get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(get_comm());
   std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
   for (curr = element_.begin(); curr != element_.end();)
   {
@@ -431,7 +431,7 @@ std::pair<std::shared_ptr<Epetra_Map>, std::shared_ptr<Epetra_Map>>
 Core::FE::Discretization::build_element_row_column(
     const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap) const
 {
-  const int myrank = get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(get_comm());
   const int numproc = get_comm().NumProc();
 
   // note:
@@ -660,7 +660,7 @@ void Core::FE::Discretization::extended_ghosting(const Epetra_Map& elecolmap,
     if (checkghosting)
     {
       int diff = elecolmap.NumGlobalElements() - oldelecolmap->NumGlobalElements();
-      if (diff == 0 and get_comm().MyPID() == 0)
+      if (diff == 0 and Core::Communication::my_mpi_rank(get_comm()) == 0)
         FOUR_C_THROW("no additional elements have been ghosted");
     }
   }

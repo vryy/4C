@@ -28,7 +28,8 @@ PoroElastScaTra::PoroScatraPart2WC::PoroScatraPart2WC(
       fluidincnp_(
           std::make_shared<Core::LinAlg::Vector<double>>(*(poro_field()->fluid_field()->velnp())))
 {
-  if (comm.MyPID() == 0) std::cout << "\n Create PoroScatraPart2WC algorithm ... \n" << std::endl;
+  if (Core::Communication::my_mpi_rank(comm) == 0)
+    std::cout << "\n Create PoroScatraPart2WC algorithm ... \n" << std::endl;
 
   const Teuchos::ParameterList& params = Global::Problem::instance()->poro_scatra_control_params();
   // Get the parameters for the convergence_check
@@ -109,7 +110,7 @@ void PoroElastScaTra::PoroScatraPart2WC::read_restart(int restart)
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraPart2WC::do_poro_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n POROUS MEDIUM SOLVER \n***********************\n";
   }
@@ -123,7 +124,7 @@ void PoroElastScaTra::PoroScatraPart2WC::do_poro_step()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraPart2WC::do_scatra_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n  TRANSPORT SOLVER \n***********************\n";
   }
@@ -194,7 +195,7 @@ void PoroElastScaTra::PoroScatraPart2WC::solve()
   int itnum = 0;
   bool stopnonliniter = false;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n*******************************************\n Poro-Scatra 2WC OUTER ITERATION "
                  "LOOP \n*******************************************\n";
@@ -272,7 +273,7 @@ bool PoroElastScaTra::PoroScatraPart2WC::convergence_check(int itnum)
   if (fluidnorm_L2 < 1e-6) fluidnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout
@@ -301,7 +302,7 @@ bool PoroElastScaTra::PoroScatraPart2WC::convergence_check(int itnum)
       (fluidincnorm_L2 / fluidnorm_L2 <= ittol_))
   {
     stopnonliniter = true;
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       printf("\n");
       printf(
@@ -319,7 +320,7 @@ bool PoroElastScaTra::PoroScatraPart2WC::convergence_check(int itnum)
           (fluidincnorm_L2 / fluidnorm_L2 > ittol_)))
   {
     stopnonliniter = true;
-    if ((get_comm().MyPID() == 0))
+    if ((Core::Communication::my_mpi_rank(get_comm()) == 0))
     {
       printf(
           "|     >>>>>> not converged in itemax steps!                                       |\n");

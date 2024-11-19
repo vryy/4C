@@ -8,6 +8,7 @@
 #include "4C_structure_new_gauss_point_data_output_manager.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_vector.hpp"
@@ -193,7 +194,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::distribute_quantities(
   comm.MaxAll(&max_num_gp_, &max_num_gp_, 1);
 
   // Collect all quantities on proc 0
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     // receive everything from all other procs
     for (int i = 1; i < comm.NumProc(); ++i)
@@ -221,7 +222,8 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::send_my_quantities_to_p
   pack_my_quantities(sdata);
 
   MPI_Request request;
-  exporter.i_send(exporter.get_comm().MyPID(), 0, sdata.data(), sdata.size(), MPI_TAG, request);
+  exporter.i_send(Core::Communication::my_mpi_rank(exporter.get_comm()), 0, sdata.data(),
+      sdata.size(), MPI_TAG, request);
   exporter.wait(request);
 }
 
@@ -246,14 +248,14 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::broadcast_my_quantitite
     const Core::Communication::Exporter& exporter)
 {
   std::vector<char> data(0);
-  if (exporter.get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(exporter.get_comm()) == 0)
   {
     pack_my_quantities(data);
   }
 
   exporter.broadcast(0, data, MPI_TAG);
 
-  if (exporter.get_comm().MyPID() != 0)
+  if (Core::Communication::my_mpi_rank(exporter.get_comm()) != 0)
   {
     std::unordered_map<std::string, int> received_quantities{};
     Core::Communication::UnpackBuffer buffer(data);

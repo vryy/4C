@@ -122,7 +122,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::setup(
 
   // Get the start GID for the lambda DOFs on this processor.
   int my_lambda_gid_start_value = start_value_lambda_gid_;
-  for (int pid = 0; pid < discret_->get_comm().MyPID(); pid++)
+  for (int pid = 0; pid < Core::Communication::my_mpi_rank(discret_->get_comm()); pid++)
     my_lambda_gid_start_value += lambda_dof_per_rank[pid];
 
   // Fill in all GIDs of the lambda DOFs on this processor
@@ -242,7 +242,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_local_maps(
         embedded_mesh_solid_pairs_[i_pair];
 
     // The first (beam) element should always be on the same processor as the pair.
-    if (pair->element_1().owner() != discret_->get_comm().MyPID())
+    if (pair->element_1().owner() != Core::Communication::my_mpi_rank(discret_->get_comm()))
       FOUR_C_THROW(
           "The current implementation need the first element of a interface coupling pair to be on "
           "the "

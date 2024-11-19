@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_gridgenerator.hpp"
@@ -75,7 +76,7 @@ namespace
     std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
         test_discretization_->build_node_coordinates();
 
-    if (comm_->MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(*comm_) == 0)
     {
       EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->num_my_row_nodes());
       EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
@@ -93,7 +94,7 @@ namespace
       EXPECT_NEAR(coords[35], 1.0, 1e-14);
       EXPECT_NEAR(coords[53], 0.25, 1e-14);
     }
-    else if (comm_->MyPID() == 1)
+    else if (Core::Communication::my_mpi_rank(*comm_) == 1)
     {
       EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->num_my_row_nodes());
       EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
@@ -111,7 +112,7 @@ namespace
       EXPECT_NEAR(coords[35], 1.0, 1e-14);
       EXPECT_NEAR(coords[53], 0.75, 1e-14);
     }
-    else if (comm_->MyPID() == 2)
+    else if (Core::Communication::my_mpi_rank(*comm_) == 2)
     {
       EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->num_my_row_nodes());
       EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
@@ -141,7 +142,7 @@ namespace
       std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
           test_discretization_->build_node_coordinates(node_row_map);
 
-      if (comm_->MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(*comm_) == 0)
       {
         EXPECT_EQ(nodal_test_coordinates->MyLength(), 4);
         EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
@@ -164,19 +165,19 @@ namespace
     // build node coordinates based on the node row map of second partial discretization
     {
       std::shared_ptr<Epetra_Map> node_row_map = nullptr;
-      if (comm_->MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(*comm_) == 0)
       {
         std::array<int, 2> nodeList{50, 62};
         node_row_map =
             std::make_shared<Epetra_Map>(-1, nodeList.size(), nodeList.data(), 0, *comm_);
       }
-      else if (comm_->MyPID() == 1)
+      else if (Core::Communication::my_mpi_rank(*comm_) == 1)
       {
         std::array<int, 1> nodeList{114};
         node_row_map =
             std::make_shared<Epetra_Map>(-1, nodeList.size(), nodeList.data(), 0, *comm_);
       }
-      else if (comm_->MyPID() == 2)
+      else if (Core::Communication::my_mpi_rank(*comm_) == 2)
       {
         std::array<int, 1> nodeList{212};
         node_row_map =
@@ -186,7 +187,7 @@ namespace
       std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
           test_discretization_->build_node_coordinates(node_row_map);
 
-      if (comm_->MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(*comm_) == 0)
       {
         EXPECT_EQ(nodal_test_coordinates->MyLength(), 2);
         EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
@@ -202,7 +203,7 @@ namespace
         EXPECT_NEAR(coords[3], 0.5, 1e-14);
         EXPECT_NEAR(coords[5], 0.25, 1e-14);
       }
-      else if (comm_->MyPID() == 1)
+      else if (Core::Communication::my_mpi_rank(*comm_) == 1)
       {
         EXPECT_EQ(nodal_test_coordinates->MyLength(), 1);
         EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
@@ -214,7 +215,7 @@ namespace
         EXPECT_NEAR(coords[1], 0.5, 1e-14);
         EXPECT_NEAR(coords[2], 0.5, 1e-14);
       }
-      else if (comm_->MyPID() == 2)
+      else if (Core::Communication::my_mpi_rank(*comm_) == 2)
       {
         EXPECT_EQ(nodal_test_coordinates->MyLength(), 1);
         EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);

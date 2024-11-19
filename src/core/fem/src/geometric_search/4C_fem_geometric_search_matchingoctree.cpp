@@ -8,6 +8,7 @@
 #include "4C_fem_geometric_search_matchingoctree.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
@@ -161,7 +162,7 @@ void Core::GeometricSearch::MatchingOctree::create_global_entity_matching(
   check_is_init();
   check_is_setup();
 
-  int myrank = discret_->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
   int numprocs = discret_->get_comm().NumProc();
 
   // map from global masternodeids to distances to their global slave
@@ -448,7 +449,7 @@ void Core::GeometricSearch::MatchingOctree::find_match(const Core::FE::Discretiz
     // Send block to next proc. Receive a block from the last proc
     if (np > 0)  // in the first step, we keep all nodes on this proc
     {
-      int myrank = discret_->get_comm().MyPID();
+      int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
       MPI_Request request;
       int tag = myrank;
 
@@ -601,7 +602,7 @@ void Core::GeometricSearch::MatchingOctree::fill_slave_to_master_gid_mapping(
     // Send block to next proc. Receive a block from the last proc
     if (np > 0)  // in the first step, we keep all nodes on this proc
     {
-      int myrank = discret_->get_comm().MyPID();
+      int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
       MPI_Request request;
       int tag = myrank;
 
@@ -759,7 +760,7 @@ bool Core::GeometricSearch::NodeMatchingOctree::check_have_entity(
 bool Core::GeometricSearch::NodeMatchingOctree::check_entity_owner(
     const Core::FE::Discretization* dis, const int id)
 {
-  return (dis->g_node(id)->owner() == dis->get_comm().MyPID());
+  return (dis->g_node(id)->owner() == Core::Communication::my_mpi_rank(dis->get_comm()));
 }  // NodeMatchingOctree::check_entity_owner
 
 /*----------------------------------------------------------------------*/
@@ -868,7 +869,7 @@ bool Core::GeometricSearch::ElementMatchingOctree::check_have_entity(
 bool Core::GeometricSearch::ElementMatchingOctree::check_entity_owner(
     const Core::FE::Discretization* dis, const int id)
 {
-  return (dis->g_element(id)->owner() == dis->get_comm().MyPID());
+  return (dis->g_element(id)->owner() == Core::Communication::my_mpi_rank(dis->get_comm()));
 }  // ElementMatchingOctree::check_have_entity
 
 /*----------------------------------------------------------------------*/

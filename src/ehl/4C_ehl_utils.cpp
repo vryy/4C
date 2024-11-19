@@ -7,6 +7,7 @@
 
 #include "4C_ehl_utils.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -125,7 +126,7 @@ void EHL::Utils::change_time_parameter(const Epetra_Comm& comm, Teuchos::Paramet
   lubricationdyn.set<int>("RESULTSEVRY", lubricationupres);
   sdyn.set<int>("RESULTSEVRY", structureupres);
 
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "====================== Overview of chosen time stepping: "
                  "==============================\n"

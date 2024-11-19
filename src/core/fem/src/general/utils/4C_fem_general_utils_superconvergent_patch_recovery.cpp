@@ -29,7 +29,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
     const std::string& statename, const int numvec, Teuchos::ParameterList& params)
 {
   const int dimp = dim + 1;
-  const int myrank = dis.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(dis.get_comm());
 
   // check whether action type is set
   if (params.getEntryRCP("action") == Teuchos::null)

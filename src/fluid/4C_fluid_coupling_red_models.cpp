@@ -342,7 +342,7 @@ void FLD::Utils::FluidCouplingWrapperBase::apply_boundary_conditions(
           FOUR_C_THROW("(%s): No such coupling variable on the 3D side is defined yet",
               variable_str.c_str());
         }
-        if (discret_3d_->get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(discret_3d_->get_comm()) == 0)
         {
           std::cout << "3D condition "
                     << " [" << condID << "] returns " << variable_str << " "
@@ -719,7 +719,7 @@ FLD::Utils::FluidCouplingBc::FluidCouplingBc(std::shared_ptr<Core::FE::Discretiz
   // ---------------------------------------------------------------------
   // get the processor ID from the communicator
   // ---------------------------------------------------------------------
-  myrank_ = discret_3d_->get_comm().MyPID();
+  myrank_ = Core::Communication::my_mpi_rank(discret_3d_->get_comm());
 
   // ---------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

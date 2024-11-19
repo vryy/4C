@@ -7,6 +7,7 @@
 
 #include "4C_contact_nitsche_integrator_ssi_elch.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_nitsche_utils.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_mat_electrode.hpp"
@@ -72,7 +73,7 @@ void CONTACT::IntegratorNitscheSsiElch::gpts_forces(Mortar::Element& slave_ele,
     const std::vector<Core::Gen::Pairedvector<int, double>>& d_gp_normal_dd, double* slave_xi,
     double* master_xi)
 {
-  if (slave_ele.owner() != Comm_.MyPID()) return;
+  if (slave_ele.owner() != Core::Communication::my_mpi_rank(Comm_)) return;
 
   static const bool do_fast_checks = true;
   // first rough check

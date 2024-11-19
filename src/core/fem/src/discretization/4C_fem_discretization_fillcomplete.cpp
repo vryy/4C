@@ -57,7 +57,7 @@ int Core::FE::Discretization::fill_complete(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // my processor id
-  const int myrank = get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(get_comm());
 
   // print information to screen
   if (myrank == 0)
@@ -161,7 +161,7 @@ void Core::FE::Discretization::initialize_elements()
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::build_node_row_map()
 {
-  const int myrank = get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(get_comm());
   int nummynodes = 0;
   std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end(); ++curr)
@@ -211,7 +211,7 @@ void Core::FE::Discretization::build_node_col_map()
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::build_element_row_map()
 {
-  const int myrank = get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(get_comm());
   int nummyeles = 0;
   std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
   for (curr = element_.begin(); curr != element_.end(); ++curr)
@@ -299,7 +299,8 @@ void Core::FE::Discretization::build_node_to_element_pointers()
     {
       Core::Nodes::Node* node = g_node(nodes[j]);
       if (!node)
-        FOUR_C_THROW("Node %d is not on this proc %d", j, get_comm().MyPID());
+        FOUR_C_THROW(
+            "Node %d is not on this proc %d", j, Core::Communication::my_mpi_rank(get_comm()));
       else
         node->add_element_ptr(elecurr->second.get());
     }

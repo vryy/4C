@@ -100,7 +100,7 @@ namespace FLD
     }
     // communicate coordinates to all procs via round Robin loop
     {
-      int myrank = discret_->get_comm().MyPID();
+      int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
       int numprocs = discret_->get_comm().NumProc();
 
       std::vector<char> sblock;
@@ -277,7 +277,7 @@ namespace FLD
               // this ensures that all processors construct the same
               // initial field, which is important to get a matching
               // velocity field in physical space
-              if (discret_->get_comm().MyPID() == 0)
+              if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
               {
                 Core::Utils::Random* random = Global::Problem::instance()->random();
                 // set range [0;1] (default: [-1;1])
@@ -955,7 +955,7 @@ namespace FLD
               // this ensures that all processors construct the same
               // initial field, which is important to get a matching
               // velocity field in physical space
-              if (discret_->get_comm().MyPID() == 0)
+              if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
               {
                 Core::Utils::Random* random = Global::Problem::instance()->random();
                 // set range [0;1] (default: [-1;1])
@@ -1231,7 +1231,7 @@ namespace FLD
       ele->evaluate(
           initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, interpolVec, elevec3);
 
-      if (ele->owner() == discret_->get_comm().MyPID())
+      if (ele->owner() == Core::Communication::my_mpi_rank(discret_->get_comm()))
       {
         std::vector<int> localDofs = discret_->dof(1, ele);
         FOUR_C_ASSERT(

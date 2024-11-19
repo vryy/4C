@@ -7,6 +7,7 @@
 
 #include "4C_particle_interaction_dem_history_pairs.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_io.hpp"
 #include "4C_particle_engine_communication_utils.hpp"
@@ -183,7 +184,7 @@ void ParticleInteraction::DEMHistoryPairs::distribute_history_pairs()
     const int currproc = particlestoproc[gid];
 
     // no need to send history pairs
-    if (currproc == comm_.MyPID()) continue;
+    if (currproc == Core::Communication::my_mpi_rank(comm_)) continue;
 
     // no particle with current global id in simulation
     if (currproc < 0) continue;

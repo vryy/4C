@@ -9,6 +9,7 @@
 
 #include "4C_adapter_fld_fluid_fsi.hpp"
 #include "4C_adapter_str_fsiwrapper.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
@@ -224,7 +225,7 @@ void FSI::FSIResultTest::test_node(
       // Strange! It seems we might actually have a global node around
       // even if it does not belong to us. But here we are just
       // interested in our nodes!
-      if (actnode->owner() != slavedisc_->get_comm().MyPID()) return;
+      if (actnode->owner() != Core::Communication::my_mpi_rank(slavedisc_->get_comm())) return;
 
       std::string quantity = container.get<std::string>("QUANTITY");
       bool unknownquantity = true;  // make sure the result value std::string can be handled

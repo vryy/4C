@@ -7,6 +7,7 @@
 
 #include "4C_particle_interaction_runtime_writer.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_particle.hpp"
 #include "4C_io.hpp"
@@ -70,8 +71,9 @@ void ParticleInteraction::InteractionWriter::register_specific_runtime_csv_write
     FOUR_C_THROW("a runtime csv writer for field '%s' is already stored!", fieldname.c_str());
 
   // set the csv writer object
-  runtime_csvwriters_[fieldname] = std::make_shared<Core::IO::RuntimeCsvWriter>(
-      comm_.MyPID(), *Global::Problem::instance()->output_control_file(), fieldname);
+  runtime_csvwriters_[fieldname] =
+      std::make_shared<Core::IO::RuntimeCsvWriter>(Core::Communication::my_mpi_rank(comm_),
+          *Global::Problem::instance()->output_control_file(), fieldname);
 }
 
 void ParticleInteraction::InteractionWriter::write_particle_interaction_runtime_output(

@@ -28,6 +28,11 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Communication
 {
+  /**
+   * Get the MPI rank of the calling process in the communicator @p comm.
+   */
+  int my_mpi_rank(const Epetra_Comm& comm);
+
   //! Merge map @p map_in (key of type @p T and value of type @p U) from all procs to a merged
   //! map (key of type @p T and value of type @p U). It is distributed to all procs.
   template <typename T, typename U>

@@ -82,7 +82,7 @@ void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& di
     const std::vector<Condition*>& conds, std::vector<int>& nodes)
 {
   std::set<int> nodeset;
-  const int myrank = dis.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(dis.get_comm());
   for (const auto& cond : conds)
   {
     for (const auto node : *cond->get_nodes())
@@ -105,7 +105,7 @@ void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& di
 void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& dis,
     const std::vector<Condition*>& conds, std::set<int>& nodeset)
 {
-  const int myrank = dis.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(dis.get_comm());
   for (auto cond : conds)
   {
     for (int gid : *cond->get_nodes())
@@ -124,7 +124,7 @@ void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& di
 void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& dis,
     const std::vector<Condition*>& conds, std::map<int, Core::Nodes::Node*>& nodes)
 {
-  const int myrank = dis.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(dis.get_comm());
   for (auto cond : conds)
   {
     for (int gid : *cond->get_nodes())
@@ -144,7 +144,7 @@ void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& di
     bool use_coupling_id)
 {
   std::map<int, std::set<int>> nodeset;
-  const int myrank = dis.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(dis.get_comm());
   for (const auto& cond : conds)
   {
     int id = use_coupling_id ? cond->parameters().get<int>("coupling id") : 0;
@@ -170,7 +170,7 @@ void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& di
 void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& dis,
     const std::vector<Condition*>& conds, std::map<int, std::map<int, Core::Nodes::Node*>>& nodes)
 {
-  const int myrank = dis.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(dis.get_comm());
   for (auto* cond : conds)
   {
     int id = cond->parameters().get<int>("coupling id");
@@ -190,7 +190,7 @@ void Core::Conditions::find_condition_objects(const Core::FE::Discretization& di
     std::map<int, Core::Nodes::Node*>& nodes,
     std::map<int, std::shared_ptr<Core::Elements::Element>>& elements, const std::string& condname)
 {
-  int myrank = dis.get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(dis.get_comm());
   std::vector<Condition*> conds;
   dis.get_condition(condname, conds);
 

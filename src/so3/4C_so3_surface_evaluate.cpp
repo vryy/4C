@@ -691,7 +691,7 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
     case calc_struct_centerdisp:
     {
       // We are not interested in ghosted elements
-      if (Comm.MyPID() == owner())
+      if (Core::Communication::my_mpi_rank(Comm) == owner())
       {
         // element geometry update
         std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
@@ -750,7 +750,7 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
     case calc_struct_rotation:
     {
       // We are not interested in ghosted elements
-      if (Comm.MyPID() == owner())
+      if (Core::Communication::my_mpi_rank(Comm) == owner())
       {
         const double maxcoord = params.get<double>("maxcoord");
         Inpar::FSI::SlideALEProj aletype = params.get<Inpar::FSI::SlideALEProj>("aletype");
@@ -934,7 +934,7 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
     case calc_struct_constrvol:
     {
       // We are not interested in volume of ghosted elements
-      if (Comm.MyPID() == owner())
+      if (Core::Communication::my_mpi_rank(Comm) == owner())
       {
         // element geometry update
         std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
@@ -1010,7 +1010,7 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
     break;
     case calc_init_vol:
     {
-      if (Comm.MyPID() == owner())
+      if (Core::Communication::my_mpi_rank(Comm) == owner())
       {
         // the reference volume of the RVE (including inner
         // holes) is calculated by evaluating the following
@@ -1100,7 +1100,7 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
     case calc_struct_monitarea:
     {
       // We are not interested in volume of ghosted elements
-      if (Comm.MyPID() == owner())
+      if (Core::Communication::my_mpi_rank(Comm) == owner())
       {
         // element geometry update
         std::shared_ptr<const Core::LinAlg::Vector<double>> disp =

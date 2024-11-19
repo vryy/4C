@@ -57,7 +57,7 @@ Cut::CutWizard::CutWizard(const std::shared_ptr<Core::FE::Discretization>& backd
     : back_mesh_(std::make_shared<CutWizard::BackMesh>(backdis, this)),
       global_dof_indices_(std::move(global_dof_indices)),
       comm_(backdis->get_comm()),
-      myrank_(backdis->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(backdis->get_comm())),
       intersection_(std::make_shared<Cut::CombIntersection>(myrank_)),
       do_mesh_intersection_(false),
       do_levelset_intersection_(false),
@@ -78,7 +78,7 @@ Cut::CutWizard::CutWizard(const std::shared_ptr<Core::FE::Discretization>& backd
 Cut::CutWizard::CutWizard(const Epetra_Comm& comm)
     : back_mesh_(nullptr),
       comm_(comm),
-      myrank_(comm.MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(comm)),
       intersection_(std::make_shared<Cut::CombIntersection>(myrank_)),
       do_mesh_intersection_(false),
       do_levelset_intersection_(false),

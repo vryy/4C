@@ -53,7 +53,7 @@ void FS3I::PartFPS3I::init()
 {
   FS3I::FS3IBase::init();
 
-  if (comm_.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm_) == 0)
   {
     // ##################       0.- Warning          //#########################
     std::cout << std::endl;

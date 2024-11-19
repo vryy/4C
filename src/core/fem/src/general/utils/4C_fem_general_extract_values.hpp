@@ -10,6 +10,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_linalg_vector.hpp"
@@ -62,7 +63,7 @@ namespace Core::FE
         // safety check
         if (lid < 0)
           FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-              global.Comm().MyPID(), lm[inode * local.size() + idof]);
+              Core::Communication::my_mpi_rank(global.Comm()), lm[inode * local.size() + idof]);
 
         // store current dof in local matrix vector consisting of ndof matrices of size nnode x 1,
         // where nnode denotes the number of element nodes and ndof denotes the number of degrees
@@ -93,7 +94,7 @@ namespace Core::FE
         // safety check
         if (lid < 0)
           FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-              global.Comm().MyPID(), lm[index]);
+              Core::Communication::my_mpi_rank(global.Comm()), lm[index]);
 
         // store current dof in local matrix, which is filled column-wise with the dofs listed in
         // the lm vector
@@ -168,7 +169,7 @@ namespace Core::FE
         const int lid = global.Map().LID(nodegid);
         if (lid < 0)
           FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-              (global).Comm().MyPID(), nodegid);
+              Core::Communication::my_mpi_rank((global).Comm()), nodegid);
         localmatrix(i, j) = global(i)[lid];
       }
     }
@@ -197,7 +198,7 @@ namespace Core::FE
       const int lid = global.Map().LID(nodegid);
       if (lid < 0)
         FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-            global.Comm().MyPID(), nodegid);
+            Core::Communication::my_mpi_rank(global.Comm()), nodegid);
 
       // loop over multi vector columns (numcol=1 for Core::LinAlg::Vector<double>)
       for (int col = 0; col < numcol; col++)

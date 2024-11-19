@@ -84,7 +84,7 @@ void ScaTra::TimIntHDG::setup()
   intphin_ = Core::LinAlg::create_vector(*intdofrowmap, true);
 
   // write number of degrees of freedom for hdg and interior variables to screen output
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::cout << "Number of degrees of freedom in HDG system: "
               << discret_->dof_row_map(0)->NumGlobalElements() << std::endl;
@@ -425,7 +425,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, std::shared_ptr<Core::IO::I
           binning_params);
       binningstrategy = std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params,
           Global::Problem::instance()->output_control_file(), discret_->get_comm(),
-          discret_->get_comm().MyPID(), nullptr, nullptr, dis);
+          Core::Communication::my_mpi_rank(discret_->get_comm()), nullptr, nullptr, dis);
       binningstrategy
           ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
               dis, stdelecolmap, stdnodecolmap);
@@ -549,7 +549,7 @@ void ScaTra::TimIntHDG::set_initial_field(
         ele->evaluate(
             eleparams, *discret_, la, dummyMat, dummyMat, updateVec1, updateVec2, dummyVec);
 
-        if (ele->owner() == discret_->get_comm().MyPID())
+        if (ele->owner() == Core::Communication::my_mpi_rank(discret_->get_comm()))
         {
           std::vector<int> localDofs = discret_->dof(nds_intvar_, ele);
           FOUR_C_ASSERT(
@@ -576,7 +576,7 @@ void ScaTra::TimIntHDG::set_initial_field(
 
       double globerror = 0;
       discret_->get_comm().SumAll(&error, &globerror, 1);
-      if (discret_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
         std::cout << "Error project when setting face twice: " << globerror << std::endl;
 
       // initialize also the solution vector. These values are a pretty good guess for the
@@ -661,7 +661,7 @@ void ScaTra::TimIntHDG::update_interior_variables(
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
     Core::Elements::Element *ele = discret_->l_col_element(iele);
-    if (ele->owner() != discret_->get_comm().MyPID()) continue;
+    if (ele->owner() != Core::Communication::my_mpi_rank(discret_->get_comm())) continue;
 
     ele->location_vector(*discret_, la, false);
     updateVec.size(discret_->num_dof(nds_intvar_, ele));
@@ -1031,7 +1031,7 @@ void ScaTra::TimIntHDG::calc_mat_initial()
     Core::Elements::Element *ele = discret_->l_col_element(iele);
 
     // if the element has only ghosted nodes it will not assemble -> skip evaluation
-    if (ele->has_only_ghost_nodes(discret_->get_comm().MyPID())) continue;
+    if (ele->has_only_ghost_nodes(Core::Communication::my_mpi_rank(discret_->get_comm()))) continue;
     ele->location_vector(*discret_, la, false);
 
     strategy.clear_element_storage(la[0].size(), la[0].size());
@@ -1040,8 +1040,8 @@ void ScaTra::TimIntHDG::calc_mat_initial()
     int err = ele->evaluate(eleparams, *discret_, la, strategy.elematrix1(), strategy.elematrix2(),
         strategy.elevector1(), strategy.elevector2(), strategy.elevector3());
     if (err)
-      FOUR_C_THROW(
-          "Proc %d: Element %d returned err=%d", discret_->get_comm().MyPID(), ele->id(), err);
+      FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+          Core::Communication::my_mpi_rank(discret_->get_comm()), ele->id(), err);
 
     int eid = ele->id();
     strategy.assemble_matrix1(eid, la[0].lm_, la[0].lm_, la[0].lmowner_, la[0].stride_);
@@ -1053,7 +1053,7 @@ void ScaTra::TimIntHDG::calc_mat_initial()
   //    std::cout << "Time measurement evaluate: " << dtmatinit << std::endl;
 
   // Output of non-zeros in system matrix
-  if (step_ == 0 and discret_->get_comm().MyPID() == 0)
+  if (step_ == 0 and Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     int numglobalnonzeros = system_matrix()->epetra_matrix()->NumGlobalNonzeros();
     std::cout << "Number of non-zeros in system matrix: " << numglobalnonzeros << std::endl;
@@ -1118,7 +1118,7 @@ void ScaTra::TimIntHDG::adapt_degree()
     // fill location array and store it for later use
     ele->location_vector(*discret_, la_old[iele], false);
 
-    if (ele->owner() == discret_->get_comm().MyPID())
+    if (ele->owner() == Core::Communication::my_mpi_rank(discret_->get_comm()))
     {
       Discret::Elements::ScaTraHDG *hdgele =
           dynamic_cast<Discret::Elements::ScaTraHDG *>(discret_->l_col_element(iele));
@@ -1316,7 +1316,7 @@ void ScaTra::TimIntHDG::adapt_variable_vector(std::shared_ptr<Core::LinAlg::Vect
     Core::Elements::Element *ele = discret_->l_col_element(iele);
 
     // if the element has only ghosted nodes it will not assemble -> skip evaluation
-    if (ele->has_only_ghost_nodes(discret_->get_comm().MyPID())) continue;
+    if (ele->has_only_ghost_nodes(Core::Communication::my_mpi_rank(discret_->get_comm()))) continue;
 
     // fill location array for adapted dofsets
     ele->location_vector(*discret_, la_temp, false);
@@ -1343,7 +1343,7 @@ void ScaTra::TimIntHDG::adapt_variable_vector(std::shared_ptr<Core::LinAlg::Vect
     ele->evaluate(eleparams, *discret_, la, dummyMat, dummyMat, phi_ele, intphi_ele, dummyVec);
 
     // store projected values of the element on the new state vector for the interior variables
-    if (ele->owner() == discret_->get_comm().MyPID())
+    if (ele->owner() == Core::Communication::my_mpi_rank(discret_->get_comm()))
     {
       std::vector<int> localDofs = discret_->dof(nds_intvar_, ele);
       FOUR_C_ASSERT(
@@ -1421,7 +1421,7 @@ void ScaTra::TimIntHDG::assemble_rhs()
     Core::Elements::Element *ele = discret_->l_col_element(iele);
 
     // if the element has only ghosted nodes it will not assemble -> skip evaluation
-    if (ele->has_only_ghost_nodes(discret_->get_comm().MyPID())) continue;
+    if (ele->has_only_ghost_nodes(Core::Communication::my_mpi_rank(discret_->get_comm()))) continue;
 
     ele->location_vector(*discret_, la, false);
 

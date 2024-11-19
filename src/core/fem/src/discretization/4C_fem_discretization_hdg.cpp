@@ -55,7 +55,7 @@ int Core::FE::DiscretizationHDG::fill_complete(
   for (std::map<int, std::shared_ptr<Core::Elements::FaceElement>>::iterator f = faces_.begin();
        f != faces_.end(); ++f)
   {
-    if (f->second->owner() == get_comm().MyPID()) continue;
+    if (f->second->owner() == Core::Communication::my_mpi_rank(get_comm())) continue;
     std::vector<int>& ids = nodeIds[f->first];
     FOUR_C_ASSERT(ids.size() > 0, "Lost a face during communication");
     f->second->set_node_ids(ids.size(), ids.data());
@@ -195,7 +195,7 @@ void Core::FE::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
 
   // unpack, unify and sort elements on processor 0
 
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::map<std::vector<int>, int> elementsanddegree;
     int index = 0;
@@ -318,7 +318,7 @@ void Core::FE::Utils::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterL
   if (discret.num_my_row_faces() > 0)
   {
     // initialize with true on each proc except proc 0
-    bool pressureDone = discret.get_comm().MyPID() != 0;
+    bool pressureDone = Core::Communication::my_mpi_rank(discret.get_comm()) != 0;
 
     // loop over all faces
     for (int i = 0; i < discret.num_my_row_faces(); ++i)
@@ -336,7 +336,8 @@ void Core::FE::Utils::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterL
         pressureDone = true;
       if (!pressureDone)
       {
-        if (discret.num_my_row_elements() > 0 && discret.get_comm().MyPID() == 0)
+        if (discret.num_my_row_elements() > 0 &&
+            Core::Communication::my_mpi_rank(discret.get_comm()) == 0)
         {
           std::vector<int> predof = discret.dof(0, discret.l_row_element(0));
           const int gid = predof[0];
@@ -374,7 +375,7 @@ void Core::FE::Utils::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterL
         const int lid = info.toggle.Map().LID(gid);
         if (lid < 0)
           FOUR_C_THROW("Global id %d not on this proc %d in system vector", dofs[j],
-              discret.get_comm().MyPID());
+              Core::Communication::my_mpi_rank(discret.get_comm()));
         // get position of label for this dof in condition line
         int onesetj = j / dofpercomponent;
 
@@ -489,7 +490,7 @@ void Core::FE::Utils::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
     initParams.set("time", time);
 
     // initialize with true if proc is not proc 0
-    bool pressureDone = discret.get_comm().MyPID() != 0;
+    bool pressureDone = Core::Communication::my_mpi_rank(discret.get_comm()) != 0;
 
     // loop over all faces
     for (int i = 0; i < discret.num_my_row_faces(); ++i)
@@ -507,7 +508,8 @@ void Core::FE::Utils::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
         pressureDone = true;
       if (!pressureDone)
       {
-        if (discret.num_my_row_elements() > 0 && discret.get_comm().MyPID() == 0)
+        if (discret.num_my_row_elements() > 0 &&
+            Core::Communication::my_mpi_rank(discret.get_comm()) == 0)
         {
           std::vector<int> predof = discret.dof(0, discret.l_row_element(0));
           const int gid = predof[0];
@@ -565,7 +567,7 @@ void Core::FE::Utils::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
         const int lid = toggle.Map().LID(gid);
         if (lid < 0)
           FOUR_C_THROW("Global id %d not on this proc %d in system vector", dofs[j],
-              discret.get_comm().MyPID());
+              Core::Communication::my_mpi_rank(discret.get_comm()));
         // get position of label for this dof in condition line
         int onesetj = j / dofpercomponent;
 

@@ -160,7 +160,7 @@ int Adapter::StructureTimeAda::integrate()
   // error checking variables
   Inpar::Solid::ConvergenceStatus convergencestatus = Inpar::Solid::conv_success;
 
-  int myrank = stm_->discretization()->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(stm_->discretization()->get_comm());
 
   // finalize initialization
   // (only relevant if an auxiliary time integrator is used)
@@ -405,7 +405,7 @@ void Adapter::StructureTimeAda::indicate(bool& accepted, double& stpsiznew)
   accepted = (norm < errtol_);
 
   // debug
-  int myrank = stm_->discretization()->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(stm_->discretization()->get_comm());
   if (myrank == 0)
   {
     std::cout << "LocErrNorm " << std::scientific << norm << ", LocErrTol " << errtol_
@@ -445,7 +445,7 @@ double Adapter::StructureTimeAda::calculate_dt(const double norm)
     sizrat = sizeratiomax_ / sizeratioscale_;
 
   // debug
-  int myrank = stm_->discretization()->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(stm_->discretization()->get_comm());
   if (myrank == 0)
   {
     printf("sizrat %g, stepsize %g, stepsizepre %g\n", sizrat, stepsize_, stepsizepre_);
@@ -539,7 +539,7 @@ void Adapter::StructureTimeAda::update_period()
 Inpar::Solid::ConvergenceStatus Adapter::StructureTimeAda::perform_error_action(
     const Inpar::Solid::DivContAct& action, double& stepsizenew)
 {
-  int myrank = stm_->discretization()->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(stm_->discretization()->get_comm());
 
   // here we handle how we deal with a failed Newton-Raphson, basically:
   // + stop -> error

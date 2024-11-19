@@ -9,6 +9,8 @@
 
 #include "4C_linalg_vector.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
+
 
 // Epetra related headers
 #include <Epetra_Map.h>
@@ -66,7 +68,7 @@ namespace
     ASSERT_FLOAT_EQ(0.0, norm_of_test_vector);
 
     // test element access function for proc 0
-    if (comm_->MyPID() == 0) test_vector[1] = 1;
+    if (Core::Communication::my_mpi_rank(*comm_) == 0) test_vector[1] = 1;
 
     // check result of Norm1
     test_vector.Norm1(&norm_of_test_vector);
@@ -283,7 +285,7 @@ namespace
 
     // New map where elements are distributed differently
     std::array<int, 5> my_elements;
-    if (comm_->MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(*comm_) == 0)
       my_elements = {0, 2, 4, 6, 8};
     else
       my_elements = {1, 3, 5, 7, 9};

@@ -1436,7 +1436,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
   if (my_multimat_IDs.size() != 0)
   {
     foundmicromat = 1;
-    foundmicromatmyrank = lcomm->MyPID();
+    foundmicromatmyrank = Core::Communication::my_mpi_rank(*lcomm);
   }
 
   // find out how many procs have micro material
@@ -1676,12 +1676,12 @@ void Global::read_microfields_np_support(Global::Problem& problem)
   {
     color++;
     gsum += supgrouplayout[color];
-  } while (gsum <= lcomm->MyPID());
+  } while (gsum <= Core::Communication::my_mpi_rank(*lcomm));
 
   // do the splitting of the communicator
   MPI_Comm mpi_local_comm;
   MPI_Comm_split((std::dynamic_pointer_cast<Epetra_MpiComm>(gcomm)->GetMpiComm()), color,
-      gcomm->MyPID(), &mpi_local_comm);
+      Core::Communication::my_mpi_rank(*gcomm), &mpi_local_comm);
 
   // create the sub communicator that includes one macro proc and some supporting procs
   std::shared_ptr<Epetra_Comm> subgroupcomm = std::make_shared<Epetra_MpiComm>(mpi_local_comm);
@@ -2030,7 +2030,8 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::InputFile& input
     int rs = type.get<int>("RANDSEED");
     if (rs < 0)
       rs = static_cast<int>(time(nullptr)) +
-           42 * Global::Problem::instance(0)->get_communicators()->global_comm()->MyPID();
+           42 * Core::Communication::my_mpi_rank(
+                    *Global::Problem::instance(0)->get_communicators()->global_comm());
 
     srand((unsigned int)rs);  // Set random seed for stdlibrary. This is deprecated, as it does not
     // produce random numbers on some platforms!
@@ -2214,7 +2215,7 @@ void Global::read_result(Global::Problem& problem, Core::IO::InputFile& input)
 void Global::read_conditions(Global::Problem& problem, Core::IO::InputFile& input)
 {
   Teuchos::Time time("", true);
-  if (input.get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(input.get_comm()) == 0)
   {
     Core::IO::cout << "Read/generate conditions                          in....";
     Core::IO::cout.flush();
@@ -2343,7 +2344,7 @@ void Global::read_conditions(Global::Problem& problem, Core::IO::InputFile& inpu
     }
   }
 
-  if (input.get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(input.get_comm()) == 0)
   {
     std::cout << time.totalElapsedTime(true) << " secs\n";
   }

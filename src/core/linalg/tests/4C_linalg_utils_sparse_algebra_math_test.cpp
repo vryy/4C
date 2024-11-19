@@ -95,7 +95,7 @@ namespace
     EXPECT_NEAR(A_inverse->norm_frobenius(), 0.1235706050986417, 1e-12);
 
     // Check fist matrix row of inverse
-    if (comm_->MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(*comm_) == 0)
     {
       double* values;
       int length;

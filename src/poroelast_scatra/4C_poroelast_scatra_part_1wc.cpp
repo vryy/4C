@@ -10,6 +10,7 @@
 #include "4C_adapter_fld_poro.hpp"
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_adapter_str_fpsiwrapper.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_scatra_timint_implicit.hpp"
@@ -21,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraPart1WC::do_poro_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n POROUS MEDIUM SOLVER \n***********************\n";
   }
@@ -37,7 +38,7 @@ void PoroElastScaTra::PoroScatraPart1WC::do_poro_step()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraPart1WC::do_scatra_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n TRANSPORT SOLVER \n***********************\n";
   }
@@ -93,7 +94,7 @@ PoroElastScaTra::PoroScatraPart1WCPoroToScatra::PoroScatraPart1WCPoroToScatra(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraPart1WC(comm, timeparams)
 {
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
     std::cout << "\n Create PoroScatraPart1WCPoroToScatra algorithm ... \n" << std::endl;
 }
 
@@ -173,7 +174,7 @@ PoroElastScaTra::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraPart1WC(comm, timeparams)
 {
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
     std::cout << "\n Create PoroScatraPart1WCScatraToPoro algorithm ... \n" << std::endl;
 
   // build a proxy of the scatra discretization for the structure field

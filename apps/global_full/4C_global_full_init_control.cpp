@@ -7,6 +7,7 @@
 
 #include "4C_global_full_init_control.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_global_data.hpp"
 
@@ -29,7 +30,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
   int ngroups = problem->get_communicators()->num_groups();
   Core::Communication::NestedParallelismType npType = problem->get_communicators()->np_type();
   int restartgroup = 0;
-  int myrank = lcomm->MyPID();
+  int myrank = Core::Communication::my_mpi_rank(*lcomm);
 
 
   if (argc <= 1)

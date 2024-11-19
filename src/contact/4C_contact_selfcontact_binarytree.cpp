@@ -952,7 +952,7 @@ void CONTACT::SelfBinaryTree::initialize_tree_bottom_up(
   for (unsigned k = 0; k < roots_.size(); ++k) roots_[k]->complete_tree(0, enlarge());
 
   // output to screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\nFound " << roots_.size() << " root node(s) for self binary tree." << std::endl;
 
   // in 3D we have to calculate adjacent tree nodes
@@ -1478,13 +1478,15 @@ void CONTACT::SelfBinaryTree::search_contact()
   int rest = nroot % nproc;
 
   // give 'ratio+1' roots to the first 'rest' procs
-  if (get_comm().MyPID() < rest)
-    for (int k = 0; k < ratio + 1; ++k) myroots.push_back(get_comm().MyPID() * (ratio + 1) + k);
+  if (Core::Communication::my_mpi_rank(get_comm()) < rest)
+    for (int k = 0; k < ratio + 1; ++k)
+      myroots.push_back(Core::Communication::my_mpi_rank(get_comm()) * (ratio + 1) + k);
 
   // give 'ratio' roots to the remaining procs
   else
     for (int k = 0; k < ratio; ++k)
-      myroots.push_back(rest * (ratio + 1) + (get_comm().MyPID() - rest) * ratio + k);
+      myroots.push_back(
+          rest * (ratio + 1) + (Core::Communication::my_mpi_rank(get_comm()) - rest) * ratio + k);
 
   //**********************************************************************
   // STEP 3: search for self contact starting at root nodes
@@ -1912,7 +1914,7 @@ void CONTACT::SelfBinaryTree::plot_dual_graph(
 void CONTACT::SelfBinaryTree::plot_roots_and_tree() const
 {
   // debug output
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     // print roots
     for (unsigned k = 0; k < roots_.size(); ++k)

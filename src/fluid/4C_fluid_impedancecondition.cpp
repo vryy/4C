@@ -182,7 +182,7 @@ FLD::Utils::FluidImpedanceBc::FluidImpedanceBc(
     const std::shared_ptr<Core::FE::Discretization> actdis, const int condid,
     Core::Conditions::Condition* impedancecond)
     : discret_(actdis),
-      myrank_(discret_->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(discret_->get_comm())),
       theta_(0.5),
       treetype_(impedancecond->parameters().get<std::string>("TYPE")),
       period_(impedancecond->parameters().get<double>("TIMEPERIOD")),

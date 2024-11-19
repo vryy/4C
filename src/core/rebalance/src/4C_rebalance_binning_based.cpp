@@ -45,7 +45,7 @@ void Core::Rebalance::rebalance_discretizations_by_binning(
   // rebalance discr. with help of binning strategy
   if (comm.NumProc() > 1)
   {
-    if (comm.MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm) == 0)
     {
       Core::IO::cout(Core::IO::verbose)
           << "+---------------------------------------------------------------" << Core::IO::endl;
@@ -66,7 +66,8 @@ void Core::Rebalance::rebalance_discretizations_by_binning(
 
     // binning strategy is created and parallel redistribution is performed
     Binstrategy::BinningStrategy binningstrategy(binning_params, output_control,
-        vector_of_discretizations[0]->get_comm(), vector_of_discretizations[0]->get_comm().MyPID(),
+        vector_of_discretizations[0]->get_comm(),
+        Core::Communication::my_mpi_rank(vector_of_discretizations[0]->get_comm()),
         std::move(correct_node), std::move(determine_relevant_points), vector_of_discretizations);
 
     binningstrategy
@@ -91,7 +92,7 @@ void Core::Rebalance::ghost_discretization_on_all_procs(Core::FE::Discretization
   // clone communicator of target discretization
   std::shared_ptr<Epetra_Comm> com(distobeghosted.get_comm().Clone());
 
-  if (com->MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(*com) == 0)
   {
     Core::IO::cout(Core::IO::verbose)
         << "+-----------------------------------------------------------------------+"
@@ -177,7 +178,7 @@ void Core::Rebalance::match_element_distribution_of_matching_discretizations(
   if (com->NumProc() > 1)
   {
     // print to screen
-    if (com->MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(*com) == 0)
     {
       Core::IO::cout(Core::IO::verbose)
           << "+-----------------------------------------------------------------------------+"
@@ -263,7 +264,7 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
   if (com->NumProc() > 1)
   {
     // print to screen
-    if (com->MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(*com) == 0)
     {
       Core::IO::cout(Core::IO::verbose)
           << "+-----------------------------------------------------------------------------+"
@@ -365,7 +366,7 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
       {
         std::cout << "ELEMENT : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]
                   << ", " << it.second[2] << " )"
-                  << " on PROC " << dis_to_rebalance.get_comm().MyPID()
+                  << " on PROC " << Core::Communication::my_mpi_rank(dis_to_rebalance.get_comm())
                   << " map size = " << matched_ele_map.size() << std::endl;
       }
     }
@@ -397,7 +398,8 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
         rebalance_colelegid_vec.push_back(ele->id());
 
         // append unconditioned ele id to row gid vec
-        if (ele->owner() == com->MyPID()) rebalance_rowelegid_vec.push_back(ele->id());
+        if (ele->owner() == Core::Communication::my_mpi_rank(*com))
+          rebalance_rowelegid_vec.push_back(ele->id());
       }
 
     }  // loop over col elements
@@ -433,7 +435,8 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
       for (int rebalance_cond_node : *rebalance_cond_nodes)
       {
         if (dis_to_rebalance.have_global_node(rebalance_cond_node))
-          if (dis_to_rebalance.g_node(rebalance_cond_node)->owner() == com->MyPID())
+          if (dis_to_rebalance.g_node(rebalance_cond_node)->owner() ==
+              Core::Communication::my_mpi_rank(*com))
             rebalance_rownodegid_vec.push_back(rebalance_cond_node);
       }
     }
@@ -470,7 +473,7 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
       {
         std::cout << "NODE : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]
                   << ", " << it.second[2] << " )"
-                  << " on PROC " << dis_to_rebalance.get_comm().MyPID()
+                  << " on PROC " << Core::Communication::my_mpi_rank(dis_to_rebalance.get_comm())
                   << " map size = " << matched_node_map.size() << std::endl;
       }
     }

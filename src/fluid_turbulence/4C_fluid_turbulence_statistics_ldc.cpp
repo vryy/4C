@@ -138,7 +138,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   // direction to all procs
   //--------------------------------------------------------------------
   {
-    int myrank = discret_->get_comm().MyPID();
+    int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
     int numprocs = discret_->get_comm().NumProc();
 
     std::vector<char> sblock;
@@ -489,7 +489,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 
   std::shared_ptr<std::ofstream> log;
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
 
@@ -1118,7 +1118,7 @@ void FLD::TurbulenceStatisticsLdc::dump_statistics(int step)
   //----------------------------------------------------------------------
   // output to log-file
   std::shared_ptr<std::ofstream> log;
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
@@ -1285,7 +1285,7 @@ void FLD::TurbulenceStatisticsLdc::dump_loma_statistics(int step)
   //----------------------------------------------------------------------
   // output to log-file
   std::shared_ptr<std::ofstream> log;
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".loma_statistics");

@@ -8,6 +8,7 @@
 #include "4C_scatra_turbulence_hit_initial_scalar_field.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_scatra_timint_implicit.hpp"
@@ -95,7 +96,7 @@ namespace ScaTra
 
     // communicate coordinates to all procs via round Robin loop
     {
-      int myrank = discret_->get_comm().MyPID();
+      int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
       int numprocs = discret_->get_comm().NumProc();
 
       std::vector<char> sblock;
@@ -245,7 +246,7 @@ namespace ScaTra
               // this ensures that all processors construct the same
               // initial field, which is important to get a matching
               // scalar field in physical space
-              if (discret_->get_comm().MyPID() == 0)
+              if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
               {
                 Core::Utils::Random* random = Global::Problem::instance()->random();
                 // set range [0;1] (default: [-1;1])

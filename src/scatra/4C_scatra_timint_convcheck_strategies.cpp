@@ -42,7 +42,7 @@ bool ScaTra::ConvCheckStrategyStd::abort_nonlin_iter(
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->get_comm().MyPID();
+  const int mypid = Core::Communication::my_mpi_rank(scatratimint.discretization()->get_comm());
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.iter_num();
@@ -169,7 +169,7 @@ bool ScaTra::ConvCheckStrategyStd::abort_outer_iter(
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->get_comm().MyPID();
+  const int mypid = Core::Communication::my_mpi_rank(scatratimint.discretization()->get_comm());
 
   // extract current outer iteration step
   const int itnum = scatratimint.iter_num_outer();
@@ -299,7 +299,7 @@ bool ScaTra::ConvCheckStrategyStdElch::abort_nonlin_iter(
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->get_comm().MyPID();
+  const int mypid = Core::Communication::my_mpi_rank(scatratimint.discretization()->get_comm());
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.iter_num();
@@ -458,7 +458,7 @@ bool ScaTra::ConvCheckStrategyS2ILM::abort_nonlin_iter(
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->get_comm().MyPID();
+  const int mypid = Core::Communication::my_mpi_rank(scatratimint.discretization()->get_comm());
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.iter_num();
@@ -615,7 +615,7 @@ bool ScaTra::ConvCheckStrategyS2ILMElch::abort_nonlin_iter(
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->get_comm().MyPID();
+  const int mypid = Core::Communication::my_mpi_rank(scatratimint.discretization()->get_comm());
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.iter_num();
@@ -809,7 +809,7 @@ bool ScaTra::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter(
   if (elchtimint == nullptr) FOUR_C_THROW("Cast of scalar transport time integrator failed!");
 
   // extract processor ID
-  const int mypid = scatratimint.discretization()->get_comm().MyPID();
+  const int mypid = Core::Communication::my_mpi_rank(scatratimint.discretization()->get_comm());
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.iter_num();
@@ -1002,7 +1002,7 @@ bool ScaTra::ConvCheckStrategyStdMacroScaleElch::abort_outer_iter(
   if (elchtimint == nullptr) FOUR_C_THROW("Cast of scalar transport time integrator failed!");
 
   // extract processor ID
-  const int mypid = scatratimint.discretization()->get_comm().MyPID();
+  const int mypid = Core::Communication::my_mpi_rank(scatratimint.discretization()->get_comm());
 
   // extract current outer iteration step
   const int itnum = scatratimint.iter_num_outer();
@@ -1105,7 +1105,7 @@ bool ScaTra::ConvCheckStrategyPoroMultiphaseScatra::abort_nonlin_iter(
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->get_comm().MyPID();
+  const int mypid = Core::Communication::my_mpi_rank(scatratimint.discretization()->get_comm());
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.iter_num();
@@ -1229,7 +1229,7 @@ bool ScaTra::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::abort_nonlin_ite
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->get_comm().MyPID();
+  const int mypid = Core::Communication::my_mpi_rank(scatratimint.discretization()->get_comm());
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.iter_num();

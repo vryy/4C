@@ -93,7 +93,7 @@ void XFEM::XFluidContactComm::initialize_fluid_state(std::shared_ptr<Cut::CutWiz
 
   if (mc_.size())
   {
-    if (!fluiddis_->get_comm().MyPID())
+    if (!Core::Communication::my_mpi_rank(fluiddis_->get_comm()))
       std::cout << "==| XFluidContactComm: Loaded " << mc_.size()
                 << " Mesh Coupling Objects! |==" << std::endl;
   }
@@ -954,7 +954,7 @@ Cut::Side* XFEM::XFluidContactComm::findnext_physical_side(Core::LinAlg::Matrix<
   if (!newSide)
   {
     std::stringstream str;
-    str << "CINS_" << fluiddis_->get_comm().MyPID() << ".pos";
+    str << "CINS_" << Core::Communication::my_mpi_rank(fluiddis_->get_comm()) << ".pos";
     std::ofstream file(str.str().c_str());
     Cut::Output::gmsh_write_section(file, "InitSide", initSide);
     Cut::Output::gmsh_write_section(file, "PerFormedSides", performed_sides, true);
@@ -1414,7 +1414,8 @@ void XFEM::XFluidContactComm::prepare_iteration_step()
 
   higher_contact_elements_comm_.insert(dest.begin(), dest.end());
 
-  if (!fluiddis_->get_comm().MyPID() && higher_contact_elements_comm_.size())
+  if (!Core::Communication::my_mpi_rank(fluiddis_->get_comm()) &&
+      higher_contact_elements_comm_.size())
   {
     std::cout << "==| Interface Elements with an increased number of Contact Gausspoins:";
     for (std::set<int>::iterator sit = higher_contact_elements_comm_.begin();
@@ -1454,7 +1455,8 @@ void XFEM::XFluidContactComm::create_new_gmsh_files()
   if (counter)
   {
     std::stringstream str;
-    str << "FSCI_" << counter << "_" << fluiddis_->Comm().MyPID() << ".pos";
+    str << "FSCI_" << counter << "_" << Core::Communication::my_mpi_rank(fluiddis_->Comm())
+        << ".pos";
     std::ofstream file(str.str().c_str());
     for (std::size_t section = 0; section < sections.size(); ++section)
     {
@@ -1477,7 +1479,7 @@ void XFEM::XFluidContactComm::create_new_gmsh_files()
 
   std::vector<int> g_sum_gps(5);
   fluiddis_->get_comm().SumAll(sum_gps_.data(), g_sum_gps.data(), 5);
-  if (!fluiddis_->get_comm().MyPID())
+  if (!Core::Communication::my_mpi_rank(fluiddis_->get_comm()))
   {
     std::cout << "===| Summary Contact GPs |===" << std::endl;
     // 0 ... Contact, 1 ... Contact_NoContactNoFSI, 2 ... Contact_NoContactFSI, 3 ... FSI_NoContact,

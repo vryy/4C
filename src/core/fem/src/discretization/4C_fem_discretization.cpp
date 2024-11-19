@@ -294,19 +294,19 @@ void Core::FE::Discretization::print(std::ostream& os) const
     int nummynodes = 0;
     std::map<int, std::shared_ptr<Core::Nodes::Node>>::const_iterator ncurr;
     for (ncurr = node_.begin(); ncurr != node_.end(); ++ncurr)
-      if (ncurr->second->owner() == get_comm().MyPID()) nummynodes++;
+      if (ncurr->second->owner() == Core::Communication::my_mpi_rank(get_comm())) nummynodes++;
 
     int nummyele = 0;
     std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator ecurr;
     for (ecurr = element_.begin(); ecurr != element_.end(); ++ecurr)
-      if (ecurr->second->owner() == get_comm().MyPID()) nummyele++;
+      if (ecurr->second->owner() == Core::Communication::my_mpi_rank(get_comm())) nummyele++;
 
     get_comm().SumAll(&nummynodes, &numglobalnodes, 1);
     get_comm().SumAll(&nummyele, &numglobalelements, 1);
   }
 
   // print head
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     os << "--------------------------------------------------\n";
     os << "discretization: " << name() << std::endl;
@@ -322,7 +322,7 @@ void Core::FE::Discretization::print(std::ostream& os) const
   get_comm().Barrier();
   for (int proc = 0; proc < get_comm().NumProc(); ++proc)
   {
-    if (proc == get_comm().MyPID())
+    if (proc == Core::Communication::my_mpi_rank(get_comm()))
     {
       // loop over dofsets
       for (int nds = 0; nds < num_dof_sets(); ++nds)
@@ -703,7 +703,7 @@ void Core::FE::Discretization::unpack_my_elements(std::vector<char>& e)
     auto* ele = dynamic_cast<Core::Elements::Element*>(o);
     FOUR_C_THROW_UNLESS(ele != nullptr,
         "Failed to build an element from the element data for discretization %s", name_.c_str());
-    ele->set_owner(comm_->MyPID());
+    ele->set_owner(Core::Communication::my_mpi_rank(*comm_));
     add_element(std::shared_ptr<Core::Elements::Element>(ele));
   }
   // in case add_element forgets...
@@ -721,7 +721,7 @@ void Core::FE::Discretization::unpack_my_nodes(std::vector<char>& e)
     auto* node = dynamic_cast<Core::Nodes::Node*>(o);
     FOUR_C_THROW_UNLESS(node != nullptr,
         "Failed to build a node from the node data for discretization %s", name_.c_str());
-    node->set_owner(comm_->MyPID());
+    node->set_owner(Core::Communication::my_mpi_rank(*comm_));
     add_node(std::shared_ptr<Core::Nodes::Node>(node));
   }
   // in case add_node forgets...

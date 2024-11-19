@@ -7,6 +7,7 @@
 
 #include "4C_io_gridgenerator.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
@@ -39,7 +40,7 @@ namespace Core::IO::GridGenerator
       const Core::IO::GridGenerator::RectangularCuboidInputs& inputData, bool outputFlag)
   {
     const Epetra_Comm& comm = dis.get_comm();
-    const int myrank = comm.MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(comm);
     const int numproc = comm.NumProc();
 
     Core::Elements::ElementDefinition ed;

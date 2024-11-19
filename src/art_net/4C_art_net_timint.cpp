@@ -8,6 +8,7 @@
 #include "4C_art_net_timint.hpp"
 
 #include "4C_art_net_artery_resulttest.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_bio.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -46,7 +47,7 @@ Arteries::TimInt::TimInt(std::shared_ptr<Core::FE::Discretization> actdis,
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
-  myrank_ = discret_->get_comm().MyPID();
+  myrank_ = Core::Communication::my_mpi_rank(discret_->get_comm());
 
   // -------------------------------------------------------------------
   // get the basic parameters first

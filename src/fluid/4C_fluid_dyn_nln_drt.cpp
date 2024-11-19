@@ -43,7 +43,7 @@ void dyn_fluid_drt(const int restart)
   if ((fdyn.sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW")) and
       (restart < fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
   {
-    if (comm.MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm) == 0)
     {
       std::cout << "#-----------------------------------------------#" << std::endl;
       std::cout << "#      ENTER TURBULENT INFLOW COMPUTATION       #" << std::endl;

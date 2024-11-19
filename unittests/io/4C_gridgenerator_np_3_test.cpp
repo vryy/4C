@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
@@ -75,7 +76,7 @@ namespace
     Core::Nodes::Node* lastNode = testdis_->l_row_node(testdis_->num_my_row_nodes() - 1);
     const auto nodePosition = lastNode->x();
 
-    if (comm_->MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(*comm_) == 0)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
@@ -86,7 +87,7 @@ namespace
       EXPECT_EQ(testdis_->num_my_col_elements(), 300);
       EXPECT_EQ(lastNode->id(), 2557);
     }
-    else if (comm_->MyPID() == 1)
+    else if (Core::Communication::my_mpi_rank(*comm_) == 1)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
@@ -97,7 +98,7 @@ namespace
       EXPECT_EQ(testdis_->num_my_col_elements(), 300);
       EXPECT_EQ(lastNode->id(), 4867);
     }
-    else if (comm_->MyPID() == 2)
+    else if (Core::Communication::my_mpi_rank(*comm_) == 2)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
@@ -124,7 +125,7 @@ namespace
     Core::Nodes::Node* lastNode = testdis_->l_row_node(testdis_->num_my_row_nodes() - 1);
     const auto nodePosition = lastNode->x();
 
-    if (comm_->MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(*comm_) == 0)
     {
       EXPECT_NEAR(nodePosition[0], -0.3, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
@@ -135,7 +136,7 @@ namespace
       EXPECT_EQ(testdis_->num_my_col_elements(), 596);
       EXPECT_EQ(lastNode->id(), 4859);
     }
-    else if (comm_->MyPID() == 1)
+    else if (Core::Communication::my_mpi_rank(*comm_) == 1)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 0.75, 1e-14);
@@ -146,7 +147,7 @@ namespace
       EXPECT_EQ(testdis_->num_my_col_elements(), 590);
       EXPECT_EQ(lastNode->id(), 4757);
     }
-    else if (comm_->MyPID() == 2)
+    else if (Core::Communication::my_mpi_rank(*comm_) == 2)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);

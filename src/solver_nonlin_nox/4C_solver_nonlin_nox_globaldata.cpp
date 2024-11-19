@@ -7,6 +7,7 @@
 
 #include "4C_solver_nonlin_nox_globaldata.hpp"  // class definition
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_inpar_boolifyparameters.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -146,7 +147,7 @@ void NOX::Nln::GlobalData::check_input() const
       msg << std::setw(109) << std::setfill('!') << "\n" << std::setfill(' ');
       msg << "!!! " << std::left << std::setw(100) << act_msg << " !!!";
       msg << std::setw(109) << std::setfill('!') << "\n" << std::setfill(' ') << std::right;
-      if (comm_->MyPID() == 0) std::cout << msg.str() << std::endl;
+      if (Core::Communication::my_mpi_rank(*comm_) == 0) std::cout << msg.str() << std::endl;
     }
   return;
 }

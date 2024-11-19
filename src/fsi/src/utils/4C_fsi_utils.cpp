@@ -615,7 +615,7 @@ void FSI::Utils::SlideAleUtils::redundant_elements(
     {
       for (eit = istructslideles_[i].begin(); eit != istructslideles_[i].end(); eit++)
       {
-        if (interfacedis.get_comm().MyPID() == (*eit).second->owner())
+        if (Core::Communication::my_mpi_rank(interfacedis.get_comm()) == (*eit).second->owner())
           vstruslideleids.push_back(eit->first);
       }
     }

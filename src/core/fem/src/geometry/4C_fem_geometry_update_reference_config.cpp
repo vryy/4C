@@ -50,7 +50,7 @@ void Core::Geo::update_reference_config_with_disp(
       const int lid = coldisp.Map().LID(gid);
 
       FOUR_C_ASSERT(lid >= 0, "Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-          coldisp.Comm().MyPID(), globaldofs[i]);
+          Core::Communication::my_mpi_rank(coldisp.Comm()), globaldofs[i]);
 
       nvector[i] = (coldisp)[lid];
     }

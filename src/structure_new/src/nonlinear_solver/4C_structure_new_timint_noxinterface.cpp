@@ -7,6 +7,7 @@
 
 #include "4C_structure_new_timint_noxinterface.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
@@ -627,7 +628,7 @@ void Solid::TimeInt::NoxInterface::get_dofs_from_elements(
 
     for (int i = 0; i < ele->num_node(); ++i)
     {
-      if (nodes[i]->owner() != gstate_ptr_->get_comm().MyPID()) continue;
+      if (nodes[i]->owner() != Core::Communication::my_mpi_rank(gstate_ptr_->get_comm())) continue;
 
       const std::vector<int> ndofs(discret_ptr->dof(0, nodes[i]));
       my_ele_dofs.insert(ndofs.begin(), ndofs.end());

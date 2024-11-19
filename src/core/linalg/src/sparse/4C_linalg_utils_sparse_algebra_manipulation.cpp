@@ -193,7 +193,7 @@ void Core::LinAlg::extract_my_vector(
     // check if the target_map is a local sub-set of the source map on each proc
     if (src_lid == -1)
       FOUR_C_THROW("Couldn't find the target GID %d in the source map on proc %d.", target_gid,
-          source.Comm().MyPID());
+          Core::Communication::my_mpi_rank(source.Comm()));
 
     target_values[tar_lid] = src_values[src_lid];
   }
@@ -597,7 +597,7 @@ int Core::LinAlg::insert_my_row_diagonal_into_unfilled_matrix(
       FOUR_C_THROW(
           "Could not find the row GID %d in the destination matrix RowMap"
           " on proc %d.",
-          rgid, dst_mat.Comm().MyPID());
+          rgid, Core::Communication::my_mpi_rank(dst_mat.Comm()));
 
     if (dst_mat.NumAllocatedGlobalEntries(rgid))
     {

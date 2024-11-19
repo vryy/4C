@@ -172,7 +172,7 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::setup(BlockedMatrix matrix)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::MergeAndSolve::Setup");
 
-  if (matrix.get_matrix(0, 0)->Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(matrix.get_matrix(0, 0)->Comm()) == 0)
   {
     std::cout
         << "Warning!!!: We are going to build a Core::LinAlg::BlockSparseMatrix. If this is a "
@@ -270,7 +270,7 @@ void Core::LinearSolver::AMGNxN::CoupledAmg::setup()
 
 
 
-  if (a_->get_matrix(0, 0)->Comm().MyPID() != 0) verbosity = "off";
+  if (Core::Communication::my_mpi_rank(a_->get_matrix(0, 0)->Comm()) != 0) verbosity = "off";
 
   if (verbosity == "on")
   {
@@ -512,7 +512,7 @@ void Core::LinearSolver::AMGNxN::MueluAMGWrapper::setup()
 
   double elaptime = timer.totalElapsedTime(true);
   if (muelu_list_.sublist("Hierarchy").get<std::string>("verbosity", "None") != "None" and
-      A_->Comm().MyPID() == 0)
+      Core::Communication::my_mpi_rank(A_->Comm()) == 0)
     std::cout << "       Calling Core::LinAlg::SOLVER::AMGNxN::MueluAMGWrapper::Setup takes "
               << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;
 }
@@ -665,7 +665,7 @@ void Core::LinearSolver::AMGNxN::SingleFieldAMG::setup()
 
 
   double elaptime = timer.totalElapsedTime(true);
-  if (A_->Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(A_->Comm()) == 0)
     std::cout << "       Calling Core::LinAlg::SOLVER::AMGNxN::SingleFieldAMG::Setup takes "
               << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;
 }

@@ -11,6 +11,7 @@
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 
@@ -37,7 +38,7 @@ double BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::g
 
   // The value we returned here is summed up over all processors. Since we already have the global
   // energy here, we only return it on rank 0.
-  if (disp->Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(disp->Comm()) == 0)
     return global_mortar_energy;
   else
     return 0.0;

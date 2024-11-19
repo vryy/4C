@@ -136,7 +136,7 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
   }
   else
   {
-    if (comm_.MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm_) == 0)
       std::cout << "WARNING: The linear solver input parameters from the .dat file will be "
                    "depreciated soon. Switch to an appropriate xml-file version."
                 << std::endl;
@@ -162,7 +162,7 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
   int glob_error = 0;
   comm_.SumAll(&my_error, &glob_error, 1);
 
-  if (glob_error > 0 and this->comm_.MyPID() == 0)
+  if (glob_error > 0 and Core::Communication::my_mpi_rank(this->comm_) == 0)
     std::cout << std::endl
               << "Core::LinearSolver::BelosSolver: WARNING: Iterative solver did not converge!"
               << std::endl;

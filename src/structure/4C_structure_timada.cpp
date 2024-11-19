@@ -33,7 +33,7 @@ Solid::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input 
     )
     : sti_(tis),
       discret_(tis->discretization()),
-      myrank_(discret_->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(discret_->get_comm())),
       solver_(tis->solver()),
       output_(tis->disc_writer()),
       //

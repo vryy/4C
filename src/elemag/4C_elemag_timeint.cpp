@@ -39,7 +39,7 @@ EleMag::ElemagTimeInt::ElemagTimeInt(const std::shared_ptr<Core::FE::Discretizat
       params_(params),
       output_(output),
       elemagdyna_(Teuchos::getIntegralValue<Inpar::EleMag::DynamicType>(*params_, "TIMEINT")),
-      myrank_(actdis->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(actdis->get_comm())),
       time_(0.0),
       step_(0),
       restart_(params_->get<int>("restart")),

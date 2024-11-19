@@ -7,6 +7,7 @@
 
 #include "4C_particle_interaction_base.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_particle_engine_container.hpp"
 #include "4C_particle_engine_interface.hpp"
 #include "4C_particle_interaction_material_handler.hpp"
@@ -19,7 +20,11 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 ParticleInteraction::ParticleInteractionBase::ParticleInteractionBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
-    : comm_(comm), myrank_(comm.MyPID()), params_(params), time_(0.0), dt_(0.0)
+    : comm_(comm),
+      myrank_(Core::Communication::my_mpi_rank(comm)),
+      params_(params),
+      time_(0.0),
+      dt_(0.0)
 {
   // empty constructor
 }

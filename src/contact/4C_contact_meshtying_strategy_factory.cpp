@@ -7,6 +7,7 @@
 
 #include "4C_contact_meshtying_strategy_factory.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_abstract_strategy.hpp"
 #include "4C_contact_meshtying_abstract_strategy.hpp"
 #include "4C_contact_meshtying_lagrange_strategy.hpp"
@@ -204,7 +205,8 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
   // *********************************************************************
   // warnings
   // *********************************************************************
-  if (mortar.get<double>("SEARCH_PARAM") == 0.0 && get_comm().MyPID() == 0)
+  if (mortar.get<double>("SEARCH_PARAM") == 0.0 &&
+      Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << ("Warning: Meshtying search called without inflation of bounding volumes\n")
               << std::endl;
 
@@ -313,7 +315,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
   int dim = Global::Problem::instance()->n_dim();
 
   // start building interfaces
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "Building contact interface(s)...............";
     fflush(stdout);
@@ -567,7 +569,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
         Global::Problem::instance()->spatial_approximation_type(), true, maxdof);
 
   }  // for (int i=0; i<(int)contactconditions.size(); ++i)
-  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0) std::cout << "done!" << std::endl;
 }
 
 /*----------------------------------------------------------------------------*
@@ -597,7 +599,7 @@ std::shared_ptr<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_
   //**********************************************************************
   // create the solver strategy object
   // and pass all necessary data to it
-  if (comm_ptr->MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(*comm_ptr) == 0)
   {
     std::cout << "Building meshtying strategy object............";
     fflush(stdout);
@@ -619,7 +621,7 @@ std::shared_ptr<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_
   else
     FOUR_C_THROW("Unrecognized strategy");
 
-  if (comm_ptr->MyPID() == 0) std::cout << "done!" << std::endl;
+  if (Core::Communication::my_mpi_rank(*comm_ptr) == 0) std::cout << "done!" << std::endl;
   return strategy_ptr;
 }
 

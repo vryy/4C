@@ -83,7 +83,7 @@ void Adapter::FSIStructureWrapperImmersed::output(
   // write extra output for specified step and time
   else
   {
-    if (structure_->discretization()->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(structure_->discretization()->get_comm()) == 0)
       std::cout << "\n   Write EXTRA STRUCTURE Output Step=" << step << " Time=" << time
                 << " ...   \n"
                 << std::endl;

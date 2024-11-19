@@ -71,7 +71,7 @@ void ehl_dyn()
   const bool modifiedreynolds = lubricationdyn.get<bool>("MODIFIED_REYNOLDS_EQU");
 
   // print problem specific logo
-  if (!problem->get_dis("structure")->get_comm().MyPID())
+  if (!Core::Communication::my_mpi_rank(problem->get_dis("structure")->get_comm()))
   {
     if (!modifiedreynolds)
       printehllogo();
@@ -79,7 +79,8 @@ void ehl_dyn()
       printehlmixlogo();
   }
 
-  if (!problem->get_dis("structure")->get_comm().MyPID()) EHL::printlogo();
+  if (!Core::Communication::my_mpi_rank(problem->get_dis("structure")->get_comm()))
+    EHL::printlogo();
 
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator

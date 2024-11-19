@@ -7,6 +7,7 @@
 
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_solver_nonlin_nox_floating_point_exception.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_base.hpp"
@@ -232,7 +233,7 @@ bool Solid::ModelEvaluator::Generic::eval_error_check() const
     ok = false;
     std::cout << "FLOATING POINT EXCEPTION occurred on proc "
                  "#"
-              << gstate_ptr_->get_comm().MyPID() << ".\n";
+              << Core::Communication::my_mpi_rank(gstate_ptr_->get_comm()) << ".\n";
   }
 
   // --- Did the element evaluation detect an error? ---------------------------
@@ -241,7 +242,7 @@ bool Solid::ModelEvaluator::Generic::eval_error_check() const
   if (eval_data_ptr_->is_ele_eval_error())
     std::cout << "ELEMENT EVALUATION failed on proc "
                  "#"
-              << gstate_ptr_->get_comm().MyPID() << ".\n"
+              << Core::Communication::my_mpi_rank(gstate_ptr_->get_comm()) << ".\n"
               << "(Error: "
               << Solid::Elements::eval_error_flag_to_string(
                      eval_data_ptr_->get_ele_eval_error_flag())

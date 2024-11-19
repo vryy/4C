@@ -77,7 +77,7 @@ void CONTACT::IntegratorNitscheSsi::gpts_forces(Mortar::Element& slave_ele,
     const std::vector<Core::Gen::Pairedvector<int, double>>& d_gp_normal_dd, double* slave_xi,
     double* master_xi)
 {
-  if (slave_ele.owner() != Comm_.MyPID()) return;
+  if (slave_ele.owner() != Core::Communication::my_mpi_rank(Comm_)) return;
 
   static const bool do_fast_checks = true;
   // first rough check

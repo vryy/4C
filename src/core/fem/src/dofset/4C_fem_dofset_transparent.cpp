@@ -174,7 +174,7 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
 
     // get number of processors and the current processors id
     int numproc = sourcedis.get_comm().NumProc();
-    int myrank = sourcedis.get_comm().MyPID();
+    int myrank = Core::Communication::my_mpi_rank(sourcedis.get_comm());
 
     //----------------------------------------------------------------------
     // communication is done in a round robin loop

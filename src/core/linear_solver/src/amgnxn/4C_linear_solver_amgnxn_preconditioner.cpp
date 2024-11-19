@@ -108,7 +108,7 @@ void Core::LinearSolver::AmGnxnPreconditioner::setup(
 
   double elaptime = timer.totalElapsedTime(true);
   if (myInterface.get_preconditioner_params().get<std::string>("verbosity", "off") == "on" and
-      A->Comm().MyPID() == 0)
+      Core::Communication::my_mpi_rank(A->Comm()) == 0)
     std::cout << "       Calling Core::LinAlg::SOLVER::AMGnxn_Preconditioner::Setup takes "
               << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;
 
@@ -498,7 +498,7 @@ void Core::LinearSolver::BlockSmootherOperator::setup()
 
   std::string verbosity = amgnxn_params_.get<std::string>("verbosity", "off");
 
-  if (a_->Comm().MyPID() != 0) verbosity = "off";
+  if (Core::Communication::my_mpi_rank(a_->Comm()) != 0) verbosity = "off";
 
 
 

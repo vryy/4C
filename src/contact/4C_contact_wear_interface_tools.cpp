@@ -71,7 +71,7 @@ void Wear::WearInterface::fd_check_gap_deriv()
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // apply finite difference scheme
-    /*if (Comm().MyPID()==snode->Owner())
+    /*if (Core::Communication::my_mpi_rank(Comm())==snode->Owner())
     {
       std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%dim
            << " Dof(g): " << snode->Dofs()[fd%dim] << std::endl;
@@ -175,7 +175,7 @@ void Wear::WearInterface::fd_check_gap_deriv()
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // apply finite difference scheme
-    /*if (Comm().MyPID()==mnode->Owner())
+    /*if (Core::Communication::my_mpi_rank(Comm())==mnode->Owner())
     {
       std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%dim
            << " Dof(g): " << mnode->Dofs()[fd%dim] << std::endl;

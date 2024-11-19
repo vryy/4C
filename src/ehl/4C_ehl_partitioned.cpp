@@ -87,7 +87,7 @@ void EHL::Partitioned::outer_loop()
   int itnum = 0;
   bool stopnonliniter = false;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n****************************************\n          OUTER ITERATION "
                  "LOOP\n****************************************\n";
@@ -148,7 +148,7 @@ void EHL::Partitioned::update_and_output()
  *----------------------------------------------------------------------*/
 void EHL::Partitioned::do_struct_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
@@ -163,7 +163,7 @@ void EHL::Partitioned::do_struct_step()
  *----------------------------------------------------------------------*/
 void EHL::Partitioned::do_lubrication_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n  LUBRICATION SOLVER \n***********************\n";
   }
@@ -217,7 +217,7 @@ bool EHL::Partitioned::convergence_check(int itnum)
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout
@@ -249,7 +249,7 @@ bool EHL::Partitioned::convergence_check(int itnum)
       ((preincnorm_L2 / dt() / sqrt(preincnp_->GlobalLength())) <= ittol_))
   {
     stopnonliniter = true;
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       printf("\n");
       printf(
@@ -270,7 +270,7 @@ bool EHL::Partitioned::convergence_check(int itnum)
           (preincnorm_L2 / dt() / sqrt(preincnp_->GlobalLength())) > ittol_))
   {
     stopnonliniter = true;
-    if ((get_comm().MyPID() == 0))
+    if ((Core::Communication::my_mpi_rank(get_comm()) == 0))
     {
       printf(
           "|     >>>>>> not converged in itemax steps!                                             "

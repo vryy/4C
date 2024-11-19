@@ -1071,7 +1071,7 @@ ScaTra::ScaTraTimIntElch::evaluate_single_electrode_info_point(
   if (discret_->node_row_map()->MyGID(nodeid))
   {
     // extract number of processor owning conditioned node
-    procid = discret_->get_comm().MyPID();
+    procid = Core::Communication::my_mpi_rank(discret_->get_comm());
 
     // create parameter list
     Teuchos::ParameterList condparams;
@@ -1117,7 +1117,7 @@ ScaTra::ScaTraTimIntElch::evaluate_single_electrode_info_point(
     // safety check
     if (error)
       FOUR_C_THROW("Element with global ID %d returned error code %d on processor %d!",
-          element->id(), error, discret_->get_comm().MyPID());
+          element->id(), error, Core::Communication::my_mpi_rank(discret_->get_comm()));
   }
 
   // communicate number of processor owning conditioned node
@@ -2731,7 +2731,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_boundary_kinetics_point_condit
       // safety check
       if (error)
         FOUR_C_THROW("Element with global ID %d returned error code %d on processor %d!",
-            element->id(), error, discret_->get_comm().MyPID());
+            element->id(), error, Core::Communication::my_mpi_rank(discret_->get_comm()));
 
       // assemble element matrix and right-hand side vector into global system of equations
       sysmat_->assemble(element->id(), la[0].stride_, elematrix, la[0].lm_, la[0].lmowner_);
@@ -2900,7 +2900,7 @@ void ScaTra::ScaTraTimIntElch::apply_dirichlet_bc(const double time,
               auto* const node = discret_->g_node(nodegid);
 
               // consider only nodes owned by current processor
-              if (node->owner() == discret_->get_comm().MyPID())
+              if (node->owner() == Core::Communication::my_mpi_rank(discret_->get_comm()))
               {
                 // extract global ID of electric potential degree of freedom carried by current
                 // node
@@ -3173,7 +3173,8 @@ void ScaTra::ScaTraTimIntElch::build_block_maps(
       for (const int node_gid : *cond->get_nodes())
       {
         if (discret_->have_global_node(node_gid) and
-            discret_->g_node(node_gid)->owner() == discret_->get_comm().MyPID())
+            discret_->g_node(node_gid)->owner() ==
+                Core::Communication::my_mpi_rank(discret_->get_comm()))
         {
           const std::vector<int> nodedofs = discret_->dof(0, discret_->g_node(node_gid));
           FOUR_C_ASSERT(num_dof_per_node() == static_cast<int>(nodedofs.size()),
@@ -3304,7 +3305,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_cccv_phase()
   if (cccv_condition_ != nullptr)
   {
     // only proc 0 should print out information
-    const bool do_print = discret_->get_comm().MyPID() == 0;
+    const bool do_print = Core::Communication::my_mpi_rank(discret_->get_comm()) == 0;
 
     // which mode was last converged step? Is this phase over? Is the current half cycle over?
     if (cccv_condition_->get_cccv_half_cycle_phase() ==

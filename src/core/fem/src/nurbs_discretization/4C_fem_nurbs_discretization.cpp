@@ -161,7 +161,7 @@ void Core::FE::Utils::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   Teuchos::Time timer("", true);
 
   // get the processor ID from the communicator
-  const int myrank = discret.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(discret.get_comm());
   if (myrank == 0) std::cout << "calculating least squares Dirichlet condition in ... ";
 
   const Core::FE::Nurbs::NurbsDiscretization& nurbs_dis =

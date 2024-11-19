@@ -99,7 +99,8 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
           {
             // we construct the local octree only with nodes owned by this proc
             if (dis_->have_global_node(idtoadd))
-              if (dis_->g_node(idtoadd)->owner() == dis_->get_comm().MyPID())
+              if (dis_->g_node(idtoadd)->owner() ==
+                  Core::Communication::my_mpi_rank(dis_->get_comm()))
                 masterset.insert(idtoadd);
           }
 
@@ -118,7 +119,8 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
           {
             // we only try to match owned nodes of each proc
             if (dis_->have_global_node(*idtoadd))
-              if (dis_->g_node(*idtoadd)->owner() == dis_->get_comm().MyPID())
+              if (dis_->g_node(*idtoadd)->owner() ==
+                  Core::Communication::my_mpi_rank(dis_->get_comm()))
                 slaveset.insert(*idtoadd);
           }
 
@@ -375,7 +377,7 @@ void FLD::TransferTurbulentInflowCondition::receive_block(
 {
   // get number of processors and the current processors id
   int numproc = dis_->get_comm().NumProc();
-  int myrank = dis_->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(dis_->get_comm());
 
   // necessary variables
 
@@ -422,7 +424,7 @@ void FLD::TransferTurbulentInflowCondition::send_block(
 {
   // get number of processors and the current processors id
   int numproc = dis_->get_comm().NumProc();
-  int myrank = dis_->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(dis_->get_comm());
 
   // Send block to next proc.
   int tag = myrank;

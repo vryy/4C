@@ -7,6 +7,7 @@
 
 #include "4C_comm_utils_gid_vector.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 
@@ -33,8 +34,8 @@ void Core::Communication::add_owned_node_gid(
 bool Core::Communication::is_node_gid_on_this_proc(
     const Core::FE::Discretization& dis, const int node_gid)
 {
-  return (
-      dis.have_global_node(node_gid) and dis.g_node(node_gid)->owner() == dis.get_comm().MyPID());
+  return (dis.have_global_node(node_gid) and
+          dis.g_node(node_gid)->owner() == Core::Communication::my_mpi_rank(dis.get_comm()));
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -720,7 +720,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::output()
   {
     structure_field()->get_constraint_manager()->compute_monitor_values(
         structure_field()->dispnp());
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       structure_field()->get_constraint_manager()->print_monitor_values();
   }
 }
@@ -958,7 +958,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::recover_lagrange_multiplier()
 
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::handle_fluid_dof_map_change_in_newton()
 {
-  if (get_comm().MyPID() == 0) Core::IO::cout << " New Map!! " << Core::IO::endl;
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+    Core::IO::cout << " New Map!! " << Core::IO::endl;
 
   // save the old x_sum
   std::shared_ptr<Core::LinAlg::Vector<double>> x_sum_n =

@@ -45,7 +45,8 @@ void Discret::Elements::FluidType::pre_evaluate(Core::FE::Discretization& dis,
   {
     Discret::Elements::FluidEleParameterStd* fldpara =
         Discret::Elements::FluidEleParameterStd::instance();
-    fldpara->set_element_general_fluid_parameter(p, dis.get_comm().MyPID());
+    fldpara->set_element_general_fluid_parameter(
+        p, Core::Communication::my_mpi_rank(dis.get_comm()));
   }
   else if (action == FLD::set_time_parameter)
   {
@@ -70,9 +71,10 @@ void Discret::Elements::FluidType::pre_evaluate(Core::FE::Discretization& dis,
     Discret::Elements::FluidEleParameterXFEM* fldpara =
         Discret::Elements::FluidEleParameterXFEM::instance();
 
-    fldpara->set_element_general_fluid_parameter(p, dis.get_comm().MyPID());
+    fldpara->set_element_general_fluid_parameter(
+        p, Core::Communication::my_mpi_rank(dis.get_comm()));
     fldpara->set_element_turbulence_parameters(p);
-    fldpara->set_element_xfem_parameter(p, dis.get_comm().MyPID());
+    fldpara->set_element_xfem_parameter(p, Core::Communication::my_mpi_rank(dis.get_comm()));
   }
 
   return;
@@ -152,7 +154,7 @@ int Discret::Elements::Fluid::evaluate(Teuchos::ParameterList& params,
       if (nsd == 3)
       {
         // do nothing if you do not own this element
-        if (this->owner() == discretization.get_comm().MyPID())
+        if (this->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
         {
           // --------------------------------------------------
           // extract velocity, pressure, and scalar from global
@@ -209,7 +211,7 @@ int Discret::Elements::Fluid::evaluate(Teuchos::ParameterList& params,
       if (nsd == 3)
       {
         // do nothing if you do not own this element
-        if (this->owner() == discretization.get_comm().MyPID())
+        if (this->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
         {
           // --------------------------------------------------
           // extract velocity, pressure, and temperature from
@@ -562,7 +564,7 @@ int Discret::Elements::Fluid::evaluate(Teuchos::ParameterList& params,
           case Core::FE::CellType::hex8:
           {
             // don't store values of ghosted elements
-            if (this->owner() == discretization.get_comm().MyPID())
+            if (this->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
             {
               FLD::f3_get_mf_params<8, 3, Core::FE::CellType::hex8>(
                   this, fldpara, params, mat, myvel, myfsvel);
@@ -789,13 +791,15 @@ void Discret::Elements::FluidIntFaceType::pre_evaluate(Core::FE::Discretization&
   {
     Discret::Elements::FluidEleParameterIntFace* fldintfacepara =
         Discret::Elements::FluidEleParameterIntFace::instance();
-    fldintfacepara->set_face_general_fluid_parameter(p, dis.get_comm().MyPID());
+    fldintfacepara->set_face_general_fluid_parameter(
+        p, Core::Communication::my_mpi_rank(dis.get_comm()));
   }
   else if (action == FLD::set_general_face_xfem_parameter)
   {
     Discret::Elements::FluidEleParameterIntFace* fldintfacepara =
         Discret::Elements::FluidEleParameterIntFace::instance();
-    fldintfacepara->set_face_general_xfem_parameter(p, dis.get_comm().MyPID());
+    fldintfacepara->set_face_general_xfem_parameter(
+        p, Core::Communication::my_mpi_rank(dis.get_comm()));
   }
   else
     FOUR_C_THROW("unknown action type for FluidIntFaceType::pre_evaluate");

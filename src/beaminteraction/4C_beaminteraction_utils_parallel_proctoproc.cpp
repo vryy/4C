@@ -8,6 +8,7 @@
 #include "4C_beaminteraction_utils_parallel_proctoproc.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -25,7 +26,7 @@ void Discret::Utils::i_send_receive_any(Core::FE::Discretization& discret,
   // build exporter
   Core::Communication::Exporter exporter(discret.get_comm());
   int const numproc = discret.get_comm().NumProc();
-  int const myrank = discret.get_comm().MyPID();
+  int const myrank = Core::Communication::my_mpi_rank(discret.get_comm());
 
   // -----------------------------------------------------------------------
   // send

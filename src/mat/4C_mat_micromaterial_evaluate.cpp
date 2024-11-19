@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_comm_exporter.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_global_data.hpp"
@@ -163,7 +164,7 @@ void Mat::MicroMaterial::post_setup()
   // get sub communicator including the supporting procs
   std::shared_ptr<Epetra_Comm> subcomm =
       Global::Problem::instance(0)->get_communicators()->sub_comm();
-  if (subcomm->MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(*subcomm) == 0)
   {
     // tell the supporting procs that the micro material will call post_setup
     int eleID = matgp_.begin()->second->ele_id();
@@ -207,7 +208,7 @@ void Mat::MicroMaterial::update()
   // get sub communicator including the supporting procs
   std::shared_ptr<Epetra_Comm> subcomm =
       Global::Problem::instance(0)->get_communicators()->sub_comm();
-  if (subcomm->MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(*subcomm) == 0)
   {
     // tell the supporting procs that the micro material will be evaluated for the element with id
     // eleID
@@ -230,7 +231,7 @@ void Mat::MicroMaterial::prepare_output()
   // get sub communicator including the supporting procs
   std::shared_ptr<Epetra_Comm> subcomm =
       Global::Problem::instance(0)->get_communicators()->sub_comm();
-  if (subcomm->MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(*subcomm) == 0)
   {
     // tell the supporting procs that the micro material will be prepared for output
     int eleID = matgp_.begin()->second->ele_id();
@@ -252,7 +253,7 @@ void Mat::MicroMaterial::output_step_state()
   // get sub communicator including the supporting procs
   std::shared_ptr<Epetra_Comm> subcomm =
       Global::Problem::instance(0)->get_communicators()->sub_comm();
-  if (subcomm->MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(*subcomm) == 0)
   {
     // tell the supporting procs that the micro material will be output
     int eleID = matgp_.begin()->second->ele_id();
@@ -275,7 +276,7 @@ void Mat::MicroMaterial::write_restart()
   // get sub communicator including the supporting procs
   std::shared_ptr<Epetra_Comm> subcomm =
       Global::Problem::instance(0)->get_communicators()->sub_comm();
-  if (subcomm->MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(*subcomm) == 0)
   {
     // tell the supporting procs that the micro material will be output
     int eleID = matgp_.begin()->second->ele_id();

@@ -7,6 +7,7 @@
 
 #include "4C_particle_engine_communication_utils.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -21,7 +22,7 @@ void PARTICLEENGINE::COMMUNICATION::immediate_recv_blocking_send(const Epetra_Co
   int const numproc = comm.NumProc();
 
   // processor id
-  int const myrank = comm.MyPID();
+  int const myrank = Core::Communication::my_mpi_rank(comm);
 
   // number of processors receiving data from this processor
   int const numsendtoprocs = sdata.size();

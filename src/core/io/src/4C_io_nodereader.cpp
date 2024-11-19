@@ -7,6 +7,7 @@
 
 #include "4C_io_nodereader.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element_definition.hpp"
 #include "4C_fem_general_fiber_node.hpp"
@@ -37,7 +38,7 @@ namespace
 void Core::IO::read_nodes(Core::IO::InputFile& input, const std::string& node_section_name,
     std::vector<ElementReader>& element_readers, int& max_node_id)
 {
-  const int myrank = input.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(input.get_comm());
   if (myrank > 0) return;
 
   std::string tmp;

@@ -9,6 +9,7 @@
 
 #include "4C_art_net_explicitintegration.hpp"
 #include "4C_art_net_impl_stationary.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
 
@@ -63,7 +64,7 @@ void Arteries::ArteryResultTest::test_node(
       // Strange! It seems we might actually have a global node around
       // even if it does not belong to us. But here we are just
       // interested in our nodes!
-      if (actnode->owner() != dis_->get_comm().MyPID()) return;
+      if (actnode->owner() != Core::Communication::my_mpi_rank(dis_->get_comm())) return;
 
       double result = 0.;
       const Epetra_BlockMap& pnpmap = mysol_->Map();
@@ -117,7 +118,7 @@ void Arteries::ArteryResultTest::test_element(
       const Core::Elements::Element* actelement = dis_->g_element(element);
 
       // Here we are just interested in the elements that we own (i.e. a row element)!
-      if (actelement->owner() != dis_->get_comm().MyPID()) return;
+      if (actelement->owner() != Core::Communication::my_mpi_rank(dis_->get_comm())) return;
 
       // extract name of quantity to be tested
       std::string quantity = container.get<std::string>("QUANTITY");

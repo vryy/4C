@@ -32,7 +32,7 @@ Immersed::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
       dbcmap_immersed_(nullptr),
       fluid_SearchTree_(nullptr),
       structure_SearchTree_(nullptr),
-      myrank_(comm.MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(comm)),
       numproc_(comm.NumProc()),
       globalproblem_(nullptr),
       displacementcoupling_(false),

@@ -102,7 +102,7 @@ int Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
     case ScaTra::Action::get_material_internal_state:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
-      if (ele->owner() == discretization.get_comm().MyPID())
+      if (ele->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
       {
         // access the general material
         std::shared_ptr<Core::Mat::Material> material = ele->material();
@@ -131,7 +131,7 @@ int Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
     case ScaTra::Action::set_material_internal_state:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
-      if (ele->owner() == discretization.get_comm().MyPID())
+      if (ele->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
       {
         // access the general material
         std::shared_ptr<Core::Mat::Material> material = ele->material();
@@ -154,7 +154,7 @@ int Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
     case ScaTra::Action::get_material_ionic_currents:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
-      if (ele->owner() == discretization.get_comm().MyPID())
+      if (ele->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
       {
         // access the general material
         std::shared_ptr<Core::Mat::Material> material = ele->material();

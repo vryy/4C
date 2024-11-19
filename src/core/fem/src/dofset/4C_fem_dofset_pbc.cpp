@@ -68,7 +68,7 @@ int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
     if (master_lid < 0)
     {
       FOUR_C_THROW("master gid %d not on proc %d, but required by slave %d", master->first,
-          dis.get_comm().MyPID(), master->second[0]);
+          Core::Communication::my_mpi_rank(dis.get_comm()), master->second[0]);
     }
 
     for (std::vector<int>::iterator slave = master->second.begin(); slave != master->second.end();

@@ -55,7 +55,7 @@ void Thermo::ResultTest::test_node(
       const Core::Nodes::Node* actnode = thrdisc_->g_node(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->owner() != thrdisc_->get_comm().MyPID()) return;
+      if (actnode->owner() != Core::Communication::my_mpi_rank(thrdisc_->get_comm())) return;
 
       std::string position = container.get<std::string>("QUANTITY");
       bool unknownpos = true;  // make sure the result value std::string can be handled

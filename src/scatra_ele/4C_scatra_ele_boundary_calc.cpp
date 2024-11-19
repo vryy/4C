@@ -257,7 +257,8 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
     case ScaTra::BoundaryAction::integrate_shape_functions:
     {
       // NOTE: add area value only for elements which are NOT ghosted!
-      const bool addarea = (ele->owner() == discretization.get_comm().MyPID());
+      const bool addarea =
+          (ele->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()));
       integrate_shape_functions(ele, params, elevec1_epetra, addarea);
 
       break;

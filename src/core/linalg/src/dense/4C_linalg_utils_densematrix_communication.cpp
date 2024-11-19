@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 int Core::LinAlg::find_my_pos(int nummyelements, const Epetra_Comm& comm)
 {
-  const int myrank = comm.MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(comm);
   const int numproc = comm.NumProc();
 
   std::vector<int> snum(numproc, 0);
@@ -98,7 +98,7 @@ std::shared_ptr<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap
   allreduce_e_map(rv, emap);
   std::shared_ptr<Epetra_Map> rmap;
 
-  if (emap.Comm().MyPID() == pid)
+  if (Core::Communication::my_mpi_rank(emap.Comm()) == pid)
   {
     rmap = std::make_shared<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
     // check the map
@@ -157,7 +157,7 @@ std::shared_ptr<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(
   allreduce_e_map(rv, emap);
   std::shared_ptr<Epetra_Map> rmap;
 
-  if (emap.Comm().MyPID() == pid)
+  if (Core::Communication::my_mpi_rank(emap.Comm()) == pid)
   {
     // remove duplicates only on proc pid
     std::set<int> rs(rv.begin(), rv.end());

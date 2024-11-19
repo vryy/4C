@@ -46,7 +46,7 @@ void SSI::SSIPart1WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList
 /*----------------------------------------------------------------------*/
 void SSI::SSIPart1WC::do_struct_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
@@ -70,7 +70,7 @@ void SSI::SSIPart1WC::do_struct_step()
 /*----------------------------------------------------------------------*/
 void SSI::SSIPart1WC::do_scatra_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n TRANSPORT SOLVER \n***********************\n";
   }

@@ -83,7 +83,7 @@ int Discret::Elements::Bele3::evaluate(Teuchos::ParameterList& params,
       const Epetra_Comm& Comm = discretization.get_comm();
 
       // We are not interested in volume of ghosted elements
-      if (Comm.MyPID() == owner())
+      if (Core::Communication::my_mpi_rank(Comm) == owner())
       {
         // element geometry update
         std::shared_ptr<const Core::LinAlg::Vector<double>> disp =

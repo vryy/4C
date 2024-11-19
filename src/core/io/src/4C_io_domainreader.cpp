@@ -7,6 +7,7 @@
 
 #include "4C_io_domainreader.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element_definition.hpp"
@@ -26,7 +27,7 @@ namespace
   void broadcast_input_data_to_all_procs(
       const Epetra_Comm& comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData)
   {
-    const int myrank = comm.MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(comm);
 
     std::vector<char> data;
     if (myrank == 0)
@@ -82,7 +83,7 @@ namespace Core::IO
   /*----------------------------------------------------------------------*/
   void DomainReader::create_partitioned_mesh(int nodeGIdOfFirstNewNode) const
   {
-    const int myrank = comm_.MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(comm_);
 
     Teuchos::Time time("", true);
 
@@ -112,7 +113,7 @@ namespace Core::IO
   {
     Core::IO::GridGenerator::RectangularCuboidInputs inputData;
     // all reading is done on proc 0
-    if (comm_.MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm_) == 0)
     {
       bool any_lines_read = false;
       // read domain info
@@ -177,7 +178,7 @@ namespace Core::IO
   /*----------------------------------------------------------------------*/
   void DomainReader::complete() const
   {
-    const int myrank = comm_.MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(comm_);
 
     Teuchos::Time time("", true);
 

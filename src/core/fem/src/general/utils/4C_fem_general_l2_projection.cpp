@@ -270,7 +270,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_proj
     }
     default:
     {
-      if (numvec != 1 and comm.MyPID() == 0)
+      if (numvec != 1 and Core::Communication::my_mpi_rank(comm) == 0)
       {
         std::cout << "Think about using a Belos solver which can handle several rhs vectors at the "
                      "same time\n";

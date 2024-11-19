@@ -7,6 +7,7 @@
 
 #include "4C_art_net_art_junction.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_condition.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -81,7 +82,7 @@ Arteries::Utils::ArtJunctionWrapper::ArtJunctionWrapper(
   //----------------------------------------------------------------------
   // Exit if the function accessed by a non-master processor
   //----------------------------------------------------------------------
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     //----------------------------------------------------------------------
     // (1) Get the junction boundary conditions
@@ -246,7 +247,7 @@ int Arteries::Utils::ArtJunctionWrapper::solve(Teuchos::ParameterList &params)
   // Exit if the function accessed by a non-master processor
   //----------------------------------------------------------------------
 
-  if (discret_->get_comm().MyPID() != 0) return 0;
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) != 0) return 0;
 
   std::map<const int, std::shared_ptr<class ArtJunctionBc>>::iterator mapiter;
 

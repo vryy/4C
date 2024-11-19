@@ -7,6 +7,7 @@
 
 #include "4C_scatra_resulttest.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -51,7 +52,9 @@ void ScaTra::ScaTraResultTest::test_node(
       Core::Nodes::Node* actnode = scatratimint_->discretization()->g_node(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->owner() != scatratimint_->discretization()->get_comm().MyPID()) return;
+      if (actnode->owner() !=
+          Core::Communication::my_mpi_rank(scatratimint_->discretization()->get_comm()))
+        return;
 
       // extract name of quantity to be tested
       std::string quantity = container.get<std::string>("QUANTITY");
@@ -233,7 +236,7 @@ void ScaTra::ScaTraResultTest::test_special(
     const double result = result_special(quantity);
 
     // compare values on first processor
-    if (scatratimint_->discretization()->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(scatratimint_->discretization()->get_comm()) == 0)
     {
       const int err = compare_values(result, "SPECIAL", container);
       nerr += err;

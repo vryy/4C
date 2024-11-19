@@ -109,7 +109,7 @@ void XFEM::evaluate_neumann_standard(
   for (fool = condition.begin(); fool != condition.end(); ++fool)
   {
     if (fool->first != (std::string) "PointNeumann") continue;
-    if (assemblemat && !systemvector.Comm().MyPID())
+    if (assemblemat && !Core::Communication::my_mpi_rank(systemvector.Comm()))
       std::cout << "WARNING: No linearization of PointNeumann conditions" << std::endl;
     Core::Conditions::Condition& cond = *(fool->second);
     const std::vector<int>* nodeids = cond.get_nodes();

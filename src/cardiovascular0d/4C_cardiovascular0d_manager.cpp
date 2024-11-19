@@ -46,7 +46,7 @@ Utils::Cardiovascular0DManager::Cardiovascular0DManager(
     Teuchos::ParameterList cv0dparams, Core::LinAlg::Solver& solver,
     std::shared_ptr<FourC::Cardiovascular0D::ProperOrthogonalDecomposition> mor)
     : actdisc_(discr),
-      myrank_(actdisc_->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(actdisc_->get_comm())),
       dbcmaps_(std::make_shared<Core::LinAlg::MapExtractor>()),
       cardiovascular0ddofset_full_(nullptr),
       cardiovascular0dmap_full_(nullptr),
@@ -452,7 +452,7 @@ void Utils::Cardiovascular0DManager::update_time_step()
 
   if (is_periodic_)
   {
-    if (actdisc_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(actdisc_->get_comm()) == 0)
       std::cout << "============ PERIODIC STATE REACHED ! ============" << std::endl;
   }
 

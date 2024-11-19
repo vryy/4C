@@ -54,7 +54,8 @@ void Core::FE::Discretization::evaluate(
             ele.evaluate(params, *this, la, strategy.elematrix1(), strategy.elematrix2(),
                 strategy.elevector1(), strategy.elevector2(), strategy.elevector3());
         if (err)
-          FOUR_C_THROW("Proc %d: Element %d returned err=%d", get_comm().MyPID(), ele.id(), err);
+          FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+              Core::Communication::my_mpi_rank(get_comm()), ele.id(), err);
       });
 }
 
@@ -153,7 +154,8 @@ void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params)
         const int err = ele.evaluate(
             params, *this, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err)
-          FOUR_C_THROW("Proc %d: Element %d returned err=%d", get_comm().MyPID(), ele.id(), err);
+          FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+              Core::Communication::my_mpi_rank(get_comm()), ele.id(), err);
       });
 }
 
@@ -184,7 +186,7 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
   for (const auto& [name, cond] : condition_)
   {
     if (name != (std::string) "PointNeumann") continue;
-    if (assemblemat && !systemvector.Comm().MyPID())
+    if (assemblemat && !Core::Communication::my_mpi_rank(systemvector.Comm()))
     {
       std::cout << "WARNING: System matrix handed in but no linearization of "
                    "PointNeumann conditions implemented. Did you set the LOADLIN-flag "
@@ -510,7 +512,8 @@ void Core::FE::Discretization::evaluate_scalars(
       int err = actele->evaluate(
           params, *this, la, elematrix1, elematrix2, elescalars, elevector2, elevector3);
       if (err)
-        FOUR_C_THROW("Proc %d: Element %d returned err=%d", get_comm().MyPID(), actele->id(), err);
+        FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+            Core::Communication::my_mpi_rank(get_comm()), actele->id(), err);
     }
 
     // sum up (on each processor)
@@ -574,7 +577,7 @@ void Core::FE::Discretization::evaluate_scalars(
         for (auto& [_, element] : geometry)
         {
           // consider only unghosted elements for evaluation
-          if (element->owner() == get_comm().MyPID())
+          if (element->owner() == Core::Communication::my_mpi_rank(get_comm()))
           {
             // construct location vector for current element
             Core::Elements::LocationArray la(dofsets_.size());
@@ -592,12 +595,12 @@ void Core::FE::Discretization::evaluate_scalars(
             {
               FOUR_C_THROW(
                   "Element evaluation failed for element %d on processor %d with error code %d!",
-                  element->id(), get_comm().MyPID(), error);
+                  element->id(), Core::Communication::my_mpi_rank(get_comm()), error);
             }
 
             // update result vector on single processor
             cpuscalars += elescalars;
-          }  // if(element.Owner() == Comm().MyPID())
+          }  // if(element.Owner() == Core::Communication::my_mpi_rank(Comm()))
         }    // loop over elements
       }      // if(condid == -1 or condid == condition.get<int>("ConditionID"))
     }        // if(conditionpair->first == condstring)
@@ -652,7 +655,8 @@ void Core::FE::Discretization::evaluate_scalars(
       int err = actele->evaluate(
           params, *this, la, elematrix1, elematrix2, elescalars, elevector2, elevector3);
       if (err)
-        FOUR_C_THROW("Proc %d: Element %d returned err=%d", get_comm().MyPID(), actele->id(), err);
+        FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+            Core::Communication::my_mpi_rank(get_comm()), actele->id(), err);
     }
 
     for (int j = 0; j < numscalars; ++j)

@@ -170,7 +170,7 @@ void FS3I::PartFS3I2Wc::outer_loop()
   int itnum = 0;
   bool stopnonliniter = false;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n****************************************\n          OUTER ITERATION "
                  "LOOP\n****************************************\n";
@@ -188,7 +188,7 @@ void FS3I::PartFS3I2Wc::outer_loop()
 
   // initially solve coupled scalar transport equation system
   // (values for intermediate time steps were calculated at the end of prepare_time_step)
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\n****************************************\n        SCALAR TRANSPORT "
                  "SOLVER\n****************************************\n";
   scatra_evaluate_solve_iter_update();
@@ -210,7 +210,7 @@ void FS3I::PartFS3I2Wc::outer_loop()
     set_scatra_values_in_fsi();
 
     // solve FSI system
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       std::cout << "\n****************************************\n               FSI "
                    "SOLVER\n****************************************\n";
     fsi_->time_step(fsi_);
@@ -221,7 +221,7 @@ void FS3I::PartFS3I2Wc::outer_loop()
     set_fsi_solution();
 
     // solve scalar transport equation
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       std::cout << "\n****************************************\n        SCALAR TRANSPORT "
                    "SOLVER\n****************************************\n";
     scatra_evaluate_solve_iter_update();
@@ -317,7 +317,7 @@ bool FS3I::PartFS3I2Wc::convergence_check(int itnum)
   bool scatrastopnonliniter = false;
 
   // dump on screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\n****************************************\n  CONVERGENCE CHECK FOR ITERATION "
                  "STEP\n****************************************\n";
 
@@ -332,7 +332,7 @@ bool FS3I::PartFS3I2Wc::convergence_check(int itnum)
   if ((itnum == itmax_) and (fluidstopnonliniter == false))
   {
     fluidstopnonliniter = true;
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       printf("\n");
       printf(">>>>>> FSI solver not converged in itemax steps!\n");
@@ -356,7 +356,7 @@ bool FS3I::PartFS3I2Wc::scatra_convergence_check(int itnum)
   bool scatra2stopnonliniter = false;
 
   // convergence check of scatra fields
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n****************************************\n         SCALAR TRANSPORT "
                  "CHECK\n****************************************\n";
@@ -367,7 +367,7 @@ bool FS3I::PartFS3I2Wc::scatra_convergence_check(int itnum)
       std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatravec_[0]->scatra_field())
           ->convergence_check(itnum, itmax_, ittol_);
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\n****************************************\n STRUCTURE-BASED SCALAR TRANSPORT "
                  "CHECK\n****************************************\n";
   // FOUR_C_THROW("convergence_check in scatra currently only for loma scatra!Fix this!");

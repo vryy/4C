@@ -7,6 +7,7 @@
 
 #include "4C_mortar_binarytree.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mortar_element.hpp"
@@ -489,10 +490,10 @@ void Mortar::BinaryTree::init()
   for (int k=0;k<Comm().NumProc();++k)
   {
     Comm().Barrier();
-    if (Comm().MyPID()==k)
+    if (Core::Communication::my_mpi_rank(Comm())==k)
     {
-      std::cout << "\n" << Comm().MyPID() << " Print tree with direct print function" << std::endl;
-      std::cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
+      std::cout << "\n" << Core::Communication::my_mpi_rank(Comm()) << " Print tree with direct
+  print function" << std::endl; std::cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
       print_tree(sroot_);
       std::cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
       print_tree(mroot_);
@@ -503,12 +504,11 @@ void Mortar::BinaryTree::init()
   for (int k=0;k<Comm().NumProc();++k)
   {
     Comm().Barrier();
-    if (Comm().MyPID()==k)
+    if (Core::Communication::my_mpi_rank(Comm())==k)
     {
-      std::cout << "\n" << Comm().MyPID() << " Print tree with print function of slave and master
-  treemap" << std::endl; std::cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
-      print_tree_of_map(streenodesmap_);
-      std::cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
+      std::cout << "\n" << Core::Communication::my_mpi_rank(Comm()) << " Print tree with print
+  function of slave and master treemap" << std::endl; std::cout <<"\n" <<Comm().MyPID()<< " Slave
+  Tree:"; print_tree_of_map(streenodesmap_); std::cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
       print_tree_of_map(mtreenodesmap_);
     }
     Comm().Barrier();
@@ -644,11 +644,13 @@ void Mortar::BinaryTree::print_tree(BinaryTreeNode& treenode)
   // if treenode has no elements (NOSLAVE_ELEMENTS,NOMASTER_ELEMENTS)
   if (treenode.type() == NOSLAVE_ELEMENTS || treenode.type() == NOMASTER_ELEMENTS)
   {
-    std::cout << "\n" << get_comm().MyPID() << " Tree has no element to print";
+    std::cout << "\n"
+              << Core::Communication::my_mpi_rank(get_comm()) << " Tree has no element to print";
     return;
   }
   std::cout << "\n"
-            << get_comm().MyPID() << " Tree at layer: " << treenode.get_layer() << " Elements: ";
+            << Core::Communication::my_mpi_rank(get_comm())
+            << " Tree at layer: " << treenode.get_layer() << " Elements: ";
   for (int i = 0; i < (int)(treenode.elelist().size()); i++)
     std::cout << " " << treenode.elelist()[i];
 
@@ -671,7 +673,9 @@ void Mortar::BinaryTree::print_tree_of_map(
   // print tree, elements listet in brackets (), belong to one treenode!
   for (int i = 0; i < (int)(treenodesmap.size()); i++)
   {
-    std::cout << "\n" << get_comm().MyPID() << " Tree at layer: " << i << " Elements: ";
+    std::cout << "\n"
+              << Core::Communication::my_mpi_rank(get_comm()) << " Tree at layer: " << i
+              << " Elements: ";
     for (int k = 0; k < (int)(treenodesmap[i].size()); k++)
     {
       std::shared_ptr<BinaryTreeNode> currentnode = treenodesmap[i][k];

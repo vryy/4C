@@ -10,6 +10,7 @@
 #include "4C_adapter_str_factory.hpp"
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_adapter_str_structure_new.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_fsi_str_model_evaluator_partitioned.hpp"
 #include "4C_global_data.hpp"
@@ -87,7 +88,7 @@ void FSI::Algorithm::setup()
            Inpar::Solid::IntegrationStrategy::int_old)  // todo this is the part that should be
                                                         // removed !
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       std::cout << "\n"
                 << " USING OLD STRUCTURAL TIME INEGRATION! FIX THIS! THIS IS ONLY SUPPOSED TO BE "
                    "TEMPORARY!"

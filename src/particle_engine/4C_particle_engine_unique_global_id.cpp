@@ -7,6 +7,7 @@
 
 #include "4C_particle_engine_unique_global_id.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_io.hpp"
@@ -22,7 +23,11 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::UniqueGlobalIdHandler::UniqueGlobalIdHandler(
     const Epetra_Comm& comm, const std::string& objectname)
-    : comm_(comm), myrank_(comm.MyPID()), masterrank_(0), objectname_(objectname), maxglobalid_(-1)
+    : comm_(comm),
+      myrank_(Core::Communication::my_mpi_rank(comm)),
+      masterrank_(0),
+      objectname_(objectname),
+      maxglobalid_(-1)
 {
   // empty constructor
 }

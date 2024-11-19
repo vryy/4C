@@ -191,7 +191,7 @@ ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average(Core::FE::Discretiza
       // get owner of the node to compare with my_rank
       int node_owner = (ele_vecOfPtsToNode[vec_it])->owner();
       // check wheather this node is a row node, compare with actual processor id
-      if (node_owner == discret.get_comm().MyPID())
+      if (node_owner == Core::Communication::my_mpi_rank(discret.get_comm()))
       {
         // insert in map (overwrite existing entry)
         int lid = ele_vecOfPtsToNode[vec_it]->lid();
@@ -324,7 +324,7 @@ ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average(Core::FE::Discretiza
     const int lid = (*gradphirow).Map().LID(GID);
     if (lid < 0)
       FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-          (*gradphirow).Comm().MyPID(), GID);
+          Core::Communication::my_mpi_rank((*gradphirow).Comm()), GID);
 
     const int numcol = (*gradphirow).NumVectors();
     if (numcol != (int)nsd)

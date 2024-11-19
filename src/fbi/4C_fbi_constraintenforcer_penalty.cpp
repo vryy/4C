@@ -31,7 +31,7 @@ void Adapter::FBIPenaltyConstraintenforcer::setup(
 {
   Adapter::FBIConstraintenforcer::setup(structure, fluid);
   std::ofstream log;
-  if ((get_discretizations()[1]->get_comm().MyPID() == 0) &&
+  if ((Core::Communication::my_mpi_rank(get_discretizations()[1]->get_comm()) == 0) &&
       (bridge()
               ->get_params()
               ->get_visualization_ouput_params_ptr()
@@ -145,7 +145,7 @@ void Adapter::FBIPenaltyConstraintenforcer::print_violation(double time, int ste
     if (norm_vel > 1e-15) norms = norm / norm_vel;
 
     std::ofstream log;
-    if (get_discretizations()[1]->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_discretizations()[1]->get_comm()) == 0)
     {
       std::string s = Global::Problem::instance()->output_control_file()->file_name();
       s.append(".penalty");

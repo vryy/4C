@@ -40,7 +40,7 @@ void Core::FE::DiscretizationCreatorBase::create_nodes(const Core::FE::Discretiz
     const std::set<int>& colnodeset, const bool isnurbsdis, const bool buildimmersednode) const
 {
   // prepare some variables we need
-  int myrank = targetdis.get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(targetdis.get_comm());
   const Epetra_Map* sourcenoderowmap = sourcedis.node_row_map();
 
   // construct nodes / control points in the new discretization

@@ -287,7 +287,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
         tap.set<double>("SIZERATIOMIN", fsiada.get<double>("SIZERATIOMIN"));
         tap.set<double>("SIZERATIOSCALE", fsiada.get<double>("SAFETYFACTOR"));
 
-        if (actdis->get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(actdis->get_comm()) == 0)
         {
           Core::IO::cout
               << "*** Due to FSI time step size adaptivity with structure based error estimation,\n"
@@ -318,7 +318,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       case Core::ProblemType::fsi:  // structure based time adaptivity within an FSI simulation
       case Core::ProblemType::fsi_redmodels:
       {
-        if ((actdis->get_comm()).MyPID() == 0)
+        if (Core::Communication::my_mpi_rank((actdis->get_comm())) == 0)
           Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
 
         std::shared_ptr<FSIStructureWrapper> fsiwrapperwithadaptivity =
@@ -348,7 +348,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       case Core::ProblemType::biofilm_fsi:
       case Core::ProblemType::thermo_fsi:
       {
-        if ((actdis->get_comm()).MyPID() == 0)
+        if (Core::Communication::my_mpi_rank((actdis->get_comm())) == 0)
           Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
 
         if (tmpstr->have_constraint())

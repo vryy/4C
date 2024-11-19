@@ -11,6 +11,7 @@
 #include "4C_adapter_fld_fluid_fluid_fsi.hpp"
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_ale_utils_mapextractor.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_global_data.hpp"
@@ -49,7 +50,8 @@ void FSI::FluidFluidMonolithicStructureSplit::update()
   // time to relax the ALE-mesh?
   if (fluid_field()->is_ale_relaxation_step(step()))
   {
-    if (get_comm().MyPID() == 0) Core::IO::cout << "Relaxing Ale" << Core::IO::endl;
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+      Core::IO::cout << "Relaxing Ale" << Core::IO::endl;
 
     ale_field()->solve();
     fluid_field()->apply_mesh_displacement(ale_to_fluid(ale_field()->dispnp()));

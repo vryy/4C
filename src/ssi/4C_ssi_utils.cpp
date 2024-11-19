@@ -144,7 +144,7 @@ void SSI::Utils::change_time_parameter(const Epetra_Comm& comm, Teuchos::Paramet
   scatradyn.set<int>("RESULTSEVRY", scatraupres);
   sdyn.set<int>("RESULTSEVRY", structureupres);
 
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "====================== Overview of chosen time stepping: "
                  "==============================\n"
@@ -907,9 +907,9 @@ SSI::Utils::SSIMeshTying::SSIMeshTying(const std::string& conditionname_coupling
     std::shared_ptr<Core::FE::Discretization> dis, const bool build_slave_slave_transformation,
     const bool check_over_constrained)
     : comm_(dis->get_comm()),
-      do_print_(dis->get_comm().MyPID() == 0),
+      do_print_(Core::Communication::my_mpi_rank(dis->get_comm()) == 0),
       meshtying_handlers_(),
-      my_rank_(dis->get_comm().MyPID()),
+      my_rank_(Core::Communication::my_mpi_rank(dis->get_comm())),
       num_proc_(dis->get_comm().NumProc())
 {
   setup_mesh_tying_handlers(

@@ -7,6 +7,7 @@
 
 #include "4C_fem_geometric_search_distributed_tree.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_geometric_search_access_traits.hpp"
 #include "4C_fem_geometric_search_bounding_volume.hpp"
 #include "4C_fem_geometric_search_utils.hpp"
@@ -36,7 +37,7 @@ namespace Core::GeometricSearch
 
     TEUCHOS_FUNC_TIME_MONITOR("Core::GeometricSearch::GlobalCollisionSearch");
 
-    int myrank = comm.MyPID();
+    int myrank = Core::Communication::my_mpi_rank(comm);
 
     using memory_space = Kokkos::HostSpace;
 

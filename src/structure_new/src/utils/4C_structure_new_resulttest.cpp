@@ -7,6 +7,7 @@
 
 #include "4C_structure_new_resulttest.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
@@ -223,7 +224,7 @@ int Solid::ResultTest::get_nodal_result(
   const Core::Nodes::Node* actnode = strudisc_->g_node(node);
 
   // Here we are just interested in the nodes that we own (i.e. a row node)!
-  if (actnode->owner() != strudisc_->get_comm().MyPID()) return -1;
+  if (actnode->owner() != Core::Communication::my_mpi_rank(strudisc_->get_comm())) return -1;
 
   bool unknownpos = true;  // make sure the result value std::string can be handled
 
@@ -492,7 +493,7 @@ void Solid::ResultTest::test_node_on_geometry(const Core::IO::InputParameterCont
   const double result = gather_result(*strudisc_, tmp_result);
 
   // test the value; we only do at rank 0
-  if (strudisc_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(strudisc_->get_comm()) == 0)
   {
     int err = 0;
     switch (geometry_type)
@@ -598,7 +599,7 @@ std::optional<int> Solid::ResultTest::get_last_lin_iteration_number(
 {
   std::optional<int> result = std::nullopt;
 
-  if (strudisc_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(strudisc_->get_comm()) == 0)
   {
     const int stepn = get_integer_number_at_last_position_of_name(quantity);
 
@@ -619,7 +620,7 @@ std::optional<int> Solid::ResultTest::get_nln_iteration_number(
 {
   std::optional<int> result = std::nullopt;
 
-  if (strudisc_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(strudisc_->get_comm()) == 0)
   {
     const int stepn = get_integer_number_at_last_position_of_name(quantity);
 
@@ -647,7 +648,7 @@ std::optional<int> Solid::ResultTest::get_nodes_per_proc_number(
   if (proc_num >= strudisc_->get_comm().NumProc())
     FOUR_C_THROW("Solid::ResultTest::get_nodes_per_proc_number: Invalid processor ID!");
 
-  if (strudisc_->get_comm().MyPID() == proc_num)
+  if (Core::Communication::my_mpi_rank(strudisc_->get_comm()) == proc_num)
   {
     // extract number of nodes owned by specified processor
     special_status = Status::evaluated;
@@ -664,7 +665,7 @@ std::optional<double> Solid::ResultTest::get_energy(
 {
   std::optional<double> result = std::nullopt;
 
-  if (strudisc_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(strudisc_->get_comm()) == 0)
   {
     special_status = Status::evaluated;
     result = data_->get_energy_data(quantity);

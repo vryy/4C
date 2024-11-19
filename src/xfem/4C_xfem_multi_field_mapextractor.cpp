@@ -207,7 +207,7 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
     // Send block to next proc. Receive a block from the last proc
     if (p > 0)
     {
-      int myrank = get_comm().MyPID();
+      int myrank = Core::Communication::my_mpi_rank(get_comm());
       int tag = myrank;
 
       int frompid = myrank;
@@ -972,7 +972,7 @@ void XFEM::MultiFieldMapExtractor::build_global_interface_node_gid_set()
     int num_my_interface_row_nodes = 0;
     std::vector<int> my_interface_row_node_gid_vec(0);
 
-    if (p == static_cast<unsigned>(get_comm().MyPID()))
+    if (p == static_cast<unsigned>(Core::Communication::my_mpi_rank(get_comm())))
     {
       std::set<int> my_unique_row_node_gid_set;
       std::set<int> my_interface_row_node_gid_set;

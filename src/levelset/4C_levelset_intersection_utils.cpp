@@ -407,7 +407,7 @@ void ScaTra::LevelSet::Intersection::export_interface(
   //-------------------------------
   // prepare parallel communication
   //-------------------------------
-  const int myrank = comm.MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(comm);
   const int numproc = comm.NumProc();
 
   int size_one = 1;

@@ -27,7 +27,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
     const std::string& statistics_outfilename)
     : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
 {
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::cout << "This is the turbulence statistics manager of periodic hill problem" << std::endl;
     std::cout << "based on the geometry of ERCOFTAC" << std::endl;
@@ -77,7 +77,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
   // round robin loop to communicate coordinates to all procs
   //--------------------------------------------------------------------
   {
-    int myrank = discret_->get_comm().MyPID();
+    int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
     int numprocs = discret_->get_comm().NumProc();
 
     std::vector<char> sblock;
@@ -249,7 +249,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
 #endif
   numx1statlocations_ = x1setstatlocations_->size();
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::cout << "Sample at " << numx1statlocations_ << " numx1statlocations_ \n" << std::endl;
   }
@@ -307,7 +307,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
     //  communication of x2-ccordinates
     //////////////////////////////////////////////
     {
-      int myrank = discret_->get_comm().MyPID();
+      int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
       int numprocs = discret_->get_comm().NumProc();
 
       std::vector<char> sblock;
@@ -454,7 +454,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
 
   std::shared_ptr<std::ofstream> log;
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
 
@@ -478,7 +478,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
 void FLD::TurbulenceStatisticsPh::do_time_sample(
     Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& stresses)
 {
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     std::cout << "------------Time Sampling Routine begins---------" << std::endl;
 
 
@@ -834,7 +834,7 @@ void FLD::TurbulenceStatisticsPh::dump_statistics(int step)
   // output to log-file
   std::shared_ptr<std::ofstream> log;
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");

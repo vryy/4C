@@ -40,7 +40,7 @@ Lubrication::TimIntImpl::TimIntImpl(std::shared_ptr<Core::FE::Discretization> ac
     :  // call constructor for "nontrivial" objects
       solver_(solver),
       params_(params),
-      myrank_(actdis->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(actdis->get_comm())),
       isale_(extraparams->get<bool>("isale")),
       incremental_(true),
       modified_reynolds_(params->get<bool>("MODIFIED_REYNOLDS_EQU")),
@@ -1137,7 +1137,7 @@ void Lubrication::TimIntImpl::output_to_gmsh(const int step, const double time) 
   // create Gmsh postprocessing file
   const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
       "solution_field_pressure", discret_->writer()->output()->file_name(), step, 500, screen_out,
-      discret_->get_comm().MyPID());
+      Core::Communication::my_mpi_rank(discret_->get_comm()));
   std::ofstream gmshfilecontent(filename.c_str());
   {
     // add 'View' to Gmsh postprocessing file

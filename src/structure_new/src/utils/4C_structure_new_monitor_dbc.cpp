@@ -156,7 +156,7 @@ void Solid::MonitorDbc::setup()
       Global::Problem::instance()->output_control_file()->file_name() + "_monitor_dbc");
   const std::string filename_only_prefix(
       Global::Problem::instance()->output_control_file()->file_name_only_prefix());
-  Core::IO::create_directory(full_dirpath, get_comm().MyPID());
+  Core::IO::create_directory(full_dirpath, Core::Communication::my_mpi_rank(get_comm()));
   // ... create files paths ...
   full_filepaths_ = create_file_paths(rconds, full_dirpath, filename_only_prefix, filetype);
   // ... clear them and write header
@@ -215,7 +215,7 @@ void Solid::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& dis
 void Solid::MonitorDbc::read_results_prior_restart_step_and_write_to_file(
     const std::vector<std::string>& full_restart_filepaths, int restart_step) const
 {
-  if (get_comm().MyPID() != 0) return;
+  if (Core::Communication::my_mpi_rank(get_comm()) != 0) return;
 
   if (full_restart_filepaths.size() != full_filepaths_.size())
     FOUR_C_THROW(
@@ -306,7 +306,7 @@ void Solid::MonitorDbc::write_results_to_file(const std::string& full_filepath,
     const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
     const double& area_ref, const double& area_curr) const
 {
-  if (get_comm().MyPID() != 0) return;
+  if (Core::Communication::my_mpi_rank(get_comm()) != 0) return;
 
   std::ofstream of(full_filepath, std::ios_base::out | std::ios_base::app);
 
@@ -323,7 +323,7 @@ void Solid::MonitorDbc::write_results_to_screen(
     const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
     const double& area_ref, const double& area_curr) const
 {
-  if (get_comm().MyPID() != 0) return;
+  if (Core::Communication::my_mpi_rank(get_comm()) != 0) return;
 
   Core::IO::cout << "\n\n--- Monitor Dirichlet boundary condition " << rcond_ptr->id() + 1 << " \n";
   write_condition_header(Core::IO::cout.os(), OS_WIDTH);
@@ -341,7 +341,7 @@ std::vector<std::string> Solid::MonitorDbc::create_file_paths(
 {
   std::vector<std::string> full_filepaths(rconds.size());
 
-  if (get_comm().MyPID() != 0) return full_filepaths;
+  if (Core::Communication::my_mpi_rank(get_comm()) != 0) return full_filepaths;
 
   size_t i = 0;
   for (const std::shared_ptr<Core::Conditions::Condition>& rcond : rconds)
@@ -357,7 +357,7 @@ void Solid::MonitorDbc::clear_files_and_write_header(
     const std::vector<std::shared_ptr<Core::Conditions::Condition>>& rconds,
     std::vector<std::string>& full_filepaths, bool do_write_condition_header)
 {
-  if (get_comm().MyPID() != 0) return;
+  if (Core::Communication::my_mpi_rank(get_comm()) != 0) return;
 
   size_t i = 0;
   for (const std::shared_ptr<Core::Conditions::Condition>& rcond : rconds)
@@ -450,7 +450,8 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
         dynamic_cast<const Core::Elements::FaceElement*>(cele);
     if (!fele) FOUR_C_THROW("No face element!");
 
-    if (!fele->parent_element() or fele->parent_element()->owner() != discret.get_comm().MyPID())
+    if (!fele->parent_element() or
+        fele->parent_element()->owner() != Core::Communication::my_mpi_rank(discret.get_comm()))
       continue;
 
     const Core::Nodes::Node* const* fnodes = fele->nodes();
@@ -572,7 +573,7 @@ double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmom
         const int lid = complete_freact.Map().LID(node_gid[i]);
         if (lid < 0)
           FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-              complete_freact.Comm().MyPID(), node_gid[i]);
+              Core::Communication::my_mpi_rank(complete_freact.Comm()), node_gid[i]);
         node_reaction_force(i) = complete_freact[lid];
       }
     }

@@ -239,7 +239,7 @@ void FSI::VolCorrector::correct_vol_displacements(std::shared_ptr<Adapter::Fluid
     std::shared_ptr<Core::LinAlg::Vector<double>> disp_fluid,
     std::shared_ptr<FLD::Utils::MapExtractor> const& finterface)
 {
-  if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(fluidale->ale_field()->discretization()->get_comm()) == 0)
     std::cout << "******************   FSI Volume Correction Step   **********************"
               << std::endl;
 
@@ -250,7 +250,7 @@ void FSI::VolCorrector::correct_vol_displacements(std::shared_ptr<Adapter::Fluid
     correct_vol_displacements_phys_space(fluidale, deltadisp, disp_fluid, finterface);
 
   // output
-  if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(fluidale->ale_field()->discretization()->get_comm()) == 0)
     std::cout << "******************FSI Volume Correction Step Done***********************"
               << std::endl;
 
@@ -286,7 +286,8 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
       int gid = it->second[i];
       Core::Nodes::Node* fluidnode = fluidale->fluid_field()->discretization()->g_node(gid);
 
-      if (fluidnode->owner() != fluidale->ale_field()->discretization()->get_comm().MyPID())
+      if (fluidnode->owner() !=
+          Core::Communication::my_mpi_rank(fluidale->ale_field()->discretization()->get_comm()))
         continue;
 
       double gpos[3] = {fluidnode->x()[0], fluidnode->x()[1], fluidnode->x()[2]};
@@ -383,7 +384,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
   correction.Norm2(&norm);
 
   // output
-  if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(fluidale->ale_field()->discretization()->get_comm()) == 0)
     std::cout << "Norm of correction (parameter space): " << norm << std::endl;
 
   return;
@@ -426,7 +427,7 @@ void FSI::VolCorrector::correct_vol_displacements_phys_space(
   correction.Norm2(&norm);
 
   // output
-  if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(fluidale->ale_field()->discretization()->get_comm()) == 0)
     std::cout << "Norm of correction (physical space): " << norm << std::endl;
 
   return;
@@ -437,7 +438,7 @@ void FSI::VolCorrector::correct_vol_displacements_phys_space(
 /*----------------------------------------------------------------------------*/
 void FSI::VolCorrector::setup(const int dim, std::shared_ptr<Adapter::FluidAle> fluidale)
 {
-  if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(fluidale->ale_field()->discretization()->get_comm()) == 0)
     std::cout << "******************FSI Volume Correction Setup***********************"
               << std::endl;
 
@@ -549,7 +550,7 @@ void FSI::VolCorrector::setup(const int dim, std::shared_ptr<Adapter::FluidAle> 
 
   std::cout << "ALE elements found: " << fluidaleelemap_.size() << std::endl;
 
-  if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(fluidale->ale_field()->discretization()->get_comm()) == 0)
     std::cout << "******************FSI Volume Correction Setup Done***********************"
               << std::endl;
 

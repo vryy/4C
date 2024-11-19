@@ -444,7 +444,7 @@ void Solid::ModelEvaluator::Meshtying::apply_mesh_initialization(
 
       if (lid < 0)
         FOUR_C_THROW("ERROR: Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-            gvector.Comm().MyPID(), nodedofs[i]);
+            Core::Communication::my_mpi_rank(gvector.Comm()), nodedofs[i]);
 
       nvector[i] += gvector[lid];
     }

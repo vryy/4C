@@ -33,6 +33,8 @@
 #include <cfenv>
 #endif
 
+using namespace FourC;
+
 namespace
 {
 
@@ -100,7 +102,7 @@ namespace
       MPI_Gather(&local_mem, 1, MPI_DOUBLE, recvbuf.get(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
       // Compute and output statistics on proc 0
-      if (comm.MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(comm) == 0)
       {
         double mem_min = recvbuf[0];
         double mem_max = recvbuf[0];
@@ -148,7 +150,7 @@ namespace
                 << std::endl;
     }
 #else
-    if (comm.MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm) == 0)
       std::cout << "Memory High Water Mark summary not available on this operating system.\n"
                 << std::endl;
 #endif
@@ -209,8 +211,6 @@ void ntam(int argc, char *argv[]);
  */
 int main(int argc, char *argv[])
 {
-  using namespace FourC;
-
   Core::Utils::SingletonOwnerRegistry::initialize();
   MPI_Init(&argc, &argv);
   Kokkos::ScopeGuard kokkos_guard{};
@@ -226,9 +226,9 @@ int main(int argc, char *argv[])
   {
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
-    printf("Global rank %d with PID %d on %s is ready for attach\n", gcomm->MyPID(), getpid(),
-        hostname);
-    if (gcomm->MyPID() == 0)
+    printf("Global rank %d with PID %d on %s is ready for attach\n",
+        Core::Communication::my_mpi_rank(*gcomm), getpid(), hostname);
+    if (Core::Communication::my_mpi_rank(*gcomm) == 0)
     {
       printf("\n** Enter a character to continue > \n");
       fflush(stdout);
@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
 
   if ((argc == 2) && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)))
   {
-    if (lcomm->MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(*lcomm) == 0)
     {
       printf("\n\n");
       print_help_message();
@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
   }
   else if ((argc == 2) && ((strcmp(argv[1], "-p") == 0) || (strcmp(argv[1], "--parameters") == 0)))
   {
-    if (lcomm->MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(*lcomm) == 0)
     {
       auto valid_parameters = Input::valid_parameters();
       Core::IO::InputFileUtils::print_metadata_yaml(std::cout, *valid_parameters);
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
   }
   else if ((argc == 2) && ((strcmp(argv[1], "-d") == 0) || (strcmp(argv[1], "--datfile") == 0)))
   {
-    if (lcomm->MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(*lcomm) == 0)
     {
       printf("\n\n");
       print_default_dat_header();
@@ -285,7 +285,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    if (gcomm->MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(*gcomm) == 0)
     {
       printf(
           "\n"
@@ -348,7 +348,7 @@ int main(int argc, char *argv[])
       if (ngroups > 1)
       {
         printf("Global processor %d has thrown an error and is waiting for the remaining procs\n\n",
-            gcomm->MyPID());
+            Core::Communication::my_mpi_rank(*gcomm));
         gcomm->Barrier();
       }
 
@@ -364,14 +364,14 @@ int main(int argc, char *argv[])
     lcomm->Barrier();
     if (ngroups > 1)
     {
-      printf("Global processor %d with local rank %d finished normally\n", gcomm->MyPID(),
-          lcomm->MyPID());
+      printf("Global processor %d with local rank %d finished normally\n",
+          Core::Communication::my_mpi_rank(*gcomm), Core::Communication::my_mpi_rank(*lcomm));
       gcomm->Barrier();
     }
     else
     {
       gcomm->Barrier();
-      printf("processor %d finished normally\n", lcomm->MyPID());
+      printf("processor %d finished normally\n", Core::Communication::my_mpi_rank(*lcomm));
     }
   }
 

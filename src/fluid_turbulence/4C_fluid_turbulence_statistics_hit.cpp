@@ -44,7 +44,7 @@ namespace FLD
     // output to screen
     //-----------------------------------
 
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       std::cout << "This is the turbulence statistics manager of\n";
       std::cout << "homogeneous isotropic turbulence:\n\n";
@@ -123,7 +123,7 @@ namespace FLD
 
     // communicate coordinates to all procs via round Robin loop
     {
-      int myrank = discret_->get_comm().MyPID();
+      int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
       int numprocs = discret_->get_comm().NumProc();
 
       std::vector<char> sblock;
@@ -315,7 +315,7 @@ namespace FLD
     std::shared_ptr<std::ofstream> log_1;
     std::shared_ptr<std::ofstream> log_2;
 
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       std::string s(statistics_outfilename_);
       s.append(".energy_spectra");
@@ -1178,7 +1178,7 @@ namespace FLD
     // write results to file
     //------------------------------
 
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       std::shared_ptr<std::ofstream> log_k;
 
@@ -1338,7 +1338,7 @@ namespace FLD
     // write results to file
     //------------------------------
 
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       std::shared_ptr<std::ofstream> log_k;
 
@@ -1655,7 +1655,7 @@ namespace FLD
     //------------------------------
 
     std::shared_ptr<std::ofstream> log;
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       std::string s = statistics_outfilename_;
       s.append(".kinetic_energy");
@@ -1698,7 +1698,7 @@ namespace FLD
     // output to screen
     //-----------------------------------
 
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       std::cout << "This is the turbulence statistics manager for HDG\n" << std::endl;
     }
@@ -1778,7 +1778,7 @@ namespace FLD
     std::shared_ptr<std::ofstream> log_1;
     std::shared_ptr<std::ofstream> log_2;
 
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       std::string s(statistics_outfilename_);
       s.append(".energy_spectra");

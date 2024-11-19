@@ -7,6 +7,7 @@
 
 #include "4C_comm_exporter.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <vector>
@@ -19,7 +20,7 @@ Core::Communication::Exporter::Exporter(const Epetra_Comm& comm)
       frommap_(dummymap_),
       tomap_(dummymap_),
       comm_(comm),
-      myrank_(comm.MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(comm)),
       numproc_(comm.NumProc())
 {
 }
@@ -30,7 +31,7 @@ Core::Communication::Exporter::Exporter(
       frommap_(frommap),
       tomap_(tomap),
       comm_(comm),
-      myrank_(comm.MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(comm)),
       numproc_(comm.NumProc())
 {
   construct_exporter();

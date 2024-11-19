@@ -63,7 +63,7 @@ void Solid::ModelEvaluator::BeamInteractionDataState::setup(
   // safety check
   check_init();
 
-  myrank_ = ia_discret->get_comm().MyPID();
+  myrank_ = Core::Communication::my_mpi_rank(ia_discret->get_comm());
 
   // displacements
   dis_ = std::make_shared<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(

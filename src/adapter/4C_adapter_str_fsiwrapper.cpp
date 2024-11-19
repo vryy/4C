@@ -177,7 +177,7 @@ Adapter::FSIStructureWrapper::extract_interface_dispnp()
   // prestressing business
   if (prestress_is_active(time()))
   {
-    if (discretization()->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discretization()->get_comm()) == 0)
       std::cout << "Applying no displacements to the fluid since we do prestressing" << std::endl;
 
     return std::make_shared<Core::LinAlg::Vector<double>>(*interface_->fsi_cond_map(), true);

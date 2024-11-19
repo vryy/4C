@@ -127,7 +127,7 @@ namespace FLD
     }
     // communicate coordinates to all procs via round Robin loop
     {
-      int myrank = discret_->get_comm().MyPID();
+      int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
       int numprocs = discret_->get_comm().NumProc();
 
       std::vector<char> sblock;
@@ -1934,7 +1934,7 @@ namespace FLD
         ele->evaluate(
             initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, interpolVec, elevec3);
 
-        if (ele->owner() == discret_->get_comm().MyPID())
+        if (ele->owner() == Core::Communication::my_mpi_rank(discret_->get_comm()))
         {
           std::vector<int> localDofs = discret_->dof(1, ele);
           FOUR_C_ASSERT(
@@ -1975,7 +1975,7 @@ namespace FLD
         count_(0),
         sum_(0.0)
   {
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       std::cout << "\nforcing for periodic hill such that a mass flow of " << idealmassflow_
                 << " is achieved" << std::endl;
     std::vector<Core::Conditions::Condition*> bodycond;
@@ -2077,7 +2077,7 @@ namespace FLD
     sum_ += newforce;
 
     // provide some information about the current condition
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       std::cout << "current mass flux:  " << oldflow_ << "/" << 49.46 << "  force:  " << oldforce_
                 << "/" << sum_ / (double)count_ << std::endl;
     return;

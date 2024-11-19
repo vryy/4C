@@ -42,7 +42,7 @@ FLD::XWall::XWall(std::shared_ptr<Core::FE::Discretization> dis, int nsd,
     : discret_(dis), params_(params), mystressmanager_(wssmanager), iter_(0)
 {
   // get the processor ID from the communicator
-  myrank_ = discret_->get_comm().MyPID();
+  myrank_ = Core::Communication::my_mpi_rank(discret_->get_comm());
 
   if (myrank_ == 0)
   {

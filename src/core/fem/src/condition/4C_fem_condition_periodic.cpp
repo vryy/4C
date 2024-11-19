@@ -94,7 +94,7 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
     // time measurement --- start TimeMonitor tm0
     tm0_ref_ = std::make_shared<Teuchos::TimeMonitor>(*timepbctot_);
 
-    if (discret_->get_comm().MyPID() == 0 && verbose_)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
     {
       std::cout << "Generate new dofset for discretization " << discret_->name();
       std::cout << std::endl << std::endl;
@@ -115,7 +115,7 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
     //                                              (call of destructor)
     tm0_ref_ = nullptr;
 
-    if (discret_->get_comm().MyPID() == 0 && verbose_)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
     {
       std::cout << std::endl << std::endl;
     }
@@ -128,7 +128,7 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
           Teuchos::Ptr(TeuchosComm.get()), std::cout, false, true, false);
     }
 
-    if (discret_->get_comm().MyPID() == 0 && verbose_)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
     {
       std::cout << std::endl << std::endl;
     }
@@ -137,7 +137,7 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
       const Epetra_Map* dofrowmap = discret_->dof_row_map();
       const Epetra_Map* noderowmap = discret_->node_row_map();
 
-      int mypid = discret_->get_comm().MyPID();
+      int mypid = Core::Communication::my_mpi_rank(discret_->get_comm());
       int numprocs = discret_->get_comm().NumProc();
 
       int countslave = 0;
@@ -178,7 +178,7 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
       discret_->get_comm().SumAll(my_n_ghostele.data(), n_ghostele.data(), numprocs);
       discret_->get_comm().SumAll(my_n_dof.data(), n_dof.data(), numprocs);
 
-      if (discret_->get_comm().MyPID() == 0 && verbose_)
+      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
       {
         printf(
             "   "
@@ -336,7 +336,8 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                   {
                     // we only add row nodes to the set
                     if (discret_->have_global_node(*idtoadd))
-                      if (discret_->g_node(*idtoadd)->owner() == discret_->get_comm().MyPID())
+                      if (discret_->g_node(*idtoadd)->owner() ==
+                          Core::Communication::my_mpi_rank(discret_->get_comm()))
                         masterset.insert(*idtoadd);
                   }
 
@@ -371,7 +372,8 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                   {
                     // we only add row nodes to the set
                     if (discret_->have_global_node(*idtoadd))
-                      if (discret_->g_node(*idtoadd)->owner() == discret_->get_comm().MyPID())
+                      if (discret_->g_node(*idtoadd)->owner() ==
+                          Core::Communication::my_mpi_rank(discret_->get_comm()))
                         slaveset.insert(*idtoadd);
                   }
 
@@ -490,7 +492,8 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
           // slavenodeids --- it belongs to this master slave pair!!!
           midtosid.clear();
 
-          if (discret_->get_comm().MyPID() == 0 && verbose_ && pbcid == numpbcpairs_ - 1)
+          if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_ &&
+              pbcid == numpbcpairs_ - 1)
           {
             std::cout << " creating layer " << nlayer << " of midtosid-map in " << *thisplane
                       << " direction ... ";
@@ -534,7 +537,8 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
             }
           }
 
-          if (discret_->get_comm().MyPID() == 0 && verbose_ && pbcid == numpbcpairs_ - 1)
+          if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_ &&
+              pbcid == numpbcpairs_ - 1)
           {
             std::cout << "adding connectivity to previous pbcs ... ";
             fflush(stdout);
@@ -555,7 +559,8 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
           // time measurement --- this causes the TimeMonitor tm4 to stop here
           tm4_ref_ = nullptr;
 
-          if (discret_->get_comm().MyPID() == 0 && verbose_ && pbcid == numpbcpairs_ - 1)
+          if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_ &&
+              pbcid == numpbcpairs_ - 1)
           {
             std::cout << "done.\n";
             fflush(stdout);
@@ -573,7 +578,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
     tm5_ref_ = std::make_shared<Teuchos::TimeMonitor>(*timepbcreddis_);
 
 
-    if (discret_->get_comm().MyPID() == 0 && verbose_)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
     {
       std::cout << "Redistributing: \n";
       fflush(stdout);
@@ -581,7 +586,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
 
     redistribute_and_create_dof_coupling();
 
-    if (discret_->get_comm().MyPID() == 0 && verbose_)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
     {
       std::cout << "... done\n";
       fflush(stdout);
@@ -783,9 +788,9 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
         // -> 2) round robin loop
 
         const int numproc = discret_->get_comm().NumProc();
-        const int myrank = discret_->get_comm().MyPID();        // me
-        const int torank = (myrank + 1) % numproc;              // to
-        const int fromrank = (myrank + numproc - 1) % numproc;  // from
+        const int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());  // me
+        const int torank = (myrank + 1) % numproc;                                  // to
+        const int fromrank = (myrank + numproc - 1) % numproc;                      // from
 
         Core::Communication::Exporter exporter(discret_->get_comm());
 
@@ -997,7 +1002,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
             Core::Nodes::Node* actnode = discret_->g_node(*idtodel);
 
             // check for row nodesactnodes ??????????????????
-            if (actnode->owner() != discret_->get_comm().MyPID())
+            if (actnode->owner() != Core::Communication::my_mpi_rank(discret_->get_comm()))
             {
               continue;
             }
@@ -1019,7 +1024,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 
     discret_->get_comm().SumAll(&myerase, &numerase, 1);
     discret_->get_comm().SumAll(&mycerase, &numcerase, 1);
-    if (discret_->get_comm().MyPID() == 0 && verbose_)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
     {
       std::cout << " Erased " << numerase << " slaves from nodeset.\n";
       std::cout << " Erased " << numcerase << " from the map of all ";
@@ -1055,7 +1060,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     }
 
     discret_->get_comm().SumAll(&mynumappend, &numappend, 1);
-    if (discret_->get_comm().MyPID() == 0 && verbose_)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
     {
       std::cout << " Appended " << numappend << " ids which belong to slave ";
       std::cout << "nodes that are coupled to a master\n";
@@ -1093,7 +1098,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       discret_->get_comm().MaxAll(&mymax, &max, 1);
       discret_->get_comm().MinAll(&mymin, &min, 1);
 
-      if (discret_->get_comm().MyPID() == 0 && verbose_)
+      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
       {
         std::cout << " The layout is generated: " << allcouplednodes
                   << " masters are coupled to at least " << min << " and up to " << max
@@ -1382,7 +1387,7 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
       // get masternode
       Core::Nodes::Node* master = discret_->g_node(master_gid);
 
-      if (master->owner() != discret_->get_comm().MyPID()) continue;
+      if (master->owner() != Core::Communication::my_mpi_rank(discret_->get_comm())) continue;
 
       // loop slavenodes associated with master
       std::vector<int> slave_gids = masterslavepair.second;
@@ -1494,7 +1499,7 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
     // nodegraph: row for each node, column with nodes from the same element and coupled nodes
     //
 
-    const int myrank = nodegraph->Comm().MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(nodegraph->Comm());
     const int numproc = nodegraph->Comm().NumProc();
 
     if (numproc > 1)
@@ -1575,7 +1580,7 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
       // do the redistribution without assigning dofs
       discret_->redistribute(newnoderowmap, newnodecolmap, {.assign_degrees_of_freedom = false});
 
-      if (discret_->get_comm().MyPID() == 0 && verbose_)
+      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
       {
         std::cout << "---------------------------------------------\n";
         std::cout << "Repair Master->Slave connection, generate final dofset";

@@ -5,6 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_defines.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_integrator.hpp"
@@ -32,7 +33,7 @@ bool CONTACT::Integrator::assemble_g(
     CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
-    if (snode->owner() != comm.MyPID()) continue;
+    if (snode->owner() != Core::Communication::my_mpi_rank(comm)) continue;
 
     // do not process slave side boundary nodes
     // (their row entries would be zero anyway!)
@@ -70,7 +71,7 @@ bool CONTACT::Integrator::assemble_g(
     CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
-    if (snode->owner() != comm.MyPID()) continue;
+    if (snode->owner() != Core::Communication::my_mpi_rank(comm)) continue;
 
     // do not process slave side boundary nodes
     // (their row entries would be zero anyway!)

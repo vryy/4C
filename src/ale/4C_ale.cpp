@@ -322,7 +322,7 @@ bool ALE::Ale::converged(const int iter)
   double res_norm;
   residual_->Norm2(&res_norm);
   res_norm /= sqrt(residual_->GlobalLength());
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     std::cout << "ITER: " << iter << "  RES NORM: " << res_norm << " DISP NORM: " << normdisi_
               << std::endl;
 
@@ -493,7 +493,7 @@ void ALE::Ale::output_restart(bool& datawritten)
   // print their own restart info.
   if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::ale)
   {
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       Core::IO::cout << "====== Restart written in step " << step_ << Core::IO::endl;
   }
 
@@ -576,7 +576,7 @@ void ALE::Ale::time_step(ALE::Utils::MapExtractor::AleDBCSetType dbc_type)
         FOUR_C_THROW("ALE newton not converged in %i iterations. Abort! ", maxiter_);
         break;
       case Inpar::ALE::divcont_continue:
-        if (discret_->get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
         {
           Core::IO::cout << "ALE newton not converged in " << maxiter_ << " iterations. Continue"
                          << Core::IO::endl;

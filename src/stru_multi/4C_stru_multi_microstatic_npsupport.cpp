@@ -8,6 +8,7 @@
 #include "4C_stru_multi_microstatic_npsupport.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_material.hpp"
@@ -46,8 +47,8 @@ void MultiScale::np_support_drt()
 
   // this call is needed in order to increment the unique ids that are distributed
   // by HDF5; the macro procs call output->write_mesh(0, 0.0) in Adapter::Structure
-  const int someUniqueNumber =
-      Global::Problem::instance(0)->get_communicators()->global_comm()->MyPID();
+  const int someUniqueNumber = Core::Communication::my_mpi_rank(
+      *Global::Problem::instance(0)->get_communicators()->global_comm());
   std::string uniqueDummyName = &"dummyHDF5file_p"[someUniqueNumber];
   H5Fcreate(uniqueDummyName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 

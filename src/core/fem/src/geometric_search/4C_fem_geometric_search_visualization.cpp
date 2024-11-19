@@ -7,6 +7,7 @@
 
 #include "4C_fem_geometric_search_visualization.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_geometric_search_utils.hpp"
 #include "4C_io_visualization_utils.hpp"
 
@@ -21,7 +22,7 @@ namespace Core::GeometricSearch
       std::string base_output_name)
       : Core::IO::VisualizationManager(std::move(parameters), comm, std::move(base_output_name))
   {
-    my_rank_ = comm.MyPID();
+    my_rank_ = Core::Communication::my_mpi_rank(comm);
     this->get_visualization_data().register_cell_data<int>("element_id", 1);
     this->get_visualization_data().register_cell_data<int>("element_created_on_rank", 1);
     this->get_visualization_data().register_cell_data<int>("primitive_predicate_flag", 1);

@@ -7,6 +7,7 @@
 
 #include "4C_contact_nitsche_integrator_fpi.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_nitsche_integrator_fsi.hpp"
 #include "4C_contact_node.hpp"
@@ -135,7 +136,8 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(Mortar::Element& sele, Mortar::E
   ++processed_gps;
   if (processed_gps == 100000)
   {
-    std::cout << "==| Processed again 100000 C-Gps! (" << Comm_.MyPID() << ") |==" << std::endl;
+    std::cout << "==| Processed again 100000 C-Gps! (" << Core::Communication::my_mpi_rank(Comm_)
+              << ") |==" << std::endl;
     processed_gps = 0;
   }
 

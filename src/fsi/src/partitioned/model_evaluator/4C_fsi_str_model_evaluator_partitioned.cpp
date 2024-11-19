@@ -110,7 +110,7 @@ Solid::ModelEvaluator::PartitionedFSI::solve_relaxation_linear(
     std::shared_ptr<Adapter::Structure> structure)
 {
   // print to screen
-  if (global_state().dof_row_map()->Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(global_state().dof_row_map()->Comm()) == 0)
     std::cout << "\n DO SRUCTURAL RELAXATION SOLVE ..." << std::endl;
 
   // cast adapter structure to implicit time integrator

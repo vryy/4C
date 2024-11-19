@@ -84,7 +84,7 @@ void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::evaluate_action(
       // We skip all elements without any row nodes on this proc (will not contribute to the matrix
       // in the assembly of the matrix). Otherwise even fully ghosted Volume Elements would required
       // a ghosted Volume Element on the other side of the interface
-      if (!ele1->has_only_ghost_nodes(discretization.get_comm().MyPID()))
+      if (!ele1->has_only_ghost_nodes(Core::Communication::my_mpi_rank(discretization.get_comm())))
         fpsi_coupling(ele1, params, discretization, lm, elemat1, elevec1);
       break;
     }

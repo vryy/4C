@@ -66,7 +66,7 @@ Coupling::VolMortar::VolMortarCoupl::VolMortarCoupl(int dim,
 
   // its the same communicator for all discr.
   comm_ = std::shared_ptr<Epetra_Comm>(dis1->get_comm().Clone());
-  myrank_ = comm_->MyPID();
+  myrank_ = Core::Communication::my_mpi_rank(*comm_);
 
   // define dof sets
   if (dofset21 == nullptr)

@@ -92,7 +92,7 @@ std::shared_ptr<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // solution output
   if (artdyn.get<bool>("SOLVESCATRA"))
   {
-    if (actdis->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(actdis->get_comm()) == 0)
     {
       std::cout << "<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>" << std::endl;
       std::cout << "<  ARTERY:  ScaTra coupling present  >" << std::endl;
@@ -117,7 +117,7 @@ std::shared_ptr<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   }
   else
   {
-    if (actdis->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(actdis->get_comm()) == 0)
     {
       std::cout << "<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>" << std::endl;
       std::cout << "<  ARTERY: no ScaTra coupling present  >" << std::endl;

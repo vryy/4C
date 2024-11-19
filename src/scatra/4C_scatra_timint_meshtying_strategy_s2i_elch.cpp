@@ -7,6 +7,7 @@
 
 #include "4C_scatra_timint_meshtying_strategy_s2i_elch.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils_gid_vector.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_fem_discretization.hpp"
@@ -419,7 +420,8 @@ void ScaTra::MeshtyingStrategyS2IElch::update() const
                   scatratimint_->discretization()->g_node(nodegid);
 
               // process only nodes owned by current processor
-              if (node->owner() == scatratimint_->discretization()->get_comm().MyPID())
+              if (node->owner() ==
+                  Core::Communication::my_mpi_rank(scatratimint_->discretization()->get_comm()))
               {
                 // extract local ID of first scalar transport degree of freedom associated with
                 // current node

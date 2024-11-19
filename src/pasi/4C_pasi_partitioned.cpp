@@ -136,7 +136,8 @@ void PaSI::PartitionedAlgo::struct_step()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PaSI::PartitionedAlgo::StructStep");
 
-  if ((get_comm().MyPID() == 0) and print_screen_evry() and (step() % print_screen_evry() == 0))
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
+      (step() % print_screen_evry() == 0))
     printf("-------------------- STRUCTURE SOLVER --------------------\n");
 
   // integrate structural time step
@@ -147,7 +148,8 @@ void PaSI::PartitionedAlgo::particle_step()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PaSI::PartitionedAlgo::particle_step");
 
-  if ((get_comm().MyPID() == 0) and print_screen_evry() and (step() % print_screen_evry() == 0))
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
+      (step() % print_screen_evry() == 0))
     printf("-------------------- PARTICLE SOLVER ---------------------\n");
 
   // integrate time step
@@ -207,7 +209,7 @@ void PaSI::PartitionedAlgo::set_interface_states(
     double normintfdisp(0.0);
     intfdispnp->Norm2(&normintfdisp);
 
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       printf("--> Norm of interface displacement: %10.5E\n", normintfdisp);
   }
 }

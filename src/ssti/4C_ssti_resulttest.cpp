@@ -7,6 +7,7 @@
 
 #include "4C_ssti_resulttest.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_ssti_algorithm.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -26,7 +27,7 @@ void SSTI::SSTIResultTest::test_special(
     const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only by one processor
-  if (ssti_algorithm_.get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(ssti_algorithm_.get_comm()) == 0)
   {
     // extract name of quantity to be tested
     std::string quantity = container.get<std::string>("QUANTITY");

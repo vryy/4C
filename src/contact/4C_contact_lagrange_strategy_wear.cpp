@@ -4674,7 +4674,7 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
   }
 
   // print balance information to screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "**********************************************************" << std::endl;
     if (taverage > 0)
@@ -4728,7 +4728,7 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
   // time measurement
   get_comm().Barrier();
   double t_end = Teuchos::Time::wallTime() - t_start;
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\nTime for parallel redistribution..............." << std::scientific
               << std::setprecision(6) << t_end << " secs\n"
               << std::endl;

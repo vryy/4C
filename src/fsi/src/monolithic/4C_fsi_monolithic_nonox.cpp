@@ -206,7 +206,7 @@ void FSI::MonolithicNoNOX::newton()
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ((converged()) and (get_comm().MyPID() == 0))
+  if ((converged()) and (Core::Communication::my_mpi_rank(get_comm()) == 0))
   {
     Core::IO::cout << Core::IO::endl;
     Core::IO::cout << "  Newton Converged! " << Core::IO::endl;
@@ -447,8 +447,8 @@ void FSI::MonolithicNoNOX::set_default_parameters(
 void FSI::MonolithicNoNOX::print_newton_iter()
 {
   // print to standard out
-  // replace myrank_ here general by Comm().MyPID()
-  if (get_comm().MyPID() == 0)
+  // replace myrank_ here general by Core::Communication::my_mpi_rank(Comm())
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     if (iter_ == 1) print_newton_iter_header();
     print_newton_iter_text();
@@ -593,7 +593,8 @@ void FSI::MonolithicNoNOX::update()
   if (fluid_->monolithic_xffsi_approach() != Inpar::XFEM::XFFSI_Full_Newton and
       fluid_->is_ale_relaxation_step(step()))
   {
-    if (get_comm().MyPID() == 0) Core::IO::cout << "Relaxing ALE!" << Core::IO::endl;
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+      Core::IO::cout << "Relaxing ALE!" << Core::IO::endl;
     // Set the ALE FSI-DOFs to Dirichlet and solve ALE system again
     // to obtain the true ALE displacement
     ale_field()->solve();

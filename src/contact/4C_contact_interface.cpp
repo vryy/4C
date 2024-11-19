@@ -200,7 +200,7 @@ CONTACT::Interface::Interface(const std::shared_ptr<Mortar::InterfaceDataContain
   if (!(selfcontact_ or nonSmoothContact_) &&
       interface_data_->get_extend_ghosting() == Inpar::Mortar::ExtendGhosting::redundant_all)
   {
-    if (Interface::get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(Interface::get_comm()) == 0)
     {
       std::cout << "\n\nWARNING: We do not want redundant interface storage for contact where not "
                    "needed, as it is very expensive. But we need it e.g. for self contact."
@@ -374,7 +374,7 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::Interface& interface)
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::print(std::ostream& os) const
 {
-  if (get_comm().MyPID() == 0) os << "Contact ";
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0) os << "Contact ";
   Mortar::Interface::print(os);
 }
 
@@ -426,7 +426,7 @@ void CONTACT::Interface::update_parallel_layout_and_data_structures(const bool p
   // print new parallel distribution
   if (perform_rebalancing)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       std::cout << "Interface parallel distribution after rebalancing:" << '\n';
     print_parallel_distribution();
   }
@@ -713,7 +713,7 @@ void CONTACT::Interface::redistribute()
 
   // some local variables
   std::shared_ptr<Epetra_Comm> comm(Interface::get_comm().Clone());
-  const int myrank = comm->MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(*comm);
   const int numproc = comm->NumProc();
   Teuchos::Time time("", true);
   std::set<int>::const_iterator iter;
@@ -1120,7 +1120,8 @@ void CONTACT::Interface::collect_distribution_data(int& numColElements, int& num
 
     // check if - in addition - the active proc owns this element.
     // Increment input variable rowele if so.
-    if (add && slaveElement->owner() == get_comm().MyPID()) ++numRowElements;
+    if (add && slaveElement->owner() == Core::Communication::my_mpi_rank(get_comm()))
+      ++numRowElements;
   }
 }
 
@@ -1131,7 +1132,7 @@ void CONTACT::Interface::create_search_tree()
 {
   // warning
 #ifdef MORTARGMSHCTN
-  if (Dim() == 3 && Comm().MyPID() == 0)
+  if (Dim() == 3 && Core::Communication::my_mpi_rank(Comm()) == 0)
   {
     std::cout << "\n******************************************************************\n";
     std::cout << "GMSH output of all contact tree nodes in 3D needs a lot of memory!\n";
@@ -1539,7 +1540,7 @@ void CONTACT::Interface::pre_evaluate(const int& step, const int& iter)
     // TODO: maybe we can remove this debug functionality
 #ifdef MORTARGMSHCELLS
   // reset integration cell GMSH files
-  int proc = Comm().MyPID();
+  int proc = Core::Communication::my_mpi_rank(Comm());
   std::ostringstream filename;
   filename << "o/gmsh_output/cells_" << proc << ".pos";
   FILE* fp = fopen(filename.str().c_str(), "w");
@@ -3217,7 +3218,7 @@ void CONTACT::Interface::post_evaluate(const int step, const int iter)
 
 #ifdef MORTARGMSHCELLS
   // finish integration cell GMSH files
-  int proc = Comm().MyPID();
+  int proc = Core::Communication::my_mpi_rank(Comm());
   std::ostringstream filename;
   filename << "o/gmsh_output/cells_" << proc << ".pos";
   FILE* fp = fopen(filename.str().c_str(), "a");
@@ -3944,7 +3945,8 @@ void CONTACT::Interface::evaluate_cpp_normals()
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Mortar::Node*>(node);
 
-    if (mrtrnode->owner() != get_comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
+    if (mrtrnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
+      FOUR_C_THROW("Node ownership inconsistency!");
 
     // vector with possible contacting master eles/nodes
     std::vector<Mortar::Element*> meles;
@@ -4130,7 +4132,7 @@ void CONTACT::Interface::export_master_nodal_normals() const
     auto* cnode = dynamic_cast<CONTACT::Node*>(node);
     int linsize = cnode->get_linsize() + (int)(n_x_key[gid].size());
 
-    if (cnode->owner() == get_comm().MyPID()) continue;
+    if (cnode->owner() == Core::Communication::my_mpi_rank(get_comm())) continue;
 
     // extract info
     std::shared_ptr<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
@@ -6095,7 +6097,8 @@ void CONTACT::Interface::evaluate_nts()
 
     if (!mrtrnode->is_on_corner() and nonSmoothContact_) continue;
 
-    if (mrtrnode->owner() != get_comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
+    if (mrtrnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
+      FOUR_C_THROW("Node ownership inconsistency!");
 
     // vector with possible contacting master eles
     std::vector<Mortar::Element*> meles;
@@ -6664,7 +6667,7 @@ void CONTACT::Interface::evaluate_distances(
   initialize();
 
   // interface needs to be complete
-  if (!filled() && get_comm().MyPID() == 0)
+  if (!filled() && Core::Communication::my_mpi_rank(get_comm()) == 0)
     FOUR_C_THROW("fill_complete() not called on interface %", id_);
 
   // create an interpolator instance

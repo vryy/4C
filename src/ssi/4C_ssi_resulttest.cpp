@@ -9,6 +9,7 @@
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_adapter_str_ssiwrapper.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_scatra_timint_implicit.hpp"
@@ -77,7 +78,7 @@ void SSI::SSIResultTest::test_special(
     const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only by one processor
-  if (ssi_base_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(ssi_base_->get_comm()) == 0)
   {
     // extract name of quantity to be tested
     std::string quantity = container.get<std::string>("QUANTITY");

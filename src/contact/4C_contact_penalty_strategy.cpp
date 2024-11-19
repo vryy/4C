@@ -78,7 +78,7 @@ void CONTACT::PenaltyStrategy::save_reference_state(
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // interface needs to be complete
-    if (!interface_[i]->filled() && get_comm().MyPID() == 0)
+    if (!interface_[i]->filled() && Core::Communication::my_mpi_rank(get_comm()) == 0)
       FOUR_C_THROW("fill_complete() not called on interface %", i);
 
     // do the computation of nodal shape function integral
@@ -207,7 +207,7 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
   else
     isincontact_ = false;
 
-  if ((get_comm().MyPID() == 0) && (globalchange >= 1))
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) && (globalchange >= 1))
     std::cout << "ACTIVE CONTACT SET HAS CHANGED..." << std::endl;
 
   // (re)setup active global Epetra_Maps
@@ -670,7 +670,7 @@ void CONTACT::PenaltyStrategy::update_constraint_norm(int uzawaiter)
   }
 
   // output to screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "********************************************\n";
     std::cout << "Normal Constraint Norm: " << cnorm << "\n";
@@ -799,7 +799,7 @@ void CONTACT::PenaltyStrategy::assemble()
   else
     isincontact_ = false;
 
-  if ((get_comm().MyPID() == 0) && (globalchange >= 1))
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) && (globalchange >= 1))
     std::cout << "ACTIVE CONTACT SET HAS CHANGED..." << std::endl;
 
   // (re)setup active global Epetra_Maps

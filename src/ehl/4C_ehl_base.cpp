@@ -543,7 +543,7 @@ void EHL::Base::setup_unprojectable_dbc()
     for (int i = 0; i < inf_gap_toggle_lub_->Map().NumMyElements(); ++i)
       if (abs(inf_gap_toggle_lub_->operator[](i) - old_toggle->operator[](i)) > 1.e-12)
       {
-        if (!get_comm().MyPID())
+        if (!Core::Communication::my_mpi_rank(get_comm()))
           std::cout << "dbc of unprojectable nodes changed boundary condition" << std::endl;
         break;
       }
@@ -553,7 +553,7 @@ void EHL::Base::setup_unprojectable_dbc()
     double d = 0.;
     inf_gap_toggle_lub_->MaxValue(&d);
 
-    if (!get_comm().MyPID())
+    if (!Core::Communication::my_mpi_rank(get_comm()))
       std::cout << "dbc of unprojectable nodes changed boundary condition" << std::endl;
   }
   old_toggle = std::make_shared<Core::LinAlg::Vector<double>>(*inf_gap_toggle_lub_);

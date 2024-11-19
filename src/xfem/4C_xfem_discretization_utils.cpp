@@ -305,7 +305,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::split_discretization(
     const std::vector<std::string>& conditions_to_copy) const
 {
   if (!sourcedis.filled()) FOUR_C_THROW("sourcedis is not filled");
-  const int myrank = targetdis.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(targetdis.get_comm());
 
   const int numothernoderow = sourcedis.num_my_row_nodes();
   const int numothernodecol = sourcedis.num_my_col_nodes();
@@ -485,7 +485,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
     const std::vector<std::string>& conditions_to_copy) const
 {
   if (not sourcedis.filled()) FOUR_C_THROW("sourcedis is not filled");
-  const int myrank = targetdis.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(targetdis.get_comm());
 
   // element map
   std::map<int, std::shared_ptr<Core::Elements::Element>> src_cond_elements;

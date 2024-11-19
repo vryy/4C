@@ -140,7 +140,7 @@ void FS3I::PartFpS3I1Wc::do_fpsi_step()
  *----------------------------------------------------------------------*/
 void FS3I::PartFpS3I1Wc::do_scatra_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n SCALAR TRANSPORT SOLVER \n***********************\n";
   }
@@ -201,7 +201,7 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
     case Inpar::ScaTra::solvertype_linear_incremental:
     {
       // print the screen info
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         printf("\n+-------------------+-------------------+\n");
         printf("| norm of residual  | norm of increment |\n");
@@ -235,7 +235,7 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
       if (connorm < 1e-5) connorm = 1.0;
 
       // print the screen info
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         printf("|  %3d/%3d   |   %10.3E [L_2 ]  | %10.3E   |   %10.3E [L_2 ]  | %10.3E   |\n",
             itnum, itemax, abstolres, conresnorm, ittol, incconnorm / connorm);
@@ -246,7 +246,7 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
       // current residual. Norm of residual is just printed for information
       if (conresnorm <= abstolres and incconnorm / connorm <= ittol)
       {
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         {
           // print 'finish line'
           printf(
@@ -259,7 +259,7 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
       // next timestep...
       else if (itnum == itemax)
       {
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         {
           printf("+---------------------------------------------------------------+\n");
           printf("|            >>>>>> not converged in itemax steps!              |\n");

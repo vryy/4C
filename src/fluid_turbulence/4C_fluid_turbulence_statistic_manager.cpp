@@ -451,7 +451,7 @@ namespace FLD
     }
 
 
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       if (flow_ == channel_flow_of_height_2 or flow_ == loma_channel_flow_of_height_2 or
           flow_ == scatra_channel_flow_of_height_2 or flow_ == bubbly_channel_flow)
@@ -519,7 +519,7 @@ namespace FLD
           // (effective viscosity etc. used during the computation)
           if (turbmodel_ == Inpar::FLUID::dynamic_smagorinsky)
           {
-            if (discret_->get_comm().MyPID() == 0)
+            if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
             {
               std::cout << "\nSmagorinsky constant, effective viscosity, ... etc, ";
               std::cout << "all element-quantities \n";
@@ -795,7 +795,7 @@ namespace FLD
         }
       }
 
-      if (discret_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       {
         std::cout
             << "Computed statistics: mean values, fluctuations, boundary forces etc.             (";
@@ -954,7 +954,7 @@ namespace FLD
           }
         }
 
-        if (discret_->get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
         {
           std::cout << "\nresiduals, dissipation rates etc, ";
           std::cout << "all gausspoint-quantities (";
@@ -962,7 +962,7 @@ namespace FLD
           std::cout << ")";
         }
       }
-      if (discret_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       {
         std::cout << "\n";
       }
@@ -1013,7 +1013,7 @@ namespace FLD
     // resolution
     if (flow_ == decaying_homogeneous_isotropic_turbulence and step == 0)
     {
-      if (discret_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       {
         std::cout << "XXXXXXXXXXXXXXXXXXXXX              ";
         std::cout << "calculate initial energy spectrum  ";
@@ -1025,7 +1025,7 @@ namespace FLD
       statistics_hit_->dump_statistics(0);
       statistics_hit_->clear_statistics();
 
-      if (discret_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       {
         std::cout << "XXXXXXXXXXXXXXXXXXXXX              ";
         std::cout << "wrote statistics record            ";
@@ -1069,7 +1069,7 @@ namespace FLD
       if (statistics_general_mean_ != nullptr)
         statistics_general_mean_->add_to_current_time_average(dt_, velnp, myscaaf_, myphinp_);
 
-      if (discret_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       {
         std::cout << "                      taking time sample (";
         printf("%10.4E", Teuchos::Time::wallTime() - tcpu);
@@ -1145,7 +1145,8 @@ namespace FLD
           output_inflow = true;
       }
 
-      if (discret_->get_comm().MyPID() == 0 && outputformat != do_not_write)
+      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 &&
+          outputformat != do_not_write)
         std::cout << "---  statistics record: \n" << std::flush;
 
       // do actual output (time averaging)
@@ -1399,7 +1400,8 @@ namespace FLD
         }
       }
 
-      if (discret_->get_comm().MyPID() == 0 && outputformat != do_not_write)
+      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 &&
+          outputformat != do_not_write)
       {
         std::cout << "XXXXXXXXXXXXXXXXXXXXX              ";
         std::cout << "wrote statistics record            ";
@@ -1421,7 +1423,8 @@ namespace FLD
       }
     }  // end step is in sampling period
 
-    if (discret_->get_comm().MyPID() == 0 and turbmodel_ == Inpar::FLUID::dynamic_vreman)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 and
+        turbmodel_ == Inpar::FLUID::dynamic_vreman)
     {
       std::string fnamevreman(statistics_outfilename_);
 
@@ -1469,7 +1472,7 @@ namespace FLD
   void TurbulenceStatisticManager::add_scatra_field(
       std::shared_ptr<ScaTra::ScaTraTimIntImpl> scatra_timeint)
   {
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       Core::IO::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
                      << Core::IO::endl;
@@ -1568,7 +1571,7 @@ namespace FLD
     {
       if (statistics_general_mean_ != nullptr)
       {
-        if (discret_->get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
         {
           std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXX          ";
           std::cout << "Read general mean values           ";
@@ -1581,7 +1584,7 @@ namespace FLD
 
       if (statistics_ldc_ != nullptr)
       {
-        if (discret_->get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
         {
           std::cout << "XXXXXXXXXXXXXXXXXXXXX              ";
           std::cout << "Read ldc statistics                ";
@@ -1611,7 +1614,7 @@ namespace FLD
     {
       if (samstart_ < step && step <= samstop_)
       {
-        if (discret_->get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
         {
           std::cout << "XXXXXXXXXXXXXXXXXXXXX        ";
           std::cout << "Read general mean values for ScaTra      ";

@@ -199,7 +199,7 @@ void Airway::RedAirwayTissue::integrate()
       iter++;
     } while (not_converged(iter) && iter < itermax_);
 
-    if ((iter >= itermax_) && (couppres_ip_->Comm().MyPID() == 0))
+    if ((iter >= itermax_) && (Core::Communication::my_mpi_rank(couppres_ip_->Comm()) == 0))
     {
       FOUR_C_THROW("FIELD ITERATION NOT CONVERGED IN %d STEPS AT TIME T=%f", itermax_, time());
     }
@@ -296,7 +296,7 @@ void Airway::RedAirwayTissue::relax_pressure(int iter)
       }
 
       // Print relaxation factor \omega_np_
-      if (couppres_ip_->Comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(couppres_ip_->Comm()) == 0)
       {
         printf("Aitken Relaxation: \n");
         for (int i = 0; i < couppres_ip_->Map().NumMyElements(); ++i)
@@ -409,7 +409,7 @@ void Airway::RedAirwayTissue::output_iteration(Core::LinAlg::Vector<double>& pre
     Core::LinAlg::Vector<double>& scaled_pres_inc, Core::LinAlg::Vector<double>& flux_inc,
     Core::LinAlg::Vector<double>& scaled_flux_inc, int iter)
 {
-  if (couppres_ip_->Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(couppres_ip_->Comm()) == 0)
   {
     printf("\nFIELD ITERATION: %i / %i\n", iter, itermax_);
     printf(

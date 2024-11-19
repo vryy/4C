@@ -5,6 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
 #include "4C_contact_interface.hpp"
@@ -85,7 +86,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   // change master-side proc ownership
   // some local variables
   std::shared_ptr<Epetra_Comm> comm_v(get_comm().Clone());
-  const int myrank = comm_v->MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(*comm_v);
   const int numproc = comm_v->NumProc();
   const int torank = (myrank + 1) % numproc;              // to
   const int fromrank = (myrank + numproc - 1) % numproc;  // from
@@ -406,8 +407,9 @@ void CONTACT::Interface::round_robin_detect_ghosting()
     for (int proc = 0; proc < (int)(get_comm().NumProc()); ++proc)
     {
       // status output
-      if (get_comm().MyPID() == 0 && proc == 0) std::cout << "Round-Robin-Iteration #" << proc;
-      if (get_comm().MyPID() == 0 && proc > 0) std::cout << " #" << proc;
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0 && proc == 0)
+        std::cout << "Round-Robin-Iteration #" << proc;
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0 && proc > 0) std::cout << " #" << proc;
 
       // perform the ownership change
       round_robin_change_ownership();
@@ -466,7 +468,8 @@ void CONTACT::Interface::round_robin_detect_ghosting()
     FOUR_C_THROW("Invalid search algorithm");
 
   // final output for loop
-  if (get_comm().MyPID() == 0) std::cout << " Round-Robin loop done!" << std::endl;
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+    std::cout << " Round-Robin loop done!" << std::endl;
 
   return;
 }

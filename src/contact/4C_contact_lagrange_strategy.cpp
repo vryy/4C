@@ -7,6 +7,7 @@
 
 #include "4C_contact_lagrange_strategy.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_defines.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
@@ -1479,13 +1480,15 @@ void CONTACT::LagrangeStrategy::compute_contact_stresses()
     // temporary output:
     double tangforce = 0.0;
     forcetangential_->Norm2(&tangforce);
-    if (get_comm().MyPID() == 0) std::cout << "tangential force = " << tangforce << std::endl;
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+      std::cout << "tangential force = " << tangforce << std::endl;
 
     double normalforce = 0.0;
     forcenormal_->Norm2(&normalforce);
-    if (get_comm().MyPID() == 0) std::cout << "normal force = " << normalforce << std::endl;
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+      std::cout << "normal force = " << normalforce << std::endl;
 
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       FILE* MyFile = nullptr;
       std::ostringstream filename;
@@ -1530,7 +1533,7 @@ void CONTACT::LagrangeStrategy::save_reference_state(
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // interface needs to be complete
-    if (!interface_[i]->filled() && get_comm().MyPID() == 0)
+    if (!interface_[i]->filled() && Core::Communication::my_mpi_rank(get_comm()) == 0)
       FOUR_C_THROW("fill_complete() not called on interface %", i);
 
     // reset kappa
@@ -4837,7 +4840,7 @@ void CONTACT::LagrangeStrategy::update_active_set()
           zigzagging = true;
 
           // output to screen
-          if (get_comm().MyPID() == 0)
+          if (Core::Communication::my_mpi_rank(get_comm()) == 0)
             std::cout << "DETECTED 1-2 ZIG-ZAGGING OF ACTIVE SET................." << std::endl;
         }
       }
@@ -4851,7 +4854,7 @@ void CONTACT::LagrangeStrategy::update_active_set()
           zigzagging = true;
 
           // output to screen
-          if (get_comm().MyPID() == 0)
+          if (Core::Communication::my_mpi_rank(get_comm()) == 0)
             std::cout << "DETECTED 1-2-3 ZIG-ZAGGING OF ACTIVE SET................" << std::endl;
         }
       }
@@ -4868,10 +4871,10 @@ void CONTACT::LagrangeStrategy::update_active_set()
   }
 
   // output of active set status to screen
-  if (get_comm().MyPID() == 0 && activesetconv_ == false)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0 && activesetconv_ == false)
     std::cout << "ACTIVE SET ITERATION " << active_set_steps() - 1
               << " NOT CONVERGED - REPEAT TIME STEP................." << std::endl;
-  else if (get_comm().MyPID() == 0 && activesetconv_ == true)
+  else if (Core::Communication::my_mpi_rank(get_comm()) == 0 && activesetconv_ == true)
     std::cout << "ACTIVE SET CONVERGED IN " << active_set_steps() - zigzagging
               << " STEP(S)................." << std::endl;
 
@@ -5062,7 +5065,7 @@ void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstSt
   }  // if (ftype != Inpar::CONTACT::friction_tresca && ftype != Inpar::CONTACT::friction_coulomb)
 
   // output to screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     if (zigzagging == 1)
     {
@@ -5087,7 +5090,7 @@ void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstSt
   }
 
   // output of active set status to screen
-  if (get_comm().MyPID() == 0 && activesetconv_ == false)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0 && activesetconv_ == false)
     std::cout << "ACTIVE CONTACT SET HAS CHANGED... CHANGE No. " << active_set_steps() - 1
               << std::endl;
 
@@ -5161,7 +5164,7 @@ void CONTACT::LagrangeStrategy::update(std::shared_ptr<const Core::LinAlg::Vecto
   //  gcsum = gssum+gmsum;
   //  if (abs(gcsum)>1.0e-11)
   //    FOUR_C_THROW("Conservation of linear momentum is not fulfilled!");
-  //  if (Comm().MyPID()==0)
+  //  if (Core::Communication::my_mpi_rank(Comm())==0)
   //  {
   //    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
   //    std::cout << ">>      Linear Momentum Conservation      <<" << std::endl;

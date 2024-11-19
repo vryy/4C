@@ -750,7 +750,7 @@ void FLD::TurbulenceStatisticsTgv::dump_statistics(const int step)
   //----------------------------------------------------------------------
   // output to log-file
   std::shared_ptr<std::ofstream> log;
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::shared_ptr<std::ofstream> log_res;
 

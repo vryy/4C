@@ -7,6 +7,7 @@
 
 #include "4C_io_elementreader.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_element_definition.hpp"
@@ -62,7 +63,7 @@ Core::IO::ElementReader::ElementReader(std::shared_ptr<Core::FE::Discretization>
 /*----------------------------------------------------------------------*/
 void Core::IO::ElementReader::read_and_distribute()
 {
-  const int myrank = comm_.MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(comm_);
   const int numproc = comm_.NumProc();
 
   // read global ids of elements of this discretization
@@ -123,7 +124,7 @@ std::pair<int, std::vector<int>> Core::IO::ElementReader::get_element_size_and_i
   int numele = 0;
 
   // all reading is done on proc 0
-  if (comm_.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm_) == 0)
   {
     for (const auto& element_line : input_.lines_in_section(sectionname_))
     {
@@ -159,7 +160,7 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
   // All ranks > 0 will receive the node ids of the elements from rank 0.
   // We know that we will read nblock blocks of elements, so call the
   // collective function an appropriate number of times.
-  if (comm_.MyPID() > 0)
+  if (Core::Communication::my_mpi_rank(comm_) > 0)
   {
     for (int i = 0; i < nblock; ++i)
     {

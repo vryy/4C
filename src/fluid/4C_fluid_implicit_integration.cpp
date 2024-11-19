@@ -1164,10 +1164,11 @@ void FLD::FluidImplicitTimeInt::evaluate_mat_and_rhs(Teuchos::ParameterList& ele
             strategy.elevector3());
 
         if (err)
-          FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->get_comm().MyPID(),
-              actele->id(), err);
+          FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+              Core::Communication::my_mpi_rank(discret_->get_comm()), actele->id(), err);
       }
-      std::vector<int> myowner(la[0].lmowner_.size(), strategy.systemvector1()->Comm().MyPID());
+      std::vector<int> myowner(la[0].lmowner_.size(),
+          Core::Communication::my_mpi_rank(strategy.systemvector1()->Comm()));
       {
         // calls the Assemble function for EpetraFECrs matrices including communication of non-row
         // entries
@@ -3544,7 +3545,7 @@ void FLD::FluidImplicitTimeInt::output()
                                Inpar::FLUID::SubscalesTD::subscales_quasistatic))
         output_->write_mesh(step_, time_);
 
-      if (discret_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
         std::cout << "====== Restart for field '" << discret_->name() << "' written in step "
                   << step_ << std::endl;
     }
@@ -3678,14 +3679,14 @@ void FLD::FluidImplicitTimeInt::output_to_gmsh(
   {
     filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files("solution_velpres_inflow",
         discret_->writer()->output()->file_name(), step, 20, screen_out,
-        discret_->get_comm().MyPID());
+        Core::Communication::my_mpi_rank(discret_->get_comm()));
     // std::ofstream gmshfilecontent(filename.c_str());
   }
   else
   {
     filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files("solution_velpres",
         discret_->writer()->output()->file_name(), step, 20, screen_out,
-        discret_->get_comm().MyPID());
+        Core::Communication::my_mpi_rank(discret_->get_comm()));
     // std::ofstream gmshfilecontent(filename.c_str());
   }
   std::ofstream gmshfilecontent(filename.c_str());
@@ -5060,7 +5061,7 @@ void FLD::FluidImplicitTimeInt::lift_drag() const
       FLD::Utils::lift_drag(discret_, *trueresidual_, dispnp_, numdim_, liftdragvals, alefluid_);
     }
 
-    if (liftdragvals != nullptr and discret_->get_comm().MyPID() == 0)
+    if (liftdragvals != nullptr and Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       FLD::Utils::write_lift_drag_to_file(time_, step_, *liftdragvals);
   }
 }
@@ -5099,7 +5100,7 @@ void FLD::FluidImplicitTimeInt::compute_flow_rates() const
     // velnp_,gridv_,dispnp_,physicaltype_);
 
     // write to file
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       FLD::Utils::write_doubles_to_file(time_, step_, flowrates, "flowrate");
     }
@@ -5110,7 +5111,7 @@ void FLD::FluidImplicitTimeInt::compute_flow_rates() const
         FLD::Utils::compute_flow_rates(*discret_, velnp_, condstring, physicaltype_);
 
     // write to file
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       FLD::Utils::write_doubles_to_file(time_, step_, flowrates, "flowrate");
   }
 }
@@ -6259,7 +6260,7 @@ void FLD::FluidImplicitTimeInt::reset(bool completeReset, int numsteps, int iter
 void FLD::FluidImplicitTimeInt::predict_tang_vel_consist_acc()
 {
   // message to screen
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::cout << "fluid: doing TangVel predictor" << std::endl;
   }
@@ -6529,7 +6530,7 @@ void FLD::FluidImplicitTimeInt::apply_dirichlet_bc(Teuchos::ParameterList& param
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::explicit_predictor()
 {
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     printf("fluid: using explicit predictor %s", predictor_.c_str());
   }
@@ -6657,7 +6658,7 @@ void FLD::FluidImplicitTimeInt::explicit_predictor()
   else
     FOUR_C_THROW("Unknown fluid predictor %s", predictor_.c_str());
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     printf("\n");
   }

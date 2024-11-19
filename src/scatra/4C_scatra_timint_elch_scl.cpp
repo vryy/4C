@@ -225,7 +225,7 @@ void ScaTra::ScaTraTimIntElchSCL::prepare_time_step()
 
     micro_scatra_field()->set_dt(new_dt);
     micro_scatra_field()->set_time_step(time(), step());
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       std::cout << "Time step size changed to " << new_dt << std::endl;
   }
 
@@ -481,7 +481,7 @@ void ScaTra::ScaTraTimIntElchSCL::write_coupling_to_csv(
 bool ScaTra::ScaTraTimIntElchSCL::break_newton_loop_and_print_convergence()
 {
   // extract processor ID
-  const int mypid = discret_->get_comm().MyPID();
+  const int mypid = Core::Communication::my_mpi_rank(discret_->get_comm());
 
   const auto& params =
       Global::Problem::instance()->scalar_transport_dynamic_params().sublist("NONLINEAR");
@@ -708,12 +708,13 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
   const unsigned int num_my_macro_slave_node_gids = my_macro_slave_node_gids.size();
   for (int iproc = 0; iproc < comm.NumProc(); ++iproc)
   {
-    if (iproc == comm.MyPID())
+    if (iproc == Core::Communication::my_mpi_rank(comm))
       micro_problem_counter += static_cast<int>(num_my_macro_slave_node_gids);
     comm.Broadcast(&micro_problem_counter, 1, iproc);
 
     // start of micro discretization of this proc is end of last proc
-    if (iproc == comm.MyPID() - 1) my_micro_problem_counter = micro_problem_counter;
+    if (iproc == Core::Communication::my_mpi_rank(comm) - 1)
+      my_micro_problem_counter = micro_problem_counter;
   }
 
   // global  map between coupled macro nodes and micro nodes
@@ -1062,7 +1063,7 @@ void ScaTra::ScaTraTimIntElchSCL::redistribute_micro_discretization()
   const int min_node_gid = micro_dis->node_row_map()->MinAllGID();
   const int num_nodes = micro_dis->node_row_map()->NumGlobalElements();
   const int num_proc = micro_dis->get_comm().NumProc();
-  const int myPID = micro_dis->get_comm().MyPID();
+  const int myPID = Core::Communication::my_mpi_rank(micro_dis->get_comm());
 
   const int num_node_per_proc = static_cast<int>(std::floor(num_nodes / num_proc));
 

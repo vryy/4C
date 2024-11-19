@@ -1492,7 +1492,8 @@ void FSI::SlidingMonolithicFluidSplit::output()
   {
     structure_field()->get_constraint_manager()->compute_monitor_values(
         structure_field()->dispnp());
-    if (comm_.MyPID() == 0) structure_field()->get_constraint_manager()->print_monitor_values();
+    if (Core::Communication::my_mpi_rank(comm_) == 0)
+      structure_field()->get_constraint_manager()->print_monitor_values();
   }
 }
 

@@ -64,7 +64,7 @@ void FLD::FluidResultTest::test_node(
       const Core::Nodes::Node* actnode = fluiddis_->g_node(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->owner() != fluiddis_->get_comm().MyPID()) return;
+      if (actnode->owner() != Core::Communication::my_mpi_rank(fluiddis_->get_comm())) return;
 
       double result = 0.;
 

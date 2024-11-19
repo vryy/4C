@@ -264,7 +264,7 @@ void PoroElastScaTra::PoroScatraMono::solve()
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ((converged()) and (get_comm().MyPID() == 0))
+  if ((converged()) and (Core::Communication::my_mpi_rank(get_comm()) == 0))
   {
     print_newton_conv();
   }
@@ -531,13 +531,14 @@ void PoroElastScaTra::PoroScatraMono::linear_solve()
 
     Core::LinAlg::apply_dirichlet_to_system(
         *sparse, *iterinc_, *rhs_, *zeros_, *combined_dbc_map());
-    //  if ( Comm().MyPID()==0 ) { cout << " DBC applied to system" << endl; }
+    //  if ( Core::Communication::my_mpi_rank(Comm())==0 ) { cout << " DBC applied to system" <<
+    //  endl; }
 
     // standard solver call
     solver_params.refactor = true;
     solver_params.reset = iter_ == 1;
     solver_->solve(sparse->epetra_operator(), iterinc_, rhs_, solver_params);
-    //  if ( Comm().MyPID()==0 ) { cout << " Solved" << endl; }
+    //  if ( Core::Communication::my_mpi_rank(Comm())==0 ) { cout << " Solved" << endl; }
   }
   else
   {
@@ -687,8 +688,9 @@ bool PoroElastScaTra::PoroScatraMono::converged()
 void PoroElastScaTra::PoroScatraMono::print_newton_iter()
 {
   // print to standard out
-  // replace myrank_ here general by Comm().MyPID()
-  if ((get_comm().MyPID() == 0) and printscreen_ and (step() % printscreen_ == 0) and printiter_)
+  // replace myrank_ here general by Core::Communication::my_mpi_rank(Comm())
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and printscreen_ and
+      (step() % printscreen_ == 0) and printiter_)
   {
     if (iter_ == 1) print_newton_iter_header(stdout);
     print_newton_iter_text(stdout);

@@ -273,7 +273,7 @@ void Mortar::create_new_col_map(const Core::LinAlg::SparseMatrix& mat,
     const int lid = mat.col_map().LID(cit->first);
     if (lid == -1)
       FOUR_C_THROW("Couldn't find the GID %d in the old column map on proc %d.", cit->first,
-          mat.Comm().MyPID());
+          Core::Communication::my_mpi_rank(mat.Comm()));
 
     my_col_gids[lid] = cit->second;
   }

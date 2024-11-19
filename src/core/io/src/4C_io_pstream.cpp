@@ -7,6 +7,8 @@
 
 #include "4C_io_pstream.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
+
 #include <Teuchos_oblackholestream.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -81,7 +83,8 @@ void Core::IO::Pstream::setup(const bool writetoscreen, const bool writetofile,
   if (on_pid() and writetofile_)
   {
     std::stringstream fname;
-    fname << fileprefix << ".p" << std::setfill('0') << std::setw(2) << comm_->MyPID() << ".log";
+    fname << fileprefix << ".p" << std::setfill('0') << std::setw(2)
+          << Core::Communication::my_mpi_rank(*comm_) << ".log";
     outfile_ = new std::ofstream(fname.str().c_str());
     if (!outfile_) FOUR_C_THROW("could not open output file");
   }
@@ -91,7 +94,7 @@ void Core::IO::Pstream::setup(const bool writetoscreen, const bool writetofile,
 
   // setup mystream
   blackholestream_ = new Teuchos::oblackholestream;
-  if (writetoscreen_ and (comm_->MyPID() == targetpid_ or targetpid_ < 0))
+  if (writetoscreen_ and (Core::Communication::my_mpi_rank(*comm_) == targetpid_ or targetpid_ < 0))
     mystream_ = &std::cout;
   else
     mystream_ = blackholestream_;
@@ -175,7 +178,7 @@ void Core::IO::Pstream::flush()
 bool Core::IO::Pstream::on_pid()
 {
   if (targetpid_ < 0) return true;
-  return (comm_->MyPID() == targetpid_);
+  return (Core::Communication::my_mpi_rank(*comm_) == targetpid_);
 }
 
 

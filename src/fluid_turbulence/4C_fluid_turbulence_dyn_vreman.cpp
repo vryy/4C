@@ -163,7 +163,7 @@ double FLD::Vreman::dyn_vreman_compute_cv()
   if (Cv < 0.0)
   {
     Cv = 0.0;
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       std::cout << "!!   Vreman constant negative --> clipping: Cv=0.0   !!" << std::endl;
   }
 

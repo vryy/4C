@@ -99,7 +99,7 @@ void FLD::TimIntStationaryHDG::reset(bool completeReset, int numsteps, int iter)
   FluidImplicitTimeInt::reset(completeReset, numsteps, iter);
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
   intvelnp_ = Core::LinAlg::create_vector(*intdofrowmap, true);
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     std::cout << "Number of degrees of freedom in HDG system: "
               << discret_->dof_row_map(0)->NumGlobalElements() << std::endl;
 }
@@ -207,7 +207,7 @@ void FLD::TimIntStationaryHDG::set_initial_flow_field(
       }
     }
 
-    if (ele->owner() == discret_->get_comm().MyPID())
+    if (ele->owner() == Core::Communication::my_mpi_rank(discret_->get_comm()))
     {
       std::vector<int> localDofs = discret_->dof(1, ele);
       FOUR_C_ASSERT(
@@ -219,7 +219,7 @@ void FLD::TimIntStationaryHDG::set_initial_flow_field(
   }
   double globerror = 0;
   discret_->get_comm().SumAll(&error, &globerror, 1);
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     std::cout << "Error project when setting face twice: " << globerror << std::endl;
 }
 

@@ -5,6 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_factory.hpp"
 #include "4C_fluid_ele_interface.hpp"
@@ -28,7 +29,7 @@ void Discret::Elements::FluidPoroEleType::pre_evaluate(Core::FE::Discretization&
   {
     Discret::Elements::FluidEleParameterPoro* fldpara =
         Discret::Elements::FluidEleParameterPoro::instance();
-    fldpara->set_element_poro_parameter(p, dis.get_comm().MyPID());
+    fldpara->set_element_poro_parameter(p, Core::Communication::my_mpi_rank(dis.get_comm()));
   }
   else
   {

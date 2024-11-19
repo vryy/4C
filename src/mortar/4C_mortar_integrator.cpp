@@ -7,6 +7,7 @@
 
 #include "4C_mortar_integrator.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -1009,7 +1010,7 @@ void inline Mortar::IntegratorCalc<distype_s, distype_m>::gp_dm(Mortar::Element&
     {
       Mortar::Node* cnode = dynamic_cast<Mortar::Node*>(snodes[j]);
 
-      if (cnode->owner() != comm.MyPID()) continue;
+      if (cnode->owner() != Core::Communication::my_mpi_rank(comm)) continue;
       if (cnode->is_on_boundor_ce()) continue;
 
       // integrate mseg
@@ -1063,7 +1064,7 @@ void inline Mortar::IntegratorCalc<distype_s, distype_m>::gp_dm(Mortar::Element&
     {
       Mortar::Node* cnode = dynamic_cast<Mortar::Node*>(snodes[j]);
 
-      if (cnode->owner() != comm.MyPID()) continue;
+      if (cnode->owner() != Core::Communication::my_mpi_rank(comm)) continue;
       if ((shapefcn_ == Inpar::Mortar::shape_standard && cnode->is_on_boundor_ce()) ||
           ((shapefcn_ == Inpar::Mortar::shape_dual ||
                shapefcn_ == Inpar::Mortar::shape_petrovgalerkin) &&

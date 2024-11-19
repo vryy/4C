@@ -10,6 +10,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -308,7 +309,7 @@ namespace Core::LinAlg
         const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) override
     {
-      const int myrank = Comm().MyPID();
+      const int myrank = Core::Communication::my_mpi_rank(Comm());
       Strategy::assemble(eid, myrank, lmstride, Aele, lmrow, lmrowowner, lmcol);
     }
 

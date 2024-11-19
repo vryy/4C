@@ -7,6 +7,7 @@
 
 #include "4C_fsi_nox_sd.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_vector.hpp"
@@ -84,8 +85,8 @@ bool NOX::FSI::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& ste
 
   // write omega
   double fnorm = oldgrp.getF().norm();
-  if (dynamic_cast<const ::NOX::Epetra::Vector&>(oldgrp.getF()).getEpetraVector().Comm().MyPID() ==
-      0)
+  if (Core::Communication::my_mpi_rank(
+          dynamic_cast<const ::NOX::Epetra::Vector&>(oldgrp.getF()).getEpetraVector().Comm()) == 0)
   {
     static int count;
     static std::ofstream* out;

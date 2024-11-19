@@ -421,8 +421,8 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(Core::FE::Discreti
       {
         std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = cond.geometry();
         if (geom.empty())
-          FOUR_C_THROW(
-              "evaluation of condition with empty geometry on proc %d", evaldis.get_comm().MyPID());
+          FOUR_C_THROW("evaluation of condition with empty geometry on proc %d",
+              Core::Communication::my_mpi_rank(evaldis.get_comm()));
 
         std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
 
@@ -464,7 +464,7 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(Core::FE::Discreti
         curr = geom.begin();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-        std::cout << "PROC " << evaldis.get_comm().MyPID()
+        std::cout << "PROC " << Core::Communication::my_mpi_rank(evaldis.get_comm())
                   << ": mygeometrysize = " << mygeometrysize
                   << " maxgeometrysize = " << maxgeometrysize << std::endl;
 #endif
@@ -571,7 +571,7 @@ void Immersed::ImmersedBase::write_extra_output(const Epetra_Comm& comm, const d
     const std::vector<double> valuetowrite2, const std::vector<double> valuetowrite3)
 {
   // append values to output file
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     const std::string fname1 =
         Global::Problem::instance()->output_control_file()->file_name() + "." + filenameending;

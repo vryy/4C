@@ -57,7 +57,7 @@ void PoroElast::Partitioned::solve()
   int itnum = 0;
   bool stopnonliniter = false;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n****************************************\n          OUTER ITERATION "
                  "LOOP\n****************************************\n";
@@ -110,7 +110,7 @@ void PoroElast::Partitioned::solve()
 
 void PoroElast::Partitioned::do_struct_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
@@ -121,7 +121,7 @@ void PoroElast::Partitioned::do_struct_step()
 
 void PoroElast::Partitioned::do_fluid_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n FLUID SOLVER \n***********************\n";
   }
@@ -169,7 +169,7 @@ bool PoroElast::Partitioned::convergence_check(int itnum)
   if (structnorm_L2 < 1e-6) structnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout
@@ -190,7 +190,7 @@ bool PoroElast::Partitioned::convergence_check(int itnum)
   if ((fluidincnorm_L2 / fluidnorm_L2 <= ittol_) && (dispincnorm_L2 / structnorm_L2 <= ittol_))
   {
     stopnonliniter = true;
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       printf("\n");
       printf(
@@ -207,7 +207,8 @@ bool PoroElast::Partitioned::convergence_check(int itnum)
       ((fluidincnorm_L2 / fluidnorm_L2 > ittol_) || (dispincnorm_L2 / structnorm_L2 > ittol_)))
   {
     stopnonliniter = true;
-    if ((get_comm().MyPID() == 0))  // and print_screen_evry() and (Step()%print_screen_evry()==0))
+    if ((Core::Communication::my_mpi_rank(get_comm()) ==
+            0))  // and print_screen_evry() and (Step()%print_screen_evry()==0))
     {
       printf(
           "|     >>>>>> not converged in itemax steps!                                       |\n");

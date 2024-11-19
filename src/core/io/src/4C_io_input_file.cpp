@@ -648,7 +648,7 @@ namespace Core::IO
         std::vector<double> box_specifications;
         {
           for (int init = 0; init < 9; ++init) box_specifications.push_back(0.0);
-          if (input.get_comm().MyPID() == 0)  // Reading is done by proc 0
+          if (Core::Communication::my_mpi_rank(input.get_comm()) == 0)  // Reading is done by proc 0
           {
             // get original domain section from the *.dat-file
             std::string dommarker = disname + " DOMAIN";
@@ -785,7 +785,7 @@ namespace Core::IO
       std::shared_ptr<Core::FE::Nurbs::Knotvector>& disknots)
   {
     // io to shell
-    const int myrank = input.get_comm().MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(input.get_comm());
 
     Teuchos::Time time("", true);
 
@@ -1103,7 +1103,7 @@ namespace Core::IO
   /*----------------------------------------------------------------------*/
   void InputFile::read_generic()
   {
-    if (comm_.MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm_) == 0)
     {
       // Gather content from all files
       std::list<std::string> content;
@@ -1160,7 +1160,7 @@ namespace Core::IO
       comm_.Broadcast(&arraysize, 1, 0);
       comm_.Broadcast(&num_lines, 1, 0);
 
-      if (comm_.MyPID() > 0)
+      if (Core::Communication::my_mpi_rank(comm_) > 0)
       {
         /*--------------------------------------allocate space for copy of file */
         inputfile_.resize(arraysize);
@@ -1174,7 +1174,7 @@ namespace Core::IO
 
       MPI_Bcast(inputfile_.data(), arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
 
-      if (comm_.MyPID() > 0)
+      if (Core::Communication::my_mpi_rank(comm_) > 0)
       {
         // Chunk the raw input file into lines: whenever encountering a null-terminator,
         // add the line that just ended to the vector of lines.
@@ -1193,7 +1193,8 @@ namespace Core::IO
             lines_.size());
       }
 
-      FOUR_C_ASSERT((comm_.MyPID() == 0 || excludepositions_.empty()), "Internal error.");
+      FOUR_C_ASSERT((Core::Communication::my_mpi_rank(comm_) == 0 || excludepositions_.empty()),
+          "Internal error.");
 
       // All-gather does the correct thing becuase the maps are empty on all ranks > 0
       excludepositions_ = Core::Communication::all_reduce(excludepositions_, comm_);
@@ -1282,7 +1283,7 @@ namespace Core::IO
         merged_map.begin(), merged_map.end(), [](const auto& kv) { return !kv.second; });
 
     // now it's time to create noise on the screen
-    if (printout and (get_comm().MyPID() == 0))
+    if (printout and (Core::Communication::my_mpi_rank(get_comm()) == 0))
     {
       out << "\nERROR!"
           << "\n--------"

@@ -7,6 +7,7 @@
 
 #include "4C_fsi_fluid_ale.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_pstream.hpp"
@@ -59,7 +60,7 @@ void FSI::FluidAleAlgorithm::prepare_time_step()
   step_ += 1;
   time_ += dt_;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\n"
               << "TIME:  " << std::scientific << time_ << "/" << std::scientific << maxtime_
               << "     DT = " << std::scientific << dt_ << "     STEP = " << std::setw(4) << step_

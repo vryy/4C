@@ -98,7 +98,7 @@ STI::Partitioned::Partitioned(const Epetra_Comm& comm,  //! communicator
 bool STI::Partitioned::exit_outer_coupling() const
 {
   // extract processor ID
-  const int mypid = get_comm().MyPID();
+  const int mypid = Core::Communication::my_mpi_rank(get_comm());
 
   // compute vector norms
   double L2_scatra(0.), L2_scatra_inc(0.), L2_thermo(0.), L2_thermo_inc(0.);

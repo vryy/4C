@@ -74,7 +74,7 @@ void FSI::Partitioned::setup()
 /*----------------------------------------------------------------------*/
 void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\n setup_coupling in FSI::Partitioned ..." << std::endl;
 
   Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
@@ -153,7 +153,7 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
 void FSI::Partitioned::set_default_parameters(
     const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list)
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\n set_default_parameters in FSI::Partitioned ..." << std::endl;
 
   // extract sublist with settings for partitioned solver
@@ -363,7 +363,7 @@ void FSI::Partitioned::set_default_parameters(
   }
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
-  printParams.set("MyPID", get_comm().MyPID());
+  printParams.set("MyPID", Core::Communication::my_mpi_rank(get_comm()));
 
   // set default output flag to no output
   // The field solver will output a lot, anyway.
@@ -402,7 +402,7 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
   // log solver iterations
 
   std::shared_ptr<std::ofstream> log;
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::string s = Global::Problem::instance()->output_control_file()->file_name();
     s.append(".iteration");
@@ -479,7 +479,7 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 
     // Output the parameter list
     if (utils_->isPrintType(::NOX::Utils::Parameters))
-      if (step() == 1 and get_comm().MyPID() == 0)
+      if (step() == 1 and Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         utils_->out() << std::endl
                       << "Final Parameters" << std::endl
@@ -493,7 +493,7 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
     // stop time measurement
     timemonitor = nullptr;
 
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       (*log) << step() << "\t" << time() << "\t" << timer.totalElapsedTime(true) << "\t"
              << nlParams.sublist("Output").get("Nonlinear Iterations", 0) << "\t"
@@ -655,7 +655,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
       // method.
       if (dirParams.get("Method", "Newton") != "User Defined")
       {
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
           utils.out() << "Warning: No Jacobian for solver " << dirParams.get("Method", "Newton")
                       << "\n";
       }
@@ -673,7 +673,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
   {
     if (lsParams.get("Preconditioner", "None") == "None")
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         utils.out() << "Warning: Preconditioner turned off in linear solver settings.\n";
     }
 
@@ -788,7 +788,7 @@ bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const 
   Teuchos::Time timer("FSI_computeF", true);
   const double startTime = timer.wallTime();
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     utils_->out() << "\n "
                   << "FSI residual calculation"
@@ -812,7 +812,7 @@ bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const 
   F = F_new;
 
   const double endTime = timer.wallTime();
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     utils_->out() << "\nTime for residual calculation: " << endTime - startTime << " secs\n\n";
   return true;
 }
@@ -835,7 +835,8 @@ void FSI::Partitioned::fsi_op(
 std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Partitioned::fluid_op(
     std::shared_ptr<Core::LinAlg::Vector<double>> idisp, const FillType fillFlag)
 {
-  if (get_comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0 and
+      utils_->isPrintType(::NOX::Utils::OuterIteration))
     utils_->out() << std::endl << "Fluid operator" << std::endl;
   return nullptr;
 }
@@ -846,7 +847,8 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Partitioned::fluid_op(
 std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Partitioned::struct_op(
     std::shared_ptr<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag)
 {
-  if (get_comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0 and
+      utils_->isPrintType(::NOX::Utils::OuterIteration))
     utils_->out() << std::endl << "Structural operator" << std::endl;
   return nullptr;
 }

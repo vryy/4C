@@ -143,7 +143,8 @@ void CONTACT::IntegratorNitscheFsi::gpts_forces(Mortar::Element& sele, Mortar::E
   ++processed_gps;
   if (processed_gps == 100000)
   {
-    std::cout << "==| Processed again 100000 C-Gps! (" << Comm_.MyPID() << ") |==" << std::endl;
+    std::cout << "==| Processed again 100000 C-Gps! (" << Core::Communication::my_mpi_rank(Comm_)
+              << ") |==" << std::endl;
     processed_gps = 0;
   }
 

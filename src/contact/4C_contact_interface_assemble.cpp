@@ -919,7 +919,7 @@ void CONTACT::Interface::assemble_lin_z(Core::LinAlg::SparseMatrix& linzglobal)
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleLinZ: Node ownership inconsistency!");
 
     // derivz is the std::vector<map> we want to assemble
@@ -981,7 +981,7 @@ void CONTACT::Interface::assemble_tn(std::shared_ptr<Core::LinAlg::SparseMatrix>
     auto* cnode = dynamic_cast<Node*>(node);
     const int numdof = cnode->num_dof();
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleTN: Node ownership inconsistency!");
 
     if (tglobal != nullptr)
@@ -1122,7 +1122,7 @@ void CONTACT::Interface::assemble_s(Core::LinAlg::SparseMatrix& sglobal)
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* cnode = dynamic_cast<Node*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleS: Node ownership inconsistency!");
 
     // prepare assembly
@@ -1167,7 +1167,8 @@ void CONTACT::Interface::assemble_t_nderiv(std::shared_ptr<Core::LinAlg::SparseM
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())  // move this check into debug?
+    if (cnode->owner() !=
+        Core::Communication::my_mpi_rank(get_comm()))  // move this check into debug?
       FOUR_C_THROW("AssembleTNderiv: Node ownership inconsistency!");
 
     if (tderivglobal != nullptr)  // assemble tangential derivs?
@@ -1498,7 +1499,7 @@ void CONTACT::Interface::assemble_g(Core::LinAlg::Vector<double>& gglobal)
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleG: Node ownership inconsistency!");
 
     /**************************************************** g-vector ******/
@@ -1597,7 +1598,7 @@ void CONTACT::Interface::assemble_inactiverhs(Core::LinAlg::Vector<double>& inac
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleInactiverhs: Node ownership inconsistency!");
     if (Interface::n_dim() == 2)
     {
@@ -1645,7 +1646,7 @@ void CONTACT::Interface::assemble_tangrhs(Core::LinAlg::Vector<double>& tangrhs)
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleTangrhs: Node ownership inconsistency!");
     if (constr_direction_ == Inpar::CONTACT::constr_xyz)
     {
@@ -1769,7 +1770,7 @@ void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstick
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleLinStick: Node ownership inconsistency!");
 
     // get friction coefficient for this node
@@ -2590,7 +2591,7 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-      if (cnode->owner() != get_comm().MyPID())
+      if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
         FOUR_C_THROW("AssembleLinSlip: Node ownership inconsistency!");
 
       // get friction coefficient for this node
@@ -3622,7 +3623,7 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-      if (cnode->owner() != get_comm().MyPID())
+      if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
         FOUR_C_THROW("AssembleLinSlip: Node ownership inconsistency!");
 
       double ct = get_ct_ref()[get_ct_ref().Map().LID(cnode->id())];
@@ -4350,7 +4351,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-      if (cnode->owner() != get_comm().MyPID())
+      if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
         FOUR_C_THROW("AssembleLinSlip: Node ownership inconsistency!");
 
       // get friction coefficient for this node
@@ -5136,7 +5137,7 @@ void CONTACT::Interface::assemble_normal_coupling(Core::LinAlg::Vector<double>& 
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* mrtnode = dynamic_cast<Node*>(node);
 
-    if (mrtnode->owner() != get_comm().MyPID())
+    if (mrtnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleDMG: Node ownership inconsistency!");
 
     /**************************************************** nCoup-vector ******/
@@ -5187,7 +5188,7 @@ void CONTACT::Interface::assemble_normal_coupling_linearisation(Core::LinAlg::Sp
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleS: Node ownership inconsistency!");
 
     std::map<int, double>::iterator colcurr;

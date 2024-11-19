@@ -1083,7 +1083,7 @@ void ScaTra::ScaTraTimIntImpl::output_lin_solver_stats(
   const Epetra_Comm& comm = solver.get_comm();
 
   // write performance statistics to file
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     // set file name
     std::string filename(
@@ -1120,7 +1120,7 @@ void ScaTra::ScaTraTimIntImpl::output_nonlin_solver_stats(
 )
 {
   // write performance statistics to file
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     // set file name
     std::string filename(Global::Problem::instance()->output_control_file()->file_name() +
@@ -1157,7 +1157,7 @@ void ScaTra::ScaTraTimIntImpl::output_to_gmsh(const int step, const double time)
   // create Gmsh postprocessing file
   const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
       "solution_field_scalar", disc_writer()->output()->file_name(), step, 500, screen_out,
-      discret_->get_comm().MyPID());
+      Core::Communication::my_mpi_rank(discret_->get_comm()));
   std::ofstream gmshfilecontent(filename.c_str());
   {
     // add 'View' to Gmsh postprocessing file
@@ -2796,7 +2796,7 @@ void ScaTra::OutputDomainIntegralStrategy::evaluate_integrals_and_print_results(
   // extract conditions for computation of domain or boundary integrals
   std::vector<Core::Conditions::Condition*> conditions;
   std::shared_ptr<Core::FE::Discretization> discret = scatratimint->discretization();
-  const int myrank = discret->get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(discret->get_comm());
   discret->get_condition(condstring, conditions);
 
   // print header

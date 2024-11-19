@@ -98,7 +98,7 @@ int Core::DOFSets::DofSetBase::max_gi_din_list(const Epetra_Comm& comm) const
 
 void Core::DOFSets::DofSetBase::print_all_dofsets(const Epetra_Comm& comm) const
 {
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::vector<int> min;
     std::vector<int> max;

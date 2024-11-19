@@ -7,6 +7,7 @@
 
 #include "4C_io_visualization_writer_vtu_per_rank.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_io_visualization_data.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -19,7 +20,7 @@ Core::IO::VisualizationWriterVtuPerRank::VisualizationWriterVtuPerRank(
     const Core::IO::VisualizationParameters& parameters, const Epetra_Comm& comm,
     std::string visualization_data_name)
     : VisualizationWriterBase(parameters, comm, std::move(visualization_data_name)),
-      vtu_writer_(comm.MyPID(), comm.NumProc(),
+      vtu_writer_(Core::Communication::my_mpi_rank(comm), comm.NumProc(),
           std::pow(10, Core::IO::get_total_digits_to_reserve_in_time_step(parameters)),
           parameters.directory_name_, (parameters.file_name_prefix_ + "-vtk-files"),
           visualization_data_name_, parameters.restart_from_name_, parameters.restart_time_,

@@ -8,6 +8,7 @@
 #include "4C_immersed_problem_fsi_partitioned_immersed.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fsi_debugwriter.hpp"
 #include "4C_global_data.hpp"
 
@@ -30,7 +31,7 @@ void FSI::PartitionedImmersed::setup()
 void FSI::PartitionedImmersed::setup_coupling(
     const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\n setup_coupling in FSI::PartitionedImmersed ..." << std::endl;
 
   // for immersed fsi

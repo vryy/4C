@@ -7,6 +7,7 @@
 
 #include "4C_fsi_xfem_fluid.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_pstream.hpp"
@@ -37,7 +38,7 @@ void FSI::FluidXFEMAlgorithm::timeloop()
 {
   if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::fluid_xfem)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       std::cout << "Integrate routine for MOVING INTERFACES"
                 << "\n"
                 << std::endl;

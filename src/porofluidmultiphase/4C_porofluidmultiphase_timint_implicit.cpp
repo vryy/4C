@@ -48,7 +48,7 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(std::shared_ptr<Core::FE::Discretiza
       linsolvernumber_(linsolvernumber),
       params_(probparams),
       poroparams_(poroparams),
-      myrank_(actdis->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(actdis->get_comm())),
       nsd_(Global::Problem::instance()->n_dim()),
       isale_(false),
       skipinitder_(poroparams_.get<bool>("SKIPINITDER")),

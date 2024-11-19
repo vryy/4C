@@ -7,6 +7,7 @@
 
 #include "4C_adapter_coupling_nonlin_mortar.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
 #include "4C_contact_integrator.hpp"
@@ -60,7 +61,7 @@ void Adapter::CouplingNonLinMortar::setup(std::shared_ptr<Core::FE::Discretizati
     std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond)
 {
-  myrank_ = masterdis->get_comm().MyPID();
+  myrank_ = Core::Communication::my_mpi_rank(masterdis->get_comm());
   comm_ = std::shared_ptr<Epetra_Comm>(masterdis->get_comm().Clone());
 
   // ParameterList
@@ -579,7 +580,7 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
     std::shared_ptr<Core::Conditions::Condition> spring, const int coupling_id,
     const Epetra_Comm& comm)
 {
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
     std::cout << "Generating CONTACT interface for spring dashpot condition...\n" << std::endl;
 
   // initialize maps for row nodes

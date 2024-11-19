@@ -25,7 +25,7 @@ void lubrication_dyn(int restart)
   const Epetra_Comm& comm = Global::Problem::instance()->get_dis("lubrication")->get_comm();
 
   // print problem type
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "###################################################" << std::endl;
     std::cout << "# YOUR PROBLEM TYPE: " << Global::Problem::instance()->problem_name()

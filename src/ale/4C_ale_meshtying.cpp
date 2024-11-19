@@ -5,11 +5,11 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#include "4C_comm_mpi_utils.hpp"
 #define DIRECTMANIPULATION
 #define ZEROSYSMAT
 
 #include "4C_ale_meshtying.hpp"
-
 #include "4C_ale_utils.hpp"
 #include "4C_ale_utils_mapextractor.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
@@ -49,7 +49,7 @@ ALE::Meshtying::Meshtying(std::shared_ptr<Core::FE::Discretization> dis,
       is_multifield_(false)
 {
   // get the processor ID from the communicator
-  myrank_ = discret_->get_comm().MyPID();
+  myrank_ = Core::Communication::my_mpi_rank(discret_->get_comm());
 }
 
 /*-------------------------------------------------------*/

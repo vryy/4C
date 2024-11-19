@@ -83,7 +83,7 @@ void Mortar::Interface::visualize_gmsh(
   //**********************************************************************
   for (int proc = 0; proc < get_comm().NumProc(); ++proc)
   {
-    if (proc == get_comm().MyPID())
+    if (proc == Core::Communication::my_mpi_rank(get_comm()))
     {
       // open files (overwrite if proc==0, else append)
       if (proc == 0)
@@ -656,13 +656,14 @@ void Mortar::Interface::visualize_gmsh(
     filenametn << iter;
   }
 
-  if (Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
   {
     for (int i = 0; i < gnslayers; i++)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_s_tnlayer_" << i << ".pos";
-      // std::cout << std::endl << Comm().MyPID()<< "filename: " << currentfilename.str().c_str();
+      // std::cout << std::endl << Core::Communication::my_mpi_rank(Comm())<< "filename: " <<
+      // currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::stringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " stl " << i << " \" {"
@@ -677,7 +678,7 @@ void Mortar::Interface::visualize_gmsh(
   // for every proc, one after another, put data of slabs into files
   for (int i = 0; i < Comm().NumProc(); i++)
   {
-    if ((i == Comm().MyPID()) && (binarytree_->Sroot()->Type() != 4))
+    if ((i == Core::Communication::my_mpi_rank(Comm())) && (binarytree_->Sroot()->Type() != 4))
     {
       // print full tree with treenodesmap
       for (int j = 0; j < (int)binarytree_->Streenodesmap().size(); j++)
@@ -722,14 +723,14 @@ void Mortar::Interface::visualize_gmsh(
 
   Comm().Barrier();
   // close all slave-gmsh files
-  if (Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
   {
     for (int i = 0; i < gnslayers; i++)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_s_tnlayer_" << i << ".pos";
-      // std::cout << std::endl << Comm().MyPID()<< "current filename: " <<
-      // currentfilename.str().c_str();
+      // std::cout << std::endl << Core::Communication::my_mpi_rank(Comm())<< "current filename: "
+      // << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "a");
       std::stringstream gmshfilecontent;
       gmshfilecontent << "};";
@@ -740,13 +741,14 @@ void Mortar::Interface::visualize_gmsh(
   Comm().Barrier();
 
   // create master slabs
-  if (Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
   {
     for (int i = 0; i < gnmlayers; i++)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_m_tnlayer_" << i << ".pos";
-      // std::cout << std::endl << Comm().MyPID()<< "filename: " << currentfilename.str().c_str();
+      // std::cout << std::endl << Core::Communication::my_mpi_rank(Comm())<< "filename: " <<
+      // currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::stringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " mtl " << i << " \" {"
@@ -832,11 +834,12 @@ void Mortar::Interface::visualize_gmsh(
   if (gcontactmapsize > 0)
   {
     // open/create new file
-    if (Comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(Comm()) == 0)
     {
       std::ostringstream currentfilename;
       currentfilename << filenamectn.str().c_str() << "_ct.pos";
-      // std::cout << std::endl << Comm().MyPID()<< "filename: " << currentfilename.str().c_str();
+      // std::cout << std::endl << Core::Communication::my_mpi_rank(Comm())<< "filename: " <<
+      // currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::stringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " contacttn  \" {" << std::endl;
@@ -847,7 +850,7 @@ void Mortar::Interface::visualize_gmsh(
     // every proc should plot its contacting treenodes!
     for (int i = 0; i < Comm().NumProc(); i++)
     {
-      if (Comm().MyPID() == i)
+      if (Core::Communication::my_mpi_rank(Comm()) == i)
       {
         if ((int)(binarytree_->coupling_map()[0]).size() !=
             (int)(binarytree_->coupling_map()[1]).size())
@@ -860,7 +863,7 @@ void Mortar::Interface::visualize_gmsh(
           std::stringstream newgmshfile;
 
           // create new sheet for slave
-          if (Comm().MyPID() == 0 && j == 0)
+          if (Core::Communication::my_mpi_rank(Comm()) == 0 && j == 0)
           {
             currentfilename << filenamectn.str().c_str() << "_ct.pos";
             fp = fopen(currentfilename.str().c_str(), "w");
@@ -893,11 +896,12 @@ void Mortar::Interface::visualize_gmsh(
     }
 
     // close file
-    if (Comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(Comm()) == 0)
     {
       std::ostringstream currentfilename;
       currentfilename << filenamectn.str().c_str() << "_ct.pos";
-      // std::cout << std::endl << Comm().MyPID()<< "filename: " << currentfilename.str().c_str();
+      // std::cout << std::endl << Core::Communication::my_mpi_rank(Comm())<< "filename: " <<
+      // currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "a");
       std::stringstream gmshfile;
       gmshfile << "};";

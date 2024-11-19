@@ -7,6 +7,7 @@
 
 #include "4C_particle_rigidbody_runtime_vtp_writer.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
@@ -201,7 +202,7 @@ void ParticleRigidBody::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_
   // rigid body owner
   {
     // set rigid body owner data
-    std::vector<int> ownerdata(ownedrigidbodies.size(), comm_.MyPID());
+    std::vector<int> ownerdata(ownedrigidbodies.size(), Core::Communication::my_mpi_rank(comm_));
 
     // append owner of rigid bodies to vtp writer
     visualization_data.set_point_data_vector<int>("owner", ownerdata, 1);

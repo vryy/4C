@@ -112,7 +112,7 @@ std::shared_ptr<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::search
              fluideleIter != (closefluideles->second).end(); fluideleIter++)
         {
           if (discretizations[1]->g_element(*fluideleIter)->owner() ==
-              discretizations[0]->get_comm().MyPID())
+              Core::Communication::my_mpi_rank(discretizations[0]->get_comm()))
           {
             // store pairs because we have to create them on the beam element owner and we are
             // currently on the fluid element owner
