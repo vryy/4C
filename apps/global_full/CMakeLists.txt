@@ -37,7 +37,9 @@ add_custom_command(
 add_custom_command(
   TARGET ${FOUR_C_EXECUTABLE_NAME}
   POST_BUILD
-  COMMAND "$<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}>" -p > ${CMAKE_BINARY_DIR}/4C_metadata.yaml
+  COMMAND
+    ${FOUR_C_ENABLE_ADDRESS_SANITIZER_TEST_OPTIONS} "$<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}>" -p >
+    ${CMAKE_BINARY_DIR}/4C_metadata.yaml
   COMMAND
     ${FOUR_C_PYTHON_VENV_BUILD}/bin/python ${PROJECT_SOURCE_DIR}/utilities/create_json_schema.py
     ${CMAKE_BINARY_DIR}/4C_metadata.yaml ${CMAKE_BINARY_DIR}/4C_schema.json
