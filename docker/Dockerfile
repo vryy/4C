@@ -6,7 +6,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 FROM ubuntu:focal
-LABEL project=4C
+LABEL org.opencontainers.image.description="Image containing all the dependencies required for building and testing 4C"
+LABEL org.4c-multiphysics.project=4C
 
 # Prevents tzdata asking for user feedback
 ENV DEBIAN_FRONTEND=noninteractive
@@ -72,7 +73,7 @@ RUN /dependencies/current/cmake/install.sh /usr/local
 # Install SuiteSparse 5.4.0
 RUN /dependencies/current/suitesparse/install.sh ${INSTALL_DIR}
 
-# Install superLU_dist 2.5
+# Install superLU_dist 7.2.0
 RUN /dependencies/current/superlu_dist/install.sh ${INSTALL_DIR}
 
 # Install qhull 2012.1
@@ -100,6 +101,12 @@ RUN /dependencies/testing/mathjax/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}
 
 # Install Paraview
 RUN /dependencies/testing/paraview/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}
+
+# Add dependencies hash
+# The label is added at the end because the label causes a cache miss
+ARG DEPENDENCIES_HASH
+LABEL org.4c-multiphysics.dependencies_hash="${DEPENDENCIES_HASH}"
+ENV DEPENDENCIES_HASH=${DEPENDENCIES_HASH}
 
 # add and enable the default user
 ENV USER=user
