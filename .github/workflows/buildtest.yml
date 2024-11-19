@@ -30,7 +30,6 @@ jobs:
       run:
         shell: bash
     steps:
-      - run: echo ${{ github.repository }}
       # Due to a bug in runner action the variables $GITHUB_WORKSPACE and ${{ github.workspace }} are different inside a container. https://github.com/actions/runner/issues/2058
       # The repo gets cloned to `/__w/4C/4C` ($GITHUB_WORKSPACE) while ${{ github.workspace }} points to `/home/runner/work/4C/4C`.`
       # Use $GITHUB_WORKSPACE instead of ${{ github.workspace }}
@@ -44,9 +43,6 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ github.job }}-${{ env.CMAKE_PRESET }}
-      - name: info
-        run: |
-          pwd; ls -l
       - uses: ./.github/actions/configure_4C
         with:
           cmake-preset: ${{ env.CMAKE_PRESET }}
@@ -130,7 +126,6 @@ jobs:
       run:
         shell: bash
     steps:
-      - run: echo ${{ github.repository }}
       # Due to a bug in runner action the variables $GITHUB_WORKSPACE and ${{ github.workspace }} are different inside a container. https://github.com/actions/runner/issues/2058
       # The repo gets cloned to `/__w/4C/4C` ($GITHUB_WORKSPACE) while ${{ github.workspace }} points to `/home/runner/work/4C/4C`.`
       # Use $GITHUB_WORKSPACE instead of ${{ github.workspace }}
@@ -144,9 +139,6 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ github.job }}-${{ env.CMAKE_PRESET }}
-      - name: info
-        run: |
-          pwd; ls -l
       - uses: ./.github/actions/configure_4C
         with:
           cmake-preset: ${{ env.CMAKE_PRESET }}
