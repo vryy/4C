@@ -562,5 +562,7 @@ template class Discret::Elements::SolidEleCalc<Core::FE::CellType::pyramid5,
 // explicit instantiations for shell_ans
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::ShellANSFormulation<Core::FE::CellType::hex8>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::wedge6,
+    Discret::Elements::ShellANSFormulation<Core::FE::CellType::wedge6>>;
 
 FOUR_C_NAMESPACE_CLOSE
