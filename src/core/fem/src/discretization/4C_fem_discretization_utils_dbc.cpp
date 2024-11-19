@@ -5,6 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization_hdg.hpp"
 #include "4C_fem_discretization_utils.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
@@ -303,7 +304,7 @@ void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
       const int lid = info.toggle.Map().LID(gid);
       if (lid < 0)
         FOUR_C_THROW("Global id %d not on this proc %d in system vector", dofs[j],
-            discret.get_comm().MyPID());
+            Core::Communication::my_mpi_rank(discret.get_comm()));
 
       // get position of label for this dof in condition line ( e.g. for XFEM )
       int onesetj = j % numdf;
@@ -524,7 +525,7 @@ void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
       const int lid = toggle.Map().LID(gid);
       if (lid < 0)
         FOUR_C_THROW("Global id %d not on this proc %d in system vector", dofs[j],
-            discret.get_comm().MyPID());
+            Core::Communication::my_mpi_rank(discret.get_comm()));
       // get position of label for this dof in condition line
       const int onesetj = j % numdf;
 

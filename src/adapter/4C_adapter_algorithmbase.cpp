@@ -7,6 +7,7 @@
 
 #include "4C_adapter_algorithmbase.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_pstream.hpp"
@@ -43,7 +44,8 @@ void Adapter::AlgorithmBase::set_time_step(const double time, const int step)
 /*----------------------------------------------------------------------*/
 void Adapter::AlgorithmBase::print_header()
 {
-  if (get_comm().MyPID() == 0 and printscreen_ and (step_ % printscreen_ == 0))
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0 and printscreen_ and
+      (step_ % printscreen_ == 0))
   {
     Core::IO::cout << "\n"
                    << method_ << "\n"

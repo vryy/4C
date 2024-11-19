@@ -158,7 +158,7 @@ Core::Rebalance::build_weights(const Core::FE::Discretization& dis)
 std::shared_ptr<const Epetra_CrsGraph> Core::Rebalance::build_graph(
     Core::FE::Discretization& dis, const Epetra_Map& roweles)
 {
-  const int myrank = dis.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(dis.get_comm());
   const int numproc = dis.get_comm().NumProc();
 
   // create a set of all nodes that I have
@@ -416,7 +416,7 @@ std::shared_ptr<const Epetra_CrsGraph> Core::Rebalance::build_monolithic_node_gr
     int predicate_lid_discretization = dis.element_row_map()->LID(predicate_gid);
     if (predicate_lid_discretization < 0)
       FOUR_C_THROW("Could not find lid for predicate with gid %d on rank %d", predicate_gid,
-          dis.get_comm().MyPID());
+          Core::Communication::my_mpi_rank(dis.get_comm()));
     if (predicate_lid != predicate_lid_discretization)
       FOUR_C_THROW("The ids dont match from arborx and the discretization");
     const auto* predicate = dis.g_element(predicate_gid);

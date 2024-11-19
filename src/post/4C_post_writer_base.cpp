@@ -7,6 +7,7 @@
 
 #include "4C_post_writer_base.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_post_common.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -14,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 PostWriterBase::PostWriterBase(PostField* field, const std::string& filename)
     : field_(field),
       filename_(filename),
-      myrank_(field->problem()->get_comm()->MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(*field->problem()->get_comm())),
       numproc_(field->problem()->get_comm()->NumProc())
 {
 }

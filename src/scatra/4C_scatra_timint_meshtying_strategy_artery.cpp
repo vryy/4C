@@ -73,7 +73,7 @@ void ScaTra::MeshtyingStrategyArtery::init_meshtying()
   artscatradis_ = artscatratimint_->discretization();
   scatradis_ = scatratimint_->discretization();
 
-  if (scatratimint_->discretization()->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(scatratimint_->discretization()->get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;

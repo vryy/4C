@@ -7,6 +7,7 @@
 
 #include "4C_cut_parentintersection.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_cut_volumecell.hpp"
 #include "4C_fem_discretization.hpp"
 
@@ -466,7 +467,7 @@ void Cut::ParentIntersection::connect_nodal_dof_sets(std::vector<Node*>& nodes, 
 
           // decide if the information for this cell has to be ordered from row-node or not
           // REMARK:
-          if (drt_node->owner() == dis.get_comm().MyPID())
+          if (drt_node->owner() == Core::Communication::my_mpi_rank(dis.get_comm()))
           {
             nds.push_back(n->dof_set_number_new(cells));
           }
@@ -585,7 +586,8 @@ void Cut::ParentIntersection::dump_gmsh_nodal_cell_set(
   std::string filename =
       "cut_test";  // ::Global::Problem::instance()->output_control_file()->file_name();
   std::stringstream str;
-  str << filename << "CUT_NodalCellSet." << dis.get_comm().MyPID() << ".pos";
+  str << filename << "CUT_NodalCellSet." << Core::Communication::my_mpi_rank(dis.get_comm())
+      << ".pos";
 
 
   std::string name = str.str();
@@ -662,7 +664,7 @@ void Cut::ParentIntersection::dump_gmsh_cell_sets(
   std::string filename =
       "cut_test";  // ::Global::Problem::instance()->output_control_file()->file_name();
   std::stringstream str;
-  str << filename << "CUT_CellSets." << dis.get_comm().MyPID() << ".pos";
+  str << filename << "CUT_CellSets." << Core::Communication::my_mpi_rank(dis.get_comm()) << ".pos";
 
 
   std::string name = str.str();
@@ -710,7 +712,8 @@ void Cut::ParentIntersection::dump_gmsh_num_dof_sets(
     std::string filename, bool include_inner, const Core::FE::Discretization& dis)
 {
   std::stringstream str;
-  str << filename << ".CUT_NumDOFSets." << dis.get_comm().MyPID() << ".pos";
+  str << filename << ".CUT_NumDOFSets." << Core::Communication::my_mpi_rank(dis.get_comm())
+      << ".pos";
 
 
   Mesh& m = normal_mesh();

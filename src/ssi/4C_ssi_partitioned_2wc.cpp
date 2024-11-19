@@ -147,7 +147,7 @@ void SSI::SSIPart2WC::timeloop()
  *----------------------------------------------------------------------*/
 void SSI::SSIPart2WC::do_struct_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
@@ -167,7 +167,7 @@ void SSI::SSIPart2WC::do_struct_step()
  *----------------------------------------------------------------------*/
 void SSI::SSIPart2WC::do_scatra_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n  TRANSPORT SOLVER \n***********************\n";
   }
@@ -283,7 +283,7 @@ void SSI::SSIPart2WC::outer_loop()
   reset_iteration_count();
   bool stopnonliniter = false;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n****************************************\n          OUTER ITERATION "
                  "LOOP\n****************************************\n";
@@ -361,7 +361,7 @@ bool SSI::SSIPart2WC::convergence_check(int itnum)
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout
@@ -393,7 +393,7 @@ bool SSI::SSIPart2WC::convergence_check(int itnum)
       ((scaincnorm_L2 / dt() / sqrt(scaincnp_->GlobalLength())) <= ittol_))
   {
     stopnonliniter = true;
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       printf(
           "|  Outer Iteration loop converged after iteration %3d/%3d !                             "
@@ -413,7 +413,7 @@ bool SSI::SSIPart2WC::convergence_check(int itnum)
           (scaincnorm_L2 / dt() / sqrt(scaincnp_->GlobalLength())) > ittol_))
   {
     stopnonliniter = true;
-    if ((get_comm().MyPID() == 0))
+    if ((Core::Communication::my_mpi_rank(get_comm()) == 0))
     {
       printf(
           "|     >>>>>> not converged in itemax steps!                                             "
@@ -487,7 +487,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
   reset_iteration_count();
   bool stopnonliniter = false;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n****************************************\n          OUTER ITERATION "
                  "LOOP\n****************************************\n";
@@ -567,7 +567,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
 void SSI::SSIPart2WCSolidToScatraRelax::calc_omega(double& omega, const int itnum)
 {
   // nothing to do in here since we have a constant relaxation parameter: omega != startomega_;
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "Fixed relaxation parameter omega is: " << omega << std::endl;
 }
 
@@ -619,7 +619,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const in
 
   double dispincnpdiffnorm = 0.0;
   dispincnpdiff->Norm2(&dispincnpdiffnorm);
-  if (dispincnpdiffnorm <= 1e-06 and get_comm().MyPID() == 0)
+  if (dispincnpdiffnorm <= 1e-06 and Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "Warning: The structure increment is to small in order to use it for Aitken "
                  "relaxation. Using the previous Omega instead!"
@@ -641,7 +641,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const in
     // we force omega to be in the range defined in the input file
     if (omega < minomega)
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value smaller than MINOMEGA!"
@@ -651,7 +651,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const in
     }
     if (omega > maxomega)
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value bigger than MAXOMEGA!"
@@ -663,7 +663,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const in
 
   // else //if itnum==1 nothing is to do here since we want to take the last omega from the previous
   // step
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "Using Aitken the relaxation parameter omega was estimated to: " << omega
               << std::endl;
 
@@ -704,7 +704,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::init(const Epetra_Comm& comm,
   // Get start relaxation parameter from input file
   omega_ = ssicontrolpart.get<double>("STARTOMEGA");
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n#########################################################################\n  "
               << std::endl;
@@ -723,7 +723,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
   reset_iteration_count();
   bool stopnonliniter = false;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n****************************************\n          OUTER ITERATION "
                  "LOOP\n****************************************\n";
@@ -785,7 +785,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
 void SSI::SSIPart2WCScatraToSolidRelax::calc_omega(double& omega, const int itnum)
 {
   // nothing to do in here since we have a constant relaxation parameter: omega != startomega_;
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "Fixed relaxation parameter omega is: " << omega << std::endl;
 }
 
@@ -837,7 +837,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const in
   double scaincnpdiffnorm = 0.0;
   scaincnpdiff->Norm2(&scaincnpdiffnorm);
 
-  if (scaincnpdiffnorm <= 1e-06 and get_comm().MyPID() == 0)
+  if (scaincnpdiffnorm <= 1e-06 and Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "Warning: The scalar increment is to small in order to use it for Aitken "
                  "relaxation. Using the previous omega instead!"
@@ -859,7 +859,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const in
     // we force omega to be in the range defined in the input file
     if (omega < minomega)
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value smaller than MINOMEGA!"
@@ -869,7 +869,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const in
     }
     if (omega > maxomega)
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value bigger than MAXOMEGA!"
@@ -881,7 +881,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const in
 
   // else //if itnum==1 nothing is to do here since we want to take the last omega from the previous
   // step
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "Using Aitken the relaxation parameter omega was estimated to: " << omega
               << std::endl;
 

@@ -7,6 +7,7 @@
 
 #include "4C_particle_rigidbody_affiliation_pairs.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
@@ -19,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 ParticleRigidBody::RigidBodyAffiliationPairs::RigidBodyAffiliationPairs(const Epetra_Comm& comm)
-    : comm_(comm), myrank_(comm.MyPID())
+    : comm_(comm), myrank_(Core::Communication::my_mpi_rank(comm))
 {
   // empty constructor
 }
@@ -79,7 +80,7 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::distribute_affiliation_pairs(
     const int currproc = particlestoproc[gid];
 
     // no need to send history pairs
-    if (currproc == comm_.MyPID()) continue;
+    if (currproc == Core::Communication::my_mpi_rank(comm_)) continue;
 
     // no particle with current global id in simulation
     if (currproc < 0) continue;

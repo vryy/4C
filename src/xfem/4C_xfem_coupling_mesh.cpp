@@ -362,7 +362,7 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
   std::set<int> adj_eles_row;
   std::set<int> adj_ele_nodes_row;
 
-  const int mypid = cond_dis_->get_comm().MyPID();
+  const int mypid = Core::Communication::my_mpi_rank(cond_dis_->get_comm());
 
   // STEP 1: Query
   // loop over nodes of cutter discretization (conditioned nodes)
@@ -1837,7 +1837,8 @@ void XFEM::MeshCouplingFSI::set_condition_specific_parameters()
     }
     bg_dis_->get_comm().MaxAll(&hmax, &h_scaling_, 1);
     std::cout << "==| XFEM::MeshCouplingFSI: Computed h_scaling for fluidele is: " << h_scaling_
-              << "(Proc: " << bg_dis_->get_comm().MyPID() << ")! |==" << std::endl;
+              << "(Proc: " << Core::Communication::my_mpi_rank(bg_dis_->get_comm())
+              << ")! |==" << std::endl;
   }
 
   std::cout << "==| XFEM::MeshCouplingFSI: Applied interface law is";

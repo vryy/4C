@@ -943,7 +943,7 @@ void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
   if (nsd_ != 3)
     FOUR_C_THROW("Writing the mass center only available for 3 dimensional problems currently.");
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     // write to file
     const std::string simulation = problem_->output_control_file()->file_name();
@@ -1131,7 +1131,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(Epetra_CrsGraph& nodegraph)
     FOUR_C_THROW("No redistribution for AVM3 subgrid stuff.");
   }
 
-  if (discret_->get_comm().MyPID() == 0) std::cout << "done" << std::endl;
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0) std::cout << "done" << std::endl;
 
   return;
 }  // ScaTra::ScaTraTimIntImpl::redistribute

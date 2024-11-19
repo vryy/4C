@@ -7,6 +7,7 @@
 
 #include "4C_cut_levelsetintersection.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_cut_levelsetside.hpp"
 #include "4C_cut_side.hpp"
 
@@ -17,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Cut::LevelSetIntersection::LevelSetIntersection(const Epetra_Comm& comm, bool create_side)
-    : ParentIntersection(comm.MyPID()), side_(nullptr), comm_(&comm)
+    : ParentIntersection(Core::Communication::my_mpi_rank(comm)), side_(nullptr), comm_(&comm)
 {
   if (create_side) add_cut_side(1);
 }

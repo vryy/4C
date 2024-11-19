@@ -328,7 +328,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 void STI::Monolithic::fd_check()
 {
   // initial screen output
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << std::endl << "FINITE DIFFERENCE CHECK FOR STI SYSTEM MATRIX" << std::endl;
 
   // create global state vector
@@ -500,7 +500,7 @@ void STI::Monolithic::fd_check()
   get_comm().MaxAll(&maxrelerr, &maxrelerrglobal, 1);
 
   // final screen output
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     if (counterglobal)
     {
@@ -563,7 +563,7 @@ void STI::Monolithic::output_matrix_to_file(
   Core::LinAlg::allreduce_vector(myrowgids, rowgids, comm);
 
   // retain communicated global IDs only on processor with ID 0
-  if (comm.MyPID()) rowgids.clear();
+  if (Core::Communication::my_mpi_rank(comm)) rowgids.clear();
 
   // create full row map on processor with ID 0
   const Epetra_Map fullrowmap(
@@ -590,7 +590,7 @@ void STI::Monolithic::output_matrix_to_file(
   }
 
   // let processor with ID 0 output matrix to file
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     // set file name
     std::ostringstream nproc;
@@ -671,7 +671,7 @@ void STI::Monolithic::output_vector_to_file(
   Core::LinAlg::allreduce_vector(mygids, gids, comm);
 
   // retain communicated global IDs only on processor with ID 0
-  if (comm.MyPID()) gids.clear();
+  if (Core::Communication::my_mpi_rank(comm)) gids.clear();
 
   // create full vector map on processor with ID 0
   const Epetra_Map fullmap(
@@ -682,7 +682,7 @@ void STI::Monolithic::output_vector_to_file(
   Core::LinAlg::export_to(vector, fullvector);
 
   // let processor with ID 0 output vector to file
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     // set file name
     std::ostringstream nproc;
@@ -1399,7 +1399,7 @@ bool STI::Monolithic::exit_newton_raphson()
       // first Newton-Raphson iteration
       if (iter_ == 1)
       {
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         {
           // print header of convergence table to screen
           std::cout << "+------------+-------------------+--------------+--------------+-----------"
@@ -1427,7 +1427,7 @@ bool STI::Monolithic::exit_newton_raphson()
       else
       {
         // print current line of convergence table to screen
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         {
           std::cout << "|  " << std::setw(3) << iter_ << "/" << std::setw(3) << itermax_ << "   | "
                     << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
@@ -1460,7 +1460,7 @@ bool STI::Monolithic::exit_newton_raphson()
       // convergence
       if (iter_ == itermax_ and !exit)
       {
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         {
           std::cout << "+------------+-------------------+--------------+--------------+-----------"
                        "---+--------------+--------------+--------------+"
@@ -1476,7 +1476,7 @@ bool STI::Monolithic::exit_newton_raphson()
       }
 
       // print finish line of convergence table to screen
-      if (exit and get_comm().MyPID() == 0)
+      if (exit and Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         std::cout << "+------------+-------------------+--------------+--------------+-------------"
                      "-+--------------+--------------+--------------+"

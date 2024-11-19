@@ -7,6 +7,7 @@
 
 #include "4C_particle_algorithm.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_inpar_particle.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
@@ -41,7 +42,7 @@ FOUR_C_NAMESPACE_OPEN
 PARTICLEALGORITHM::ParticleAlgorithm::ParticleAlgorithm(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
     : AlgorithmBase(comm, params),
-      myrank_(comm.MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(comm)),
       params_(params),
       numparticlesafterlastloadbalance_(0),
       transferevery_(params_.get<bool>("TRANSFER_EVERY")),

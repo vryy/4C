@@ -694,7 +694,7 @@ void Discret::Elements::AirwayImpl<distype>::initial(RedAirway* ele, Teuchos::Pa
     Core::LinAlg::SerialDenseVector& radii_in, Core::LinAlg::SerialDenseVector& radii_out,
     std::shared_ptr<const Core::Mat::Material> material)
 {
-  const int myrank = discretization.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(discretization.get_comm());
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
@@ -853,7 +853,7 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& rhs, std::shared_ptr<Core::Mat::Material> material)
 {
-  const int myrank = discretization.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(discretization.get_comm());
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
@@ -1004,7 +1004,7 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
           if (local_id < 0)
           {
             FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i]->id(),
-                discretization.get_comm().MyPID());
+                Core::Communication::my_mpi_rank(discretization.get_comm()));
             exit(1);
           }
         }
@@ -1183,7 +1183,7 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
           if (local_id < 0)
           {
             FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i]->id(),
-                discretization.get_comm().MyPID());
+                Core::Communication::my_mpi_rank(discretization.get_comm()));
             exit(1);
           }
         }
@@ -1241,7 +1241,7 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
           if (local_id < 0)
           {
             FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i],
-                discretization.get_comm().MyPID());
+                Core::Communication::my_mpi_rank(discretization.get_comm()));
             exit(1);
           }
 
@@ -1452,7 +1452,7 @@ void Discret::Elements::AirwayImpl<distype>::get_coupled_values(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     std::shared_ptr<Core::Mat::Material> material)
 {
-  const int myrank = discretization.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(discretization.get_comm());
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();

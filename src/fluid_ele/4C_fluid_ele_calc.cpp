@@ -534,8 +534,9 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Discret::Element
       egridv_, egridvn_, fsevelaf_, fsescaaf_, evel_hat_, ereynoldsstress_hat_, eporo_,
       gradphieletot_,    // gradphiele,
       curvatureeletot_,  // curvatureele,
-      mat, ele->is_ale(), ele->owner() == discretization.get_comm().MyPID(), CsDeltaSq, CiDeltaSq,
-      saccn, sveln, svelnp, intpoints, offdiag);
+      mat, ele->is_ale(),
+      ele->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()), CsDeltaSq,
+      CiDeltaSq, saccn, sveln, svelnp, intpoints, offdiag);
 
   // rotate matrices and vectors if we have a rotationally symmetric problem
   rotsymmpbc_->rotate_matand_vec_if_necessary(elemat1, elemat2, elevec1);
@@ -5854,7 +5855,8 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_service(
       if (nsd_ == 3)
       {
         if (ele->owner() ==
-            discretization.get_comm().MyPID())  // don't store values of ghosted elements
+            Core::Communication::my_mpi_rank(
+                discretization.get_comm()))  // don't store values of ghosted elements
         {
           return calc_dissipation(ele, params, discretization, lm, mat);
         }
@@ -5917,7 +5919,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_service(
     {
       if (nsd_ == 3)
       {
-        if (ele->owner() == discretization.get_comm().MyPID())
+        if (ele->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
         {
           // it is quite expensive to calculate second order derivatives, since a matrix has to be
           // inverted... so let's save time here

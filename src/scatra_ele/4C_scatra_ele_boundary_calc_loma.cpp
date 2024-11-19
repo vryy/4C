@@ -174,7 +174,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_t
 
   // calculate integral of normal diffusive and velocity flux
   // NOTE: add integral value only for elements which are NOT ghosted!
-  if (ele->owner() == discretization.get_comm().MyPID())
+  if (ele->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
   {
     norm_diff_flux_and_vel_integral(ele, params, mynormdiffflux, mynormvel);
   }

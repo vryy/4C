@@ -23,7 +23,7 @@ namespace
     // at least two procs required
     ASSERT_GT(comm.NumProc(), 1);
 
-    const int myPID = comm.MyPID();
+    const int myPID = Core::Communication::my_mpi_rank(comm);
     std::map<int, double> map_in;
     for (int i = 0; i < myPID; ++i)
     {
@@ -53,7 +53,7 @@ namespace
     // at least two procs required
     ASSERT_GT(comm.NumProc(), 1);
 
-    const int myPID = comm.MyPID();
+    const int myPID = Core::Communication::my_mpi_rank(comm);
     const std::vector<double> vec_in(myPID + 1, static_cast<double>(myPID));
     const auto vec_out = Core::Communication::all_reduce(vec_in, comm);
 
@@ -73,7 +73,7 @@ namespace
     // at least two procs required
     ASSERT_GT(comm.NumProc(), 1);
 
-    const int myPID = comm.MyPID();
+    const int myPID = Core::Communication::my_mpi_rank(comm);
     const std::vector<std::pair<int, double>> pair_vec_in(
         myPID + 1, std::make_pair(myPID, static_cast<double>(myPID)));
     const auto pair_vec_out = Core::Communication::all_reduce(pair_vec_in, comm);
@@ -97,7 +97,7 @@ namespace
     // at least two procs required
     ASSERT_GT(comm.NumProc(), 1);
 
-    const int myPID = comm.MyPID();
+    const int myPID = Core::Communication::my_mpi_rank(comm);
     const std::map<int, double> map_in = {std::make_pair(myPID, static_cast<double>(myPID))};
     const auto map_out = Core::Communication::all_reduce(map_in, comm);
 
@@ -117,7 +117,7 @@ namespace
     // at least two procs required
     ASSERT_GT(comm.NumProc(), 1);
 
-    const int myPID = comm.MyPID();
+    const int myPID = Core::Communication::my_mpi_rank(comm);
     const std::unordered_map<int, double> map_in = {
         std::make_pair(myPID, static_cast<double>(myPID))};
     const auto map_out = Core::Communication::all_reduce(map_in, comm);
@@ -138,7 +138,7 @@ namespace
     // at least two procs required
     ASSERT_GT(comm.NumProc(), 1);
 
-    const int myPID = comm.MyPID();
+    const int myPID = Core::Communication::my_mpi_rank(comm);
     const std::unordered_multimap<int, int> map_in = {std::make_pair(1, myPID)};
     const auto map_out = Core::Communication::all_reduce(map_in, comm);
 
@@ -158,7 +158,7 @@ namespace
     // at least two procs required
     ASSERT_GT(comm.NumProc(), 1);
 
-    const int myPID = comm.MyPID();
+    const int myPID = Core::Communication::my_mpi_rank(comm);
     const std::set<int> set_in = {myPID};
     const std::set<int> set_out = Core::Communication::all_reduce(set_in, comm);
 
@@ -179,7 +179,7 @@ namespace
     // at least two procs required
     ASSERT_GT(comm.NumProc(), 1);
 
-    const int myPID = comm.MyPID();
+    const int myPID = Core::Communication::my_mpi_rank(comm);
     const std::vector<std::string> vec_in(myPID + 1, std::to_string(myPID));
     const auto vec_out = Core::Communication::all_reduce(vec_in, comm);
 
@@ -199,7 +199,7 @@ namespace
     // at least two procs required
     ASSERT_GT(comm.NumProc(), 1);
 
-    const int myPID = comm.MyPID();
+    const int myPID = Core::Communication::my_mpi_rank(comm);
     const std::map<std::string, std::pair<int, double>> in = {
         {std::to_string(myPID), {myPID, 2.0}}};
     const auto out = Core::Communication::all_reduce(in, comm);
@@ -220,7 +220,7 @@ namespace
     // at least two procs required
     ASSERT_GT(comm.NumProc(), 1);
 
-    const int myPID = comm.MyPID();
+    const int myPID = Core::Communication::my_mpi_rank(comm);
     using MapType = std::map<std::string, bool>;
     const MapType in{{std::to_string(myPID), (myPID % 2) == 0}, {"key", false}};
     const auto reduced_map = Core::Communication::all_reduce<MapType>(

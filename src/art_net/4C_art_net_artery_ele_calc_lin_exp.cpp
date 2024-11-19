@@ -10,6 +10,7 @@
 #include "4C_art_net_art_junction.hpp"
 #include "4C_art_net_art_terminal_bc.hpp"
 #include "4C_art_net_artery_ele_calc.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_condition.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
@@ -298,7 +299,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::initial(Artery* ele,
 
   Core::Nodes::Node** nodes = ele->nodes();
 
-  int myrank = discretization.get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(discretization.get_comm());
   if (material->material_type() == Core::Materials::m_cnst_art)
   {
     const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
@@ -1104,7 +1105,7 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
       // ---------------------------------------------------------------------------
       // Modify the global backkward characteristics speeds vector
       // ---------------------------------------------------------------------------
-      int myrank = discretization.get_comm().MyPID();
+      int myrank = Core::Communication::my_mpi_rank(discretization.get_comm());
       if (myrank == ele->nodes()[i]->owner())
       {
         int gid = ele->nodes()[i]->id();
@@ -1130,7 +1131,7 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
         if (local_id < 0)
         {
           FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i],
-              discretization.get_comm().MyPID());
+              Core::Communication::my_mpi_rank(discretization.get_comm()));
           exit(1);
         }
         if (TermIO == -1.0)
@@ -1306,7 +1307,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
       if (local_id < 0)
       {
         FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i],
-            discretization.get_comm().MyPID());
+            Core::Communication::my_mpi_rank(discretization.get_comm()));
         exit(1);
       }
 
@@ -1381,7 +1382,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
         // -----------------------------------------------------------------------------
         // Modify the global forward and backward characteristics speeds vector
         // -----------------------------------------------------------------------------
-        int myrank = discretization.get_comm().MyPID();
+        int myrank = Core::Communication::my_mpi_rank(discretization.get_comm());
         if (myrank == ele->nodes()[i]->owner())
         {
           int gid = ele->nodes()[i]->id();
@@ -1662,7 +1663,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
   {
     const double beta = sqrt(M_PI) * young_(i) * th_(i) / (1.0 - nue * nue);
 
-    int myrank = discretization.get_comm().MyPID();
+    int myrank = Core::Communication::my_mpi_rank(discretization.get_comm());
     if (myrank == ele->nodes()[i]->owner())
     {
       int gid = ele->nodes()[i]->id();

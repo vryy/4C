@@ -396,9 +396,9 @@ namespace Immersed
 
     // declarations and definitions for round robin loop
     const int numproc = comm.NumProc();
-    const int myrank = comm.MyPID();                        // myrank
-    const int torank = (myrank + 1) % numproc;              // sends to
-    const int fromrank = (myrank + numproc - 1) % numproc;  // recieves from
+    const int myrank = Core::Communication::my_mpi_rank(comm);  // myrank
+    const int torank = (myrank + 1) % numproc;                  // sends to
+    const int fromrank = (myrank + numproc - 1) % numproc;      // recieves from
 
     Core::Communication::Exporter exporter(comm);
 
@@ -827,7 +827,7 @@ namespace Immersed
     }  // end for irobin
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-    if (owner != comm.MyPID())
+    if (owner != Core::Communication::my_mpi_rank(comm))
       FOUR_C_THROW("after round robin every proc should have recieved his original data");
 #endif
 
@@ -881,9 +881,9 @@ namespace Immersed
     static constexpr int source_dim = Core::FE::dim<sourcedistype>;
     // declarations and definitions for round robin loop
     int numproc = comm.NumProc();
-    const int myrank = comm.MyPID();                        // myrank
-    const int torank = (myrank + 1) % numproc;              // sends to
-    const int fromrank = (myrank + numproc - 1) % numproc;  // recieves from
+    const int myrank = Core::Communication::my_mpi_rank(comm);  // myrank
+    const int torank = (myrank + 1) % numproc;                  // sends to
+    const int fromrank = (myrank + numproc - 1) % numproc;      // recieves from
 
     if (numproc == 1) doCommunication = false;
     if (doCommunication == false) numproc = 1;
@@ -1138,7 +1138,7 @@ namespace Immersed
     }  // end for irobin
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-    if (owner != comm.MyPID())
+    if (owner != Core::Communication::my_mpi_rank(comm))
       FOUR_C_THROW("after round robin every proc should have recieved his original data");
 #endif
 
@@ -1209,9 +1209,9 @@ namespace Immersed
 
     // declarations and definitions for round robin loop
     int numproc = comm.NumProc();
-    const int myrank = comm.MyPID();                        // myrank
-    const int torank = (myrank + 1) % numproc;              // sends to
-    const int fromrank = (myrank + numproc - 1) % numproc;  // recieves from
+    const int myrank = Core::Communication::my_mpi_rank(comm);  // myrank
+    const int torank = (myrank + 1) % numproc;                  // sends to
+    const int fromrank = (myrank + numproc - 1) % numproc;      // recieves from
 
     if (numproc == 1) doCommunication = false;
 
@@ -1542,7 +1542,7 @@ namespace Immersed
     }  // loop over all procs
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-    if (owner != comm.MyPID())
+    if (owner != Core::Communication::my_mpi_rank(comm))
       FOUR_C_THROW("after round robin every proc should have received his original data");
 #endif
 

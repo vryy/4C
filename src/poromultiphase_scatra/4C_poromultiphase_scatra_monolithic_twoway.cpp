@@ -919,7 +919,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_newton()
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::newton_output()
 {
   // print the incremental based convergence check to the screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     if (itnum_ == 1)
       printf(
@@ -950,7 +950,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::newton_error_ch
   if (converged())  // norminc_ < ittolinc_ && normrhs_ < ittolinc_ && normincfluid_ < ittolinc_ &&
                     // normincstruct_ < ittolinc_
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       printf(
           "|  Monolithic iteration loop converged after iteration %3d/%3d !                        "
@@ -975,7 +975,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::newton_error_ch
   }
   else
   {
-    if ((get_comm().MyPID() == 0))
+    if ((Core::Communication::my_mpi_rank(get_comm()) == 0))
     {
       printf(
           "|     >>>>>> not converged in %3d steps!                                                "
@@ -1015,7 +1015,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::dof_row_map()
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::print_header()
 {
   if (!solve_structure_) print_structure_disabled_info();
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "+--------------------------------------------------------------------------------"
                  "---------------------+"
@@ -1037,7 +1037,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::print_header()
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::print_structure_disabled_info()
 {
   // print out Info
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"

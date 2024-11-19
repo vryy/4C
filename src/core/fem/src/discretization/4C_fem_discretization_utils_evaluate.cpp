@@ -5,6 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_discretization_utils.hpp"
@@ -120,8 +121,8 @@ void Core::FE::Utils::evaluate(Core::FE::Discretization& discret, Teuchos::Param
       int err = actele->evaluate(eparams, discret, la, strategy.elematrix1(), strategy.elematrix2(),
           strategy.elevector1(), strategy.elevector2(), strategy.elevector3());
       if (err)
-        FOUR_C_THROW(
-            "Proc %d: Element %d returned err=%d", discret.get_comm().MyPID(), actele->id(), err);
+        FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+            Core::Communication::my_mpi_rank(discret.get_comm()), actele->id(), err);
     }
 
     {

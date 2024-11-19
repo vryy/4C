@@ -96,7 +96,7 @@ void Wear::WearInterface::assemble_te(
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (fnode->owner() != get_comm().MyPID())
+    if (fnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleTE: Node ownership inconsistency!");
 
     /**************************************************** T-matrix ******/
@@ -1066,7 +1066,7 @@ void Wear::WearInterface::export_nodal_normals() const
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       int linsize = cnode->get_linsize() + (int)(n_x_key[gid].size());
 
-      if (cnode->owner() == get_comm().MyPID()) continue;
+      if (cnode->owner() == Core::Communication::my_mpi_rank(get_comm())) continue;
 
       // extract info
       std::shared_ptr<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
@@ -1175,7 +1175,7 @@ void Wear::WearInterface::assemble_s(Core::LinAlg::SparseMatrix& sglobal)
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleS: Node ownership inconsistency!");
 
     // prepare assembly
@@ -1221,7 +1221,7 @@ void Wear::WearInterface::assemble_lin_g_w(Core::LinAlg::SparseMatrix& sglobal)
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleS: Node ownership inconsistency!");
 
     // prepare assembly
@@ -1285,7 +1285,7 @@ void Wear::WearInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstic
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-      if (cnode->owner() != get_comm().MyPID())
+      if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
         FOUR_C_THROW("AssembleLinStick: Node ownership inconsistency!");
 
       cn = cn_ref()[cn_ref().Map().LID(cnode->id())];
@@ -1582,7 +1582,7 @@ void Wear::WearInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstic
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-      if (cnode->owner() != get_comm().MyPID())
+      if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
         FOUR_C_THROW("AssembleLinStick: Node ownership inconsistency!");
 
       // prepare assembly, get information from node
@@ -1796,7 +1796,7 @@ void Wear::WearInterface::assemble_lin_slip_w(Core::LinAlg::SparseMatrix& linsli
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-      if (cnode->owner() != get_comm().MyPID())
+      if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
         FOUR_C_THROW("AssembleLinSlip: Node ownership inconsistency!");
 
       cn = cn_ref()[cn_ref().Map().LID(cnode->id())];
@@ -1982,7 +1982,7 @@ void Wear::WearInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipL
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-      if (cnode->owner() != get_comm().MyPID())
+      if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
         FOUR_C_THROW("AssembleLinSlip: Node ownership inconsistency!");
 
       cn = cn_ref()[cn_ref().Map().LID(cnode->id())];
@@ -2083,7 +2083,8 @@ void Wear::WearInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipL
       // check of euclidean norm
       if (euclidean == 0.0)
       {
-        std::cout << "owner= " << cnode->owner() << "  " << get_comm().MyPID() << std::endl;
+        std::cout << "owner= " << cnode->owner() << "  "
+                  << Core::Communication::my_mpi_rank(get_comm()) << std::endl;
         FOUR_C_THROW("AssemblelinSlip: Euclidean norm is zero");
       }
 
@@ -2759,7 +2760,7 @@ void Wear::WearInterface::assemble_lin_w_lm(Core::LinAlg::SparseMatrix& sglobal)
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleWLm: Node ownership inconsistency!");
 
     // prepare assembly
@@ -2813,7 +2814,8 @@ void Wear::WearInterface::assemble_lin_w_lm_st(Core::LinAlg::SparseMatrix& sglob
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (cnode->owner() != get_comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
+      FOUR_C_THROW("Node ownership inconsistency!");
 
     cn = cn_ref()[cn_ref().Map().LID(cnode->id())];
     ct = ct_ref()[ct_ref().Map().LID(cnode->id())];
@@ -2897,7 +2899,7 @@ void Wear::WearInterface::assemble_lin_w_lm_sl(Core::LinAlg::SparseMatrix& sglob
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleLinSlip: Node ownership inconsistency!");
 
     cn = cn_ref()[cn_ref().Map().LID(cnode->id())];
@@ -3002,7 +3004,7 @@ void Wear::WearInterface::assemble_wear(Core::LinAlg::Vector<double>& wglobal)
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (frinode->owner() != get_comm().MyPID())
+    if (frinode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleWear: Node ownership inconsistency!");
 
     /**************************************************** w-vector ******/
@@ -3133,7 +3135,7 @@ bool Wear::WearInterface::build_active_set_master()
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (frinode->owner() != get_comm().MyPID())
+    if (frinode->owner() != Core::Communication::my_mpi_rank(get_comm()))
     {
       frinode->active() = true;
     }
@@ -3148,7 +3150,8 @@ bool Wear::WearInterface::build_active_set_master()
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (frinode->owner() != get_comm().MyPID()) frinode->fri_data().slip() = true;
+    if (frinode->owner() != Core::Communication::my_mpi_rank(get_comm()))
+      frinode->fri_data().slip() = true;
   }
 
   // spread info for attached status...
@@ -3163,7 +3166,8 @@ bool Wear::WearInterface::build_active_set_master()
     if (!ele) FOUR_C_THROW("Cannot find node with gid %", gid);
     Mortar::Element* moele = dynamic_cast<Mortar::Element*>(ele);
 
-    if (moele->is_attached() == true and moele->owner() == get_comm().MyPID())
+    if (moele->is_attached() == true and
+        moele->owner() == Core::Communication::my_mpi_rank(get_comm()))
       eleatt.push_back(moele->id());
   }
 
@@ -3284,7 +3288,7 @@ bool Wear::WearInterface::build_active_set_master()
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (mnode->owner() == get_comm().MyPID())
+    if (mnode->owner() == Core::Communication::my_mpi_rank(get_comm()))
     {
       bool isin = false;
       for (int k = 0; k < (int)ga.size(); ++k)
@@ -3303,7 +3307,7 @@ bool Wear::WearInterface::build_active_set_master()
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (mnode->owner() == get_comm().MyPID())
+    if (mnode->owner() == Core::Communication::my_mpi_rank(get_comm()))
     {
       bool isin = false;
       for (int k = 0; k < (int)gs.size(); ++k)
@@ -3332,7 +3336,7 @@ bool Wear::WearInterface::build_active_set_master()
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (frinode->owner() != get_comm().MyPID()) frinode->active() = false;
+    if (frinode->owner() != Core::Communication::my_mpi_rank(get_comm())) frinode->active() = false;
   }
   for (int j = 0; j < slave_col_nodes()->NumMyElements(); ++j)
   {
@@ -3344,7 +3348,8 @@ bool Wear::WearInterface::build_active_set_master()
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (frinode->owner() != get_comm().MyPID()) frinode->fri_data().slip() = false;
+    if (frinode->owner() != Core::Communication::my_mpi_rank(get_comm()))
+      frinode->fri_data().slip() = false;
   }
 
   return true;
@@ -3396,7 +3401,7 @@ bool Wear::WearInterface::build_active_set(bool init)
       get_comm().SumAll(&inv, &invglobal, 1);
       get_comm().Barrier();
 
-      if (cnode->owner() == get_comm().MyPID() && invglobal > 0)
+      if (cnode->owner() == Core::Communication::my_mpi_rank(get_comm()) && invglobal > 0)
       {
         mymnodegids.push_back(cnode->id());
 
@@ -3488,7 +3493,7 @@ void Wear::WearInterface::assemble_inactive_wear_rhs(Core::LinAlg::Vector<double
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleInactiverhs: Node ownership inconsistency!");
 
     if (n_dim() == 2)
@@ -3551,7 +3556,7 @@ void Wear::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& ina
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleInactiverhs: Node ownership inconsistency!");
 
     if (n_dim() == 2)
@@ -3562,7 +3567,7 @@ void Wear::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& ina
       // calculate the tangential rhs
       Core::LinAlg::SerialDenseVector w_i(1);
 
-      w_owner[0] = get_comm().MyPID();  // cnode->Owner();
+      w_owner[0] = Core::Communication::my_mpi_rank(get_comm());  // cnode->Owner();
       w_i[0] =
           -cnode->wear_data().wold()[0] - cnode->wear_data().wcurr()[0];  // already negative rhs!!!
       w_gid[0] = cnode->dofs()[0];                                        // inactivedofs->GID(2*i);
@@ -3577,7 +3582,7 @@ void Wear::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& ina
       // calculate the tangential rhs
       Core::LinAlg::SerialDenseVector w_i(1);
 
-      w_owner[0] = get_comm().MyPID();  // cnode->Owner();
+      w_owner[0] = Core::Communication::my_mpi_rank(get_comm());  // cnode->Owner();
       w_i[0] =
           -cnode->wear_data().wold()[0] - cnode->wear_data().wcurr()[0];  // already negative rhs!!!
       w_gid[0] = cnode->dofs()[0];                                        // inactivedofs->GID(3*i);
@@ -3632,7 +3637,7 @@ void Wear::WearInterface::assemble_wear_cond_rhs(Core::LinAlg::Vector<double>& r
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (fnode->owner() != get_comm().MyPID())
+    if (fnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleWearCondRhs: Node ownership inconsistency!");
 
     /**************************************************** E-matrix ******/
@@ -3746,7 +3751,7 @@ void Wear::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
 
         Core::LinAlg::SerialDenseVector w_i(1);
 
-        w_owner[0] = get_comm().MyPID();  // fnode->Owner();
+        w_owner[0] = Core::Communication::my_mpi_rank(get_comm());  // fnode->Owner();
         w_i[0] =
             (-(csnode->wear_data().wold()[0]) - (csnode->wear_data().wcurr()[0])) * (p->second);
         w_gid[0] = fnode->dofs()[0];
@@ -3778,7 +3783,7 @@ void Wear::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
 
         Core::LinAlg::SerialDenseVector w_i(1);
 
-        w_owner[0] = get_comm().MyPID();  // fnode->Owner();
+        w_owner[0] = Core::Communication::my_mpi_rank(get_comm());  // fnode->Owner();
         w_i[0] = wcoeff * lmn * (p->second);
         w_gid[0] = fnode->dofs()[0];
 
@@ -4186,12 +4191,14 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
   // gather information over all procs
   std::vector<int> localnumwdof(get_comm().NumProc());
   std::vector<int> globalnumlmdof(get_comm().NumProc());
-  localnumwdof[get_comm().MyPID()] = (int)((sdofrowmap_->NumMyElements()) / n_dim());
+  localnumwdof[Core::Communication::my_mpi_rank(get_comm())] =
+      (int)((sdofrowmap_->NumMyElements()) / n_dim());
   get_comm().SumAll(localnumwdof.data(), globalnumlmdof.data(), get_comm().NumProc());
 
   // compute offet for LM dof initialization for all procs
   int offset = 0;
-  for (int k = 0; k < get_comm().MyPID(); ++k) offset += globalnumlmdof[k];
+  for (int k = 0; k < Core::Communication::my_mpi_rank(get_comm()); ++k)
+    offset += globalnumlmdof[k];
 
   // loop over all slave dofs and initialize LM dofs
   for (int i = 0; i < (int)((sdofrowmap_->NumMyElements()) / n_dim()); ++i)
@@ -4215,12 +4222,14 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
     // gather information over all procs
     std::vector<int> localnumwdof(get_comm().NumProc());
     std::vector<int> globalnumlmdof(get_comm().NumProc());
-    localnumwdof[get_comm().MyPID()] = (int)((mdofrowmap_->NumMyElements()) / n_dim());
+    localnumwdof[Core::Communication::my_mpi_rank(get_comm())] =
+        (int)((mdofrowmap_->NumMyElements()) / n_dim());
     get_comm().SumAll(localnumwdof.data(), globalnumlmdof.data(), get_comm().NumProc());
 
     // compute offet for LM dof initialization for all procs
     int offset = 0;
-    for (int k = 0; k < get_comm().MyPID(); ++k) offset += globalnumlmdof[k];
+    for (int k = 0; k < Core::Communication::my_mpi_rank(get_comm()); ++k)
+      offset += globalnumlmdof[k];
 
     // loop over all slave dofs and initialize LM dofs
     for (int i = 0; i < (int)((mdofrowmap_->NumMyElements()) / n_dim()); ++i)

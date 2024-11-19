@@ -520,7 +520,8 @@ template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int d
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
     dim>::pre_evaluate_lateral_surface_coupling(Core::LinAlg::MultiVector<double>& gp_vector)
 {
-  const int pid = Global::Problem::instance()->get_dis("artery")->get_comm().MyPID();
+  const int pid =
+      Core::Communication::my_mpi_rank(Global::Problem::instance()->get_dis("artery")->get_comm());
   const int mylid = element1_->lid();
   if (element2_->owner() != pid) return;
 

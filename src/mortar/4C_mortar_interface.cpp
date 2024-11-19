@@ -311,7 +311,7 @@ std::ostream& operator<<(std::ostream& os, const Mortar::Interface& interface)
  *----------------------------------------------------------------------*/
 void Mortar::Interface::print(std::ostream& os) const
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     os << "\nMortar Interface Id " << id_ << std::endl;
     os << "Mortar Interface discretization:" << std::endl;
@@ -335,7 +335,7 @@ void Mortar::Interface::print_parallel_distribution() const
   // only print parallel distribution if numproc > 1
   if (numproc > 1)
   {
-    const int myrank = discret().get_comm().MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(discret().get_comm());
 
     std::vector<int> my_n_nodes(numproc, 0);
     std::vector<int> n_nodes(numproc, 0);
@@ -1078,7 +1078,8 @@ std::shared_ptr<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_bin
 
   std::shared_ptr<Core::Binstrategy::BinningStrategy> binningstrategy =
       std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params, output_control,
-          get_comm(), get_comm().MyPID(), nullptr, determine_relevant_points);
+          get_comm(), Core::Communication::my_mpi_rank(get_comm()), nullptr,
+          determine_relevant_points);
   return binningstrategy;
 }
 
@@ -1102,7 +1103,7 @@ void Mortar::Interface::redistribute()
 
   // some local variables
   std::shared_ptr<Epetra_Comm> comm(get_comm().Clone());
-  const int myrank = comm->MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(*comm);
   const int numproc = comm->NumProc();
   Teuchos::Time time("", true);
 
@@ -1268,7 +1269,7 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     //
     // std::vector<int> stproc(0);
     // if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
-    //   stproc.push_back(Comm().MyPID());
+    //   stproc.push_back(Core::Communication::my_mpi_rank(Comm()));
     // std::vector<int> rtproc(0);
     // Core::LinAlg::gather<int>(stproc,rtproc,Comm().NumProc(),allproc.data(),Comm());
     //
@@ -1335,7 +1336,7 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     //
     // std::vector<int> stproc(0);
     // if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
-    //   stproc.push_back(Comm().MyPID());
+    //   stproc.push_back(Core::Communication::my_mpi_rank(Comm()));
     // std::vector<int> rtproc(0);
     // Core::LinAlg::gather<int>(stproc,rtproc,Comm().NumProc(),allproc.data(),Comm());
     //
@@ -1436,7 +1437,7 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     //
     // std::vector<int> stproc(0);
     // if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
-    //   stproc.push_back(Comm().MyPID());
+    //   stproc.push_back(Core::Communication::my_mpi_rank(Comm()));
     // std::vector<int> rtproc(0);
     // Core::LinAlg::gather<int>(stproc,rtproc,Comm().NumProc(),allproc.data(),Comm());
     //
@@ -1555,7 +1556,7 @@ void Mortar::Interface::create_search_tree()
 {
   // warning
 #ifdef MORTARGMSHCTN
-  if (Dim() == 3 && Comm().MyPID() == 0)
+  if (Dim() == 3 && Core::Communication::my_mpi_rank(Comm()) == 0)
   {
     std::cout << "\n*****************************************************************\n";
     std::cout << "GMSH output of all mortar tree nodes in 3D needs a lot of memory!\n";
@@ -1863,12 +1864,13 @@ std::shared_ptr<Epetra_Map> Mortar::Interface::update_lag_mult_sets(
   // gather information over all procs
   std::vector<int> localnumlmdof(get_comm().NumProc());
   std::vector<int> globalnumlmdof(get_comm().NumProc());
-  localnumlmdof[get_comm().MyPID()] = ref_map.NumMyElements();
+  localnumlmdof[Core::Communication::my_mpi_rank(get_comm())] = ref_map.NumMyElements();
   get_comm().SumAll(localnumlmdof.data(), globalnumlmdof.data(), get_comm().NumProc());
 
   // compute offset for LM dof initialization for all procs
   int offset = 0;
-  for (int k = 0; k < get_comm().MyPID(); ++k) offset += globalnumlmdof[k];
+  for (int k = 0; k < Core::Communication::my_mpi_rank(get_comm()); ++k)
+    offset += globalnumlmdof[k];
 
   // loop over all slave dofs and initialize LM dofs
   lmdof.reserve(ref_map.NumMyElements());
@@ -1931,7 +1933,7 @@ std::shared_ptr<Epetra_Map> Mortar::Interface::redistribute_lag_mult_sets() cons
 
     /* communicate the correlation list of proc p
      * to all procs */
-    if (p == get_comm().MyPID())
+    if (p == Core::Communication::my_mpi_rank(get_comm()))
       for (std::size_t i = 0; i < my_related_gids.size(); ++i)
         g_related_gids[i] = my_related_gids[i];
     get_comm().Broadcast(g_related_gids.data(), 2 * num_mygids, p);
@@ -2148,7 +2150,7 @@ void Mortar::Interface::evaluate_geometry(std::vector<std::shared_ptr<Mortar::In
     FOUR_C_THROW("Geometry evaluation only for mortar problems!");
 
   // interface needs to be complete
-  if (!filled() && get_comm().MyPID() == 0)
+  if (!filled() && Core::Communication::my_mpi_rank(get_comm()) == 0)
     FOUR_C_THROW("fill_complete() not called on interface %", id_);
 
   // clear vector
@@ -2430,7 +2432,8 @@ void Mortar::Interface::evaluate_nts()
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Mortar::Node*>(node);
 
-    if (mrtrnode->owner() != get_comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
+    if (mrtrnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
+      FOUR_C_THROW("Node ownership inconsistency!");
 
     // vector with possible contacting master eles
     std::vector<Mortar::Element*> meles;
@@ -2509,7 +2512,7 @@ void Mortar::Interface::pre_evaluate(const int& step, const int& iter)
     // TODO: maybe we can remove this debug functionality
 #ifdef MORTARGMSHCELLS
   // reset integration cell GMSH files
-  int proc = Comm().MyPID();
+  int proc = Core::Communication::my_mpi_rank(Comm());
   std::ostringstream filename;
   filename << "o/gmsh_output/cells_" << proc << ".pos";
   FILE* fp = fopen(filename.str().c_str(), "w");
@@ -2538,7 +2541,7 @@ void Mortar::Interface::post_evaluate(const int step, const int iter)
 
 #ifdef MORTARGMSHCELLS
   // finish integration cell GMSH files
-  int proc = Comm().MyPID();
+  int proc = Core::Communication::my_mpi_rank(Comm());
   std::ostringstream filename;
   filename << "o/gmsh_output/cells_" << proc << ".pos";
   FILE* fp = fopen(filename.str().c_str(), "a");
@@ -3031,13 +3034,14 @@ void Mortar::Interface::evaluate_search_brute_force(const double& eps)
         }
       }
 
-      // std::cout <<"\n"<< Comm().MyPID() << " Number of intercepts found: " << nintercepts ;
+      // std::cout <<"\n"<< Core::Communication::my_mpi_rank(Comm()) << " Number of intercepts
+      // found: " << nintercepts ;
 
       // slabs of current master and slave element do intercept
       if (nintercepts == kdop / 2)
       {
-        // std::cout << Comm().MyPID() << " Coupling found between slave element: " << sgid <<" and
-        // master element: "<< mgid << std::endl;
+        // std::cout << Core::Communication::my_mpi_rank(Comm()) << " Coupling found between slave
+        // element: " << sgid <<" and master element: "<< mgid << std::endl;
         Core::Elements::Element* element = idiscret_->g_element(sgid);
         auto* selement = dynamic_cast<Mortar::Element*>(element);
         selement->add_search_elements(mgid);
@@ -3422,7 +3426,8 @@ void Mortar::Interface::assemble_d(Core::LinAlg::SparseMatrix& dglobal)
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
-    if (mrtrnode->owner() != get_comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
+    if (mrtrnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
+      FOUR_C_THROW("Node ownership inconsistency!");
 
     /**************************************************** D-matrix ******/
     if ((mrtrnode->mo_data().get_d()).size() > 0)
@@ -3495,7 +3500,8 @@ void Mortar::Interface::assemble_m(Core::LinAlg::SparseMatrix& mglobal)
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
-    if (mrtrnode->owner() != get_comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
+    if (mrtrnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
+      FOUR_C_THROW("Node ownership inconsistency!");
 
     /**************************************************** M-matrix ******/
     if ((mrtrnode->mo_data().get_m()).size() > 0)
@@ -3598,7 +3604,8 @@ void Mortar::Interface::assemble_normals(Core::LinAlg::SparseMatrix& nglobal)
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
-    if (mrtrnode->owner() != get_comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
+    if (mrtrnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
+      FOUR_C_THROW("Node ownership inconsistency!");
 
     // nodal normal
     double* nodalnormal = mrtrnode->mo_data().n();
@@ -3637,7 +3644,8 @@ void Mortar::Interface::assemble_trafo(Core::LinAlg::SparseMatrix& trafo,
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
-    if (mrtrnode->owner() != get_comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
+    if (mrtrnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
+      FOUR_C_THROW("Node ownership inconsistency!");
 
     // find out whether this is a corner node (no trafo), an edge
     // node (trafo of displacement DOFs) or a center node (only for
@@ -3880,7 +3888,7 @@ void Mortar::Interface::assemble_trafo(Core::LinAlg::SparseMatrix& trafo,
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       auto* mrtrnode = dynamic_cast<Node*>(node);
 
-      if (mrtrnode->owner() != get_comm().MyPID())
+      if (mrtrnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
         FOUR_C_THROW("AssembleTrafo: Node ownership inconsistency!");
 
       // find out whether this is a "real" master node (no trafo), a former

@@ -7,6 +7,7 @@
 
 #include "4C_art_net_art_write_gnuplot.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_condition.hpp"
 #include "4C_fem_general_extract_values.hpp"
 
@@ -68,7 +69,7 @@ Arteries::Utils::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
   // if gnuplot export conditions exist then create the classes
   // which will export the files
   // -------------------------------------------------------------------
-  if (numofcond > 0 && discret_->get_comm().MyPID() == 0)
+  if (numofcond > 0 && Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     // Start by creating a map of classes that will export the wanted arteries
     for (unsigned int i = 0; i < myConditions.size(); i++)
@@ -188,7 +189,7 @@ void Arteries::Utils::ArtWriteGnuplotWrapper::write(Teuchos::ParameterList& para
   //----------------------------------------------------------------------
   // Exit if the function accessed by a non-master processor
   //----------------------------------------------------------------------
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     // -------------------------------------------------------------------
     // loop over all conditions and export the arteries values
@@ -274,7 +275,7 @@ void Arteries::Utils::ArtWriteGnuplot::write(Core::FE::Discretization& discret,
     // get the elements connected to the node
     if (!discret.have_global_node((*nodes)[i]))
     {
-      int proc = discret.get_comm().MyPID();
+      int proc = Core::Communication::my_mpi_rank(discret.get_comm());
       FOUR_C_THROW("Global Node (%d) doesn't exist on processor (%d)\n", (*nodes)[i], proc);
       exit(1);
     }

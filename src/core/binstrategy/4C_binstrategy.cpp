@@ -1205,7 +1205,7 @@ Core::Binstrategy::BinningStrategy::weighted_distribution_of_bins_to_procs(
       // safety check
       if (lid < 0)
         FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-            discret[i]->get_comm().MyPID(), biniter->first);
+            Core::Communication::my_mpi_rank(discret[i]->get_comm()), biniter->first);
 
       // weighting
       (*vweights)[lid] += weight * static_cast<double>(biniter->second.size());

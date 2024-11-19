@@ -319,7 +319,7 @@ void CONTACT::UnbiasedSelfBinaryTree::initialize_tree_bottom_up(std::map<int,
 
   for (unsigned k = 0; k < roots().size(); ++k) roots()[k]->complete_tree(0, enlarge());
   // output to screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\nFound " << roots().size() << " root node(s) for unbiased self binary tree."
               << std::endl;
 
@@ -460,7 +460,7 @@ void CONTACT::UnbiasedSelfBinaryTree::search_contact()
   // therefore find out which processor owns which root node
   std::vector<unsigned> myroots(0);
   for (unsigned i = 0; i < roots().size(); ++i)
-    if (roots()[i]->owner() == get_comm().MyPID()) myroots.push_back(i);
+    if (roots()[i]->owner() == Core::Communication::my_mpi_rank(get_comm())) myroots.push_back(i);
 
   //**********************************************************************
   // STEP 3: search for self contact starting at root nodes

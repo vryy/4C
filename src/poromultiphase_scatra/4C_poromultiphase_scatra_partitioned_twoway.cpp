@@ -97,7 +97,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::do_poro_step()
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::do_scatra_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout << "*********************************************************************************"
@@ -117,7 +117,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::do_scatra_step
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::print_header_partitioned()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout << "********************************************************************************"
@@ -212,7 +212,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_ch
   if (artscanorm_L2 < 1e-6) artscanorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "                                                                                 "
                  "                                                             *\n";
@@ -245,7 +245,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_ch
       ((artscaincnorm_L2 / artscanorm_L2) <= ittol_))
   {
     stopnonliniter = true;
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       printf(
           "* MULTIPORO  <-------> SCATRA Outer Iteration loop converged after iteration %3d/%3d !  "
@@ -266,7 +266,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_ch
           ((artscaincnorm_L2 / artscanorm_L2) > ittol_)))
   {
     stopnonliniter = true;
-    if ((get_comm().MyPID() == 0))
+    if ((Core::Communication::my_mpi_rank(get_comm()) == 0))
     {
       printf(
           "* MULTIPORO  <-------> SCATRA Outer Iteration loop not converged in itemax steps        "

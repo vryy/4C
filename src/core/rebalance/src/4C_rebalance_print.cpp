@@ -7,6 +7,7 @@
 
 #include "4C_rebalance_print.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_io_pstream.hpp"
 
@@ -15,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 void Core::Rebalance::Utils::print_parallel_distribution(const Core::FE::Discretization& dis)
 {
   const int numproc = dis.get_comm().NumProc();
-  const int myrank = dis.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(dis.get_comm());
 
   if (numproc > 1)
   {

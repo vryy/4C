@@ -115,7 +115,8 @@ void POROFLUIDMULTIPHASE::Utils::setup_material(
     else
     {
       // before we stop, print the material id map
-      std::cout << "Material map on PROC " << comm.MyPID() << ":" << std::endl;
+      std::cout << "Material map on PROC " << Core::Communication::my_mpi_rank(comm) << ":"
+                << std::endl;
       for (mat_iter = matmap.begin(); mat_iter != matmap.end(); mat_iter++)
         std::cout << mat_iter->first << " -> " << mat_iter->second << std::endl;
 
@@ -197,7 +198,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::Utils::extended_ghosting_arter
     const Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod couplingmethod)
 {
   // user output
-  if (contdis.get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(contdis.get_comm()) == 0)
   {
     std::cout
         << "\n<<<<<<<<<<<<<<< Starting extended ghosting of artery discretization >>>>>>>>>>>>>>>\n"
@@ -270,7 +271,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::Utils::extended_ghosting_arter
   Core::Rebalance::Utils::print_parallel_distribution(*artdis);
 
   // user output
-  if (contdis.get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(contdis.get_comm()) == 0)
   {
     std::cout << "<<<<<<<<<<<<<<< Finished extended ghosting of artery discretization "
                  ">>>>>>>>>>>>>>>\n"
@@ -325,7 +326,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::Utils::oct_tree_search(
   searchTree.initialize_tree(sourceEleBox, contdis, Core::Geo::TreeType(Core::Geo::OCTTREE));
 
   // user info and timer
-  if (contdis.get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(contdis.get_comm()) == 0)
     std::cout << "Starting with OctTree search for coupling ... " << std::endl;
   Teuchos::Time timersearch("OctTree_search", true);
   // *********** time measurement ***********
@@ -379,7 +380,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::Utils::oct_tree_search(
       double mydtsearch = timersearch.wallTime() - dtcpu;
       double maxdtsearch = 0.0;
       contdis.get_comm().MaxAll(&mydtsearch, &maxdtsearch, 1);
-      if (contdis.get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(contdis.get_comm()) == 0)
         std::cout << "Estimated duration: " << 20.0 * (maxdtsearch) << "s" << std::endl;
     }
   }
@@ -389,7 +390,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::Utils::oct_tree_search(
   double maxdtsearch = 0.0;
   contdis.get_comm().MaxAll(&mydtsearch, &maxdtsearch, 1);
   // *********** time measurement ***********
-  if (contdis.get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(contdis.get_comm()) == 0)
     std::cout << "Completed in " << maxdtsearch << "s" << std::endl;
 
   return nearbyelepairs;

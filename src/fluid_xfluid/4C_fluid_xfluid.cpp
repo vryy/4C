@@ -913,8 +913,8 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
               strategy.elevector3());
 
           if (err)
-            FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->get_comm().MyPID(),
-                actele->id(), err);
+            FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+                Core::Communication::my_mpi_rank(discret_->get_comm()), actele->id(), err);
         }
         else
         {
@@ -931,8 +931,8 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
               strategy.elevector2(), strategy.elevector3(), intpoints_sets[set_counter], cells);
 
           if (err)
-            FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->get_comm().MyPID(),
-                actele->id(), err);
+            FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+                Core::Communication::my_mpi_rank(discret_->get_comm()), actele->id(), err);
         }
 
         //------------------------------------------------------------
@@ -1214,7 +1214,8 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
         // introduce an vector containing the rows for that values have to be communicated
         // REMARK: when assembling row elements also non-row rows have to be communicated
-        std::vector<int> myowner(la[0].lmowner_.size(), strategy.systemvector1()->Comm().MyPID());
+        std::vector<int> myowner(la[0].lmowner_.size(),
+            Core::Communication::my_mpi_rank(strategy.systemvector1()->Comm()));
         {
           TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 6) FEAssemble");
           // calls the Assemble function for EpetraFECrs matrices including communication of non-row
@@ -1256,13 +1257,14 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
             strategy.elevector3());
 
         if (err)
-          FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->get_comm().MyPID(),
-              actele->id(), err);
+          FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+              Core::Communication::my_mpi_rank(discret_->get_comm()), actele->id(), err);
       }
 
       // introduce an vector containing the rows for that values have to be communicated
       // REMARK: when assembling row elements also non-row rows have to be communicated
-      std::vector<int> myowner(la[0].lmowner_.size(), strategy.systemvector1()->Comm().MyPID());
+      std::vector<int> myowner(la[0].lmowner_.size(),
+          Core::Communication::my_mpi_rank(strategy.systemvector1()->Comm()));
       {
         TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 6) FEAssemble");
 
@@ -1421,8 +1423,8 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
               strategy.elevector1(), elevec2, elevec3);
 
           if (err)
-            FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret.get_comm().MyPID(),
-                actele->id(), err);
+            FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+                Core::Communication::my_mpi_rank(discret.get_comm()), actele->id(), err);
         }
         else
         {
@@ -1438,8 +1440,8 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
               ele, discret, la[0].lm_, strategy.elevector1(), intpoints_sets[set_counter], cells);
 
           if (err)
-            FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret.get_comm().MyPID(),
-                actele->id(), err);
+            FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+                Core::Communication::my_mpi_rank(discret.get_comm()), actele->id(), err);
         }
 
 
@@ -1451,7 +1453,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
         std::vector<int> myowner;
         for (size_t index = 0; index < la[0].lmowner_.size(); index++)
         {
-          myowner.push_back(strategy.systemvector1()->Comm().MyPID());
+          myowner.push_back(Core::Communication::my_mpi_rank(strategy.systemvector1()->Comm()));
         }
 
         // REMARK:: call Assemble without lmowner
@@ -1489,15 +1491,15 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
           strategy.elevector1(), elevec2, elevec3);
 
       if (err)
-        FOUR_C_THROW(
-            "Proc %d: Element %d returned err=%d", discret.get_comm().MyPID(), actele->id(), err);
+        FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+            Core::Communication::my_mpi_rank(discret.get_comm()), actele->id(), err);
 
       // introduce an vector containing the rows for that values have to be communicated
       // REMARK: when assembling row elements also non-row rows have to be communicated
       std::vector<int> myowner;
       for (size_t index = 0; index < la[0].lmowner_.size(); index++)
       {
-        myowner.push_back(strategy.systemvector1()->Comm().MyPID());
+        myowner.push_back(Core::Communication::my_mpi_rank(strategy.systemvector1()->Comm()));
       }
 
       // REMARK:: call Assemble without lmowner
@@ -4817,7 +4819,7 @@ void FLD::XFluid::assemble_mat_and_rhs() {}
  *----------------------------------------------------------------------*/
 void FLD::XFluid::explicit_predictor()
 {
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     printf("fluid: using explicit predictor %s", predictor_.c_str());
   }
@@ -4949,7 +4951,7 @@ void FLD::XFluid::explicit_predictor()
   else
     FOUR_C_THROW("Unknown fluid predictor %s", predictor_.c_str());
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     printf("\n");
   }
@@ -4964,7 +4966,7 @@ void FLD::XFluid::explicit_predictor()
 void FLD::XFluid::predict_tang_vel_consist_acc()
 {
   // message to screen
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::cout << "fluid: doing TangVel predictor" << std::endl;
   }

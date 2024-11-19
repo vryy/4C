@@ -372,7 +372,7 @@ namespace Core::IO
     std::vector<double> owner_of_row_elements;
     owner_of_row_elements.reserve(discretization_->num_my_row_elements());
 
-    const int my_pid = discretization_->get_comm().MyPID();
+    const int my_pid = Core::Communication::my_mpi_rank(discretization_->get_comm());
     for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
     {
       if (element_filter_(ele)) owner_of_row_elements.push_back(my_pid);
@@ -478,7 +478,7 @@ namespace Core::IO
     // Set up a multivector which will be populated with all ghosting informations.
     const Epetra_Comm& comm = discretization.element_col_map()->Comm();
     const int n_proc = comm.NumProc();
-    const int my_proc = comm.MyPID();
+    const int my_proc = Core::Communication::my_mpi_rank(comm);
 
     // Create Vectors to store the ghosting information.
     Epetra_FEVector ghosting_information(*discretization.element_row_map(), n_proc);

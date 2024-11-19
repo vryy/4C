@@ -7,6 +7,7 @@
 
 #include "4C_particle_rigidbody.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
@@ -32,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 ParticleRigidBody::RigidBodyHandler::RigidBodyHandler(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
-    : comm_(comm), myrank_(comm.MyPID()), params_(params)
+    : comm_(comm), myrank_(Core::Communication::my_mpi_rank(comm)), params_(params)
 {
   // empty constructor
 }

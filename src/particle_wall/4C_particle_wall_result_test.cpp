@@ -7,6 +7,7 @@
 
 #include "4C_particle_wall_result_test.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_io_linedefinition.hpp"
@@ -64,7 +65,8 @@ void PARTICLEWALL::WallResultTest::test_node(
     const Core::Nodes::Node* actnode = walldiscretization_->g_node(node);
 
     // node not owned on this processor
-    if (actnode->owner() != walldiscretization_->get_comm().MyPID()) return;
+    if (actnode->owner() != Core::Communication::my_mpi_rank(walldiscretization_->get_comm()))
+      return;
 
     // get wall data state container
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
@@ -145,7 +147,7 @@ void PARTICLEWALL::WallResultTest::test_special(
     const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // check results only for processor 0
-  if (walldiscretization_->get_comm().MyPID() != 0) return;
+  if (Core::Communication::my_mpi_rank(walldiscretization_->get_comm()) != 0) return;
 
   // extract and check discretization name
   std::string dis = container.get<std::string>("DIS");

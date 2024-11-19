@@ -528,7 +528,7 @@ int Discret::Elements::Wall1Line::evaluate(Teuchos::ParameterList& params,
         FOUR_C_THROW("Area Constraint only works for line2 curves!");
       }
       // We are not interested in volume of ghosted elements
-      if (Comm.MyPID() == owner())
+      if (Core::Communication::my_mpi_rank(Comm) == owner())
       {
         // element geometry update
         std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
@@ -557,7 +557,7 @@ int Discret::Elements::Wall1Line::evaluate(Teuchos::ParameterList& params,
     break;
     case calc_struct_centerdisp:
     {
-      if (Comm.MyPID() == owner())
+      if (Core::Communication::my_mpi_rank(Comm) == owner())
       {
         // element geometry update
         std::shared_ptr<const Core::LinAlg::Vector<double>> disptotal =

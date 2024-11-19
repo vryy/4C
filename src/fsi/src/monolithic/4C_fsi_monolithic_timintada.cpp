@@ -224,7 +224,7 @@ void FSI::Monolithic::timeloop_ada_dt(
        * time step size --> no more refinement is possible anyway!*/
       if (dtminused_)
       {
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         {
           Core::IO::cout << "Time Step has already been calculated with minimum step size"
                          << " --> continue with next time step!"
@@ -240,7 +240,7 @@ void FSI::Monolithic::timeloop_ada_dt(
         {
           if (not is_ada_solver())
           {
-            if (get_comm().MyPID() == 0)
+            if (Core::Communication::my_mpi_rank(get_comm()) == 0)
             {
               Core::IO::cout << "adaptstep_ = " << adaptstepmax
                              << " --> Max. number of adaption iterations is reached:"
@@ -262,7 +262,7 @@ void FSI::Monolithic::timeloop_ada_dt(
           reset_step();
           reset_time();
 
-          if (get_comm().MyPID() == 0)
+          if (Core::Communication::my_mpi_rank(get_comm()) == 0)
           {
             Core::IO::cout << "Repeat current time step with dt = " << dt() << " based on "
                            << adareason_ << ".\n";
@@ -298,7 +298,7 @@ void FSI::Monolithic::prepare_adaptive_time_step()
   adaptstep_ = 0;
   accepted_ = false;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     Core::IO::cout << "\n"
                    << "+++++++++++++++++++++++++++++NEW TIME STEP+++++++++++++++++++++++++++++";
@@ -311,7 +311,7 @@ void FSI::Monolithic::prepare_adaptive_time_step()
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::print_header_repeated_step() const
 {
-  if (adaptstep_ != 0 and get_comm().MyPID() == 0)
+  if (adaptstep_ != 0 and Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     Core::IO::cout << Core::IO::endl
                    << "__________REAPEATING TIME STEP " << step() << " WITH DT = " << dt()
@@ -324,7 +324,7 @@ void FSI::Monolithic::print_header_repeated_step() const
 void FSI::Monolithic::write_ada_file_header() const
 {
   // write to adaptivity file
-  if (get_comm().MyPID() == 0 and (logada_))
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0 and (logada_))
   {
     // get string of type of auxiliary time integration scheme in structure field
     const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
@@ -361,7 +361,7 @@ void FSI::Monolithic::write_ada_file() const
 {
   if (!logada_) FOUR_C_THROW("No access to adaptivity file!");
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     (*logada_) << std::right << std::setw(9) << step() << std::right << std::setw(16) << time()
                << std::right << std::setw(16) << dt_past(1) << std::right << std::setw(16)
@@ -388,7 +388,7 @@ void FSI::Monolithic::write_ada_file() const
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::print_adaptivity_summary() const
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     if (dt() != dt_past(1))  // only if time step size has changed
     {
@@ -766,7 +766,7 @@ bool FSI::Monolithic::check_if_dts_same()
     dtstrada = std::dynamic_pointer_cast<Adapter::StructureFSITimIntAda>(structure_field())->dt();
 
   // print time step sizes in all fields
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << std::endl << "Time step sizes:" << std::endl;
     std::cout << "dt in FSI      : " << std::setprecision(16) << dtfsi << std::endl;

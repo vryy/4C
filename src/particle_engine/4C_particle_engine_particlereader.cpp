@@ -7,6 +7,7 @@
 
 #include "4C_particle_engine_particlereader.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_io_input_file.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_io_value_parser.hpp"
@@ -21,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 void PARTICLEENGINE::read_particles(Core::IO::InputFile& input, const std::string& section_name,
     std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles)
 {
-  const int myrank = input.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(input.get_comm());
   if (myrank > 0) return;
 
   Teuchos::Time time("", true);

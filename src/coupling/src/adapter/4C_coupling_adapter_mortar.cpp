@@ -121,7 +121,7 @@ void Coupling::Adapter::CouplingMortar::setup(
   // in order to get initial D_ and M_
 
   // processor ID
-  const int myrank = masterdis->get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(masterdis->get_comm());
 
   // get mortar coupling parameters
   Teuchos::ParameterList inputmortar;
@@ -241,9 +241,9 @@ void Coupling::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
   }
 
   // print warning message to screen
-  if (overlap && comm.MyPID() == 0)
+  if (overlap && Core::Communication::my_mpi_rank(comm) == 0)
   {
-    if (comm.MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm) == 0)
       FOUR_C_THROW(
           "Slave boundary and Dirichlet boundary conditions overlap!\n"
           "This leads to an over-constraint problem setup");
@@ -623,7 +623,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
   const double tol = 1.0e-12;
   // no need to do mesh relocation if g already very small
 
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "Analyze interface quality: L2-norm of gap vector = " << gnorm
               << " whereas tol = " << tol << std::endl;
@@ -634,7 +634,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
   if (gnorm < tol) return;
 
   // print message
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "Performing mesh relocation...........";
     fflush(stdout);
@@ -781,7 +781,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
     if (isininterfacecolmap)
     {
       // owner processor of this node will do computation
-      if (comm.MyPID() == mtnode->owner())
+      if (Core::Communication::my_mpi_rank(comm) == mtnode->owner())
       {
         // get corresponding entries from Xslavemod
         int numdim = mtnode->n_dim();
@@ -859,7 +859,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
       if (isininterfacecolmap and idisp != nullptr)
       {
         // insertion solely done by owner processor of this node
-        if (comm.MyPID() == node->owner())
+        if (Core::Communication::my_mpi_rank(comm) == node->owner())
         {
           // define error variable
           int err(0);
@@ -993,7 +993,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
   Core::Communication::ParObjectFactory::instance().initialize_elements(slavedis);
 
   // print message
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "done!" << std::endl
               << std::endl

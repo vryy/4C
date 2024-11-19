@@ -53,7 +53,7 @@ void FLD::Utils::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
   if (discret.num_my_row_faces() > 0)
   {
     // initialize with true on each proc except proc 0
-    bool pressureDone = discret.get_comm().MyPID() != 0;
+    bool pressureDone = Core::Communication::my_mpi_rank(discret.get_comm()) != 0;
 
     // loop over all faces
     for (int i = 0; i < discret.num_my_row_faces(); ++i)
@@ -71,7 +71,8 @@ void FLD::Utils::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
         pressureDone = true;
       if (!pressureDone)
       {
-        if (discret.num_my_row_elements() > 0 && discret.get_comm().MyPID() == 0)
+        if (discret.num_my_row_elements() > 0 &&
+            Core::Communication::my_mpi_rank(discret.get_comm()) == 0)
         {
           std::vector<int> predof = discret.dof(0, discret.l_row_element(0));
           const int gid = predof[0];
@@ -109,7 +110,7 @@ void FLD::Utils::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
         const int lid = info.toggle.Map().LID(gid);
         if (lid < 0)
           FOUR_C_THROW("Global id %d not on this proc %d in system vector", dofs[j],
-              discret.get_comm().MyPID());
+              Core::Communication::my_mpi_rank(discret.get_comm()));
         // get position of label for this dof in condition line
         int onesetj = j / dofpercomponent;
 
@@ -219,7 +220,7 @@ void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
     initParams.set("time", time);
 
     // initialize with true if proc is not proc 0
-    bool pressureDone = discret.get_comm().MyPID() != 0;
+    bool pressureDone = Core::Communication::my_mpi_rank(discret.get_comm()) != 0;
 
     // loop over all faces
     for (int i = 0; i < discret.num_my_row_faces(); ++i)
@@ -237,7 +238,8 @@ void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
         pressureDone = true;
       if (!pressureDone)
       {
-        if (discret.num_my_row_elements() > 0 && discret.get_comm().MyPID() == 0)
+        if (discret.num_my_row_elements() > 0 &&
+            Core::Communication::my_mpi_rank(discret.get_comm()) == 0)
         {
           std::vector<int> predof = discret.dof(0, discret.l_row_element(0));
           const int gid = predof[0];
@@ -350,7 +352,7 @@ void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
         const int lid = toggle.Map().LID(gid);
         if (lid < 0)
           FOUR_C_THROW("Global id %d not on this proc %d in system vector", dofs[j],
-              discret.get_comm().MyPID());
+              Core::Communication::my_mpi_rank(discret.get_comm()));
         // get position of label for this dof in condition line
         int onesetj = j / dofpercomponent;
 

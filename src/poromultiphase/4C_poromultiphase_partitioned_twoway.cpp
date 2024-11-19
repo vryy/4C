@@ -109,7 +109,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::outer_loop()
   itnum_ = 0;
   bool stopnonliniter = false;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "********************************************************************************"
               << "***********************************************\n";
@@ -212,7 +212,7 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::convergence_check(int itnu
   if (artpressnorm_L2 < 1e-6) artpressnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "                                                                                 "
                  "                                             *\n";
@@ -240,7 +240,7 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::convergence_check(int itnu
       ((artpressincnorm_L2 / artpressnorm_L2) <= ittol_))
   {
     stopnonliniter = true;
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       printf(
           "* FLUID  <-------> STRUCTURE Outer Iteration loop converged after iteration %3d/%3d !   "
@@ -259,7 +259,7 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::convergence_check(int itnu
           ((artpressincnorm_L2 / artpressnorm_L2) > ittol_)))
   {
     stopnonliniter = true;
-    if ((get_comm().MyPID() == 0))
+    if ((Core::Communication::my_mpi_rank(get_comm()) == 0))
     {
       printf(
           "|     >>>>>> not converged in itemax steps!                                             "
@@ -281,7 +281,7 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::convergence_check(int itnu
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::do_struct_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout << "*********************************************************************************"
@@ -344,7 +344,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::perform_relaxation(
     {
       // constant relaxation parameter omega
       omega_ = startomega_;
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Fixed relaxation parameter omega is: " << omega_ << std::endl;
       break;
     }
@@ -353,7 +353,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::perform_relaxation(
     {
       // Aitken
       aitken_relaxation(omega_, itnum);
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Aitken relaxation parameter omega is: " << omega_ << std::endl;
       break;
     }
@@ -389,7 +389,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::aitken_relaxation(
   double fluidphiincnpdiffnorm = 0.0;
   fluidphiincnpdiff->Norm2(&fluidphiincnpdiffnorm);
 
-  if (fluidphiincnpdiffnorm <= 1e-06 and get_comm().MyPID() == 0)
+  if (fluidphiincnpdiffnorm <= 1e-06 and Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "Warning: The scalar increment is too small in order to use it for Aitken "
                  "relaxation. Using the previous omega instead!"
               << std::endl;
@@ -410,7 +410,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::aitken_relaxation(
     // we force omega to be in the range defined in the input file
     if (omega < omegamin_)
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value smaller than MINOMEGA!"
                   << std::endl;
@@ -418,7 +418,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::aitken_relaxation(
     }
     if (omega > omegamax_)
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value bigger than MAXOMEGA!"
                   << std::endl;

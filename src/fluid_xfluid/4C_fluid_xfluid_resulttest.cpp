@@ -80,7 +80,7 @@ void FLD::XFluidResultTest::test_node(const Core::IO::InputParameterContainer& c
     {
       Core::Nodes::Node* actnode = discret.g_node(node);
 
-      if (actnode->owner() != discret.get_comm().MyPID()) return;
+      if (actnode->owner() != Core::Communication::my_mpi_rank(discret.get_comm())) return;
 
       double result = 0.;
 

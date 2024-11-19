@@ -7,6 +7,7 @@
 
 #include "4C_contact_meshtying_manager.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_meshtying_lagrange_strategy.hpp"
 #include "4C_contact_meshtying_penalty_strategy.hpp"
 #include "4C_contact_meshtying_poro_lagrange_strategy.hpp"
@@ -42,11 +43,11 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
   Teuchos::ParameterList mtparams;
 
   // read and check meshtying input parameters
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "Checking meshtying input parameters..........." << std::endl;
 
   read_and_check_input(mtparams, discret);
-  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0) std::cout << "done!" << std::endl;
 
   // check for fill_complete of discretization
   if (!discret.filled()) FOUR_C_THROW("discretization of underlying problem is not fillcomplete.");
@@ -54,7 +55,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
   // let's check for meshtying boundary conditions in discret
   // and detect groups of matching conditions
   // for each group, create a contact interface and store it
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "Building meshtying interface(s)..............." << std::endl;
 
   std::vector<Core::Conditions::Condition*> contactconditions(0);
@@ -313,12 +314,12 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
           Global::Problem::instance()->spatial_approximation_type(), isFinalDistribution, maxdof);
     }
   }
-  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0) std::cout << "done!" << std::endl;
 
   //**********************************************************************
   // create the solver strategy object
   // and pass all necessary data to it
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "Building meshtying strategy object............" << std::endl;
 
   const Core::ProblemType problemtype = Global::Problem::instance()->get_problem_type();
@@ -345,7 +346,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
   else
     FOUR_C_THROW("Unrecognized strategy");
 
-  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0) std::cout << "done!" << std::endl;
   //**********************************************************************
 
   //**********************************************************************
@@ -525,7 +526,8 @@ bool CONTACT::MtManager::read_and_check_input(
   // *********************************************************************
   // warnings
   // *********************************************************************
-  if (mortar.get<double>("SEARCH_PARAM") == 0.0 && get_comm().MyPID() == 0)
+  if (mortar.get<double>("SEARCH_PARAM") == 0.0 &&
+      Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << ("Warning: Meshtying search called without inflation of bounding volumes\n")
               << std::endl;
 

@@ -5,6 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_full_init_control.hpp"
@@ -51,7 +52,7 @@ void ntam(int argc, char *argv[])
   ntainp_ccadiscret(inputfile_name, outputfile_kenner, restartfile_kenner);
 
   ti = walltime_in_seconds() - t0;
-  if (gcomm->MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(*gcomm) == 0)
   {
     Core::IO::cout << "\nTotal CPU Time for INPUT:       " << std::setw(10) << std::setprecision(3)
                    << std::scientific << ti << " sec \n\n";
@@ -63,7 +64,7 @@ void ntam(int argc, char *argv[])
   ntacal();
 
   tc = walltime_in_seconds() - t0;
-  if (gcomm->MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(*gcomm) == 0)
   {
     Core::IO::cout << "\nTotal CPU Time for CALCULATION: " << std::setw(10) << std::setprecision(3)
                    << std::scientific << tc << " sec \n\n";

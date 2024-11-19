@@ -399,7 +399,7 @@ void FSI::MonolithicXFEM::setup_system()
  *----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::create_system_matrix()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "Create a new global systemmatrix (BlockSparseMatrix)" << std::endl;
 
   // TODO: check the savegraph option and explicit Dirichlet flag for the matrix!
@@ -419,7 +419,7 @@ void FSI::MonolithicXFEM::create_system_matrix()
   // do not want to have two sysmats in memory at the same time
   if (systemmatrix_ != nullptr)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       std::cout << "Delete the global systemmatrix (BlockSparseMatrix)" << std::endl;
     systemmatrix_ = nullptr;
   }
@@ -855,7 +855,7 @@ void FSI::MonolithicXFEM::solve()
     //--------------------------------------------------------
     if (newton())  // stop since the main inner Newton loop converged
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         Core::IO::cout
             << "-------------------------------------- Outer loop finished with converged "
@@ -866,7 +866,7 @@ void FSI::MonolithicXFEM::solve()
     }
     else
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         Core::IO::cout
             << "---------------------------------------- Restart Newton-Raphson - DOF-sets "
@@ -880,7 +880,7 @@ void FSI::MonolithicXFEM::solve()
 
   if (iter_outer_ > itermax_outer_)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       Core::IO::cout
           << "-------------------------- Maximum number of restarts reached - Fluid DOF-sets "
@@ -946,7 +946,8 @@ void FSI::MonolithicXFEM::output()
   if (structure_poro()->get_constraint_manager()->have_monitor())
   {
     structure_poro()->get_constraint_manager()->compute_monitor_values(structure_poro()->dispnp());
-    if (get_comm().MyPID() == 0) structure_poro()->get_constraint_manager()->print_monitor_values();
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+      structure_poro()->get_constraint_manager()->print_monitor_values();
   }
 
   if (have_ale()) ale_field()->output();
@@ -1286,7 +1287,7 @@ bool FSI::MonolithicXFEM::newton()
   /*----------------------------------------------------------------------*/
   if (converged())
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       Core::IO::cout << "-------------------------------------------------------Newton Converged ! "
                         "--------------------------------------------------"
@@ -1296,7 +1297,7 @@ bool FSI::MonolithicXFEM::newton()
   }
   else if (iter_ >= itermax_)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       Core::IO::cout << "----------------------------------------- Newton not converged in ITEMAX "
                         "iterations ! --------------------------------------"
@@ -1592,7 +1593,7 @@ bool FSI::MonolithicXFEM::evaluate()
       {
         fluid_field()->set_evaluate_cut(false);
 
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         {
           Core::IO::cout << "==| Do not evaluate CUT for this iteration as disp_inc: "
                          << normstrincdisp_inf_ / std::min(nd_act_scaling_, nd_inc_scaling_)
@@ -1607,7 +1608,7 @@ bool FSI::MonolithicXFEM::evaluate()
 
     fluid_field()->evaluate();
 
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       Core::IO::cout << "fluid time : " << tf.totalElapsedTime(true) << Core::IO::endl;
 
     // Assign the Unphysical Boundary Elements to all procs (only for contact)
@@ -1647,7 +1648,7 @@ bool FSI::MonolithicXFEM::evaluate()
     // Evaluate Structure (do not set state again)
     structure_poro()->evaluate(nullptr, iter_ == 1);
 
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       Core::IO::cout << "structure time: " << ts.totalElapsedTime(true) << Core::IO::endl;
   }
 
@@ -2032,7 +2033,8 @@ void FSI::MonolithicXFEM::create_linear_solver()
   if (solvertype == Core::LinearSolver::SolverType::umfpack ||
       solvertype == Core::LinearSolver::SolverType::superlu)
   {
-    if (get_comm().MyPID() == 0) std::cout << "Merged XFSI block matrix is used!\n" << std::endl;
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+      std::cout << "Merged XFSI block matrix is used!\n" << std::endl;
 
     merge_fsi_blockmatrix_ = true;
 
@@ -2265,7 +2267,8 @@ void FSI::MonolithicXFEM::create_linear_solver()
  *----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::linear_solve()
 {
-  if (get_comm().MyPID() == 0) std::cout << " FSI::MonolithicXFEM::linear_solve()" << std::endl;
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+    std::cout << " FSI::MonolithicXFEM::linear_solve()" << std::endl;
 
   // Solve for inc_ = [disi_,tempi_]
   // Solve K_Teffdyn . IncX = -R  ===>  IncX_{n+1} with X=[d,(u,p)]
@@ -2347,7 +2350,7 @@ void FSI::MonolithicXFEM::linear_solve()
 
   //---------------------------------------------
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << " Solved" << std::endl;
   }
@@ -2442,7 +2445,7 @@ std::shared_ptr<Epetra_Map> FSI::MonolithicXFEM::combined_dbc_map()
 void FSI::MonolithicXFEM::print_newton_iter()
 {
   // print to standard out
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     if (iter_ == 1) print_newton_iter_header();
 
@@ -2656,7 +2659,7 @@ void FSI::MonolithicXFEM::apply_newton_damping()
       if (nd_normrhs_old_[level] < nd_normrhs_old_[level - 1] &&
           (iter_ > level + 1 || iter_outer_ > level + 1))
       {
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         {
           std::cout << "==| Skip rescaling level " << level + 1 << " |==" << std::endl;
         }
@@ -2722,7 +2725,7 @@ void FSI::MonolithicXFEM::apply_newton_damping()
 
   if (nd_act_scaling_ > nd_inc_scaling_)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       std::cout << "==| Incremental Based Damping of Newton Scheme with scaling " << nd_inc_scaling_
                 << "! |==" << std::endl;
@@ -2731,7 +2734,7 @@ void FSI::MonolithicXFEM::apply_newton_damping()
   }
   else if (nd_act_scaling_ < 1)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       std::cout << "==| Residual Based Damping of Newton Scheme with scaling " << nd_act_scaling_
                 << "! |==" << std::endl;

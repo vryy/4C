@@ -68,7 +68,7 @@ void Solid::TimIntPrestress::update_step_element()
   {
     if ((*time_)[0] <= pstime + 1e-15)
     {
-      if (!discret_->get_comm().MyPID())
+      if (!Core::Communication::my_mpi_rank(discret_->get_comm()))
         Core::IO::cout << "====== Entering MULF update" << Core::IO::endl;
       // action for elements
       p.set("action", "calc_struct_prestress_update");

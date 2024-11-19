@@ -7,6 +7,7 @@
 
 #include "4C_coupling_volmortar_integrator.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_coupling_volmortar_cell.hpp"
 #include "4C_coupling_volmortar_defines.hpp"
 #include "4C_coupling_volmortar_shape.hpp"
@@ -498,7 +499,7 @@ bool Coupling::VolMortar::vol_mortar_ele_based_gp(Core::Elements::Element& sele,
   for (int j = 0; j < ns_; ++j)
   {
     Core::Nodes::Node* cnode = sele.nodes()[j];
-    if (cnode->owner() != Adis.get_comm().MyPID()) continue;
+    if (cnode->owner() != Core::Communication::my_mpi_rank(Adis.get_comm())) continue;
 
     const int nsdof = Adis.num_dof(dofseta, cnode);
 
@@ -832,7 +833,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
         Core::Nodes::Node* cnode = sele.nodes()[j];
         int nsdof = slavedis.num_dof(sdofset, cnode);
 
-        if (cnode->owner() != slavedis.get_comm().MyPID()) continue;
+        if (cnode->owner() != Core::Communication::my_mpi_rank(slavedis.get_comm())) continue;
 
         // loop over slave dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
@@ -891,7 +892,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
       {
         Core::Nodes::Node* cnode = sele.nodes()[j];
 
-        if (cnode->owner() != slavedis.get_comm().MyPID()) continue;
+        if (cnode->owner() != Core::Communication::my_mpi_rank(slavedis.get_comm())) continue;
 
         int nsdof = slavedis.num_dof(sdofset, cnode);
 
@@ -1314,7 +1315,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
       for (int j = 0; j < ns_; ++j)
       {
         Core::Nodes::Node* cnode = Aele.nodes()[j];
-        if (cnode->owner() != Adis.get_comm().MyPID()) continue;
+        if (cnode->owner() != Core::Communication::my_mpi_rank(Adis.get_comm())) continue;
 
         int nsdof = Adis.num_dof(dofsetA, cnode);
 
@@ -1439,7 +1440,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
       for (int j = 0; j < nm_; ++j)
       {
         Core::Nodes::Node* cnode = Bele.nodes()[j];
-        if (cnode->owner() != Bdis.get_comm().MyPID()) continue;
+        if (cnode->owner() != Core::Communication::my_mpi_rank(Bdis.get_comm())) continue;
 
         int nsdof = Bdis.num_dof(dofsetB, cnode);
 
@@ -1960,7 +1961,7 @@ void Coupling::VolMortar::ConsInterpolator::interpolate(Core::Nodes::Node* node,
     std::pair<int, int>& dofset, const Epetra_Map& P_dofrowmap, const Epetra_Map& P_dofcolmap)
 {
   // check ownership
-  if (node->owner() != nodediscret.get_comm().MyPID()) return;
+  if (node->owner() != Core::Communication::my_mpi_rank(nodediscret.get_comm())) return;
 
   // map gp into A and B para space
   double nodepos[3] = {node->x()[0], node->x()[1], node->x()[2]};

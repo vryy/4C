@@ -591,7 +591,7 @@ bool SSTI::ConvCheckMono::converged(const SSTI::SSTIMono& ssti_mono)
   // first Newton-Raphson iteration
   if (ssti_mono.newton_iteration() == 1)
   {
-    if (ssti_mono.get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(ssti_mono.get_comm()) == 0)
     {
       // print header of convergence table to screen
       std::cout << "+------------+-------------------+--------------+--------------+--------------+"
@@ -623,7 +623,7 @@ bool SSTI::ConvCheckMono::converged(const SSTI::SSTIMono& ssti_mono)
   else
   {
     // print current line of convergence table to screen
-    if (ssti_mono.get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(ssti_mono.get_comm()) == 0)
     {
       std::cout << "|  " << std::setw(3) << ssti_mono.newton_iteration() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
@@ -663,7 +663,7 @@ bool SSTI::ConvCheckMono::converged(const SSTI::SSTIMono& ssti_mono)
   // convergence
   if (ssti_mono.newton_iteration() == itermax_ and !exit)
   {
-    if (ssti_mono.get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(ssti_mono.get_comm()) == 0)
     {
       std::cout << "+------------+-------------------+--------------+--------------+--------------+"
                    "--------------+--------------+--------------+--------------+--------------+----"

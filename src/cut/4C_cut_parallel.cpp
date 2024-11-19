@@ -8,6 +8,7 @@
 #include "4C_cut_parallel.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_cut_output.hpp"
 #include "4C_cut_volumecell.hpp"
@@ -25,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 Cut::Parallel::Parallel(const std::shared_ptr<Core::FE::Discretization>& discret, Cut::Mesh& mesh,
     Cut::ParentIntersection& parentintersection)
     : discret_(discret),
-      myrank_(discret_->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(discret_->get_comm())),
       numproc_(discret_->get_comm().NumProc()),
       mesh_(mesh),
       parentintersection_(parentintersection)

@@ -158,7 +158,7 @@ void ElCh::MovingBoundaryAlgorithm::time_loop()
       // compute L2 norm of increment
       incr->Norm2(&incnorm);
 
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         std::cout << "After outer iteration " << iter << " of " << itmax_
                   << ":  ||idispnpinc|| = " << incnorm << std::endl;
@@ -166,12 +166,13 @@ void ElCh::MovingBoundaryAlgorithm::time_loop()
       if (incnorm < ittol_)
       {
         stopiter = true;
-        if (get_comm().MyPID() == 0) std::cout << "   || Outer iteration loop converged! ||\n\n\n";
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+          std::cout << "   || Outer iteration loop converged! ||\n\n\n";
       }
       if (iter == itmax_)
       {
         stopiter = true;
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
           std::cout << "   || Maximum number of iterations reached: " << itmax_ << " ||\n\n\n";
       }
     }
@@ -199,7 +200,7 @@ void ElCh::MovingBoundaryAlgorithm::prepare_time_step()
   increment_time_and_step();
 
   // screen output
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << std::endl;
     std::cout << "*************************************************************************"
@@ -228,7 +229,7 @@ void ElCh::MovingBoundaryAlgorithm::prepare_time_step()
 void ElCh::MovingBoundaryAlgorithm::solve_fluid_ale()
 {
   // screen output
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << std::endl;
     std::cout << "*********************" << std::endl;
@@ -245,7 +246,7 @@ void ElCh::MovingBoundaryAlgorithm::solve_fluid_ale()
 /*----------------------------------------------------------------------*/
 void ElCh::MovingBoundaryAlgorithm::solve_scatra()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << std::endl;
     std::cout << "************************" << std::endl;

@@ -90,7 +90,7 @@ void CONTACT::Interface::visualize_gmsh(
   //**********************************************************************
   for (int proc = 0; proc < get_comm().NumProc(); ++proc)
   {
-    if (proc == get_comm().MyPID())
+    if (proc == Core::Communication::my_mpi_rank(get_comm()))
     {
       // open files (overwrite if proc==0, else append)
       if (proc == 0)
@@ -722,13 +722,14 @@ void CONTACT::Interface::visualize_gmsh(
     filenametn << iter;
   }
 
-  if (Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
   {
     for (int i = 0; i < gnslayers; i++)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_s_tnlayer_" << i << ".pos";
-      // std::cout << std::endl << Comm().MyPID()<< "filename: " << currentfilename.str().c_str();
+      // std::cout << std::endl << Core::Communication::my_mpi_rank(Comm())<< "filename: " <<
+      // currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::ostringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " stl " << i << " \" {"
@@ -743,7 +744,7 @@ void CONTACT::Interface::visualize_gmsh(
   // for every proc, one after another, put data of slabs into files
   for (int i = 0; i < Comm().NumProc(); i++)
   {
-    if ((i == Comm().MyPID()) && (binarytree_->Sroot()->Type() != 4))
+    if ((i == Core::Communication::my_mpi_rank(Comm())) && (binarytree_->Sroot()->Type() != 4))
     {
       // print full tree with treenodesmap
       for (int j = 0; j < (int)binarytree_->Streenodesmap().size(); j++)
@@ -788,14 +789,14 @@ void CONTACT::Interface::visualize_gmsh(
 
   Comm().Barrier();
   // close all slave-gmsh files
-  if (Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
   {
     for (int i = 0; i < gnslayers; i++)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_s_tnlayer_" << i << ".pos";
-      // std::cout << std::endl << Comm().MyPID()<< "current filename: " <<
-      // currentfilename.str().c_str();
+      // std::cout << std::endl << Core::Communication::my_mpi_rank(Comm())<< "current filename: "
+      // << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "a");
       std::ostringstream gmshfilecontent;
       gmshfilecontent << "};";
@@ -806,13 +807,14 @@ void CONTACT::Interface::visualize_gmsh(
   Comm().Barrier();
 
   // create master slabs
-  if (Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
   {
     for (int i = 0; i < gnmlayers; i++)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_m_tnlayer_" << i << ".pos";
-      // std::cout << std::endl << Comm().MyPID()<< "filename: " << currentfilename.str().c_str();
+      // std::cout << std::endl << Core::Communication::my_mpi_rank(Comm())<< "filename: " <<
+      // currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::ostringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " mtl " << i << " \" {"
@@ -898,11 +900,12 @@ void CONTACT::Interface::visualize_gmsh(
   if (gcontactmapsize > 0)
   {
     // open/create new file
-    if (Comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(Comm()) == 0)
     {
       std::ostringstream currentfilename;
       currentfilename << filenamectn.str().c_str() << "_ct.pos";
-      // std::cout << std::endl << Comm().MyPID()<< "filename: " << currentfilename.str().c_str();
+      // std::cout << std::endl << Core::Communication::my_mpi_rank(Comm())<< "filename: " <<
+      // currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::ostringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " contacttn  \" {" << std::endl;
@@ -913,7 +916,7 @@ void CONTACT::Interface::visualize_gmsh(
     // every proc should plot its contacting treenodes!
     for (int i = 0; i < Comm().NumProc(); i++)
     {
-      if (Comm().MyPID() == i)
+      if (Core::Communication::my_mpi_rank(Comm()) == i)
       {
         if ((int)(binarytree_->coupling_map()[0]).size() !=
             (int)(binarytree_->coupling_map()[1]).size())
@@ -926,7 +929,7 @@ void CONTACT::Interface::visualize_gmsh(
           std::ostringstream newgmshfile;
 
           // create new sheet for slave
-          if (Comm().MyPID() == 0 && j == 0)
+          if (Core::Communication::my_mpi_rank(Comm()) == 0 && j == 0)
           {
             currentfilename << filenamectn.str().c_str() << "_ct.pos";
             fp = fopen(currentfilename.str().c_str(), "w");
@@ -959,11 +962,12 @@ void CONTACT::Interface::visualize_gmsh(
     }
 
     // close file
-    if (Comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(Comm()) == 0)
     {
       std::ostringstream currentfilename;
       currentfilename << filenamectn.str().c_str() << "_ct.pos";
-      // std::cout << std::endl << Comm().MyPID()<< "filename: " << currentfilename.str().c_str();
+      // std::cout << std::endl << Core::Communication::my_mpi_rank(Comm())<< "filename: " <<
+      // currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "a");
       std::ostringstream gmshfile;
       gmshfile << "};";
@@ -2832,7 +2836,7 @@ void CONTACT::Interface::fd_check_alpha_deriv()
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // apply finite difference scheme
-    /*if (Comm().MyPID()==snode->Owner())
+    /*if (Core::Communication::my_mpi_rank(Comm())==snode->Owner())
     {
       std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%dim
            << " Dof(g): " << snode->Dofs()[fd%dim] << std::endl;
@@ -2984,7 +2988,7 @@ void CONTACT::Interface::fd_check_alpha_deriv()
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // apply finite difference scheme
-    /*if (Comm().MyPID()==mnode->Owner())
+    /*if (Core::Communication::my_mpi_rank(Comm())==mnode->Owner())
     {
       std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%dim
            << " Dof(g): " << mnode->Dofs()[fd%dim] << std::endl;
@@ -3163,7 +3167,7 @@ void CONTACT::Interface::fd_check_gap_deriv_ltl()
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // apply finite difference scheme
-    /*if (Comm().MyPID()==snode->Owner())
+    /*if (Core::Communication::my_mpi_rank(Comm())==snode->Owner())
     {
       std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%dim
            << " Dof(g): " << snode->Dofs()[fd%dim] << std::endl;
@@ -3318,7 +3322,7 @@ void CONTACT::Interface::fd_check_gap_deriv_ltl()
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // apply finite difference scheme
-    /*if (Comm().MyPID()==mnode->Owner())
+    /*if (Core::Communication::my_mpi_rank(Comm())==mnode->Owner())
     {
       std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%dim
            << " Dof(g): " << mnode->Dofs()[fd%dim] << std::endl;
@@ -3545,7 +3549,7 @@ void CONTACT::Interface::fd_check_jump_deriv_ltl()
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // apply finite difference scheme
-    /*if (Comm().MyPID()==snode->Owner())
+    /*if (Core::Communication::my_mpi_rank(Comm())==snode->Owner())
     {
       std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%dim
            << " Dof(g): " << snode->Dofs()[fd%dim] << std::endl;
@@ -3700,7 +3704,7 @@ void CONTACT::Interface::fd_check_jump_deriv_ltl()
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // apply finite difference scheme
-    /*if (Comm().MyPID()==mnode->Owner())
+    /*if (Core::Communication::my_mpi_rank(Comm())==mnode->Owner())
     {
       std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%dim
            << " Dof(g): " << mnode->Dofs()[fd%dim] << std::endl;
@@ -3967,7 +3971,7 @@ void CONTACT::Interface::fd_check_gap_deriv()
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // apply finite difference scheme
-    /*if (Comm().MyPID()==snode->Owner())
+    /*if (Core::Communication::my_mpi_rank(Comm())==snode->Owner())
     {
       std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%dim
            << " Dof(g): " << snode->Dofs()[fd%dim] << std::endl;
@@ -4118,7 +4122,7 @@ void CONTACT::Interface::fd_check_gap_deriv()
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // apply finite difference scheme
-    /*if (Comm().MyPID()==mnode->Owner())
+    /*if (Core::Communication::my_mpi_rank(Comm())==mnode->Owner())
     {
       std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%dim
            << " Dof(g): " << mnode->Dofs()[fd%dim] << std::endl;
@@ -4351,7 +4355,7 @@ void CONTACT::Interface::fd_check_tang_lm_deriv()
     Node* snode = dynamic_cast<Node*>(node);
 
     // apply finite difference scheme
-    if (get_comm().MyPID() == snode->owner())
+    if (Core::Communication::my_mpi_rank(get_comm()) == snode->owner())
     {
       std::cout << "\nBuilding FD for Slave Node: " << snode->id() << " Dof(l): " << fd % 3
                 << " Dof(g): " << snode->dofs()[fd % 3] << std::endl;
@@ -4553,7 +4557,7 @@ void CONTACT::Interface::fd_check_tang_lm_deriv()
     Node* mnode = dynamic_cast<Node*>(node);
 
     // apply finite difference scheme
-    if (get_comm().MyPID() == mnode->owner())
+    if (Core::Communication::my_mpi_rank(get_comm()) == mnode->owner())
     {
       std::cout << "\nBuilding FD for Master Node: " << mnode->id() << " Dof(l): " << fd % 3
                 << " Dof(g): " << mnode->dofs()[fd % 3] << std::endl;
@@ -4919,7 +4923,7 @@ void CONTACT::Interface::fd_check_stick_deriv(
     FriNode* snode = dynamic_cast<FriNode*>(node);
 
     // apply finite difference scheme
-    if (get_comm().MyPID() == snode->owner())
+    if (Core::Communication::my_mpi_rank(get_comm()) == snode->owner())
     {
       // std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
       //     << " Dof: " << snode->Dofs()[fd%3] << endl;
@@ -5133,7 +5137,7 @@ void CONTACT::Interface::fd_check_stick_deriv(
     FriNode* mnode = dynamic_cast<FriNode*>(node);
 
     // apply finite difference scheme
-    if (get_comm().MyPID() == mnode->owner())
+    if (Core::Communication::my_mpi_rank(get_comm()) == mnode->owner())
     {
       // std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof: " << fd%3
       //     << " Dof: " << mnode->Dofs()[fd%3] << endl;
@@ -6616,7 +6620,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     Node* snode = dynamic_cast<Node*>(node);
 
     // apply finite difference scheme
-    if (get_comm().MyPID() == snode->owner())
+    if (Core::Communication::my_mpi_rank(get_comm()) == snode->owner())
     {
       std::cout << "\nBuilding FD for Slave Node: " << snode->id() << " Dof: " << fd % 3
                 << " Dof: " << snode->dofs()[fd % 3] << std::endl;
@@ -6836,7 +6840,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     Node* mnode = dynamic_cast<Node*>(node);
 
     // apply finite difference scheme
-    if (get_comm().MyPID() == mnode->owner())
+    if (Core::Communication::my_mpi_rank(get_comm()) == mnode->owner())
     {
       std::cout << "\nBuilding FD for Master Node: " << mnode->id() << " Dof: " << fd % 3
                 << " Dof: " << mnode->dofs()[fd % 3] << std::endl;
@@ -7055,7 +7059,7 @@ void CONTACT::Interface::write_nodal_coordinates_to_file(
     const int interfacel_id, const Epetra_Map& nodal_map, const std::string& full_path) const
 {
   // only processor zero writes header
-  if (get_comm().MyPID() == 0 and interfacel_id == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0 and interfacel_id == 0)
   {
     std::ofstream of(full_path, std::ios_base::out);
     of << std::setw(7) << "ID" << std::setw(24) << "x" << std::setw(24) << "y" << std::setw(24)
@@ -7067,7 +7071,7 @@ void CONTACT::Interface::write_nodal_coordinates_to_file(
 
   for (int p = 0; p < get_comm().NumProc(); ++p)
   {
-    if (p == get_comm().MyPID())
+    if (p == Core::Communication::my_mpi_rank(get_comm()))
     {
       // open the output stream again on all procs
       std::ofstream of(full_path, std::ios_base::out | std::ios_base::app);

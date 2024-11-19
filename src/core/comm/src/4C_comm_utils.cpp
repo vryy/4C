@@ -265,7 +265,8 @@ namespace Core::Communication
     int localsize = lcomm->NumProc();
     for (int lpid = 0; lpid < localsize; lpid++)
     {
-      lpidgpid[lpid] = gcomm->MyPID() - lcomm->MyPID() + lpid;
+      lpidgpid[lpid] = Core::Communication::my_mpi_rank(*gcomm) -
+                       Core::Communication::my_mpi_rank(*lcomm) + lpid;
     }
 
     // nested parallelism group is created
@@ -273,7 +274,7 @@ namespace Core::Communication
         std::make_shared<Communicators>(color, ngroup, lpidgpid, lcomm, gcomm, npType);
 
     // info for the nested parallelism user
-    if (lcomm->MyPID() == 0 && ngroup > 1)
+    if (Core::Communication::my_mpi_rank(*lcomm) == 0 && ngroup > 1)
       printf("Nested parallelism layout: Group %d has %d processors.\n ", color, lcomm->NumProc());
     fflush(stdout);
 
@@ -356,7 +357,7 @@ namespace Core::Communication
 
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
     std::shared_ptr<Epetra_Map> proc0map;
-    if (lcomm->MyPID() == gcomm->MyPID())
+    if (Core::Communication::my_mpi_rank(*lcomm) == Core::Communication::my_mpi_rank(*gcomm))
       proc0map = Core::LinAlg::allreduce_overlapping_e_map(vecmap, 0);
     else
       proc0map = Core::LinAlg::allreduce_overlapping_e_map(vecmap, lcomm->NumProc() - 1);
@@ -365,7 +366,7 @@ namespace Core::Communication
     Core::LinAlg::MultiVector<double> fullvec(*proc0map, vec.NumVectors(), true);
     Core::LinAlg::export_to(vec, fullvec);
 
-    const int myglobalrank = gcomm->MyPID();
+    const int myglobalrank = Core::Communication::my_mpi_rank(*gcomm);
     double maxdiff = 0.0;
     // last proc in gcomm sends its data to proc 0 which does the comparison
     if (myglobalrank == 0)
@@ -480,7 +481,7 @@ namespace Core::Communication
     std::shared_ptr<Epetra_Comm> gcomm = communicators.global_comm();
     MPI_Comm mpi_lcomm = std::dynamic_pointer_cast<Epetra_MpiComm>(lcomm)->GetMpiComm();
     MPI_Comm mpi_gcomm = std::dynamic_pointer_cast<Epetra_MpiComm>(gcomm)->GetMpiComm();
-    const int myglobalrank = gcomm->MyPID();
+    const int myglobalrank = Core::Communication::my_mpi_rank(*gcomm);
 
     int result = -1;
     MPI_Comm_compare(mpi_gcomm, mpi_lcomm, &result);
@@ -496,13 +497,13 @@ namespace Core::Communication
 
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
     std::shared_ptr<Epetra_Map> serialrowmap;
-    if (lcomm->MyPID() == gcomm->MyPID())
+    if (Core::Communication::my_mpi_rank(*lcomm) == Core::Communication::my_mpi_rank(*gcomm))
       serialrowmap = Core::LinAlg::allreduce_overlapping_e_map(rowmap, 0);
     else
       serialrowmap = Core::LinAlg::allreduce_overlapping_e_map(rowmap, lcomm->NumProc() - 1);
 
     std::shared_ptr<Epetra_Map> serialdomainmap;
-    if (lcomm->MyPID() == gcomm->MyPID())
+    if (Core::Communication::my_mpi_rank(*lcomm) == Core::Communication::my_mpi_rank(*gcomm))
       serialdomainmap = Core::LinAlg::allreduce_overlapping_e_map(domainmap, 0);
     else
       serialdomainmap = Core::LinAlg::allreduce_overlapping_e_map(domainmap, lcomm->NumProc() - 1);

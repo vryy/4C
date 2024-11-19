@@ -56,7 +56,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
   artnettimint_->init(probparams, artdyn, "artery_scatra");
 
   // print user info
-  if (porofluidmultitimint->discretization()->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(porofluidmultitimint->discretization()->get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;

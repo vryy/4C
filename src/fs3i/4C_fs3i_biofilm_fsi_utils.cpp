@@ -56,7 +56,7 @@ void FS3I::BioFilm::Utils::scatra_change_config(Core::FE::Discretization& scatra
 
       if (lid < 0)
         FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-            gvector.Comm().MyPID(), nodedofs[i]);
+            Core::Communication::my_mpi_rank(gvector.Comm()), nodedofs[i]);
       nvector[i] += gvector[lid];
     }
 

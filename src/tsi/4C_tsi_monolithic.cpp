@@ -8,6 +8,7 @@
 #include "4C_tsi_monolithic.hpp"
 
 #include "4C_adapter_str_structure_new.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_abstract_strategy.hpp"
 #include "4C_contact_interface.hpp"
 #include "4C_contact_lagrange_strategy_tsi.hpp"
@@ -111,7 +112,8 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   else  // (merge_tsi_blockmatrix_ == true)
   {
 #ifndef TFSI
-    if (get_comm().MyPID() == 0) std::cout << "Merged TSI block matrix is used!\n" << std::endl;
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+      std::cout << "Merged TSI block matrix is used!\n" << std::endl;
 #endif
 
     // get solver parameter list of linear TSI solver
@@ -144,7 +146,8 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   }
 
 #ifndef TFSI
-  if ((tsidynmono_.get<bool>("CALC_NECKING_TSI_VALUES")) and (get_comm().MyPID() == 0))
+  if ((tsidynmono_.get<bool>("CALC_NECKING_TSI_VALUES")) and
+      (Core::Communication::my_mpi_rank(get_comm()) == 0))
     std::cout
         << "CAUTION: calculation ONLY valid for necking of a cylindrical body!"
         << "\n Due to symmetry only 1/8 of the cylinder is simulated, i.e r/l = 6.413mm/53.334mm."
@@ -384,7 +387,8 @@ void TSI::Monolithic::newton_full()
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  if (Comm().MyPID() == 0) std::cout << "TSI::Monolithic::NewtonFull()" << std::endl;
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
+    std::cout << "TSI::Monolithic::NewtonFull()" << std::endl;
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
@@ -600,7 +604,7 @@ void TSI::Monolithic::newton_full()
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ((converged()) and (get_comm().MyPID() == 0))
+  if ((converged()) and (Core::Communication::my_mpi_rank(get_comm()) == 0))
   {
     print_newton_conv();
   }
@@ -629,7 +633,8 @@ void TSI::Monolithic::ptc()
 
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  if (Comm().MyPID() == 0) std::cout << "TSI::Monolithic::PTC()" << std::endl;
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
+    std::cout << "TSI::Monolithic::PTC()" << std::endl;
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
@@ -844,7 +849,7 @@ void TSI::Monolithic::ptc()
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ((converged()) and (get_comm().MyPID() == 0))
+  if ((converged()) and (Core::Communication::my_mpi_rank(get_comm()) == 0))
   {
     print_newton_conv();
   }
@@ -861,7 +866,8 @@ void TSI::Monolithic::evaluate(std::shared_ptr<Core::LinAlg::Vector<double>> ste
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  if (Comm().MyPID() == 0) std::cout << "\n TSI::Monolithic::evaluate()" << std::endl;
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
+    std::cout << "\n TSI::Monolithic::evaluate()" << std::endl;
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
@@ -917,7 +923,7 @@ void TSI::Monolithic::evaluate(std::shared_ptr<Core::LinAlg::Vector<double>> ste
 #endif
 
 #ifdef TSIPARALLEL
-  std::cout << Comm().MyPID() << " nach ApplyTemp!!" << std::endl;
+  std::cout << Core::Communication::my_mpi_rank(Comm()) << " nach ApplyTemp!!" << std::endl;
 #endif  // TSIPARALLEL
 
 #ifdef TSIMONOLITHASOUTPUT
@@ -1028,7 +1034,8 @@ void TSI::Monolithic::setup_system()
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  if (Comm().MyPID() == 0) std::cout << " TSI::Monolithic::SetupSystem()" << std::endl;
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
+    std::cout << " TSI::Monolithic::SetupSystem()" << std::endl;
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
@@ -1036,7 +1043,7 @@ void TSI::Monolithic::setup_system()
   set_default_parameters();
 
 #ifdef TSIPARALLEL
-  std::cout << Comm().MyPID() << " :PID" << std::endl;
+  std::cout << Core::Communication::my_mpi_rank(Comm()) << " :PID" << std::endl;
   std::cout << "structure dofmap" << std::endl;
   std::cout << *structure_field()->dof_row_map(0) << std::endl;
   std::cout << "thermo dofmap" << std::endl;
@@ -1091,7 +1098,8 @@ void TSI::Monolithic::setup_system_matrix()
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  if (Comm().MyPID() == 0) std::cout << " TSI::Monolithic::setup_system_matrix()" << std::endl;
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
+    std::cout << " TSI::Monolithic::setup_system_matrix()" << std::endl;
 #endif  // TFSI
 #endif  // TSI_DEBUG
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::setup_system_matrix");
@@ -1178,7 +1186,8 @@ void TSI::Monolithic::setup_rhs()
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  if (Comm().MyPID() == 0) std::cout << " TSI::Monolithic::setup_rhs()" << std::endl;
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
+    std::cout << " TSI::Monolithic::setup_rhs()" << std::endl;
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
@@ -1212,7 +1221,8 @@ void TSI::Monolithic::linear_solve()
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  if (Comm().MyPID() == 0) std::cout << " TSI::Monolithic::linear_solve()" << std::endl;
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
+    std::cout << " TSI::Monolithic::linear_solve()" << std::endl;
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
@@ -1240,9 +1250,10 @@ void TSI::Monolithic::linear_solve()
   {
 #ifdef TSI_DEBUG
 #ifndef TFSI
-    if (Comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(Comm()) == 0)
     {
-      std::cout << " DBC applied to TSI system on proc" << Comm().MyPID() << std::endl;
+      std::cout << " DBC applied to TSI system on proc" << Core::Communication::my_mpi_rank(Comm())
+                << std::endl;
     }
 #endif  // TFSI
 #endif  // TSI_DEBUG
@@ -1273,7 +1284,7 @@ void TSI::Monolithic::linear_solve()
 
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  if (Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
   {
     std::cout << " Solved" << std::endl;
   }
@@ -1483,9 +1494,9 @@ bool TSI::Monolithic::converged()
 void TSI::Monolithic::print_newton_iter()
 {
   // print to standard out
-  // replace myrank_ here general by Comm().MyPID()
-  if ((get_comm().MyPID() == 0) and print_screen_evry() and (step() % print_screen_evry() == 0) and
-      printiter_)
+  // replace myrank_ here general by Core::Communication::my_mpi_rank(Comm())
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
+      (step() % print_screen_evry() == 0) and printiter_)
   {
     if (iter_ == 0) print_newton_iter_header(stdout);
     print_newton_iter_text(stdout);
@@ -1843,7 +1854,8 @@ void TSI::Monolithic::apply_str_coupl_matrix(
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  if (Comm().MyPID() == 0) std::cout << " TSI::Monolithic::apply_str_coupl_matrix()" << std::endl;
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
+    std::cout << " TSI::Monolithic::apply_str_coupl_matrix()" << std::endl;
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
@@ -1933,7 +1945,8 @@ void TSI::Monolithic::apply_thr_coupl_matrix(
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  if (Comm().MyPID() == 0) std::cout << " TSI::Monolithic::ApplyThrCouplMatrix()" << std::endl;
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
+    std::cout << " TSI::Monolithic::ApplyThrCouplMatrix()" << std::endl;
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
@@ -2051,7 +2064,7 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  if (Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
     std::cout << " TSI::Monolithic::apply_thr_coupl_matrix_conv_bc()" << std::endl;
 #endif  // TFSI
 #endif  // TSI_DEBUG
@@ -2355,40 +2368,40 @@ void TSI::Monolithic::set_default_parameters()
   {
     case Inpar::TSI::bop_and:
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of TSI:\n res, inc with 'AND'." << std::endl;
       break;
     }
     case Inpar::TSI::bop_or:
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of TSI:\n res, inc with 'OR'." << std::endl;
       break;
     }
     case Inpar::TSI::bop_coupl_and_singl:
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of TSI:\n res, inc, str-res, thr-res, dis, temp with 'AND'."
                   << std::endl;
       break;
     }
     case Inpar::TSI::bop_coupl_or_singl:
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of TSI:\n (res, inc) or (str-res, thr-res, dis, temp)."
                   << std::endl;
       break;
     }
     case Inpar::TSI::bop_and_singl:
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of TSI:\n str-res, thr-res, dis, temp with 'AND'."
                   << std::endl;
       break;
     }
     case Inpar::TSI::bop_or_singl:
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of TSI:\n str-res, thr-res, dis, temp with 'OR'."
                   << std::endl;
       break;
@@ -2732,7 +2745,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   std::cout.precision(7);
   std::cout << std::scientific;
   std::cout << std::fixed;
-  if (thermo_field()->discretization()->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(thermo_field()->discretization()->get_comm()) == 0)
   {
     std::cout << "OUTPUT:\ttop-disp \ttop-freact \tneck-disp \tneck-tempi \ttop-tempi \ttop-force\n"
               << "\t" << top_disp_global << "\t" << top_reaction_force << "\t"

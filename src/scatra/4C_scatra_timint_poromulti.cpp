@@ -197,7 +197,7 @@ void ScaTra::ScaTraTimIntPoroMulti::collect_runtime_output_data()
         const Core::Nodes::Node* const node = discret_->g_node(nodegid);
 
         // process only nodes owned by current processor
-        if (node->owner() == discret_->get_comm().MyPID())
+        if (node->owner() == Core::Communication::my_mpi_rank(discret_->get_comm()))
         {
           // get dof
           int myoxydof = discret_->dof(0, node, oxyscalar);

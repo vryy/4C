@@ -7,6 +7,7 @@
 
 #include "4C_fpsi_dyn.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fpsi.hpp"
 #include "4C_fpsi_utils.hpp"
@@ -28,7 +29,7 @@ void fpsi_drt()
   const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   // print the chuck
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "                            ``;@@@@@@@@@#@`               " << std::endl;
     std::cout << "                            .@#@#@@@@@@@@@@,+.`           " << std::endl;

@@ -775,7 +775,8 @@ void XFEM::MeshCouplingFPI::set_condition_specific_parameters()
     }
     bg_dis_->get_comm().MaxAll(&hmax, &h_scaling_, 1);
     std::cout << "==| XFEM::MeshCouplingFPI: Computed h_scaling for fluidele is: " << h_scaling_
-              << "(Proc: " << bg_dis_->get_comm().MyPID() << ")! |==" << std::endl;
+              << "(Proc: " << Core::Communication::my_mpi_rank(bg_dis_->get_comm())
+              << ")! |==" << std::endl;
 
     fpsi_contact_hfraction_ = (Global::Problem::instance()->x_fluid_dynamic_params())
                                   .sublist("XFPSI MONOLITHIC")

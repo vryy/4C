@@ -641,7 +641,7 @@ void Thermo::TimIntImpl::halve_time_step()
 
   // remember number of iterations
   resetiter_ += iter_;
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     Core::IO::cout << "Nonlinear solver failed to converge in step " << step()
                    << ". Divide timestep in half. "
                    << "Old time step: " << old_dt << Core::IO::endl
@@ -668,7 +668,7 @@ void Thermo::TimIntImpl::check_for_time_step_increase()
       // increase the step size if the remaining number of steps is a even number
       if (((num_step() - step()) % 2) == 0 and num_step() != step())
       {
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
           Core::IO::cout << "Nonlinear solver successful. Double timestep size!" << Core::IO::endl;
 
         // step up one refinement level

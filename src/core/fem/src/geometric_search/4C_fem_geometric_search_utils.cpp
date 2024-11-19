@@ -7,6 +7,7 @@
 
 #include "4C_fem_geometric_search_utils.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_geometric_search_bounding_volume.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
@@ -20,7 +21,7 @@ namespace Core::GeometricSearch
   void print_geometric_search_details(const Epetra_Comm& comm, const GeometricSearchInfo info)
   {
     const int numproc = comm.NumProc();
-    const int myrank = comm.MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(comm);
 
     std::vector<int> primitive_size(numproc, 0), my_primitive_size(numproc, 0);
     std::vector<int> predicate_size(numproc, 0), my_predicate_size(numproc, 0);

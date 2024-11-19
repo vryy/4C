@@ -263,7 +263,7 @@ void XFEM::MeshProjector::project(std::map<int, std::set<int>>& projection_nodeT
     if (!have_values.at(ni))
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (targetdis_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(targetdis_->get_comm()) == 0)
         Core::IO::cout << "WARNING: Found no parent for node: " << node_id << Core::IO::endl;
 #endif
       continue;
@@ -525,7 +525,7 @@ void XFEM::MeshProjector::receive_block(
 {
   // get number of processors and the current processors id
   int numproc = sourcedis_->get_comm().NumProc();
-  int myrank = sourcedis_->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(sourcedis_->get_comm());
 
   // necessary variables
   int length = -1;
@@ -559,7 +559,7 @@ void XFEM::MeshProjector::send_block(
 {
   // get number of processors and the current processors id
   int numproc = sourcedis_->get_comm().NumProc();
-  int myrank = sourcedis_->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(sourcedis_->get_comm());
 
   // Send block to next proc.
   int tag = myrank;
@@ -599,9 +599,9 @@ void XFEM::MeshProjector::gmsh_output(
 {
   // output of source discretization with element numbers and target nodes together with element id
   // of source element for value projection
-  const std::string filename =
-      Core::IO::Gmsh::get_new_file_name_and_delete_old_files("tarnode_to_src_ele",
-          targetdis_->writer()->output()->file_name(), step, 30, 0, targetdis_->get_comm().MyPID());
+  const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
+      "tarnode_to_src_ele", targetdis_->writer()->output()->file_name(), step, 30, 0,
+      Core::Communication::my_mpi_rank(targetdis_->get_comm()));
   std::ofstream gmshfilecontent(filename.c_str());
   {
     XFEM::Utils::print_discretization_to_stream(

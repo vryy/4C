@@ -169,11 +169,11 @@ void Core::IO::DiscretizationReader::read_mesh(int step)
 
   find_mesh_group(step, input_->control_file());
 
-  std::shared_ptr<std::vector<char>> nodedata =
-      meshreader_->read_node_data(step, get_comm().NumProc(), get_comm().MyPID());
+  std::shared_ptr<std::vector<char>> nodedata = meshreader_->read_node_data(
+      step, get_comm().NumProc(), Core::Communication::my_mpi_rank(get_comm()));
 
-  std::shared_ptr<std::vector<char>> elementdata =
-      meshreader_->read_element_data(step, get_comm().NumProc(), get_comm().MyPID());
+  std::shared_ptr<std::vector<char>> elementdata = meshreader_->read_element_data(
+      step, get_comm().NumProc(), Core::Communication::my_mpi_rank(get_comm()));
 
   // unpack nodes and elements and redistributed to current layout
   // take care --- we are just adding elements to the discretisation
@@ -199,8 +199,8 @@ void Core::IO::DiscretizationReader::read_nodes_only(int step)
 {
   find_mesh_group(step, input_->control_file());
 
-  std::shared_ptr<std::vector<char>> nodedata =
-      meshreader_->read_node_data(step, get_comm().NumProc(), get_comm().MyPID());
+  std::shared_ptr<std::vector<char>> nodedata = meshreader_->read_node_data(
+      step, get_comm().NumProc(), Core::Communication::my_mpi_rank(get_comm()));
 
   // unpack nodes; fill_complete() has to be called manually
   dis_->unpack_my_nodes(*nodedata);
@@ -215,11 +215,11 @@ void Core::IO::DiscretizationReader::read_history_data(int step)
 {
   find_mesh_group(step, input_->control_file());
 
-  std::shared_ptr<std::vector<char>> nodedata =
-      meshreader_->read_node_data(step, get_comm().NumProc(), get_comm().MyPID());
+  std::shared_ptr<std::vector<char>> nodedata = meshreader_->read_node_data(
+      step, get_comm().NumProc(), Core::Communication::my_mpi_rank(get_comm()));
 
-  std::shared_ptr<std::vector<char>> elementdata =
-      meshreader_->read_element_data(step, get_comm().NumProc(), get_comm().MyPID());
+  std::shared_ptr<std::vector<char>> elementdata = meshreader_->read_element_data(
+      step, get_comm().NumProc(), Core::Communication::my_mpi_rank(get_comm()));
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
   Epetra_Map noderowmap(*dis_->node_row_map());
@@ -265,7 +265,7 @@ void Core::IO::DiscretizationReader::read_redundant_double_vector(
 {
   int length;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     // only proc0 reads the vector entities
     MAP* result = map_read_map(restart_step_, name.c_str());
@@ -294,7 +294,7 @@ void Core::IO::DiscretizationReader::read_redundant_int_vector(
 {
   int length;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     // only proc0 reads the vector entities
     MAP* result = map_read_map(restart_step_, name.c_str());
@@ -463,7 +463,8 @@ std::shared_ptr<Core::IO::HDFReader> Core::IO::DiscretizationReader::open_files(
   const std::string filename = map_read_string(result_step, filestring);
 
   std::shared_ptr<HDFReader> reader = std::make_shared<HDFReader>(dirname);
-  reader->open(filename, numoutputproc, get_comm().NumProc(), get_comm().MyPID());
+  reader->open(
+      filename, numoutputproc, get_comm().NumProc(), Core::Communication::my_mpi_rank(get_comm()));
   return reader;
 }
 
@@ -610,7 +611,7 @@ void Core::IO::DiscretizationWriter::create_mesh_file(const int step)
     meshfilename_ = meshname.str();
     if (get_comm().NumProc() > 1)
     {
-      meshname << ".p" << get_comm().MyPID();
+      meshname << ".p" << Core::Communication::my_mpi_rank(get_comm());
     }
 
     if (meshfile_ != -1)
@@ -641,7 +642,7 @@ void Core::IO::DiscretizationWriter::create_result_file(const int step)
     resultfilename_ = resultname.str();
     if (get_comm().NumProc() > 1)
     {
-      resultname << ".p" << get_comm().MyPID();
+      resultname << ".p" << Core::Communication::my_mpi_rank(get_comm());
     }
     if (resultfile_ != -1)
     {
@@ -749,7 +750,7 @@ void Core::IO::DiscretizationWriter::new_step(const int step, const double time)
     resultgroup_ = H5Gcreate(resultfile_, groupname.str().c_str(), 0);
     if (resultgroup_ < 0) FOUR_C_THROW("Failed to write HDF-group in resultfile");
 
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       output_->control_file() << "result:\n"
                               << "    field = \"" << dis_->name() << "\"\n"
@@ -787,7 +788,7 @@ void Core::IO::DiscretizationWriter::write_double(const std::string name, const 
 {
   if (binio_)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       // using a local stringstream we make sure that we do not change
       // the output formatting of control file permanently
@@ -806,7 +807,7 @@ void Core::IO::DiscretizationWriter::write_int(const std::string name, const int
 {
   if (binio_)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       output_->control_file() << "    " << name << " = " << value << "\n\n" << std::flush;
     }
@@ -907,7 +908,7 @@ void Core::IO::DiscretizationWriter::write_multi_vector(
             "process.");
     }
 
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       std::string vectortype;
       switch (vt)
@@ -1021,7 +1022,7 @@ void Core::IO::DiscretizationWriter::write_vector(const std::string name,
             "stored in the output process.");
     }
 
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       std::string vectortype;
       switch (vt)
@@ -1087,7 +1088,7 @@ void Core::IO::DiscretizationWriter::write_mesh(const int step, const double tim
         FOUR_C_THROW(
             "Failed to create dataset in HDF-meshfile on proc %d which does"
             " not have row elements",
-            get_comm().MyPID());
+            Core::Communication::my_mpi_rank(get_comm()));
     }
 
     // only procs with row nodes need to write data
@@ -1107,13 +1108,13 @@ void Core::IO::DiscretizationWriter::write_mesh(const int step, const double tim
         FOUR_C_THROW(
             "Failed to create dataset in HDF-meshfile on proc %d which"
             " does not have row nodes",
-            get_comm().MyPID());
+            Core::Communication::my_mpi_rank(get_comm()));
     }
 
     int max_nodeid = dis_->node_row_map()->MaxAllGID();
 
     // ... write other mesh informations
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       output_->control_file() << "field:\n"
                               << "    field = \"" << dis_->name() << "\"\n"
@@ -1163,7 +1164,7 @@ void Core::IO::DiscretizationWriter::write_mesh(
   if (binio_)
   {
     // ... write other mesh informations
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       output_->control_file() << "field:\n"
                               << "    field = \"" << dis_->name() << "\"\n"
@@ -1236,7 +1237,7 @@ void Core::IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_cont
           FOUR_C_THROW(
               "Failed to create dataset in HDF-meshfile on proc %d which "
               "does not have row nodes",
-              get_comm().MyPID());
+              Core::Communication::my_mpi_rank(get_comm()));
       }
     }
 
@@ -1247,7 +1248,7 @@ void Core::IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_cont
     int max_nodeid = dis_->node_row_map()->MaxAllGID();
 
     // ... write other mesh informations
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       /* number of nodes and elements is set to zero to suppress reading of
        * nodes during post-processing only maxnodeid is important */
@@ -1480,7 +1481,7 @@ void Core::IO::DiscretizationWriter::write_char_data(
     }
 
     // ... write other mesh informations
-    if (dis_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(dis_->get_comm()) == 0)
     {
       // do I need the following naming stuff?
       std::ostringstream groupname;
@@ -1508,7 +1509,7 @@ void Core::IO::DiscretizationWriter::write_redundant_double_vector(
 {
   if (binio_)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       // only proc0 writes the vector entities to the binary data
       // an appropriate name has to be provided
@@ -1555,7 +1556,7 @@ void Core::IO::DiscretizationWriter::write_redundant_int_vector(
 {
   if (binio_)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       // only proc0 writes the entities to the binary data
       // an appropriate name has to be provided

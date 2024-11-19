@@ -8,6 +8,7 @@
 #include "4C_structure_new_model_evaluator_data.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
@@ -32,7 +33,7 @@ namespace
     const Epetra_Comm& comm = exporter.get_comm();
 
     const int numprocs = comm.NumProc();
-    const int myrank = comm.MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(comm);
     int tag = myrank;
 
     int frompid = myrank;
@@ -383,7 +384,7 @@ void Solid::ModelEvaluator::Data::sum_into_my_update_norm(
     const double* my_update_values, const double* my_new_sol_values, const double& step_length,
     const int& owner)
 {
-  if (owner != comm_ptr_->MyPID()) return;
+  if (owner != Core::Communication::my_mpi_rank(*comm_ptr_)) return;
   // --- standard update norms
   enum ::NOX::Abstract::Vector::NormType normtype = ::NOX::Abstract::Vector::TwoNorm;
   if (get_update_norm_type(qtype, normtype))
@@ -405,7 +406,7 @@ void Solid::ModelEvaluator::Data::sum_into_my_previous_sol_norm(
     const enum NOX::Nln::StatusTest::QuantityType& qtype, const int& numentries,
     const double* my_old_sol_values, const int& owner)
 {
-  if (owner != comm_ptr_->MyPID()) return;
+  if (owner != Core::Communication::my_mpi_rank(*comm_ptr_)) return;
 
   enum ::NOX::Abstract::Vector::NormType normtype = ::NOX::Abstract::Vector::TwoNorm;
   if (not get_update_norm_type(qtype, normtype)) return;

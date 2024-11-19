@@ -44,7 +44,7 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm) : PartFS3I1Wc(comm), comm_
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::init()
 {
-  if (comm_.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm_) == 0)
     std::cout << "\n WARNING ! The implementation of BiofilmFSI is not well tested,\n"
                  " buggy, and introduction of just init(...) and setup() in commit\n"
                  " to revision 22366 led to differing results slightly above the\n"
@@ -76,7 +76,7 @@ void FS3I::BiofilmFSI::init()
     alecreator.create_matching_discretization(*structdis, *structaledis, 11);
     structaledis->fill_complete();
   }
-  if (comm_.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm_) == 0)
   {
     std::cout << "Created discretization " << (structaledis->name())
               << " as a clone of discretization " << (structdis->name()) << " in...."
@@ -289,7 +289,7 @@ void FS3I::BiofilmFSI::timeloop()
         fluid_gmsh_output();
       }
 
-      if (comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(comm()) == 0)
       {
         std::cout << "\n***********************\n     GROWTH STEP \n***********************\n";
         printf(" growth step = %3d   \n", step_bio_);
@@ -384,7 +384,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
 
     set_fsi_solution();
 
-    if (comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm()) == 0)
     {
       std::cout << "\n***********************\n GAS TRANSPORT SOLVER \n***********************\n";
     }
@@ -930,7 +930,7 @@ void FS3I::BiofilmFSI::struct_gmsh_output()
 
   const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files("struct",
       structdis->writer()->output()->file_name(), step_bio_, 701, false,
-      structdis->get_comm().MyPID());
+      Core::Communication::my_mpi_rank(structdis->get_comm()));
   std::ofstream gmshfilecontent(filename.c_str());
 
   std::shared_ptr<const Core::LinAlg::Vector<double>> structdisp = fsi_->structure_field()->dispn();
@@ -981,7 +981,7 @@ void FS3I::BiofilmFSI::fluid_gmsh_output()
 
   const std::string filenamefluid = Core::IO::Gmsh::get_new_file_name_and_delete_old_files("fluid",
       fluiddis->writer()->output()->file_name(), step_bio_, 701, false,
-      fluiddis->get_comm().MyPID());
+      Core::Communication::my_mpi_rank(fluiddis->get_comm()));
   std::ofstream gmshfilecontent(filenamefluid.c_str());
 
   std::shared_ptr<const Core::LinAlg::Vector<double>> fluidvel = fsi_->fluid_field()->velnp();

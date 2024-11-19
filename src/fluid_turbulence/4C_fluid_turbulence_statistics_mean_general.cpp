@@ -159,7 +159,8 @@ void FLD::TurbulenceStatisticsGeneralMean::add_to_current_time_average(const dou
       // any XFEM problem with scatra will crash here, it could probably be removed     henke 12/11
       const Epetra_Comm& comm =
           (discret_ != nullptr) ? (discret_->get_comm()) : (standarddofset_->dof_row_map()->Comm());
-      if (comm.MyPID() == 0) std::cout << "curr_avg_sca_ or scavec is nullptr" << std::endl;
+      if (Core::Communication::my_mpi_rank(comm) == 0)
+        std::cout << "curr_avg_sca_ or scavec is nullptr" << std::endl;
     }
 
     if ((curr_avg_scatra_ != nullptr) and (scatravec != nullptr))
@@ -358,7 +359,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
   {
     // FOUR_C_THROW("No node with the smallest coordinate in direction %d found. Changing master and
     // slave of the pbc might help. Read remark.");
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       std::cout << "Warning: Sampling for paraview output (averaged velocity/pressure) is "
                    "incomplete! \nChanging master and slave of the pbc might help! \nRead remark!"
                 << std::endl;
@@ -383,7 +384,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
   // 1) is skipped in the first step, 4) in the last
   //----------------------------------------------------------------------
 
-  const int myrank = avgcomm.MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(avgcomm);
   const int numprocs = avgcomm.NumProc();
 
   std::vector<char> sblock;
@@ -1056,7 +1057,7 @@ void FLD::TurbulenceStatisticsGeneralMean::write_old_average_vec(
 
   add_to_total_time_average();
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::cout << "XXXXXXXXXXXXXXXXXXXXX              ";
     std::cout << " Wrote averaged vector             ";
@@ -1289,7 +1290,7 @@ void FLD::TurbulenceStatisticsGeneralMean::do_output_for_scatra(
     else
       FOUR_C_THROW("Could not write vector to result file");
 
-    if (scatradis_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(scatradis_->get_comm()) == 0)
     {
       std::cout << "XXXXXXXXXXXXXXXXXXXXX           ";
       std::cout << " Wrote averaged scatra vector         ";

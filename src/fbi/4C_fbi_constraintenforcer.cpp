@@ -223,12 +223,14 @@ void Adapter::FBIConstraintenforcer::create_pairs(
     ele_ptrs[0] = (structure_->discretization())->g_element(beamelementiterator->first);
 
 
-    if (ele_ptrs[0]->owner() != structure_->discretization()->get_comm().MyPID())
+    if (ele_ptrs[0]->owner() !=
+        Core::Communication::my_mpi_rank(structure_->discretization()->get_comm()))
       FOUR_C_THROW(
           "For now we can only create the pair on the beam owner, but beam element owner is %i "
           "and "
           "we are on proc %i \n",
-          ele_ptrs[0]->owner(), structure_->discretization()->get_comm().MyPID());
+          ele_ptrs[0]->owner(),
+          Core::Communication::my_mpi_rank(structure_->discretization()->get_comm()));
 
     // loop over all fluid elements, in which the beam element might lie
     for (std::vector<int>::const_iterator fluideleIter = beamelementiterator->second.begin();

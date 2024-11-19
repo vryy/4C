@@ -53,7 +53,7 @@ void EleMag::ElemagResultTest::test_node(
       Core::Nodes::Node* actnode = dis_->g_node(node);
 
       // Here, we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->owner() != dis_->get_comm().MyPID()) return;
+      if (actnode->owner() != Core::Communication::my_mpi_rank(dis_->get_comm())) return;
 
       double result = 0.;
       // const Epetra_BlockMap& map = mysol_->Map();

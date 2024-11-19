@@ -224,7 +224,7 @@ void PoroElast::Monolithic::solve()
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ((converged()) and (get_comm().MyPID() == 0))
+  if ((converged()) and (Core::Communication::my_mpi_rank(get_comm()) == 0))
   {
     print_newton_conv();
   }
@@ -786,8 +786,9 @@ bool PoroElast::Monolithic::converged()
 void PoroElast::Monolithic::print_newton_iter()
 {
   // print to standard out
-  // replace myrank_ here general by Comm().MyPID()
-  if ((get_comm().MyPID() == 0) and printscreen_ and (step() % printscreen_ == 0) and printiter_)
+  // replace myrank_ here general by Core::Communication::my_mpi_rank(Comm())
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and printscreen_ and
+      (step() % printscreen_ == 0) and printiter_)
   {
     if (iter_ == 1) print_newton_iter_header(stdout);
     print_newton_iter_text(stdout);

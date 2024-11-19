@@ -8,6 +8,7 @@
 #include "4C_particle_engine.hpp"
 
 #include "4C_binstrategy.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_general_element.hpp"
@@ -34,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
 PARTICLEENGINE::ParticleEngine::ParticleEngine(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
     : comm_(comm),
-      myrank_(comm.MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(comm)),
       params_(params),
       minbinsize_(0.0),
       typevectorsize_(0),
@@ -916,8 +917,9 @@ void PARTICLEENGINE::ParticleEngine::init_binning_strategy()
   Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
       binning_params);
-  binstrategy_ = std::make_shared<Core::Binstrategy::BinningStrategy>(
-      binning_params, Global::Problem::instance()->output_control_file(), comm_, comm_.MyPID());
+  binstrategy_ = std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params,
+      Global::Problem::instance()->output_control_file(), comm_,
+      Core::Communication::my_mpi_rank(comm_));
 }
 
 void PARTICLEENGINE::ParticleEngine::setup_binning_strategy()

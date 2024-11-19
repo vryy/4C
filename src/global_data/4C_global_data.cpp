@@ -175,7 +175,7 @@ void Global::Problem::open_control_file(const Epetra_Comm& comm, const std::stri
       spatial_approximation_type(), inputfile, restartkenner, std::move(prefix), n_dim(), restart(),
       io_params().get<int>("FILESTEPS"), io_params().get<bool>("OUTPUT_BIN"), true);
 
-  if (!io_params().get<bool>("OUTPUT_BIN") && comm.MyPID() == 0)
+  if (!io_params().get<bool>("OUTPUT_BIN") && Core::Communication::my_mpi_rank(comm) == 0)
   {
     Core::IO::cout << "==================================================\n"
                    << "=== WARNING: No binary output will be written. ===\n"

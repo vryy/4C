@@ -123,7 +123,7 @@ void Solid::TimeInt::BaseDataGlobalState::init(
   {
     discret_ = discret;
     comm_ = Core::Utils::shared_ptr_from_ref(discret_->get_comm());
-    my_rank_ = comm_->MyPID();
+    my_rank_ = Core::Communication::my_mpi_rank(*comm_);
   }
 
   // --------------------------------------

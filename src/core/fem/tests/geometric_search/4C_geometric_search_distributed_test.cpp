@@ -9,6 +9,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <array>
@@ -35,7 +36,7 @@ namespace
     {
       comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
       verbosity_ = Core::IO::minimal;
-      my_rank_ = comm_->MyPID();
+      my_rank_ = Core::Communication::my_mpi_rank(*comm_);
     }
 
    protected:

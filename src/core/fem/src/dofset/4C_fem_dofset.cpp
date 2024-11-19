@@ -47,7 +47,7 @@ void Core::DOFSets::DofSet::print(std::ostream& os) const
 {
   for (int proc = 0; proc < numdfcolelements_->Comm().NumProc(); ++proc)
   {
-    if (proc == numdfcolelements_->Comm().MyPID())
+    if (proc == Core::Communication::my_mpi_rank(numdfcolelements_->Comm()))
     {
       if (numdfcolelements_->MyLength()) os << "-------------------------- Proc " << proc << " :\n";
       for (int i = 0; i < numdfcolelements_->MyLength(); ++i)
@@ -64,7 +64,7 @@ void Core::DOFSets::DofSet::print(std::ostream& os) const
   }
   for (int proc = 0; proc < numdfcolnodes_->Comm().NumProc(); ++proc)
   {
-    if (proc == numdfcolnodes_->Comm().MyPID())
+    if (proc == Core::Communication::my_mpi_rank(numdfcolnodes_->Comm()))
     {
       if (numdfcolnodes_->MyLength()) os << "-------------------------- Proc " << proc << " :\n";
       for (int i = 0; i < numdfcolnodes_->MyLength(); ++i)
@@ -81,7 +81,7 @@ void Core::DOFSets::DofSet::print(std::ostream& os) const
   }
   for (int proc = 0; proc < numdfcolfaces_->Comm().NumProc(); ++proc)
   {
-    if (proc == numdfcolfaces_->Comm().MyPID())
+    if (proc == Core::Communication::my_mpi_rank(numdfcolfaces_->Comm()))
     {
       if (numdfcolfaces_->MyLength()) os << "-------------------------- Proc " << proc << " :\n";
       for (int i = 0; i < numdfcolfaces_->MyLength(); ++i)
@@ -354,7 +354,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
       Core::LinAlg::Vector<int> idxrowfaces(*facedis->face_row_map());
       int numcolelements = dis.num_my_col_elements();
 
-      const int mypid = dis.get_comm().MyPID();
+      const int mypid = Core::Communication::my_mpi_rank(dis.get_comm());
       for (int i = 0; i < numcolelements; ++i)
       {
         std::shared_ptr<Core::Elements::FaceElement>* faces = dis.l_col_element(i)->faces();

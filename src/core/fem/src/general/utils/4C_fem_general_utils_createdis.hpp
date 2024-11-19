@@ -10,6 +10,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_general_element.hpp"
@@ -131,7 +132,7 @@ namespace Core::FE
     )
     {
       std::shared_ptr<Epetra_Comm> com(sourcedis.get_comm().Clone());
-      const int myrank = com->MyPID();
+      const int myrank = Core::Communication::my_mpi_rank(*com);
       const Epetra_Map* sourcenoderowmap = sourcedis.node_row_map();
 
       std::shared_ptr<Core::FE::Discretization> targetdis;
@@ -547,7 +548,7 @@ namespace Core::FE
         std::vector<std::string>& eletype, std::set<int>& rownodeset, std::set<int>& colnodeset,
         std::set<int>& roweleset, std::set<int>& coleleset)
     {
-      const int myrank = sourcedis.get_comm().MyPID();
+      const int myrank = Core::Communication::my_mpi_rank(sourcedis.get_comm());
       const Epetra_Map* sourcenoderowmap = sourcedis.node_row_map();
       const Epetra_Map* sourcenodecolmap = sourcedis.node_col_map();
 
@@ -620,7 +621,7 @@ namespace Core::FE
       }
 
       // prepare some variables we need
-      int myrank = targetdis.get_comm().MyPID();
+      int myrank = Core::Communication::my_mpi_rank(targetdis.get_comm());
 
       // construct new elements
       // The order of the elements might be different from that of the
@@ -720,7 +721,7 @@ namespace Core::FE
       }
 
       // prepare some variables we need
-      int myrank = targetdis.get_comm().MyPID();
+      int myrank = Core::Communication::my_mpi_rank(targetdis.get_comm());
 
       // construct new elements
       // The order of the elements might be different from that of the
@@ -856,7 +857,7 @@ namespace Core::FE
 
       clonewizard->create_matching_discretization(sourcedis, targetdis, matmap);
     }
-    if (comm.MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm) == 0)
     {
       Core::IO::cout << "Created discretization " << targetdis.name()
                      << " as a clone of discretization " << sourcedis.name() << " in...."
@@ -895,7 +896,7 @@ namespace Core::FE
       clonewizard->create_matching_discretization_from_condition(
           *sourcedis_ptr, conds, *targetdis_ptr, matmap);
     }
-    if (comm.MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm) == 0)
     {
       Core::IO::cout << "Created discretization " << targetdis_ptr->name()
                      << " as a clone from the condition(s) with ID(s)=";
@@ -929,7 +930,7 @@ namespace Core::FE
       clonewizard->create_matching_discretization_from_condition(
           sourcedis, condname, targetdis, matmap);
     }
-    if (comm.MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm) == 0)
     {
       Core::IO::cout << "Created discretization " << targetdis.name()
                      << " as a clone from the condition \"" << condname.c_str()

@@ -59,7 +59,7 @@ void Airway::RedAirwayResultTest::test_node(
       Core::Nodes::Node* actnode = dis_->g_node(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->owner() != dis_->get_comm().MyPID()) return;
+      if (actnode->owner() != Core::Communication::my_mpi_rank(dis_->get_comm())) return;
 
       double result = 0.;
       const Epetra_BlockMap& nodemap = mynodesol_pressure_->Map();
@@ -122,7 +122,7 @@ void Airway::RedAirwayResultTest::test_element(
       const Core::Elements::Element* actelement = dis_->g_element(element);
 
       // Here we are just interested in the elements that we own (i.e. a row element)!
-      if (actelement->owner() != dis_->get_comm().MyPID()) return;
+      if (actelement->owner() != Core::Communication::my_mpi_rank(dis_->get_comm())) return;
 
       double result = 0.;
       const Epetra_BlockMap& elementmap = myelemsol_acinivol_->Map();

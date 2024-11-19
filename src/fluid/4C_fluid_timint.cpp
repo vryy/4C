@@ -7,6 +7,7 @@
 
 #include "4C_fluid_timint.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_global_data.hpp"
@@ -45,7 +46,7 @@ FLD::TimInt::TimInt(const std::shared_ptr<Core::FE::Discretization>& discret,
           *params_, "time int algo")),
       physicaltype_(
           Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(*params_, "Physical Type")),
-      myrank_(discret_->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(discret_->get_comm())),
       updateprojection_(false),
       projector_(nullptr),
       kspsplitter_(nullptr)

@@ -25,7 +25,7 @@ void poroelast_drt()
   const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   // print Logo to screen
-  if (comm.MyPID() == 0) PoroElast::print_logo();
+  if (Core::Communication::my_mpi_rank(comm) == 0) PoroElast::print_logo();
 
   // setup of the discretizations, including clone strategy
   PoroElast::Utils::setup_poro<PoroElast::Utils::PoroelastCloneStrategy>();

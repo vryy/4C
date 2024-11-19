@@ -35,7 +35,7 @@ void poromultiphase_dyn(int restart)
   const Epetra_Comm& comm = problem->get_dis(struct_disname)->get_comm();
 
   // print problem type
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     POROMULTIPHASE::print_logo();
     std::cout << "###################################################" << std::endl;

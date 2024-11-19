@@ -49,7 +49,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
       coupledTo3D_(false)
 {
   // Get the processor ID from the communicator
-  myrank_ = discret_->get_comm().MyPID();
+  myrank_ = Core::Communication::my_mpi_rank(discret_->get_comm());
 
   // Time measurement: initialization
   if (!coupledTo3D_)

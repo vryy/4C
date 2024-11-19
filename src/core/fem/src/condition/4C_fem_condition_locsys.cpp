@@ -372,7 +372,7 @@ void Core::Conditions::LocsysManager::update(const double time,
   // once.
   if ((not warning_thrown_) && sanity_check)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       warning_thrown_ = true;
 
@@ -441,7 +441,7 @@ void Core::Conditions::LocsysManager::update(const double time,
  *----------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::print() const
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     Core::IO::cout << "\n-------------------------------------Core::Conditions::LocsysManager"
                    << Core::IO::endl;
@@ -602,7 +602,7 @@ void Core::Conditions::LocsysManager::calc_rotation_vector_for_normal_system(
   const std::vector<int>* nodes = currLocsysCond->get_nodes();
 
   // Obtain rank of calling processor
-  int myrank = discret_.get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(discret_.get_comm());
 
   // Loop through all nodes in the condition
   for (int nodeGID : *nodes)

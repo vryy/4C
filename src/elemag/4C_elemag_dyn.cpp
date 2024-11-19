@@ -64,7 +64,7 @@ void electromagnetics_drt()
 
   // declare communicator and print module information to screen
   const Epetra_Comm& comm = elemagdishdg->get_comm();
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "---------------------------------------------------------------------------------"
               << std::endl;

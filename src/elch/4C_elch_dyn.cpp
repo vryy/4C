@@ -36,7 +36,7 @@ void elch_dyn(int restart)
   const auto& comm = problem->get_dis("fluid")->get_comm();
 
   // print ELCH-Logo to screen
-  if (comm.MyPID() == 0) printlogo();
+  if (Core::Communication::my_mpi_rank(comm) == 0) printlogo();
 
   // access the fluid discretization
   auto fluiddis = problem->get_dis("fluid");

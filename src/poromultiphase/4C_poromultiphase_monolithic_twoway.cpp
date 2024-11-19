@@ -720,7 +720,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_newton()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::print_header()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     if (!solve_structure_) print_structure_disabled_info();
     std::cout
@@ -794,7 +794,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_convergence_norms()
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::newton_output()
 {
   // print the incremental based convergence check to the screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     if (itnum_ == 1)
       printf(
@@ -827,7 +827,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::newton_error_check()
   if (converged())  // norminc_ < ittol_ && normrhs_ < ittol_ && normincfluid_ < ittol_ &&
                     // normincstruct_ < ittol_
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       printf(
           "|  Monolithic iteration loop converged after iteration %3d/%3d !                        "
@@ -852,7 +852,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::newton_error_check()
   }
   else
   {
-    if ((get_comm().MyPID() == 0))
+    if ((Core::Communication::my_mpi_rank(get_comm()) == 0))
     {
       printf(
           "|     >>>>>> not converged in %3d steps!                                                "
@@ -1010,7 +1010,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::extract_structure_and_fluid
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::print_structure_disabled_info()
 {
   // print out Info
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"

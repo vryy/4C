@@ -49,7 +49,8 @@ void Solid::ModelEvaluator::Multiscale::read_restart(Core::IO::DiscretizationRea
 {
   check_init_setup();
 
-  const int my_pid = Global::Problem::instance()->get_dis("structure")->get_comm().MyPID();
+  const int my_pid = Core::Communication::my_mpi_rank(
+      Global::Problem::instance()->get_dis("structure")->get_comm());
   for (const auto& actele : discret().my_col_element_range())
   {
     std::shared_ptr<Core::Mat::Material> mat = actele->material();

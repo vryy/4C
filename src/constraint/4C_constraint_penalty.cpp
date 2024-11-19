@@ -46,7 +46,7 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
     }
     int nummyele = 0;
     int numele = penalties_.size();
-    if (!actdisc_->get_comm().MyPID())
+    if (!Core::Communication::my_mpi_rank(actdisc_->get_comm()))
     {
       nummyele = numele;
     }
@@ -110,7 +110,7 @@ void CONSTRAINTS::ConstraintPenalty::initialize(const double& time)
     if ((inittimes_.find(condID)->second <= time) && (activecons_.find(condID)->second == false))
     {
       activecons_.find(condID)->second = true;
-      if (actdisc_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(actdisc_->get_comm()) == 0)
       {
         std::cout << "Encountered another active condition (Id = " << condID
                   << ")  for restart time t = " << time << std::endl;
@@ -365,7 +365,8 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
         Core::LinAlg::assemble(systemvector, elevector3, constrlm, constrowner);
       }
 
-      if (actdisc_->get_comm().MyPID() == 0 && (!(activecons_.find(condID)->second)))
+      if (Core::Communication::my_mpi_rank(actdisc_->get_comm()) == 0 &&
+          (!(activecons_.find(condID)->second)))
       {
         std::cout << "Encountered a new active penalty condition (Id = " << condID
                   << ")  at time t = " << time << std::endl;

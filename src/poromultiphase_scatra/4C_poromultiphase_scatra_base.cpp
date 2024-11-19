@@ -261,7 +261,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::update_and_output()
     scatramsht_->art_scatra_field()->evaluate_error_compared_to_analytical_sol();
     scatramsht_->art_scatra_field()->check_and_write_output_and_restart();
   }
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "Finished POROMULTIPHASESCATRA STEP " << std::setw(5) << std::setprecision(4)
               << std::scientific << step() << "/" << std::setw(5) << std::setprecision(4)
@@ -362,8 +362,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
 
     for (int inode = 0; inode < (myele->num_node()); inode++)
     {
-      if (nodes[inode]->owner() ==
-          scatra_algo()->scatra_field()->discretization()->get_comm().MyPID())
+      if (nodes[inode]->owner() == Core::Communication::my_mpi_rank(
+                                       scatra_algo()->scatra_field()->discretization()->get_comm()))
       {
         std::vector<int> scatradofs =
             scatra_algo()->scatra_field()->discretization()->dof(0, nodes[inode]);
@@ -444,7 +444,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::handle_divergence() const
     {
       // warn if itemax is reached without convergence, but proceed to
       // next timestep...
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         std::cout << "+---------------------------------------------------------------+"
                   << std::endl;

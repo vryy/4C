@@ -76,7 +76,7 @@ Solid::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
     std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : discret_(actdis),
       facediscret_(nullptr),
-      myrank_(actdis->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(actdis->get_comm())),
       solver_(solver),
       contactsolver_(contactsolver),
       solveradapttol_(sdynparams.get<bool>("ADAPTCONV")),
@@ -921,7 +921,7 @@ void Solid::TimInt::apply_mesh_initialization(
 
       if (lid < 0)
         FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-            gvector.Comm().MyPID(), nodedofs[i]);
+            Core::Communication::my_mpi_rank(gvector.Comm()), nodedofs[i]);
 
       nvector[i] += gvector[lid];
     }

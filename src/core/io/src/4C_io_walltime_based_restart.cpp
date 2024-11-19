@@ -7,6 +7,7 @@
 
 #include "4C_io_walltime_based_restart.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <chrono>
@@ -67,7 +68,7 @@ bool Core::IO::RestartManager::restart(const int step, const Epetra_Comm& comm)
 
     // compute elapsed walltime on proc 0 and let it decide for all other procs, too
     int restarttime = 0;
-    if (comm.MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm) == 0)
     {
       const double elapsedtime = walltime_in_seconds() - startwalltime_;
       const bool walltimerestart = (int)(elapsedtime / restartevrytime_) > restartcounter_;

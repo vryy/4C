@@ -90,13 +90,13 @@ void Discret::Elements::FluidBoundaryImpl<distype>::evaluate_action(
     }
     case FLD::calc_area:
     {
-      if (ele1->owner() == discretization.get_comm().MyPID())
+      if (ele1->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
         area_calculation(ele1, params, discretization, lm);
       break;
     }
     case FLD::calc_pressure_bou_int:
     {
-      if (ele1->owner() == discretization.get_comm().MyPID())
+      if (ele1->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
         pressure_boundary_integral(ele1, params, discretization, lm);
       break;
     }
@@ -184,7 +184,7 @@ void Discret::Elements::FluidBoundaryImpl<distype>::evaluate_action(
     case FLD::center_of_mass_calc:
     {
       // evaluate center of mass
-      if (ele1->owner() == discretization.get_comm().MyPID())
+      if (ele1->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
         center_of_mass_calculation(ele1, params, discretization, lm);
       break;
     }

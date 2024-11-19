@@ -152,7 +152,7 @@ void XFEM::ConditionManager::set_dof_set_coupling_map(
 
 void XFEM::ConditionManager::status()
 {
-  int myrank = bg_dis_->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(bg_dis_->get_comm());
 
   // -------------------------------------------------------------------
   //                       output to screen

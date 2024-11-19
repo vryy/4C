@@ -7,6 +7,7 @@
 
 #include "4C_fsi_nox_aitken.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
@@ -126,7 +127,8 @@ bool NOX::FSI::AitkenRelaxation::compute(::NOX::Abstract::Group& grp, double& st
 
   // write omega
   double fnorm = grp.getF().norm();
-  if (dynamic_cast<const ::NOX::Epetra::Vector&>(F).getEpetraVector().Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(
+          dynamic_cast<const ::NOX::Epetra::Vector&>(F).getEpetraVector().Comm()) == 0)
   {
     static int count;
     static std::ofstream* out;

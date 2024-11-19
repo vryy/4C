@@ -71,7 +71,7 @@ void Core::FE::DiscretizationFaces::create_internal_faces_extension(const bool v
     int summall = 0;
     comm_->SumAll(&summyfaces, &summall, 1);
 
-    if (comm_->MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(*comm_) == 0)
       std::cout << "number of created faces:   " << summall << "\n" << std::endl;
   }
 
@@ -87,7 +87,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
 {
   faces_.clear();
 
-  if (verbose and comm_->MyPID() == 0)
+  if (verbose and Core::Communication::my_mpi_rank(*comm_) == 0)
   {
     std::cout << "Create internal faces ..." << std::endl;
   }
@@ -832,7 +832,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
             // set in face
             face_it->second.set_local_numbering_map(localtrafomap);
 
-            //            if (comm_->MyPID()==1)
+            //            if (Core::Communication::my_mpi_rank(*comm_)==1)
             //            {
             //            std::cout << "\n added pbc face "  << std::endl;
             //
@@ -926,7 +926,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
        faceit != finalFaces.end(); ++faceit)
     faces_[faceit->first] = std::dynamic_pointer_cast<Core::Elements::FaceElement>(faceit->second);
 
-  if (verbose and comm_->MyPID() == 0)
+  if (verbose and Core::Communication::my_mpi_rank(*comm_) == 0)
   {
     std::cout << "... done!" << std::endl;
   }
@@ -941,7 +941,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
  *----------------------------------------------------------------------*/
 void Core::FE::DiscretizationFaces::build_face_row_map()
 {
-  const int myrank = get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(get_comm());
   int nummyeles = 0;
   std::map<int, std::shared_ptr<Core::Elements::FaceElement>>::iterator curr;
   for (curr = faces_.begin(); curr != faces_.end(); ++curr)
@@ -1067,13 +1067,13 @@ void Core::FE::DiscretizationFaces::print_faces(std::ostream& os) const
     int nummyfaces = 0;
     std::map<int, std::shared_ptr<Core::Elements::FaceElement>>::const_iterator ecurr;
     for (ecurr = faces_.begin(); ecurr != faces_.end(); ++ecurr)
-      if (ecurr->second->owner() == get_comm().MyPID()) nummyfaces++;
+      if (ecurr->second->owner() == Core::Communication::my_mpi_rank(get_comm())) nummyfaces++;
 
     get_comm().SumAll(&nummyfaces, &numglobalfaces, 1);
   }
 
   // print head
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     os << "--------------------------------------------------\n";
     os << "discretization: " << name() << std::endl;
@@ -1089,7 +1089,7 @@ void Core::FE::DiscretizationFaces::print_faces(std::ostream& os) const
   // print elements
   for (int proc = 0; proc < get_comm().NumProc(); ++proc)
   {
-    if (proc == get_comm().MyPID())
+    if (proc == Core::Communication::my_mpi_rank(get_comm()))
     {
       if ((int)faces_.size()) os << "-------------------------- Proc " << proc << " :\n";
       std::map<int, std::shared_ptr<Core::Elements::FaceElement>>::const_iterator curr;

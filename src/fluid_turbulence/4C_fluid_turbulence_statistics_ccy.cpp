@@ -443,7 +443,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
 
   std::shared_ptr<std::ofstream> log;
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
@@ -1341,7 +1341,7 @@ void FLD::TurbulenceStatisticsCcy::time_average_means_and_output_of_statistics(i
   //----------------------------------------------------------------------
   // output to log-file
   std::shared_ptr<std::ofstream> log;
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
@@ -1509,7 +1509,7 @@ void FLD::TurbulenceStatisticsCcy::add_scatra_results(
     pointsumphi_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(size, numscatradofpernode_);
     pointsumphiphi_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(size, numscatradofpernode_);
 
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       std::cout << std::endl
                 << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
@@ -1524,7 +1524,7 @@ void FLD::TurbulenceStatisticsCcy::add_scatra_results(
   }
   else
   {
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       std::cout << "------------------------------------------------------------" << std::endl;
       std::cout << "TurbulenceStatisticsCcy: NO access to ScaTra results !" << std::endl;

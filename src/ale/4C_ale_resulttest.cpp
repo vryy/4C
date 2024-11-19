@@ -8,6 +8,7 @@
 #include "4C_ale_resulttest.hpp"
 
 #include "4C_ale.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_io_linedefinition.hpp"
@@ -48,7 +49,7 @@ void ALE::AleResultTest::test_node(
       Core::Nodes::Node* actnode = aledis_->g_node(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->owner() != aledis_->get_comm().MyPID()) return;
+      if (actnode->owner() != Core::Communication::my_mpi_rank(aledis_->get_comm())) return;
 
       double result = 0.;
 

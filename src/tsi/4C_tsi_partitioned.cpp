@@ -426,7 +426,8 @@ void TSI::Partitioned::outer_iteration_loop()
   bool stopnonliniter = false;
 
   // outer iteration loop starts
-  if ((get_comm().MyPID() == 0) and print_screen_evry() and (step() % print_screen_evry() == 0))
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
+      (step() % print_screen_evry() == 0))
   {
     std::cout << "\n";
     std::cout << "**************************************************************\n";
@@ -612,7 +613,7 @@ void TSI::Partitioned::outer_iteration_loop()
            (coupling == Inpar::TSI::IterStaggAitkenIrons) or
            (coupling == Inpar::TSI::IterStaggFixedRel))
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       std::cout << "Iterative staggered TSI with relaxation" << std::endl;
       std::cout << "Have you set MAXOMEGA to the wished value?" << std::endl;
@@ -1058,7 +1059,7 @@ void TSI::Partitioned::outer_iteration_loop()
 void TSI::Partitioned::do_structure_step()
 {
 #ifndef TFSI
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout << "************************\n";
@@ -1085,7 +1086,7 @@ void TSI::Partitioned::do_structure_step()
 void TSI::Partitioned::do_thermo_step()
 {
 #ifndef TFSI
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout << "*********************\n";
@@ -1157,7 +1158,8 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
     {
       // print the incremental based convergence check to the screen
       // test here increment
-      if ((get_comm().MyPID() == 0) and print_screen_evry() and (step() % print_screen_evry() == 0))
+      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
+          (step() % print_screen_evry() == 0))
       {
         std::cout << "\n";
         std::cout << "*****************************************************************************"
@@ -1184,7 +1186,8 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
       // norm of the increment with respect to the norm of the variables itself: use the last
       // converged solution
       stopnonliniter = ((tempincnorm_L2 <= ittol) and (dispincnorm_L2 <= ittol));
-      if ((stopnonliniter == true) and print_screen_evry() and (get_comm().MyPID() == 0) and
+      if ((stopnonliniter == true) and print_screen_evry() and
+          (Core::Communication::my_mpi_rank(get_comm()) == 0) and
           (step() % print_screen_evry() == 0))
       {
         printf("\n");
@@ -1201,7 +1204,7 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
       if ((itnum == itmax) and ((tempincnorm_L2 > ittol) or (dispincnorm_L2 > ittol)))
       {
         stopnonliniter = true;
-        if ((get_comm().MyPID() == 0) and print_screen_evry() and
+        if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
             (step() % print_screen_evry() == 0))
         {
           printf(
@@ -1221,7 +1224,8 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
     {
       // print the incremental based convergence check to the screen
       // test here increment/variable
-      if ((get_comm().MyPID() == 0) and print_screen_evry() and (step() % print_screen_evry() == 0))
+      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
+          (step() % print_screen_evry() == 0))
       {
         std::cout << "\n";
         std::cout << "*****************************************************************************"
@@ -1245,8 +1249,8 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
 
       stopnonliniter =
           ((tempincnorm_L2 / tempnorm_L2 <= ittol) and (dispincnorm_L2 / dispnorm_L2 <= ittol));
-      if ((stopnonliniter == true) and (get_comm().MyPID() == 0) and print_screen_evry() and
-          (step() % print_screen_evry() == 0))
+      if ((stopnonliniter == true) and (Core::Communication::my_mpi_rank(get_comm()) == 0) and
+          print_screen_evry() and (step() % print_screen_evry() == 0))
       {
         printf("\n");
         printf(
@@ -1263,7 +1267,7 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
           ((tempincnorm_L2 / tempnorm_L2 > ittol) or (dispincnorm_L2 / dispnorm_L2 > ittol)))
       {
         stopnonliniter = true;
-        if ((get_comm().MyPID() == 0) and print_screen_evry() and
+        if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
             (step() % print_screen_evry() == 0))
         {
           printf(

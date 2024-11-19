@@ -5,6 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_micromaterial.hpp"
@@ -23,7 +24,8 @@ FOUR_C_NAMESPACE_OPEN
 
 void Discret::Elements::SoHex8::soh8_homog(Teuchos::ParameterList& params)
 {
-  if (Global::Problem::instance(0)->get_communicators()->sub_comm()->MyPID() == owner())
+  if (Core::Communication::my_mpi_rank(
+          *Global::Problem::instance(0)->get_communicators()->sub_comm()) == owner())
   {
     double homogdens = 0.;
     const static std::vector<double> weights = soh8_weights();
@@ -131,7 +133,8 @@ void Discret::Elements::SoHex8::soh8_read_restart_multi()
     auto* micro = dynamic_cast<Mat::MicroMaterial*>(mat.get());
     int eleID = id();
     bool eleowner = false;
-    if (Global::Problem::instance()->get_dis("structure")->get_comm().MyPID() == owner())
+    if (Core::Communication::my_mpi_rank(
+            Global::Problem::instance()->get_dis("structure")->get_comm()) == owner())
       eleowner = true;
 
     for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp) micro->read_restart(gp, eleID, eleowner);

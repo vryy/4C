@@ -132,7 +132,7 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
   Global::Problem* microproblem = Global::Problem::instance(microdisnum_);
   std::shared_ptr<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
 
-  if (microdis->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(microdis->get_comm()) == 0)
   {
     // figure out prefix of micro-scale restart files
     restartname_ = new_result_file_path(microprefix);
@@ -265,7 +265,7 @@ void Mat::MicroMaterialGP::post_setup()
   Global::Problem* microproblem = Global::Problem::instance(microdisnum_);
   std::shared_ptr<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
 
-  if (microdis->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(microdis->get_comm()) == 0)
   {
     step_ = Global::Problem::instance()->restart();
     if (step_ > 0)

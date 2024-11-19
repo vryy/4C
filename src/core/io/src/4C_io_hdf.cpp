@@ -7,6 +7,7 @@
 
 #include "4C_io_hdf.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <iostream>
@@ -348,7 +349,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::IO::HDFReader::read_res
     std::string id_path, std::string value_path, int columns, const Epetra_Comm& Comm) const
 {
   int new_proc_num = Comm.NumProc();
-  int my_id = Comm.MyPID();
+  int my_id = Core::Communication::my_mpi_rank(Comm);
 
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
   int start, end;
@@ -394,7 +395,7 @@ std::shared_ptr<std::vector<char>> Core::IO::HDFReader::read_result_data_vec_cha
   if (columns != 1) FOUR_C_THROW("got multivector, std::vector<char> expected");
 
   int new_proc_num = Comm.NumProc();
-  int my_id = Comm.MyPID();
+  int my_id = Core::Communication::my_mpi_rank(Comm);
 
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
   int start, end;
@@ -415,7 +416,7 @@ std::shared_ptr<std::vector<char>> Core::IO::HDFReader::read_char_vector(
     std::string value_path, const Epetra_Comm& Comm) const
 {
   int new_proc_num = Comm.NumProc();
-  int my_id = Comm.MyPID();
+  int my_id = Core::Communication::my_mpi_rank(Comm);
 
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
   int start, end;

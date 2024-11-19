@@ -134,7 +134,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // -------------------------------------------------------------------
   if (!discret_->filled()) discret_->fill_complete();
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  myrank_ = discret_->get_comm().MyPID();
+  myrank_ = Core::Communication::my_mpi_rank(discret_->get_comm());
 
   // -------------------------------------------------------------------
   // create empty matrices
@@ -1094,7 +1094,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     std::vector<double> sum(81, 0.0);
     discret_->get_comm().SumAll(val.data(), sum.data(), 81);
 
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       // write as a 9x9 matrix
       for (int i = 0; i < 9; i++)

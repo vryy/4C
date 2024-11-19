@@ -24,7 +24,7 @@ FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(
     const Epetra_Comm& comm, const Teuchos::ParameterList& fdyn)
     : step_(0)
 {
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "#-----------------------------------------------#" << std::endl;
     std::cout << "#       INITIALIZE BASIC FLUID ALGORITHM        #" << std::endl;
@@ -36,7 +36,7 @@ FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(
 
   // get the compete fluid discretization
   fluiddis_ = fluidalgo_->fluid_field()->discretization();
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "#-----------------------------------------------#" << std::endl;
     std::cout << "#         EXTRACT INFLOW DISCRETIZATION         #" << std::endl;
@@ -51,7 +51,7 @@ FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(
   // set number of time steps
   numtimesteps_ = fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP");
 
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "#-----------------------------------------------#" << std::endl;
     std::cout << "#       INITIALIZE INFLOW FLUID ALGORITHM       #" << std::endl;
@@ -71,7 +71,7 @@ FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(
  *--------------------------------------------------------------------------------*/
 void FLD::TurbulentFlowAlgorithm::time_loop()
 {
-  if (fluiddis_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(fluiddis_->get_comm()) == 0)
   {
     std::cout << "#-----------------------------------------------#" << std::endl;
     std::cout << "#       START TURBULENT INFLOW COMPUTATION      #" << std::endl;
@@ -84,7 +84,7 @@ void FLD::TurbulentFlowAlgorithm::time_loop()
 
     // prepare time integration
     inflowfluidalgo_->fluid_field()->prepare_time_step();
-    if (fluiddis_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(fluiddis_->get_comm()) == 0)
       printf("#   STEP = %4d/%4d     TIME: %11.4E  DT = %11.4E \n", step_, numtimesteps_,
           inflowfluidalgo_->fluid_field()->time(), inflowfluidalgo_->fluid_field()->dt());
     // slove nonlinear problem
@@ -109,7 +109,7 @@ void FLD::TurbulentFlowAlgorithm::time_loop()
     fluidalgo_->fluid_field()->output();
   }
 
-  if (fluiddis_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(fluiddis_->get_comm()) == 0)
   {
     std::cout << "#-----------------------------------------------#" << std::endl;
     std::cout << "#     FINISHED TURBULENT INFLOW COMPUTATION     #" << std::endl;
@@ -129,7 +129,7 @@ void FLD::TurbulentFlowAlgorithm::time_loop()
  *-------------------------------------------------------------------------------------------*/
 void FLD::TurbulentFlowAlgorithm::transfer_inflow_velocity()
 {
-  if (fluiddis_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(fluiddis_->get_comm()) == 0)
     std::cout << "#   transfer solution of inflow section ..." << std::flush;
 
   // velocity/pressure at time n+1 of inflow section
@@ -146,7 +146,8 @@ void FLD::TurbulentFlowAlgorithm::transfer_inflow_velocity()
   int err = velnp_->Export(*inflowvelnp, exporter, Insert);
   if (err != 0) FOUR_C_THROW("Export using exporter returned err=%d", err);
 
-  if (fluiddis_->get_comm().MyPID() == 0) std::cout << "done\n" << std::endl;
+  if (Core::Communication::my_mpi_rank(fluiddis_->get_comm()) == 0)
+    std::cout << "done\n" << std::endl;
 
   return;
 }
@@ -157,7 +158,7 @@ void FLD::TurbulentFlowAlgorithm::transfer_inflow_velocity()
  *---------------------------------------------------------------------------*/
 void FLD::TurbulentFlowAlgorithm::read_restart(const int restart)
 {
-  if (fluiddis_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(fluiddis_->get_comm()) == 0)
   {
     std::cout << "#-----------------------------------------------#" << std::endl;
     std::cout << "#                 READ RESTART                  #" << std::endl;
@@ -219,7 +220,8 @@ void FLD::TurbulentFlowAlgorithm::read_restart(const int restart)
   inflowfluidalgo_->fluid_field()->set_restart(
       restart, fluidalgo_->fluid_field()->time(), velnp, veln, velnm, accnp, accn);
 
-  if (fluiddis_->get_comm().MyPID() == 0) std::cout << "#   ... done \n" << std::endl;
+  if (Core::Communication::my_mpi_rank(fluiddis_->get_comm()) == 0)
+    std::cout << "#   ... done \n" << std::endl;
 
   return;
 }

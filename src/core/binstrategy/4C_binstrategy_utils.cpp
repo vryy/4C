@@ -8,6 +8,7 @@
 #include "4C_binstrategy_utils.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_io_pstream.hpp"
@@ -53,7 +54,7 @@ namespace Core::Binstrategy::Utils
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // print distribution after standard ghosting
-    if (discret.get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret.get_comm()) == 0)
       std::cout << "parallel distribution with extended ghosting" << std::endl;
     Core::Rebalance::Utils::print_parallel_distribution(discret);
 #endif
@@ -95,8 +96,8 @@ namespace Core::Binstrategy::Utils
     int tag = 0;
     for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end(); ++p)
     {
-      exporter.i_send(discret.get_comm().MyPID(), p->first, (p->second).data(),
-          (int)(p->second).size(), 1234, request[tag]);
+      exporter.i_send(Core::Communication::my_mpi_rank(discret.get_comm()), p->first,
+          (p->second).data(), (int)(p->second).size(), 1234, request[tag]);
       ++tag;
     }
     if (tag != length) FOUR_C_THROW("Number of messages is mixed up");
@@ -109,7 +110,8 @@ namespace Core::Binstrategy::Utils
     discret.get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
 
     // ---- receive ----
-    for (int rec = 0; rec < summedtargets[discret.get_comm().MyPID()]; ++rec)
+    for (int rec = 0; rec < summedtargets[Core::Communication::my_mpi_rank(discret.get_comm())];
+         ++rec)
     {
       std::vector<char> rdata;
       int length = 0;
@@ -118,7 +120,7 @@ namespace Core::Binstrategy::Utils
       exporter.receive_any(from, tag, rdata, length);
       if (tag != 1234)
         FOUR_C_THROW("Received on proc %i data with wrong tag from proc %i",
-            discret.get_comm().MyPID(), from);
+            Core::Communication::my_mpi_rank(discret.get_comm()), from);
 
       // ---- unpack ----
       {
@@ -137,7 +139,7 @@ namespace Core::Binstrategy::Utils
             FOUR_C_THROW(
                 "%i is getting owner of element %i without having it ghosted before, "
                 "this is not intended.",
-                discret.get_comm().MyPID(), element->id());
+                Core::Communication::my_mpi_rank(discret.get_comm()), element->id());
 
           // delete already existing element (as it has wrong internal variables)
           discret.delete_element(element->id());
@@ -188,8 +190,8 @@ namespace Core::Binstrategy::Utils
     int tag = 0;
     for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end(); ++p)
     {
-      exporter.i_send(discret.get_comm().MyPID(), p->first, (p->second).data(),
-          (int)(p->second).size(), 1234, request[tag]);
+      exporter.i_send(Core::Communication::my_mpi_rank(discret.get_comm()), p->first,
+          (p->second).data(), (int)(p->second).size(), 1234, request[tag]);
       ++tag;
     }
     if (tag != length) FOUR_C_THROW("Number of messages is mixed up");
@@ -202,7 +204,8 @@ namespace Core::Binstrategy::Utils
     discret.get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
 
     // ---- receive ----
-    for (int rec = 0; rec < summedtargets[discret.get_comm().MyPID()]; ++rec)
+    for (int rec = 0; rec < summedtargets[Core::Communication::my_mpi_rank(discret.get_comm())];
+         ++rec)
     {
       std::vector<char> rdata;
       int length = 0;
@@ -211,7 +214,7 @@ namespace Core::Binstrategy::Utils
       exporter.receive_any(from, tag, rdata, length);
       if (tag != 1234)
         FOUR_C_THROW("Received on proc %i data with wrong tag from proc %i",
-            discret.get_comm().MyPID(), from);
+            Core::Communication::my_mpi_rank(discret.get_comm()), from);
 
       // ---- unpack ----
       {

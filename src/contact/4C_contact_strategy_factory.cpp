@@ -58,7 +58,7 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
 {
   check_init();
   // console output at the beginning
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "Checking contact input parameters...........";
     fflush(stdout);
@@ -214,7 +214,7 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
   // ---------------------------------------------------------------------
   // warnings
   // ---------------------------------------------------------------------
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     if (mortar.get<double>("SEARCH_PARAM") == 0.0)
       std::cout << ("Warning: Contact search called without inflation of bounding volumes\n")
@@ -522,7 +522,7 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
     {
       double timestep = Global::Problem::instance()->tsi_dynamic_params().get<double>("TIMESTEP");
       // rauch 01/16
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         std::cout << "\n \n  Warning: CONTACT::STRATEGY::Factory::read_and_check_input() reads "
                      "TIMESTEP = "
@@ -624,7 +624,7 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
             "PARALLEL_REDIST", Inpar::Mortar::ParallelRedist::redist_none);
 
   // console output at the end
-  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0) std::cout << "done!" << std::endl;
 
   // set dimension
   params.set<int>("DIMENSION", dim);
@@ -637,7 +637,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
     bool& poromaster) const
 {
   // start building interfaces
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "Building contact interface(s)..............." << std::endl;
     fflush(stdout);
@@ -1059,7 +1059,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
       int lsize = 0;
       std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator fool;
       for (fool = currele.begin(); fool != currele.end(); ++fool)
-        if (fool->second->owner() == get_comm().MyPID()) ++lsize;
+        if (fool->second->owner() == Core::Communication::my_mpi_rank(get_comm())) ++lsize;
 
       int gsize = 0;
       get_comm().SumAll(&lsize, &gsize, 1);
@@ -1128,7 +1128,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
   if (not isanyselfcontact) fully_overlapping_interfaces(interfaces);
 
   // finish the interface creation
-  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0) std::cout << "done!" << std::endl;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1241,7 +1241,8 @@ int CONTACT::STRATEGY::Factory::identify_full_subset(
     else if (is_fullsubmap != ref_map->MyGID(mysubgids[i]))
     {
       if (throw_if_partial_subset_on_proc)
-        FOUR_C_THROW("Partial sub-map detected on proc #%d!", get_comm().MyPID());
+        FOUR_C_THROW(
+            "Partial sub-map detected on proc #%d!", Core::Communication::my_mpi_rank(get_comm()));
       is_fullsubmap = false;
     }
   }
@@ -1530,7 +1531,7 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
     std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr,
     CONTACT::ParamsInterface* cparams_interface)
 {
-  if (comm_ptr->MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(*comm_ptr) == 0)
   {
     std::cout << "Building contact strategy object............";
     fflush(stdout);
@@ -1642,7 +1643,7 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
   // setup the stategy object
   strategy_ptr->setup(false, true);
 
-  if (comm_ptr->MyPID() == 0) std::cout << "done!" << std::endl;
+  if (Core::Communication::my_mpi_rank(*comm_ptr) == 0) std::cout << "done!" << std::endl;
 
   return strategy_ptr;
 }
@@ -1663,7 +1664,7 @@ void CONTACT::STRATEGY::Factory::print(
     CONTACT::AbstractStrategy& strategy_ptr, const Teuchos::ParameterList& params) const
 {
   // print friction information of interfaces
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     // get input parameter
     auto ftype = Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(params, "FRICTION");
@@ -1689,7 +1690,7 @@ void CONTACT::STRATEGY::Factory::print(
   // print initial parallel redistribution
   for (const auto& interface : interfaces) interface->print_parallel_distribution();
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     print_strategy_banner(strategy_ptr.type());
   }

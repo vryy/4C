@@ -42,7 +42,7 @@ FOUR_C_NAMESPACE_OPEN
 PARTICLEWALL::WallHandlerBase::WallHandlerBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
     : comm_(comm),
-      myrank_(comm.MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(comm)),
       params_(params),
       validwallelements_(false),
       validwallneighbors_(false)

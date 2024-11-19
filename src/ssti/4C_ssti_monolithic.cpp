@@ -215,7 +215,7 @@ void SSTI::SSTIMono::init(const Epetra_Comm& comm, const Teuchos::ParameterList&
 void SSTI::SSTIMono::output()
 {
   // print finish line of convergence table to screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "+------------+-------------------+--------------+--------------+--------------+--"
                  "------------+--------------+--------------+--------------+--------------+--------"

@@ -71,7 +71,7 @@ void CONTACT::IntegratorNitsche::gpts_forces(Mortar::Element& sele, Mortar::Elem
     std::vector<Core::Gen::Pairedvector<int, double>>& deriv_contact_normal, double* sxi,
     double* mxi)
 {
-  if (sele.owner() != Comm_.MyPID()) return;
+  if (sele.owner() != Core::Communication::my_mpi_rank(Comm_)) return;
 
   if (dim != n_dim()) FOUR_C_THROW("dimension inconsistency");
 

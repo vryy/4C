@@ -87,7 +87,7 @@ namespace
     std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
 
     // get the processor ID from the communicator
-    const int myrank = dis.get_comm().MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(dis.get_comm());
 
     if (myrank == 0)
     {

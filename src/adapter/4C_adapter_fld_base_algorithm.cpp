@@ -859,7 +859,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
       break;
       case Core::ProblemType::fsi_redmodels:
       {  // give a warning
-        if (actdis->get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(actdis->get_comm()) == 0)
           std::cout << "\n Warning: FSI_RedModels is little tested. Keep testing! \n" << std::endl;
 
         // create the fluid time integration object

@@ -100,7 +100,7 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Core::LinAlg::SparseMatrix& stif
     std::shared_ptr<Core::LinAlg::Vector<double>> dispinc, Core::LinAlg::Vector<double>& lagrinc,
     Core::LinAlg::Vector<double>& rhsstand, Core::LinAlg::Vector<double>& rhsconstr)
 {
-  const int myrank = (actdisc_->get_comm().MyPID());
+  const int myrank = (Core::Communication::my_mpi_rank(actdisc_->get_comm()));
   // For every iteration step an uzawa algorithm is used to solve the linear system.
   // Preparation of uzawa method to solve the linear system.
   double norm_uzawa;

@@ -7,6 +7,7 @@
 
 #include "4C_linear_solver_method_linalg.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linear_solver_method_direct.hpp"
@@ -60,7 +61,8 @@ void Core::LinAlg::Solver::adapt_tolerance(
   if (!solver_params.isParameter("Convergence Tolerance"))
     FOUR_C_THROW("No iterative solver tolerance in ParameterList");
 
-  const bool do_output = solver_params.get<int>("Output Frequency", 1) and !get_comm().MyPID();
+  const bool do_output = solver_params.get<int>("Output Frequency", 1) and
+                         !Core::Communication::my_mpi_rank(get_comm());
 
   const std::string conv_test_strategy = solver_params.get<std::string>(
       "Implicit Residual Scaling", Belos::convertScaleTypeToString(Belos::ScaleType::None));

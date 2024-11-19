@@ -203,7 +203,7 @@ void FSI::MonolithicBase::output()
   {
     structure_field()->get_constraint_manager()->compute_monitor_values(
         structure_field()->dispnp());
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       structure_field()->get_constraint_manager()->print_monitor_values();
   }
 }
@@ -472,7 +472,7 @@ void FSI::Monolithic::prepare_timeloop()
   Teuchos::ParameterList& nlParams = nox_parameter_list();
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
-  printParams.set("MyPID", get_comm().MyPID());
+  printParams.set("MyPID", Core::Communication::my_mpi_rank(get_comm()));
 
   printParams.set(
       "Output Information", ::NOX::Utils::Error | ::NOX::Utils::Warning |
@@ -487,7 +487,7 @@ void FSI::Monolithic::prepare_timeloop()
   utils_ = std::make_shared<::NOX::Utils>(printParams);
 
   // write header of log-file
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     (*log_) << "# num procs      = " << get_comm().NumProc() << "\n"
             << "# Method         = " << nlParams.sublist("Direction").get<std::string>("Method")
@@ -503,7 +503,7 @@ void FSI::Monolithic::prepare_timeloop()
   write_ada_file_header();
 
   // write header of energy-file
-  if (get_comm().MyPID() == 0 and (logenergy_))
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0 and (logenergy_))
   {
     (*logenergy_) << "# Artificial interface energy due to temporal discretization\n"
                   << "# num procs      = " << get_comm().NumProc() << "\n"
@@ -546,7 +546,7 @@ void FSI::Monolithic::time_step(
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
-  printParams.set("MyPID", get_comm().MyPID());
+  printParams.set("MyPID", Core::Communication::my_mpi_rank(get_comm()));
 
   switch (verbosity_)
   {
@@ -664,7 +664,7 @@ void FSI::Monolithic::time_step(
   // stop time measurement
   timemonitor = nullptr;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     (*log_) << std::right << std::setw(9) << step() << std::right << std::setw(16) << time()
             << std::right << std::setw(16) << timer.totalElapsedTime(true) << std::right
@@ -750,7 +750,7 @@ void FSI::Monolithic::non_lin_error_check()
         erroraction_ = erroraction_continue;
 
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         {
           Core::IO::cout << "\n*** Nonlinear solver did not converge in " << noxiter_
                          << " iterations in time step " << step() << ". Continue ..."
@@ -772,7 +772,7 @@ void FSI::Monolithic::non_lin_error_check()
         }
 
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         {
           Core::IO::cout << Core::IO::endl
                          << "*** Nonlinear solver did not converge in " << noxiter_
@@ -794,7 +794,7 @@ void FSI::Monolithic::non_lin_error_check()
         }
 
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         {
           Core::IO::cout << Core::IO::endl
                          << "*** Nonlinear solver did not converge in " << noxiter_
@@ -1071,7 +1071,7 @@ void FSI::Monolithic::combine_field_vectors(Core::LinAlg::Vector<double>& v,
 void FSI::Monolithic::write_interface_energy_file(const double energystep, const double energysum)
 {
   // write to energy file
-  if (get_comm().MyPID() == 0 and (logenergy_))
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0 and (logenergy_))
   {
     (*logenergy_) << std::right << std::setw(9) << step() << std::right << std::setw(16) << time()
                   << std::right << std::setw(16) << energystep << std::right << std::setw(16)

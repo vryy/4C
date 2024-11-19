@@ -293,8 +293,8 @@ void fsi_immersed_drt()
 
 
   auto binningstrategy = std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params,
-      Global::Problem::instance()->output_control_file(), comm, comm.MyPID(), correct_node,
-      determine_relevant_points, dis);
+      Global::Problem::instance()->output_control_file(), comm,
+      Core::Communication::my_mpi_rank(comm), correct_node, determine_relevant_points, dis);
 
   const Teuchos::ParameterList& fbidyn = problem->fbi_params();
 
@@ -465,8 +465,8 @@ void fsi_ale_drt()
             "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
         Core::Binstrategy::BinningStrategy binningstrategy(binning_params,
-            Global::Problem::instance()->output_control_file(), comm, comm.MyPID(), correct_node,
-            determine_relevant_points, dis);
+            Global::Problem::instance()->output_control_file(), comm,
+            Core::Communication::my_mpi_rank(comm), correct_node, determine_relevant_points, dis);
         binningstrategy
             .do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
                 dis, stdelecolmap, stdnodecolmap);
@@ -670,7 +670,7 @@ void xfsi_drt()
 {
   const Epetra_Comm& comm = Global::Problem::instance()->get_dis("structure")->get_comm();
 
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << std::endl;
     std::cout << "       @..@    " << std::endl;
@@ -820,7 +820,7 @@ void xfpsi_drt()
 {
   const Epetra_Comm& comm = Global::Problem::instance()->get_dis("structure")->get_comm();
 
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << std::endl;
     std::cout << "       @..@    " << std::endl;

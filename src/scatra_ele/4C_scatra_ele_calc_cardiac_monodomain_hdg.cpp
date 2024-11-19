@@ -7,6 +7,7 @@
 
 #include "4C_scatra_ele_calc_cardiac_monodomain_hdg.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_fiber_node.hpp"
@@ -464,7 +465,7 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization)
 {
   // NOTE: add integral values only for elements which are NOT ghosted!
-  if (ele->owner() == discretization.get_comm().MyPID())
+  if (ele->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
   {
     // access the general material
     std::shared_ptr<Core::Mat::Material> material = ele->material();
@@ -506,7 +507,7 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization)
 {
   // NOTE: add integral values only for elements which are NOT ghosted!
-  if (ele->owner() == discretization.get_comm().MyPID())
+  if (ele->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
   {
     // access the general material
     std::shared_ptr<Core::Mat::Material> material = ele->material();

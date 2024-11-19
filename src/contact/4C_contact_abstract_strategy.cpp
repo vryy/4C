@@ -7,6 +7,7 @@
 
 #include "4C_contact_abstract_strategy.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_defines.hpp"
 #include "4C_contact_friction_node.hpp"
 #include "4C_contact_interface.hpp"
@@ -249,7 +250,7 @@ void CONTACT::AbstractStrategy::print_parallel_balance_indicators(
     const double time_average, const double elements_average, const double max_time_unbalance) const
 {
   // Screen output only on proc 0
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "*************** DATA OF PREVIOUS TIME STEP ***************" << std::endl;
     if (time_average > 0)
@@ -310,7 +311,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact(
     redistributed = redistribute_with_safe_ghosting(*dis, *vel);
   else
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       std::cout << "+++++++++++++++++++++++++++++++ WARNING +++++++++++++++++++++++++++++++\n"
                 << "+++ You're using an outdated contact redistribution implementation, +++\n"
@@ -365,7 +366,7 @@ bool CONTACT::AbstractStrategy::redistribute_with_safe_ghosting(
   // time measurement
   get_comm().Barrier();
   const double t_end = Teuchos::Time::wallTime() - t_start;
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\nTime for parallel redistribution..............." << std::scientific
               << std::setprecision(6) << t_end << " secs\n"
               << std::endl;
@@ -416,7 +417,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
         Global::Problem::instance()->spatial_approximation_type(), true, maxdof_, ivel_[i]);
 
     // print new parallel distribution
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       std::cout << "Interface parallel distribution after rebalancing:" << std::endl;
     interfaces()[i]->print_parallel_distribution();
 
@@ -430,7 +431,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
   // time measurement
   get_comm().Barrier();
   double t_end = Teuchos::Time::wallTime() - t_start;
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\nTime for parallel redistribution..............." << std::scientific
               << std::setprecision(6) << t_end << " secs\n"
               << std::endl;
@@ -816,7 +817,7 @@ std::shared_ptr<Epetra_Map> CONTACT::AbstractStrategy::create_deterministic_lm_d
       FOUR_C_THROW(
           "Couldn't find the global slave dof id #%d in the local interface "
           "maps on proc #%d!",
-          sgid, get_comm().MyPID());
+          sgid, Core::Communication::my_mpi_rank(get_comm()));
 
     // get the corresponding Lagrange Multiplier GID
     const int interface_lmgid = interfaces()[interface_id]->lag_mult_dofs()->GID(interface_slid);
@@ -908,7 +909,7 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(
     // only for debugging:
     interface_forces();
 
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       std::cout << "    -->setstate :\t" << t_end1 << " seconds\n";
       std::cout << "    -->interface eval. :\t" << t_end2 << " seconds\n";
@@ -1171,7 +1172,7 @@ void CONTACT::AbstractStrategy::initialize_and_evaluate_interface(
   Core::LinAlg::gather<int>(intcells, gintcells, numproc, allproc.data(), Comm());
 
   // output to screen
-  if (Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
   {
     std::cout << "--------------------------------------------------------------------------------"
               << std::endl;
@@ -2328,7 +2329,7 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
   {
     // do this at end of time step only (output==true)!
     // processor 0 does all the work
-    if (output && get_comm().MyPID() == 0)
+    if (output && Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       FILE* MyFile = nullptr;
       std::ostringstream filename;
@@ -2357,7 +2358,7 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
   {
     // do this during Newton steps only (output==false)!
     // processor 0 does all the work
-    if (!output && get_comm().MyPID() == 0)
+    if (!output && Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       double snorm = sqrt(ggfcs[0] * ggfcs[0] + ggfcs[1] * ggfcs[1] + ggfcs[2] * ggfcs[2]);
       double mnorm = sqrt(ggfcm[0] * ggfcm[0] + ggfcm[1] * ggfcm[1] + ggfcm[2] * ggfcm[2]);
@@ -2379,7 +2380,7 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
  *----------------------------------------------------------------------*/
 void CONTACT::AbstractStrategy::print(std::ostream& os) const
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     os << "--------------------------------- CONTACT::AbstractStrategy\n"
        << "Contact interfaces: " << (int)interfaces().size() << std::endl
@@ -2400,7 +2401,7 @@ void CONTACT::AbstractStrategy::print_active_set() const
 {
   // output message
   get_comm().Barrier();
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     printf("\nActive contact set--------------------------------------------------------------\n");
     fflush(stdout);
@@ -2585,7 +2586,7 @@ void CONTACT::AbstractStrategy::print_active_set() const
   }
 
   // output is solely done by proc 0
-  if (Comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(Comm()) == 0)
   {
     //--------------------------------------------------------------------
     // FRICTIONLESS CASE
@@ -2722,7 +2723,7 @@ void CONTACT::AbstractStrategy::print_active_set() const
   get_comm().SumAll(&surfacenodes, &gsurfacenodes, 1);
 
   // print active set information
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     if (nonsmooth)
     {
@@ -2746,7 +2747,7 @@ void CONTACT::AbstractStrategy::print_active_set() const
 #endif  // #ifdef CONTACTASOUTPUT
   // output line
   get_comm().Barrier();
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     printf("--------------------------------------------------------------------------------\n\n");
     fflush(stdout);

@@ -336,7 +336,7 @@ namespace BEAMINTERACTION
       {
         // myrank == iproc: copy set to vector in order to broadcast data
         std::vector<int> requirednodes(0);
-        if (iproc == discret.get_comm().MyPID())
+        if (iproc == Core::Communication::my_mpi_rank(discret.get_comm()))
           requirednodes.insert(requirednodes.begin(), setofnodegidswithrequiredelecloud.begin(),
               setofnodegidswithrequiredelecloud.end());
 
@@ -365,7 +365,7 @@ namespace BEAMINTERACTION
 
         // gather and store information on iproc
         Core::LinAlg::gather<int>(sdata, rdata, 1, &iproc, discret.get_comm());
-        if (iproc == discret.get_comm().MyPID()) coleleset = rdata;
+        if (iproc == Core::Communication::my_mpi_rank(discret.get_comm())) coleleset = rdata;
       }
 
       // insert previous ghosting

@@ -7,6 +7,7 @@
 
 #include "4C_contact_manager.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
 #include "4C_contact_interface.hpp"
@@ -53,18 +54,18 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
   Teuchos::ParameterList contactParams;
 
   // read and check contact input parameters
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "Checking contact input parameters..........." << std::endl;
 
   read_and_check_input(contactParams);
-  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0) std::cout << "done!" << std::endl;
 
   // check for fill_complete of discretization
   if (!discret.filled()) FOUR_C_THROW("discretization is not fillcomplete");
 
   // let's check for contact boundary conditions in the discretization and and detect groups of
   // matching conditions. For each group, create a contact interface and store it.
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "Building contact interface(s)..............." << std::endl;
 
   // Vector that contains solid-to-solid and beam-to-solid contact pairs
@@ -532,11 +533,11 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
       find_poro_interface_types(
           poromaster, poroslave, structmaster, structslave, slavetype, mastertype);
   }
-  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0) std::cout << "done!" << std::endl;
 
   //**********************************************************************
   // create the solver strategy object and pass all necessary data to it
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "Building contact strategy object............";
     fflush(stdout);
@@ -616,11 +617,11 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
 
   dynamic_cast<CONTACT::AbstractStrategy&>(*strategy_).setup(false, true);
 
-  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0) std::cout << "done!" << std::endl;
   //**********************************************************************
 
   // print friction information of interfaces
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     for (unsigned i = 0; i < interfaces.size(); ++i)
     {
@@ -641,7 +642,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
   }
 
   // print initial parallel redistribution
-  if (get_comm().MyPID() == 0 && get_comm().NumProc() > 1)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0 && get_comm().NumProc() > 1)
     std::cout << "\nInitial parallel distribution of all contact interfaces:" << std::endl;
   for (auto& interface : interfaces) interface->print_parallel_distribution();
 
@@ -799,7 +800,8 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams) con
   // *********************************************************************
   // warnings
   // *********************************************************************
-  if (mortar.get<double>("SEARCH_PARAM") == 0.0 && get_comm().MyPID() == 0)
+  if (mortar.get<double>("SEARCH_PARAM") == 0.0 &&
+      Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << ("Warning: Contact search called without inflation of bounding volumes\n")
               << std::endl;
 
@@ -1084,7 +1086,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams) con
   else if (problemtype != Core::ProblemType::structure)
   {
     // rauch 01/16
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       std::cout << "\n \n  Warning: CONTACT::Manager::read_and_check_input() reads TIMESTEP = "
                 << stru.get<double>("TIMESTEP") << " from --STRUCTURAL DYNAMIC \n"
                 << std::endl;

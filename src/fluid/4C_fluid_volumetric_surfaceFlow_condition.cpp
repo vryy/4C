@@ -169,7 +169,7 @@ FLD::Utils::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
-  myrank_ = discret_->get_comm().MyPID();
+  myrank_ = Core::Communication::my_mpi_rank(discret_->get_comm());
 
   // -------------------------------------------------------------------
   // get dof row map
@@ -425,7 +425,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
   //--------------------------------------------------------------------
   // get the processor rank
   //--------------------------------------------------------------------
-  int myrank = discret_->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
 
   local_radii_ = Core::LinAlg::create_vector(*cond_surfnoderowmap_, true);
 
@@ -687,7 +687,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::build_condition_node_row_map(
   //--------------------------------------------------------------------
   // get the processor rank
   //--------------------------------------------------------------------
-  int myrank = dis->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(dis->get_comm());
 
   //--------------------------------------------------------------------
   // read in the condition
@@ -737,7 +737,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
   //--------------------------------------------------------------------
   // get the processor rank
   //--------------------------------------------------------------------
-  int myrank = dis->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(dis->get_comm());
 
   //--------------------------------------------------------------------
   // read in the condition
@@ -996,7 +996,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::velocities(Core::FE::Discretizati
   //--------------------------------------------------------------------
   // get the processor rank
   //--------------------------------------------------------------------
-  int myrank = disc.get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(disc.get_comm());
 
 
   // -------------------------------------------------------------------
@@ -1188,7 +1188,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
-  int myrank = discret_->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
 
   // -------------------------------------------------------------------
   // calculate flow rate

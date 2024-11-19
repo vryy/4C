@@ -61,7 +61,7 @@ XFEM::XfluidTimeintBase::XfluidTimeintBase(
       dispnp_(dispnp),
       timeIntData_(nullptr),
       pbcmap_(pbcmap),
-      myrank_(discret_->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(discret_->get_comm())),
       numproc_(discret_->get_comm().NumProc()),
       newton_max_iter_(10),  /// maximal number of newton iterations for Semi-Lagrangean algorithm
       limits_tol_(1.0e-10),  /// newton tolerance for Semi-Lagrangean algorithm

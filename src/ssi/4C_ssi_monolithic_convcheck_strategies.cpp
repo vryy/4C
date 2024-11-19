@@ -9,6 +9,7 @@
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_adapter_str_ssiwrapper.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_ssi_utils.hpp"
@@ -162,7 +163,7 @@ void SSI::SsiMono::ConvCheckStrategyStd::print_newton_iteration_information(
     const SSI::SsiMono& ssi_mono, const bool converged, const bool exit,
     const std::map<L2norm, double>& norms) const
 {
-  if (ssi_mono.get_comm().MyPID() != 0) return;
+  if (Core::Communication::my_mpi_rank(ssi_mono.get_comm()) != 0) return;
 
   if (ssi_mono.iteration_count() == 1)
   {
@@ -329,7 +330,7 @@ void SSI::SsiMono::ConvCheckStrategyElch::print_newton_iteration_information(
     const SSI::SsiMono& ssi_mono, const bool converged, const bool exit,
     const std::map<L2norm, double>& norms) const
 {
-  if (ssi_mono.get_comm().MyPID() != 0) return;
+  if (Core::Communication::my_mpi_rank(ssi_mono.get_comm()) != 0) return;
 
   if (ssi_mono.iteration_count() == 1)
   {
@@ -410,7 +411,7 @@ bool SSI::SsiMono::ConvCheckStrategyElch::exit_newton_raphson_init_pot_calc(
   const bool exit = compute_exit(ssi_mono, converged);
   if (exit and !converged) non_converged_steps_.insert(ssi_mono.step());
 
-  if (ssi_mono.get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(ssi_mono.get_comm()) == 0)
   {
     if (ssi_mono.iteration_count() == 1)
     {
@@ -586,7 +587,7 @@ void SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::print_newton_iteration_i
     const SSI::SsiMono& ssi_mono, const bool converged, const bool exit,
     const std::map<L2norm, double>& norms) const
 {
-  if (ssi_mono.get_comm().MyPID() != 0) return;
+  if (Core::Communication::my_mpi_rank(ssi_mono.get_comm()) != 0) return;
 
   if (ssi_mono.iteration_count() == 1)
   {
@@ -697,7 +698,7 @@ bool SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::exit_newton_raphson_init
   const bool exit = compute_exit(ssi_mono, converged);
   if (exit and !converged) non_converged_steps_.insert(ssi_mono.step());
 
-  if (ssi_mono.get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(ssi_mono.get_comm()) == 0)
   {
     if (ssi_mono.iteration_count() == 1)
     {

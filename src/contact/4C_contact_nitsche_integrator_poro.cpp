@@ -95,7 +95,7 @@ void CONTACT::IntegratorNitschePoro::gpts_forces(Mortar::Element& sele, Mortar::
     const Core::Gen::Pairedvector<int, double>& dgapgp, const double* gpn,
     std::vector<Core::Gen::Pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
 {
-  if (sele.owner() != Comm_.MyPID()) return;
+  if (sele.owner() != Core::Communication::my_mpi_rank(Comm_)) return;
 
   static const bool do_fast_checks = true;
   // first rough check

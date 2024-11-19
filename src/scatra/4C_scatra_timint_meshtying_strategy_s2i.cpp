@@ -1927,7 +1927,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
   scatratimint_->discretization()->get_condition("S2IKinetics", s2ikinetics_conditions);
   kinetics_conditions_meshtying_slaveside_.clear();
   master_conditions_.clear();
-  runtime_csvwriter_.emplace(scatratimint_->discretization()->get_comm().MyPID(),
+  runtime_csvwriter_.emplace(
+      Core::Communication::my_mpi_rank(scatratimint_->discretization()->get_comm()),
       *scatratimint_->disc_writer()->output(), "kinetics_interface_flux");
 
   for (auto* s2imeshtying_cond : s2imeshtying_conditions)
@@ -2641,7 +2642,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               // determine number of Lagrange multiplier dofs owned by each processor
               const Epetra_Comm& comm(scatratimint_->discretization()->get_comm());
               const int numproc(comm.NumProc());
-              const int mypid(comm.MyPID());
+              const int mypid(Core::Communication::my_mpi_rank(comm));
               std::vector<int> localnumlmdof(numproc, 0);
               std::vector<int> globalnumlmdof(numproc, 0);
               if (lmside_ == Inpar::S2I::side_slave)
@@ -2894,7 +2895,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
             const Core::Nodes::Node* const node = scatratimint_->discretization()->g_node(nodegid);
 
             // process only nodes owned by current processor
-            if (node->owner() == scatratimint_->discretization()->get_comm().MyPID())
+            if (node->owner() ==
+                Core::Communication::my_mpi_rank(scatratimint_->discretization()->get_comm()))
             {
               // extract local ID of scatra-scatra interface layer thickness variable associated
               // with current node
@@ -3282,7 +3284,8 @@ void ScaTra::MeshtyingStrategyS2I::collect_output_data() const
         const Core::Nodes::Node* const node = scatratimint_->discretization()->g_node(nodegid);
 
         // process only nodes owned by current processor
-        if (node->owner() == scatratimint_->discretization()->get_comm().MyPID())
+        if (node->owner() ==
+            Core::Communication::my_mpi_rank(scatratimint_->discretization()->get_comm()))
         {
           // extract local ID of current node
           const int nodelid = scatratimint_->discretization()->node_row_map()->LID(nodegid);
@@ -3941,7 +3944,7 @@ void ScaTra::MeshtyingStrategyS2I::fd_check(
     Core::LinAlg::Vector<double>& extendedresidual) const
 {
   // initial screen output
-  if (scatratimint_->discretization()->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(scatratimint_->discretization()->get_comm()) == 0)
   {
     std::cout << std::endl
               << "FINITE DIFFERENCE CHECK FOR EXTENDED SYSTEM MATRIX INVOLVING SCATRA-SCATRA "
@@ -4107,7 +4110,7 @@ void ScaTra::MeshtyingStrategyS2I::fd_check(
   scatratimint_->discretization()->get_comm().MaxAll(&maxrelerr, &maxrelerrglobal, 1);
 
   // final screen output
-  if (scatratimint_->discretization()->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(scatratimint_->discretization()->get_comm()) == 0)
   {
     if (counterglobal)
     {
@@ -4904,7 +4907,7 @@ void ScaTra::MortarCellAssemblyStrategy::assemble_cell_vector(
 
     case Inpar::S2I::side_master:
     {
-      if (assembler_pid_master == systemvector.Comm().MyPID())
+      if (assembler_pid_master == Core::Communication::my_mpi_rank(systemvector.Comm()))
       {
         FOUR_C_ASSERT(false, "Don't know what to do! Need a FEVector.");
       }
@@ -4940,7 +4943,7 @@ void ScaTra::MortarCellAssemblyStrategy::assemble_cell_vector(
 
     case Inpar::S2I::side_master:
     {
-      if (assembler_pid_master == systemvector->Comm().MyPID())
+      if (assembler_pid_master == Core::Communication::my_mpi_rank(systemvector->Comm()))
       {
         if (std::dynamic_pointer_cast<Epetra_FEVector>(systemvector)
                 ->SumIntoGlobalValues(static_cast<int>(la_master[nds_rows_].lm_.size()),

@@ -44,7 +44,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
   homdir_ = params_.sublist("TURBULENCE MODEL").get<std::string>("HOMDIR", "not_specified");
 
   // output to screen
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::cout
         << "This is the turbulence statistics manager for the flow past a square-section cylinder:"
@@ -164,7 +164,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
   // all procs
   //--------------------------------------------------------------------
   {
-    int myrank = discret_->get_comm().MyPID();
+    int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
     int numprocs = discret_->get_comm().NumProc();
 
     std::vector<char> sblock;
@@ -864,7 +864,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
   std::shared_ptr<std::ofstream> log;
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
@@ -1856,7 +1856,7 @@ void FLD::TurbulenceStatisticsSqc::dump_statistics(int step)
   //----------------------------------------------------------------------
   // output to log-file
   std::shared_ptr<std::ofstream> log;
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");

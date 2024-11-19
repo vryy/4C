@@ -50,7 +50,7 @@ FLD::DynSmagFilter::DynSmagFilter(
       // check, if averaging is desired
       if (params_.sublist("SUBGRID VISCOSITY").get<bool>("C_SMAGORINSKY_AVERAGED"))
       {
-        if (discret_->get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
         {
           std::cout << "------->  Prepare averaging of Smagorinsky constant ..." << std::endl;
           std::cout << "------->  Caution: works only for cartesian meshes!" << std::endl;
@@ -63,14 +63,14 @@ FLD::DynSmagFilter::DynSmagFilter(
         }
         else
           FOUR_C_THROW("Expected homogeneous direction!");
-        if (discret_->get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
         {
           std::cout << "------->  Homogeneous direction(s): " << special_flow_homdir_ << std::endl;
         }
       }
       else
       {
-        if (discret_->get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
         {
           std::cout << "------->  No averaging of Smagorinsky constant ..." << std::endl;
           std::cout << "------->  Point-wise clipping!" << std::endl;
@@ -82,18 +82,18 @@ FLD::DynSmagFilter::DynSmagFilter(
       {
         if (params_.sublist("SUBGRID VISCOSITY").get<bool>("C_INCLUDE_CI"))
         {
-          if (discret_->get_comm().MyPID() == 0)
+          if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
             std::cout << "------->  Ci is included for loma problem" << std::endl;
           if (params_.sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA") < 0.0)
           {
-            if (discret_->get_comm().MyPID() == 0)
+            if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
               std::cout << "------->  Ci is determined dynamically" << std::endl;
 
             calc_ci_ = true;
           }
           else
           {
-            if (discret_->get_comm().MyPID() == 0)
+            if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
               std::cout << "------->  Ci is set to "
                         << params_.sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA")
                         << std::endl;
@@ -103,7 +103,7 @@ FLD::DynSmagFilter::DynSmagFilter(
         }
         else
         {
-          if (discret_->get_comm().MyPID() == 0)
+          if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
             std::cout << "------->  Ci is not included for loma problem" << std::endl;
 
           calc_ci_ = false;
@@ -452,8 +452,8 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
     int err = ele->evaluate(
         calc_smag_const_params, *discret_, lm, dummym1, dummym2, dummyv1, dummyv2, dummyv3);
     if (err)
-      FOUR_C_THROW(
-          "Proc %d: Element %d returned err=%d", discret_->get_comm().MyPID(), ele->id(), err);
+      FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+          Core::Communication::my_mpi_rank(discret_->get_comm()), ele->id(), err);
 
     // get turbulent Cs and Ci of this element
     double ele_Cs_delta_sq = calc_smag_const_params.get<double>("ele_Cs_delta_sq");
@@ -834,8 +834,8 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
     int err = ele->evaluate(
         calc_turb_prandtl_params, *scatradiscret_, la, dummym1, dummym2, dummyv1, dummyv2, dummyv3);
     if (err)
-      FOUR_C_THROW("Proc %d: Element %d returned err=%d", scatradiscret_->get_comm().MyPID(),
-          ele->id(), err);
+      FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+          Core::Communication::my_mpi_rank(scatradiscret_->get_comm()), ele->id(), err);
 
     // get turbulent Prandlt number of this element
     double ele_Prt = calc_turb_prandtl_params.get<double>("ele_Prt");

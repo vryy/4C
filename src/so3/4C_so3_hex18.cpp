@@ -427,7 +427,7 @@ int Discret::Elements::SoHex18::evaluate(Teuchos::ParameterList& params,
     case calc_struct_stress:
     {
       // nothing to do for ghost elements
-      if (discretization.get_comm().MyPID() == owner())
+      if (Core::Communication::my_mpi_rank(discretization.get_comm()) == owner())
       {
         std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
             discretization.get_state("displacement");

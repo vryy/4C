@@ -22,7 +22,7 @@ void Core::LinAlg::print_matrix_in_matlab_format(
 {
   const auto& comm = sparsematrix.Comm();
 
-  const int my_PID = comm.MyPID();
+  const int my_PID = Core::Communication::my_mpi_rank(comm);
   const int num_proc = comm.NumProc();
 
   // loop over all procs and send row data to proc 0
@@ -104,7 +104,7 @@ void Core::LinAlg::print_vector_in_matlab_format(
 {
   const auto& comm = vector.Comm();
 
-  const int my_PID = comm.MyPID();
+  const int my_PID = Core::Communication::my_mpi_rank(comm);
   const int num_proc = comm.NumProc();
 
   // loop over all procs and send data to proc 0
@@ -177,7 +177,7 @@ void Core::LinAlg::print_map_in_matlab_format(
 {
   const auto& comm = map.Comm();
 
-  const int my_PID = comm.MyPID();
+  const int my_PID = Core::Communication::my_mpi_rank(comm);
   const int num_proc = comm.NumProc();
 
   // loop over all procs and send data to proc 0

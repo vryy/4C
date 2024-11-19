@@ -7,6 +7,7 @@
 
 #include "4C_adapter_scatra_fluid_coupling_algorithm.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fluid_turbulence_statistic_manager.hpp"
@@ -100,14 +101,14 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
     case Inpar::ScaTra::timeint_stationary:
     {
       if (fluid_field()->tim_int_scheme() != Inpar::FLUID::timeint_stationary)
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
           FOUR_C_THROW("Fluid and scatra time integration schemes do not match!");
       break;
     }
     case Inpar::ScaTra::timeint_one_step_theta:
     {
       if (fluid_field()->tim_int_scheme() != Inpar::FLUID::timeint_one_step_theta)
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
           std::cout << "WARNING: Fluid and scatra time integration schemes do not match!"
                     << std::endl;
       break;
@@ -115,7 +116,7 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
     case Inpar::ScaTra::timeint_bdf2:
     {
       if (fluid_field()->tim_int_scheme() != Inpar::FLUID::timeint_bdf2)
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
           std::cout << "WARNING: Fluid and scatra time integration schemes do not match!"
                     << std::endl;
       break;
@@ -124,7 +125,7 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
     {
       if (fluid_field()->tim_int_scheme() != Inpar::FLUID::timeint_npgenalpha and
           fluid_field()->tim_int_scheme() != Inpar::FLUID::timeint_afgenalpha)
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
           std::cout << "WARNING: Fluid and scatra time integration schemes do not match!"
                     << std::endl;
       break;

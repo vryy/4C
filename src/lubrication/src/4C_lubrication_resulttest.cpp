@@ -7,6 +7,7 @@
 
 #include "4C_lubrication_resulttest.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_io_linedefinition.hpp"
@@ -55,7 +56,7 @@ void Lubrication::ResultTest::test_node(
       Core::Nodes::Node* actnode = dis_->g_node(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->owner() != dis_->get_comm().MyPID()) return;
+      if (actnode->owner() != Core::Communication::my_mpi_rank(dis_->get_comm())) return;
 
       // extract name of quantity to be tested
       std::string quantity = container.get<std::string>("QUANTITY");
@@ -102,7 +103,7 @@ void Lubrication::ResultTest::test_special(
     const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only once
-  if (dis_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(dis_->get_comm()) == 0)
   {
     // extract name of quantity to be tested
     std::string quantity = container.get<std::string>("QUANTITY");

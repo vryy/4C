@@ -90,7 +90,7 @@ void LowMach::Algorithm::init()
   numinflowsteps_ = fluiddyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP");
   if (turbinflow_)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       std::cout << "##############################################################" << '\n';
       std::cout << "#                     TURBULENT INFLOW                       #" << '\n';
@@ -367,7 +367,7 @@ void LowMach::Algorithm::outer_loop()
   int itnum = 0;
   bool stopnonliniter = false;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n****************************************\n          OUTER ITERATION "
                  "LOOP\n****************************************\n";
@@ -387,7 +387,7 @@ void LowMach::Algorithm::outer_loop()
   if (special_flow_ != "no" && step() < samstart_)
   {
     itmax_ = itmaxbs_;
-    if (get_comm().MyPID() == 0 and
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0 and
         (step() == 1 or (turbinflow_ and step() == (numinflowsteps_ + 1))))
     {
       std::cout << "\n+----------------------------------------------------------------------------"
@@ -404,7 +404,8 @@ void LowMach::Algorithm::outer_loop()
   else
   {
     itmax_ = itmaxpre_;
-    if (get_comm().MyPID() == 0 and special_flow_ != "no" and step() == samstart_)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0 and special_flow_ != "no" and
+        step() == samstart_)
     {
       std::cout << "\n+----------------------------------------------------------------------------"
                    "----------------+"
@@ -425,7 +426,7 @@ void LowMach::Algorithm::outer_loop()
 
   // initially solve scalar transport equation
   // (values for intermediate time steps were calculated at the end of PerpareTimeStep)
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\n****************************************\n        SCALAR TRANSPORT "
                  "SOLVER\n****************************************\n";
   scatra_field()->solve();
@@ -446,7 +447,7 @@ void LowMach::Algorithm::outer_loop()
     set_scatra_values_in_fluid();
 
     // solve low-Mach-number flow equations
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       std::cout << "\n****************************************\n              FLUID "
                    "SOLVER\n****************************************\n";
     fluid_field()->solve();
@@ -455,7 +456,7 @@ void LowMach::Algorithm::outer_loop()
     set_fluid_values_in_scatra();
 
     // solve scalar transport equation
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       std::cout << "\n****************************************\n        SCALAR TRANSPORT "
                    "SOLVER\n****************************************\n";
     scatra_field()->solve();
@@ -475,7 +476,7 @@ void LowMach::Algorithm::mono_loop()
   int itnum = 0;
   bool stopnonliniter = false;
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n****************************************\n       MONOLITHIC ITERATION "
                  "LOOP\n****************************************\n";
@@ -817,7 +818,7 @@ bool LowMach::Algorithm::convergence_check(int itnum)
   bool scatrastopnonliniter = false;
 
   // fluid convergence check
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n****************************************\n  CONVERGENCE CHECK FOR ITERATION "
                  "STEP\n****************************************\n";
@@ -828,7 +829,7 @@ bool LowMach::Algorithm::convergence_check(int itnum)
       fluid_field()->convergence_check(itnum, itmax_, ittol_, ittol_, ittol_, ittol_);
 
   // scatra convergence check
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\n****************************************\n         SCALAR TRANSPORT "
                  "CHECK\n****************************************\n";
   scatrastopnonliniter = std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())

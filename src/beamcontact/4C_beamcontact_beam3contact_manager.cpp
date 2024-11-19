@@ -14,6 +14,7 @@
 #include "4C_beamcontact_beam3contact_octtree.hpp"
 #include "4C_beaminteraction_beam_to_beam_contact_defines.hpp"
 #include "4C_beaminteraction_beam_to_beam_contact_utils.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_fem_discretization.hpp"
@@ -113,7 +114,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
   currentpp_ = sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM");
   btspp_ = sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM");
 
-  if (!pdiscret_.get_comm().MyPID())
+  if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()))
   {
     std::cout << "========================= Beam Contact =========================" << std::endl;
     std::cout << "Elements in discret.   = " << pdiscret_.num_global_elements() << std::endl;
@@ -132,10 +133,10 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
   if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::OctreeType>(sbeamcontact_, "BEAMS_OCTREE") !=
       Inpar::BEAMCONTACT::boct_none)
   {
-    if (!pdiscret_.get_comm().MyPID())
+    if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()))
       std::cout << "BTB-CO penalty         = " << currentpp_ << std::endl;
 
-    if (!pdiscret_.get_comm().MyPID())
+    if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()))
       std::cout << "BTS-CO penalty         = " << btspp_ << std::endl;
 
     tree_ = std::make_shared<Beam3ContactOctTree>(sbeamcontact_, pdiscret_, *btsoldiscret_);
@@ -149,10 +150,11 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
     // compute the search radius for searching possible contact pairs
     compute_search_radius();
     tree_ = nullptr;
-    if (!pdiscret_.get_comm().MyPID()) std::cout << "\nBrute Force Search" << std::endl;
+    if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()))
+      std::cout << "\nBrute Force Search" << std::endl;
   }
 
-  if (!pdiscret_.get_comm().MyPID())
+  if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()))
   {
     if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
         Inpar::BEAMCONTACT::bstr_penalty)
@@ -311,7 +313,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
               "only positive values are allowed for potential law exponent. Check your input file");
     }
 
-    if (!pdiscret_.get_comm().MyPID())
+    if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()))
     {
       std::cout << "=============== Beam Potential-Based Interaction ===============" << std::endl;
 
@@ -364,14 +366,14 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
       // Compute the search radius for searching possible contact pairs
       compute_search_radius();
       pottree_ = nullptr;
-      if (!pdiscret_.get_comm().MyPID())
+      if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()))
       {
         std::cout << "\nSearch Strategy:     Brute Force Search" << std::endl;
         std::cout << "Search Radius:       " << searchradiuspot_ << std::endl;
       }
     }
 
-    if (!pdiscret_.get_comm().MyPID())
+    if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()))
     {
       std::cout << "================================================================\n"
                 << std::endl;
@@ -391,7 +393,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::print(std::ostream& os) const
 {
-  if (get_comm().MyPID() == 0) os << "Beam3 Contact discretization:" << std::endl;
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+    os << "Beam3 Contact discretization:" << std::endl;
 
   problem_discret().print(os);
 
@@ -445,7 +448,8 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
 
     t_end = Teuchos::Time::wallTime() - t_start;
     Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
-    if (!pdiscret_.get_comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
+    if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()) &&
+        ioparams.get<int>("STDOUTEVRY", 0))
       Core::IO::cout(Core::IO::standard)
           << "      OctTree Search (Contact): " << t_end << " seconds" << Core::IO::endl;
   }
@@ -459,7 +463,8 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
     elementpairs = brute_force_search(currentpositions, searchradius_, sphericalsearchradius_);
     t_end = Teuchos::Time::wallTime() - t_start;
     Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
-    if (!pdiscret_.get_comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
+    if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()) &&
+        ioparams.get<int>("STDOUTEVRY", 0))
       Core::IO::cout(Core::IO::standard)
           << "      Brute Force Search (Contact): " << t_end << " seconds" << Core::IO::endl;
   }
@@ -481,7 +486,8 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
 
       double t_end = Teuchos::Time::wallTime() - t_start;
       Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
-      if (!pdiscret_.get_comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
+      if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()) &&
+          ioparams.get<int>("STDOUTEVRY", 0))
         Core::IO::cout(Core::IO::standard)
             << "      OctTree Search (Potential): " << t_end << " seconds" << Core::IO::endl;
     }
@@ -496,7 +502,8 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
           searchradiuspot_);  // TODO do we need a sphericalsearchradius here as well?
       double t_end = Teuchos::Time::wallTime() - t_start;
       Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
-      if (!pdiscret_.get_comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
+      if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()) &&
+          ioparams.get<int>("STDOUTEVRY", 0))
         Core::IO::cout(Core::IO::standard)
             << "      Brute Force Search (Potential): " << t_end << " seconds" << Core::IO::endl;
     }
@@ -533,7 +540,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
 
 
   t_end = Teuchos::Time::wallTime() - t_start;
-  if (!pdiscret_.get_comm().MyPID())
+  if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()))
     Core::IO::cout(Core::IO::debug)
         << "      Pair management: " << t_end << " seconds. " << Core::IO::endl;
   t_start = Teuchos::Time::wallTime();
@@ -542,7 +549,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
   evaluate_all_pairs(timeintparams);
 
   t_end = Teuchos::Time::wallTime() - t_start;
-  if (!pdiscret_.get_comm().MyPID())
+  if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()))
     Core::IO::cout(Core::IO::debug)
         << "      Evaluate Contact Pairs: " << t_end << " seconds. " << Core::IO::endl;
   double sumproc_evaluationtime = 0.0;
@@ -587,7 +594,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
 #endif
 
   t_end = Teuchos::Time::wallTime() - t_start;
-  if (!pdiscret_.get_comm().MyPID())
+  if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()))
     Core::IO::cout(Core::IO::debug)
         << "      Post-manage Pairs: " << t_end << " seconds. " << Core::IO::endl;
 
@@ -882,8 +889,10 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // if current proc is participating it writes row IDs into (e)stproc
   std::vector<int> stproc(0);
   std::vector<int> estproc(0);
-  if (noderowmap_->NumMyElements()) stproc.push_back(bt_sol_discret().get_comm().MyPID());
-  if (elerowmap_->NumMyElements()) estproc.push_back(bt_sol_discret().get_comm().MyPID());
+  if (noderowmap_->NumMyElements())
+    stproc.push_back(Core::Communication::my_mpi_rank(bt_sol_discret().get_comm()));
+  if (elerowmap_->NumMyElements())
+    estproc.push_back(Core::Communication::my_mpi_rank(bt_sol_discret().get_comm()));
 
   // information how many processors participate in total
   std::vector<int> allproc(bt_sol_discret().get_comm().NumProc());
@@ -1465,7 +1474,7 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
 
   pdiscret_.get_comm().SumAll(&numpairsthisproc, &numpairs, 1);
 
-  if (pdiscret_.get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(pdiscret_.get_comm()) == 0)
     Core::IO::cout(Core::IO::standard)
         << "\t Total number of BTB contact pairs:     " << numpairs << Core::IO::endl;
 
@@ -1476,7 +1485,7 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
 
     pdiscret_.get_comm().SumAll(&numpairsthisproc, &numpairs, 1);
 
-    if (pdiscret_.get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(pdiscret_.get_comm()) == 0)
       Core::IO::cout(Core::IO::standard)
           << "\t Total number of BTSOL contact pairs:    " << numpairs << Core::IO::endl;
   }
@@ -1887,7 +1896,7 @@ void CONTACT::Beam3cmanager::compute_search_radius()
   sphericalsearchradius_ = 2.0 * searchboxinc_ + globalcharactlength;
 
   // some information for the user
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "Penalty parameter      = " << currentpp_ << std::endl;
     std::cout << "BTS-Penalty parameter  = " << btspp_ << std::endl;
@@ -2063,7 +2072,8 @@ void CONTACT::Beam3cmanager::update(
         // beams could cross!
         pairs_[i]->invert_normal();
         Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
-        if (!pdiscret_.get_comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
+        if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()) &&
+            ioparams.get<int>("STDOUTEVRY", 0))
           std::cout << "      Warning: Penetration to large, choose higher penalty parameter!"
                     << std::endl;
       }
@@ -2200,7 +2210,7 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
   FILE* fp = nullptr;
 
   // The whole gmsh output is done by proc 0!
-  if (btsoldiscret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(btsoldiscret_->get_comm()) == 0)
   {
     // open file to write output data into
     fp = fopen(filename.str().c_str(), "w");
@@ -2343,7 +2353,7 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
                        // the output to one output file
                        for (int i = 0; i < numoutputloops; i++)
   {
-    if (btsoldiscret_->get_comm().MyPID() == i)
+    if (Core::Communication::my_mpi_rank(btsoldiscret_->get_comm()) == i)
     {
       fp = fopen(filename.str().c_str(), "a");
       std::stringstream gmshfilecontent;
@@ -2941,7 +2951,7 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
 
   get_comm().Barrier();
   // Add a white and a black point -> this is necessary in order to get the full color range
-  if (btsoldiscret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(btsoldiscret_->get_comm()) == 0)
   {
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream gmshfilecontent;
@@ -3291,7 +3301,7 @@ void CONTACT::Beam3cmanager::update_constr_norm()
 
   // print results to screen
   Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
-  if (get_comm().MyPID() == 0 && ioparams.get<int>("STDOUTEVRY", 0))
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0 && ioparams.get<int>("STDOUTEVRY", 0))
   {
     Core::IO::cout(Core::IO::debug)
         << Core::IO::endl
@@ -3350,7 +3360,7 @@ void CONTACT::Beam3cmanager::console_output()
   if (ioparams.get<int>("STDOUTEVRY", 0))
   {
     // begin output
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       Core::IO::cout(Core::IO::verbose)
           << "\n    Active contact "
@@ -3532,7 +3542,7 @@ void CONTACT::Beam3cmanager::console_output()
     get_comm().SumAll(&numperpc_transitions, &sumpro_numperpc_transitions, 1);
 
 #ifdef PRINTNUMCONTACTSFILE
-    if (Comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(Comm()) == 0)
     {
       // TODO
       std::ostringstream filename;
@@ -3601,7 +3611,7 @@ void CONTACT::Beam3cmanager::console_output()
 
     // print results to screen
     Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
-    if (get_comm().MyPID() == 0 && ioparams.get<int>("STDOUTEVRY", 0))
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0 && ioparams.get<int>("STDOUTEVRY", 0))
     {
       Core::IO::cout(Core::IO::standard)
           << "\n    Number of Point-to-Point Contact Pairs: " << sumpro_numperpc << Core::IO::endl;
@@ -3660,7 +3670,8 @@ void CONTACT::Beam3cmanager::console_output()
 
     // end output
     get_comm().Barrier();
-    if (get_comm().MyPID() == 0) Core::IO::cout(Core::IO::standard) << Core::IO::endl;
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+      Core::IO::cout(Core::IO::standard) << Core::IO::endl;
   }
   return;
 }

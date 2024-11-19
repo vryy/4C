@@ -9,6 +9,7 @@
 
 #include "4C_adapter_fld_poro.hpp"
 #include "4C_adapter_str_fpsiwrapper.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fpsi_utils.hpp"
@@ -220,13 +221,13 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
   if (fluid_field()->interface()->Map(FLD::Utils::MapExtractor::cond_fsi)->NumGlobalElements())
   {
     FSI_Interface_exists_ = true;
-    if (comm.MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm) == 0)
       std::cout << "FPSI Calculation will be performed with FSI - Interface!" << std::endl;
   }
   else
   {
     FSI_Interface_exists_ = false;
-    if (comm.MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(comm) == 0)
       std::cout << "FPSI Calculation will skip all FSI parts as there is no FSI - Interface!"
                 << std::endl;
   }
@@ -394,7 +395,7 @@ void FPSI::Monolithic::time_step()
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ((converged()) and (get_comm().MyPID() == 0))
+  if ((converged()) and (Core::Communication::my_mpi_rank(get_comm()) == 0))
   {
     if (linesearch_counter > 0.5)
       std::cout << "            Evaluation of residual with scaled increment yields: " << normofrhs_
@@ -1204,8 +1205,9 @@ void FPSI::Monolithic::build_convergence_norms()
 void FPSI::Monolithic::print_newton_iter()
 {
   // print to standard out
-  // replace myrank_ here general by Comm().MyPID()
-  if ((get_comm().MyPID() == 0) and printscreen_ and (step() % printscreen_ == 0) and printiter_)
+  // replace myrank_ here general by Core::Communication::my_mpi_rank(Comm())
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and printscreen_ and
+      (step() % printscreen_ == 0) and printiter_)
   {
     if (iter_ == 1) print_newton_iter_header(stdout);
     print_newton_iter_text(stdout);

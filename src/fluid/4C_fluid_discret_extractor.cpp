@@ -7,6 +7,7 @@
 
 #include "4C_fluid_discret_extractor.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_condition_periodic.hpp"
 #include "4C_fem_dofset_transparent.hpp"
 #include "4C_global_data.hpp"
@@ -34,7 +35,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
   // yes, we have nodes belonging to a separate section
   if (sepcond.size() != 0)
   {
-    if (parentdiscret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(parentdiscret_->get_comm()) == 0)
     {
       printf("+----------------\n");
       printf("|\n");
@@ -249,14 +250,14 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
           -1, colnodes.size(), colnodes.data(), 0, childdiscret_->get_comm());
     }
 
-    if (childdiscret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
     {
       printf("| Distribute inflow discretization according to the initial nodemaps");
     }
 
     childdiscret_->redistribute(*newrownodemap, *newcolnodemap, false, false, false);
 
-    if (childdiscret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
     {
       std::cout << " ... done.\n";
     }
@@ -264,7 +265,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
     // make all conditions known to the child discretization
     // i.e. periodic boundary conditions, dirichlet conditions, ...
     {
-      if (childdiscret_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
       {
         printf("| Inherit all boundary conditions");
       }
@@ -330,13 +331,13 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
         }
       }
 
-      if (childdiscret_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
       {
         std::cout << " ... done.\n";
       }
     }
 
-    if (childdiscret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
     {
       std::cout << "| Replace dofset by a transparent dofset that copies ";
       std::cout << "the dofs of the original";
@@ -351,12 +352,12 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
     // remark: nothing is redistributed here
     childdiscret_->redistribute(*newrownodemap, *newcolnodemap, true, true, true);
 
-    if (childdiscret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
     {
       std::cout << " ... done.\n";
     }
 
-    if (childdiscret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
     {
       std::cout << "| Call PARMETIS on the child discretization and ";
       std::cout << "redistribute according to";
@@ -379,14 +380,14 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
     const auto& [sepcondrownodes, sepcondcolnodes] =
         Core::Rebalance::rebalance_node_maps(*sepcondnodemap, rebalanceParams);
 
-    if (childdiscret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
     {
       std::cout << "| Redistributing .";
     }
     // redistribute accordingly to the adapted rowmap
     childdiscret_->redistribute(*sepcondrownodes, *sepcondcolnodes, false, false);
 
-    if (childdiscret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
     {
       std::cout << ".. done.\n";
     }
@@ -394,7 +395,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
     // redistribute master and slave nodes
     // master and slave nodes are owned by one proc afterwards
     {
-      if (childdiscret_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
       {
         std::cout << "| Apply periodic boundary conditions to the redistributed";
         std::cout << " discretization and fetch slave nodes to the master's proc\n";
@@ -410,7 +411,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
       row_pbcmapmastertoslave_ = pbc.return_all_coupled_row_nodes();
     }
 
-    if (childdiscret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
     {
       std::cout << "| Assign the dofs for the redistributed layout, again using ";
       std::cout << "a parallel version";
@@ -431,7 +432,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
     //         it also calls fill_complete() at the end
     childdiscret_->fill_complete(true, true, true);
 
-    if (childdiscret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
     {
       std::cout << " ... done.\n";
       printf("|\n");
@@ -451,7 +452,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
       std::vector<int> my_n_dof(numproc, 0);
       std::vector<int> n_dof(numproc, 0);
 
-      int myrank = childdiscret_->get_comm().MyPID();
+      int myrank = Core::Communication::my_mpi_rank(childdiscret_->get_comm());
 
       my_n_nodes[myrank] = childdiscret_->node_row_map()->NumMyElements();
       my_n_elements[myrank] = childdiscret_->num_my_col_elements();
@@ -464,7 +465,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
       childdiscret_->get_comm().SumAll(my_n_ghostele.data(), n_ghostele.data(), numproc);
       childdiscret_->get_comm().SumAll(my_n_dof.data(), n_dof.data(), numproc);
 
-      if (childdiscret_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
       {
         printf("   +-----+---------------+-----------------+----------------+-----------------+\n");
         printf("   +                          child discretization                            +\n");
@@ -508,7 +509,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
             if (childdiscret_->dof_col_map()->LID(gid) < 0)
             {
               insane = true;
-              printf("myrank %d dof %d not in colmap\n", childdiscret_->get_comm().MyPID(), gid);
+              printf("myrank %d dof %d not in colmap\n",
+                  Core::Communication::my_mpi_rank(childdiscret_->get_comm()), gid);
             }
           }
         }

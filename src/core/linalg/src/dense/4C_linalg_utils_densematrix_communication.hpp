@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 
 #include <Epetra_Comm.h>
@@ -51,7 +52,7 @@ namespace Core::LinAlg
   void gather(std::vector<T>& sdata, std::vector<T>& rdata, const int ntargetprocs,
       const int* tprocs, const Epetra_Comm& comm)
   {
-    const int myrank = comm.MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(comm);
     const int numproc = comm.NumProc();
     if (numproc == 1)
     {
@@ -126,7 +127,7 @@ namespace Core::LinAlg
   void gather(std::set<T>& sdata, std::set<T>& rdata, const int ntargetprocs, const int* tprocs,
       const Epetra_Comm& comm)
   {
-    const int myrank = comm.MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(comm);
     const int numproc = comm.NumProc();
     if (numproc == 1)
     {
@@ -201,7 +202,7 @@ namespace Core::LinAlg
   void gather(std::map<int, std::set<T>>& sdata, std::map<int, std::set<T>>& rdata,
       const int ntargetprocs, const int* tprocs, const Epetra_Comm& comm)
   {
-    const int myrank = comm.MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(comm);
     const int numproc = comm.NumProc();
     if (numproc == 1)
     {
@@ -276,7 +277,7 @@ namespace Core::LinAlg
   void gather(std::map<int, std::vector<T>>& sdata, std::map<int, std::vector<T>>& rdata,
       const int ntargetprocs, const int* tprocs, const Epetra_Comm& comm)
   {
-    const int myrank = comm.MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(comm);
     const int numproc = comm.NumProc();
     if (numproc == 1)
     {
@@ -352,7 +353,7 @@ namespace Core::LinAlg
   void gather(std::map<T, U>& sdata, std::map<T, U>& rdata, const int ntargetprocs,
       const int* tprocs, const Epetra_Comm& comm)
   {
-    const int myrank = comm.MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(comm);
     const int numproc = comm.NumProc();
     if (numproc == 1)
     {

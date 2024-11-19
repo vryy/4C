@@ -31,7 +31,7 @@ void Core::FE::extract_my_values(const Core::LinAlg::Vector<double>& global,
     const int lid = global.Map().LID(lm[i]);
     if (lid < 0)
       FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-          global.Comm().MyPID(), lm[i]);
+          Core::Communication::my_mpi_rank(global.Comm()), lm[i]);
     local[i] = global[lid];
   }
   return;
@@ -50,7 +50,7 @@ void Core::FE::extract_my_values(const Core::LinAlg::Vector<double>& global,
     const int lid = global.Map().LID(lm[i]);
     if (lid < 0)
       FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-          global.Comm().MyPID(), lm[i]);
+          Core::Communication::my_mpi_rank(global.Comm()), lm[i]);
     local[i] = global[lid];
   }
   return;
@@ -73,7 +73,7 @@ void Core::FE::extract_my_values(const Core::LinAlg::MultiVector<double>& global
     const int lid = global.Map().LID(lm[i]);
     if (lid < 0)
       FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::MultiVector<double>",
-          global.Comm().MyPID(), lm[i]);
+          Core::Communication::my_mpi_rank(global.Comm()), lm[i]);
 
     // loop over multi vector columns (numcol=1 for Core::LinAlg::Vector<double>)
     for (int col = 0; col < numcol; col++)
@@ -101,7 +101,7 @@ void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
     const int lid = global.Map().LID(nodegid);
     if (lid < 0)
       FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-          global.Comm().MyPID(), nodegid);
+          Core::Communication::my_mpi_rank(global.Comm()), nodegid);
 
     // loop over multi vector columns (numcol=1 for Core::LinAlg::Vector<double>)
     for (int col = 0; col < numcol; col++)
@@ -134,7 +134,7 @@ void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
       const int lid = global.Map().LID(nodegid);
       if (lid < 0)
         FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::MultiVector<double>",
-            global.Comm().MyPID(), nodegid);
+            Core::Communication::my_mpi_rank(global.Comm()), nodegid);
       local(i + (nsd * j)) = global(i)[lid];
     }
   }

@@ -44,7 +44,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
     std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver,
     std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : discret_(actdis),
-      myrank_(actdis->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(actdis->get_comm())),
       solver_(solver),
       solveradapttol_(tdynparams.get<bool>("ADAPTCONV")),
       solveradaptolbetter_(tdynparams.get<double>("ADAPTCONV_BETTER")),

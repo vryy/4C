@@ -7,6 +7,7 @@
 
 #include "4C_contact_meshtying_penalty_strategy.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -48,7 +49,7 @@ void CONTACT::MtPenaltyStrategy::mortar_coupling(
   TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtPenaltyStrategy::mortar_coupling");
 
   // print message
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "Performing mortar coupling...............";
     fflush(stdout);
@@ -118,7 +119,7 @@ void CONTACT::MtPenaltyStrategy::mortar_coupling(
   // time measurement
   get_comm().Barrier();
   const double t_end = Teuchos::Time::wallTime() - t_start;
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "in...." << std::scientific << std::setprecision(6) << t_end << " secs"
               << std::endl;
 }
@@ -137,7 +138,7 @@ CONTACT::MtPenaltyStrategy::mesh_initialization()
     return nullptr;
 
   // print message
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "Performing mesh initialization..........." << std::endl;
   }
@@ -183,7 +184,7 @@ CONTACT::MtPenaltyStrategy::mesh_initialization()
   // time measurement
   get_comm().Barrier();
   const double t_end = Teuchos::Time::wallTime() - t_start;
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "in...." << std::scientific << std::setprecision(6) << t_end << " secs"
               << std::endl;
@@ -393,7 +394,7 @@ void CONTACT::MtPenaltyStrategy::update_constraint_norm(int uzawaiter)
   constrnorm_ = cnorm;
 
   // output to screen
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "********************************************\n";
     std::cout << "Constraint Norm: " << cnorm << "\n";

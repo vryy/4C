@@ -7,6 +7,7 @@
 
 #include "4C_xfem_coupling_base.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fluid_ele_parameter_xfem.hpp"
 #include "4C_mat_newtonianfluid.hpp"
@@ -79,7 +80,7 @@ XFEM::CouplingBase::CouplingBase(
       coupl_dis_(nullptr),
       coupl_name_(""),
       averaging_strategy_(Inpar::XFEM::invalid),
-      myrank_(bg_dis_->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(bg_dis_->get_comm())),
       dt_(-1.0),
       time_(time),
       step_(step),

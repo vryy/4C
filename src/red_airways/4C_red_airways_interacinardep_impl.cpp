@@ -153,7 +153,7 @@ void Discret::Elements::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& rhs, std::shared_ptr<Core::Mat::Material> material)
 {
-  const int myrank = discretization.get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(discretization.get_comm());
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
@@ -251,7 +251,7 @@ void Discret::Elements::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
           if (local_id < 0)
           {
             FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i]->id(),
-                discretization.get_comm().MyPID());
+                Core::Communication::my_mpi_rank(discretization.get_comm()));
             exit(1);
           }
         }
@@ -394,7 +394,7 @@ void Discret::Elements::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
           if (local_id < 0)
           {
             FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i],
-                discretization.get_comm().MyPID());
+                Core::Communication::my_mpi_rank(discretization.get_comm()));
             exit(1);
           }
 

@@ -758,7 +758,7 @@ void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
           time_adaptivity_params.set<double>("SIZERATIOMIN", fsiada.get<double>("SIZERATIOMIN"));
           time_adaptivity_params.set<double>("SIZERATIOSCALE", fsiada.get<double>("SAFETYFACTOR"));
 
-          if (actdis_->get_comm().MyPID() == 0)
+          if (Core::Communication::my_mpi_rank(actdis_->get_comm()) == 0)
           {
             Core::IO::cout
                 << "*** Due to FSI time step size adaptivity with structure based error "
@@ -852,7 +852,7 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
           ti_strategy->get_data_sdyn().get_model_types();
       if (modeltypes.find(Inpar::Solid::model_lag_pen_constraint) != modeltypes.end())
       {
-        if ((actdis_->get_comm()).MyPID() == 0)
+        if (Core::Communication::my_mpi_rank((actdis_->get_comm())) == 0)
           Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
 
         str_wrapper_ = std::make_shared<StructureConstrMerged>(

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::Utils::FluidInfNormScaling::FluidInfNormScaling(Core::LinAlg::MapExtractor& mapextractor)
-    : myrank_(mapextractor.Map(0)->Comm().MyPID()),
+    : myrank_(Core::Communication::my_mpi_rank(mapextractor.Map(0)->Comm())),
       velpressplitter_(mapextractor),
       leftscale_momentum_(true),
       leftscale_continuity_(false)

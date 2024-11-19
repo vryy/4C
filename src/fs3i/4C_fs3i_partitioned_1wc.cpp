@@ -9,6 +9,7 @@
 
 #include "4C_adapter_fld_fluid_fsi.hpp"
 #include "4C_adapter_str_fsiwrapper.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fsi_monolithic.hpp"
 #include "4C_global_data.hpp"
@@ -94,7 +95,7 @@ void FS3I::PartFS3I1Wc::do_fsi_step()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I1Wc::do_scatra_step()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n***********************\n GAS TRANSPORT SOLVER \n***********************\n"
               << std::endl;
@@ -164,7 +165,7 @@ bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
     case Inpar::ScaTra::solvertype_linear_incremental:
     {
       // print the screen info
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         printf("\n+-------------------+-------------------+\n");
         printf("| norm of residual  | norm of increment |\n");
@@ -198,7 +199,7 @@ bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
       if (connorm < 1e-5) connorm = 1.0;
 
       // print the screen info
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         printf("|  %3d/%3d   |   %10.3E [L_2 ]  | %10.3E   |   %10.3E [L_2 ]  | %10.3E   |\n",
             itnum, itemax, abstolres, conresnorm, ittol, incconnorm / connorm);
@@ -209,7 +210,7 @@ bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
       // current residual. Norm of residual is just printed for information
       if (conresnorm <= abstolres and incconnorm / connorm <= ittol)
       {
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         {
           // print 'finish line'
           printf(
@@ -222,7 +223,7 @@ bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
       // next timestep...
       else if (itnum == itemax)
       {
-        if (get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         {
           printf("+---------------------------------------------------------------+\n");
           printf("|            >>>>>> not converged in itemax steps!              |\n");

@@ -5,6 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
@@ -87,7 +88,7 @@ void ntainp_ccadiscret(
   }
 
   // all reading is done at this point!
-  if (lcomm->MyPID() == 0) problem->write_input_parameters();
+  if (Core::Communication::my_mpi_rank(*lcomm) == 0) problem->write_input_parameters();
 
   // before we destroy the reader we want to know about unused sections
   const bool all_ok = !reader.print_unknown_sections(std::cout);

@@ -32,7 +32,7 @@ void NOX::Nln::Aux::set_printing_parameters(Teuchos::ParameterList& p_nox, const
 
   // adjust printing parameter list
   Teuchos::ParameterList& printParams = p_nox.sublist("Printing");
-  printParams.set<int>("MyPID", comm.MyPID());
+  printParams.set<int>("MyPID", Core::Communication::my_mpi_rank(comm));
   printParams.set<int>("Output Precision", 5);
   printParams.set<int>("Output Processor", 0);
   int outputinformationlevel = ::NOX::Utils::Error;  // ::NOX::Utils::Error==0

@@ -7,6 +7,7 @@
 
 #include "4C_structure_resulttest.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_io_linedefinition.hpp"
@@ -60,7 +61,7 @@ void StruResultTest::test_node(
       const Core::Nodes::Node* actnode = strudisc_->g_node(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->owner() != strudisc_->get_comm().MyPID()) return;
+      if (actnode->owner() != Core::Communication::my_mpi_rank(strudisc_->get_comm())) return;
 
       std::string position = container.get<std::string>("QUANTITY");
       bool unknownpos = true;  // make sure the result value std::string can be handled
@@ -161,7 +162,7 @@ void StruResultTest::test_special(
   const double result = get_special_result_for_testing(quantity);
 
   // compare values on one processor only, as they are the same everywhere
-  if (strudisc_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(strudisc_->get_comm()) == 0)
   {
     const int err = compare_values(result, "SPECIAL", container);
     nerr += err;

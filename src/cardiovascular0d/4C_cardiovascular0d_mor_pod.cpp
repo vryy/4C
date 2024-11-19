@@ -7,6 +7,7 @@
 
 #include "4C_cardiovascular0d_mor_pod.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
@@ -315,7 +316,7 @@ void Cardiovascular0D::ProperOrthogonalDecomposition::read_pod_basis_vectors_fro
   // calculation of starting points in matrix for each processor
   const Epetra_Comm& comm(full_model_dof_row_map_->Comm());
   const int numproc(comm.NumProc());
-  const int mypid(comm.MyPID());
+  const int mypid(Core::Communication::my_mpi_rank(comm));
   std::vector<int> localnumbers(numproc, 0);
   std::vector<int> globalnumbers(numproc, 0);
   localnumbers[mypid] = mymap->NumMyElements();
@@ -361,7 +362,7 @@ void Cardiovascular0D::ProperOrthogonalDecomposition::read_pod_basis_vectors_fro
   comm.Barrier();
 
   // Inform user
-  if (comm.MyPID() == 0) std::cout << " --> Successful\n" << std::endl;
+  if (Core::Communication::my_mpi_rank(comm) == 0) std::cout << " --> Successful\n" << std::endl;
 
   return;
 }

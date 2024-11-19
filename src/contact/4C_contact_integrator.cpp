@@ -7,6 +7,7 @@
 
 #include "4C_contact_integrator.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_defines.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
@@ -4575,7 +4576,7 @@ void CONTACT::Integrator::integrate_d(Mortar::Element& sele, const Epetra_Comm& 
             }
             else
             {
-              if (sele.owner() == comm.MyPID())
+              if (sele.owner() == Core::Communication::my_mpi_rank(comm))
               {
                 if (abs(prod) > MORTARINTTOL)
                   dynamic_cast<CONTACT::FriNode*>(cnode)->add_d2_value(jdof, col, prod);
@@ -9562,7 +9563,7 @@ void inline CONTACT::Integrator::gp_d2(Mortar::Element& sele, Mortar::Element& m
       // IMPORTANT: assembling to node is only allowed for master nodes
       //            associated to owned slave elements. This results
       //            to an unique entry distribution!
-      if (sele.owner() == comm.MyPID())
+      if (sele.owner() == Core::Communication::my_mpi_rank(comm))
       {
         for (int jdof = 0; jdof < ndof; ++jdof)
         {
@@ -10461,7 +10462,7 @@ void inline CONTACT::Integrator::gp_te_master(Mortar::Element& sele, Mortar::Ele
     Core::LinAlg::SerialDenseVector& mval, double& jac, double& wgt, double* jumpval,
     const Epetra_Comm& comm)
 {
-  if (sele.owner() != comm.MyPID()) return;
+  if (sele.owner() != Core::Communication::my_mpi_rank(comm)) return;
 
   // mele is involved for both-sided wear
   mele.set_attached() = true;
@@ -10555,7 +10556,7 @@ void inline CONTACT::Integrator::gp_2d_te_master_lin(int& iter,  // like k
     const Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dualmap,
     const Epetra_Comm& comm)
 {
-  if (sele.owner() != comm.MyPID()) return;
+  if (sele.owner() != Core::Communication::my_mpi_rank(comm)) return;
 
   const int nrow = sele.num_node();
   const int ncol = mele.num_node();
@@ -11135,7 +11136,7 @@ void inline CONTACT::Integrator::gp_3d_te_master_lin(int& iter, Mortar::Element&
     const Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dual2map,
     const Epetra_Comm& comm)
 {
-  if (sele.owner() != comm.MyPID()) return;
+  if (sele.owner() != Core::Communication::my_mpi_rank(comm)) return;
 
   const int ncol = mele.num_node();
   const int nrow = sele.num_node();

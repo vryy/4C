@@ -60,7 +60,7 @@ int Discret::Elements::ScaTraEleCalcLoma<distype>::evaluate_action(Core::Element
     case ScaTra::Action::calc_domain_and_bodyforce:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
-      if (ele->owner() == discretization.get_comm().MyPID())
+      if (ele->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
         // calculate domain and bodyforce integral
         calculate_domain_and_bodyforce(elevec1_epetra, ele);
 

@@ -1476,7 +1476,7 @@ void Solid::ModelEvaluator::Structure::update_step_element()
 
   if (isDuringPrestressing && prestress_type == Inpar::Solid::PreStress::mulf)
   {
-    if (discret().get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret().get_comm()) == 0)
       Core::IO::cout << "====== Entering PRESTRESSING update" << Core::IO::endl;
 
     // Choose special update action for elements in case of MULF

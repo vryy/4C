@@ -33,7 +33,7 @@ void loma_dyn(int restart)
   const Epetra_Comm& comm = Global::Problem::instance()->get_dis("fluid")->get_comm();
 
   // print warning to screen
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
     std::cout << "You are now about to enter the module for low-Mach-number flow!" << std::endl;
 
   // define abbreviation

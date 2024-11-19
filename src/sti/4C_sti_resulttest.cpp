@@ -7,6 +7,7 @@
 
 #include "4C_sti_resulttest.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_sti_monolithic.hpp"
@@ -40,7 +41,7 @@ void STI::STIResultTest::test_special(
 )
 {
   // make sure that quantity is tested only by one processor
-  if (sti_algorithm_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(sti_algorithm_->get_comm()) == 0)
   {
     // extract name of quantity to be tested
     std::string quantity = container.get<std::string>("QUANTITY");

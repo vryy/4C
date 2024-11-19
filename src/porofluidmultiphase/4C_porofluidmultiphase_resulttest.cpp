@@ -57,7 +57,9 @@ void POROFLUIDMULTIPHASE::ResultTest::test_node(
       Core::Nodes::Node* actnode = porotimint_.discretization()->g_node(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->owner() != porotimint_.discretization()->get_comm().MyPID()) return;
+      if (actnode->owner() !=
+          Core::Communication::my_mpi_rank(porotimint_.discretization()->get_comm()))
+        return;
 
       // extract name of quantity to be tested
       std::string quantity = container.get<std::string>("QUANTITY");
@@ -103,7 +105,9 @@ void POROFLUIDMULTIPHASE::ResultTest::test_element(
       const Core::Elements::Element* actelement = porotimint_.discretization()->g_element(element);
 
       // Here we are just interested in the elements that we own (i.e. a row element)!
-      if (actelement->owner() != porotimint_.discretization()->get_comm().MyPID()) return;
+      if (actelement->owner() !=
+          Core::Communication::my_mpi_rank(porotimint_.discretization()->get_comm()))
+        return;
 
       // extract name of quantity to be tested
       std::string quantity = container.get<std::string>("QUANTITY");
@@ -250,7 +254,7 @@ void POROFLUIDMULTIPHASE::ResultTest::test_special(
     const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only once
-  if (porotimint_.discretization()->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(porotimint_.discretization()->get_comm()) == 0)
   {
     // extract name of quantity to be tested
     std::string quantity = container.get<std::string>("QUANTITY");

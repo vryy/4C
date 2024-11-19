@@ -33,7 +33,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
     const std::string& statistics_outfilename)
     : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
 {
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::cout << "This is the turbulence statistics manager of a benchmark of blood flowing "
                  "through a channel:"
@@ -107,7 +107,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   //--------------------------------------------------------------------
   // round robin loop to communicate coordinates to all procs
   //--------------------------------------------------------------------
-  int myrank = discret_->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
   int numprocs = discret_->get_comm().NumProc();
 
   std::vector<char> sblock;
@@ -200,7 +200,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   //----------------------------------------------------------------------
   // Error Message if no nodes are on z-axis (nothing for evaluation)
   //----------------------------------------------------------------------
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     if (numzcoor_ == 0)
     {
@@ -269,7 +269,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
     int countActRadNodeOnAllProcs = 0;
     discret_->get_comm().SumAll(&actRadNode, &countActRadNodeOnAllProcs, 1);
 
-    int myrank = discret_->get_comm().MyPID();
+    int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
     int numprocs = discret_->get_comm().NumProc();
 
     std::vector<char> sblock;
@@ -363,7 +363,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   // Error Message if no nodes are in radial direction in a specific evaluation plane (nothing for
   // evaluation)
   //----------------------------------------------------------------------
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     if (numrstatlocations_ == 0)
     {
@@ -400,7 +400,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   std::shared_ptr<std::ofstream> log;
   std::shared_ptr<std::ofstream> log_2;
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
     std::string s2(statistics_outfilename_);
@@ -610,7 +610,7 @@ void FLD::TurbulenceStatisticsBfda::dump_statistics(int step)
   //----------------------------------------------------------------------------------------------
   std::shared_ptr<std::ofstream> log;
   std::shared_ptr<std::ofstream> log_2;
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics_along_z");  // s.append(".flow_statistics");

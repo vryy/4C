@@ -8,6 +8,7 @@
 #include "4C_post_common.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_fem_condition_periodic.hpp"
 #include "4C_fem_condition_utils.hpp"
@@ -309,7 +310,8 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
 
     /* read the previous control file */
     parse_control_file(table, control_file_name.c_str(), MPI_COMM_WORLD);
-    if (comm_->MyPID() == 0) printf("read restarted control file: %s\n", control_file_name.c_str());
+    if (Core::Communication::my_mpi_rank(*comm_) == 0)
+      printf("read restarted control file: %s\n", control_file_name.c_str());
 
     /* find the previous results */
     {
@@ -471,19 +473,20 @@ void PostProblem::read_meshes()
             "No meshfile name for discretization %s.", currfield.discretization()->name().c_str());
       std::string filename = fn;
       Core::IO::HDFReader reader = Core::IO::HDFReader(input_dir_);
-      reader.open(filename, num_output_procs, comm_->NumProc(), comm_->MyPID());
+      reader.open(
+          filename, num_output_procs, comm_->NumProc(), Core::Communication::my_mpi_rank(*comm_));
 
       if (currfield.num_nodes() != 0)
       {
         std::shared_ptr<std::vector<char>> node_data =
-            reader.read_node_data(step, comm_->NumProc(), comm_->MyPID());
+            reader.read_node_data(step, comm_->NumProc(), Core::Communication::my_mpi_rank(*comm_));
         currfield.discretization()->unpack_my_nodes(*node_data);
       }
 
       if (currfield.num_elements() != 0)
       {
-        std::shared_ptr<std::vector<char>> element_data =
-            reader.read_element_data(step, comm_->NumProc(), comm_->MyPID());
+        std::shared_ptr<std::vector<char>> element_data = reader.read_element_data(
+            step, comm_->NumProc(), Core::Communication::my_mpi_rank(*comm_));
         currfield.discretization()->unpack_my_elements(*element_data);
       }
 
@@ -504,7 +507,7 @@ void PostProblem::read_meshes()
                 currfield.discretization()->name().c_str());
 
           std::shared_ptr<std::vector<char>> packed_knots;
-          if (comm_->MyPID() == 0)
+          if (Core::Communication::my_mpi_rank(*comm_) == 0)
             packed_knots = reader.read_knotvector(step);
           else
             packed_knots = std::make_shared<std::vector<char>>();
@@ -514,7 +517,7 @@ void PostProblem::read_meshes()
           {
             Core::Communication::Exporter exporter(nurbsdis->get_comm());
 
-            if (comm_->MyPID() == 0)
+            if (Core::Communication::my_mpi_rank(*comm_) == 0)
             {
               MPI_Request request;
               int tag = -1;
@@ -534,7 +537,7 @@ void PostProblem::read_meshes()
             {
               int length = -1;
               int frompid = 0;
-              int mypid = comm_->MyPID();
+              int mypid = Core::Communication::my_mpi_rank(*comm_);
 
               std::vector<char> rblock;
 
@@ -863,7 +866,7 @@ void PostResult::open_result_files(MAP* field_info)
   const std::string basename = map_read_string(field_info, "result_file");
   // field_->problem()->set_basename(basename);
   Epetra_Comm& comm = *field_->problem()->get_comm();
-  file_.open(basename, num_output_procs, comm.NumProc(), comm.MyPID());
+  file_.open(basename, num_output_procs, comm.NumProc(), Core::Communication::my_mpi_rank(comm));
 }
 
 /*----------------------------------------------------------------------*

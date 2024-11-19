@@ -60,7 +60,7 @@ void CONSTRAINTS::MPConstraint2::initialize(const double& time)
     if ((inittimes_.find(condID)->second < time) && (!activecons_.find(condID)->second))
     {
       activecons_.find(condID)->second = true;
-      if (actdisc_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(actdisc_->get_comm()) == 0)
       {
         std::cout << "Encountered another active condition (Id = " << condID
                   << ")  for restart time t = " << time << std::endl;
@@ -97,7 +97,7 @@ void CONSTRAINTS::MPConstraint2::initialize(
       IDs[i] = MPCcondID - mid;
       // remember next time, that this condition is already initialized, i.e. active
       activecons_.find(condID)->second = true;
-      if (actdisc_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(actdisc_->get_comm()) == 0)
       {
         std::cout << "Encountered a new active condition (Id = " << condID
                   << ")  at time t = " << time << std::endl;
@@ -106,7 +106,7 @@ void CONSTRAINTS::MPConstraint2::initialize(
   }
   // replace systemvector by the given amplitude values
   // systemvector is supposed to be the vector with initial values of the constraints
-  if (actdisc_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(actdisc_->get_comm()) == 0)
   {
     systemvector->ReplaceGlobalValues(amplit.size(), amplit.data(), IDs.data());
   }
@@ -157,7 +157,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
     actdisc->fill_complete();
   }
 
-  const int myrank = newdis->get_comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(newdis->get_comm());
 
   if (constrcondvec.size() == 0)
     FOUR_C_THROW(
@@ -335,8 +335,8 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(std::shared_ptr<Core::FE::D
       int err = actele->evaluate(
           params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err)
-        FOUR_C_THROW(
-            "Proc %d: Element %d returned err=%d", disc->get_comm().MyPID(), actele->id(), err);
+        FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+            Core::Communication::my_mpi_rank(disc->get_comm()), actele->id(), err);
 
       int eid = actele->id();
 

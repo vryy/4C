@@ -79,9 +79,10 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
     std::list<std::shared_ptr<Core::Nodes::Node>>& homelesslinker)
 {
   const int numproc = binstrategy_->bin_discret()->get_comm().NumProc();
-  const int myrank = binstrategy_->bin_discret()->get_comm().MyPID();  // me
-  const int torank = (myrank + 1) % numproc;                           // to
-  const int fromrank = (myrank + numproc - 1) % numproc;               // from
+  const int myrank =
+      Core::Communication::my_mpi_rank(binstrategy_->bin_discret()->get_comm());  // me
+  const int torank = (myrank + 1) % numproc;                                      // to
+  const int fromrank = (myrank + numproc - 1) % numproc;                          // from
 
   Core::Communication::Exporter exporter(binstrategy_->bin_discret()->get_comm());
 

@@ -7,6 +7,7 @@
 
 #include "4C_pasi_dyn.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
@@ -31,7 +32,7 @@ void pasi_dyn()
   const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   // print pasi logo to screen
-  if (comm.MyPID() == 0) PaSI::Utils::logo();
+  if (Core::Communication::my_mpi_rank(comm) == 0) PaSI::Utils::logo();
 
   // get parameter list
   const Teuchos::ParameterList& params = problem->pasi_dynamic_params();

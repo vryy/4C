@@ -279,7 +279,7 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_thickness:
     {
       // nothing to do for ghost elements
-      if (discretization.get_comm().MyPID() == owner())
+      if (Core::Communication::my_mpi_rank(discretization.get_comm()) == owner())
       {
         std::shared_ptr<std::vector<char>> thickdata = nullptr;
 
@@ -424,7 +424,7 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       if (is_params_interface())  // new structural time integration
       {
         // only add contributions from row elements to avoid counting them on more than one proc
-        if (discretization.get_comm().MyPID() == owner())
+        if (Core::Communication::my_mpi_rank(discretization.get_comm()) == owner())
           str_params_interface().add_contribution_to_energy_type(intenergy, Solid::internal_energy);
       }
       else  // old structural time integration

@@ -7,6 +7,7 @@
 
 #include "4C_contact_nitsche_integrator_tsi.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_nitsche_integrator.hpp"
 #include "4C_contact_nitsche_utils.hpp"
@@ -72,7 +73,7 @@ void CONTACT::IntegratorNitscheTsi::gpts_forces(Mortar::Element& sele, Mortar::E
     std::vector<Core::Gen::Pairedvector<int, double>>& deriv_contact_normal, double* sxi,
     double* mxi)
 {
-  if (sele.owner() != Comm_.MyPID()) return;
+  if (sele.owner() != Core::Communication::my_mpi_rank(Comm_)) return;
 
   if (dim != n_dim()) FOUR_C_THROW("dimension inconsistency");
 

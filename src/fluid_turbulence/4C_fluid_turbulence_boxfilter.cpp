@@ -318,8 +318,8 @@ void FLD::Boxfilter::apply_box_filter(
     // against heaviside function element
     int err = ele->evaluate(filterparams, *discret_, lm, emat1, emat2, evec1, evec2, evec2);
     if (err)
-      FOUR_C_THROW(
-          "Proc %d: Element %d returned err=%d", discret_->get_comm().MyPID(), ele->id(), err);
+      FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+          Core::Communication::my_mpi_rank(discret_->get_comm()), ele->id(), err);
 
     // get contribution to patch volume of this element. Add it up.
     double volume_contribution = filterparams.get<double>("volume_contribution");
@@ -338,7 +338,7 @@ void FLD::Boxfilter::apply_box_filter(
       Core::Nodes::Node* node = (elenodes[nn]);
 
       // we are interested only in  row nodes
-      if (node->owner() == discret_->get_comm().MyPID())
+      if (node->owner() == Core::Communication::my_mpi_rank(discret_->get_comm()))
       {
         // now assemble the computed values into the global vector
         int id = (node->id());
@@ -440,7 +440,9 @@ void FLD::Boxfilter::apply_box_filter(
       for (const auto& [master_gid, slave_gids] : *pbcmapmastertoslave)
       {
         // loop only owned nodes
-        if ((discret_->g_node(master_gid))->owner() != discret_->get_comm().MyPID()) continue;
+        if ((discret_->g_node(master_gid))->owner() !=
+            Core::Communication::my_mpi_rank(discret_->get_comm()))
+          continue;
 
         int lid = noderowmap->LID(master_gid);
         if (lid < 0) FOUR_C_THROW("nodelid < 0 ?");
@@ -1074,8 +1076,8 @@ void FLD::Boxfilter::apply_box_filter_scatra(
     // against heaviside function element
     int err = ele->evaluate(filterparams, *scatradiscret_, la, emat1, emat2, evec1, evec2, evec2);
     if (err)
-      FOUR_C_THROW("Proc %d: Element %d returned err=%d", scatradiscret_->get_comm().MyPID(),
-          ele->id(), err);
+      FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+          Core::Communication::my_mpi_rank(scatradiscret_->get_comm()), ele->id(), err);
 
     // get contribution to patch volume of this element. Add it up.
     // double volume_contribution = filterparams.get<double>("volume_contribution");
@@ -1094,7 +1096,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
       Core::Nodes::Node* node = (elenodes[nn]);
 
       // we are interested only in  row nodes
-      if (node->owner() == scatradiscret_->get_comm().MyPID())
+      if (node->owner() == Core::Communication::my_mpi_rank(scatradiscret_->get_comm()))
       {
         // now assemble the computed values into the global vector
         int id = (node->id());
@@ -1165,7 +1167,8 @@ void FLD::Boxfilter::apply_box_filter_scatra(
       for (const auto& [master_gid, slave_gids] : *pbcmapmastertoslave)
       {
         // loop only owned nodes
-        if ((scatradiscret_->g_node(master_gid))->owner() != scatradiscret_->get_comm().MyPID())
+        if ((scatradiscret_->g_node(master_gid))->owner() !=
+            Core::Communication::my_mpi_rank(scatradiscret_->get_comm()))
           continue;
 
         int lid = noderowmap->LID(master_gid);

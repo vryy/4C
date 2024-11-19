@@ -7,6 +7,7 @@
 
 #include "4C_particle_engine_runtime_vtp_writer.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_visualization_manager.hpp"
@@ -171,7 +172,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::set_particle_positions_and_states
           .set_point_data_vector<int>("globalid", globaliddata, 1);
 
       // set particle owner data
-      std::vector<int> ownerdata(particlestored, comm_.MyPID());
+      std::vector<int> ownerdata(particlestored, Core::Communication::my_mpi_rank(comm_));
 
       // append owner of particles to vtp writer
       (runtime_visualization_managers_[type])[status]

@@ -198,7 +198,7 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
   // write restart
   if (write_restart_data)
   {
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       Core::IO::cout << "---  write restart... " << Core::IO::endl;
 
     restart_count_++;
@@ -236,7 +236,7 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
 
   if (restart_count_ == 5)
   {
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       Core::IO::cout << "\t... Clear MapCache after " << restart_count_ << " written restarts."
                      << Core::IO::endl;
 
@@ -408,7 +408,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
 )
 {
   // Todo: should be private
-  int myrank = discret_->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
 
   if (myrank == 0) std::cout << "\n\t ... writing Gmsh output...\n" << std::flush;
 
@@ -1287,7 +1287,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
 {
   if (!gmsh_discret_out_) return;
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     std::cout << "discretization output " << discret_->name() << std::endl;
 
   // cast to DiscretizationFaces
@@ -1301,7 +1301,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
   // output for Element and Node IDs
   const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files("DISCRET",
       discret_->writer()->output()->file_name(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
-      discret_->get_comm().MyPID());
+      Core::Communication::my_mpi_rank(discret_->get_comm()));
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);
@@ -1332,7 +1332,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_eos(
   // output for Element and Node IDs
   const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files("EOS",
       discret_->writer()->output()->file_name(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
-      discret_->get_comm().MyPID());
+      Core::Communication::my_mpi_rank(discret_->get_comm()));
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);

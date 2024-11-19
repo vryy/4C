@@ -179,7 +179,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate(Core::Elements:
 
   // perform finite difference check on element level
   if (scatrapara_->fd_check() == Inpar::ScaTra::fdcheck_local and
-      ele->owner() == discretization.get_comm().MyPID())
+      ele->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
     fd_check(ele, elemat1_epetra, elevec1_epetra, elevec2_epetra);
 
   // ---------------------------------------------------------------------
@@ -189,8 +189,9 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate(Core::Elements:
   if (turbparams_->turb_model() == Inpar::FLUID::dynamic_smagorinsky and turbparams_->cs_av())
   {
     Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
-    store_model_parameters_for_output(
-        ele, ele->owner() == discretization.get_comm().MyPID(), turbulencelist, nlayer);
+    store_model_parameters_for_output(ele,
+        ele->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()), turbulencelist,
+        nlayer);
   }
 
   return 0;

@@ -7,6 +7,8 @@
 
 #include "4C_pasi_utils.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
+
 #include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -38,7 +40,7 @@ void PaSI::Utils::change_time_parameter(const Epetra_Comm& comm,
   particle_params.set<int>("RESTARTEVRY", pasi_params.get<int>("RESTARTEVRY"));
   struct_params.set<int>("RESTARTEVRY", pasi_params.get<int>("RESTARTEVRY"));
 
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "================= Overview of chosen time stepping: =================="
               << std::endl;

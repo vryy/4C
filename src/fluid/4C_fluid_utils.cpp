@@ -440,7 +440,7 @@ void FLD::Utils::StressManager::calc_sep_enr(std::shared_ptr<Core::LinAlg::Spars
     if (sysmat2 == nullptr)
       FOUR_C_THROW("One of these two dynamic casts should have worked... Sorry!");
 
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       std::cout << "Calculating mean WSS via multilevel-aggregation:" << std::endl;
 
     Teuchos::ParameterList params;
@@ -540,7 +540,7 @@ void FLD::Utils::lift_drag(const std::shared_ptr<const Core::FE::Discretization>
     const std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp, const int ndim,
     std::shared_ptr<std::map<int, std::vector<double>>>& liftdragvals, bool alefluid)
 {
-  int myrank = dis->get_comm().MyPID();
+  int myrank = Core::Communication::my_mpi_rank(dis->get_comm());
 
   std::map<const int, std::set<Core::Nodes::Node*>> ldnodemap;
   std::map<const int, const std::vector<double>*> ldcoordmap;

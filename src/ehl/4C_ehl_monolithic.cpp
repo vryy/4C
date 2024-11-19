@@ -280,7 +280,7 @@ void EHL::Monolithic::newton_full()
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ((converged()) and (get_comm().MyPID() == 0))
+  if ((converged()) and (Core::Communication::my_mpi_rank(get_comm()) == 0))
   {
     print_newton_conv();
   }
@@ -897,9 +897,9 @@ bool EHL::Monolithic::converged()
 void EHL::Monolithic::print_newton_iter()
 {
   // print to standard out
-  // replace myrank_ here general by Comm().MyPID()
-  if ((get_comm().MyPID() == 0) and print_screen_evry() and (step() % print_screen_evry() == 0) and
-      printiter_)
+  // replace myrank_ here general by Core::Communication::my_mpi_rank(Comm())
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
+      (step() % print_screen_evry() == 0) and printiter_)
   {
     if (iter_ == 1) print_newton_iter_header(stdout);
     print_newton_iter_text(stdout);
@@ -1459,40 +1459,40 @@ void EHL::Monolithic::set_default_parameters()
   {
     case Inpar::EHL::bop_and:
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of EHL:\n res, inc with 'AND'." << std::endl;
       break;
     }
     case Inpar::EHL::bop_or:
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of EHL:\n res, inc with 'OR'." << std::endl;
       break;
     }
     case Inpar::EHL::bop_coupl_and_singl:
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of EHL:\n res, inc, str-res, lub-res, dis, pre with 'AND'."
                   << std::endl;
       break;
     }
     case Inpar::EHL::bop_coupl_or_singl:
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of EHL:\n (res, inc) or (str-res, lub-res, dis, pre)."
                   << std::endl;
       break;
     }
     case Inpar::EHL::bop_and_singl:
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of EHL:\n str-res, lub-res, dis, pre with 'AND'."
                   << std::endl;
       break;
     }
     case Inpar::EHL::bop_or_singl:
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of EHL:\n str-res, lub-res, dis, pre with 'OR'."
                   << std::endl;
       break;

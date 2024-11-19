@@ -7,6 +7,7 @@
 
 #include "4C_scatra_algorithm.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_fluid_turbulence_statistic_manager.hpp"
 #include "4C_global_data.hpp"
@@ -189,7 +190,7 @@ void ScaTra::ScaTraAlgorithm::prepare_time_step()
    */
   scatra_field()->prepare_time_step();
 
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n******************\n   TIME STEP     \n******************\n";
     std::cout << "\nStep:   " << step() << " / " << n_step() << "\n";
@@ -246,7 +247,7 @@ void ScaTra::ScaTraAlgorithm::prepare_time_step_convection()
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraAlgorithm::print_scatra_solver()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout
         << "\n****************************\n      TRANSPORT SOLVER\n****************************\n";
 }
@@ -256,7 +257,7 @@ void ScaTra::ScaTraAlgorithm::print_scatra_solver()
 void ScaTra::ScaTraAlgorithm::do_fluid_step()
 {
   // solve nonlinear Navier-Stokes system
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\n************************\n      FLUID SOLVER\n************************\n";
 
   // currently only required for forced homogeneous isotropic turbulence with
@@ -336,7 +337,7 @@ void ScaTra::ScaTraAlgorithm::outer_iteration_convection()
   bool stopnonliniter = false;
 
   // Outer Iteration loop starts
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout << "**************************************************************\n";
@@ -457,7 +458,7 @@ bool ScaTra::ScaTraAlgorithm::convergence_check(
   // Print the incremental based convergence check to the screen
   if (natconvitnum != 1)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       std::cout << "\n";
       std::cout
@@ -479,7 +480,7 @@ bool ScaTra::ScaTraAlgorithm::convergence_check(
     // if ((incconnorm_L2/connorm_L2 <= natconvittol))
     {
       stopnonliniter = true;
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         printf("| Outer Iteration loop converged after iteration %3d/%3d                    |\n",
             natconvitnum, natconvitmax);
@@ -490,7 +491,7 @@ bool ScaTra::ScaTraAlgorithm::convergence_check(
     }
     else
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         printf("| Outer Iteration loop is not converged after iteration %3d/%3d             |\n",
             natconvitnum, natconvitmax);
@@ -505,7 +506,7 @@ bool ScaTra::ScaTraAlgorithm::convergence_check(
     // first outer iteration loop: fluid solver has not got the new density yet
     // => minimum two outer iteration loops
     stopnonliniter = false;
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       std::cout << "\n";
       std::cout
@@ -531,7 +532,7 @@ bool ScaTra::ScaTraAlgorithm::convergence_check(
         (natconvitmax == 1))
     {
       stopnonliniter = true;
-      if ((get_comm().MyPID() == 0))
+      if ((Core::Communication::my_mpi_rank(get_comm()) == 0))
       {
         printf("|     >>>>>> not converged in itemax steps!     |\n");
         printf("+-----------------------------------------------+\n");

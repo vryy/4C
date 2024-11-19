@@ -83,7 +83,7 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(std::shared_ptr<Core::FE::Discretizati
     // get geometry
     std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = spring_->geometry();
     // calculate nodal area
-    if (!actdisc_->get_comm().MyPID())
+    if (!Core::Communication::my_mpi_rank(actdisc_->get_comm()))
       Core::IO::cout << "Computing area for spring dashpot condition...\n";
     get_area(geom);
     initialize_cur_surf_normal();

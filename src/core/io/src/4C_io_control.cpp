@@ -10,6 +10,7 @@
 
 #include "4C_io_control.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_io_legacy_table.hpp"
 #include "4C_io_pstream.hpp"
 
@@ -39,7 +40,7 @@ Core::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string prob
       restartname_(outputname),
       filesteps_(filesteps),
       restart_step_(restart_step),
-      myrank_(comm.MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(comm)),
       write_binary_output_(write_binary_output)
 {
   if (restart_step)
@@ -104,7 +105,7 @@ Core::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string prob
       restartname_(restartname),
       filesteps_(filesteps),
       restart_step_(restart_step),
-      myrank_(comm.MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(comm)),
       write_binary_output_(write_binary_output)
 {
   if (restart_step)

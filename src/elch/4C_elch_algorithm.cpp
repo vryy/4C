@@ -7,6 +7,7 @@
 
 #include "4C_elch_algorithm.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_scatra_timint_elch.hpp"
 
@@ -41,7 +42,7 @@ void ElCh::Algorithm::prepare_time_loop()
  *----------------------------------------------------------------------*/
 void ElCh::Algorithm::print_scatra_solver()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout
         << "\n****************************\n      ELCH SOLVER\n****************************\n";
 }
@@ -100,7 +101,7 @@ bool ElCh::Algorithm::convergence_check(
   // Print the incremental based convergence check to the screen
   if (natconvitnum != 1)
   {
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       std::cout << "\n";
       std::cout
@@ -124,7 +125,7 @@ bool ElCh::Algorithm::convergence_check(
     // if ((incconnorm_L2/connorm_L2 <= natconvittol))
     {
       stopnonliniter = true;
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         printf("| Outer Iteration loop converged after iteration %3d/%3d                    |\n",
             natconvitnum, natconvitmax);
@@ -135,7 +136,7 @@ bool ElCh::Algorithm::convergence_check(
     }
     else
     {
-      if (get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       {
         printf("| Outer Iteration loop is not converged after iteration %3d/%3d             |\n",
             natconvitnum, natconvitmax);
@@ -150,7 +151,7 @@ bool ElCh::Algorithm::convergence_check(
     // first outer iteration loop: fluid solver has not got the new density yet
     // => minimum two outer iteration loops
     stopnonliniter = false;
-    if (get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       std::cout << "\n";
       std::cout
@@ -177,7 +178,7 @@ bool ElCh::Algorithm::convergence_check(
         (natconvitmax == 1))
     {
       stopnonliniter = true;
-      if ((get_comm().MyPID() == 0))
+      if ((Core::Communication::my_mpi_rank(get_comm()) == 0))
       {
         printf("|     >>>>>> not converged in itemax steps!     |\n");
         printf("+-----------------------------------------------+\n");

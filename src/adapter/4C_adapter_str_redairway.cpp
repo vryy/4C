@@ -7,6 +7,7 @@
 
 #include "4C_adapter_str_redairway.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -138,7 +139,7 @@ void Adapter::StructureRedAirway::init_vol()
 {
   calc_vol(vn_);
 
-  if (discretization()->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discretization()->get_comm()) == 0)
   {
     std::cout << "------------------------ Initial tissue volumes ----------------------"
               << std::endl;

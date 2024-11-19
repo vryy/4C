@@ -71,7 +71,7 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
       xfluid_timint_check_interfacetips_(xfluid_timint_check_interfacetips),
       xfluid_timint_check_sliding_on_surface_(xfluid_timint_check_sliding_on_surface)
 {
-  myrank_ = dis->get_comm().MyPID();
+  myrank_ = Core::Communication::my_mpi_rank(dis->get_comm());
   numproc_ = dis->get_comm().NumProc();
 
   permutation_map_ = std::make_shared<std::map<int, int>>();
@@ -2242,9 +2242,9 @@ void XFEM::XFluidTimeInt::output()
   int step_diff = 500;
 
   // output for all dofsets of nodes
-  const std::string filename =
-      Core::IO::Gmsh::get_new_file_name_and_delete_old_files("TIMINT_Method",
-          dis_->writer()->output()->file_name(), step_, step_diff, true, dis_->get_comm().MyPID());
+  const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
+      "TIMINT_Method", dis_->writer()->output()->file_name(), step_, step_diff, true,
+      Core::Communication::my_mpi_rank(dis_->get_comm()));
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);

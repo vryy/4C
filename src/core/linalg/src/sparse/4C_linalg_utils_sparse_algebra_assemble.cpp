@@ -25,7 +25,7 @@ void Core::LinAlg::assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDense
   if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.numRows() || lcoldim > Aele.numCols())
     FOUR_C_THROW("Mismatch in dimensions");
 
-  const int myrank = A.Comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(A.Comm());
   const Epetra_Map& rowmap = A.RowMap();
 
   // this 'Assemble' is not implemented for a Filled() matrix A
@@ -77,7 +77,7 @@ void Core::LinAlg::assemble(Core::LinAlg::Vector<double>& V,
   // therefore check only for ">" rather than "!="
   if (ldim != (int)lmowner.size() || ldim > Vele.length()) FOUR_C_THROW("Mismatch in dimensions");
 
-  const int myrank = V.Comm().MyPID();
+  const int myrank = Core::Communication::my_mpi_rank(V.Comm());
 
   for (int lrow = 0; lrow < ldim; ++lrow)
   {
@@ -102,7 +102,7 @@ void Core::LinAlg::assemble_my_vector(double scalar_target, Core::LinAlg::Vector
       FOUR_C_THROW(
           "The target vector has no global row %i"
           " on processor %i!",
-          sgid, target.Comm().MyPID());
+          sgid, Core::Communication::my_mpi_rank(target.Comm()));
 
     // update the vector row
     target[tlid] = scalar_target * target[tlid] + scalar_source * source[slid];

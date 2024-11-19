@@ -7,6 +7,7 @@
 
 #include "4C_mortar_coupling3d.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
@@ -3471,7 +3472,7 @@ bool Mortar::Coupling3d::integrate_cells(
 void Mortar::Coupling3d::gmsh_output_cells(int lid) const
 {
   // every processor writes its own cell file
-  int proc = idiscret_.get_comm().MyPID();
+  int proc = Core::Communication::my_mpi_rank(idiscret_.get_comm());
   int nproc = idiscret_.get_comm().NumProc();
 
   // write each integration cell only once

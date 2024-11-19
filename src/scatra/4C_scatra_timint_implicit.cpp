@@ -60,7 +60,7 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(std::shared_ptr<Core::FE::Discretizat
       solver_(std::move(solver)),
       params_(params),
       extraparams_(extraparams),
-      myrank_(actdis->get_comm().MyPID()),
+      myrank_(Core::Communication::my_mpi_rank(actdis->get_comm())),
       splitter_(nullptr),
       strategy_(nullptr),
       additional_model_evaluator_(nullptr),
@@ -3618,7 +3618,8 @@ void ScaTra::ScaTraTimIntImpl::build_block_maps(
       for (int nodegid : *cond->get_nodes())
       {
         if (discret_->have_global_node(nodegid) and
-            discret_->g_node(nodegid)->owner() == discret_->get_comm().MyPID())
+            discret_->g_node(nodegid)->owner() ==
+                Core::Communication::my_mpi_rank(discret_->get_comm()))
         {
           const std::vector<int> nodedofs = discret_->dof(0, discret_->g_node(nodegid));
           std::copy(nodedofs.begin(), nodedofs.end(), std::inserter(dofs, dofs.end()));

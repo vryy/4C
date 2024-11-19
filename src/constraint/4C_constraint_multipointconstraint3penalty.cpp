@@ -67,7 +67,7 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
 
     int nummyele = 0;
     int numele = eletocond_id_.size();
-    if (!actdisc_->get_comm().MyPID())
+    if (!Core::Communication::my_mpi_rank(actdisc_->get_comm()))
     {
       nummyele = numele;
     }
@@ -94,7 +94,7 @@ void CONSTRAINTS::MPConstraint3Penalty::initialize(const double& time)
     if ((inittimes_.find(condID)->second < time) && (!activecons_.find(condID)->second))
     {
       activecons_.find(condID)->second = true;
-      if (actdisc_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(actdisc_->get_comm()) == 0)
       {
         std::cout << "Encountered another active condition (Id = " << condID
                   << ")  for restart time t = " << time << std::endl;
@@ -136,7 +136,7 @@ void CONSTRAINTS::MPConstraint3Penalty::initialize(Teuchos::ParameterList& param
     evaluate_error(*constraintdis_.find(condID)->second, params, *initerror_, true);
 
     activecons_.find(condID)->second = true;
-    if (actdisc_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(actdisc_->get_comm()) == 0)
     {
       std::cout << "Encountered a new active condition (Id = " << condID
                 << ")  at time t = " << time << std::endl;
@@ -223,7 +223,7 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
     std::shared_ptr<Epetra_Comm> com(actdisc->get_comm().Clone());
     std::shared_ptr<Core::FE::Discretization> newdis =
         std::make_shared<Core::FE::Discretization>(discret_name, com, actdisc->n_dim());
-    const int myrank = newdis->get_comm().MyPID();
+    const int myrank = Core::Communication::my_mpi_rank(newdis->get_comm());
     std::set<int> rownodeset;
     std::set<int> colnodeset;
     const Epetra_Map* actnoderowmap = actdisc->node_row_map();
@@ -406,7 +406,8 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
       int err = actele->evaluate(
           params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err)
-        FOUR_C_THROW("Proc %d: Element %d returned err=%d", disc->get_comm().MyPID(), eid, err);
+        FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+            Core::Communication::my_mpi_rank(disc->get_comm()), eid, err);
 
       // loadcurve business
       const auto* curve = cond->parameters().get_if<int>("curve");
@@ -480,7 +481,8 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Core::FE::Discretization&
       int err = actele->evaluate(
           params, disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err)
-        FOUR_C_THROW("Proc %d: Element %d returned err=%d", disc.get_comm().MyPID(), eid, err);
+        FOUR_C_THROW("Proc %d: Element %d returned err=%d",
+            Core::Communication::my_mpi_rank(disc.get_comm()), eid, err);
     }
 
     // assembly
@@ -492,7 +494,8 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Core::FE::Discretization&
 
     activecons_.find(condID)->second = true;
 
-    if (actdisc_->get_comm().MyPID() == 0 && (!(activecons_.find(condID)->second)))
+    if (Core::Communication::my_mpi_rank(actdisc_->get_comm()) == 0 &&
+        (!(activecons_.find(condID)->second)))
     {
       std::cout << "Encountered a new active penalty mp condition (Id = " << condID
                 << ")  at time t = " << time << std::endl;

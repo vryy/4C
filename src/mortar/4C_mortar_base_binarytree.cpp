@@ -7,6 +7,7 @@
 
 #include "4C_mortar_base_binarytree.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_mortar_node.hpp"
@@ -240,7 +241,7 @@ void Mortar::BaseBinaryTreeNode::enlarge_geometry(double& enlarge)
 void Mortar::BaseBinaryTreeNode::print_slabs()
 {
   std::cout << std::endl
-            << discret().get_comm().MyPID()
+            << Core::Communication::my_mpi_rank(discret().get_comm())
             << "************************************************************";
   print_type();
   std::cout << "slabs:";

@@ -8,6 +8,7 @@
 #include "4C_tsi_dyn.hpp"
 
 #include "4C_adapter_str_structure.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_tsi.hpp"
@@ -33,7 +34,7 @@ void tsi_dyn_drt()
   const Epetra_Comm& comm = Global::Problem::instance()->get_dis("structure")->get_comm();
 
   // print TSI-Logo to screen
-  if (comm.MyPID() == 0) TSI::printlogo();
+  if (Core::Communication::my_mpi_rank(comm) == 0) TSI::printlogo();
 
   // setup of the discretizations, including clone strategy
   TSI::Utils::setup_tsi(comm);

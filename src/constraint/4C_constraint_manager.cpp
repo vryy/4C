@@ -183,7 +183,7 @@ void CONSTRAINTS::ConstrManager::setup(
     Teuchos::ParameterList p1;
     // monitor values are only stored on processor zero since they are only needed for output
     int nummyele = 0;
-    if (!actdisc_->get_comm().MyPID())
+    if (!Core::Communication::my_mpi_rank(actdisc_->get_comm()))
     {
       nummyele = num_monitor_id_;
     }

@@ -7,6 +7,7 @@
 
 #include "4C_particle_algorithm_input_generator.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_particle_engine_object.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -16,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::InputGenerator::InputGenerator(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
-    : myrank_(comm.MyPID()), params_(params)
+    : myrank_(Core::Communication::my_mpi_rank(comm)), params_(params)
 {
   // empty constructor
 }

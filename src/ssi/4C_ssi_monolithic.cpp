@@ -926,7 +926,7 @@ void SSI::SsiMono::timeloop()
     // output solution to screen and files
     output();
   }
-  strategy_convcheck_->print_non_converged_steps(get_comm().MyPID());
+  strategy_convcheck_->print_non_converged_steps(Core::Communication::my_mpi_rank(get_comm()));
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -1294,7 +1294,7 @@ void SSI::SsiMono::calc_initial_time_derivative()
       (is_elch and is_scatra_manifold()) ? scatra_manifold()->splitter() : nullptr;
 
   // initial screen output
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "Calculating initial time derivative of state variables on discretization "
               << scatra_field()->discretization()->name();
@@ -1591,7 +1591,7 @@ std::shared_ptr<const Core::LinAlg::MultiMapExtractor> SSI::SsiMono::block_map_s
  *--------------------------------------------------------------------------------------*/
 void SSI::SsiMono::print_time_step_info()
 {
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << std::endl
               << "TIME: " << std::setw(11) << std::setprecision(4) << std::scientific << time()

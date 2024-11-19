@@ -457,7 +457,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
         std::cout << std::endl;
       }
       // NOTE: add integral values only for elements which are NOT ghosted!
-      if (ele->owner() == discretization.get_comm().MyPID())
+      if (ele->owner() == Core::Communication::my_mpi_rank(discretization.get_comm()))
       {
         // need current scalar vector
         // -> extract local values from the global vectors

@@ -313,7 +313,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system()
     const bool restartfrompartfsi = timeparams_.get<bool>("RESTART_FROM_PART_FSI");
     if (restartfrompartfsi)  // restart from part. fsi
     {
-      if (comm_.MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(comm_) == 0)
         std::cout << "Warning: RESTART_FROM_PART_FSI for mortar fsi is not jet implemented. For "
                      "now lambda_ is simply assumed to be zero!"
                   << std::endl;
@@ -1496,7 +1496,8 @@ void FSI::MortarMonolithicFluidSplit::output()
   {
     structure_field()->get_constraint_manager()->compute_monitor_values(
         structure_field()->dispnp());
-    if (comm_.MyPID() == 0) structure_field()->get_constraint_manager()->print_monitor_values();
+    if (Core::Communication::my_mpi_rank(comm_) == 0)
+      structure_field()->get_constraint_manager()->print_monitor_values();
   }
 }
 

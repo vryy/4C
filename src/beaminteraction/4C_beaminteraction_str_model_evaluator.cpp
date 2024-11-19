@@ -92,7 +92,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   dis_at_last_redistr_ =
       std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
   // get myrank
-  myrank_ = discret_ptr()->get_comm().MyPID();
+  myrank_ = Core::Communication::my_mpi_rank(discret_ptr()->get_comm());
 
   beaminteraction_params_ptr_ = std::make_shared<BEAMINTERACTION::BeamInteractionParams>();
   beaminteraction_params_ptr_->init();
@@ -191,8 +191,8 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
 
   binstrategy_ = std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params,
       Global::Problem::instance()->output_control_file(), ia_discret_->get_comm(),
-      ia_discret_->get_comm().MyPID(), correct_node, determine_relevant_points, discret_vec,
-      disp_vec);
+      Core::Communication::my_mpi_rank(ia_discret_->get_comm()), correct_node,
+      determine_relevant_points, discret_vec, disp_vec);
 
   binstrategy_->set_deforming_binning_domain_handler(
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box());

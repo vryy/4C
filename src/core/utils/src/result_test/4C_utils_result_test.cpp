@@ -7,6 +7,7 @@
 
 #include "4C_utils_result_test.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -142,7 +143,8 @@ void Core::Utils::ResultTestManager::test_all(const Epetra_Comm& comm)
   int uneval_test_count = 0;         // number of unevaluated tests
   const int size = results_.size();  // total number of tests
 
-  if (comm.MyPID() == 0) Core::IO::cout << "\nChecking results of " << size << " tests:\n";
+  if (Core::Communication::my_mpi_rank(comm) == 0)
+    Core::IO::cout << "\nChecking results of " << size << " tests:\n";
 
   for (auto& result : results_)
   {
@@ -167,7 +169,7 @@ void Core::Utils::ResultTestManager::test_all(const Epetra_Comm& comm)
   // print number of unevaluated tests to screen
   int guneval_test_count = 0;
   comm.SumAll(&uneval_test_count, &guneval_test_count, 1);
-  if (guneval_test_count > 0 and comm.MyPID() == 0)
+  if (guneval_test_count > 0 and Core::Communication::my_mpi_rank(comm) == 0)
     Core::IO::cout << guneval_test_count << " tests stay unevaluated" << Core::IO::endl;
 
   // determine the total number of errors
@@ -197,7 +199,7 @@ void Core::Utils::ResultTestManager::test_all(const Epetra_Comm& comm)
     }
   }
 
-  if (comm.MyPID() == 0) Core::IO::cout << "\nOK (" << count << ")\n";
+  if (Core::Communication::my_mpi_rank(comm) == 0) Core::IO::cout << "\nOK (" << count << ")\n";
 }
 
 /*----------------------------------------------------------------------*/

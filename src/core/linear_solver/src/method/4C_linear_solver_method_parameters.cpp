@@ -7,6 +7,7 @@
 
 #include "4C_linear_solver_method_parameters.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_discretization_nullspace.hpp"
 #include "4C_fem_general_elementtype.hpp"
@@ -105,7 +106,8 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
 void Core::LinearSolver::Parameters::fix_null_space(std::string field, const Epetra_Map& oldmap,
     const Epetra_Map& newmap, Teuchos::ParameterList& solveparams)
 {
-  if (!oldmap.Comm().MyPID()) printf("Fixing %s Nullspace\n", field.c_str());
+  if (!Core::Communication::my_mpi_rank(oldmap.Comm()))
+    printf("Fixing %s Nullspace\n", field.c_str());
 
   // find the ML or MueLu list
   Teuchos::ParameterList* params_ptr = nullptr;

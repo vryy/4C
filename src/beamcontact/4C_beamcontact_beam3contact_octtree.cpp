@@ -136,14 +136,14 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
   {
     case Inpar::BEAMCONTACT::boct_aabb:
     {
-      if (!discret_.get_comm().MyPID())
+      if (!Core::Communication::my_mpi_rank(discret_.get_comm()))
         std::cout << "Search routine:\nOctree + Axis Aligned BBs" << std::endl;
       boundingbox_ = Beam3ContactOctTree::axisaligned;
     }
     break;
     case Inpar::BEAMCONTACT::boct_cobb:
     {
-      if (!discret_.get_comm().MyPID())
+      if (!Core::Communication::my_mpi_rank(discret_.get_comm()))
         std::cout << "Search routine:\nOctree + Cylindrical Oriented BBs" << std::endl;
       boundingbox_ = Beam3ContactOctTree::cyloriented;
 
@@ -154,7 +154,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
     break;
     case Inpar::BEAMCONTACT::boct_spbb:
     {
-      if (!discret_.get_comm().MyPID())
+      if (!Core::Communication::my_mpi_rank(discret_.get_comm()))
         std::cout << "Search routine:\nOctree + Spherical BBs" << std::endl;
       boundingbox_ = Beam3ContactOctTree::spherical;
     }
@@ -164,7 +164,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
       break;
   }
 
-  if (!discret_.get_comm().MyPID())
+  if (!Core::Communication::my_mpi_rank(discret_.get_comm()))
   {
     int numextval = (int)extrusionvalue_->size();
     if (additiveextrusion_)
@@ -356,7 +356,7 @@ bool Beam3ContactOctTree::intersect_b_boxes_with(
 void Beam3ContactOctTree::octree_output(
     std::vector<std::vector<Core::Elements::Element*>> contactpairelements, int step)
 {
-  if (!discret_.get_comm().MyPID() && step != -1)
+  if (!Core::Communication::my_mpi_rank(discret_.get_comm()) && step != -1)
   {
     // active contact pairs
     if ((int)contactpairelements.size() > 0)
@@ -590,7 +590,7 @@ void Beam3ContactOctTree::create_bounding_boxes(
 
   searchdis_.Comm().MaxAll(&bbgentimelocal, &bbgentimeglobal, 1);
 
-  if (!searchdis_.Comm().MyPID())
+  if (!Core::Communication::my_mpi_rank(searchdis_.Comm()))
     std::cout << "\n\nBBox creation time:\t\t" << bbgentimeglobal << " seconds" << std::endl;
 #endif
 
@@ -974,7 +974,7 @@ bool Beam3ContactOctTree::locate_all()
 
   // calculate root box limits
   rootbox_ = get_root_box();
-  if (searchdis_.get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(searchdis_.get_comm()) == 0)
   {
     locate_box(allbboxesstdvec, rootbox_, octreelimits_, bboxesinoctants, bbox2octant, treedepth);
 
@@ -993,7 +993,7 @@ bool Beam3ContactOctTree::locate_all()
       *(searchdis_.element_col_map()), maxnumoctglobal, true);
 
   // fill epetra vector
-  if (!searchdis_.get_comm().MyPID())
+  if (!Core::Communication::my_mpi_rank(searchdis_.get_comm()))
   {
     bbox2octant_->PutScalar(-9.0);
     std_vec_to_epetra_multi_vec(bbox2octant, *bbox2octant_);
@@ -1028,7 +1028,7 @@ bool Beam3ContactOctTree::locate_all()
     Core::LinAlg::MultiVector<double> bboxinoctrow(octtreerowmap, maxdepthglobal, true);
 
     // fill bboxinoct for Proc 0
-    if (searchdis_.get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(searchdis_.get_comm()) == 0)
     {
       bboxesinoctants_->PutScalar(-9.0);
       //      for (int i=0 ; i<(int)bboxesinoctants.size(); i++ )
@@ -1041,7 +1041,7 @@ bool Beam3ContactOctTree::locate_all()
     communicate_multi_vector(bboxinoctrow, *bboxesinoctants_);
 
 #ifdef MEASURETIME
-    if (!searchdis_.Comm().MyPID())
+    if (!Core::Communication::my_mpi_rank(searchdis_.Comm()))
       std::cout << "\nOctree building time:\t\t" << Teuchos::Time::wallTime() - t_octree
                 << " seconds" << std::endl;
 #endif
@@ -1530,7 +1530,7 @@ void Beam3ContactOctTree::bounding_box_intersection(
   std::map<int, std::vector<int>>::iterator it;
   for (it = contactpairmap.begin(); it != contactpairmap.end(); it++)
   {
-    // if(!discret_.Comm().MyPID())
+    // if(!Core::Communication::my_mpi_rank(discret_.Comm()))
     // std::cout << std::scientific << (*it).first <<"  "<< ((*it).second)[0]<<" "<<
     // ((*it).second)[1]<<std::endl;
     int collid1 = searchdis_.element_col_map()->LID(((*it).second)[0]);
@@ -1560,7 +1560,7 @@ void Beam3ContactOctTree::bounding_box_intersection(
     temp_vec[1] = tempele2;
     contactpairelements.push_back(temp_vec);
   }
-  // if(!discret_.Comm().MyPID())
+  // if(!Core::Communication::my_mpi_rank(discret_.Comm()))
   // std::cout<<"number of boxes: "<<counter<<std::endl;
 
 #ifdef MEASURETIME
@@ -1569,7 +1569,7 @@ void Beam3ContactOctTree::bounding_box_intersection(
 
   searchdis_.Comm().MaxAll(&isectimelocal, &isectimeglobal, 1);
   discret_.Comm().Barrier();
-  if (!searchdis_.Comm().MyPID())
+  if (!Core::Communication::my_mpi_rank(searchdis_.Comm()))
     std::cout << "intersection time:\t\t" << isectimeglobal << " seconds" << std::endl;
 #endif
 
@@ -1818,7 +1818,7 @@ void Beam3ContactOctTree::communicate_vector(Core::LinAlg::Vector<double>& InVec
   if (doexport)
   {
     // zero out all vectors which are not Proc 0. Then, export Proc 0 data to InVec map.
-    if (discret_.get_comm().MyPID() != 0 && zerofy) OutVec.PutScalar(0.0);
+    if (Core::Communication::my_mpi_rank(discret_.get_comm()) != 0 && zerofy) OutVec.PutScalar(0.0);
     InVec.Export(OutVec, exporter, Add);
   }
   if (doimport) OutVec.Import(InVec, importer, Insert);
@@ -1837,7 +1837,7 @@ void Beam3ContactOctTree::communicate_multi_vector(Core::LinAlg::MultiVector<dou
   if (doexport)
   {
     // zero out all vectors which are not Proc 0. Then, export Proc 0 data to InVec map.
-    if (discret_.get_comm().MyPID() != 0 && zerofy) OutVec.PutScalar(0.0);
+    if (Core::Communication::my_mpi_rank(discret_.get_comm()) != 0 && zerofy) OutVec.PutScalar(0.0);
     InVec.Export(OutVec, exporter, Add);
   }
   if (doimport) OutVec.Import(InVec, importer, Insert);

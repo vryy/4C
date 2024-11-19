@@ -7,6 +7,7 @@
 
 #include "4C_contact_tsi_interface.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_defines.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
@@ -80,7 +81,7 @@ void CONTACT::TSIInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linst
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-    if (cnode->Owner() != Comm().MyPID())
+    if (cnode->Owner() != Core::Communication::my_mpi_rank(Comm()))
       FOUR_C_THROW("AssembleLinStick: Node ownership inconsistency!");
 
     const Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
@@ -204,7 +205,7 @@ void CONTACT::TSIInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linsli
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-    if (cnode->owner() != get_comm().MyPID())
+    if (cnode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleLinStick: Node ownership inconsistency!");
 
     const Core::LinAlg::Matrix<3, 1> n(cnode->mo_data().n(), true);
@@ -318,7 +319,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* conode = dynamic_cast<CONTACT::Node*>(node);
 
-    if (conode->owner() != get_comm().MyPID())
+    if (conode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleDualMass: Node ownership inconsistency!");
 
     double thermo_lm = conode->tsi_data().thermo_lm();

@@ -60,7 +60,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   // inflow channel check
   if (inflowchannel_)
   {
-    if (discret_->get_comm().MyPID() == 0)
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {
       std::cout << "\n---------------------------------------------------------------------------"
                 << std::endl;
@@ -126,7 +126,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
         params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL", "no_model") ==
             "Smagorinsky")
     {
-      if (discret_->get_comm().MyPID() == 0)
+      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       {
         std::cout
             << "                             Initialising output for Smagorinsky type models\n\n\n";
@@ -143,7 +143,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       if (modelparams->get<std::string>("PHYSICAL_MODEL", "no_model") ==
           "Multifractal_Subgrid_Scales")
       {
-        if (discret_->get_comm().MyPID() == 0)
+        if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
         {
           std::cout << "                             Initializing output for multifractal subgrid "
                        "scales type models\n\n\n";
@@ -301,7 +301,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     // round robin loop to communicate coordinates to all procs
 
     {
-      int myrank = discret_->get_comm().MyPID();
+      int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
       int numprocs = discret_->get_comm().NumProc();
 
       std::vector<char> sblock;
@@ -1247,7 +1247,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   std::shared_ptr<std::ofstream> log_res;
   std::shared_ptr<std::ofstream> log_res_scatra;
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
 
@@ -3843,7 +3843,7 @@ void FLD::TurbulenceStatisticsCha::time_average_means_and_output_of_statistics(c
   //----------------------------------------------------------------------
   // output to log-file
   std::shared_ptr<std::ofstream> log;
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
     if (inflowchannel_)
@@ -4296,7 +4296,7 @@ void FLD::TurbulenceStatisticsCha::dump_statistics(const int step)
   //----------------------------------------------------------------------
   // output to log-file
   std::shared_ptr<std::ofstream> log;
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
     if (inflowchannel_)
@@ -4346,7 +4346,7 @@ void FLD::TurbulenceStatisticsCha::dump_statistics(const int step)
     log->flush();
   }
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     // ------------------------------------------------------------------
     // additional output for dynamic Smagorinsky model
@@ -4688,7 +4688,7 @@ void FLD::TurbulenceStatisticsCha::dump_loma_statistics(const int step)
   //----------------------------------------------------------------------
   // output to log-file
   std::shared_ptr<std::ofstream> log;
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
     if (inflowchannel_)
@@ -5180,7 +5180,7 @@ void FLD::TurbulenceStatisticsCha::dump_scatra_statistics(const int step)
   //----------------------------------------------------------------------
   // output to log-file
   std::shared_ptr<std::ofstream> log;
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::string s(statistics_outfilename_);
     if (inflowchannel_)
@@ -5853,7 +5853,7 @@ void FLD::TurbulenceStatisticsCha::store_scatra_discret_and_params(
   scatraextraparams_ = scatraextraparams;
   scatratimeparams_ = scatratimeparams;
 
-  if (discret_->get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
   {
     std::cout << "Additional information:" << std::endl;
     std::cout << "-> added ScaTra discretization to channel-flow-statistics manager\n" << std::endl;

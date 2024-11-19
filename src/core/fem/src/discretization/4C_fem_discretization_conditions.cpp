@@ -96,7 +96,7 @@ void Core::FE::Discretization::boundary_conditions_geometry()
       for (const auto& [ele_id, ele] : condition->geometry())
       {
         // do not count ghosted elements
-        if (ele->owner() == get_comm().MyPID())
+        if (ele->owner() == Core::Communication::my_mpi_rank(get_comm()))
         {
           localcount += 1;
         }
@@ -161,7 +161,7 @@ void Core::FE::Discretization::assign_global_i_ds(const Epetra_Comm& comm,
 
   // unpack, unify and sort elements on processor 0
 
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::set<std::vector<int>> elements;
     int index = 0;

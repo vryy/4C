@@ -371,7 +371,7 @@ POROMULTIPHASE::PoroMultiPhaseBase::solid_pressure() const
 void POROMULTIPHASE::PoroMultiPhaseBase::print_structure_disabled_info()
 {
   // print out Info
-  if (get_comm().MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     std::cout << "\n";
     std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"

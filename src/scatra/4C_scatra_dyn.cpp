@@ -45,7 +45,7 @@ void scatra_dyn(int restart)
   const Epetra_Comm& comm = Global::Problem::instance()->get_dis("fluid")->get_comm();
 
   // print problem type
-  if (comm.MyPID() == 0)
+  if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "###################################################" << '\n';
     std::cout << "# YOUR PROBLEM TYPE: " << Global::Problem::instance()->problem_name() << '\n';
