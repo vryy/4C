@@ -13,6 +13,7 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_inpar_structure.hpp"
+#include "4C_solid_3D_ele_calc_eas_helpers.hpp"
 #include "4C_solid_3D_ele_calc_interface.hpp"
 #include "4C_solid_3D_ele_interface_serializable.hpp"
 #include "4C_solid_3D_ele_utils.hpp"
@@ -23,49 +24,6 @@
 #include <unordered_map>
 
 FOUR_C_NAMESPACE_OPEN
-
-namespace Solid::Elements
-{
-  enum class EasType
-  {
-    soh8_easnone,
-    eastype_h8_9,
-    eastype_h8_21,
-    eastype_sh8_7,
-    eastype_sh18_9,
-    eastype_undefined
-  };
-
-  template <Solid::Elements::EasType eastype>
-  struct EasTypeToNumEas
-  {
-  };
-  template <>
-  struct EasTypeToNumEas<Solid::Elements::EasType::eastype_h8_9>
-  {
-    static constexpr int num_eas = 9;
-  };
-  template <>
-  struct EasTypeToNumEas<Solid::Elements::EasType::eastype_h8_21>
-  {
-    static constexpr int num_eas = 21;
-  };
-  template <>
-  struct EasTypeToNumEas<Solid::Elements::EasType::eastype_sh8_7>
-  {
-    static constexpr int num_eas = 7;
-  };
-  template <>
-  struct EasTypeToNumEas<Solid::Elements::EasType::eastype_sh18_9>
-  {
-    static constexpr int num_eas = 9;
-  };
-  template <>
-  struct EasTypeToNumEas<Solid::Elements::EasType::eastype_undefined>
-  {
-  };
-
-}  // namespace Solid::Elements
 
 namespace Mat
 {
@@ -81,30 +39,7 @@ namespace Discret
 
   namespace Elements
   {
-    /// struct for EAS matrices and vectors to be stored between iterations
-    template <Core::FE::CellType celltype, Solid::Elements::EasType eastype>
-    struct EasIterationData
-    {
-      constexpr static int num_eas = Solid::Elements::EasTypeToNumEas<eastype>::num_eas;
-
-      /// inverse EAS matrix K_{alpha alpha}
-      Core::LinAlg::Matrix<num_eas, num_eas> invKaa_{true};
-
-      /// EAS matrix K_{d alpha}
-      Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>, num_eas> Kda_{
-          true};
-
-      /// EAS enhacement vector s
-      Core::LinAlg::Matrix<num_eas, 1> s_{true};
-
-      /// discrete enhanced strain scalars increment
-      Core::LinAlg::Matrix<num_eas, 1> alpha_inc_{true};
-
-      /// discrete enhanced strain scalars alpha
-      Core::LinAlg::Matrix<num_eas, 1> alpha_{true};
-    };
-
-    template <Core::FE::CellType celltype, Solid::Elements::EasType eastype,
+    template <Core::FE::CellType celltype, Discret::Elements::EasType eastype,
         Inpar::Solid::KinemType>
     class SolidEleCalcEas
     {
