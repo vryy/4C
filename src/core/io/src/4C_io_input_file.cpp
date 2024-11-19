@@ -1265,8 +1265,21 @@ namespace Core::IO
   /*----------------------------------------------------------------------*/
   bool InputFile::print_unknown_sections(std::ostream& out) const
   {
+    using MapType = decltype(knownsections_);
+    const MapType merged_map = Core::Communication::all_reduce<MapType>(
+        knownsections_,
+        [](const MapType& r, const MapType& in)
+        {
+          MapType result = r;
+          for (const auto& [key, value] : in)
+          {
+            result[key] |= value;
+          }
+          return result;
+        },
+        comm_);
     const bool printout = std::any_of(
-        knownsections_.begin(), knownsections_.end(), [](const auto& kv) { return !kv.second; });
+        merged_map.begin(), merged_map.end(), [](const auto& kv) { return !kv.second; });
 
     // now it's time to create noise on the screen
     if (printout and (get_comm().MyPID() == 0))
