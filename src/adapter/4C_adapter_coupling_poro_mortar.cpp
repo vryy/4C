@@ -7,6 +7,7 @@
 
 #include "4C_adapter_coupling_poro_mortar.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_interface.hpp"
 #include "4C_contact_node.hpp"
@@ -270,13 +271,13 @@ void Adapter::CouplingPoroMortar::create_strategy(
 
   // wait for all processors to determine if they have poro or structural master or slave elements
   comm_->Barrier();
-  std::vector<int> slaveTypeList(comm_->NumProc());
-  std::vector<int> masterTypeList(comm_->NumProc());
+  std::vector<int> slaveTypeList(Core::Communication::num_mpi_ranks(*comm_));
+  std::vector<int> masterTypeList(Core::Communication::num_mpi_ranks(*comm_));
   comm_->GatherAll(&slavetype_, slaveTypeList.data(), 1);
   comm_->GatherAll(&mastertype_, masterTypeList.data(), 1);
   comm_->Barrier();
 
-  for (int i = 0; i < comm_->NumProc(); ++i)
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(*comm_); ++i)
   {
     switch (slaveTypeList[i])
     {
@@ -301,7 +302,7 @@ void Adapter::CouplingPoroMortar::create_strategy(
     }
   }
 
-  for (int i = 0; i < comm_->NumProc(); ++i)
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(*comm_); ++i)
   {
     switch (masterTypeList[i])
     {

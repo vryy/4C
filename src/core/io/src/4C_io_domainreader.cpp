@@ -165,7 +165,7 @@ namespace Core::IO
     }
 
     // broadcast if necessary
-    if (comm_.NumProc() > 1)
+    if (Core::Communication::num_mpi_ranks(comm_) > 1)
     {
       broadcast_input_data_to_all_procs(comm_, inputData);
     }

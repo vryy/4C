@@ -1448,7 +1448,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
   // every proc needs to know which procs have micro material in order to distribute colors
   // array is filled with either its local proc id or -1 when no micro mat was found
   std::vector<int> foundmyranks;
-  foundmyranks.resize(lcomm->NumProc(), -1);
+  foundmyranks.resize(Core::Communication::num_mpi_ranks(*lcomm), -1);
   lcomm->GatherAll(&foundmicromatmyrank, foundmyranks.data(), 1);
 
   // determine color of macro procs with any contribution to micro material, only important for
@@ -1659,10 +1659,10 @@ void Global::read_microfields_np_support(Global::Problem& problem)
 
   // groups should be equally sized
   // in a first step every macro proc that needs support gets procpergroup supporting procs
-  int procpergroup = int(floor((lcomm->NumProc()) / nummicromat));
+  int procpergroup = int(floor((Core::Communication::num_mpi_ranks(*lcomm)) / nummicromat));
   std::vector<int> supgrouplayout(nummicromat, procpergroup);
   // remaining procs are added to the groups in the beginning
-  int remainingProcs = lcomm->NumProc() - procpergroup * nummicromat;
+  int remainingProcs = Core::Communication::num_mpi_ranks(*lcomm) - procpergroup * nummicromat;
   for (int k = 0; k < remainingProcs; ++k)
   {
     supgrouplayout[k]++;

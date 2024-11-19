@@ -97,7 +97,7 @@ namespace
       local_mem /= (1 << 20);
 
       // Gather values
-      const int num_procs = comm.NumProc();
+      const int num_procs = Core::Communication::num_mpi_ranks(comm);
       auto recvbuf = std::unique_ptr<double[]>(new double[num_procs]);
       MPI_Gather(&local_mem, 1, MPI_DOUBLE, recvbuf.get(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
@@ -302,7 +302,7 @@ int main(int argc, char *argv[])
           VersionControl::git_hash);
       printf(
           "Trilinos Version %s (git SHA1 %s)\n", TrilinosVersion.c_str(), TrilinosGitHash.c_str());
-      printf("Total number of processors: %d\n", gcomm->NumProc());
+      printf("Total number of processors: %d\n", Core::Communication::num_mpi_ranks(*gcomm));
     }
 
     /* Here we turn the NaN and INF numbers off. No need to calculate

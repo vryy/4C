@@ -642,7 +642,8 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
   }
 
   // print initial parallel redistribution
-  if (Core::Communication::my_mpi_rank(get_comm()) == 0 && get_comm().NumProc() > 1)
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0 &&
+      Core::Communication::num_mpi_ranks(get_comm()) > 1)
     std::cout << "\nInitial parallel distribution of all contact interfaces:" << std::endl;
   for (auto& interface : interfaces) interface->print_parallel_distribution();
 
@@ -1158,7 +1159,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams) con
   }
 
   // no parallel redistribution in the serial case
-  if (get_comm().NumProc() == 1)
+  if (Core::Communication::num_mpi_ranks(get_comm()) == 1)
     cparams.sublist("PARALLEL REDISTRIBUTION")
         .set<Inpar::Mortar::ParallelRedist>(
             "PARALLEL_REDIST", Inpar::Mortar::ParallelRedist::redist_none);
@@ -1523,13 +1524,13 @@ void CONTACT::Manager::find_poro_interface_types(bool& poromaster, bool& porosla
   // s-s, p-s, s-p, p-p
   // wait for all processors to determine if they have poro or structural master or slave elements
   comm_->Barrier();
-  std::vector<int> slaveTypeList(comm_->NumProc());
-  std::vector<int> masterTypeList(comm_->NumProc());
+  std::vector<int> slaveTypeList(Core::Communication::num_mpi_ranks(*comm_));
+  std::vector<int> masterTypeList(Core::Communication::num_mpi_ranks(*comm_));
   comm_->GatherAll(&slavetype, slaveTypeList.data(), 1);
   comm_->GatherAll(&mastertype, masterTypeList.data(), 1);
   comm_->Barrier();
 
-  for (int i = 0; i < comm_->NumProc(); ++i)
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(*comm_); ++i)
   {
     switch (slaveTypeList[i])
     {
@@ -1556,7 +1557,7 @@ void CONTACT::Manager::find_poro_interface_types(bool& poromaster, bool& porosla
     }
   }
 
-  for (int i = 0; i < comm_->NumProc(); ++i)
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(*comm_); ++i)
   {
     switch (masterTypeList[i])
     {

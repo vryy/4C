@@ -298,7 +298,7 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
   params.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // no parallel redistribution in the serial case
-  if (get_comm().NumProc() == 1)
+  if (Core::Communication::num_mpi_ranks(get_comm()) == 1)
     params.sublist("PARALLEL REDISTRIBUTION")
         .set<Inpar::Mortar::ParallelRedist>(
             "PARALLEL_REDIST", Inpar::Mortar::ParallelRedist::redist_none);

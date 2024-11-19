@@ -372,7 +372,7 @@ void FS3I::PartFPS3I::redistribute_interface()
 
   Global::Problem* problem = Global::Problem::instance();
 
-  if (comm_.NumProc() >
+  if (Core::Communication::num_mpi_ranks(comm_) >
       1)  // if we have more than one processor, we need to redistribute at the FPSI interface
   {
     FPSI::InterfaceUtils* FPSI_UTILS = FPSI::InterfaceUtils::instance();

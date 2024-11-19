@@ -645,7 +645,7 @@ std::optional<int> Solid::ResultTest::get_nodes_per_proc_number(
   const int proc_num = std::stoi(proc_string);
 
   // extract processor ID
-  if (proc_num >= strudisc_->get_comm().NumProc())
+  if (proc_num >= Core::Communication::num_mpi_ranks(strudisc_->get_comm()))
     FOUR_C_THROW("Solid::ResultTest::get_nodes_per_proc_number: Invalid processor ID!");
 
   if (Core::Communication::my_mpi_rank(strudisc_->get_comm()) == proc_num)

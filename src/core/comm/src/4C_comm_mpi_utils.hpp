@@ -33,6 +33,11 @@ namespace Core::Communication
    */
   int my_mpi_rank(const Epetra_Comm& comm);
 
+  /**
+   * Get the total number of MPI ranks in the communicator @p comm.
+   */
+  int num_mpi_ranks(const Epetra_Comm& comm);
+
   //! Merge map @p map_in (key of type @p T and value of type @p U) from all procs to a merged
   //! map (key of type @p T and value of type @p U). It is distributed to all procs.
   template <typename T, typename U>
@@ -219,7 +224,7 @@ template <typename T>
 std::vector<T> Core::Communication::all_gather(const T& value, const Epetra_Comm& comm)
 {
   MPI_Comm mpi_comm = dynamic_cast<const Epetra_MpiComm&>(comm).Comm();
-  const int n_procs = comm.NumProc();
+  const int n_procs = num_mpi_ranks(comm);
 
   // Use PackBuffer to serialize the data into a vector<char>
   PackBuffer buffer;

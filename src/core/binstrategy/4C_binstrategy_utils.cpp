@@ -69,7 +69,7 @@ namespace Core::Binstrategy::Utils
   {
     // build exporter
     Core::Communication::Exporter exporter(discret.get_comm());
-    int const numproc = discret.get_comm().NumProc();
+    int const numproc = Core::Communication::num_mpi_ranks(discret.get_comm());
 
     // -----------------------------------------------------------------------
     // send
@@ -163,7 +163,7 @@ namespace Core::Binstrategy::Utils
   {
     // build exporter
     Core::Communication::Exporter exporter(discret.get_comm());
-    int const numproc = discret.get_comm().NumProc();
+    int const numproc = Core::Communication::num_mpi_ranks(discret.get_comm());
 
     // -----------------------------------------------------------------------
     // send

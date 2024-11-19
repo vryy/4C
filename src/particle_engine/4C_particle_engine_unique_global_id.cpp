@@ -198,7 +198,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::prepare_requested_global_ids_for_all
   if (!mpicomm) FOUR_C_THROW("dynamic cast to Epetra_MpiComm failed!");
 
   // gather number of requested global ids of each processor on master processor
-  std::vector<int> numberofrequestedgidsofallprocs(comm_.NumProc(), 0);
+  std::vector<int> numberofrequestedgidsofallprocs(Core::Communication::num_mpi_ranks(comm_), 0);
   MPI_Gather(&numberofrequestedgids, 1, MPI_INT, numberofrequestedgidsofallprocs.data(), 1, MPI_INT,
       masterrank_, mpicomm->Comm());
 
@@ -238,7 +238,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::prepare_requested_global_ids_for_all
     // iterators for range of global ids to be set
     auto curr_range_begin = allrequestedglobalids.begin();
 
-    for (int rank = 0; rank < comm_.NumProc(); ++rank)
+    for (int rank = 0; rank < Core::Communication::num_mpi_ranks(comm_); ++rank)
     {
       // get current number of requested global ids
       const int currnumberofrequestedgids = numberofrequestedgidsofallprocs[rank];
@@ -285,7 +285,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
   if (myrank_ == masterrank_)
   {
     // pack data for sending
-    for (int torank = 0; torank < comm_.NumProc(); ++torank)
+    for (int torank = 0; torank < Core::Communication::num_mpi_ranks(comm_); ++torank)
     {
       if (tobesendglobalids[torank].empty()) continue;
 

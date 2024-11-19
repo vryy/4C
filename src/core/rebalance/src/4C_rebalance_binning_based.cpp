@@ -43,7 +43,7 @@ void Core::Rebalance::rebalance_discretizations_by_binning(
   const Epetra_Comm& comm = vector_of_discretizations[0]->get_comm();
 
   // rebalance discr. with help of binning strategy
-  if (comm.NumProc() > 1)
+  if (Core::Communication::num_mpi_ranks(comm) > 1)
   {
     if (Core::Communication::my_mpi_rank(comm) == 0)
     {
@@ -105,8 +105,8 @@ void Core::Rebalance::ghost_discretization_on_all_procs(Core::FE::Discretization
         << Core::IO::endl;
   }
 
-  std::vector<int> allproc(com->NumProc());
-  for (int i = 0; i < com->NumProc(); ++i) allproc[i] = i;
+  std::vector<int> allproc(Core::Communication::num_mpi_ranks(*com));
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(*com); ++i) allproc[i] = i;
 
   // fill my own row node ids
   const Epetra_Map* noderowmap = distobeghosted.node_row_map();
@@ -153,10 +153,10 @@ void Core::Rebalance::ghost_discretization_on_all_procs(Core::FE::Discretization
   // Safety checks in DEBUG
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   int nummycolnodes = newnodecolmap.NumMyElements();
-  std::vector<int> sizelist(com->NumProc());
+  std::vector<int> sizelist(Core::Communication::num_mpi_ranks(*com));
   com->GatherAll(&nummycolnodes, sizelist.data(), 1);
   com->Barrier();
-  for (int k = 1; k < com->NumProc(); ++k)
+  for (int k = 1; k < Core::Communication::num_mpi_ranks(*com); ++k)
   {
     if (sizelist[k - 1] != nummycolnodes)
       FOUR_C_THROW(
@@ -175,7 +175,7 @@ void Core::Rebalance::match_element_distribution_of_matching_discretizations(
 {
   // clone communicator of target discretization
   std::shared_ptr<Epetra_Comm> com(dis_template.get_comm().Clone());
-  if (com->NumProc() > 1)
+  if (Core::Communication::num_mpi_ranks(*com) > 1)
   {
     // print to screen
     if (Core::Communication::my_mpi_rank(*com) == 0)
@@ -261,7 +261,7 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
 {
   // clone communicator of target discretization
   std::shared_ptr<Epetra_Comm> com(dis_template.get_comm().Clone());
-  if (com->NumProc() > 1)
+  if (Core::Communication::num_mpi_ranks(*com) > 1)
   {
     // print to screen
     if (Core::Communication::my_mpi_rank(*com) == 0)

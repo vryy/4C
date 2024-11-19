@@ -127,8 +127,9 @@ void XFEM::DiscretizationXFEM::export_initialto_active_vector(
   {  // Export manually as target.Map().UniqueGIDs() gives = true, although this shouldn't be the
      // case
     //(UniqueGIDs() just checks if gid occurs on more procs!)
-    if (initialvec.Comm().NumProc() == 1 &&
-        activevec.Comm().NumProc() == 1)  // for one proc , Export works fine!
+    if (Core::Communication::num_mpi_ranks(initialvec.Comm()) == 1 &&
+        Core::Communication::num_mpi_ranks(activevec.Comm()) ==
+            1)  // for one proc , Export works fine!
     {
       Core::LinAlg::export_to(initialvec, fullvec);
     }

@@ -332,7 +332,7 @@ namespace BEAMINTERACTION
       // elements of a filament containing at least one node of myrank
       // do communication to gather all elements to temporarily extend ghosting
       std::set<int> coleleset;
-      for (int iproc = 0; iproc < discret.get_comm().NumProc(); ++iproc)
+      for (int iproc = 0; iproc < Core::Communication::num_mpi_ranks(discret.get_comm()); ++iproc)
       {
         // myrank == iproc: copy set to vector in order to broadcast data
         std::vector<int> requirednodes(0);

@@ -174,7 +174,8 @@ int main(int argc, char** argv)
 
   try
   {
-    if ((comm->NumProc() > 1)) FOUR_C_THROW("Using more than one processor is not supported.");
+    if ((Core::Communication::num_mpi_ranks(*comm) > 1))
+      FOUR_C_THROW("Using more than one processor is not supported.");
 
     std::string exofile;
     std::string bcfile;

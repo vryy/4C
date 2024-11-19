@@ -131,7 +131,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       if (scatradyn.get<bool>("PADAPTIVITY"))
       {
         // redistribute discr. with help of binning strategy
-        if (scatradis->get_comm().NumProc() > 1)
+        if (Core::Communication::num_mpi_ranks(scatradis->get_comm()) > 1)
         {
           // create vector of discr.
           std::vector<std::shared_ptr<Core::FE::Discretization>> dis;

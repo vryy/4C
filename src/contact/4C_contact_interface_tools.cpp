@@ -88,7 +88,7 @@ void CONTACT::Interface::visualize_gmsh(
   //**********************************************************************
   // Start GMSH output
   //**********************************************************************
-  for (int proc = 0; proc < get_comm().NumProc(); ++proc)
+  for (int proc = 0; proc < Core::Communication::num_mpi_ranks(get_comm()); ++proc)
   {
     if (proc == Core::Communication::my_mpi_rank(get_comm()))
     {
@@ -664,7 +664,7 @@ void CONTACT::Interface::visualize_gmsh(
       }
 
       // end GMSH output section in all files
-      if (proc == get_comm().NumProc() - 1)
+      if (proc == Core::Communication::num_mpi_ranks(get_comm()) - 1)
       {
         gmshfilecontent << "};" << std::endl;
         gmshfilecontentslave << "};" << std::endl;
@@ -742,7 +742,7 @@ void CONTACT::Interface::visualize_gmsh(
   Comm().Barrier();
 
   // for every proc, one after another, put data of slabs into files
-  for (int i = 0; i < Comm().NumProc(); i++)
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(Comm()); i++)
   {
     if ((i == Core::Communication::my_mpi_rank(Comm())) && (binarytree_->Sroot()->Type() != 4))
     {
@@ -914,7 +914,7 @@ void CONTACT::Interface::visualize_gmsh(
     }
 
     // every proc should plot its contacting treenodes!
-    for (int i = 0; i < Comm().NumProc(); i++)
+    for (int i = 0; i < Core::Communication::num_mpi_ranks(Comm()); i++)
     {
       if (Core::Communication::my_mpi_rank(Comm()) == i)
       {
@@ -988,7 +988,8 @@ void CONTACT::Interface::fd_check_normal_deriv()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for normals / tangents
   std::vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
@@ -1253,7 +1254,8 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for normals / tangents
   std::vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
@@ -1742,7 +1744,8 @@ void CONTACT::Interface::fd_check_mortar_d_deriv()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for D-Matrix entries
   std::map<int, double> refD;  // stores dof-wise the entries of D
@@ -2012,7 +2015,8 @@ void CONTACT::Interface::fd_check_mortar_m_deriv()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for M-Matrix entries
   std::map<int, double> refM;  // stores dof-wise the entries of M
@@ -2280,7 +2284,8 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -2513,7 +2518,8 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -2747,7 +2753,8 @@ void CONTACT::Interface::fd_check_alpha_deriv()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3120,7 +3127,8 @@ void CONTACT::Interface::fd_check_gap_deriv_ltl()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3502,7 +3510,8 @@ void CONTACT::Interface::fd_check_jump_deriv_ltl()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3883,7 +3892,8 @@ void CONTACT::Interface::fd_check_gap_deriv()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -4253,7 +4263,8 @@ void CONTACT::Interface::fd_check_tang_lm_deriv()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for tangential LM values
   int nrow = snoderowmap_->NumMyElements();
@@ -4823,7 +4834,8 @@ void CONTACT::Interface::fd_check_stick_deriv(
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -5354,7 +5366,8 @@ void CONTACT::Interface::fd_check_slip_deriv(
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // information from interface contact parameter list
   auto ftype =
@@ -6191,7 +6204,8 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   std::cout << std::setprecision(14);
 
@@ -6477,7 +6491,8 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // information from interface contact parameter list
   double frcoeff = interface_params().get<double>("FRCOEFF");
@@ -7069,7 +7084,7 @@ void CONTACT::Interface::write_nodal_coordinates_to_file(
 
   get_comm().Barrier();
 
-  for (int p = 0; p < get_comm().NumProc(); ++p)
+  for (int p = 0; p < Core::Communication::num_mpi_ranks(get_comm()); ++p)
   {
     if (p == Core::Communication::my_mpi_rank(get_comm()))
     {

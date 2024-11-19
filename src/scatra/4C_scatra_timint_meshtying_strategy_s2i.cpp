@@ -2284,7 +2284,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
           }
 
           // perform parallel redistribution if desired
-          if (imortarredistribution_ and idiscret.get_comm().NumProc() > 1)
+          if (imortarredistribution_ and
+              Core::Communication::num_mpi_ranks(idiscret.get_comm()) > 1)
           {
             interface.interface_params()
                 .sublist("PARALLEL REDISTRIBUTION")
@@ -2641,7 +2642,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
             {
               // determine number of Lagrange multiplier dofs owned by each processor
               const Epetra_Comm& comm(scatratimint_->discretization()->get_comm());
-              const int numproc(comm.NumProc());
+              const int numproc(Core::Communication::num_mpi_ranks(comm));
               const int mypid(Core::Communication::my_mpi_rank(comm));
               std::vector<int> localnumlmdof(numproc, 0);
               std::vector<int> globalnumlmdof(numproc, 0);

@@ -330,7 +330,7 @@ bool Mortar::Interface::filled() const { return idiscret_->filled(); }
 void Mortar::Interface::print_parallel_distribution() const
 {
   // how many processors
-  const int numproc = discret().get_comm().NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(discret().get_comm());
 
   // only print parallel distribution if numproc > 1
   if (numproc > 1)
@@ -1104,7 +1104,7 @@ void Mortar::Interface::redistribute()
   // some local variables
   std::shared_ptr<Epetra_Comm> comm(get_comm().Clone());
   const int myrank = Core::Communication::my_mpi_rank(*comm);
-  const int numproc = comm->NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(*comm);
   Teuchos::Time time("", true);
 
   // vector containing all proc ids
@@ -1278,8 +1278,8 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     //**********************************************************************
 
     // we want to do full ghosting on all procs
-    std::vector<int> allproc(get_comm().NumProc());
-    for (int i = 0; i < get_comm().NumProc(); ++i) allproc[i] = i;
+    std::vector<int> allproc(Core::Communication::num_mpi_ranks(get_comm()));
+    for (int i = 0; i < Core::Communication::num_mpi_ranks(get_comm()); ++i) allproc[i] = i;
 
     // fill my own row node ids
     const Epetra_Map* noderowmap = discret().node_row_map();
@@ -1345,8 +1345,8 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     //**********************************************************************
 
     // at least for master, we want to do full ghosting on all procs
-    std::vector<int> allproc(get_comm().NumProc());
-    for (int i = 0; i < get_comm().NumProc(); ++i) allproc[i] = i;
+    std::vector<int> allproc(Core::Communication::num_mpi_ranks(get_comm()));
+    for (int i = 0; i < Core::Communication::num_mpi_ranks(get_comm()); ++i) allproc[i] = i;
 
     // fill my own master row node ids
     const Epetra_Map* noderowmap = discret().node_row_map();
@@ -1862,10 +1862,11 @@ std::shared_ptr<Epetra_Map> Mortar::Interface::update_lag_mult_sets(
   std::vector<int> lmdof;
 
   // gather information over all procs
-  std::vector<int> localnumlmdof(get_comm().NumProc());
-  std::vector<int> globalnumlmdof(get_comm().NumProc());
+  std::vector<int> localnumlmdof(Core::Communication::num_mpi_ranks(get_comm()));
+  std::vector<int> globalnumlmdof(Core::Communication::num_mpi_ranks(get_comm()));
   localnumlmdof[Core::Communication::my_mpi_rank(get_comm())] = ref_map.NumMyElements();
-  get_comm().SumAll(localnumlmdof.data(), globalnumlmdof.data(), get_comm().NumProc());
+  get_comm().SumAll(
+      localnumlmdof.data(), globalnumlmdof.data(), Core::Communication::num_mpi_ranks(get_comm()));
 
   // compute offset for LM dof initialization for all procs
   int offset = 0;
@@ -1922,7 +1923,7 @@ std::shared_ptr<Epetra_Map> Mortar::Interface::redistribute_lag_mult_sets() cons
 
   std::vector<int> g_related_gids;
   get_comm().Barrier();
-  for (int p = 0; p < get_comm().NumProc(); ++p)
+  for (int p = 0; p < Core::Communication::num_mpi_ranks(get_comm()); ++p)
   {
     int num_mygids = plmdofmap_->NumMyElements();
 

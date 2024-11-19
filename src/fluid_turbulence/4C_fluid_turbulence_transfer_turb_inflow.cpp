@@ -269,7 +269,7 @@ void FLD::TransferTurbulentInflowCondition::transfer(
     std::vector<char> rblock;
 
     // get number of processors and the current processors id
-    int numproc = dis_->get_comm().NumProc();
+    int numproc = Core::Communication::num_mpi_ranks(dis_->get_comm());
 
     //----------------------------------------------------------------------
     // communication is done in a round robin loop
@@ -376,7 +376,7 @@ void FLD::TransferTurbulentInflowCondition::receive_block(
     std::vector<char>& rblock, Core::Communication::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
-  int numproc = dis_->get_comm().NumProc();
+  int numproc = Core::Communication::num_mpi_ranks(dis_->get_comm());
   int myrank = Core::Communication::my_mpi_rank(dis_->get_comm());
 
   // necessary variables
@@ -423,7 +423,7 @@ void FLD::TransferTurbulentInflowCondition::send_block(
     std::vector<char>& sblock, Core::Communication::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
-  int numproc = dis_->get_comm().NumProc();
+  int numproc = Core::Communication::num_mpi_ranks(dis_->get_comm());
   int myrank = Core::Communication::my_mpi_rank(dis_->get_comm());
 
   // Send block to next proc.
@@ -802,7 +802,7 @@ void FLD::TransferTurbulentInflowConditionXW::transfer(
     std::vector<char> rblock;
 
     // get number of processors and the current processors id
-    int numproc = dis_->get_comm().NumProc();
+    int numproc = Core::Communication::num_mpi_ranks(dis_->get_comm());
 
     //----------------------------------------------------------------------
     // communication is done in a round robin loop
@@ -992,7 +992,7 @@ void FLD::TransferTurbulentInflowConditionNodal::transfer(
     std::vector<char> rblock;
 
     // get number of processors and the current processors id
-    int numproc = dis_->get_comm().NumProc();
+    int numproc = Core::Communication::num_mpi_ranks(dis_->get_comm());
 
     //----------------------------------------------------------------------
     // communication is done in a round robin loop

@@ -477,7 +477,7 @@ namespace Core::IO
   {
     // Set up a multivector which will be populated with all ghosting informations.
     const Epetra_Comm& comm = discretization.element_col_map()->Comm();
-    const int n_proc = comm.NumProc();
+    const int n_proc = Core::Communication::num_mpi_ranks(comm);
     const int my_proc = Core::Communication::my_mpi_rank(comm);
 
     // Create Vectors to store the ghosting information.

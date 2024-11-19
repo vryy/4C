@@ -486,7 +486,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   std::shared_ptr<Core::LinAlg::Vector<double>> conveltmp =
       std::make_shared<Core::LinAlg::Vector<double>>(*discret_->dof_row_map(nds_vel()), true);
 
-  const int numproc = discret_->get_comm().NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(discret_->get_comm());
   std::vector<int> allproc(numproc);
   for (int i = 0; i < numproc; ++i) allproc[i] = i;
 

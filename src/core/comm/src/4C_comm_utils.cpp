@@ -262,7 +262,7 @@ namespace Core::Communication
 
     // mapping of local proc ids to global proc ids
     std::map<int, int> lpidgpid;
-    int localsize = lcomm->NumProc();
+    int localsize = Core::Communication::num_mpi_ranks(*lcomm);
     for (int lpid = 0; lpid < localsize; lpid++)
     {
       lpidgpid[lpid] = Core::Communication::my_mpi_rank(*gcomm) -
@@ -275,7 +275,8 @@ namespace Core::Communication
 
     // info for the nested parallelism user
     if (Core::Communication::my_mpi_rank(*lcomm) == 0 && ngroup > 1)
-      printf("Nested parallelism layout: Group %d has %d processors.\n ", color, lcomm->NumProc());
+      printf("Nested parallelism layout: Group %d has %d processors.\n ", color,
+          Core::Communication::num_mpi_ranks(*lcomm));
     fflush(stdout);
 
     // for sync of output
@@ -360,7 +361,8 @@ namespace Core::Communication
     if (Core::Communication::my_mpi_rank(*lcomm) == Core::Communication::my_mpi_rank(*gcomm))
       proc0map = Core::LinAlg::allreduce_overlapping_e_map(vecmap, 0);
     else
-      proc0map = Core::LinAlg::allreduce_overlapping_e_map(vecmap, lcomm->NumProc() - 1);
+      proc0map = Core::LinAlg::allreduce_overlapping_e_map(
+          vecmap, Core::Communication::num_mpi_ranks(*lcomm) - 1);
 
     // export full vectors to the two desired processors
     Core::LinAlg::MultiVector<double> fullvec(*proc0map, vec.NumVectors(), true);
@@ -377,14 +379,15 @@ namespace Core::Communication
       MPI_Status status;
       // first: receive length of name
       int tag = 1336;
-      MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
+      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(*gcomm) - 1, tag,
+          mpi_gcomm, &status);
       if (lengthRecv == 0) FOUR_C_THROW("Length of name received from second run is zero.");
 
       // second: receive name
       tag = 2672;
       receivename.resize(lengthRecv);
-      MPI_Recv(
-          receivename.data(), lengthRecv, MPI_CHAR, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
+      MPI_Recv(receivename.data(), lengthRecv, MPI_CHAR,
+          Core::Communication::num_mpi_ranks(*gcomm) - 1, tag, mpi_gcomm, &status);
 
       // do comparison of names
       if (std::strcmp(name, receivename.data()))
@@ -397,7 +400,8 @@ namespace Core::Communication
       std::vector<double> receivebuf;
       // first: receive length of data
       tag = 1337;
-      MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
+      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(*gcomm) - 1, tag,
+          mpi_gcomm, &status);
       // also enable comparison of empty vectors
       if (lengthRecv == 0 && fullvec.MyLength() != lengthRecv)
         FOUR_C_THROW("Length of data received from second run is incorrect.");
@@ -405,8 +409,8 @@ namespace Core::Communication
       // second: receive data
       tag = 2674;
       receivebuf.resize(lengthRecv);
-      MPI_Recv(
-          receivebuf.data(), lengthRecv, MPI_DOUBLE, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
+      MPI_Recv(receivebuf.data(), lengthRecv, MPI_DOUBLE,
+          Core::Communication::num_mpi_ranks(*gcomm) - 1, tag, mpi_gcomm, &status);
 
       // start comparison
       int mylength = fullvec.MyLength() * vec.NumVectors();
@@ -434,7 +438,7 @@ namespace Core::Communication
         result = 1;
       }
     }
-    else if (myglobalrank == gcomm->NumProc() - 1)
+    else if (myglobalrank == Core::Communication::num_mpi_ranks(*gcomm) - 1)
     {
       // compare names
       // include terminating \0 of char array
@@ -500,13 +504,15 @@ namespace Core::Communication
     if (Core::Communication::my_mpi_rank(*lcomm) == Core::Communication::my_mpi_rank(*gcomm))
       serialrowmap = Core::LinAlg::allreduce_overlapping_e_map(rowmap, 0);
     else
-      serialrowmap = Core::LinAlg::allreduce_overlapping_e_map(rowmap, lcomm->NumProc() - 1);
+      serialrowmap = Core::LinAlg::allreduce_overlapping_e_map(
+          rowmap, Core::Communication::num_mpi_ranks(*lcomm) - 1);
 
     std::shared_ptr<Epetra_Map> serialdomainmap;
     if (Core::Communication::my_mpi_rank(*lcomm) == Core::Communication::my_mpi_rank(*gcomm))
       serialdomainmap = Core::LinAlg::allreduce_overlapping_e_map(domainmap, 0);
     else
-      serialdomainmap = Core::LinAlg::allreduce_overlapping_e_map(domainmap, lcomm->NumProc() - 1);
+      serialdomainmap = Core::LinAlg::allreduce_overlapping_e_map(
+          domainmap, Core::Communication::num_mpi_ranks(*lcomm) - 1);
 
     // export full matrices to the two desired processors
     Epetra_Import serialimporter(*serialrowmap, rowmap);
@@ -519,7 +525,7 @@ namespace Core::Communication
     data_indices.reserve(serialCrsMatrix.NumMyNonzeros() * 2);
     std::vector<double> data_values;
     data_values.reserve(serialCrsMatrix.NumMyNonzeros());
-    if (myglobalrank == 0 || myglobalrank == gcomm->NumProc() - 1)
+    if (myglobalrank == 0 || myglobalrank == Core::Communication::num_mpi_ranks(*gcomm) - 1)
     {
       for (int i = 0; i < serialrowmap->NumMyElements(); ++i)
       {
@@ -551,14 +557,15 @@ namespace Core::Communication
       MPI_Status status;
       // first: receive length of name
       int tag = 1336;
-      MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
+      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(*gcomm) - 1, tag,
+          mpi_gcomm, &status);
       if (lengthRecv == 0) FOUR_C_THROW("Length of name received from second run is zero.");
 
       // second: receive name
       tag = 2672;
       receivename.resize(lengthRecv);
-      MPI_Recv(
-          receivename.data(), lengthRecv, MPI_CHAR, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
+      MPI_Recv(receivename.data(), lengthRecv, MPI_CHAR,
+          Core::Communication::num_mpi_ranks(*gcomm) - 1, tag, mpi_gcomm, &status);
 
       // do comparison of names
       if (std::strcmp(name, receivename.data()))
@@ -571,7 +578,8 @@ namespace Core::Communication
       std::vector<int> receivebuf_indices;
       // first: receive length of data
       tag = 1337;
-      MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
+      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(*gcomm) - 1, tag,
+          mpi_gcomm, &status);
       // also enable comparison of empty matrices
       if (lengthRecv == 0 && (int)data_indices.size() != lengthRecv)
         FOUR_C_THROW("Length of data received from second run is incorrect.");
@@ -579,8 +587,8 @@ namespace Core::Communication
       // second: receive data
       tag = 2674;
       receivebuf_indices.resize(lengthRecv);
-      MPI_Recv(receivebuf_indices.data(), lengthRecv, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm,
-          &status);
+      MPI_Recv(receivebuf_indices.data(), lengthRecv, MPI_INT,
+          Core::Communication::num_mpi_ranks(*gcomm) - 1, tag, mpi_gcomm, &status);
 
       // start comparison
       int mylength = data_indices.size();
@@ -606,7 +614,8 @@ namespace Core::Communication
       std::vector<double> receivebuf_values;
       // first: receive length of data
       tag = 1338;
-      MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
+      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(*gcomm) - 1, tag,
+          mpi_gcomm, &status);
       // also enable comparison of empty matrices
       if (lengthRecv == 0 && (int)data_values.size() != lengthRecv)
         FOUR_C_THROW("Length of data received from second run is incorrect.");
@@ -614,8 +623,8 @@ namespace Core::Communication
       // second: receive data
       tag = 2676;
       receivebuf_values.resize(lengthRecv);
-      MPI_Recv(receivebuf_values.data(), lengthRecv, MPI_DOUBLE, gcomm->NumProc() - 1, tag,
-          mpi_gcomm, &status);
+      MPI_Recv(receivebuf_values.data(), lengthRecv, MPI_DOUBLE,
+          Core::Communication::num_mpi_ranks(*gcomm) - 1, tag, mpi_gcomm, &status);
 
       // start comparison
       mylength = data_values.size();
@@ -642,7 +651,7 @@ namespace Core::Communication
                        << " are identical." << Core::IO::endl;
       }
     }
-    else if (myglobalrank == gcomm->NumProc() - 1)
+    else if (myglobalrank == Core::Communication::num_mpi_ranks(*gcomm) - 1)
     {
       // compare names
       // include terminating \0 of char array

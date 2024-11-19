@@ -20,7 +20,7 @@ namespace Core::GeometricSearch
 {
   void print_geometric_search_details(const Epetra_Comm& comm, const GeometricSearchInfo info)
   {
-    const int numproc = comm.NumProc();
+    const int numproc = Core::Communication::num_mpi_ranks(comm);
     const int myrank = Core::Communication::my_mpi_rank(comm);
 
     std::vector<int> primitive_size(numproc, 0), my_primitive_size(numproc, 0);

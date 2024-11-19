@@ -142,7 +142,7 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
   }
 
   // restart file name and new output file name are sent to supporting procs
-  if (microdis->get_comm().NumProc() > 1)
+  if (Core::Communication::num_mpi_ranks(microdis->get_comm()) > 1)
   {
     {
       // broadcast restartname_ for micro scale

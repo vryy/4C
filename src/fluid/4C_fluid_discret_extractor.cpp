@@ -379,7 +379,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
         Core::Rebalance::build_graph(*childdiscret_, sepcondelenodesmap);
 
     Teuchos::ParameterList rebalanceParams;
-    rebalanceParams.set<std::string>("num parts", std::to_string(comm->NumProc()));
+    rebalanceParams.set<std::string>(
+        "num parts", std::to_string(Core::Communication::num_mpi_ranks(*comm)));
 
     const auto& [sepcondrownodes, sepcondcolnodes] =
         Core::Rebalance::rebalance_node_maps(*sepcondnodemap, rebalanceParams);
@@ -446,7 +447,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
 
     // some output on the screen
     {
-      const int numproc = parentdiscret_->get_comm().NumProc();
+      const int numproc = Core::Communication::num_mpi_ranks(parentdiscret_->get_comm());
 
       std::vector<int> my_n_nodes(numproc, 0);
       std::vector<int> n_nodes(numproc, 0);

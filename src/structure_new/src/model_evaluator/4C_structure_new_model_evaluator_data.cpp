@@ -32,7 +32,7 @@ namespace
   {
     const Epetra_Comm& comm = exporter.get_comm();
 
-    const int numprocs = comm.NumProc();
+    const int numprocs = Core::Communication::num_mpi_ranks(comm);
     const int myrank = Core::Communication::my_mpi_rank(comm);
     int tag = myrank;
 
@@ -109,7 +109,7 @@ namespace
 
     // create an exporter for point to point communication
     Core::Communication::Exporter exporter(comm);
-    const int numprocs = comm.NumProc();
+    const int numprocs = Core::Communication::num_mpi_ranks(comm);
 
     for (int p = 0; p < numprocs; ++p)
     {

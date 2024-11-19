@@ -25,7 +25,7 @@ void Discret::Utils::i_send_receive_any(Core::FE::Discretization& discret,
 {
   // build exporter
   Core::Communication::Exporter exporter(discret.get_comm());
-  int const numproc = discret.get_comm().NumProc();
+  int const numproc = Core::Communication::num_mpi_ranks(discret.get_comm());
   int const myrank = Core::Communication::my_mpi_rank(discret.get_comm());
 
   // -----------------------------------------------------------------------

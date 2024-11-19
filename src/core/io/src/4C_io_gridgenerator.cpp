@@ -41,7 +41,7 @@ namespace Core::IO::GridGenerator
   {
     const Epetra_Comm& comm = dis.get_comm();
     const int myrank = Core::Communication::my_mpi_rank(comm);
-    const int numproc = comm.NumProc();
+    const int numproc = Core::Communication::num_mpi_ranks(comm);
 
     Core::Elements::ElementDefinition ed;
     ed.setup_valid_element_lines();
@@ -230,7 +230,8 @@ namespace Core::IO::GridGenerator
           Core::Rebalance::build_graph(dis, *elementRowMap);
 
       Teuchos::ParameterList rebalanceParams;
-      rebalanceParams.set<std::string>("num parts", std::to_string(comm.NumProc()));
+      rebalanceParams.set<std::string>(
+          "num parts", std::to_string(Core::Communication::num_mpi_ranks(comm)));
 
       std::tie(nodeRowMap, nodeColMap) =
           Core::Rebalance::rebalance_node_maps(*nodeGraph, rebalanceParams);

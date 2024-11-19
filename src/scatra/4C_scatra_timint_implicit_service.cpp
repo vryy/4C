@@ -2985,7 +2985,8 @@ void ScaTra::ScalarHandler::setup(const ScaTraTimIntImpl* const scatratimint)
   vecmynumdofpernode.resize(maxsize, 0);
 
   // initialize std::vector for communication
-  std::vector<int> vecnumdofpernode(maxsize * discret->get_comm().NumProc(), 0);
+  std::vector<int> vecnumdofpernode(
+      maxsize * Core::Communication::num_mpi_ranks(discret->get_comm()), 0);
 
   // communicate
   discret->get_comm().GatherAll(vecmynumdofpernode.data(), vecnumdofpernode.data(),
@@ -3047,7 +3048,8 @@ int ScaTra::ScalarHandler::num_dof_per_node_in_condition(
   vecmynumdofpernode.resize(maxsize, 0);
 
   // initialize std::vector for communication
-  std::vector<int> vecnumdofpernode(maxsize * discret.get_comm().NumProc(), 0);
+  std::vector<int> vecnumdofpernode(
+      maxsize * Core::Communication::num_mpi_ranks(discret.get_comm()), 0);
 
   // communicate
   discret.get_comm().GatherAll(vecmynumdofpernode.data(), vecnumdofpernode.data(),

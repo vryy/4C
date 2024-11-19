@@ -320,7 +320,7 @@ void Core::FE::Discretization::print(std::ostream& os) const
     os << "--------------------------------------------------\n";
   }
   get_comm().Barrier();
-  for (int proc = 0; proc < get_comm().NumProc(); ++proc)
+  for (int proc = 0; proc < Core::Communication::num_mpi_ranks(get_comm()); ++proc)
   {
     if (proc == Core::Communication::my_mpi_rank(get_comm()))
     {

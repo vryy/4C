@@ -154,7 +154,8 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
     // done. Rebuild all maps and boundary condition geometries
     discret_->fill_complete(true, true, true);
 
-    if (Core::Communication::my_mpi_rank(*com) == 0 and com->NumProc() > 1)
+    if (Core::Communication::my_mpi_rank(*com) == 0 and
+        Core::Communication::num_mpi_ranks(*com) > 1)
       std::cout << "parallel distribution of auxiliary discr. with standard ghosting" << std::endl;
     Core::Rebalance::Utils::print_parallel_distribution(*discret_);
   }

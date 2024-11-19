@@ -553,12 +553,12 @@ void Core::LinAlg::DefaultBlockMatrixStrategy::complete(bool enforce_complete)
   if (err != 0) FOUR_C_THROW("RemoteIDList failed");
 
   const Epetra_Comm& comm = mat_.full_range_map().Comm();
-  const int numproc = comm.NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(comm);
 
   // Send the ghost gids to their respective processor to ask for the domain
   // map the gids belong to.
 
-  std::vector<std::vector<int>> ghostgids(comm.NumProc());
+  std::vector<std::vector<int>> ghostgids(Core::Communication::num_mpi_ranks(comm));
   for (unsigned i = 0; i < cgidlist.size(); ++i)
   {
     ghostgids[cpidlist[i]].push_back(cgidlist[i]);
@@ -573,7 +573,7 @@ void Core::LinAlg::DefaultBlockMatrixStrategy::complete(bool enforce_complete)
   // Now all gids are at the processors that own them. Lets find the owning
   // block for each of them.
 
-  std::vector<std::vector<int>> block(comm.NumProc());
+  std::vector<std::vector<int>> block(Core::Communication::num_mpi_ranks(comm));
 
   for (int proc = 0; proc < numproc; ++proc)
   {

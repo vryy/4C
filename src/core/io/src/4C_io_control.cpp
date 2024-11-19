@@ -71,7 +71,7 @@ Core::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string prob
       }
     }
 
-    if (comm.NumProc() > 1)
+    if (Core::Communication::num_mpi_ranks(comm) > 1)
     {
       int length = static_cast<int>(filename_.length());
       std::vector<int> name(filename_.begin(), filename_.end());
@@ -151,7 +151,7 @@ Core::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string prob
       }
     }
 
-    if (comm.NumProc() > 1)
+    if (Core::Communication::num_mpi_ranks(comm) > 1)
     {
       int length = static_cast<int>(filename_.length());
       std::vector<int> name(filename_.begin(), filename_.end());

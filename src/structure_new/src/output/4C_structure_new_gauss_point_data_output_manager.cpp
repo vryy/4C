@@ -197,7 +197,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::distribute_quantities(
   if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     // receive everything from all other procs
-    for (int i = 1; i < comm.NumProc(); ++i)
+    for (int i = 1; i < Core::Communication::num_mpi_ranks(comm); ++i)
     {
       std::unique_ptr<std::unordered_map<std::string, int>> received_quantities =
           receive_quantities_from_proc(exporter, i);

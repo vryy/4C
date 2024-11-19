@@ -594,7 +594,7 @@ void STI::Monolithic::output_matrix_to_file(
   {
     // set file name
     std::ostringstream nproc;
-    nproc << comm.NumProc();
+    nproc << Core::Communication::num_mpi_ranks(comm);
     const std::string filename(Global::Problem::instance()->output_control_file()->file_name() +
                                ".matrix_" + nproc.str() + "proc.csv");
 
@@ -686,7 +686,7 @@ void STI::Monolithic::output_vector_to_file(
   {
     // set file name
     std::ostringstream nproc;
-    nproc << comm.NumProc();
+    nproc << Core::Communication::num_mpi_ranks(comm);
     const std::string filename(Global::Problem::instance()->output_control_file()->file_name() +
                                ".vector_" + nproc.str() + "proc.csv");
 

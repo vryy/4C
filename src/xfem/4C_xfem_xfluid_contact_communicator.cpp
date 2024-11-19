@@ -39,7 +39,7 @@ void XFEM::XFluidContactComm::initialize_fluid_state(std::shared_ptr<Cut::CutWiz
   fluiddis_ = fluiddis;
   condition_manager_ = condition_manager;
 
-  parallel_ = (fluiddis_->get_comm().NumProc() > 1);
+  parallel_ = (Core::Communication::num_mpi_ranks(fluiddis_->get_comm()) > 1);
 
   Teuchos::ParameterList& params_xf_stab = fluidparams->sublist("XFLUID DYNAMIC/STABILIZATION");
 

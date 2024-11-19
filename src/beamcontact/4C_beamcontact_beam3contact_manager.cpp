@@ -267,7 +267,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
   if (linechargeconds_.size() != 0)
   {
     // safety check
-    if (pdiscret_.get_comm().NumProc() != 1)
+    if (Core::Communication::num_mpi_ranks(pdiscret_.get_comm()) != 1)
       FOUR_C_THROW("potential-based beam interactions not implemented in parallel yet!");
 
     // initialize parameters of applied potential law
@@ -895,8 +895,9 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
     estproc.push_back(Core::Communication::my_mpi_rank(bt_sol_discret().get_comm()));
 
   // information how many processors participate in total
-  std::vector<int> allproc(bt_sol_discret().get_comm().NumProc());
-  for (int i = 0; i < bt_sol_discret().get_comm().NumProc(); ++i) allproc[i] = i;
+  std::vector<int> allproc(Core::Communication::num_mpi_ranks(bt_sol_discret().get_comm()));
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(bt_sol_discret().get_comm()); ++i)
+    allproc[i] = i;
 
   // declaring new variables into which the info of (e)stproc on all processors is gathered
   std::vector<int> rtproc(0);
@@ -904,9 +905,11 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
 
   // gathers information of (e)stproc and writes it into (e)rtproc; in the end (e)rtproc
   // is a vector which contains the numbers of all processors which own nodes/elements.
-  Core::LinAlg::gather<int>(stproc, rtproc, bt_sol_discret().get_comm().NumProc(), allproc.data(),
+  Core::LinAlg::gather<int>(stproc, rtproc,
+      Core::Communication::num_mpi_ranks(bt_sol_discret().get_comm()), allproc.data(),
       bt_sol_discret().get_comm());
-  Core::LinAlg::gather<int>(estproc, ertproc, bt_sol_discret().get_comm().NumProc(), allproc.data(),
+  Core::LinAlg::gather<int>(estproc, ertproc,
+      Core::Communication::num_mpi_ranks(bt_sol_discret().get_comm()), allproc.data(),
       bt_sol_discret().get_comm());
 
   // in analogy to (e)stproc and (e)rtproc the variables (e)rdata gather all the row ID
@@ -2140,7 +2143,7 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
   // Since all the gmsh-output is written by proc0 (this is necessary in order to keep the correct
   // order of the nodes and intermediate points when visualizing Bezier curves with Blender) the
   // pairs_ vector would have to be communicated before writing the output
-  if (btsoldiscret_->Comm().NumProc() > 1)
+  if (Core::Communication::num_mpi_ranks(btsoldiscret_->Comm()) > 1)
     FOUR_C_THROW("Contact pair specific gmsh output is not implemented in parallel so far.");
 #endif
 
@@ -2344,14 +2347,14 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
   }
 
 #ifdef OUTPUTALLPROCS
-  int numoutputloops = btsoldiscret_->Comm().NumProc()
+  int numoutputloops = Core::Communication::num_mpi_ranks(btsoldiscret_->Comm())
 #else
   int numoutputloops = 1;
 #endif
 
-                       // loop over the participating processors each of which appends its part of
-                       // the output to one output file
-                       for (int i = 0; i < numoutputloops; i++)
+      // loop over the participating processors each of which appends its part of
+      // the output to one output file
+      for (int i = 0; i < numoutputloops; i++)
   {
     if (Core::Communication::my_mpi_rank(btsoldiscret_->get_comm()) == i)
     {

@@ -843,7 +843,7 @@ void Cut::CutWizard::find_position_dof_sets(bool include_inner)
   {
     Cut::Mesh& m = intersection_->normal_mesh();
 
-    bool communicate = (comm_.NumProc() > 1);
+    bool communicate = (Core::Communication::num_mpi_ranks(comm_) > 1);
 
     // create a parallel Cut object for the current background mesh to communicate missing data
     std::shared_ptr<Cut::Parallel> cut_parallel = nullptr;

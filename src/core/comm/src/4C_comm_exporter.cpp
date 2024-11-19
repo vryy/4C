@@ -21,7 +21,7 @@ Core::Communication::Exporter::Exporter(const Epetra_Comm& comm)
       tomap_(dummymap_),
       comm_(comm),
       myrank_(Core::Communication::my_mpi_rank(comm)),
-      numproc_(comm.NumProc())
+      numproc_(Core::Communication::num_mpi_ranks(comm))
 {
 }
 
@@ -32,7 +32,7 @@ Core::Communication::Exporter::Exporter(
       tomap_(tomap),
       comm_(comm),
       myrank_(Core::Communication::my_mpi_rank(comm)),
-      numproc_(comm.NumProc())
+      numproc_(Core::Communication::num_mpi_ranks(comm))
 {
   construct_exporter();
 }
@@ -235,7 +235,7 @@ void Core::Communication::Exporter::construct_exporter()
       }
     }
     get_comm().Barrier();
-  }  // for (int proc=0; proc<NumProc(); ++proc)
+  }
 }
 
 void Core::Communication::Exporter::generic_export(ExporterHelper& helper)
@@ -323,7 +323,7 @@ void Core::Communication::Exporter::generic_export(ExporterHelper& helper)
 
     // make sure we do not get mixed up messages as we use wild card receives here
     get_comm().Barrier();
-  }  // for (int i=0; i<NumProc()-1; ++i)
+  }
 
   helper.post_export_cleanup(this);
 }

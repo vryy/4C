@@ -72,7 +72,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
   // coupling pair is scaled by the inverse of the multiplicity
 
   int duplicates = 0;
-  if (get_comm().NumProc() > 1)
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
   {
     std::vector<int> mygpvec(numgp_per_artele, 0);
     std::vector<int> sumgpvec(numgp_per_artele, 0);

@@ -405,7 +405,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, std::shared_ptr<Core::IO::I
   if (padaptivity_)
   {
     // redistribute discr. with help of binning strategy
-    if (discret_->get_comm().NumProc() > 1)
+    if (Core::Communication::num_mpi_ranks(discret_->get_comm()) > 1)
     {
       // create vector of discr.
       std::vector<std::shared_ptr<Core::FE::Discretization>> dis;

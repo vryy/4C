@@ -910,7 +910,7 @@ SSI::Utils::SSIMeshTying::SSIMeshTying(const std::string& conditionname_coupling
       do_print_(Core::Communication::my_mpi_rank(dis->get_comm()) == 0),
       meshtying_handlers_(),
       my_rank_(Core::Communication::my_mpi_rank(dis->get_comm())),
-      num_proc_(dis->get_comm().NumProc())
+      num_proc_(Core::Communication::num_mpi_ranks(dis->get_comm()))
 {
   setup_mesh_tying_handlers(
       dis, conditionname_coupling, build_slave_slave_transformation, check_over_constrained);

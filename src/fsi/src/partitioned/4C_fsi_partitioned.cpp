@@ -407,7 +407,7 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
     std::string s = Global::Problem::instance()->output_control_file()->file_name();
     s.append(".iteration");
     log = std::make_shared<std::ofstream>(s.c_str());
-    (*log) << "# num procs      = " << get_comm().NumProc() << "\n"
+    (*log) << "# num procs      = " << Core::Communication::num_mpi_ranks(get_comm()) << "\n"
            << "# Method         = " << nlParams.sublist("Direction").get("Method", "Newton") << "\n"
            << "# Jacobian       = " << nlParams.get("Jacobian", "None") << "\n"
            << "# Preconditioner = " << nlParams.get("Preconditioner", "None") << "\n"

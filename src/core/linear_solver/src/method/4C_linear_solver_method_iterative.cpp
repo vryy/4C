@@ -196,7 +196,7 @@ bool Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::allow_reuse_pr
 
   // synchronize results of all processors
   // all processors have to do the same (either recompute preconditioner or allow reusing it)
-  int nProc = comm_.NumProc();
+  int nProc = Core::Communication::num_mpi_ranks(comm_);
   int lAllowReuse = bAllowReuse == true ? 1 : 0;
   int gAllowReuse = 0;
   comm_.SumAll(&lAllowReuse, &gAllowReuse, 1);

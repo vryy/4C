@@ -76,7 +76,7 @@ void CONTACT::MtAbstractStrategy::redistribute_meshtying()
   TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtAbstractStrategy::redistribute_meshtying");
 
   // Do we really want to redistribute?
-  if (par_redist() && get_comm().NumProc() > 1)
+  if (par_redist() && Core::Communication::num_mpi_ranks(get_comm()) > 1)
   {
     // time measurement
     get_comm().Barrier();

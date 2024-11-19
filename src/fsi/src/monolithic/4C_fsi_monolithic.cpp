@@ -489,7 +489,7 @@ void FSI::Monolithic::prepare_timeloop()
   // write header of log-file
   if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
-    (*log_) << "# num procs      = " << get_comm().NumProc() << "\n"
+    (*log_) << "# num procs      = " << Core::Communication::num_mpi_ranks(get_comm()) << "\n"
             << "# Method         = " << nlParams.sublist("Direction").get<std::string>("Method")
             << std::endl
             << std::right << std::setw(9) << "# step" << std::right << std::setw(16) << "time"
@@ -506,7 +506,7 @@ void FSI::Monolithic::prepare_timeloop()
   if (Core::Communication::my_mpi_rank(get_comm()) == 0 and (logenergy_))
   {
     (*logenergy_) << "# Artificial interface energy due to temporal discretization\n"
-                  << "# num procs      = " << get_comm().NumProc() << "\n"
+                  << "# num procs      = " << Core::Communication::num_mpi_ranks(get_comm()) << "\n"
                   << "# Method         = "
                   << nlParams.sublist("Direction").get<std::string>("Method") << std::endl
                   << std::right << std::setw(9) << "# step" << std::right << std::setw(16) << "time"

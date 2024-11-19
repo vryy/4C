@@ -116,7 +116,7 @@ CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointCon
  *----------------------------------------------------------------------------*/
 void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::check_input()
 {
-  if (discret_ptr_->get_comm().NumProc() > 1)
+  if (Core::Communication::num_mpi_ranks(discret_ptr_->get_comm()) > 1)
     FOUR_C_THROW("periodic boundary conditions for RVEs are not implemented in parallel.");
 
 

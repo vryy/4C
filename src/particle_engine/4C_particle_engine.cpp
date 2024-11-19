@@ -280,7 +280,8 @@ void PARTICLEENGINE::ParticleEngine::distribute_particles(
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::DistributeParticles");
 
-  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
+  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(
+      Core::Communication::num_mpi_ranks(comm_));
   std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
 
   // determine particles that need to be distributed
@@ -304,7 +305,8 @@ void PARTICLEENGINE::ParticleEngine::transfer_particles()
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::TransferParticles");
 
   std::vector<std::set<int>> particlestoremove(typevectorsize_);
-  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
+  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(
+      Core::Communication::num_mpi_ranks(comm_));
   std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
 
   // relate owned particles to bins
@@ -339,7 +341,8 @@ void PARTICLEENGINE::ParticleEngine::ghost_particles()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::GhostParticles");
 
-  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
+  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(
+      Core::Communication::num_mpi_ranks(comm_));
   std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
   std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>> directghosting;
 
@@ -366,7 +369,8 @@ void PARTICLEENGINE::ParticleEngine::refresh_particles() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::RefreshParticles");
 
-  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
+  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(
+      Core::Communication::num_mpi_ranks(comm_));
   std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
 
   // determine particles that need to be refreshed
@@ -385,7 +389,8 @@ void PARTICLEENGINE::ParticleEngine::refresh_particles_of_specific_states_and_ty
   TEUCHOS_FUNC_TIME_MONITOR(
       "PARTICLEENGINE::ParticleEngine::refresh_particles_of_specific_states_and_types");
 
-  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
+  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(
+      Core::Communication::num_mpi_ranks(comm_));
   std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
 
   // determine particles that need to be refreshed
@@ -1004,7 +1009,7 @@ void PARTICLEENGINE::ParticleEngine::setup_bin_ghosting()
   bincolmap_ = std::make_shared<Epetra_Map>(
       -1, static_cast<int>(bincolmapvec.size()), bincolmapvec.data(), 0, comm_);
 
-  if (bincolmap_->NumGlobalElements() == 1 && comm_.NumProc() > 1)
+  if (bincolmap_->NumGlobalElements() == 1 && Core::Communication::num_mpi_ranks(comm_) > 1)
     FOUR_C_THROW("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");
 
   // make sure that all processors are either filled or unfilled
@@ -1052,7 +1057,8 @@ void PARTICLEENGINE::ParticleEngine::setup_data_storage(
   directghostingtargets_.resize(typevectorsize_);
 
   // allocate memory for particles being communicated to target processors
-  communicatedparticletargets_.assign(comm_.NumProc(), std::vector<int>(0));
+  communicatedparticletargets_.assign(
+      Core::Communication::num_mpi_ranks(comm_), std::vector<int>(0));
 }
 
 void PARTICLEENGINE::ParticleEngine::init_particle_vtp_writer()
@@ -1186,7 +1192,7 @@ void PARTICLEENGINE::ParticleEngine::determine_ghosting_dependent_maps_and_sets(
   add_to_pack(data, ghostedbins_);
 
   // communicate ghosted bins between all processors
-  for (int torank = 0; torank < comm_.NumProc(); ++torank)
+  for (int torank = 0; torank < Core::Communication::num_mpi_ranks(comm_); ++torank)
   {
     if (torank == myrank_) continue;
 
@@ -1372,7 +1378,8 @@ void PARTICLEENGINE::ParticleEngine::determine_particles_to_be_distributed(
     std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep)
 {
   // clear particles being communicated to target processors
-  communicatedparticletargets_.assign(comm_.NumProc(), std::vector<int>(0));
+  communicatedparticletargets_.assign(
+      Core::Communication::num_mpi_ranks(comm_), std::vector<int>(0));
 
   // number of particles to distribute
   int numparticles = particlestodistribute.size();
@@ -1486,7 +1493,8 @@ void PARTICLEENGINE::ParticleEngine::determine_particles_to_be_transfered(
   if (not validownedparticles_) FOUR_C_THROW("invalid relation of owned particles to bins!");
 
   // clear particles being communicated to target processors
-  communicatedparticletargets_.assign(comm_.NumProc(), std::vector<int>(0));
+  communicatedparticletargets_.assign(
+      Core::Communication::num_mpi_ranks(comm_), std::vector<int>(0));
 
   // iterate over this processors bins being touched by other processors
   for (int touchedbin : touchedbins_)
@@ -1704,7 +1712,7 @@ void PARTICLEENGINE::ParticleEngine::communicate_particles(
   std::map<int, std::vector<char>> rdata;
 
   // pack data for sending
-  for (int torank = 0; torank < comm_.NumProc(); ++torank)
+  for (int torank = 0; torank < Core::Communication::num_mpi_ranks(comm_); ++torank)
   {
     if (particlestosend[torank].empty()) continue;
 

@@ -4583,7 +4583,8 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
 {
   // get out of here if parallel redistribution is switched off
   // or if this is a single processor (serial) job
-  if (!parallel_redistribution_status() || get_comm().NumProc() == 1) return false;
+  if (!parallel_redistribution_status() || Core::Communication::num_mpi_ranks(get_comm()) == 1)
+    return false;
 
   for (int i = 0; i < (int)interface_.size(); ++i)
   {

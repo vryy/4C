@@ -64,7 +64,7 @@ Core::IO::ElementReader::ElementReader(std::shared_ptr<Core::FE::Discretization>
 void Core::IO::ElementReader::read_and_distribute()
 {
   const int myrank = Core::Communication::my_mpi_rank(comm_);
-  const int numproc = comm_.NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(comm_);
 
   // read global ids of elements of this discretization
   const auto& [numele, eids] = get_element_size_and_ids();

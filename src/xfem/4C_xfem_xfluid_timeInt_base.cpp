@@ -62,7 +62,7 @@ XFEM::XfluidTimeintBase::XfluidTimeintBase(
       timeIntData_(nullptr),
       pbcmap_(pbcmap),
       myrank_(Core::Communication::my_mpi_rank(discret_->get_comm())),
-      numproc_(discret_->get_comm().NumProc()),
+      numproc_(Core::Communication::num_mpi_ranks(discret_->get_comm())),
       newton_max_iter_(10),  /// maximal number of newton iterations for Semi-Lagrangean algorithm
       limits_tol_(1.0e-10),  /// newton tolerance for Semi-Lagrangean algorithm
       TOL_dist_(1.0e-12)  /// tolerance to find the shortest distance of point to its projection on

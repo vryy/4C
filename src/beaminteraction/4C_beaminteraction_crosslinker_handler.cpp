@@ -78,7 +78,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::remove_all_linker()
 void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
     std::list<std::shared_ptr<Core::Nodes::Node>>& homelesslinker)
 {
-  const int numproc = binstrategy_->bin_discret()->get_comm().NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(binstrategy_->bin_discret()->get_comm());
   const int myrank =
       Core::Communication::my_mpi_rank(binstrategy_->bin_discret()->get_comm());  // me
   const int torank = (myrank + 1) % numproc;                                      // to
@@ -165,7 +165,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
 {
   TEUCHOS_FUNC_TIME_MONITOR(
       "BEAMINTERACTION::beam_crosslinker_handler::fill_linker_into_bins_remote_id_list");
-  const int numproc = binstrategy_->bin_discret()->get_comm().NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(binstrategy_->bin_discret()->get_comm());
   std::shared_ptr<std::list<int>> removedlinker = std::make_shared<std::list<int>>(0);
 
   // parallel case
@@ -275,7 +275,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
   TEUCHOS_FUNC_TIME_MONITOR(
       "BEAMINTERACTION::beam_crosslinker_handler::fill_linker_into_bins_using_ghosting");
 
-  const int numproc = binstrategy_->bin_discret()->get_comm().NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(binstrategy_->bin_discret()->get_comm());
   std::shared_ptr<std::list<int>> removedlinker = std::make_shared<std::list<int>>(0);
 
   // parallel case
@@ -584,7 +584,7 @@ std::shared_ptr<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::transfe
   //---------------------------------------------------------------------------
   // numproc == 1
   //---------------------------------------------------------------------------
-  if (binstrategy_->bin_discret()->get_comm().NumProc() == 1)
+  if (Core::Communication::num_mpi_ranks(binstrategy_->bin_discret()->get_comm()) == 1)
   {
     if (homelesslinker.size())
     {

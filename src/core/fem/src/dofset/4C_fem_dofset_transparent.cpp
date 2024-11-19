@@ -173,7 +173,7 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
     std::vector<char> rblock;
 
     // get number of processors and the current processors id
-    int numproc = sourcedis.get_comm().NumProc();
+    int numproc = Core::Communication::num_mpi_ranks(sourcedis.get_comm());
     int myrank = Core::Communication::my_mpi_rank(sourcedis.get_comm());
 
     //----------------------------------------------------------------------
@@ -357,7 +357,7 @@ void Core::DOFSets::TransparentDofSet::set_source_dofs_available_on_this_proc(
     }
     else
     {
-      int numproc = sourcedis_->get_comm().NumProc();
+      int numproc = Core::Communication::num_mpi_ranks(sourcedis_->get_comm());
       if (numproc == 1)
       {
         FOUR_C_THROW(

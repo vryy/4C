@@ -385,7 +385,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
   //----------------------------------------------------------------------
 
   const int myrank = Core::Communication::my_mpi_rank(avgcomm);
-  const int numprocs = avgcomm.NumProc();
+  const int numprocs = Core::Communication::num_mpi_ranks(avgcomm);
 
   std::vector<char> sblock;
   std::vector<char> rblock;

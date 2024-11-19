@@ -871,7 +871,7 @@ double FLD::Utils::FluidCouplingBc::area(double& density, double& viscosity, int
   viscosity = eleparams.get<double>("viscosity");
 
   // find the lowest proc number that knows the material data
-  int numproc = discret_3d_->get_comm().NumProc();
+  int numproc = Core::Communication::num_mpi_ranks(discret_3d_->get_comm());
   int theproc = -1;  // the lowest proc that has the desired information
   std::vector<double> alldens(numproc);
 

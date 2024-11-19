@@ -11,4 +11,6 @@ FOUR_C_NAMESPACE_OPEN
 
 int Core::Communication::my_mpi_rank(const Epetra_Comm &comm) { return comm.MyPID(); }
 
+int Core::Communication::num_mpi_ranks(const Epetra_Comm &comm) { return comm.NumProc(); }
+
 FOUR_C_NAMESPACE_CLOSE

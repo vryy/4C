@@ -230,8 +230,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::pre_evaluate_c
   }
 
   // communicate the dummy map to all procs.
-  std::vector<int> allproc(get_comm().NumProc());
-  for (int i = 0; i < get_comm().NumProc(); ++i) allproc[i] = i;
+  std::vector<int> allproc(Core::Communication::num_mpi_ranks(get_comm()));
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(get_comm()); ++i) allproc[i] = i;
   Core::LinAlg::gather<double>(
       duplicates, duplicates, (int)allproc.size(), allproc.data(), get_comm());
 
@@ -614,8 +614,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::fill_gid_to_se
   }
 
   // communicate it to all procs.
-  std::vector<int> allproc(get_comm().NumProc());
-  for (int i = 0; i < get_comm().NumProc(); ++i) allproc[i] = i;
+  std::vector<int> allproc(Core::Communication::num_mpi_ranks(get_comm()));
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(get_comm()); ++i) allproc[i] = i;
   Core::LinAlg::gather<double>(
       gid_to_seglength, gid_to_seglength, (int)allproc.size(), allproc.data(), get_comm());
 }

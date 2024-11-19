@@ -247,7 +247,7 @@ void XFEM::MeshProjector::project(std::map<int, std::set<int>>& projection_nodeT
 
   // vector which identifies if a target node has already interpolated values (initialize to false)
   std::vector<int> have_values(projection_targetnodes.size(), 0);
-  if (sourcedis_->get_comm().NumProc() > 1)
+  if (Core::Communication::num_mpi_ranks(sourcedis_->get_comm()) > 1)
     communicate_nodes(tar_nodepositions_n, interpolated_vecs, projection_targetnodes, have_values);
   else
   {
@@ -469,7 +469,7 @@ void XFEM::MeshProjector::communicate_nodes(
     std::vector<int>& projection_targetnodes, std::vector<int>& have_values)
 {
   // get number of processors and the current processors id
-  const int numproc = sourcedis_->get_comm().NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(sourcedis_->get_comm());
 
   // information how many processors work at all
   std::vector<int> allproc(numproc);
@@ -524,7 +524,7 @@ void XFEM::MeshProjector::receive_block(
     std::vector<char>& rblock, Core::Communication::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
-  int numproc = sourcedis_->get_comm().NumProc();
+  int numproc = Core::Communication::num_mpi_ranks(sourcedis_->get_comm());
   int myrank = Core::Communication::my_mpi_rank(sourcedis_->get_comm());
 
   // necessary variables
@@ -558,7 +558,7 @@ void XFEM::MeshProjector::send_block(
     std::vector<char>& sblock, Core::Communication::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
-  int numproc = sourcedis_->get_comm().NumProc();
+  int numproc = Core::Communication::num_mpi_ranks(sourcedis_->get_comm());
   int myrank = Core::Communication::my_mpi_rank(sourcedis_->get_comm());
 
   // Send block to next proc.

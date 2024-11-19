@@ -305,7 +305,8 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
           Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(
               mtparams.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
       bool isFinalDistribution = false;
-      if (parallelRedist == Inpar::Mortar::ParallelRedist::redist_none or comm_->NumProc() == 1)
+      if (parallelRedist == Inpar::Mortar::ParallelRedist::redist_none or
+          Core::Communication::num_mpi_ranks(*comm_) == 1)
         isFinalDistribution = true;
 
       interface->fill_complete(Global::Problem::instance()->discretization_map(),
@@ -620,7 +621,7 @@ bool CONTACT::MtManager::read_and_check_input(
   mtparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // no parallel redistribution in the serial case
-  if (get_comm().NumProc() == 1)
+  if (Core::Communication::num_mpi_ranks(get_comm()) == 1)
     mtparams.sublist("PARALLEL REDISTRIBUTION")
         .set<Inpar::Mortar::ParallelRedist>(
             "PARALLEL_REDIST", Inpar::Mortar::ParallelRedist::redist_none);

@@ -473,20 +473,20 @@ void PostProblem::read_meshes()
             "No meshfile name for discretization %s.", currfield.discretization()->name().c_str());
       std::string filename = fn;
       Core::IO::HDFReader reader = Core::IO::HDFReader(input_dir_);
-      reader.open(
-          filename, num_output_procs, comm_->NumProc(), Core::Communication::my_mpi_rank(*comm_));
+      reader.open(filename, num_output_procs, Core::Communication::num_mpi_ranks(*comm_),
+          Core::Communication::my_mpi_rank(*comm_));
 
       if (currfield.num_nodes() != 0)
       {
-        std::shared_ptr<std::vector<char>> node_data =
-            reader.read_node_data(step, comm_->NumProc(), Core::Communication::my_mpi_rank(*comm_));
+        std::shared_ptr<std::vector<char>> node_data = reader.read_node_data(step,
+            Core::Communication::num_mpi_ranks(*comm_), Core::Communication::my_mpi_rank(*comm_));
         currfield.discretization()->unpack_my_nodes(*node_data);
       }
 
       if (currfield.num_elements() != 0)
       {
-        std::shared_ptr<std::vector<char>> element_data = reader.read_element_data(
-            step, comm_->NumProc(), Core::Communication::my_mpi_rank(*comm_));
+        std::shared_ptr<std::vector<char>> element_data = reader.read_element_data(step,
+            Core::Communication::num_mpi_ranks(*comm_), Core::Communication::my_mpi_rank(*comm_));
         currfield.discretization()->unpack_my_elements(*element_data);
       }
 
@@ -513,7 +513,7 @@ void PostProblem::read_meshes()
             packed_knots = std::make_shared<std::vector<char>>();
 
           // distribute knots to all procs
-          if (comm_->NumProc() > 1)
+          if (Core::Communication::num_mpi_ranks(*comm_) > 1)
           {
             Core::Communication::Exporter exporter(nurbsdis->get_comm());
 
@@ -524,7 +524,7 @@ void PostProblem::read_meshes()
               int frompid = 0;
               int topid = -1;
 
-              for (int np = 1; np < comm_->NumProc(); ++np)
+              for (int np = 1; np < Core::Communication::num_mpi_ranks(*comm_); ++np)
               {
                 tag = np;
                 topid = np;
@@ -558,7 +558,7 @@ void PostProblem::read_meshes()
             FOUR_C_THROW("expected a nurbs discretisation for spatial approx. Nurbs\n");
           }
 
-          if (nurbsdis->get_comm().NumProc() != 1)
+          if (Core::Communication::num_mpi_ranks(nurbsdis->get_comm()) != 1)
             nurbsdis->setup_ghosting(false, false, false);
           else
             nurbsdis->fill_complete(false, false, false);
@@ -583,7 +583,7 @@ void PostProblem::read_meshes()
         default:
         {
           // setup of parallel layout: create ghosting of already distributed nodes+elems
-          if (currfield.discretization()->get_comm().NumProc() != 1)
+          if (Core::Communication::num_mpi_ranks(currfield.discretization()->get_comm()) != 1)
             currfield.discretization()->setup_ghosting(true, true, true);
           else
             currfield.discretization()->fill_complete();
@@ -866,7 +866,8 @@ void PostResult::open_result_files(MAP* field_info)
   const std::string basename = map_read_string(field_info, "result_file");
   // field_->problem()->set_basename(basename);
   Epetra_Comm& comm = *field_->problem()->get_comm();
-  file_.open(basename, num_output_procs, comm.NumProc(), Core::Communication::my_mpi_rank(comm));
+  file_.open(basename, num_output_procs, Core::Communication::num_mpi_ranks(comm),
+      Core::Communication::my_mpi_rank(comm));
 }
 
 /*----------------------------------------------------------------------*

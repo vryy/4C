@@ -7,6 +7,7 @@
 
 #include "4C_post_processor_single_field_writers.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_post_common.hpp"
@@ -513,7 +514,8 @@ void ElchFilter::write_all_results(PostField* field)
   discret.get_comm().MaxAll(&mysize, &maxsize, 1);
   std::vector<int> mynumdofpernodevec(mynumdofpernodeset.begin(), mynumdofpernodeset.end());
   mynumdofpernodevec.resize(maxsize, -1);
-  std::vector<int> numdofpernodevec(maxsize * discret.get_comm().NumProc(), -1);
+  std::vector<int> numdofpernodevec(
+      maxsize * Core::Communication::num_mpi_ranks(discret.get_comm()), -1);
   discret.get_comm().GatherAll(
       mynumdofpernodevec.data(), numdofpernodevec.data(), mynumdofpernodevec.size());
   std::set<int> numdofpernodeset;

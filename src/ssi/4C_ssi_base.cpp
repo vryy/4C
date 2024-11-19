@@ -316,7 +316,8 @@ void SSI::SSIBase::init_discretizations(const Epetra_Comm& comm, const std::stri
         // resize vector and fill with place holders (-1)
         my_node_ids.resize(max_num_nodes, -1);
 
-        std::vector<int> glob_node_ids(max_num_nodes * get_comm().NumProc(), -1);
+        std::vector<int> glob_node_ids(
+            max_num_nodes * Core::Communication::num_mpi_ranks(get_comm()), -1);
         get_comm().GatherAll(
             my_node_ids.data(), glob_node_ids.data(), static_cast<int>(my_node_ids.size()));
 

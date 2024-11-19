@@ -81,7 +81,7 @@ void Mortar::Interface::visualize_gmsh(
   //**********************************************************************
   // Start GMSH output
   //**********************************************************************
-  for (int proc = 0; proc < get_comm().NumProc(); ++proc)
+  for (int proc = 0; proc < Core::Communication::num_mpi_ranks(get_comm()); ++proc)
   {
     if (proc == Core::Communication::my_mpi_rank(get_comm()))
     {
@@ -598,7 +598,7 @@ void Mortar::Interface::visualize_gmsh(
       }
 
       // end GMSH output section in all files
-      if (proc == get_comm().NumProc() - 1)
+      if (proc == Core::Communication::num_mpi_ranks(get_comm()) - 1)
       {
         gmshfilecontent << "};" << std::endl;
         gmshfilecontentslave << "};" << std::endl;
@@ -676,7 +676,7 @@ void Mortar::Interface::visualize_gmsh(
   Comm().Barrier();
 
   // for every proc, one after another, put data of slabs into files
-  for (int i = 0; i < Comm().NumProc(); i++)
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(Comm()); i++)
   {
     if ((i == Core::Communication::my_mpi_rank(Comm())) && (binarytree_->Sroot()->Type() != 4))
     {
@@ -848,7 +848,7 @@ void Mortar::Interface::visualize_gmsh(
     }
 
     // every proc should plot its contacting treenodes!
-    for (int i = 0; i < Comm().NumProc(); i++)
+    for (int i = 0; i < Core::Communication::num_mpi_ranks(Comm()); i++)
     {
       if (Core::Communication::my_mpi_rank(Comm()) == i)
       {

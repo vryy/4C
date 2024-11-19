@@ -158,7 +158,7 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::AbstractStrategy& stra
 bool CONTACT::AbstractStrategy::is_rebalancing_necessary(const bool first_time_step)
 {
   // No rebalancing of a serial run, since it makes no sense.
-  if (get_comm().NumProc() == 1) return false;
+  if (Core::Communication::num_mpi_ranks(get_comm()) == 1) return false;
 
   bool perform_rebalancing = false;
   const double max_time_unbalance =
@@ -1161,7 +1161,7 @@ void CONTACT::AbstractStrategy::initialize_and_evaluate_interface(
   }
 
   // vector containing all proc ids
-  const int numproc = Comm().NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(Comm());
   std::vector<int> allproc(numproc);
   for (int i = 0; i < numproc; ++i) allproc[i] = i;
 
@@ -1206,7 +1206,7 @@ void CONTACT::AbstractStrategy::update_parallel_distribution_status(const double
   // PARALLEL REDISTRIBUTION
   //**********************************************************************
   // don't do this if this is a single processor (serial) job
-  if (get_comm().NumProc() == 1) return;
+  if (Core::Communication::num_mpi_ranks(get_comm()) == 1) return;
 
   // collect information about participation in coupling evaluation
   // and in parallel distribution of the individual interfaces
@@ -1263,7 +1263,7 @@ void CONTACT::AbstractStrategy::update_parallel_distribution_status(const double
 
     // minimum number of elements per proc
     int minele = params().sublist("PARALLEL REDISTRIBUTION").get<int>("MIN_ELEPROC");
-    int numproc = get_comm().NumProc();
+    int numproc = Core::Communication::num_mpi_ranks(get_comm());
 
     //--------------------------------------------------------------------
     // check if there is an element unbalance
@@ -2559,8 +2559,8 @@ void CONTACT::AbstractStrategy::print_active_set() const
   }
 
   // we want to gather data from on all procs
-  std::vector<int> allproc(Comm().NumProc());
-  for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
+  std::vector<int> allproc(Core::Communication::num_mpi_ranks(Comm()));
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(Comm()); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
   Core::LinAlg::gather<int>(lnid, gnid, (int)allproc.size(), allproc.data(), Comm());

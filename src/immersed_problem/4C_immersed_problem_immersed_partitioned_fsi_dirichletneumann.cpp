@@ -33,7 +33,7 @@ Immersed::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
       fluid_SearchTree_(nullptr),
       structure_SearchTree_(nullptr),
       myrank_(Core::Communication::my_mpi_rank(comm)),
-      numproc_(comm.NumProc()),
+      numproc_(Core::Communication::num_mpi_ranks(comm)),
       globalproblem_(nullptr),
       displacementcoupling_(false),
       multibodysimulation_(false),

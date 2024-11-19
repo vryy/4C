@@ -456,7 +456,7 @@ void fsi_ale_drt()
       std::vector<std::shared_ptr<Epetra_Map>> stdnodecolmap;
 
       // redistribute discr. with help of binning strategy
-      if (structdis->get_comm().NumProc() > 1)
+      if (Core::Communication::num_mpi_ranks(structdis->get_comm()) > 1)
       {
         // binning strategy is created and parallel redistribution is performed
         Teuchos::ParameterList binning_params =
