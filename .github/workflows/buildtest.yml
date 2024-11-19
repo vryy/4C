@@ -8,9 +8,6 @@ on:
     branches:
       - 'main'
 
-env:
-  FOUR_C_DOCKER_DEPENDENCIES_HASH: 40d8b295
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -21,7 +18,7 @@ jobs:
       CMAKE_PRESET: docker
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/4c-multiphysics/4c-dependencies:40d8b295
+      image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
       credentials:
         username: ${{ github.actor }}
@@ -37,7 +34,7 @@ jobs:
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
-          docker_image_hash: $FOUR_C_DOCKER_DEPENDENCIES_HASH
+          docker_image_hash: $DEPENDENCIES_HASH
       - run: apt update
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -66,7 +63,7 @@ jobs:
     needs: gcc9_build
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/4c-multiphysics/4c-dependencies:40d8b295
+      image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
       credentials:
         username: ${{ github.actor }}
@@ -84,7 +81,7 @@ jobs:
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
-          docker_image_hash: $FOUR_C_DOCKER_DEPENDENCIES_HASH
+          docker_image_hash: $DEPENDENCIES_HASH
       - name: Setup developer environment for testing
         run: |
           cd $GITHUB_WORKSPACE
@@ -117,7 +114,7 @@ jobs:
       CMAKE_PRESET: docker_release_clang18
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/4c-multiphysics/4c-dependencies:40d8b295
+      image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
       credentials:
         username: ${{ github.actor }}
@@ -133,7 +130,7 @@ jobs:
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
-          docker_image_hash: $FOUR_C_DOCKER_DEPENDENCIES_HASH
+          docker_image_hash: $DEPENDENCIES_HASH
       - run: apt update
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -162,4 +159,3 @@ jobs:
         uses: re-actors/alls-green@release/v1
         with:
           jobs: ${{ toJSON(needs) }}
-
