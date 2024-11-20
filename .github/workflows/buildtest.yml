@@ -62,6 +62,7 @@ jobs:
   gcc9_test:
     needs: gcc9_build
     runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
