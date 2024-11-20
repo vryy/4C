@@ -18,7 +18,6 @@
 #include "4C_cut_volumecell.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_inpar_constraint_framework.hpp"
-#include "4C_inpar_cut.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_solid_3D_ele.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
@@ -156,13 +155,17 @@ std::shared_ptr<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> coupling_pair_m
   }
 }
 
-void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
-    std::shared_ptr<Cut::CutWizard>& cutwizard,
-    CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr, Core::FE::Discretization& discret,
-    std::vector<std::shared_ptr<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>&
-        embeddedmesh_coupling_pairs,
-    std::vector<Core::Elements::Element*>& cut_elements_vector)
+std::vector<CONSTRAINTS::EMBEDDEDMESH::BackgroundInterfaceInfo>
+CONSTRAINTS::EMBEDDEDMESH::get_information_background_and_interface_elements(
+    const std::shared_ptr<Cut::CutWizard>& cutwizard, Core::FE::Discretization& discret,
+    std::vector<int>& ids_cut_elements_col,
+    std::vector<Core::Elements::Element*>& cut_elements_col_vector)
 {
+  // Declare object to store information of the background elements and their interface elements
+  std::vector<CONSTRAINTS::EMBEDDEDMESH::BackgroundInterfaceInfo> information_coupling_pairs;
+  cut_elements_col_vector.clear();
+  std::set<int> ids_cut_elements;
+
   // Perform checks before building the coupling pairs
   cutwizard->check_if_mesh_intersection_and_cut();
 
@@ -170,7 +173,7 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
   Cut::Mesh background_mesh = (cutwizard->get_intersection())->normal_mesh();
 
   // Get the elements inside the background mesh
-  const std::map<int, std::shared_ptr<Cut::Element>> background_elements =
+  const std::map<int, std::shared_ptr<Cut::Element>>& background_elements =
       background_mesh.get_mesh_elements();
 
   // Do a loop to check all the elements of the background mesh, if the element is cut, then
@@ -183,13 +186,27 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
     if (background_element->is_cut())
     {
       // Get the element of the background mesh
-      Core::Elements::Element* background_ele = discret.g_element(background_element->id());
+      auto background_ele = discret.g_element(background_element->id());
 
-      // Create a multimap the boundary cells and their ids of this background element
+      // Add this element into the vector of column cut elements
+      ids_cut_elements.insert(background_element->id());
+
+      // Add this element into the vector of cut elements if it hasn't been stored yet
+      bool is_cut_ele_included =
+          std::find(cut_elements_col_vector.begin(), cut_elements_col_vector.end(),
+              background_ele) != cut_elements_col_vector.end();
+      if (!is_cut_ele_included) cut_elements_col_vector.push_back(background_ele);
+
+      // Check if the background element is owned by this processor, if this is not the case,
+      // continue with the next element.
+      if (background_ele->owner() != discret.get_comm().MyPID()) continue;
+
+      // Create a multimap of the global ids of interface elements and their corresponding
+      // boundary cells for this background element
+      std::set<int> unique_interface_ele_global_ids;
       std::multimap<int, Cut::BoundaryCell*> boundarycells_ids_multimap;
-      Cut::plain_volumecell_set volume_cells = background_element->volume_cells();
 
-      for (auto volume_cell : volume_cells)
+      for (auto volume_cell : background_element->volume_cells())
       {
         // Check if the position of the volume cell is in the outside direction of the
         // cutting interface. As the boundary cells are the same for the inside and outside
@@ -202,60 +219,85 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
 
           for (auto it_boundarycell = bc_temp.begin(); it_boundarycell != bc_temp.end();
                ++it_boundarycell)
+          {
+            unique_interface_ele_global_ids.insert(
+                (*it_boundarycell)->get_global_boundary_cell_id());
             boundarycells_ids_multimap.insert(
                 {(*it_boundarycell)->get_global_boundary_cell_id(), *it_boundarycell});
+          }
         }
       }
 
-      std::set<int> uniqueBoundaryCellIds;
-      for (const auto& pair : boundarycells_ids_multimap) uniqueBoundaryCellIds.insert(pair.first);
+      // Save the obtained background and interface information
+      BackgroundInterfaceInfo background_interface_info;
+      background_interface_info.background_element_ptr = background_ele;
+      background_interface_info.interface_element_global_ids = unique_interface_ele_global_ids;
+      background_interface_info.interface_ele_to_boundarycells = boundarycells_ids_multimap;
 
-      // Iterate over the ids of the boundary cells to  construct coupling pairs
-      for (auto iter_id = uniqueBoundaryCellIds.begin(); iter_id != uniqueBoundaryCellIds.end();
-           iter_id++)
+      information_coupling_pairs.push_back(background_interface_info);
+    }
+  }
+
+  // Allocate enough space in the vector and copy the information of the std::set into it
+  ids_cut_elements_col.reserve(ids_cut_elements.size());
+  std::copy(
+      ids_cut_elements.begin(), ids_cut_elements.end(), std::back_inserter(ids_cut_elements_col));
+
+  return information_coupling_pairs;
+}
+
+void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
+    std::vector<BackgroundInterfaceInfo>& info_background_interface_elements,
+    std::shared_ptr<Cut::CutWizard>& cutwizard,
+    CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr, Core::FE::Discretization& discret,
+    std::vector<std::shared_ptr<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>&
+        embeddedmesh_coupling_pairs)
+{
+  // Iterate over the information of the background elements and their corresponding interface
+  // elements
+  for (auto& background_interface_info : info_background_interface_elements)
+  {
+    Core::Elements::Element* background_ele = background_interface_info.background_element_ptr;
+
+    for (auto iter_interface_ele : background_interface_info.interface_element_global_ids)
+    {
+      Core::Elements::Element* interfaceEle = discret.g_element(iter_interface_ele);
+      std::vector<std::shared_ptr<Core::Elements::Element>> interfaceEleSurfaces =
+          interfaceEle->surfaces();
+      if (interfaceEleSurfaces[0] == nullptr)
+        FOUR_C_THROW("The interface element doesn't have surfaces defined. ");
+
+      std::shared_ptr<Core::Elements::Element> surface_ele;
+      for (const auto& interfaceEleSurface : interfaceEleSurfaces)
       {
-        Core::Elements::Element* interfaceEle = discret.g_element(*iter_id);
-        std::vector<std::shared_ptr<Core::Elements::Element>> interfaceEleSurfaces =
-            interfaceEle->surfaces();
-        if (interfaceEleSurfaces[0] == nullptr)
-          FOUR_C_THROW("The interface element doesn't have surfaces defined. ");
+        if (CONSTRAINTS::EMBEDDEDMESH::is_interface_element_surface(*interfaceEleSurface))
+          surface_ele = interfaceEleSurface;
+      }
 
-        std::shared_ptr<Core::Elements::Element> surface_ele;
-        for (const auto& interfaceEleSurface : interfaceEleSurfaces)
-        {
-          if (CONSTRAINTS::EMBEDDEDMESH::is_interface_element_surface(*interfaceEleSurface))
-            surface_ele = interfaceEleSurface;
-        }
+      if (surface_ele == nullptr) FOUR_C_THROW("No face/surface was found");
 
-        if (surface_ele == nullptr) FOUR_C_THROW("No face/surface was found");
+      // Get the boundary cells of background element related to this coupling pair
+      std::vector<std::shared_ptr<Cut::BoundaryCell>> coupling_pair_boundary_cells;
+      auto& boundarycells_ids_multimap = background_interface_info.interface_ele_to_boundarycells;
+      auto boundarycells = boundarycells_ids_multimap.equal_range(iter_interface_ele);
 
-        // Get the boundary cells of background element related to this coupling pair
-        std::vector<std::shared_ptr<Cut::BoundaryCell>> coupling_pair_boundary_cells;
-        auto boundarycells = boundarycells_ids_multimap.equal_range(*iter_id);
-        for (auto iter = boundarycells.first; iter != boundarycells.second; ++iter)
-        {
-          std::shared_ptr<Cut::BoundaryCell> boundaryCell =
-              Core::Utils::shared_ptr_from_ref(*iter->second);
-          coupling_pair_boundary_cells.push_back(boundaryCell);
-        }
+      for (auto iter = boundarycells.first; iter != boundarycells.second; ++iter)
+      {
+        std::shared_ptr<Cut::BoundaryCell> boundaryCell =
+            Core::Utils::shared_ptr_from_ref(*iter->second);
+        coupling_pair_boundary_cells.push_back(boundaryCell);
+      }
 
-        // Check that the vector of boundary cells is not empty, if it's not empty, create the
-        // coupling pair
-        if (coupling_pair_boundary_cells.size() != 0)
-        {
-          // Add this element into the vector of cut elements if it hasn't been stored yet
-          bool is_cut_ele_included =
-              std::find(cut_elements_vector.begin(), cut_elements_vector.end(), background_ele) !=
-              cut_elements_vector.end();
-          if (!is_cut_ele_included) cut_elements_vector.push_back(background_ele);
+      // Check that the vector of boundary cells is not empty, if it's not empty, create the
+      // coupling pair
+      if (coupling_pair_boundary_cells.size() != 0)
+      {
+        std::shared_ptr<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>
+            embeddedmesh_coupling_pair = coupling_pair_mortar_factory(
+                surface_ele, background_ele, params_ptr, cutwizard, coupling_pair_boundary_cells);
 
-          std::shared_ptr<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>
-              embeddedmesh_coupling_pair = coupling_pair_mortar_factory(
-                  surface_ele, background_ele, params_ptr, cutwizard, coupling_pair_boundary_cells);
-
-          // Add coupling pair to the vector of coupling pairs
-          embeddedmesh_coupling_pairs.push_back(embeddedmesh_coupling_pair);
-        }
+        // Add coupling pair to the vector of coupling pairs
+        embeddedmesh_coupling_pairs.push_back(embeddedmesh_coupling_pair);
       }
     }
   }
@@ -389,16 +431,16 @@ void CONSTRAINTS::EMBEDDEDMESH::assemble_local_mortar_contributions(
   {
     for (unsigned int i_interface = 0; i_interface < Interface::n_dof_; ++i_interface)
     {
-      global_g_bl.assemble(
+      global_g_bl.fe_assemble(
           local_D(i_lambda, i_interface), lambda_row[i_lambda], interface_row[i_interface]);
-      global_fbl_l.assemble(
+      global_fbl_l.fe_assemble(
           local_D(i_lambda, i_interface), interface_row[i_interface], lambda_row[i_lambda]);
     }
     for (unsigned int i_background = 0; i_background < Background::n_dof_; ++i_background)
     {
-      global_g_bg.assemble(
+      global_g_bg.fe_assemble(
           -local_M(i_lambda, i_background), lambda_row[i_lambda], background_row[i_background]);
-      global_fbg_l.assemble(
+      global_fbg_l.fe_assemble(
           -local_M(i_lambda, i_background), background_row[i_background], lambda_row[i_lambda]);
     }
   }

@@ -429,7 +429,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::Discretization::bui
  *----------------------------------------------------------------------*/
 std::pair<std::shared_ptr<Epetra_Map>, std::shared_ptr<Epetra_Map>>
 Core::FE::Discretization::build_element_row_column(
-    const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap) const
+    const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap, bool do_extended_ghosting) const
 {
   const int myrank = Core::Communication::my_mpi_rank(get_comm());
   const int numproc = get_comm().NumProc();
@@ -514,9 +514,29 @@ Core::FE::Discretization::build_element_row_column(
       for (int j = 0; j < numnode; ++j)
         if (noderowmap.MyGID(nodeids[j])) ++nummine;
 
-      // if I do not own any of the nodes, it is definitely not my element
-      // and I do not ghost it
-      if (!nummine) continue;
+      // Check if I own nodes of this element
+      if (!nummine)
+      {
+        // If the rebalance type is monolithic, activate additional ghosting
+        if (do_extended_ghosting)
+        {
+          // If all nodes of the element are in col map we still ghost it
+          bool all_nodes_in_col = true;
+          for (int j = 0; j < numnode; ++j)
+            if (!nodecolmap.MyGID(nodeids[j])) all_nodes_in_col = false;
+
+          if (all_nodes_in_col)
+          {
+            myghostele[nummyghostele++] = elegid;
+          }
+          continue;
+        }
+
+        // if I do not own any of the nodes, it is definitely not my element
+        // and I do not ghost it
+        else
+          continue;
+      }
 
       // check whether I ghost all nodes of this element
       // this is necessary to be able to own or ghost the element
@@ -602,7 +622,8 @@ void Core::FE::Discretization::redistribute(const Epetra_Map& noderowmap,
     const Epetra_Map& nodecolmap, OptionsRedistribution options_redistribution)
 {
   // build the overlapping and non-overlapping element maps
-  const auto& [elerowmap, elecolmap] = build_element_row_column(noderowmap, nodecolmap);
+  const auto& [elerowmap, elecolmap] =
+      build_element_row_column(noderowmap, nodecolmap, options_redistribution.do_extended_ghosting);
 
   // export nodes and elements to the new maps
   export_row_nodes(noderowmap, options_redistribution.kill_dofs, options_redistribution.kill_cond);

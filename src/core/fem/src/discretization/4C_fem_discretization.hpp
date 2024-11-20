@@ -1324,8 +1324,8 @@ namespace Core::FE
 
     \param noderowmap (in): unique nodal row map of some distribution
     \param nodecolmap (in): overlapping nodal column map
-    \param ExtendedGhosting (in): allow for ghosting of elements on processors, which don't own any
-    of the elements' nodes (default: false) // rauch 09/13
+    \param do_extended_ghosting (in): allow for ghosting of elements on processors, which don't own
+    any of the elements' nodes (default: false)
 
     @return unique element row map and overlapping element column map
 
@@ -1339,7 +1339,8 @@ namespace Core::FE
 
     */
     virtual std::pair<std::shared_ptr<Epetra_Map>, std::shared_ptr<Epetra_Map>>
-    build_element_row_column(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap) const;
+    build_element_row_column(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
+        bool do_extended_ghosting = false) const;
 
     /*!
     \brief Export the nodes to a different parallel layout

@@ -1985,11 +1985,15 @@ if (FOUR_C_WITH_ARBORX)
     four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_surface_coupling_gpts_reference_forced_boundingvolume.dat NP 3 RESTART_STEP 2)
     four_c_test(TEST_FILE beam3r_herm2line3_static_contact_penalty_linposquadpen_beamrotatingoverarc_boundingvolume.dat NP 2)
     four_c_test(TEST_FILE beam3r_herm2line3_static_point_coupling_BTSPH_contact_stent_honeycomb_stretch_r01_circ10_boundingvolume.dat NP 3 RESTART_STEP 20)
+    four_c_test(TEST_FILE embeddedmesh_parallel_bending_beam.dat NP 3)
+    four_c_test(TEST_FILE embeddedmesh_parallel_bending_beam_fine.dat NP 3)
 
     # only execute these vtk tests with ArborX
     four_c_test_vtk(beam3eb_static_beam_to_solid_volume_meshtying_beam_to_beam_contact_boundingvolume-vtk-beam-interaction-geometric-search.dat beam3eb_static_beam_to_solid_volume_meshtying_beam_to_beam_contact_boundingvolume.dat 2 xxx-beam-interaction-geometric-search.pvd ref/beam3eb_static_beam_to_solid_volume_meshtying_beam_to_beam_contact_boundingvolume-vtk/beam-interaction-geometric-search.pvd 1e-06 0.0 1.0)
     four_c_test_vtk(beam3eb_static_beam_to_solid_volume_meshtying_monolithic_partitioning-vtk-beam.dat beam3eb_static_beam_to_solid_volume_meshtying_monolithic_partitioning.dat 3 xxx-structure-beams.pvd ref/beam3eb_static_beam_to_solid_volume_meshtying_monolithic_partitioning-vtk/beam.pvd 1e-06)
     four_c_test_vtk(beam3eb_static_beam_to_solid_volume_meshtying_monolithic_partitioning-vtk-structure.dat beam3eb_static_beam_to_solid_volume_meshtying_monolithic_partitioning.dat 3 xxx-structure.pvd ref/beam3eb_static_beam_to_solid_volume_meshtying_monolithic_partitioning-vtk/structure.pvd 1e-06)
+    four_c_test_vtk(embeddedmesh_parallel_bending_beam-vtk-structure.dat embeddedmesh_parallel_bending_beam.dat 3 xxx-structure.pvd ref/embeddedmesh_parallel_bending_beam_np_3-structure.pvd 1e-06)
+    four_c_test_vtk(embeddedmesh_parallel_bending_beam_fine-vtk-structure.dat embeddedmesh_parallel_bending_beam_fine.dat 3 xxx-structure.pvd ref/embeddedmesh_parallel_bending_beam_fine-structure.pvd 1e-06)
 endif (FOUR_C_WITH_ARBORX)
 
 if (FOUR_C_WITH_FFTW)

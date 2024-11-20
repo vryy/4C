@@ -57,9 +57,11 @@ CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface, Back
     std::vector<std::shared_ptr<Cut::BoundaryCell>>& boundary_cells)
     : SolidInteractionPair(element1, element2, params_ptr, cutwizard_ptr, boundary_cells)
 {
-  // Define the mortar shape functions in the parameters
-  params_ptr.embedded_mesh_mortar_shape_function_ =
-      define_shape_functions_lagrange_multipliers(this->element_1().shape());
+  // Check that the shape functions in the parameters are of the same shape as the element
+  FOUR_C_ASSERT(params_ptr.embedded_mesh_mortar_shape_function_ ==
+                    define_shape_functions_lagrange_multipliers(this->element_1().shape()),
+      "The interface element in the coupling pair doesn't have the same shape as defined in the "
+      "input parameter MORTAR_SHAPE_FUNCTION.");
   params_ = params_ptr;
 
   // Initialize the element positions and displacement containers

@@ -52,6 +52,7 @@ GENERAL_POSITON_POSITION_FLOATTYPE    double
 DO_SELFCUT                            no
 ----------------------------------------------------------EMBEDDED MESH COUPLING
 COUPLING_STRATEGY                     mortar
+MORTAR_SHAPE_FUNCTION                 nurbs9
 CONSTRAINT_ENFORCEMENT                penalty
 CONSTRAINT_ENFORCEMENT_PENALTYPARAM   1e+10
 -----------------------------------------------------------------------MATERIALS

@@ -28,6 +28,15 @@ void Inpar::CONSTRAINTS::set_valid_parameters(Teuchos::ParameterList& list)
             EmbeddedMeshCouplingStrategy::none, EmbeddedMeshCouplingStrategy::mortar),
         &embeddedmeshcoupling);
 
+    setStringToIntegralParameter<SolidToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION", "none",
+        "Shape functions that should be use in case of coupling using the Mortar/Lagrange "
+        "Multiplier method",
+        tuple<std::string>("none", "quad4", "quad9", "nurbs9"),
+        tuple<SolidToSolidMortarShapefunctions>(SolidToSolidMortarShapefunctions::none,
+            SolidToSolidMortarShapefunctions::quad4, SolidToSolidMortarShapefunctions::quad9,
+            SolidToSolidMortarShapefunctions::nurbs9),
+        &embeddedmeshcoupling);
+
     setStringToIntegralParameter<EmbeddedMeshConstraintEnforcement>("CONSTRAINT_ENFORCEMENT",
         "none", "Apply a constraint enforcement in the embedded mesh coupling strategy",
         tuple<std::string>("none", "penalty"),
