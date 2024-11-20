@@ -70,8 +70,6 @@ before_script:
   - mkdir -p ${CI_PROJECT_DIR}/../build
   # configure
   - |
-    cd ${CI_PROJECT_DIR}
-    ./utilities/set_up_dev_env.sh
     cd ${CI_PROJECT_DIR}/../build
     cmake ${CI_PROJECT_DIR} --fresh --preset=${CMAKE_PRESET}
   - echo Building the following targets ${BUILD_TARGETS}
@@ -477,8 +475,6 @@ verify_headers:
     - mkdir -p ${CI_PROJECT_DIR}/../build
     # configure
     - |
-      cd ${CI_PROJECT_DIR}
-      ./utilities/set_up_dev_env.sh
       cd ${CI_PROJECT_DIR}/../build
       # Configure verification of header sets.
       cmake ${CI_PROJECT_DIR} --fresh --preset=docker -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
@@ -501,9 +497,6 @@ readthedocs:
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   script:
     - echo Create ReadTheDocs documentation
-    # loading python virtual environment
-    - cd ${CI_PROJECT_DIR}
-    - ./utilities/set_up_dev_env.sh
     - *clean-build-folder-for-nightly-pipelines
     - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
 
