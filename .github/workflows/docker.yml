@@ -2,12 +2,19 @@ name: Docker
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/docker.yml'
+      - 'dependencies/current/'
+      - 'dependencies/testing/'
 
 env:
   REGISTRY: ghcr.io
   IMAGE_SUFFIX: dependencies
-  FOUR_C_DOCKER_DEPENDENCIES_HASH: 40d8b295
-  IMAGE_PATH: ghcr.io/4c-multiphysics/4c-dependencies
+  FOUR_C_DOCKER_DEPENDENCIES_HASH: 2083744d
+  IMAGE_NAME: ghcr.io/4c-multiphysics/4c-dependencies
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,6 +23,7 @@ concurrency:
 jobs:
   check-if-docker-build-is-required:
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
     outputs:
       dependencies_hash: ${{ steps.compute-dependencies-hash.outputs.dependencies_hash }}
       build_docker_image: ${{ steps.check-if-build-is-required.outputs.build }}
@@ -35,7 +43,7 @@ jobs:
         name: Check if the docker image needs to be built
         run: |
           exit_code=0
-          docker manifest inspect ${{ env.IMAGE_PATH }}:$COMPUTED_DOCKER_DEPENDENCIES_HASH > /dev/null || exit_code=$?
+          docker manifest inspect ${{ env.IMAGE_NAME }}:$COMPUTED_DOCKER_DEPENDENCIES_HASH > /dev/null || exit_code=$?
           echo $exit_code
           case $exit_code in
             0)
@@ -62,7 +70,8 @@ jobs:
       id-token: write
       #
     needs: check-if-docker-build-is-required
-    if: ${{ needs.check-if-docker-build-is-required.outputs.build_docker_image == 'true' }}
+    if: github.event_name == 'workflow_dispatch' && ${{ needs.check-if-docker-build-is-required.outputs.build_docker_image
+      == 'true' }}
     steps:
       # Hack to get the repository name as lower case as Github does not provide this function: https://github.com/orgs/community/discussions/25768
       - id: repository-to-lower-case
@@ -82,11 +91,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       # This step uses [docker/metadata-action](https://github.com/docker/metadata-action#about) to extract tags and labels that will be applied to the specified image. The `id` "meta" allows the output of this step to be referenced in a subsequent step. The `images` value provides the base name for the tags and labels.
-      # - name: Extract metadata (tags, labels) for Docker
-      #   id: meta
-      #   uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
-      #   with:
-      #     images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.description=Image containing all the dependencies required for building and testing 4C
       # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
       # It uses the `context` parameter to define the build's context as the set of files located in the specified path. For more information, see "[Usage](https://github.com/docker/build-push-action#usage)" in the README of the `docker/build-push-action` repository.
       # It uses the `tags` and `labels` parameters to tag and label the image with the output from the "meta" step.
@@ -96,17 +107,36 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile
+          build-args: "DEPENDENCIES_HASH=${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }}"
           push: true
           tags: ${{ env.REGISTRY }}/${{ steps.repository-to-lower-case.outputs.repository }}-${{ env.IMAGE_SUFFIX
             }}:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }}
           # tags: ${{ steps.meta.outputs.tags }}
-          # labels: ${{ steps.meta.outputs.labels }}
+          labels: ${{ steps.meta.outputs.labels }}
 
-    # This step generates an artifact attestation for the image, which is an unforgeable statement about where and how it was built. It increases supply chain security for people who consume the image. For more information, see "[AUTOTITLE](/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)."
-    # - name: Generate artifact attestation
-    #   uses: actions/attest-build-provenance@v1
-    #   with:
-    #     subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-    #     subject-digest: ${{ steps.push.outputs.digest }}
-    #     push-to-registry: true
+      # This step generates an artifact attestation for the image, which is an unforgeable statement about where and how it was built. It increases supply chain security for people who consume the image. For more information, see "[AUTOTITLE](/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)."
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@ef244123eb79f2f7a7e75d99086184180e6d0018 # v1.1.4
+        with:
+          subject-name: ${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
 
+  tag-image-as-latest:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Log in to the Container registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull current dependencies image and tag it with latest
+        run: |
+          docker pull $IMAGE_NAME:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }}
+          docker image tag $IMAGE_NAME:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }} $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:latest

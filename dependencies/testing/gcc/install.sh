@@ -29,5 +29,3 @@ mkdir gcc-build && cd gcc-build
 make -j${NPROCS}
 make install
 cd ../ && rm -rf gcc*
-
-

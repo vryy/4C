@@ -8,9 +8,6 @@ on:
     branches:
       - 'main'
 
-env:
-  FOUR_C_DOCKER_DEPENDENCIES_HASH: 40d8b295
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -19,7 +16,7 @@ jobs:
   doxygen:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/4c-multiphysics/4c-dependencies:40d8b295
+      image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
       credentials:
         username: ${{ github.actor }}
@@ -32,7 +29,7 @@ jobs:
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
-          docker_image_hash: $FOUR_C_DOCKER_DEPENDENCIES_HASH
+          docker_image_hash: $DEPENDENCIES_HASH
       - uses: ./.github/actions/configure_4C
         with:
           cmake-preset: docker
@@ -49,9 +46,11 @@ jobs:
           retention-days: 1
 
   readthedocs:
+    env:
+      CMAKE_PRESET: docker
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/4c-multiphysics/4c-dependencies:40d8b295
+      image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
       credentials:
         username: ${{ github.actor }}
@@ -64,7 +63,7 @@ jobs:
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
-          docker_image_hash: $FOUR_C_DOCKER_DEPENDENCIES_HASH
+          docker_image_hash: $DEPENDENCIES_HASH
       - run: apt update
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -72,7 +71,7 @@ jobs:
           key: ${{ github.job }}-${{ env.CMAKE_PRESET }}
       - uses: ./.github/actions/configure_4C
         with:
-          cmake-preset: docker
+          cmake-preset: ${{ env.CMAKE_PRESET }}
           build-directory: ${{ github.workspace }}/build
           additional-cmake-flags: -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
       - uses: ./.github/actions/build_4C
