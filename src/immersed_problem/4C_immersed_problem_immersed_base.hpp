@@ -771,10 +771,7 @@ namespace Immersed
           }
 
           // normal vector
-          for (int dim = 0; dim < globdim; ++dim)
-          {
-            data.add_to_pack(normal_vec[dim]);
-          }
+          add_to_pack(data, normal_vec);
 
           std::swap(sdata, data());
         }
@@ -807,7 +804,7 @@ namespace Immersed
           for (int dim = 0; dim < datalength; ++dim) extract_from_pack(buffer, (vectofill)(dim));
         }
 
-        for (int i = 0; i < globdim; ++i) extract_from_pack(buffer, normal_vec[i]);
+        extract_from_pack(buffer, normal_vec);
 
         // wait for all communication to finish
         exporter.wait(request);
