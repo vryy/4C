@@ -28,8 +28,9 @@ void Solid::ModelEvaluator::Constraints::setup()
 {
   check_init();
 
-  constraint_stiff_ptr_ = std::make_shared<Core::LinAlg::SparseMatrix>(
-      *global_state().dof_row_map_view(), 81, true, true);
+  constraint_stiff_ptr_ =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*global_state().get_discret()->dof_row_map(), 81,
+          true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   constraint_force_ptr_ =
       std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
@@ -305,7 +306,8 @@ std::shared_ptr<const Epetra_Map> Solid::ModelEvaluator::Constraints::get_block_
 std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Constraints::get_current_solution_ptr() const
 {
-  FOUR_C_THROW("This function is not yet implemented");
+  // there are no model specific solution entries
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -313,7 +315,8 @@ Solid::ModelEvaluator::Constraints::get_current_solution_ptr() const
 std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Constraints::get_last_time_step_solution_ptr() const
 {
-  FOUR_C_THROW("This function is not yet implemented");
+  // there are no model specific solution entries
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*

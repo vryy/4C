@@ -56,6 +56,13 @@ namespace CONSTRAINTS::EMBEDDEDMESH
   class SolidToSolidMortarManager;
   class SolidInteractionPair;
 
+  struct BackgroundInterfaceInfo
+  {
+    Core::Elements::Element* background_element_ptr;
+    std::set<int> interface_element_global_ids;
+    std::multimap<int, Cut::BoundaryCell*> interface_ele_to_boundarycells;
+  };
+
   /**
    * \brief Free function that prepares and performs the cut.
    * @param cutwizard (in) object of the cut library that performs the cut operation.
@@ -66,18 +73,37 @@ namespace CONSTRAINTS::EMBEDDEDMESH
       CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& embedded_mesh_coupling_params);
 
   /**
-   * \brief Free function to get coupling pairs and background elements
+   * \brief Free function that obtains the information of a background element and
+   * its interface elements and returns them in a BackgroundInterfaceInfo object.
+   * The background elements in this object are owned by the current processor.
+   * For further calculations, we need to obtain the background elements that
+   * are ghosted in this processor. Therefore, their ids and pointers to this
+   * elements are given in ids_cut_elements_col and cut_elements_col_vector, respectively.
    * @param cutwizard (in) object of the cut library that performs the cut operation.
-   * @param embedded_mesh_params_ptr (in) pointer to the embeddedmesh parameters
+   * @param discret (in) Discretization
+   * @param ids_cut_elements_col (out) vector of global ids of column cut elements
+   * @param cut_elements_col_vector (out) vector of column cut elements
+   */
+  std::vector<BackgroundInterfaceInfo> get_information_background_and_interface_elements(
+      const std::shared_ptr<Cut::CutWizard>& cutwizard, Core::FE::Discretization& discret,
+      std::vector<int>& ids_cut_elements_col,
+      std::vector<Core::Elements::Element*>& cut_elements_col_vector);
+
+  /**
+   * \brief Free function to get coupling pairs and background elements
+   * @param info_background_interface_elements (out) struct that stores the information of
+   * background elements and their interface elements
+   * @param cutwizard (in) object of the cut library that performs the cut operation.
+   * @param params_ptr (in) pointer to the embeddedmesh parameters
    * @param discret (in) solid discretization
    * @param embedded_mesh_solid_interaction_pairs (out) embedded mesh coupling pairs
-   * @param cut_elements_vector (out) vector of cut elements
    */
-  void get_coupling_pairs_and_background_elements(std::shared_ptr<Cut::CutWizard>& cutwizard,
+  void get_coupling_pairs_and_background_elements(
+      std::vector<BackgroundInterfaceInfo>& info_background_interface_elements,
+      std::shared_ptr<Cut::CutWizard>& cutwizard,
       CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr, Core::FE::Discretization& discret,
       std::vector<std::shared_ptr<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>&
-          embeddedmesh_coupling_pairs,
-      std::vector<Core::Elements::Element*>& cut_elements_vector);
+          embeddedmesh_coupling_pairs);
 
   /**
    * \brief Change integration rule of cut background elements

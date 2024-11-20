@@ -389,6 +389,7 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
     case Inpar::Solid::model_beam_interaction_old:
     case Inpar::Solid::model_browniandyn:
     case Inpar::Solid::model_beaminteraction:
+    case Inpar::Solid::model_constraints:
     {
       // structural block
       model_block_id_[mt] = 0;
@@ -401,13 +402,11 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
       // do nothing
       break;
     }
-    case Inpar::Solid::model_constraints:
     case Inpar::Solid::model_multiscale:
     {
       // do nothing
       break;
     }
-
     default:
     {
       // FixMe please

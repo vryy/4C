@@ -55,6 +55,9 @@ SOLVER                                UMFPACK
 GMSH_DEBUG_OUT                        Yes
 GMSH_CUT_OUT                          Yes
 VOLUME_GAUSS_POINTS_BY                Tessellation
+--------------------------------------------------------------------EMBEDDED MESH COUPLING
+COUPLING_STRATEGY                     mortar
+MORTAR_SHAPE_FUNCTION                 quad4
 ---------------------------------------------------------------------CUT GENERAL
 KERNEL_INTERSECTION_FLOATTYPE         double
 KERNEL_DISTANCE_FLOATTYPE             double

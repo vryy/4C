@@ -52,6 +52,7 @@ BOUNDARYCELL_CUBATURDEGREE            4
 INTEGRATE_INSIDE_CELLS                No
 ----------------------------------------------------------EMBEDDED MESH COUPLING
 COUPLING_STRATEGY                     mortar
+MORTAR_SHAPE_FUNCTION                 nurbs9
 CONSTRAINT_ENFORCEMENT                penalty
 CONSTRAINT_ENFORCEMENT_PENALTYPARAM   100
 ---------------------------------DESIGN EMBEDDED SOLID VOL BACKGROUND CONDITIONS

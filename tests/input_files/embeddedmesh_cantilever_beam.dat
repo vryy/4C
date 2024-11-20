@@ -49,6 +49,7 @@ DO_SELFCUT                            no
 INTEGRATE_INSIDE_CELLS                no
 ----------------------------------------------------------EMBEDDED MESH COUPLING
 COUPLING_STRATEGY                     mortar
+MORTAR_SHAPE_FUNCTION                 quad4
 CONSTRAINT_ENFORCEMENT                penalty
 CONSTRAINT_ENFORCEMENT_PENALTYPARAM   1e+5
 -----------------------------------------------------------------------MATERIALS

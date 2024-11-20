@@ -217,7 +217,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
      */
     void set_local_maps(const Core::LinAlg::Vector<double>& displacement_vector);
 
-    //! Pointer to the discretization containing the solid and beam elements.
+    //! Pointer to the discretization containing the solid and interface elements.
     std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! Flag if setup was called.
@@ -235,8 +235,11 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     //! Embedded mesh parameters.
     CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams embedded_mesh_coupling_params_;
 
-    //! Vector to cut elements
-    std::vector<Core::Elements::Element*> cut_elements_vector_;
+    //! Vector to background row elements that are cut
+    std::vector<Core::Elements::Element*> cut_elements_col_vector_;
+
+    //! Id of background column elements that are cut
+    std::vector<int> ids_cut_elements_col_;
 
     //! Global constraint vector.
     std::shared_ptr<Epetra_FEVector> global_constraint_ = nullptr;

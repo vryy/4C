@@ -18,8 +18,6 @@
 
 #include <Epetra_FEVector.h>
 
-#include <unordered_set>
-
 FOUR_C_NAMESPACE_OPEN
 
 /**
@@ -41,12 +39,18 @@ CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::SolidToSolidMortarManager(
   CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(
       cutwizard, discret_, embedded_mesh_coupling_params_);
 
+  // Obtain the information of the background and its related interface elements
+  std::vector<BackgroundInterfaceInfo> info_background_interface_elements =
+      get_information_background_and_interface_elements(
+          cutwizard, *discret_, ids_cut_elements_col_, cut_elements_col_vector_);
+
   // Get the coupling pairs and cut elements
-  get_coupling_pairs_and_background_elements(cutwizard, embedded_mesh_coupling_params_, *discret_,
-      embedded_mesh_solid_pairs_, cut_elements_vector_);
+  get_coupling_pairs_and_background_elements(info_background_interface_elements, cutwizard,
+      embedded_mesh_coupling_params_, *discret_, embedded_mesh_solid_pairs_);
 
   // Change integration rule of elements if they are cut
-  CONSTRAINTS::EMBEDDEDMESH::change_gauss_rule_of_cut_elements(cut_elements_vector_, *cutwizard);
+  CONSTRAINTS::EMBEDDEDMESH::change_gauss_rule_of_cut_elements(
+      cut_elements_col_vector_, *cutwizard);
 
   // Get the number of Lagrange multiplier DOF on a solid node and on a solid element
   unsigned int n_lambda_node_temp = 0;
@@ -85,16 +89,14 @@ CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::SolidToSolidMortarManager(
   lagrange_multipliers_visualization_data.register_point_data<double>("lambda", 3);
 
   // Setup the solid to solid mortar manager
-  setup(displacement_vector);
+  Core::LinAlg::Vector<double> disp_col_vec(*discret_->dof_col_map());
+  Core::LinAlg::export_to(displacement_vector, disp_col_vec);
+  setup(disp_col_vec);
 }
 
 void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_state(
     const Core::LinAlg::Vector<double>& displacement_vector)
 {
-  // Check if the coupling pairs are empty, if thats the case, return dserror
-  if (embedded_mesh_solid_pairs_.size() == 0)
-    FOUR_C_THROW("We cannot set the state of the coupling pairs if they are not defined yet.");
-
   for (auto couplig_pair_iter : embedded_mesh_solid_pairs_)
     couplig_pair_iter->set_current_element_position(*discret_, displacement_vector);
 }
@@ -193,7 +195,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::setup(
 
 void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_global_maps()
 {
-  // Loop over all nodes on this processor
+  // Get the dofs of the background and interface elements
   std::vector<int> boundary_layer_interface_dofs(0);
   std::vector<int> background_dofs(0);
   for (int i_node = 0; i_node < discret_->node_row_map()->NumMyElements(); i_node++)
@@ -231,7 +233,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_local_maps(
 
   // At this point the global multi vectors are filled up completely. To get the map for global
   // node ids to the global lambda ids we need to be able to extract more than the local
-  // values on this processor. Therefore we need a new map that contains all rows we want to
+  // values on this processor. Therefore, we need a new map that contains all rows we want to
   // access in the global multi vector.
   std::vector<int> node_gid_needed;
 
@@ -241,20 +243,20 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_local_maps(
     const std::shared_ptr<EMBEDDEDMESH::SolidInteractionPair>& pair =
         embedded_mesh_solid_pairs_[i_pair];
 
-    // The first (beam) element should always be on the same processor as the pair.
-    if (pair->element_1().owner() != Core::Communication::my_mpi_rank(discret_->get_comm()))
+    // The second (background) element should always be on the same processor as the pair.
+    if (pair->element_2().owner() != Core::Communication::my_mpi_rank(discret_->get_comm()))
       FOUR_C_THROW(
-          "The current implementation need the first element of a interface coupling pair to be on "
-          "the "
-          "same processor as the pair!");
+          "The current implementation needs the background element of "
+          "a interface coupling pair to be on on the same "
+          "processor as the pair! The background element id"
+          " is %i trying to be processed in proc %i",
+          pair->element_2().id(), discret_->get_comm().MyPID());
 
     // Get the global id of the nodes that the pairs on this rank need.
     if (n_lambda_node_ > 0)
       for (int i_node = 0; i_node < pair->element_1().num_node(); i_node++)
         node_gid_needed.push_back(pair->element_1().nodes()[i_node]->id());
   }
-
-  std::vector<int> node_gid_needed_copy = node_gid_needed;
 
   // Make the entries in the vectors unique.
   std::vector<int>::iterator it;
@@ -338,7 +340,9 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::evaluate_global_coupl
   check_setup();
   check_global_maps();
 
-  set_state(displacement_vector);
+  Core::LinAlg::Vector<double> disp_col_vec(*discret_->dof_col_map());
+  Core::LinAlg::export_to(displacement_vector, disp_col_vec);
+  set_state(disp_col_vec);
 
   // Reset the global data structures.
   global_constraint_->PutScalar(0.);
@@ -412,8 +416,8 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::
 
   if (force != nullptr)
   {
-    // Factor for right hand side (forces). 1 corresponds to the meshtying forces being added to the
-    // right hand side, -1 to the left hand side.
+    // Factor for right hand side (forces). 1 corresponds to the meshtying forces being added to
+    // the right hand side, -1 to the left hand side.
     const double rhs_factor = 1.0;
 
     // Get the penalty Lagrange multiplier vector.
@@ -562,9 +566,13 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::collect_output_integr
   // Loop over pairs
   for (auto& elepairptr : embedded_mesh_solid_pairs_)
   {
-    elepairptr->get_projected_gauss_rule_on_interface(
-        background_integration_points_visualization_data,
-        interface_integration_points_visualization_data);
+    unsigned int n_segments = elepairptr->get_num_segments();
+    for (size_t iter_segments = 0; iter_segments < n_segments; iter_segments++)
+    {
+      elepairptr->get_projected_gauss_rule_on_interface(
+          background_integration_points_visualization_data,
+          interface_integration_points_visualization_data);
+    }
 
     elepairptr->get_projected_gauss_rule_in_cut_element(
         cut_element_integration_points_visualization_data);
@@ -579,8 +587,9 @@ bool CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::is_cut_node(
   // Check if the node belongs to an element that is cut
   for (int num_ele = 0; num_ele < node.num_element(); num_ele++)
   {
-    bool is_node_in_cut_ele = std::find(cut_elements_vector_.begin(), cut_elements_vector_.end(),
-                                  node.elements()[num_ele]) != cut_elements_vector_.end();
+    bool is_node_in_cut_ele =
+        std::find(cut_elements_col_vector_.begin(), cut_elements_col_vector_.end(),
+            node.elements()[num_ele]) != cut_elements_col_vector_.end();
     if (is_node_in_cut_ele) is_cut_node = true;
   }
 

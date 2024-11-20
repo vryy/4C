@@ -33,6 +33,10 @@ CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::EmbeddedMeshConst
       Teuchos::getIntegralValue<Inpar::CONSTRAINTS::EmbeddedMeshConstraintEnforcement>(
           embedded_mesh_parameter_list, "CONSTRAINT_ENFORCEMENT");
 
+  auto embedded_mesh_mortar_shape_function =
+      Teuchos::getIntegralValue<Inpar::CONSTRAINTS::SolidToSolidMortarShapefunctions>(
+          embedded_mesh_parameter_list, "MORTAR_SHAPE_FUNCTION");
+
   auto embedded_mesh_constraint_penalty_parameter =
       embedded_mesh_parameter_list.get<double>("CONSTRAINT_ENFORCEMENT_PENALTYPARAM");
 
@@ -51,8 +55,7 @@ CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::EmbeddedMeshConst
       .embedded_mesh_coupling_strategy_ = embedded_mesh_coupling_strategy,
       .embedded_mesh_constraint_enforcement_ = embedded_mesh_constraint_enforcement,
       .embedded_mesh_constraint_penalty_parameter_ = embedded_mesh_constraint_penalty_parameter,
-      .embedded_mesh_mortar_shape_function_ =
-          Inpar::CONSTRAINTS::SolidToSolidMortarShapefunctions::none,
+      .embedded_mesh_mortar_shape_function_ = embedded_mesh_mortar_shape_function,
       .xfem_nodal_dof_set_strategy_ = nodal_dofset_strategy,
       .xfem_volume_cell_gauss_point_by_ = volume_cell_gauss_point_by,
       .xfem_bcell_gauss_point_by_ = bound_cell_gauss_point_by,
