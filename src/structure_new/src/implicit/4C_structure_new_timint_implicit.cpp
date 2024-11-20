@@ -365,7 +365,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
       double randnum = 1.0;
       const Epetra_Comm& comm = discretization()->get_comm();
       comm.SumAll(&proc_randnum, &randnum, 1);
-      const double numproc = comm.NumProc();
+      const double numproc = Core::Communication::num_mpi_ranks(comm);
       randnum /= numproc;
       if (get_random_time_step_factor() > 1.0)
         set_random_time_step_factor(randnum * 0.49 + 0.51);

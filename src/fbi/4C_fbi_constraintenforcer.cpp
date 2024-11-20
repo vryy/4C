@@ -74,7 +74,7 @@ void Adapter::FBIConstraintenforcer::setup(std::shared_ptr<Adapter::FSIStructure
 
   if (meshtying)
   {
-    if (structure_->discretization()->get_comm().NumProc() > 1)
+    if (Core::Communication::num_mpi_ranks(structure_->discretization()->get_comm()) > 1)
       FOUR_C_THROW(
           "Currently fluid mesh tying can only be used for serial computations, since offproc "
           "assembly is not supported. Once the coupling matrices are computed by the fluid element "
@@ -92,7 +92,7 @@ void Adapter::FBIConstraintenforcer::setup(std::shared_ptr<Adapter::FSIStructure
 
   bridge_->setup(structure_->discretization()->dof_row_map(),
       fluid_->discretization()->dof_row_map(), fluidmatrix, meshtying);
-  if (structure_->discretization()->get_comm().NumProc() > 1)
+  if (Core::Communication::num_mpi_ranks(structure_->discretization()->get_comm()) > 1)
   {
     geometrycoupler_->extend_beam_ghosting(*(structure->discretization()));
 
@@ -195,7 +195,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FBIConstraintenforcer::fl
 void Adapter::FBIConstraintenforcer::create_pairs(
     std::shared_ptr<std::map<int, std::vector<int>>> pairids)
 {
-  if ((structure_->discretization())->get_comm().NumProc() > 1)
+  if (Core::Communication::num_mpi_ranks(structure_->discretization()->get_comm()) > 1)
   {
     // The geometrycoupler takes care of all MPI communication that needs to be done before the
     // pairs can finally be created

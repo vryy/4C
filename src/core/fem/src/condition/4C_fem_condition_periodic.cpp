@@ -104,7 +104,7 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
     put_all_slaves_to_masters_proc();
 
 
-    if (discret_->get_comm().NumProc() > 1)
+    if (Core::Communication::num_mpi_ranks(discret_->get_comm()) > 1)
     {
       // eventually  optimally distribute the nodes --- up to
       // now, a periodic boundary condition might remove all nodes from a
@@ -138,7 +138,7 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
       const Epetra_Map* noderowmap = discret_->node_row_map();
 
       int mypid = Core::Communication::my_mpi_rank(discret_->get_comm());
-      int numprocs = discret_->get_comm().NumProc();
+      int numprocs = Core::Communication::num_mpi_ranks(discret_->get_comm());
 
       int countslave = 0;
       for (std::map<int, std::vector<int>>::iterator iter = allcoupledcolnodes_->begin();
@@ -506,7 +506,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
           // time measurement --- this causes the TimeMonitor tm1 to stop here
           tm1_ref_ = nullptr;
 
-          if (discret_->get_comm().NumProc() == 1)
+          if (Core::Communication::num_mpi_ranks(discret_->get_comm()) == 1)
           {
             if (masternodeids.size() != midtosid.size())
             {
@@ -787,7 +787,7 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
         //--------------------------------------------------------------------
         // -> 2) round robin loop
 
-        const int numproc = discret_->get_comm().NumProc();
+        const int numproc = Core::Communication::num_mpi_ranks(discret_->get_comm());
         const int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());  // me
         const int torank = (myrank + 1) % numproc;                                  // to
         const int fromrank = (myrank + numproc - 1) % numproc;                      // from
@@ -1354,7 +1354,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void Core::Conditions::PeriodicBoundaryConditions::balance_load()
 {
-  if (discret_->get_comm().NumProc() > 1)
+  if (Core::Communication::num_mpi_ranks(discret_->get_comm()) > 1)
   {
     const Epetra_Map* noderowmap = discret_->node_row_map();
 
@@ -1500,7 +1500,7 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
     //
 
     const int myrank = Core::Communication::my_mpi_rank(nodegraph->Comm());
-    const int numproc = nodegraph->Comm().NumProc();
+    const int numproc = Core::Communication::num_mpi_ranks(nodegraph->Comm());
 
     if (numproc > 1)
     {

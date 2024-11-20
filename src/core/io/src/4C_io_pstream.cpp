@@ -77,7 +77,8 @@ void Core::IO::Pstream::setup(const bool writetoscreen, const bool writetofile,
   group_id_ = groupID;
 
   // make sure the target processor exists
-  if (targetpid_ >= comm_->NumProc()) FOUR_C_THROW("Chosen target processor does not exist.");
+  if (targetpid_ >= Core::Communication::num_mpi_ranks(*comm_))
+    FOUR_C_THROW("Chosen target processor does not exist.");
 
   // prepare the file handle
   if (on_pid() and writetofile_)

@@ -7,6 +7,7 @@
 
 #include "4C_post_vtk_writer.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_io_legacy_table.hpp"
 #include "4C_post_common.hpp"
@@ -311,7 +312,8 @@ void PostVtkWriter::write_files(PostFilterBase &filter)
   // timesteps when the solution is written
   const std::vector<double> soltime = result.get_result_times(field_->name());
   ntdigits_ = LibB64::ndigits(soltime.size());
-  npdigits_ = LibB64::ndigits(field_->discretization()->get_comm().NumProc());
+  npdigits_ =
+      LibB64::ndigits(Core::Communication::num_mpi_ranks(field_->discretization()->get_comm()));
   std::vector<std::pair<double, std::string>> filenames;
 
   const std::string dirname = filename_ + "-files";

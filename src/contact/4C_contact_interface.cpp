@@ -509,8 +509,8 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       // This way, also all mortar elements will be fully ghosted on all processors.
 
       // we want to do full ghosting on all procs
-      std::vector<int> allproc(get_comm().NumProc());
-      for (int i = 0; i < get_comm().NumProc(); ++i) allproc[i] = i;
+      std::vector<int> allproc(Core::Communication::num_mpi_ranks(get_comm()));
+      for (int i = 0; i < Core::Communication::num_mpi_ranks(get_comm()); ++i) allproc[i] = i;
 
       // fill my own row node ids
       const Epetra_Map* noderowmap = discret().node_row_map();
@@ -557,8 +557,8 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       // ghosted on all processors.
 
       // at least for master, we want to do full ghosting on all procs
-      std::vector<int> allproc(get_comm().NumProc());
-      for (int i = 0; i < get_comm().NumProc(); ++i) allproc[i] = i;
+      std::vector<int> allproc(Core::Communication::num_mpi_ranks(get_comm()));
+      for (int i = 0; i < Core::Communication::num_mpi_ranks(get_comm()); ++i) allproc[i] = i;
 
       // fill my own master row node ids
       const Epetra_Map* noderowmap = discret().node_row_map();
@@ -714,7 +714,7 @@ void CONTACT::Interface::redistribute()
   // some local variables
   std::shared_ptr<Epetra_Comm> comm(Interface::get_comm().Clone());
   const int myrank = Core::Communication::my_mpi_rank(*comm);
-  const int numproc = comm->NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(*comm);
   Teuchos::Time time("", true);
   std::set<int>::const_iterator iter;
 

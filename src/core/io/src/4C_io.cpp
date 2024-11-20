@@ -169,11 +169,11 @@ void Core::IO::DiscretizationReader::read_mesh(int step)
 
   find_mesh_group(step, input_->control_file());
 
-  std::shared_ptr<std::vector<char>> nodedata = meshreader_->read_node_data(
-      step, get_comm().NumProc(), Core::Communication::my_mpi_rank(get_comm()));
+  std::shared_ptr<std::vector<char>> nodedata = meshreader_->read_node_data(step,
+      Core::Communication::num_mpi_ranks(get_comm()), Core::Communication::my_mpi_rank(get_comm()));
 
-  std::shared_ptr<std::vector<char>> elementdata = meshreader_->read_element_data(
-      step, get_comm().NumProc(), Core::Communication::my_mpi_rank(get_comm()));
+  std::shared_ptr<std::vector<char>> elementdata = meshreader_->read_element_data(step,
+      Core::Communication::num_mpi_ranks(get_comm()), Core::Communication::my_mpi_rank(get_comm()));
 
   // unpack nodes and elements and redistributed to current layout
   // take care --- we are just adding elements to the discretisation
@@ -199,8 +199,8 @@ void Core::IO::DiscretizationReader::read_nodes_only(int step)
 {
   find_mesh_group(step, input_->control_file());
 
-  std::shared_ptr<std::vector<char>> nodedata = meshreader_->read_node_data(
-      step, get_comm().NumProc(), Core::Communication::my_mpi_rank(get_comm()));
+  std::shared_ptr<std::vector<char>> nodedata = meshreader_->read_node_data(step,
+      Core::Communication::num_mpi_ranks(get_comm()), Core::Communication::my_mpi_rank(get_comm()));
 
   // unpack nodes; fill_complete() has to be called manually
   dis_->unpack_my_nodes(*nodedata);
@@ -215,11 +215,11 @@ void Core::IO::DiscretizationReader::read_history_data(int step)
 {
   find_mesh_group(step, input_->control_file());
 
-  std::shared_ptr<std::vector<char>> nodedata = meshreader_->read_node_data(
-      step, get_comm().NumProc(), Core::Communication::my_mpi_rank(get_comm()));
+  std::shared_ptr<std::vector<char>> nodedata = meshreader_->read_node_data(step,
+      Core::Communication::num_mpi_ranks(get_comm()), Core::Communication::my_mpi_rank(get_comm()));
 
-  std::shared_ptr<std::vector<char>> elementdata = meshreader_->read_element_data(
-      step, get_comm().NumProc(), Core::Communication::my_mpi_rank(get_comm()));
+  std::shared_ptr<std::vector<char>> elementdata = meshreader_->read_element_data(step,
+      Core::Communication::num_mpi_ranks(get_comm()), Core::Communication::my_mpi_rank(get_comm()));
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
   Epetra_Map noderowmap(*dis_->node_row_map());
@@ -463,8 +463,8 @@ std::shared_ptr<Core::IO::HDFReader> Core::IO::DiscretizationReader::open_files(
   const std::string filename = map_read_string(result_step, filestring);
 
   std::shared_ptr<HDFReader> reader = std::make_shared<HDFReader>(dirname);
-  reader->open(
-      filename, numoutputproc, get_comm().NumProc(), Core::Communication::my_mpi_rank(get_comm()));
+  reader->open(filename, numoutputproc, Core::Communication::num_mpi_ranks(get_comm()),
+      Core::Communication::my_mpi_rank(get_comm()));
   return reader;
 }
 
@@ -609,7 +609,7 @@ void Core::IO::DiscretizationWriter::create_mesh_file(const int step)
 
     meshname << output_->file_name() << ".mesh." << dis_->name() << ".s" << step;
     meshfilename_ = meshname.str();
-    if (get_comm().NumProc() > 1)
+    if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
     {
       meshname << ".p" << Core::Communication::my_mpi_rank(get_comm());
     }
@@ -640,7 +640,7 @@ void Core::IO::DiscretizationWriter::create_result_file(const int step)
     resultname << output_->file_name() << ".result." << dis_->name() << ".s" << step;
 
     resultfilename_ = resultname.str();
-    if (get_comm().NumProc() > 1)
+    if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
     {
       resultname << ".p" << Core::Communication::my_mpi_rank(get_comm());
     }
@@ -759,9 +759,10 @@ void Core::IO::DiscretizationWriter::new_step(const int step, const double time)
 
       if (write_file)
       {
-        if (get_comm().NumProc() > 1)
+        if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
         {
-          output_->control_file() << "    num_output_proc = " << get_comm().NumProc() << "\n";
+          output_->control_file() << "    num_output_proc = "
+                                  << Core::Communication::num_mpi_ranks(get_comm()) << "\n";
         }
         std::string filename;
         const std::string::size_type pos = resultfilename_.find_last_of('/');
@@ -1130,9 +1131,10 @@ void Core::IO::DiscretizationWriter::write_mesh(const int step, const double tim
       // knotvectors for nurbs-discretisation
       write_knotvector();
 
-      if (get_comm().NumProc() > 1)
+      if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
       {
-        output_->control_file() << "    num_output_proc = " << get_comm().NumProc() << "\n";
+        output_->control_file() << "    num_output_proc = "
+                                << Core::Communication::num_mpi_ranks(get_comm()) << "\n";
       }
       std::string filename;
       std::string::size_type pos = meshfilename_.find_last_of('/');
@@ -1184,9 +1186,10 @@ void Core::IO::DiscretizationWriter::write_mesh(
       meshname << name_base_file << ".mesh." << dis_->name() << ".s" << step;
       meshfilename_ = meshname.str();
 
-      if (get_comm().NumProc() > 1)
+      if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
       {
-        output_->control_file() << "    num_output_proc = " << get_comm().NumProc() << "\n";
+        output_->control_file() << "    num_output_proc = "
+                                << Core::Communication::num_mpi_ranks(get_comm()) << "\n";
       }
       std::string filename;
       std::string::size_type pos = meshfilename_.find_last_of('/');
@@ -1265,9 +1268,10 @@ void Core::IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_cont
 
       /* name of the output file must be specified for changing geometries in
        * each time step */
-      if (get_comm().NumProc() > 1)
+      if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
       {
-        output_->control_file() << "    num_output_proc = " << get_comm().NumProc() << "\n";
+        output_->control_file() << "    num_output_proc = "
+                                << Core::Communication::num_mpi_ranks(get_comm()) << "\n";
       }
       std::string filename;
       std::string::size_type pos = meshfilename_.find_last_of('/');

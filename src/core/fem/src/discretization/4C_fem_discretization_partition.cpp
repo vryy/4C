@@ -432,7 +432,7 @@ Core::FE::Discretization::build_element_row_column(
     const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap, bool do_extended_ghosting) const
 {
   const int myrank = Core::Communication::my_mpi_rank(get_comm());
-  const int numproc = get_comm().NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(get_comm());
 
   // note:
   // - noderowmap need not match distribution of nodes in this

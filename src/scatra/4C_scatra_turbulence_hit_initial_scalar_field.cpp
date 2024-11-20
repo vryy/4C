@@ -97,7 +97,7 @@ namespace ScaTra
     // communicate coordinates to all procs via round Robin loop
     {
       int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
-      int numprocs = discret_->get_comm().NumProc();
+      int numprocs = Core::Communication::num_mpi_ranks(discret_->get_comm());
 
       std::vector<char> sblock;
       std::vector<char> rblock;

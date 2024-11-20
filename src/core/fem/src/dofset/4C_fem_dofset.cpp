@@ -45,7 +45,7 @@ std::ostream& operator<<(std::ostream& os, const Core::DOFSets::DofSet& dofset)
  *----------------------------------------------------------------------*/
 void Core::DOFSets::DofSet::print(std::ostream& os) const
 {
-  for (int proc = 0; proc < numdfcolelements_->Comm().NumProc(); ++proc)
+  for (int proc = 0; proc < Core::Communication::num_mpi_ranks(numdfcolelements_->Comm()); ++proc)
   {
     if (proc == Core::Communication::my_mpi_rank(numdfcolelements_->Comm()))
     {
@@ -62,7 +62,7 @@ void Core::DOFSets::DofSet::print(std::ostream& os) const
     }
     numdfcolelements_->Comm().Barrier();
   }
-  for (int proc = 0; proc < numdfcolnodes_->Comm().NumProc(); ++proc)
+  for (int proc = 0; proc < Core::Communication::num_mpi_ranks(numdfcolnodes_->Comm()); ++proc)
   {
     if (proc == Core::Communication::my_mpi_rank(numdfcolnodes_->Comm()))
     {
@@ -79,7 +79,7 @@ void Core::DOFSets::DofSet::print(std::ostream& os) const
     }
     numdfcolnodes_->Comm().Barrier();
   }
-  for (int proc = 0; proc < numdfcolfaces_->Comm().NumProc(); ++proc)
+  for (int proc = 0; proc < Core::Communication::num_mpi_ranks(numdfcolfaces_->Comm()); ++proc)
   {
     if (proc == Core::Communication::my_mpi_rank(numdfcolfaces_->Comm()))
     {

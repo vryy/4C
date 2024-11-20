@@ -467,7 +467,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_initial_linke
 
   // gather all data over all procs
   Epetra_Comm const& com = discret().get_comm();
-  const int numproc = com.NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(com);
   int numpairs = static_cast<int>(my_bspot_linker.size());
   std::vector<int> elegid_1, elegid_2, locbspot_1, locbspot_2, type, mat;
   for (int iproc = 0; iproc < numproc; ++iproc)
@@ -643,7 +643,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup_my_initial_double_b
   std::vector<int> nummynewlinks(1);
   nummynewlinks[0] = static_cast<int>(newlinker.size());
   // initialize std::vector for communication
-  std::vector<int> numnewlinks(com.NumProc(), 0);
+  std::vector<int> numnewlinks(Core::Communication::num_mpi_ranks(com), 0);
   // communicate
   com.GatherAll(nummynewlinks.data(), numnewlinks.data(), nummynewlinks.size());
   com.Barrier();
@@ -2609,7 +2609,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_bind_event_criteria
      * to beam binding spots. Additionally missing one event would not change any physics.
      * (Could be cured with additional communication)
      */
-    if (discret().get_comm().NumProc() > 1)
+    if (Core::Communication::num_mpi_ranks(discret().get_comm()) > 1)
       Core::IO::cout(Core::IO::verbose)
           << " Warning: There is a minimal chance of missing a regular binding event on "
              "rank "
@@ -3655,7 +3655,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_bin_ids(
 
   // build exporter
   Core::Communication::Exporter exporter(discret().get_comm());
-  int const numproc = discret().get_comm().NumProc();
+  int const numproc = Core::Communication::num_mpi_ranks(discret().get_comm());
   int const myrank = g_state().get_my_rank();
 
   // ---- send ---- ( we do not need to pack anything)
@@ -3932,7 +3932,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
 
   // build exporter
   Core::Communication::Exporter exporter(discret_ptr()->get_comm());
-  int const numproc = discret_ptr()->get_comm().NumProc();
+  int const numproc = Core::Communication::num_mpi_ranks(discret_ptr()->get_comm());
 
   // -----------------------------------------------------------------------
   // send
@@ -4074,7 +4074,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
 {
   check_init();
 
-  const int numproc = discret().get_comm().NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(discret().get_comm());
 
   // get number of procs from which myrank receives data
   std::vector<int> targetprocs(numproc, 0);

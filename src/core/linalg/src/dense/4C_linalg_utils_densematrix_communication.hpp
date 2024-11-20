@@ -53,7 +53,7 @@ namespace Core::LinAlg
       const int* tprocs, const Epetra_Comm& comm)
   {
     const int myrank = Core::Communication::my_mpi_rank(comm);
-    const int numproc = comm.NumProc();
+    const int numproc = Core::Communication::num_mpi_ranks(comm);
     if (numproc == 1)
     {
       rdata = sdata;
@@ -128,7 +128,7 @@ namespace Core::LinAlg
       const Epetra_Comm& comm)
   {
     const int myrank = Core::Communication::my_mpi_rank(comm);
-    const int numproc = comm.NumProc();
+    const int numproc = Core::Communication::num_mpi_ranks(comm);
     if (numproc == 1)
     {
       rdata = sdata;
@@ -203,7 +203,7 @@ namespace Core::LinAlg
       const int ntargetprocs, const int* tprocs, const Epetra_Comm& comm)
   {
     const int myrank = Core::Communication::my_mpi_rank(comm);
-    const int numproc = comm.NumProc();
+    const int numproc = Core::Communication::num_mpi_ranks(comm);
     if (numproc == 1)
     {
       rdata = sdata;
@@ -278,7 +278,7 @@ namespace Core::LinAlg
       const int ntargetprocs, const int* tprocs, const Epetra_Comm& comm)
   {
     const int myrank = Core::Communication::my_mpi_rank(comm);
-    const int numproc = comm.NumProc();
+    const int numproc = Core::Communication::num_mpi_ranks(comm);
     if (numproc == 1)
     {
       rdata = sdata;
@@ -354,7 +354,7 @@ namespace Core::LinAlg
       const int* tprocs, const Epetra_Comm& comm)
   {
     const int myrank = Core::Communication::my_mpi_rank(comm);
-    const int numproc = comm.NumProc();
+    const int numproc = Core::Communication::num_mpi_ranks(comm);
     if (numproc == 1)
     {
       rdata = sdata;
@@ -421,7 +421,7 @@ namespace Core::LinAlg
   void gather_all(std::set<T>& data, const Epetra_Comm& comm)
   {
     // ntargetprocs is equal to the total number of processors to make data redundant on all procs
-    const int numprocs = comm.NumProc();
+    const int numprocs = Core::Communication::num_mpi_ranks(comm);
     std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
@@ -446,7 +446,7 @@ namespace Core::LinAlg
   template <typename T, typename U>
   void gather_all(std::map<T, U>& data, const Epetra_Comm& comm)
   {
-    const int numprocs = comm.NumProc();
+    const int numprocs = Core::Communication::num_mpi_ranks(comm);
     std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
@@ -472,7 +472,7 @@ namespace Core::LinAlg
   template <typename T>
   void gather_all(std::map<int, std::vector<T>>& data, const Epetra_Comm& comm)
   {
-    const int numprocs = comm.NumProc();
+    const int numprocs = Core::Communication::num_mpi_ranks(comm);
     std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
@@ -501,7 +501,7 @@ namespace Core::LinAlg
   void gather_all(std::vector<T>& data, const Epetra_Comm& comm)
   {
     // ntargetprocs is equal to the total number of processors to make data redundant on all procs
-    const int numprocs = comm.NumProc();
+    const int numprocs = Core::Communication::num_mpi_ranks(comm);
     std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
@@ -645,8 +645,9 @@ namespace Core::LinAlg
    Communication is implemented with the MPI function MPI_Alltoallv.
 
    \param comm (i) communicator
-   \param send (i) vector of length comm.NumProc(), j-th element to be send to j-th processor.
-   \param recv (o) vector of length comm.NumProc(), j-th element received from j-th processor.
+   \param send (i) vector of length Core::Communication::num_mpi_ranks(comm), j-th element to be
+   send to j-th processor. \param recv (o) vector of length
+   Core::Communication::num_mpi_ranks(comm), j-th element received from j-th processor.
 
    \author h.kue
    \date 09/07
@@ -662,8 +663,9 @@ namespace Core::LinAlg
    Communication is implemented with the MPI function MPI_Alltoallv.
 
    \param[in] comm communicator
-   \param[in] send vector of length comm.NumProc(), j-th element to be send to j-th processor.
-   \param[out] recv vector of received elements without knowledge of the sending processor
+   \param[in] send vector of length Core::Communication::num_mpi_ranks(comm), j-th element to be
+   send to j-th processor. \param[out] recv vector of received elements without knowledge of the
+   sending processor
    */
   void all_to_all_communication(
       const Epetra_Comm& comm, const std::vector<std::vector<int>>& send, std::vector<int>& recv);

@@ -106,7 +106,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::setup()
 
   // Tell all other processors how many lambda DOFs this processor has. This information is needed
   // to construct the lambda_dof_rowmap_.
-  std::vector<int> lambda_dof_per_rank(discretization_structure_->get_comm().NumProc(), 0);
+  std::vector<int> lambda_dof_per_rank(
+      Core::Communication::num_mpi_ranks(discretization_structure_->get_comm()), 0);
   int temp_my_n_lambda_dof = (int)n_lambda_dof;
   discretization_structure_->get_comm().GatherAll(
       &temp_my_n_lambda_dof, lambda_dof_per_rank.data(), 1);

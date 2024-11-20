@@ -29,7 +29,8 @@ void Wear::WearInterface::fd_check_gap_deriv()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -304,7 +305,8 @@ void Wear::WearInterface::fd_check_gap_deriv_w()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -416,7 +418,8 @@ void Wear::WearInterface::fd_check_deriv_e_d(Core::LinAlg::SparseMatrix& linedis
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -731,7 +734,8 @@ void Wear::WearInterface::fd_check_deriv_e_d_master(Core::LinAlg::SparseMatrix& 
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -1046,7 +1050,8 @@ void Wear::WearInterface::fd_check_deriv_t_d(Core::LinAlg::SparseMatrix& lintdis
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
@@ -1238,7 +1243,8 @@ void Wear::WearInterface::fd_check_deriv_t_d_master(Core::LinAlg::SparseMatrix& 
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // nothing to do if no slip nodes
   if (slipmasternodes_->NumMyElements() == 0) return;
@@ -1433,7 +1439,8 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // information from interface contact parameter list
   auto ftype =
@@ -2490,7 +2497,8 @@ void Wear::WearInterface::fd_check_mortar_t_deriv()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for D-Matrix entries
   std::map<int, std::map<int, double>> refT;  // stores dof-wise the entries of D
@@ -2660,7 +2668,8 @@ void Wear::WearInterface::fd_check_mortar_t_master_deriv()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for D-Matrix entries
   std::map<int, std::map<int, double>> refT;  // stores dof-wise the entries of D
@@ -2944,7 +2953,8 @@ void Wear::WearInterface::fd_check_mortar_e_deriv()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for D-Matrix entries
   std::map<int, std::map<int, double>> refE;  // stores dof-wise the entries of D
@@ -3114,7 +3124,8 @@ void Wear::WearInterface::fd_check_mortar_e_master_deriv()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for D-Matrix entries
   std::map<int, std::map<int, double>> refE;  // stores dof-wise the entries of D
@@ -3401,7 +3412,8 @@ void Wear::WearInterface::fd_check_wear_deriv_lm()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3552,7 +3564,8 @@ void Wear::WearInterface::fd_check_wear_deriv()
   // FD checks only for serial case
   std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
   std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
-  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();

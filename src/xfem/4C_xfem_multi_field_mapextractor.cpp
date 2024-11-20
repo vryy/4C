@@ -200,7 +200,7 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
   // ------------------------------------------------------------------------
   // create an exporter for point to point communication
   Core::Communication::Exporter exporter(get_comm());
-  const int numprocs = get_comm().NumProc();
+  const int numprocs = Core::Communication::num_mpi_ranks(get_comm());
 
   for (int p = 0; p < numprocs; ++p)
   {
@@ -964,7 +964,8 @@ void XFEM::MultiFieldMapExtractor::build_global_interface_node_gid_set()
   g_interface_node_gid_set_.clear();
 
   // loop over all proc's
-  for (unsigned p = 0; p < static_cast<unsigned>(get_comm().NumProc()); ++p)
+  for (unsigned p = 0; p < static_cast<unsigned>(Core::Communication::num_mpi_ranks(get_comm()));
+       ++p)
   {
     int num_my_unique_row_nodes = 0;
     std::vector<int> my_unique_row_node_gid_vec(0);

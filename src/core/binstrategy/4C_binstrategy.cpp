@@ -644,7 +644,7 @@ std::shared_ptr<Epetra_Map> Core::Binstrategy::BinningStrategy::create_linear_ma
     const Epetra_Comm& comm) const
 {
   // initial dummy distribution using a linear map
-  const int numproc = comm.NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(comm);
   const int numbin = bin_per_dir_[0] * bin_per_dir_[1] * bin_per_dir_[2];
   const int start = numbin / numproc * myrank_;
   int end;
@@ -740,7 +740,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
     int nummycol;
     nummycol = static_cast<int>(ghostcorners.size());
     // initialize std::vector for communication
-    std::vector<int> numcol(com->NumProc(), 0);
+    std::vector<int> numcol(Core::Communication::num_mpi_ranks(*com), 0);
     // communicate
     com->GatherAll(&nummycol, numcol.data(), 1);
     com->Barrier();
@@ -1121,15 +1121,15 @@ Core::Binstrategy::BinningStrategy::weighted_distribution_of_bins_to_procs(
 
   // some safety checks to ensure efficiency
   {
-    if (numbin < discret[0]->get_comm().NumProc() && myrank_ == 0)
+    if (numbin < Core::Communication::num_mpi_ranks(discret[0]->get_comm()) && myrank_ == 0)
     {
       FOUR_C_THROW(
           "ERROR:NumProc %i > NumBin %i. Too many processors to "
           "distribute your bins properly!!!",
-          discret[0]->get_comm().NumProc(), numbin);
+          Core::Communication::num_mpi_ranks(discret[0]->get_comm()), numbin);
     }
 
-    if (numbin < 8 * discret[0]->get_comm().NumProc() && myrank_ == 0)
+    if (numbin < 8 * Core::Communication::num_mpi_ranks(discret[0]->get_comm()) && myrank_ == 0)
     {
       std::cout << "\n\nWARNING: partitioning not useful, choose less procs. "
                    " Owner distribution may be inefficient!\n\n";
@@ -1261,7 +1261,7 @@ std::shared_ptr<Epetra_Map> Core::Binstrategy::BinningStrategy::extend_element_c
     const Epetra_Map* ele_colmap_from_standardghosting) const
 {
   // do communication to gather all elements for extended ghosting
-  const int numproc = comm_->NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(*comm_);
   for (int iproc = 0; iproc < numproc; ++iproc)
   {
     // gather set of column bins for each proc
@@ -1356,7 +1356,8 @@ void Core::Binstrategy::BinningStrategy::extend_ghosting_of_binning_discretizati
   Epetra_Map bincolmap(
       -1, static_cast<int>(bincolmapvec.size()), bincolmapvec.data(), 0, bindis_->get_comm());
 
-  if (bincolmap.NumGlobalElements() == 1 && bindis_->get_comm().NumProc() > 1)
+  if (bincolmap.NumGlobalElements() == 1 &&
+      Core::Communication::num_mpi_ranks(bindis_->get_comm()) > 1)
     FOUR_C_THROW("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");
 
   Utils::extend_discretization_ghosting(*bindis_, bincolmap, assigndegreesoffreedom, false, true);
@@ -1480,7 +1481,7 @@ void Core::Binstrategy::BinningStrategy::
         std::map<int, std::vector<int>>& allnodesinmybins) const
 {
   // do communication to gather all nodes
-  const int numproc = rowbins.Comm().NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(rowbins.Comm());
   for (int iproc = 0; iproc < numproc; ++iproc)
   {
     // vector with row bins on this proc

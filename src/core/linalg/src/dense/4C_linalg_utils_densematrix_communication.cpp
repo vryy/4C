@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 int Core::LinAlg::find_my_pos(int nummyelements, const Epetra_Comm& comm)
 {
   const int myrank = Core::Communication::my_mpi_rank(comm);
-  const int numproc = comm.NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(comm);
 
   std::vector<int> snum(numproc, 0);
   std::vector<int> rnum(numproc);
@@ -184,7 +184,7 @@ std::shared_ptr<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(
 void Core::LinAlg::all_to_all_communication(const Epetra_Comm& comm,
     const std::vector<std::vector<int>>& send, std::vector<std::vector<int>>& recv)
 {
-  if (comm.NumProc() == 1)
+  if (Core::Communication::num_mpi_ranks(comm) == 1)
   {
     FOUR_C_ASSERT(send.size() == 1, "there has to be just one entry for sending");
 
@@ -198,9 +198,9 @@ void Core::LinAlg::all_to_all_communication(const Epetra_Comm& comm,
 
     std::vector<int> sendbuf;
     std::vector<int> sendcounts;
-    sendcounts.reserve(comm.NumProc());
+    sendcounts.reserve(Core::Communication::num_mpi_ranks(comm));
     std::vector<int> sdispls;
-    sdispls.reserve(comm.NumProc());
+    sdispls.reserve(Core::Communication::num_mpi_ranks(comm));
 
     int displacement = 0;
     sdispls.push_back(0);
@@ -213,7 +213,7 @@ void Core::LinAlg::all_to_all_communication(const Epetra_Comm& comm,
       sdispls.push_back(displacement);
     }
 
-    std::vector<int> recvcounts(comm.NumProc());
+    std::vector<int> recvcounts(Core::Communication::num_mpi_ranks(comm));
 
     // initial communication: Request. Send and receive the number of
     // ints we communicate with each process.
@@ -224,7 +224,7 @@ void Core::LinAlg::all_to_all_communication(const Epetra_Comm& comm,
     if (status != MPI_SUCCESS) FOUR_C_THROW("MPI_Alltoall returned status=%d", status);
 
     std::vector<int> rdispls;
-    rdispls.reserve(comm.NumProc());
+    rdispls.reserve(Core::Communication::num_mpi_ranks(comm));
 
     displacement = 0;
     rdispls.push_back(0);
@@ -244,7 +244,7 @@ void Core::LinAlg::all_to_all_communication(const Epetra_Comm& comm,
     if (status != MPI_SUCCESS) FOUR_C_THROW("MPI_Alltoallv returned status=%d", status);
 
     recv.clear();
-    for (int proc = 0; proc < comm.NumProc(); ++proc)
+    for (int proc = 0; proc < Core::Communication::num_mpi_ranks(comm); ++proc)
     {
       recv.push_back(
           std::vector<int>(recvbuf.data() + rdispls[proc], recvbuf.data() + rdispls[proc + 1]));
@@ -258,7 +258,7 @@ void Core::LinAlg::all_to_all_communication(const Epetra_Comm& comm,
 void Core::LinAlg::all_to_all_communication(
     const Epetra_Comm& comm, const std::vector<std::vector<int>>& send, std::vector<int>& recv)
 {
-  if (comm.NumProc() == 1)
+  if (Core::Communication::num_mpi_ranks(comm) == 1)
   {
     FOUR_C_ASSERT(send.size() == 1, "there has to be just one entry for sending");
 
@@ -272,9 +272,9 @@ void Core::LinAlg::all_to_all_communication(
 
     std::vector<int> sendbuf;
     std::vector<int> sendcounts;
-    sendcounts.reserve(comm.NumProc());
+    sendcounts.reserve(Core::Communication::num_mpi_ranks(comm));
     std::vector<int> sdispls;
-    sdispls.reserve(comm.NumProc());
+    sdispls.reserve(Core::Communication::num_mpi_ranks(comm));
 
     int displacement = 0;
     sdispls.push_back(0);
@@ -287,7 +287,7 @@ void Core::LinAlg::all_to_all_communication(
       sdispls.push_back(displacement);
     }
 
-    std::vector<int> recvcounts(comm.NumProc());
+    std::vector<int> recvcounts(Core::Communication::num_mpi_ranks(comm));
 
     // initial communication: Request. Send and receive the number of
     // ints we communicate with each process.
@@ -298,7 +298,7 @@ void Core::LinAlg::all_to_all_communication(
     if (status != MPI_SUCCESS) FOUR_C_THROW("MPI_Alltoall returned status=%d", status);
 
     std::vector<int> rdispls;
-    rdispls.reserve(comm.NumProc());
+    rdispls.reserve(Core::Communication::num_mpi_ranks(comm));
 
     displacement = 0;
     rdispls.push_back(0);

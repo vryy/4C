@@ -19,7 +19,7 @@ void PARTICLEENGINE::COMMUNICATION::immediate_recv_blocking_send(const Epetra_Co
     std::map<int, std::vector<char>>& sdata, std::map<int, std::vector<char>>& rdata)
 {
   // number of processors
-  int const numproc = comm.NumProc();
+  int const numproc = Core::Communication::num_mpi_ranks(comm);
 
   // processor id
   int const myrank = Core::Communication::my_mpi_rank(comm);

@@ -87,7 +87,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   // some local variables
   std::shared_ptr<Epetra_Comm> comm_v(get_comm().Clone());
   const int myrank = Core::Communication::my_mpi_rank(*comm_v);
-  const int numproc = comm_v->NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(*comm_v);
   const int torank = (myrank + 1) % numproc;              // to
   const int fromrank = (myrank + numproc - 1) % numproc;  // from
 
@@ -403,8 +403,8 @@ void CONTACT::Interface::round_robin_detect_ghosting()
   // start RR loop for current interface
   // *************************************
   // loop over all procs
-  if (get_comm().NumProc() > 1)
-    for (int proc = 0; proc < (int)(get_comm().NumProc()); ++proc)
+  if (Core::Communication::num_mpi_ranks(get_comm()) > 1)
+    for (int proc = 0; proc < (int)(Core::Communication::num_mpi_ranks(get_comm())); ++proc)
     {
       // status output
       if (Core::Communication::my_mpi_rank(get_comm()) == 0 && proc == 0)
@@ -421,7 +421,7 @@ void CONTACT::Interface::round_robin_detect_ghosting()
         FOUR_C_THROW("Invalid search algorithm");
 
       // evaluate interfaces
-      if (proc < (int)(get_comm().NumProc() - 1))
+      if (proc < (int)(Core::Communication::num_mpi_ranks(get_comm()) - 1))
       {
         if (search_alg() == Inpar::Mortar::search_bfele)
           evaluate_search_brute_force(search_param());

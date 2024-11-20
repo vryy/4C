@@ -462,7 +462,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::redistribute(
   std::shared_ptr<const Epetra_CrsGraph> nodegraph = Core::Rebalance::build_graph(dis, elerowmap);
 
   Teuchos::ParameterList rebalanceParams;
-  rebalanceParams.set("num parts", std::to_string(comm->NumProc()));
+  rebalanceParams.set("num parts", std::to_string(Core::Communication::num_mpi_ranks(*comm)));
   std::tie(noderowmap, nodecolmap) =
       Core::Rebalance::rebalance_node_maps(*nodegraph, rebalanceParams);
 

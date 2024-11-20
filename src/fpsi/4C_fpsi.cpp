@@ -7,6 +7,7 @@
 
 #include "4C_fpsi.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fpsi_utils.hpp"
 #include "4C_global_data.hpp"
@@ -30,7 +31,7 @@ void FPSI::FpsiBase::redistribute_interface()
   const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
   FPSI::InterfaceUtils* FPSI_UTILS = FPSI::InterfaceUtils::instance();
 
-  if (comm.NumProc() >
+  if (Core::Communication::num_mpi_ranks(comm) >
       1)  // if we have more than one processor, we need to redistribute at the FPSI interface
   {
     std::shared_ptr<std::map<int, int>> Fluid_PoroFluid_InterfaceMap =

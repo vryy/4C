@@ -601,7 +601,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
   }
 
   // reuse dofs of structural discretization for wall discretization
-  bool parallel = (comm_.NumProc() == 1) ? false : true;
+  bool parallel = (Core::Communication::num_mpi_ranks(comm_) == 1) ? false : true;
   std::shared_ptr<Core::DOFSets::DofSet> newdofset =
       std::make_shared<Core::DOFSets::TransparentDofSet>(structurediscretization, parallel);
   walldiscretization_->replace_dof_set(newdofset);

@@ -291,7 +291,7 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
   ///////////////////////////////////////////////////////////////////////////////////
 
   // loop over procs
-  for (int proc = 0; proc < mastercomm.NumProc(); proc++)
+  for (int proc = 0; proc < Core::Communication::num_mpi_ranks(mastercomm); proc++)
   {
     curr = mastergeom.begin();
 
@@ -299,8 +299,8 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
     int parenteleowner = -1;
     int match = 0;
     int mastergeomsize = mastergeom.size();
-    std::vector<int> sizelist(
-        mastercomm.NumProc());  // how many master interface elements has each processor
+    std::vector<int> sizelist(Core::Communication::num_mpi_ranks(
+        mastercomm));  // how many master interface elements has each processor
     mastercomm.GatherAll(&mastergeomsize, sizelist.data(), 1);
     mastercomm.Barrier();  // wait for procs
 
@@ -394,7 +394,7 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
 
       mastercomm.Barrier();
 
-      for (int p = 0; p < mastercomm.NumProc(); ++p)
+      for (int p = 0; p < Core::Communication::num_mpi_ranks(mastercomm); ++p)
       {
         mastercomm.Barrier();
         if (Core::Communication::my_mpi_rank(mastercomm) == p)
@@ -467,12 +467,12 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
 
   int mymapsize = interfacefacingelementmap.size();
   int globalmapsize;
-  std::vector<int> mapsizearray(comm.NumProc());
+  std::vector<int> mapsizearray(Core::Communication::num_mpi_ranks(comm));
   comm.GatherAll(&mymapsize, mapsizearray.data(), 1);
   comm.SumAll(&mymapsize, &globalmapsize, 1);
 
   int counter = 0;
-  for (int proc = 0; proc < comm.NumProc(); ++proc)
+  for (int proc = 0; proc < Core::Communication::num_mpi_ranks(comm); ++proc)
   {
     mapcurr = interfacefacingelementmap.begin();
 
@@ -492,8 +492,8 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
       int slaveeleid = -1;
       int mastereleowner = -1;
       int mastereleid = -1;
-      std::vector<int> slaveeleowners(comm.NumProc());
-      std::vector<int> mastereleowners(comm.NumProc());
+      std::vector<int> slaveeleowners(Core::Communication::num_mpi_ranks(comm));
+      std::vector<int> mastereleowners(Core::Communication::num_mpi_ranks(comm));
 
       // get master id
       if (Core::Communication::my_mpi_rank(comm) == proc)
@@ -518,12 +518,12 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
 
       comm.GatherAll(&mastereleowner, mastereleowners.data(), 1);
 
-      for (int i = 0; i < comm.NumProc(); i++)
+      for (int i = 0; i < Core::Communication::num_mpi_ranks(comm); i++)
       {
         if (mastereleowners[i] != -1) mastereleowner = i;
       }  // now every processor knows the mastereleowner
 
-      std::vector<int> procHasMasterEle(comm.NumProc());
+      std::vector<int> procHasMasterEle(Core::Communication::num_mpi_ranks(comm));
       HasMasterEle = masterdis.have_global_element(mastereleid);
       comm.GatherAll(&HasMasterEle, procHasMasterEle.data(), 1);
 

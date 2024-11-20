@@ -72,7 +72,7 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
       xfluid_timint_check_sliding_on_surface_(xfluid_timint_check_sliding_on_surface)
 {
   myrank_ = Core::Communication::my_mpi_rank(dis->get_comm());
-  numproc_ = dis->get_comm().NumProc();
+  numproc_ = Core::Communication::num_mpi_ranks(dis->get_comm());
 
   permutation_map_ = std::make_shared<std::map<int, int>>();
 

@@ -159,7 +159,7 @@ std::shared_ptr<const Epetra_CrsGraph> Core::Rebalance::build_graph(
     Core::FE::Discretization& dis, const Epetra_Map& roweles)
 {
   const int myrank = Core::Communication::my_mpi_rank(dis.get_comm());
-  const int numproc = dis.get_comm().NumProc();
+  const int numproc = Core::Communication::num_mpi_ranks(dis.get_comm());
 
   // create a set of all nodes that I have
   std::set<int> mynodes;

@@ -3473,7 +3473,7 @@ void Mortar::Coupling3d::gmsh_output_cells(int lid) const
 {
   // every processor writes its own cell file
   int proc = Core::Communication::my_mpi_rank(idiscret_.get_comm());
-  int nproc = idiscret_.get_comm().NumProc();
+  int nproc = Core::Communication::num_mpi_ranks(idiscret_.get_comm());
 
   // write each integration cell only once
   // (no overlap, only owner of slave element writes output)

@@ -523,7 +523,9 @@ void FLD::FluidImplicitTimeInt::complete_general_init()
       if (myrank_ == 0 and (logenergy_))
       {
         (*logenergy_) << "# Kinetic energy in fluid field\n"
-                      << "# num procs = " << discretization()->get_comm().NumProc() << std::endl
+                      << "# num procs = "
+                      << Core::Communication::num_mpi_ranks(discretization()->get_comm())
+                      << std::endl
                       << std::right << std::setw(9) << "# step" << std::right << std::setw(16)
                       << "time" << std::right << std::setw(16) << "kinetic_energy" << std::endl;
 

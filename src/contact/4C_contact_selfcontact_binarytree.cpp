@@ -1472,7 +1472,7 @@ void CONTACT::SelfBinaryTree::search_contact()
   //**********************************************************************
   // introduce some parallelization for multibody contact
   std::vector<int> myroots(0);
-  int nproc = get_comm().NumProc();
+  int nproc = Core::Communication::num_mpi_ranks(get_comm());
   int nroot = (int)roots_.size();
   int ratio = nroot / nproc;
   int rest = nroot % nproc;

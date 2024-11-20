@@ -3011,7 +3011,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimInt::perform_error_action(
       double proc_randnum = proc_randnum_get;
       double randnum = 1.0;
       discret_->get_comm().SumAll(&proc_randnum, &randnum, 1);
-      const double numproc = discret_->get_comm().NumProc();
+      const double numproc = Core::Communication::num_mpi_ranks(discret_->get_comm());
       randnum /= numproc;
       if (rand_tsfac_ > 1.0)
         rand_tsfac_ = randnum * 0.49 + 0.51;

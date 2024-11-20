@@ -163,7 +163,7 @@ void Core::GeometricSearch::MatchingOctree::create_global_entity_matching(
   check_is_setup();
 
   int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
-  int numprocs = discret_->get_comm().NumProc();
+  int numprocs = Core::Communication::num_mpi_ranks(discret_->get_comm());
 
   // map from global masternodeids to distances to their global slave
   // counterpart
@@ -404,9 +404,9 @@ void Core::GeometricSearch::MatchingOctree::find_match(const Core::FE::Discretiz
   check_is_init();
   check_is_setup();
 
-  int numprocs = discret_->get_comm().NumProc();
+  int numprocs = Core::Communication::num_mpi_ranks(discret_->get_comm());
 
-  if (slavedis.get_comm().NumProc() != numprocs)
+  if (Core::Communication::num_mpi_ranks(slavedis.get_comm()) != numprocs)
     FOUR_C_THROW("compared discretizations must live on same procs");
 
   // 1) each proc generates a list of his slavenodes
@@ -563,9 +563,9 @@ void Core::GeometricSearch::MatchingOctree::fill_slave_to_master_gid_mapping(
   check_is_init();
   check_is_setup();
 
-  int numprocs = discret_->get_comm().NumProc();
+  int numprocs = Core::Communication::num_mpi_ranks(discret_->get_comm());
 
-  if (slavedis.get_comm().NumProc() != numprocs)
+  if (Core::Communication::num_mpi_ranks(slavedis.get_comm()) != numprocs)
     FOUR_C_THROW("compared discretizations must live on same procs");
 
   // 1) each proc generates a list of his slavenodes

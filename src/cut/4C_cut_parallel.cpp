@@ -27,7 +27,7 @@ Cut::Parallel::Parallel(const std::shared_ptr<Core::FE::Discretization>& discret
     Cut::ParentIntersection& parentintersection)
     : discret_(discret),
       myrank_(Core::Communication::my_mpi_rank(discret_->get_comm())),
-      numproc_(discret_->get_comm().NumProc()),
+      numproc_(Core::Communication::num_mpi_ranks(discret_->get_comm())),
       mesh_(mesh),
       parentintersection_(parentintersection)
 {

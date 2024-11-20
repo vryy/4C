@@ -397,7 +397,7 @@ double ScaTra::ScaTraResultTest::result_special(
     const int proc_num = std::stoi(proc_string);
 
     // extract processor ID
-    if (proc_num >= scatratimint_->discretization()->get_comm().NumProc())
+    if (proc_num >= Core::Communication::num_mpi_ranks(scatratimint_->discretization()->get_comm()))
       FOUR_C_THROW("Invalid processor ID!");
 
     // extract scatra-scatra interface meshtying strategy class

@@ -131,8 +131,9 @@ std::shared_ptr<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::search
 // todo Needs to be adapted as soon as problems can contain beam and general structure nodes
 void FBI::FBIGeometryCoupler::extend_beam_ghosting(Core::FE::Discretization& discretization)
 {
-  std::vector<int> allproc(discretization.get_comm().NumProc());
-  for (int i = 0; i < discretization.get_comm().NumProc(); ++i) allproc[i] = i;
+  std::vector<int> allproc(Core::Communication::num_mpi_ranks(discretization.get_comm()));
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(discretization.get_comm()); ++i)
+    allproc[i] = i;
 
   // fill my own row node ids
   const Epetra_Map* noderowmap = discretization.node_row_map();
@@ -182,15 +183,17 @@ void FBI::FBIGeometryCoupler::prepare_pair_creation(
   auto t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::PreparePairCreation");
   Teuchos::TimeMonitor monitor(*t);
 
-  std::vector<std::vector<int>> element_senddata(discretizations[0]->get_comm().NumProc());
-  std::vector<std::vector<int>> node_senddata(discretizations[0]->get_comm().NumProc());
+  std::vector<std::vector<int>> element_senddata(
+      Core::Communication::num_mpi_ranks(discretizations[0]->get_comm()));
+  std::vector<std::vector<int>> node_senddata(
+      Core::Communication::num_mpi_ranks(discretizations[0]->get_comm()));
   std::vector<std::vector<int>> pairids_to_send(element_senddata.size());
   std::vector<std::vector<int>> pairids_to_recv;
   std::vector<int> element_recvdata;
   std::vector<int> node_recvdata;
   std::vector<int> nodegids;
 
-  for (int i = 0; i < discretizations[0]->get_comm().NumProc(); ++i)
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(discretizations[0]->get_comm()); ++i)
   {
     element_senddata[i] = std::vector<int>();
     pairids_to_send[i] = std::vector<int>();

@@ -340,10 +340,10 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::Utils::oct_tree_search(
       get_nodal_positions(artdis, artdis.node_row_map());
 
   // gather
-  std::vector<int> procs(contdis.get_comm().NumProc());
-  for (int i = 0; i < contdis.get_comm().NumProc(); i++) procs[i] = i;
+  std::vector<int> procs(Core::Communication::num_mpi_ranks(contdis.get_comm()));
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(contdis.get_comm()); i++) procs[i] = i;
   Core::LinAlg::gather<int, Core::LinAlg::Matrix<3, 1>>(my_positions_artery, positions_artery,
-      contdis.get_comm().NumProc(), procs.data(), contdis.get_comm());
+      Core::Communication::num_mpi_ranks(contdis.get_comm()), procs.data(), contdis.get_comm());
 
   // do the actual search on fully overlapping artery discretization
   for (unsigned int iart = 0; iart < artEleGIDs.size(); ++iart)

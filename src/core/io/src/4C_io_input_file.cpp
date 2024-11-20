@@ -1152,7 +1152,7 @@ namespace Core::IO
     // Now lets do all the parallel setup. Afterwards all processors
     // have to be the same.
     int arraysize = inputfile_.size();
-    if (comm_.NumProc() > 1)
+    if (Core::Communication::num_mpi_ranks(comm_) > 1)
     {
       int num_lines = lines_.size();
       /* Now that we use a variable number of bytes per line we have to

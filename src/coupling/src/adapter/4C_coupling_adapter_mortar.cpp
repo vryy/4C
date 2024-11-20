@@ -457,7 +457,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
           input.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
   {
     bool isFinalDistribution = false;
-    if (parallelRedist == Inpar::Mortar::ParallelRedist::redist_none or comm.NumProc() == 1)
+    if (parallelRedist == Inpar::Mortar::ParallelRedist::redist_none or
+        Core::Communication::num_mpi_ranks(comm) == 1)
       isFinalDistribution = true;
 
     interface_->fill_complete(discretization_map, binning_params, output_control,
@@ -477,7 +478,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
   //**********************************************************************
-  if (parallelRedist != Inpar::Mortar::ParallelRedist::redist_none and comm.NumProc() > 1)
+  if (parallelRedist != Inpar::Mortar::ParallelRedist::redist_none and
+      Core::Communication::num_mpi_ranks(comm) > 1)
   {
     // redistribute optimally among all procs
     interface_->redistribute();

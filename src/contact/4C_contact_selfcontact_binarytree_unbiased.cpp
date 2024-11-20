@@ -221,7 +221,7 @@ void CONTACT::UnbiasedSelfBinaryTree::init()
       procdualgraph;
 
   // loop over all interface processors
-  for (int p = 0; p < get_comm().NumProc(); ++p)
+  for (int p = 0; p < Core::Communication::num_mpi_ranks(get_comm()); ++p)
   {
     std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>> dualgraph;
 

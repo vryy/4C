@@ -395,7 +395,7 @@ namespace Immersed
     static constexpr int target_dim = Core::FE::dim<targetdistype>;
 
     // declarations and definitions for round robin loop
-    const int numproc = comm.NumProc();
+    const int numproc = Core::Communication::num_mpi_ranks(comm);
     const int myrank = Core::Communication::my_mpi_rank(comm);  // myrank
     const int torank = (myrank + 1) % numproc;                  // sends to
     const int fromrank = (myrank + numproc - 1) % numproc;      // recieves from
@@ -880,7 +880,7 @@ namespace Immersed
     // dimension of source discretization
     static constexpr int source_dim = Core::FE::dim<sourcedistype>;
     // declarations and definitions for round robin loop
-    int numproc = comm.NumProc();
+    int numproc = Core::Communication::num_mpi_ranks(comm);
     const int myrank = Core::Communication::my_mpi_rank(comm);  // myrank
     const int torank = (myrank + 1) % numproc;                  // sends to
     const int fromrank = (myrank + numproc - 1) % numproc;      // recieves from
@@ -1208,7 +1208,7 @@ namespace Immersed
     Core::LinAlg::Matrix<4, 1> shapefcts(true);
 
     // declarations and definitions for round robin loop
-    int numproc = comm.NumProc();
+    int numproc = Core::Communication::num_mpi_ranks(comm);
     const int myrank = Core::Communication::my_mpi_rank(comm);  // myrank
     const int torank = (myrank + 1) % numproc;                  // sends to
     const int fromrank = (myrank + numproc - 1) % numproc;      // recieves from

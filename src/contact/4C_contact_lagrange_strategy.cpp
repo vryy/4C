@@ -4760,7 +4760,7 @@ void CONTACT::LagrangeStrategy::update_active_set()
 
   // active set is only converged, if converged on all procs
   // if not, increase no. of active set steps too
-  if (convcheck != get_comm().NumProc())
+  if (convcheck != Core::Communication::num_mpi_ranks(get_comm()))
   {
     activesetconv_ = false;
     activesetsteps_ += 1;
@@ -4959,7 +4959,7 @@ void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstSt
 
   // active set is only converged, if converged on all procs
   // if not, increase no. of active set steps too
-  if (convcheck != get_comm().NumProc())
+  if (convcheck != Core::Communication::num_mpi_ranks(get_comm()))
   {
     activesetconv_ = false;
     activesetsteps_ += 1;

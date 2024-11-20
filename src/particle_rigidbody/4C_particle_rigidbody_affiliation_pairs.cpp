@@ -71,7 +71,7 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::distribute_affiliation_pairs(
   particleengineinterface_->relate_all_particles_to_all_procs(particlestoproc);
 
   // allocate memory
-  std::vector<std::vector<int>> particletargets(comm_.NumProc());
+  std::vector<std::vector<int>> particletargets(Core::Communication::num_mpi_ranks(comm_));
 
   // iterate over all particle global ids
   for (int gid = 0; gid < static_cast<int>(particlestoproc.size()); ++gid)
@@ -111,7 +111,7 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::communicate_specific_affiliat
   std::map<int, std::vector<char>> rdata;
 
   // pack affiliation pairs
-  for (int torank = 0; torank < comm_.NumProc(); ++torank)
+  for (int torank = 0; torank < Core::Communication::num_mpi_ranks(comm_); ++torank)
   {
     if (particletargets[torank].empty()) continue;
 

@@ -624,7 +624,7 @@ void FLD::XWall::setup_x_wall_dis()
 
 
   // find out if we are in parallel; needed for TransparentDofSet
-  bool parallel = (xwdiscret_->get_comm().NumProc() == 1) ? false : true;
+  bool parallel = Core::Communication::num_mpi_ranks(discret_->get_comm()) != 1;
 
   // dofs of the original discretization are used to set same dofs for the new discretization
   std::shared_ptr<Core::DOFSets::DofSet> newdofset =
@@ -644,7 +644,8 @@ void FLD::XWall::setup_x_wall_dis()
         Core::Rebalance::build_graph(*xwdiscret_, elemap);
 
     Teuchos::ParameterList rebalanceParams;
-    rebalanceParams.set<std::string>("num parts", std::to_string(comm->NumProc()));
+    rebalanceParams.set<std::string>(
+        "num parts", std::to_string(Core::Communication::num_mpi_ranks(*comm)));
 
     const auto& [rownodes, colnodes] =
         Core::Rebalance::rebalance_node_maps(*nodegraph, rebalanceParams);

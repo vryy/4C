@@ -28,8 +28,8 @@ void Core::LinAlg::export_to(
     const bool targetunique = target.Map().UniqueGIDs();
 
     // both are unique, does not matter whether ex- or import
-    if (sourceunique && targetunique && source.Comm().NumProc() == 1 &&
-        target.Comm().NumProc() == 1)
+    if (sourceunique && targetunique && Core::Communication::num_mpi_ranks(source.Comm()) == 1 &&
+        Core::Communication::num_mpi_ranks(target.Comm()) == 1)
     {
       if (source.NumVectors() != target.NumVectors())
         FOUR_C_THROW("number of vectors in source and target not the same!");
@@ -107,8 +107,8 @@ void Core::LinAlg::export_to(
     const bool targetunique = target.Map().UniqueGIDs();
 
     // both are unique, does not matter whether ex- or import
-    if (sourceunique && targetunique && source.Comm().NumProc() == 1 &&
-        target.Comm().NumProc() == 1)
+    if (sourceunique && targetunique && Core::Communication::num_mpi_ranks(source.Comm()) == 1 &&
+        Core::Communication::num_mpi_ranks(target.Comm()) == 1)
     {
       for (int i = 0; i < target.Map().NumMyElements(); ++i)
       {

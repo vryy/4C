@@ -4189,11 +4189,12 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
   std::vector<int> wdof;
 
   // gather information over all procs
-  std::vector<int> localnumwdof(get_comm().NumProc());
-  std::vector<int> globalnumlmdof(get_comm().NumProc());
+  std::vector<int> localnumwdof(Core::Communication::num_mpi_ranks(get_comm()));
+  std::vector<int> globalnumlmdof(Core::Communication::num_mpi_ranks(get_comm()));
   localnumwdof[Core::Communication::my_mpi_rank(get_comm())] =
       (int)((sdofrowmap_->NumMyElements()) / n_dim());
-  get_comm().SumAll(localnumwdof.data(), globalnumlmdof.data(), get_comm().NumProc());
+  get_comm().SumAll(
+      localnumwdof.data(), globalnumlmdof.data(), Core::Communication::num_mpi_ranks(get_comm()));
 
   // compute offet for LM dof initialization for all procs
   int offset = 0;
@@ -4220,11 +4221,12 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
     maxdofwear += wdofmap_->NumGlobalElements();
 
     // gather information over all procs
-    std::vector<int> localnumwdof(get_comm().NumProc());
-    std::vector<int> globalnumlmdof(get_comm().NumProc());
+    std::vector<int> localnumwdof(Core::Communication::num_mpi_ranks(get_comm()));
+    std::vector<int> globalnumlmdof(Core::Communication::num_mpi_ranks(get_comm()));
     localnumwdof[Core::Communication::my_mpi_rank(get_comm())] =
         (int)((mdofrowmap_->NumMyElements()) / n_dim());
-    get_comm().SumAll(localnumwdof.data(), globalnumlmdof.data(), get_comm().NumProc());
+    get_comm().SumAll(
+        localnumwdof.data(), globalnumlmdof.data(), Core::Communication::num_mpi_ranks(get_comm()));
 
     // compute offet for LM dof initialization for all procs
     int offset = 0;

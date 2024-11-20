@@ -128,7 +128,7 @@ void XFEM::MeshCoupling::create_cutter_dis_from_condition(std::string suffix)
   }
 
   // for parallel jobs we have to call TransparentDofSet with additional flag true
-  bool parallel = cond_dis_->get_comm().NumProc() > 1;
+  bool parallel = Core::Communication::num_mpi_ranks(cond_dis_->get_comm()) > 1;
   std::shared_ptr<Core::DOFSets::DofSet> newdofset =
       std::make_shared<Core::DOFSets::TransparentIndependentDofSet>(cond_dis_, parallel);
 

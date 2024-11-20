@@ -610,7 +610,8 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
   swap(sblock, data());
 
   // now we start the communication
-  for (unsigned int pid = 0; pid < static_cast<unsigned int>(dis.get_comm().NumProc()); ++pid)
+  for (unsigned int pid = 0;
+       pid < static_cast<unsigned int>(Core::Communication::num_mpi_ranks(dis.get_comm())); ++pid)
   {
     MPI_Request request;
     int tag = 0;
@@ -817,7 +818,8 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
     swap(sblock, data());
 
     // now we start the communication
-    for (unsigned int pid = 0; pid < static_cast<unsigned int>(dis.get_comm().NumProc()); ++pid)
+    for (unsigned int pid = 0;
+         pid < static_cast<unsigned int>(Core::Communication::num_mpi_ranks(dis.get_comm())); ++pid)
     {
       MPI_Request request;
       int tag = 0;

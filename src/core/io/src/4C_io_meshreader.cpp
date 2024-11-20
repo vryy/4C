@@ -7,6 +7,7 @@
 
 #include "4C_io_meshreader.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_io_domainreader.hpp"
 #include "4C_io_elementreader.hpp"
@@ -89,9 +90,9 @@ void Core::IO::MeshReader::read_and_partition()
     int local_max_node_id = max_node_id;
     comm_.MaxAll(&local_max_node_id, &max_node_id, 1);
 
-    if (max_node_id > 0 && max_node_id < comm_.NumProc())
-      FOUR_C_THROW("Bad idea: Simulation with %d procs for problem with %d nodes", comm_.NumProc(),
-          max_node_id);
+    if (max_node_id > 0 && max_node_id < Core::Communication::num_mpi_ranks(comm_))
+      FOUR_C_THROW("Bad idea: Simulation with %d procs for problem with %d nodes",
+          Core::Communication::num_mpi_ranks(comm_), max_node_id);
   }
 }
 

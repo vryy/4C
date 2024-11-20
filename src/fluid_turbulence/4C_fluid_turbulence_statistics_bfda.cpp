@@ -108,7 +108,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   // round robin loop to communicate coordinates to all procs
   //--------------------------------------------------------------------
   int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
-  int numprocs = discret_->get_comm().NumProc();
+  int numprocs = Core::Communication::num_mpi_ranks(discret_->get_comm());
 
   std::vector<char> sblock;
   std::vector<char> rblock;
@@ -270,7 +270,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
     discret_->get_comm().SumAll(&actRadNode, &countActRadNodeOnAllProcs, 1);
 
     int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
-    int numprocs = discret_->get_comm().NumProc();
+    int numprocs = Core::Communication::num_mpi_ranks(discret_->get_comm());
 
     std::vector<char> sblock;
     std::vector<char> rblock;

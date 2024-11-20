@@ -436,7 +436,7 @@ void ScaTra::ScaTraTimIntElchSCL::write_coupling_to_csv(
 
   // node coordinates only known by owning proc. Writing of data to file not possible by
   // multiple procs in parallel
-  for (int iproc = 0; iproc < discret_->get_comm().NumProc(); ++iproc)
+  for (int iproc = 0; iproc < Core::Communication::num_mpi_ranks(discret_->get_comm()); ++iproc)
   {
     if (iproc == myrank_)
     {
@@ -706,7 +706,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
   int micro_problem_counter = 0;
   int my_micro_problem_counter = 0;
   const unsigned int num_my_macro_slave_node_gids = my_macro_slave_node_gids.size();
-  for (int iproc = 0; iproc < comm.NumProc(); ++iproc)
+  for (int iproc = 0; iproc < Core::Communication::num_mpi_ranks(comm); ++iproc)
   {
     if (iproc == Core::Communication::my_mpi_rank(comm))
       micro_problem_counter += static_cast<int>(num_my_macro_slave_node_gids);
@@ -1062,7 +1062,7 @@ void ScaTra::ScaTraTimIntElchSCL::redistribute_micro_discretization()
   auto micro_dis = micro_scatra_field()->discretization();
   const int min_node_gid = micro_dis->node_row_map()->MinAllGID();
   const int num_nodes = micro_dis->node_row_map()->NumGlobalElements();
-  const int num_proc = micro_dis->get_comm().NumProc();
+  const int num_proc = Core::Communication::num_mpi_ranks(micro_dis->get_comm());
   const int myPID = Core::Communication::my_mpi_rank(micro_dis->get_comm());
 
   const int num_node_per_proc = static_cast<int>(std::floor(num_nodes / num_proc));

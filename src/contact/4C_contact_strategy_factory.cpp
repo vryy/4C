@@ -618,7 +618,7 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
   }
 
   // no parallel redistribution in the serial case
-  if (get_comm().NumProc() == 1)
+  if (Core::Communication::num_mpi_ranks(get_comm()) == 1)
     params.sublist("PARALLEL REDISTRIBUTION")
         .set<Inpar::Mortar::ParallelRedist>(
             "PARALLEL_REDIST", Inpar::Mortar::ParallelRedist::redist_none);
@@ -1254,7 +1254,7 @@ int CONTACT::STRATEGY::Factory::identify_full_subset(
 
   get_comm().SumAll(&lfullsubmap, &gfullsubmap, 1);
 
-  return (gfullsubmap == get_comm().NumProc() ? sub_id : -1);
+  return (gfullsubmap == Core::Communication::num_mpi_ranks(get_comm()) ? sub_id : -1);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1421,15 +1421,15 @@ void CONTACT::STRATEGY::Factory::find_poro_interface_types(bool& poromaster, boo
    *  Comm().gather_all(static_cast<int*>(&slavetype),static_cast<int*>(slaveTypeList.data()),1);
    *  Comm().gather_all(static_cast<int*>(&mastertype),static_cast<int*>(masterTypeList.data()),1);
    */
-  std::vector<int> slaveTypeList(get_comm().NumProc());
-  std::vector<int> masterTypeList(get_comm().NumProc());
+  std::vector<int> slaveTypeList(Core::Communication::num_mpi_ranks(get_comm()));
+  std::vector<int> masterTypeList(Core::Communication::num_mpi_ranks(get_comm()));
   int int_slavetype = static_cast<int>(slavetype);
   int int_mastertype = static_cast<int>(mastertype);
   get_comm().GatherAll(&int_slavetype, slaveTypeList.data(), 1);
   get_comm().GatherAll(&int_mastertype, masterTypeList.data(), 1);
   get_comm().Barrier();
 
-  for (int i = 0; i < get_comm().NumProc(); ++i)
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(get_comm()); ++i)
   {
     switch (slaveTypeList[i])
     {
@@ -1466,7 +1466,7 @@ void CONTACT::STRATEGY::Factory::find_poro_interface_types(bool& poromaster, boo
     }
   }
 
-  for (int i = 0; i < get_comm().NumProc(); ++i)
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(get_comm()); ++i)
   {
     switch (masterTypeList[i])
     {

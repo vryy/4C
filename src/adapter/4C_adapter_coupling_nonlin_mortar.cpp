@@ -517,7 +517,8 @@ void Adapter::CouplingNonLinMortar::complete_interface(
    */
   {
     bool isFinalDistribution = false;
-    if (parallelRedist == Inpar::Mortar::ParallelRedist::redist_none || comm_->NumProc() == 1)
+    if (parallelRedist == Inpar::Mortar::ParallelRedist::redist_none ||
+        Core::Communication::num_mpi_ranks(*comm_) == 1)
       isFinalDistribution = true;
     interface->fill_complete(Global::Problem::instance()->discretization_map(),
         Global::Problem::instance()->binning_strategy_params(),
@@ -540,7 +541,8 @@ void Adapter::CouplingNonLinMortar::complete_interface(
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
   //**********************************************************************
-  if (parallelRedist != Inpar::Mortar::ParallelRedist::redist_none && comm_->NumProc() > 1)
+  if (parallelRedist != Inpar::Mortar::ParallelRedist::redist_none &&
+      Core::Communication::num_mpi_ranks(*comm_) > 1)
   {
     // redistribute optimally among all procs
     interface->redistribute();
@@ -733,7 +735,7 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
         Global::Problem::instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
     if (Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(input, "PARALLEL_REDIST") ==
             Inpar::Mortar::ParallelRedist::redist_none or
-        comm_->NumProc() == 1)
+        Core::Communication::num_mpi_ranks(*comm_) == 1)
       isFinalDistribution = true;
 
     interface->fill_complete(Global::Problem::instance()->discretization_map(),
