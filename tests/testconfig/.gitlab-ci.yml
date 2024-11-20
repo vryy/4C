@@ -86,8 +86,8 @@ before_script:
 .post_process_log_files: &post_process_log_files
   # sort output of pipeline
   - cd ${CI_PROJECT_DIR}/../build
-  - ${CI_PROJECT_DIR}/utilities/python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
-    ${CI_PROJECT_DIR}/test.log ${CI_PROJECT_DIR}/test.log
+  - python_venv_build_test/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py ${CI_PROJECT_DIR}/test.log
+    ${CI_PROJECT_DIR}/test.log
   # Write selection of the output into the terminal and therefore to GITLAB
   # Output 200 lines for any failing test
   - grep -B 200 '*Failed\|*Timeout' ${CI_PROJECT_DIR}/test.log || true
