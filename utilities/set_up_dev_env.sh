@@ -7,6 +7,12 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+# Install the virtual Python environment necessary for code development in 4C.
+# Call the script from the root directory of the repository:
+#     ./utilities/set_up_dev_env.sh
+# Optionally, you can specify the path to the python executable (>=3.8):
+#     ./utilities/set_up_dev_env.sh /path/to/python
+
 # Exit the script at the first failure
 set -e
 
@@ -21,8 +27,17 @@ PYTHON_VENV="`dirname "$0"`/python-venv"
 # If the virtual environment already exists, delete it.
 if [ -d "$PYTHON_VENV" ]; then rm -Rf $PYTHON_VENV; fi
 
+# Path to python
+PYTHON_PATH=${1:-python3}
+
+# Check Python version >= 3.8
+if ! $PYTHON_PATH -c "import sys; exit(sys.version_info < (3, 8))"; then
+    echo "Provided Python version does not meet the minimum requirement (>=3.8)."
+    exit 1
+fi
+
 # Setup the virtual environment and source it.
-python3 -m venv "${PYTHON_VENV}"
+$PYTHON_PATH -m venv "${PYTHON_VENV}"
 source "${PYTHON_VENV}"/bin/activate
 
 # Install all the modules defined in requirements.txt.
