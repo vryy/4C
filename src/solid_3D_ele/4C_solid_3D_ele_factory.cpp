@@ -73,7 +73,7 @@ namespace
       Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
-        Solid::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>;
+        Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>;
   };
 
   /*!
@@ -84,7 +84,7 @@ namespace
       Discret::Elements::ElementTechnology::eas_mild, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
-        Solid::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::linear>;
+        Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::linear>;
   };
 
   /*!
@@ -96,7 +96,7 @@ namespace
       Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
-        Solid::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::nonlinearTotLag>;
+        Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::nonlinearTotLag>;
   };
 
   /*!
@@ -107,7 +107,7 @@ namespace
       Discret::Elements::ElementTechnology::eas_full, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
-        Solid::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::linear>;
+        Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::linear>;
   };
 
   /*!
@@ -119,7 +119,7 @@ namespace
       Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
-        Solid::Elements::EasType::eastype_sh8_7, Inpar::Solid::KinemType::nonlinearTotLag>;
+        Discret::Elements::EasType::eastype_sh8_7, Inpar::Solid::KinemType::nonlinearTotLag>;
   };
 
   /*!
