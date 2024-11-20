@@ -71,7 +71,7 @@ jobs:
           key: ${{ github.job }}-${{ env.CMAKE_PRESET }}
       - uses: ./.github/actions/configure_4C
         with:
-          cmake-preset: docker
+          cmake-preset: ${{ env.CMAKE_PRESET }}
           build-directory: ${{ github.workspace }}/build
           additional-cmake-flags: -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
       - uses: ./.github/actions/build_4C
