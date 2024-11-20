@@ -592,34 +592,6 @@ int Discret::Elements::SoHex8::evaluate(Teuchos::ParameterList& params,
     }
     break;
     //==================================================================================
-    case Core::Elements::struct_calc_store_istep:
-    {
-      int timestep = params.get<int>("timestep", -1);
-
-      if (timestep == -1) FOUR_C_THROW("Provide timestep number to be stored");
-
-      // EAS
-      if (eastype_ != soh8_easnone) soh8_easupdate();
-
-      // Material
-      solid_material()->store_history(timestep);
-    }
-    break;
-    //==================================================================================
-    case Core::Elements::struct_calc_recover_istep:
-    {
-      int timestep = params.get<int>("timestep", -1);
-
-      if (timestep == -1) FOUR_C_THROW("Provide timestep number of the timestep to be recovered");
-
-      // EAS
-      if (eastype_ != soh8_easnone) soh8_easrestore();
-
-      // Material
-      solid_material()->set_history(timestep);
-    }
-    break;
-    //==================================================================================
     case Core::Elements::struct_calc_energy:
     {
       // initialization of internal energy

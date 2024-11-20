@@ -114,10 +114,6 @@ int Discret::Elements::SoTet4::evaluate(Teuchos::ParameterList& params,
     act = SoTet4::calc_struct_eleload;
   else if (action == "calc_struct_fsiload")
     act = SoTet4::calc_struct_fsiload;
-  else if (action == "calc_struct_store_istep")
-    act = SoTet4::struct_calc_store_istep;
-  else if (action == "calc_struct_recover_istep")
-    act = SoTet4::struct_calc_recover_istep;
   else if (action == "calc_struct_update_istep")
     act = SoTet4::calc_struct_update_istep;
   else if (action == "calc_struct_reset_istep")
@@ -511,44 +507,6 @@ int Discret::Elements::SoTet4::evaluate(Teuchos::ParameterList& params,
     case calc_struct_fsiload:
       FOUR_C_THROW("Case not yet implemented");
       break;
-
-    //==================================================================================
-    case struct_calc_store_istep:
-    {
-      int timestep = params.get<int>("timestep", -1);
-
-      if (timestep == -1) FOUR_C_THROW("Provide timestep number to be stored");
-
-      // due to the multiplicativity and futility to redo prestress steps
-      // other than the last one, no need to store/recover anything
-      // ... but keep in mind
-      if (Prestress::is_any(pstype_))
-      {
-      }
-
-      // Material
-      solid_material()->store_history(timestep);
-    }
-    break;
-
-    //==================================================================================
-    case struct_calc_recover_istep:
-    {
-      int timestep = params.get<int>("timestep", -1);
-
-      if (timestep == -1) FOUR_C_THROW("Provide timestep number of the timestep to be recovered");
-
-      // due to the multiplicativity and futility to redo prestress steps
-      // other than the last one, no need to store/recover anything
-      // ... but keep in mind
-      if (Prestress::is_any(pstype_))
-      {
-      }
-
-      // Material
-      solid_material()->set_history(timestep);
-    }
-    break;
 
     //==================================================================================
     case calc_struct_update_istep:

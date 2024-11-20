@@ -2077,12 +2077,6 @@ void Solid::ModelEvaluator::Structure::params_interface2_parameter_list(
     case Core::Elements::struct_calc_reset_istep:
       action = "calc_struct_reset_istep";
       break;
-    case Core::Elements::struct_calc_store_istep:
-      action = "calc_struct_store_istep";
-      break;
-    case Core::Elements::struct_calc_recover_istep:
-      action = "calc_struct_recover_istep";
-      break;
     case Core::Elements::struct_calc_energy:
       action = "calc_struct_energy";
       break;

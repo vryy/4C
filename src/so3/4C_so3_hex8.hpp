@@ -424,13 +424,11 @@ namespace Discret
         calc_struct_eleload,
         calc_struct_fsiload,
         calc_struct_update_istep,
-        calc_struct_reset_istep,    //!< reset elementwise internal variables
-                                    //!< during iteration to last converged state
-        calc_struct_store_istep,    //!< store internal information in history
-        calc_struct_recover_istep,  //!< recover internal information from history
-        calc_struct_reset_all,      //!< reset elementwise internal variables
-                                    //!< to state in the beginning of the computation
-        calc_struct_energy,         //!< compute internal energy
+        calc_struct_reset_istep,  //!< reset elementwise internal variables
+                                  //!< during iteration to last converged state
+        calc_struct_reset_all,    //!< reset elementwise internal variables
+                                  //!< to state in the beginning of the computation
+        calc_struct_energy,       //!< compute internal energy
         prestress_update,
         multi_readrestart,           //!< multi-scale: read restart on microscale
         multi_eas_init,              //!< multi-scale: initialize EAS parameters on microscale
