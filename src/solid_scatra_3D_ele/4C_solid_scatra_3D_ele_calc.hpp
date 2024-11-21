@@ -47,7 +47,7 @@ namespace Discret::Elements
 
     void material_post_setup(const Core::Elements::Element& ele, Mat::So3Material& solid_material);
 
-    void recover(const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
+    void recover(Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
         const Core::Elements::LocationArray& la, Teuchos::ParameterList& params);
 
     void update(const Core::Elements::Element& ele, Mat::So3Material& solid_material,

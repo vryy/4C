@@ -58,7 +58,6 @@ namespace
             celltype>;
   };
 
-
   /*!
    * @brief Nonlinear total lagrangian formulation with F-Bar for hex8 and pyramid 5
    */
@@ -68,6 +67,30 @@ namespace
       std::enable_if_t<celltype == Core::FE::CellType::hex8>>
   {
     using type = Discret::Elements::Internal::FBarSolidScatraIntegrator<celltype>;
+  };
+
+  /*!
+   * @brief EAS full Formulation for hex8
+   */
+  template <Core::FE::CellType celltype>
+  struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+      Discret::Elements::ElementTechnology::eas_full, Discret::Elements::PrestressTechnology::none,
+      std::enable_if_t<celltype == Core::FE::CellType::hex8>>
+  {
+    using type = Discret::Elements::Internal::EASSolidScatraIntegrator<Core::FE::CellType::hex8,
+        Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::nonlinearTotLag>;
+  };
+
+  /*!
+   * @brief EAS mild Formulation for hex8
+   */
+  template <Core::FE::CellType celltype>
+  struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+      Discret::Elements::ElementTechnology::eas_mild, Discret::Elements::PrestressTechnology::none,
+      std::enable_if_t<celltype == Core::FE::CellType::hex8>>
+  {
+    using type = Discret::Elements::Internal::EASSolidScatraIntegrator<Core::FE::CellType::hex8,
+        Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>;
   };
 }  // namespace
 

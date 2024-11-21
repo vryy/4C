@@ -15,6 +15,7 @@
 #include "4C_inpar_scatra.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based_linear_kinematics.hpp"
+#include "4C_solid_3D_ele_calc_eas.hpp"
 #include "4C_solid_3D_ele_calc_fbar.hpp"
 #include "4C_solid_3D_ele_factory_lib.hpp"
 #include "4C_solid_3D_ele_properties.hpp"
@@ -73,8 +74,20 @@ namespace Discret::Elements
     using FbarScatraEvaluators = Core::FE::apply_celltype_sequence<FBarSolidScatraIntegrator,
         Core::FE::CelltypeSequence<Core::FE::CellType::hex8>>;
 
+    // Eas evaluators
+    template <Core::FE::CellType celltype, Discret::Elements::EasType eas_type,
+        Inpar::Solid::KinemType kinem_type>
+    using EASSolidScatraIntegrator =
+        SolidScatraEleCalc<celltype, EASFormulation<celltype, eas_type, kinem_type>>;
+    using EASScatraEvaluators = Core::FE::BaseTypeList<
+        EASSolidScatraIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_9,
+            Inpar::Solid::KinemType::nonlinearTotLag>,
+        EASSolidScatraIntegrator<Core::FE::CellType::hex8,
+            Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::nonlinearTotLag>>;
+
     using SolidScatraEvaluators = Core::FE::Join<DisplacementBasedSolidScatraEvaluator,
-        DisplacementBasedLinearKinematicsSolidScatraEvaluator, FbarScatraEvaluators>;
+        DisplacementBasedLinearKinematicsSolidScatraEvaluator, FbarScatraEvaluators,
+        EASScatraEvaluators>;
   }  // namespace Internal
 
   /// Variant holding the different implementations for the solid-scatra element
