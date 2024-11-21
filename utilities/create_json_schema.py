@@ -75,6 +75,23 @@ def create_properties_dict(properties_entry: dict) -> dict:
     return properties
 
 
+def is_parent_section(section_name: str, section_names: list) -> bool:
+    """Check if the section is a parent section.
+
+    Args:
+        section_name (str): name of the section
+        section_names (list): list of valid section names
+
+    Returns:
+        bool: True if it is a parent section
+    """
+    for name in section_names:
+        if name.startswith(section_name + "/"):
+            return True
+
+    return False
+
+
 def create_json_schema(fourc_metadata: dict) -> dict:
     """Create a JSON schema dict.
 
@@ -115,7 +132,9 @@ def create_json_schema(fourc_metadata: dict) -> dict:
     for section_name, section_options in fourc_metadata["parameters"].items():
 
         # Some sections are empty
-        if not section_options:
+        if not section_options and not is_parent_section(
+            section_name, fourc_metadata["parameters"].keys()
+        ):
             warnings.warn(f"For section {section_name} no metadata is available!")
 
         description = f"Section '{section_name}'\n"
