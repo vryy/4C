@@ -42,12 +42,13 @@ namespace Mat
    public:
     std::string name() const override { return typeid(this).name(); }
 
-    static BeamElastHyperMaterialType& instance() { return instance_; };
+    static BeamElastHyperMaterialType& instance()
+    {
+      static BeamElastHyperMaterialType instance;
+      return instance;
+    }
 
     Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
-
-   private:
-    static BeamElastHyperMaterialType instance_;
   };
 
 
