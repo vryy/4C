@@ -3269,7 +3269,7 @@ std::shared_ptr<const Epetra_Map> ScaTra::ScaTraTimIntImpl::dof_row_map(int nds)
  *----------------------------------------------------------------------*/
 int ScaTra::ScaTraTimIntImpl::max_num_dof_per_node() const
 {
-  FOUR_C_THROW_UNLESS(scalarhandler_ != nullptr, "scalar handler was not initialized!");
+  FOUR_C_ASSERT_ALWAYS(scalarhandler_ != nullptr, "scalar handler was not initialized!");
   return scalarhandler_->max_num_dof_per_node();
 }
 

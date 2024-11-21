@@ -619,7 +619,7 @@ namespace Mat
     //! Get vector of concentration at current Gauss point
     [[nodiscard]] const std::vector<double>& get_concentration_gp() const
     {
-      FOUR_C_THROW_UNLESS(concentrations_ != nullptr, "Concentrations are not set");
+      FOUR_C_ASSERT_ALWAYS(concentrations_ != nullptr, "Concentrations are not set");
       return *concentrations_;
     };
 

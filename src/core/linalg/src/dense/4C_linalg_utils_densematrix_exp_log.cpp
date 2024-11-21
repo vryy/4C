@@ -63,7 +63,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(const Core::LinAlg::Matr
     }
 
     // throw error if no convergence is reached after the maximum number of terms
-    FOUR_C_THROW_UNLESS(n < n_max, "Matrix exponential unconverged in %i steps.", n);
+    FOUR_C_ASSERT_ALWAYS(n < n_max, "Matrix exponential unconverged in %i steps.", n);
 
     return output;
   }
@@ -141,7 +141,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     while (A_minus_id_m.norm2() > conv_tol)
     {
       // check whether the maximum number of terms was reached
-      FOUR_C_THROW_UNLESS(
+      FOUR_C_ASSERT_ALWAYS(
           m <= m_max, "Couldn't compute the matrix logarithm using the Taylor series!");
 
       // update output matrix
@@ -186,7 +186,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     while (update_mat_2mpl1.norm2() > conv_tol)
     {
       // check whether the maximum number of terms was reached
-      FOUR_C_THROW_UNLESS(
+      FOUR_C_ASSERT_ALWAYS(
           m <= m_max, "Couldn't compute the matrix logarithm using the Gregory series!");
 
       // update output matrix
@@ -213,7 +213,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     // get the (principal) logarithms of the eigenvalues
     for (unsigned int i = 0; i < dim; ++i)
     {
-      FOUR_C_THROW_UNLESS(eigenval_matrix(i, i).real() >= 0.0,
+      FOUR_C_ASSERT_ALWAYS(eigenval_matrix(i, i).real() >= 0.0,
           "The current matrix logarithm implementation only considers the case where all "
           "eigenvalues "
           "possess positive real parts! This is not given here, real part:  %d",
@@ -278,7 +278,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_exp_1st_deriv(
     tmp2 = tmp1;
   }
 
-  FOUR_C_THROW_UNLESS(nIter < 50, "matrix exponential unconverged in %i steps", nIter);
+  FOUR_C_ASSERT_ALWAYS(nIter < 50, "matrix exponential unconverged in %i steps", nIter);
   nmax = nIter;
 
   // compose derivative of matrix exponential (non-symmetric Voigt-notation)
@@ -341,7 +341,7 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
       Xn.push_back(tmp1);
       tmp2 = tmp1;
     }
-    FOUR_C_THROW_UNLESS(nIter < 50, "matrix exponential unconverged in %i steps", nIter);
+    FOUR_C_ASSERT_ALWAYS(nIter < 50, "matrix exponential unconverged in %i steps", nIter);
     nmax = nIter;
 
     // compose derivative of matrix exponential (symmetric Voigt-notation)
@@ -550,7 +550,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
     while (dA_minus_id_m_dA.norm2() > conv_tol)
     {
       // check whether the maximum number of terms was reached
-      FOUR_C_THROW_UNLESS(
+      FOUR_C_ASSERT_ALWAYS(
           m <= m_max, "Couldn't compute the matrix logarithm derivative using the Taylor series!");
 
       // update output matrix
@@ -654,7 +654,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
     while (true)
     {
       // check whether we have reached the maximum number of terms
-      FOUR_C_THROW_UNLESS(
+      FOUR_C_ASSERT_ALWAYS(
           m <= m_max, "Couldn't compute the matrix logarithm derivative using the Gregory series!");
 
       // update output matrix
@@ -781,7 +781,7 @@ void Core::LinAlg::sym_matrix_3x3_exp_2nd_deriv_voigt(const Core::LinAlg::Matrix
   } while (k < kmax && ak.norm2() > 1.e-16);
 
 
-  FOUR_C_THROW_UNLESS(k < kmax, "Matrix exponential unconverged with %i summands", k);
+  FOUR_C_ASSERT_ALWAYS(k < kmax, "Matrix exponential unconverged with %i summands", k);
 
   // Additions: 1. Map first derivative from [6](3,3) to (6,6)
   for (int i = 0; i < 6; i++)

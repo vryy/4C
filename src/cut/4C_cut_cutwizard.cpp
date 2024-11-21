@@ -378,7 +378,7 @@ void evaluate_position_on_nurbs9(Core::Elements::Element* element,
 
   // The element pointer has to be a face element.
   auto face_element = dynamic_cast<const Core::Elements::FaceElement*>(element);
-  FOUR_C_THROW_UNLESS(
+  FOUR_C_ASSERT_ALWAYS(
       face_element, "Element given in evaluate_position_on_nurbs9 has to be a face element.");
 
   // Factor for surface orientation.

@@ -535,7 +535,7 @@ bool Cut::ElementHandle::get_gauss_rule_integration_cells(
   // if the element is cut, then check how many volume sets it has. Here, we assume
   // that there is only one cut interface and the element should be cut by two, there should
   // be only two volume cells, one representing the inside and the outside sides
-  FOUR_C_THROW_UNLESS(cell_sets.size() == 2,
+  FOUR_C_ASSERT_ALWAYS(cell_sets.size() == 2,
       "We expect exactly two volume cells for this element, but %i where found.", cell_sets.size());
 
   // Now, erase the volume cells that should not be integrated depending on

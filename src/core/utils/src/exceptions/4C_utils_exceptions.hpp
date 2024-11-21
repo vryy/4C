@@ -22,7 +22,29 @@ namespace Core
   namespace Internal
   {
     class ExceptionImplementation;
-  }
+
+    /**
+     * A helper struct taking the file name and line number from the error macro.
+     */
+    struct ErrorHelper
+    {
+      const char* file_name;
+      int line_number;
+      const char* failed_assertion_string = nullptr;
+
+      template <typename StringType, typename... Args>
+      [[noreturn]] void operator()(const StringType& format, Args&&... args) const
+      {
+        static_assert(
+            (... && std::is_trivial_v<std::decay_t<Args>>), "Can only format trivial types.");
+        throw_error(format, std::forward<Args>(args)...);
+      }
+
+      [[noreturn]] void throw_error(const char* format, ...) const;
+
+      [[noreturn]] void throw_error(const std::string& format, ...) const;
+    };
+  }  // namespace Internal
 
   /**
    * @brief Base class for all 4C exceptions.
@@ -53,7 +75,7 @@ namespace Core
      * Return a message that describes what happened and includes a stack trace.
      *
      * @note Calling this function can be a lot more expensive than the what() function because the
-     * stacktrace needs to be symbolyzed.
+     * stacktrace needs to be symbolized.
      */
     [[nodiscard]] std::string what_with_stacktrace() const noexcept;
 
@@ -64,65 +86,14 @@ namespace Core
      */
     std::unique_ptr<Internal::ExceptionImplementation> pimpl_;
   };
-
-  namespace Internal
-  {
-
-    [[noreturn]] void throw_error(const char* file, int line, const char* format, ...);
-    [[noreturn]] void throw_error(const char* file, int line, const std::string& format, ...);
-
-    /**
-     * A helper struct taking the file name and line number from the error macro.
-     */
-    struct ErrorHelper
-    {
-      const char* file_name;
-      int line_number;
-
-      template <typename StringType, typename... Args>
-      [[noreturn]] void operator()(const StringType& format, Args&&... args) const
-      {
-        static_assert(
-            (... && std::is_trivial_v<std::decay_t<Args>>), "Can only format trivial types.");
-        throw_error(file_name, line_number, format, std::forward<Args>(args)...);
-      }
-    };
-
-  }  // namespace Internal
 }  // namespace Core
 
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-
-/**
- * Assert that @p test is `true`. If not issue an error in the form of a Core::Exception.
- * This macro is only active if FOUR_C_ENABLE_ASSERTIONS is set. Otherwise, the @p test is not
- * even evaluated.
- *
- * This macro takes the test to evaluate and an error message.
- * For example:
- *
- * @code
- *   FOUR_C_ASSERT(vector.size() == dim, "Vector size does not equal dimension.");
- * @endcode
- */
-#define FOUR_C_ASSERT(test, args...) \
-  if (!(test))                       \
-  {                                  \
-    FOUR_C_THROW(args);              \
-  }                                  \
-  static_assert(true, "Terminate FOUR_C_ASSERT with a comma.")
-
-#else
-
-/**
- * This macro would asserts that @p test is true, but only if FOUR_C_ENABLE_ASSERTIONS is set.
- */
-#define FOUR_C_ASSERT(test, args...) static_assert(true, "Terminate FOUR_C_ASSERT with a comma.")
-
-#endif
 
 /**
  * Throw an error in the form of a Core::Exception.
+ *
+ * @note Consider using the more expressive FOUR_C_ASSERT and FOUR_C_ASSERT_ALWAYS macros which
+ * take a violated assertion as an argument and print it in the error message.
  *
  * This macro takes an error message, which may contain C-style formatting.
  * All format arguments are passed as additional arguments. For example:
@@ -132,24 +103,52 @@ namespace Core
  * @endcode
  */
 #define FOUR_C_THROW \
-  FourC::Core::Internal::ErrorHelper { __FILE__, __LINE__ }
+  FourC::Core::Internal::ErrorHelper { .file_name = __FILE__, .line_number = __LINE__ }
 
 /**
- * Throw an error in the form of a Core::Exception, unless the @p test is true.
+ * Assert that @p test is `true`. If not issue an error in the form of a Core::Exception.
  *
- * This macro takes an error message, which may contain C-style formatting.
+ * This macro takes the test to evaluate and an error message which may contain C-style formatting.
  * All format arguments are passed as additional arguments. For example:
  *
  * @code
- *   FOUR_C_THROW_UNLESS(vector.size() == dim, "Vector size does not equal dimension d=%d.", dim);
+ *   FOUR_C_ASSERT_ALWAYS(vector.size() == dim, "Vector size does not equal dimension d=%d.", dim);
  * @endcode
  */
-#define FOUR_C_THROW_UNLESS(test, args...) \
-  if (!(test))                             \
-  {                                        \
-    FOUR_C_THROW(args);                    \
-  }                                        \
-  static_assert(true, "Terminate FOUR_C_THROW_UNLESS with a comma.")
+#define FOUR_C_ASSERT_ALWAYS(test, args...)                                                      \
+  if (!(test))                                                                                   \
+  {                                                                                              \
+    FourC::Core::Internal::ErrorHelper{                                                          \
+        .file_name = __FILE__, .line_number = __LINE__, .failed_assertion_string = #test}(args); \
+  }                                                                                              \
+  static_assert(true, "Terminate with a comma.")
+
+
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+
+/**
+ * Assert that @p test is `true`. If not issue an error in the form of a Core::Exception.
+ * This macro is only active if FOUR_C_ENABLE_ASSERTIONS is set and may therefore be used for
+ * expensive checks. Use FOUR_C_ASSERT_ALWAYS if you want to evaluate the test in any case.
+ *
+ * This macro takes the test to evaluate and an error message which may contain C-style formatting.
+ * All format arguments are passed as additional arguments. For example:
+ *
+ * @code
+ *   FOUR_C_ASSERT(vector.size() == dim, "Vector size does not equal dimension.");
+ * @endcode
+ */
+#define FOUR_C_ASSERT(test, args...) FOUR_C_ASSERT_ALWAYS(test, args)
+
+#else
+
+/**
+ * This macro would assert that @p test is true, but only if FOUR_C_ENABLE_ASSERTIONS is set.
+ */
+#define FOUR_C_ASSERT(test, args...) static_assert(true, "Terminate with a comma.")
+
+#endif
+
 
 FOUR_C_NAMESPACE_CLOSE
 

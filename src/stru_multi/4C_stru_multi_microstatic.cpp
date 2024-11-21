@@ -237,7 +237,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
     ele->location_vector(*discret_, la, false);
 
     const auto* solid_ele = dynamic_cast<const Discret::Elements::Solid*>(ele);
-    FOUR_C_THROW_UNLESS(solid_ele,
+    FOUR_C_ASSERT_ALWAYS(solid_ele,
         "Multiscale simulations are currently only possible with the new solid elements");
 
     solid_ele->for_each_gauss_point(*discret_, la[0].lm_,
@@ -263,7 +263,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
   density_ = micro_discretization_density_integration / V0_;
 
-  FOUR_C_THROW_UNLESS(
+  FOUR_C_ASSERT_ALWAYS(
       density_ > 0, "Density determined from homogenization procedure must be larger than zero!");
 }  // MultiScale::MicroStatic::MicroStatic
 

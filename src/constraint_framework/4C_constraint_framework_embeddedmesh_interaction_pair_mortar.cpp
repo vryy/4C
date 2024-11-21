@@ -250,7 +250,7 @@ std::shared_ptr<Core::FE::GaussPoints> project_boundary_cell_gauss_rule_on_inter
   // Check if the weights of the obtained Gauss Points are positive
   for (int it_gp = 0; it_gp < gp->num_points(); it_gp++)
   {
-    FOUR_C_THROW_UNLESS(
+    FOUR_C_ASSERT_ALWAYS(
         gp->weight(it_gp) > 0.0, "The Gauss rule for this boundary cell has negative weights.");
   }
 

@@ -117,7 +117,7 @@ namespace Core::LinAlg
     Teuchos::LAPACK<int, double> lapack;
     lapack.SYEV(jobz, uplo, N, tmp.data(), lda, w.data(), work.data(), lwork, &info);
 
-    FOUR_C_THROW_UNLESS(info == 0, "Lapack's SYEV returned %d", info);
+    FOUR_C_ASSERT_ALWAYS(info == 0, "Lapack's SYEV returned %d", info);
 
     // return eigenvectors
     V.update(tmp);
@@ -183,7 +183,7 @@ namespace Core::LinAlg
     lapack.GEEV(jobvl, jobvr, N, tmp.data(), lda, wr.data(), wi.data(), vl.data(), ldvl, vr.data(),
         ldvr, work.data(), lwork, &info);
 
-    FOUR_C_THROW_UNLESS(info == 0, "Lapack's GEEV returned %d", info);
+    FOUR_C_ASSERT_ALWAYS(info == 0, "Lapack's GEEV returned %d", info);
 
     // save the temporary right eigenvectors, which are now in a "real" format instead of their
     // general complex form with complex conjugate pairs

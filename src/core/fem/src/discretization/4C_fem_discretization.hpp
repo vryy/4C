@@ -1593,7 +1593,7 @@ namespace Core::FE
       if (state_.size() <= nds) return nullptr;
 
       auto state_iterator = state_[nds].find(name);
-      FOUR_C_THROW_UNLESS(state_iterator != state_[nds].end(),
+      FOUR_C_ASSERT_ALWAYS(state_iterator != state_[nds].end(),
           "Cannot find state %s in discretization %s", name.data(), name_.c_str());
       return state_iterator->second;
     }

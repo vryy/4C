@@ -1324,7 +1324,7 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
     // which where found by vis_names
     Core::LinAlg::gather_all(names, get_comm());
 
-    FOUR_C_THROW_UNLESS(
+    FOUR_C_ASSERT_ALWAYS(
         std::all_of(names.begin(), names.end(), [](const auto& pair) { return pair.second >= 1; }),
         "Dimension of all data must be at least 1");
 
@@ -1344,7 +1344,7 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
         // get data for a given name from element & put in sysdata
         ele->vis_data(name, eledata);
 
-        FOUR_C_THROW_UNLESS(
+        FOUR_C_ASSERT_ALWAYS(
             (int)eledata.size() == dimension, "element manipulated size of visualization data");
         for (int j = 0; j < dimension; ++j) sysdata(j)[ele_counter] = eledata[j];
 

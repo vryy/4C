@@ -396,9 +396,9 @@ const Epetra_Map* Core::FE::Discretization::dof_row_map(const unsigned nds) cons
 {
   FOUR_C_ASSERT(
       nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
-  FOUR_C_THROW_UNLESS(
+  FOUR_C_ASSERT_ALWAYS(
       filled(), "fill_complete was not called on discretization %s!", name_.c_str());
-  FOUR_C_THROW_UNLESS(
+  FOUR_C_ASSERT_ALWAYS(
       have_dofs(), "assign_degrees_of_freedom() not called on discretization %s!", name_.c_str());
 
   return dofsets_[nds]->dof_row_map();
@@ -411,9 +411,9 @@ const Epetra_Map* Core::FE::Discretization::dof_col_map(const unsigned nds) cons
 {
   FOUR_C_ASSERT(
       nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
-  FOUR_C_THROW_UNLESS(
+  FOUR_C_ASSERT_ALWAYS(
       filled(), "fill_complete was not called on discretization %s!", name_.c_str());
-  FOUR_C_THROW_UNLESS(
+  FOUR_C_ASSERT_ALWAYS(
       have_dofs(), "assign_degrees_of_freedom() not called on discretization %s!", name_.c_str());
 
   return dofsets_[nds]->dof_col_map();
@@ -519,7 +519,7 @@ void Core::FE::Discretization::set_state(const unsigned nds, const std::string& 
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Discretization::set_state");
 
-  FOUR_C_THROW_UNLESS(
+  FOUR_C_ASSERT_ALWAYS(
       have_dofs(), "fill_complete() was not called for discretization %s!", name_.c_str());
   const Epetra_Map* colmap = dof_col_map(nds);
   const Epetra_BlockMap& vecmap = state->Map();
@@ -563,7 +563,7 @@ void Core::FE::Discretization::set_state(const unsigned nds, const std::string& 
 
     // transfer data
     int err = tmp->Import(*state, (*stateimporter_[nds]), Insert);
-    FOUR_C_THROW_UNLESS(!err,
+    FOUR_C_ASSERT_ALWAYS(!err,
         "Export using importer failed for Core::LinAlg::Vector<double>: return value = %d", err);
 
     // save state
@@ -614,7 +614,7 @@ void Core::FE::Discretization::get_condition(
   {
     out[count++] = cond->second.get();
   }
-  FOUR_C_THROW_UNLESS(
+  FOUR_C_ASSERT_ALWAYS(
       count == num, "Mismatch in number of conditions found in discretization %s!", name_.c_str());
 }
 /*----------------------------------------------------------------------*
@@ -631,7 +631,7 @@ void Core::FE::Discretization::get_condition(
   {
     out[count++] = cond->second;
   }
-  FOUR_C_THROW_UNLESS(
+  FOUR_C_ASSERT_ALWAYS(
       count == num, "Mismatch in number of conditions found in discretization %s!", name_.c_str());
 }
 
@@ -662,7 +662,7 @@ void Core::FE::Discretization::get_condition_names(std::vector<std::string>& nam
  *----------------------------------------------------------------------*/
 std::shared_ptr<std::vector<char>> Core::FE::Discretization::pack_my_elements() const
 {
-  FOUR_C_THROW_UNLESS(
+  FOUR_C_ASSERT_ALWAYS(
       filled(), "fill_complete was not called on discretization %s!", name_.c_str());
 
   Core::Communication::PackBuffer buffer;
@@ -679,7 +679,7 @@ std::shared_ptr<std::vector<char>> Core::FE::Discretization::pack_my_elements() 
  *----------------------------------------------------------------------*/
 std::shared_ptr<std::vector<char>> Core::FE::Discretization::pack_my_nodes() const
 {
-  FOUR_C_THROW_UNLESS(
+  FOUR_C_ASSERT_ALWAYS(
       filled(), "fill_complete was not called on discretization %s!", name_.c_str());
 
   Core::Communication::PackBuffer buffer;
@@ -701,7 +701,7 @@ void Core::FE::Discretization::unpack_my_elements(std::vector<char>& e)
   {
     Core::Communication::ParObject* o = Core::Communication::factory(buffer);
     auto* ele = dynamic_cast<Core::Elements::Element*>(o);
-    FOUR_C_THROW_UNLESS(ele != nullptr,
+    FOUR_C_ASSERT_ALWAYS(ele != nullptr,
         "Failed to build an element from the element data for discretization %s", name_.c_str());
     ele->set_owner(Core::Communication::my_mpi_rank(*comm_));
     add_element(std::shared_ptr<Core::Elements::Element>(ele));
@@ -719,7 +719,7 @@ void Core::FE::Discretization::unpack_my_nodes(std::vector<char>& e)
   {
     Core::Communication::ParObject* o = Core::Communication::factory(buffer);
     auto* node = dynamic_cast<Core::Nodes::Node*>(o);
-    FOUR_C_THROW_UNLESS(node != nullptr,
+    FOUR_C_ASSERT_ALWAYS(node != nullptr,
         "Failed to build a node from the node data for discretization %s", name_.c_str());
     node->set_owner(Core::Communication::my_mpi_rank(*comm_));
     add_node(std::shared_ptr<Core::Nodes::Node>(node));

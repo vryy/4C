@@ -2324,7 +2324,7 @@ void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(Core::Elements::El
 {
   if (get_averaging_strategy() == Inpar::XFEM::Xfluid_Sided) return;
 
-  FOUR_C_THROW_UNLESS(coupl_ele->shape() == Core::FE::CellType::hex8,
+  FOUR_C_ASSERT_ALWAYS(coupl_ele->shape() == Core::FE::CellType::hex8,
       "XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress is currently only implemented for "
       "hex8 elements");
 
@@ -2387,7 +2387,7 @@ void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(Core::Elements::El
     for (int col = 0; col < NUMDOF_SOH8; ++col) dtraction_dd_l(col, i) = dtraction_dd_i_l(col, 0);
   }
 
-  FOUR_C_THROW_UNLESS(timefac_ > 0,
+  FOUR_C_ASSERT_ALWAYS(timefac_ > 0,
       "XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress: timefac = %f, not set!", timefac_);
 
   // Change from linearization w.r.t. displacements to linearization w.r.t. velocities

@@ -27,12 +27,12 @@ namespace Core
 {
   namespace Internal
   {
-    void throw_error(const char* file_name, int line_number, const std::string& format, ...)
+    void ErrorHelper::throw_error(const std::string& format, ...) const
     {
-      throw_error(file_name, line_number, format.c_str());
+      throw_error(format.c_str());
     }
 
-    void throw_error(const char* file_name, int line_number, const char* format, ...)
+    void ErrorHelper::throw_error(const char* format, ...) const
     {
       int initialized;
       MPI_Initialized(&initialized);
@@ -54,7 +54,11 @@ namespace Core
       std::stringstream compound_message;
       compound_message << "PROC " << myrank << " ERROR in " << file_name << ", line " << line_number
                        << ":\n";
-      compound_message << formatted_msg;
+
+      if (failed_assertion_string != nullptr)
+        compound_message << "The following test failed:\n  " << failed_assertion_string << "\n";
+
+      compound_message << "Error message:\n  " << formatted_msg;
       compound_message << "\n------------------\n";
 
       throw Core::Exception(compound_message.str());
@@ -96,7 +100,7 @@ namespace Core
   }
 
   // This number tells the stack trace class to skip a certain number of frames that are introduced
-  // by our exception framework itself. Users are not interested in these calls, and provding them
+  // by our exception framework itself. Users are not interested in these calls, and providing them
   // exposes unnecessary details.
   constexpr std::size_t skip_frames = 2;
 

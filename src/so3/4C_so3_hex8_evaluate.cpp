@@ -3123,7 +3123,7 @@ void Discret::Elements::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
     Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
     double* d_cauchyndir_dc)
 {
-  FOUR_C_THROW_UNLESS(eastype_ == soh8_easnone && !Prestress::is_mulf(),
+  FOUR_C_ASSERT_ALWAYS(eastype_ == soh8_easnone && !Prestress::is_mulf(),
       "Evaluation of the Cauchy stress is not possible for EAS-elements or MULF prestressing.");
   if (temp || d_cauchyndir_dT || d2_cauchyndir_dd_dT)
     FOUR_C_THROW("Thermo-elastic Nitsche contact not yet implemented in so hex8");

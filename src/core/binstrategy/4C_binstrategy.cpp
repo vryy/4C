@@ -182,13 +182,13 @@ Core::Binstrategy::BinningStrategy::BinningStrategy(const Teuchos::ParameterList
 
   if (not feasibleboxinput)
   {
-    FOUR_C_THROW_UNLESS(discret.size() != 0, "We need a discretization at this point.");
+    FOUR_C_ASSERT_ALWAYS(discret.size() != 0, "We need a discretization at this point.");
     compute_min_binning_domain_containing_all_elements_of_multiple_discrets(
         discret, disnp, domain_bounding_box_corner_positions_, bin_size_lower_bound_ < 0.0);
   }
   else if (bin_size_lower_bound_ < 0.0)
   {
-    FOUR_C_THROW_UNLESS(discret.size() != 0, "We need a discretization at this point.");
+    FOUR_C_ASSERT_ALWAYS(discret.size() != 0, "We need a discretization at this point.");
     bin_size_lower_bound_ =
         compute_lower_bound_for_bin_size_as_max_edge_length_of_aabb_of_largest_ele(discret, disnp);
   }
@@ -1003,7 +1003,7 @@ void Core::Binstrategy::BinningStrategy::distribute_row_nodes_to_bins(
     convert_pos_to_ijk(coords, ijk);
     const int binid = convert_ijk_to_gid(ijk);
 
-    FOUR_C_THROW_UNLESS(binid != -1,
+    FOUR_C_ASSERT_ALWAYS(binid != -1,
         "Node %i in your discretization resides outside the binning \n"
         "domain, this does not work at this point.",
         node->id());
@@ -1566,7 +1566,7 @@ void Core::Binstrategy::BinningStrategy::
   if (set_bin_size_lower_bound_) bin_size_lower_bound_ = 0.0;
 
   // safety check
-  FOUR_C_THROW_UNLESS(discret[0]->node_row_map()->NumMyElements() > 0,
+  FOUR_C_ASSERT_ALWAYS(discret[0]->node_row_map()->NumMyElements() > 0,
       "At least one proc does not even own at least one element, this leads to problems."
       " Choose less procs or change parallel distribution");
 
@@ -1675,8 +1675,8 @@ void Core::Binstrategy::BinningStrategy::
     inv_bin_size_[dim] = 1.0 / bin_size_[dim];
   }
 
-  FOUR_C_THROW_UNLESS(id_calc_bin_per_dir_[0] * id_calc_bin_per_dir_[1] * id_calc_bin_per_dir_[2] <
-                          std::numeric_limits<int>::max(),
+  FOUR_C_ASSERT_ALWAYS(id_calc_bin_per_dir_[0] * id_calc_bin_per_dir_[1] * id_calc_bin_per_dir_[2] <
+                           std::numeric_limits<int>::max(),
       "number of bins is larger than an integer can hold! Reduce number of bins by increasing "
       "the bin_size_lower_bound_");
 

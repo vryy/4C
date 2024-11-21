@@ -88,7 +88,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
   if (contactconditions.size() == 1)
   {
     const std::string side = contactconditions[0]->parameters().get<std::string>("Side");
-    FOUR_C_THROW_UNLESS(side == "Selfcontact", "Not enough contact conditions in discretization");
+    FOUR_C_ASSERT_ALWAYS(side == "Selfcontact", "Not enough contact conditions in discretization");
   }
 
   // find all pairs of matching contact conditions

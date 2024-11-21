@@ -56,7 +56,7 @@ namespace
   {
     auto* monolithic_material = dynamic_cast<Mat::MonolithicSolidScalarMaterial*>(&solid_material);
 
-    FOUR_C_THROW_UNLESS(
+    FOUR_C_ASSERT_ALWAYS(
         monolithic_material, "Your material does not allow to evaluate a monolithic ssi material!");
 
     // The derivative of the solid stress w.r.t. the scalar is implemented in the normal
@@ -123,7 +123,7 @@ namespace
     {
       if (discretization.has_state(field_index, field_name))
       {
-        FOUR_C_THROW_UNLESS(!detected_field_index.has_value(),
+        FOUR_C_ASSERT_ALWAYS(!detected_field_index.has_value(),
             "There are multiple dofsets with the field name %s in the discretization. Found %s at "
             "least in dofset %d and %d.",
             field_name.c_str(), *detected_field_index, field_index);

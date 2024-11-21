@@ -116,7 +116,7 @@ Core::Communication::ParObject* Core::Communication::ParObjectFactory::create(
 
   ParObject* o = i->second->create(buffer);
 
-  FOUR_C_THROW_UNLESS(o, "failed to create object of type %d", type);
+  FOUR_C_ASSERT_ALWAYS(o, "failed to create object of type %d", type);
 
   return o;
 }

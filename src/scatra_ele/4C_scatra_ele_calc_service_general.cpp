@@ -1741,7 +1741,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
 
     case Inpar::ScaTra::calcerror_spherediffusion:
     {
-      FOUR_C_THROW_UNLESS(nsd_ == 3, "Sphere diffusion only implemented for 3D!");
+      FOUR_C_ASSERT_ALWAYS(nsd_ == 3, "Sphere diffusion only implemented for 3D!");
       // analytical solution
       double phi_exact(0.0);
       double deltaphi(0.0);
