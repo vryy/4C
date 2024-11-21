@@ -70,8 +70,6 @@ std::shared_ptr<Mat::ViscoplasticLaws> Mat::ViscoplasticLaws::factory(int matnum
     default:
       FOUR_C_THROW("cannot deal with type %d", curmat->type());
   }
-  // dummy return
-  return nullptr;
 }
 
 

@@ -167,6 +167,72 @@ namespace Mat
     explicit MultiplicativeSplitDefgradElastHyper(
         Mat::PAR::MultiplicativeSplitDefgradElastHyper* params);
 
+    /// struct containing various kinematic quantities for the model evaluation
+    struct KinematicQuantities
+    {
+      // ----- elasticity tensor components ----- //
+
+      /// part of the elasticity tensor as shown in evaluate_stress_cmat_iso
+      Core::LinAlg::Matrix<6, 6> cmatiso{true};
+      /// Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic deformation
+      /// gradient
+      Core::LinAlg::Matrix<6, 9> dSdiFin{true};
+      /// additional elasticity tensor \f$ cmat_{add} \f$
+      Core::LinAlg::Matrix<6, 6> cmatadd{true};
+
+      // ----- variables of kinetic quantities ----- //
+
+      /// inverse right Cauchy-Green tensor \f$ \mathbf{C}^{-1} \f$ stored as 6x1 vector
+      Core::LinAlg::Matrix<6, 1> iCV{true};
+      /// inverse inelastic right Cauchy-Green tensor \f$\mathbf{C}_\text{in}^{-1}\f$ stored as 6x1
+      /// vector
+      Core::LinAlg::Matrix<6, 1> iCinV{true};
+      /// \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \cdot \mathbf{C}_\text{in}^{-1} \f$ stored
+      /// as 6x1 vector
+      Core::LinAlg::Matrix<6, 1> iCinCiCinV{true};
+      /// \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \f$
+      Core::LinAlg::Matrix<3, 3> iCinCM{true};
+      ///\f$ \mathbf{F}_\text{in}^{-1} \cdot \mathbf{C}_\text{el} \f$
+      Core::LinAlg::Matrix<3, 3> iFinCeM{true};
+      /// \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \f$ stored as 9x1 vector
+      Core::LinAlg::Matrix<9, 1> CiFin9x1{true};
+      ///\f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \cdot \mathbf{C}_\text{el} \f$ stored as 9x1
+      /// vector
+      Core::LinAlg::Matrix<9, 1> CiFinCe9x1{true};
+      /// \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \cdot \mathbf{C}_\text{el}^{-1} \f$ stored
+      /// as 9x1 vector
+      Core::LinAlg::Matrix<9, 1> CiFiniCe9x1{true};
+      /// principal invariants of the elastic right Cauchy-Green tensor
+      Core::LinAlg::Matrix<3, 1> prinv{true};
+      /// partial derivative of the elastic right Cauchy-Green tensor w.r.t. right Cauchy-Green
+      /// tensor \f$ \frac{\partial \boldsymbol{C}_\text{e}}{\partial \boldsymbol{C}} \f$ (Voigt
+      /// stress-stress notation)
+      Core::LinAlg::Matrix<6, 6> dCedC{true};
+      /// partial derivative of the elastic right Cauchy-Green tensor w.r.t. inelastic deformation
+      /// gradient \f$ \frac{\partial \boldsymbol{C}_\text{e}}{\partial \boldsymbol{F} _\text{in} ^
+      /// { -1 }} \f$(Voigt stress notation)
+      Core::LinAlg::Matrix<6, 9> dCediFin{true};
+      /// inverse inelastic deformation gradient
+      Core::LinAlg::Matrix<3, 3> iFinM{true};
+      /// determinant of the inelastic deformation gradient
+      double detFin = 1.0;
+
+      // ----- derivatives of principal invariants ----- //
+
+      /// first derivatives of principle invariants
+      Core::LinAlg::Matrix<3, 1> dPIe{true};
+      /// second derivatives of principle invariants
+      Core::LinAlg::Matrix<6, 1> ddPIIe{true};
+
+      // ----- gamma and delta factors ----- //
+
+      // 2nd Piola Kirchhoff stresses factors (according to Holzapfel-Nonlinear Solid Mechanics p.
+      // 216)
+      Core::LinAlg::Matrix<3, 1> gamma{true};
+      // constitutive tensor factors (according to Holzapfel-Nonlinear Solid Mechanics p. 261)
+      Core::LinAlg::Matrix<8, 1> delta{true};
+    };
+
     int unique_par_object_id() const override
     {
       return MultiplicativeSplitDefgradElastHyperType::instance().unique_par_object_id();
@@ -258,60 +324,26 @@ namespace Mat
      * @brief  Evaluate derivative of 2nd Piola Kirchhoff stresses w.r.t. the inelastic deformation
      * gradient for the isotropic components
      *
-     * @param[in] gamma  Factors for stress calculation (see e.g. Holzapfel - Nonlinear Solid
-     *                   Mechanics)
-     * @param[in] delta  Factors for elasticity tensor calculation (see e.g. Holzapfel  - Nonlinear
-     *                   Solid Mechanics)
-     * @param[in] iFinM   Inverse inelastic deformation gradient
-     * @param[in] iCinCM  \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \f$
-     * @param[in] iCinV   Inverse inelastic right Cauchy-Green tensor
-     * \f$\mathbf{C}_\text{in}^{-1}\f$ stored as 6x1 vector
-     * @param[in] CiFin9x1    \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \f$ stored as 9x1
-     * vector
-     * @param[in] CiFinCe9x1  \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \cdot
-     * \mathbf{C}_\text{el} \f$ stored as 9x1 vector
-     * @param[in] iCinCiCinV    \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \cdot
-     *                          \mathbf{C}_\text{in}^{-1} \f$ stored as 6x1 vector
-     * @param[in] CiFiniCe9x1   \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \cdot
-     *                          \mathbf{C}_\text{el}^{-1} \f$ stored as 9x1 vector
-     * @param[in] iCV           Inverse right Cauchy-Green tensor \f$ \mathbf{C}^{-1} \f$ stored as
-     *                          6x1 vector
-     * @param[in] iFinCeM       \f$ \mathbf{F}_\text{in}^{-1} \cdot \mathbf{C}_\text{el} \f$
-     * @param[in] detFin        determinant of inelastic deformation gradient
-     * @param[out] dSdiFin      derivative of 2nd Piola Kirchhoff stresses w.r.t. inverse inelastic
-     *                          deformation gradient
+     * @param[in, out] kinemat_quant struct containing the kinematic quantities and the elasticity
+     * tensor components
      */
-    void evaluated_sdi_fin(const Core::LinAlg::Matrix<3, 1>& gamma,
-        const Core::LinAlg::Matrix<8, 1>& delta, const Core::LinAlg::Matrix<3, 3>& iFinM,
-        const Core::LinAlg::Matrix<3, 3>& iCinCM, const Core::LinAlg::Matrix<6, 1>& iCinV,
-        const Core::LinAlg::Matrix<9, 1>& CiFin9x1, const Core::LinAlg::Matrix<9, 1>& CiFinCe9x1,
-        const Core::LinAlg::Matrix<6, 1>& iCinCiCinV, const Core::LinAlg::Matrix<9, 1>& CiFiniCe9x1,
-        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<3, 3>& iFinCeM,
-        double detFin, Core::LinAlg::Matrix<6, 9>& dSdiFin) const;
+    void evaluated_sdi_fin(KinematicQuantities& kinemat_quant) const;
 
     /*!
      * @brief  Evaluate the stress and stiffness components of the transversely isotropic components
      * separately
      *
-     * @param[in] iFinM   Inverse inelastic deformation gradient
+     * @param[in, out] kinemat_quant struct containing the kinematic quantities and the elasticity
+     * tensor components
      * @param[in] CM Right CG deformation tensor
-     * @param[in] dCedC         Partial derivative of the elastic right CG tensor w.r.t. right CG
-     *                           tensor (Voigt stress-stress notation)
-     * @param[in] dCediFin      Partial derivative of the elastic right CG tensor w.r.t. inelastic
-     *                           deformation gradient (Voigt stress notation)
      * \param[in]  params additional parameters for comp. of material properties
      * \param[in]  gp       Gauss point
      * \param[in]  eleGID element GID
-     * @param[out] dSdiFin      derivative of 2nd Piola Kirchhoff stresses w.r.t. inverse inelastic
-     *                          deformation gradient (Voigt stress-notation)
      * @param[out] stress   2nd Piola--Kirchhoff stress tensor
-     * @param[out] cmatiso  part of the elasticity tensor as shown in evaluate_stress_cmat_iso
      */
-    void evaluate_transv_iso_quantities(const Core::LinAlg::Matrix<3, 3>& iFinM,
-        const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<6, 6>& dCedC,
-        const Core::LinAlg::Matrix<6, 9>& dCediFin, Teuchos::ParameterList& params, const int gp,
-        const int eleGID, Core::LinAlg::Matrix<6, 9>& dSdiFin, Core::LinAlg::Matrix<6, 1>& stress,
-        Core::LinAlg::Matrix<6, 6>& cmatiso) const;
+    void evaluate_transv_iso_quantities(KinematicQuantities& kinemat_quant,
+        const Core::LinAlg::Matrix<3, 3>& CM, Teuchos::ParameterList& params, const int gp,
+        const int eleGID, Core::LinAlg::Matrix<6, 1>& stress) const;
 
     /*!
      * @brief Evaluates stress and cmat
@@ -359,61 +391,23 @@ namespace Mat
      *   A^{-1}_{ad} A^{-1}_{bc}); \text{ for } A_{ab} = A_{ba}
      * \f] meaning a symmetric 2-tensor \f$A\f$
      *
-     * @param[in] iCV     Inverse right Cauchy-Green tensor \f$ \mathbf{C}^{-1} \f$ stored as 6x1
-     *                    vector
-     * @param[in] iCinV   Inverse inelastic right Cauchy-Green tensor
-     * \f$\mathbf{C}_\text{in}^{-1}\f$ stored as 6x1 vector
-     * @param[in] iCinCiCinV  \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \cdot
-     *                        \mathbf{C}_\text{in}^{-1} \f$ stored as 6x1 vector
-     * @param[in] gamma  Factors for stress calculation (see e.g. Holzapfel - Nonlinear Solid
-     *                   Mechanics)
-     * @param[in] delta  Factors for elasticity tensor calculation (see e.g. Holzapfel  - Nonlinear
-     *                   Solid Mechanics)
-     * @param[in] detFin    determinant of inelastic deformation gradient
+     * @param[in, out] kinemat_quant struct containing the kinematic quantities and the elasticity
+     * tensor components
      * @param[out] stress   2nd Piola--Kirchhoff stress tensor
-     * @param[out] cmatiso  part of the elasticity tensor as shown above
      */
-    void evaluate_stress_cmat_iso(const Core::LinAlg::Matrix<6, 1>& iCV,
-        const Core::LinAlg::Matrix<6, 1>& iCinV, const Core::LinAlg::Matrix<6, 1>& iCinCiCinV,
-        const Core::LinAlg::Matrix<3, 1>& gamma, const Core::LinAlg::Matrix<8, 1>& delta,
-        double detFin, Core::LinAlg::Matrix<6, 1>& stress,
-        Core::LinAlg::Matrix<6, 6>& cmatiso) const;
+    void evaluate_stress_cmat_iso(
+        KinematicQuantities& kinemat_quant, Core::LinAlg::Matrix<6, 1>& stress) const;
 
     /*!
      * @brief Evaluates some kinematic quantities that are used in stress and elasticity tensor
      * calculation
      *
      * @param[in] defgrad  Deformation gradient
-     * @param[in] iFinM    Inverse inelastic deformation gradient
-     * @param[out] iCinV   Inverse inelastic right Cauchy-Green tensor
-     * \f$\mathbf{C}_\text{in}^{-1}\f$ stored as 6x1 vector
-     * @param[out] iCinCiCinV  \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \cdot
-     *                         \mathbf{C}_\text{in}^{-1} \f$ stored as 6x1 vector
-     * @param[out] iCV         Inverse right Cauchy-Green tensor \f$ \mathbf{C}^{-1} \f$ stored as
-     * 6x1 vector
-     * @param[out] iCinCM      \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \f$
-     * @param[out] iFinCeM     \f$ \mathbf{F}_\text{in}^{-1} \cdot \mathbf{C}_\text{el} \f$
-     * @param[out] CiFin9x1    \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \f$ stored as 9x1
-     * vector
-     * @param[out] CiFinCe9x1  \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \cdot
-     *                         \mathbf{C}_\text{el} \f$ stored as 9x1 vector
-     * @param[out] CiFiniCe9x1   \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \cdot
-     *                           \mathbf{C}_\text{el}^{-1} \f$ stored as 9x1 vector
-     * @param[out] prinv         Principal invariants of the elastic right Cauchy-Green tensor
-     * @param[out] dCedC         Partial derivative of the elastic right Cauchy-Green tensor w.r.t.
-     * right Cauchy-Green tensor \f$ \frac{\partial \boldsymbol{C}_\text{e}}{\partial
-     * \boldsymbol{C}} \f$ (Voigt stress-stress notation)
-     * @param[out] dCediFin      Partial derivative of the elastic right Cauchy-Green tensor w.r.t.
-     * inelastic deformation gradient \f$ \frac{\partial \boldsymbol{C}_\text{e}}{\partial
-     *                           \boldsymbol{F}_\text{in}^{-1}} \f$ (Voigt stress notation)
+     * @param[out] kinemat_quant struct containing the kinematic quantities and the elasticity
+     * tensor components
      */
-    void evaluate_kin_quant_elast(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinM, Core::LinAlg::Matrix<6, 1>& iCinV,
-        Core::LinAlg::Matrix<6, 1>& iCinCiCinV, Core::LinAlg::Matrix<6, 1>& iCV,
-        Core::LinAlg::Matrix<3, 3>& iCinCM, Core::LinAlg::Matrix<3, 3>& iFinCeM,
-        Core::LinAlg::Matrix<9, 1>& CiFin9x1, Core::LinAlg::Matrix<9, 1>& CiFinCe9x1,
-        Core::LinAlg::Matrix<9, 1>& CiFiniCe9x1, Core::LinAlg::Matrix<3, 1>& prinv,
-        Core::LinAlg::Matrix<6, 6>& dCedC, Core::LinAlg::Matrix<6, 9>& dCediFin) const;
+    void evaluate_kin_quant_elast(
+        const Core::LinAlg::Matrix<3, 3>* defgrad, KinematicQuantities& kinemat_quant) const;
 
     /*!
      * @brief calculates the derivatives of the hyper-elastic laws with respect to the invariants
@@ -459,6 +453,11 @@ namespace Mat
 
     /// map to elastic materials/potential summands (only transversely isotropic)
     std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>> potsumel_transviso_;
+
+    KinematicQuantities evaluate_kinematic_quantities(
+        const Mat::MultiplicativeSplitDefgradElastHyper& splitdefgrd,
+        Mat::InelasticFactorsHandler& inelastic_factors_handler,
+        const Core::LinAlg::Matrix<3, 3>& defgrad, const int gp, const int eleGID);
   };
 
 }  // namespace Mat

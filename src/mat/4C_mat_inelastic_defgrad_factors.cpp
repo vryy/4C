@@ -730,7 +730,7 @@ std::shared_ptr<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::fact
       // construct fiber reader
       auto *fiber_reader_params = Global::Problem::instance(probinst)->materials()->parameter_by_id(
           params->fiber_reader_gid());
-      FOUR_C_THROW_UNLESS(
+      FOUR_C_ASSERT_ALWAYS(
           fiber_reader_params->type() == Core::Materials::mes_couptransverselyisotropic,
           "Provided fiber reader material is not of the correct type (hyperelastic, transversely "
           "isotropic: ELAST_CoupTransverselyIsotropic)!");
@@ -744,7 +744,7 @@ std::shared_ptr<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::fact
       {
         // create elastic component
         auto elastic_summand = Mat::Elastic::Summand::factory(matid_elastic);
-        FOUR_C_THROW_UNLESS(elastic_summand != nullptr, "Failed to allocate");
+        FOUR_C_ASSERT_ALWAYS(elastic_summand != nullptr, "Failed to allocate");
         // add to the list of elastic components
         if (elastic_summand->material_type() == Core::Materials::mes_couptransverselyisotropic)
         {
@@ -765,8 +765,6 @@ std::shared_ptr<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::fact
     default:
       FOUR_C_THROW("cannot deal with type %d", curmat->type());
   }
-  // dummy return
-  return nullptr;
 }
 
 /*--------------------------------------------------------------------*
@@ -2973,7 +2971,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
         // proceed with a smaller time step in the substepping scheme!
         if (iter > max_iter)
         {
-          FOUR_C_THROW_UNLESS(time_step_halving_counter <= parameter()->max_halve_number(),
+          FOUR_C_ASSERT_ALWAYS(time_step_halving_counter <= parameter()->max_halve_number(),
               "Local Newton-Raphson Loop in InelasticDefgradTransvIsotropElastViscoplast"
               "material has "
               "not "

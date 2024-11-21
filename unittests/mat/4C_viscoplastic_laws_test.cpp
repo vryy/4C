@@ -12,6 +12,7 @@
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_viscoplastic_laws.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 #include <memory>
 namespace
@@ -54,14 +55,6 @@ namespace
       viscoplastic_law_reformulated_JC_->pre_evaluate(0);
     }
 
-    void TearDown() override
-    {
-      // We need to make sure the Global::Problem instance created in SetUp is deleted again. If
-      // this is not done, some troubles arise where unit tests influence each other on some
-      // configurations. We suspect that missing singleton destruction might be the reason for that.
-      Global::Problem::done();
-    }
-
     // equivalent stress
     double equiv_stress_;
     // equivalent stress
@@ -78,6 +71,8 @@ namespace
     // pointer to parameters of ViscoplasticLawReformulatedJohnsonCook
     std::shared_ptr<Mat::PAR::ViscoplasticLawReformulatedJohnsonCook>
         params_viscoplastic_law_reformulated_JC_;
+
+    Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };
 
   TEST_F(ViscoplasticLawsTest, TestEvaluateStressRatio)
