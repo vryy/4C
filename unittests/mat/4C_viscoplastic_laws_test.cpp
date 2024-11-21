@@ -34,10 +34,6 @@ namespace
       viscoplastic_law_reformulated_JC_data.add("INIT_YIELD_STRENGTH", 792.0);
       viscoplastic_law_reformulated_JC_data.add("ISOTROP_HARDEN_PREFAC", 510.0);
       viscoplastic_law_reformulated_JC_data.add("ISOTROP_HARDEN_EXP", 0.26);
-      viscoplastic_law_reformulated_JC_data.add("SIM_TEMPERATURE", 293.0);
-      viscoplastic_law_reformulated_JC_data.add("MELT_TEMPERATURE", 1793.0);
-      viscoplastic_law_reformulated_JC_data.add("REF_TEMPERATURE", 293.0);
-      viscoplastic_law_reformulated_JC_data.add("TEMPERATURE_EXP", 1.03);
       params_viscoplastic_law_reformulated_JC_ =
           std::dynamic_pointer_cast<Mat::PAR::ViscoplasticLawReformulatedJohnsonCook>(
               std::shared_ptr(Mat::make_parameter(1,

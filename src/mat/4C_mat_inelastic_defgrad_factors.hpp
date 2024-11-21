@@ -315,6 +315,33 @@ namespace Mat
       [[nodiscard]] int max_halve_number() const { return max_halve_number_; };
 
 
+      //! read anisotropy type (true: transversely-isotropic, false: isotropic)
+      bool read_anisotropy_type(std::string anisotropy_type)
+      {
+        // define naming types
+        const std::array<std::string, 3> transv_isotropy_names{
+            "transvisotrop", "transverseisotropic", "transverselyisotropic"};
+        const std::array<std::string, 2> isotropy_names{"isotrop", "isotropic"};
+
+
+        if (std::find(transv_isotropy_names.begin(), transv_isotropy_names.end(),
+                anisotropy_type) != transv_isotropy_names.end())
+        {
+          return true;
+        }
+        else if (std::find(isotropy_names.begin(), isotropy_names.end(), anisotropy_type) !=
+                 isotropy_names.end())
+        {
+          return false;
+        }
+        else
+        {
+          FOUR_C_THROW(
+              "Given anisotropy type %s not defined for InelasticDefgradTransvIsotropViscoplast",
+              anisotropy_type.c_str());
+        }
+      };
+
      private:
       //! ID of the viscoplasticity law
       const int viscoplastic_law_id_;

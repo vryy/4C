@@ -617,11 +617,13 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
       yield_cond_a_(matdata.parameters.get<double>("YIELD_COND_A")),
       yield_cond_b_(matdata.parameters.get<double>("YIELD_COND_B")),
       yield_cond_f_(matdata.parameters.get<double>("YIELD_COND_F")),
-      bool_transv_isotropy_(matdata.parameters.get<bool>("TRANSV_ISOTROPY")),
+      bool_transv_isotropy_(
+          read_anisotropy_type(matdata.parameters.get<std::string>("ANISOTROPY"))),
       bool_log_substepping_(matdata.parameters.get<bool>("LOG_SUBSTEP")),
       max_halve_number_(matdata.parameters.get<int>("MAX_HALVE_NUM_SUBSTEP"))
 {
 }
+
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
@@ -1747,8 +1749,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
     // initialize empty parameter list
     Teuchos::ParameterList param_list{};
 
-    // loop through all transversely isotropic parts, and compute the additional elastic stress and
-    // elastic stiffness
+    // loop through all transversely isotropic parts, and compute the additional elastic stress
+    // and elastic stiffness
     Core::LinAlg::Matrix<6, 1> SeV(true);
     for (auto &p : potsumel_transviso_)
     {
@@ -2138,8 +2140,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
   // recompute flow direction in stress form
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(NpM, NpV);
 
-  // we use the Hill 1949 yield condition, adapted for transversely isotropic materials -> get yield
-  // condition parameters A, B, and F
+  // we use the Hill 1949 yield condition, adapted for transversely isotropic materials -> get
+  // yield condition parameters A, B, and F
   const double A = parameter()->yield_cond_a();
   const double B = parameter()->yield_cond_b();
   const double F = parameter()->yield_cond_f();
@@ -2302,8 +2304,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
   double min_dt = time_step_settings_.dt_;
   if (parameter()->bool_log_substepping())
   {
-    min_dt = 1.0e-100;  // when using logarithmic substepping, set to extremely small value to avoid
-                        // built-in overflow error check
+    min_dt = 1.0e-100;  // when using logarithmic substepping, set to extremely small value to
+                        // avoid built-in overflow error check
   }
 
   // calculate linearization term only if we have plastic strain
@@ -2386,8 +2388,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
     catch (...)
     {
       // ----- FD-based linearization ----- //
-      // approximation using perturbations of the right Cauchy-Green deformation tensor, inspired by
-      // the procedure described in Miehe et al. (1995)
+      // approximation using perturbations of the right Cauchy-Green deformation tensor, inspired
+      // by the procedure described in Miehe et al. (1995)
 
       // auxiliaries
       Core::LinAlg::Matrix<3, 3> temp3x3(true);
@@ -2405,8 +2407,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
       Core::LinAlg::Voigt::matrix_3x3_to_9x1(
           time_step_quantities_.current_plastic_defgrd_inverse_[gp_], iFinV);
 
-      // derivative of inverse inelastic deformation gradient w.r.t. right Cauchy-Green deformation
-      // tensor, to be evaluated in the FD-based procedure
+      // derivative of inverse inelastic deformation gradient w.r.t. right Cauchy-Green
+      // deformation tensor, to be evaluated in the FD-based procedure
       Core::LinAlg::Matrix<9, 6> diFindC_FD(true);
 
       // declare perturbed variables
@@ -2512,8 +2514,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
         time_step_quantities_.current_plastic_defgrd_inverse_[gp_] = iFinM;
         time_step_quantities_.current_plastic_strain_[gp_] = plastic_strain_pred;
       }
-    }  // predictor does not suffice: error is thrown in order to reroute to the catch block, where
-       // time integration is performed
+    }  // predictor does not suffice: error is thrown in order to reroute to the catch block,
+       // where time integration is performed
     else
     {
       throw std::runtime_error(
@@ -2522,7 +2524,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
   }
   catch (...)
   {
-    // perform time integration via the Local Newton-Raphson Loop (LNL), using the elastic predictor
+    // perform time integration via the Local Newton-Raphson Loop (LNL), using the elastic
+    // predictor
     Core::LinAlg::Matrix<10, 1> x = wrap_unknowns(iFinM_pred, plastic_strain_pred);
     Core::LinAlg::Matrix<10, 1> sol = local_newton_loop(FredM, x);
 
@@ -2668,8 +2671,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::unpack_inelastic(
       time_step_quantities_.last_plastic_strain_[0]);  // value irrelevant
 
 
-  // now that the fiber direction is available, we set the material-dependent constant tensors with
-  // it
+  // now that the fiber direction is available, we set the material-dependent constant tensors
+  // with it
   const_mat_tensors_.set_material_const_tensors(m_);
 }
 
@@ -2770,7 +2773,8 @@ Core::LinAlg::Matrix<10, 10> Mat::InelasticDefgradTransvIsotropElastViscoplast::
 
   // declare Jacobian component blocks
 
-  // derivative of residual for inelastic deformation gradient w.r.t. inelastic deformation gradient
+  // derivative of residual for inelastic deformation gradient w.r.t. inelastic deformation
+  // gradient
   Core::LinAlg::Matrix<9, 9> J_iFin_iFin(true);
   // derivative of residual for inelastic deformation gradient w.r.t. plastic strain
   Core::LinAlg::Matrix<9, 1> J_iFin_epsp(true);
@@ -2782,8 +2786,8 @@ Core::LinAlg::Matrix<10, 10> Mat::InelasticDefgradTransvIsotropElastViscoplast::
   // standard substepping
   if (!parameter()->bool_log_substepping())
   {
-    // compute 9x9 north-west component block of the Jacobian (derivative of residual for inelastic
-    // deformation gradient w.r.t. inelastic deformation gradient)
+    // compute 9x9 north-west component block of the Jacobian (derivative of residual for
+    // inelastic deformation gradient w.r.t. inelastic deformation gradient)
     Core::LinAlg::Tensor::multiply_matrix_four_tensor<3>(
         tempFourTensor, last_iFinM, dEpdiFin_FourTensor, true);
     Core::LinAlg::Voigt::setup_9x9_voigt_matrix_from_four_tensor(temp9x9, tempFourTensor);
@@ -2793,8 +2797,8 @@ Core::LinAlg::Matrix<10, 10> Mat::InelasticDefgradTransvIsotropElastViscoplast::
     Core::LinAlg::Matrix<3, 3> dEpdepsp_M(true);
     Core::LinAlg::Voigt::matrix_9x1_to_3x3(state_quantity_derivatives_.curr_dEpdepsp_, dEpdepsp_M);
 
-    // compute 9x1 north-east component block of the Jacobian (derivative of residual for inelastic
-    // deformation gradient w.r.t. plastic strain)
+    // compute 9x1 north-east component block of the Jacobian (derivative of residual for
+    // inelastic deformation gradient w.r.t. plastic strain)
     temp3x3.multiply_nn(-1.0, last_iFinM, dEpdepsp_M, 0.0);
     Core::LinAlg::Voigt::matrix_3x3_to_9x1(temp3x3, J_iFin_epsp);
 
@@ -2810,8 +2814,8 @@ Core::LinAlg::Matrix<10, 10> Mat::InelasticDefgradTransvIsotropElastViscoplast::
   else
   // logarithmic substepping
   {
-    // compute 9x9 north-west component block of the Jacobian (derivative of residual for inelastic
-    // deformation gradient w.r.t. inelastic deformation gradient)
+    // compute 9x9 north-west component block of the Jacobian (derivative of residual for
+    // inelastic deformation gradient w.r.t. inelastic deformation gradient)
     Core::LinAlg::Matrix<3, 3> last_FinM(true);
     last_FinM.invert(last_iFinM);
     Core::LinAlg::Matrix<3, 3> T(true);
@@ -2824,8 +2828,8 @@ Core::LinAlg::Matrix<10, 10> Mat::InelasticDefgradTransvIsotropElastViscoplast::
     dlogTdiFin.multiply_nn(1.0, dlogTdT, dTdiFin, 0.0);
     J_iFin_iFin.update(1.0, dlogTdiFin, int_dt, state_quantity_derivatives_.curr_dlpdiFin_, 0.0);
 
-    // compute 9x1 north-east component block of the Jacobian (derivative of residual for inelastic
-    // deformation gradient w.r.t. plastic strain)
+    // compute 9x1 north-east component block of the Jacobian (derivative of residual for
+    // inelastic deformation gradient w.r.t. plastic strain)
     J_iFin_epsp.update(int_dt, state_quantity_derivatives_.curr_dlpdepsp_, 0.0);
 
     // compute 1x9 south-west component block of the Jacobian (derivative of residual for plastic

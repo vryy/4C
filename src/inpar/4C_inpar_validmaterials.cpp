@@ -2425,8 +2425,10 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
     add_named_real(m, "YIELD_COND_F",
         "transversely isotropic version of the Hill(1948) yield condition: parameter F, following "
         "the notation in Dafalias 1989, International Journal of Plasticity, Vol. 5");
-    add_named_bool(m, "TRANSV_ISOTROPY",
-        "boolean: transversely isotropic (True) or isotropic (False) material behavior?");
+    add_named_string(m, "ANISOTROPY",
+        "Anisotropy type: transversely isotropic (transvisotrop; transverseisotropic; "
+        "transverselyisotropic) | isotropic (isotrop; isotropic; Default)",
+        "isotrop");
     add_named_bool(m, "LOG_SUBSTEP",
         "boolean: time integration of internal variables using logarithmic substepping (True) or "
         "standard substepping (False)?");

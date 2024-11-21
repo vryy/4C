@@ -279,7 +279,8 @@ namespace
       inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("YIELD_COND_A", 1.0);
       inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("YIELD_COND_B", 2.0);
       inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("YIELD_COND_F", 2.5);
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("TRANSV_ISOTROPY", true);
+      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add(
+          "ANISOTROPY", std::string("transvisotrop"));
       inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("LOG_SUBSTEP", true);
       inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("MAX_HALVE_NUM_SUBSTEP", 10);
 
@@ -297,7 +298,7 @@ namespace
       inelastic_defgrad_isotrop_elast_viscoplast_data.add("YIELD_COND_A", 1.0);
       inelastic_defgrad_isotrop_elast_viscoplast_data.add("YIELD_COND_B", 2.0);
       inelastic_defgrad_isotrop_elast_viscoplast_data.add("YIELD_COND_F", 2.5);
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add("TRANSV_ISOTROPY", false);
+      inelastic_defgrad_isotrop_elast_viscoplast_data.add("ANISOTROPY", std::string("isotrop"));
       inelastic_defgrad_isotrop_elast_viscoplast_data.add("LOG_SUBSTEP", true);
       inelastic_defgrad_isotrop_elast_viscoplast_data.add("MAX_HALVE_NUM_SUBSTEP", 10);
       params_isotrop_elast_viscoplast_ =
@@ -329,10 +330,6 @@ namespace
       viscoplastic_law_reformulated_Johnson_Cook_data.add("INIT_YIELD_STRENGTH", 20000.0);
       viscoplastic_law_reformulated_Johnson_Cook_data.add("ISOTROP_HARDEN_PREFAC", 5000.0);
       viscoplastic_law_reformulated_Johnson_Cook_data.add("ISOTROP_HARDEN_EXP", 0.2);
-      viscoplastic_law_reformulated_Johnson_Cook_data.add("SIM_TEMPERATURE", 293.0);
-      viscoplastic_law_reformulated_Johnson_Cook_data.add("MELT_TEMPERATURE", 1793.0);
-      viscoplastic_law_reformulated_Johnson_Cook_data.add("REF_TEMPERATURE", 293.0);
-      viscoplastic_law_reformulated_Johnson_Cook_data.add("TEMPERATURE_EXP", 1.03);
       // add material to problem instance
       problem.materials()->insert(400,
           Mat::make_parameter(400, Core::Materials::MaterialType::mvl_reformulated_Johnson_Cook,
