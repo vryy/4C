@@ -46,6 +46,7 @@ namespace Discret::Elements
     static constexpr bool has_gauss_point_history = false;
     static constexpr bool has_global_history = false;
     static constexpr bool has_preparation_data = true;
+    static constexpr bool has_condensed_contribution = false;
 
     using LinearizationContainer = FBarLinearizationContainer<celltype>;
     using PreparationData = FBarPreparationData<celltype>;

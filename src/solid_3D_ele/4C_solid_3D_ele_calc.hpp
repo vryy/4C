@@ -82,7 +82,7 @@ namespace Discret::Elements
         Core::LinAlg::SerialDenseMatrix* stiffness_matrix,
         Core::LinAlg::SerialDenseMatrix* mass_matrix);
 
-    void recover(const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
+    void recover(Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
         const std::vector<int>& lm, Teuchos::ParameterList& params);
 
     void update(const Core::Elements::Element& ele, Mat::So3Material& solid_material,

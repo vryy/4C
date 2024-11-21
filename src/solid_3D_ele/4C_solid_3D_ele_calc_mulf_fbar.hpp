@@ -107,6 +107,7 @@ namespace Discret::Elements
     static constexpr bool has_global_history = true;
     static constexpr bool has_preparation_data = true;
     static constexpr bool is_prestress_updatable = true;
+    static constexpr bool has_condensed_contribution = false;
 
     using LinearizationContainer = FBarLinearizationContainer<celltype>;
     using GaussPointHistory = MulfHistoryData<celltype>;

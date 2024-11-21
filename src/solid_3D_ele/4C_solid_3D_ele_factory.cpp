@@ -72,7 +72,7 @@ namespace
       Inpar::Solid::KinemType::nonlinearTotLag, Discret::Elements::ElementTechnology::eas_mild,
       Discret::Elements::PrestressTechnology::none>
   {
-    using type = Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
+    using type = Discret::Elements::EASSolidIntegrator<Core::FE::CellType::hex8,
         Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>;
   };
 
@@ -83,7 +83,7 @@ namespace
   struct SolidCalculationFormulation<Core::FE::CellType::hex8, Inpar::Solid::KinemType::linear,
       Discret::Elements::ElementTechnology::eas_mild, Discret::Elements::PrestressTechnology::none>
   {
-    using type = Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
+    using type = Discret::Elements::EASSolidIntegrator<Core::FE::CellType::hex8,
         Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::linear>;
   };
 
@@ -95,7 +95,7 @@ namespace
       Inpar::Solid::KinemType::nonlinearTotLag, Discret::Elements::ElementTechnology::eas_full,
       Discret::Elements::PrestressTechnology::none>
   {
-    using type = Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
+    using type = Discret::Elements::EASSolidIntegrator<Core::FE::CellType::hex8,
         Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::nonlinearTotLag>;
   };
 
@@ -106,7 +106,7 @@ namespace
   struct SolidCalculationFormulation<Core::FE::CellType::hex8, Inpar::Solid::KinemType::linear,
       Discret::Elements::ElementTechnology::eas_full, Discret::Elements::PrestressTechnology::none>
   {
-    using type = Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
+    using type = Discret::Elements::EASSolidIntegrator<Core::FE::CellType::hex8,
         Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::linear>;
   };
 
@@ -118,7 +118,7 @@ namespace
       Inpar::Solid::KinemType::nonlinearTotLag, Discret::Elements::ElementTechnology::shell_eas,
       Discret::Elements::PrestressTechnology::none>
   {
-    using type = Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
+    using type = Discret::Elements::EASSolidIntegrator<Core::FE::CellType::hex8,
         Discret::Elements::EasType::eastype_sh8_7, Inpar::Solid::KinemType::nonlinearTotLag>;
   };
 

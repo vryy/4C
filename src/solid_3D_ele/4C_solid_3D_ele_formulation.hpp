@@ -13,6 +13,7 @@
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
+#include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <tuple>
@@ -22,6 +23,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+// forward declaration
+namespace Solid::Elements
+{
+  class ParamsInterface;
+}
 
 namespace Discret::Elements
 {
@@ -51,6 +57,15 @@ namespace Discret::Elements
    */
   template <typename SolidFormulation>
   constexpr bool has_preparation_data = SolidFormulation::has_preparation_data;
+
+  /*!
+   * @brief a trait for solid formulation determining whether the formulation has a contribution of
+   * condensed dofs (e.g. for EAS)
+   *
+   * @tparam SolidFormulation
+   */
+  template <typename SolidFormulation>
+  constexpr bool has_condensed_contribution = SolidFormulation::has_condensed_contribution;
 
   namespace Internal
   {
@@ -522,6 +537,196 @@ namespace Discret::Elements
         std::tuple_cat(std::forward_as_tuple(xi, shape_functions, linearization, jacobian_mapping,
                            stress, integration_factor),
             Internal::get_additional_tuple(preparation_data, history_data, gp),
+            std::forward_as_tuple(stiffness_matrix)));
+  }
+
+  /*!
+   * @brief Resed any condensed variables before integration. Called before the Gauss-point loop.
+   *
+   * @tparam SolidFormulation
+   * @tparam celltype
+   * @param ele
+   * @param element_nodes
+   * @param preparation_data (in) : Preparation that is forwarded to the solid formulation if needed
+   * @param history_data (in/out) : History data that is forwarded to the solid formulation if
+   * needed
+   */
+  template <typename SolidFormulation, Core::FE::CellType celltype>
+  static inline void reset_condensed_variable_integration(const Core::Elements::Element& ele,
+      const ElementNodes<celltype>& element_nodes,
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data)
+  {
+    std::apply(
+        [](auto&&... args) {
+          SolidFormulation::reset_condensed_variable_integration(
+              std::forward<decltype(args)>(args)...);
+        },
+        std::tuple_cat(std::forward_as_tuple(ele, element_nodes),
+            Internal::get_additional_tuple(preparation_data, history_data)));
+  }
+
+  /*!
+   * @brief Perform the integration of any condensed variables.
+   *
+   * @tparam SolidFormulation
+   * @tparam celltype
+   * @param linearization
+   * @param stress
+   * @param integration_factor
+   * @param preparation_data (in) : Preparation that is forwarded to the solid formulation if needed
+   * @param history_data (in/out) : History data that is forwarded to the solid formulation if
+   * @param gp
+   */
+  template <typename SolidFormulation, Core::FE::CellType celltype>
+  static inline void integrate_condensed_contribution(
+      const typename SolidFormulation::LinearizationContainer& linearization,
+      const Stress<celltype>& stress, const double integration_factor,
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data, const int gp)
+  {
+    // only needed if there are condensed variables
+    std::apply(
+        [](auto&&... args) {
+          SolidFormulation::integrate_condensed_contribution(std::forward<decltype(args)>(args)...);
+        },
+        std::tuple_cat(std::forward_as_tuple(linearization, stress, integration_factor),
+            Internal::get_additional_tuple(preparation_data, history_data, gp)));
+  }
+
+  /*!
+   * @brief Evaluate the contributions of condensed variables
+   *
+   * @tparam SolidFormulation
+   * @param preparation_data (in) : Preparation that is forwarded to the solid formulation if needed
+   * @param history_data (in/out) : History data that is forwarded to the solid formulation if
+   * @return SolidFormulation::CondensedContributionData
+   */
+  template <typename SolidFormulation>
+  static inline typename SolidFormulation::CondensedContributionData prepare_condensed_contribution(
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data)
+  {
+    // only needed if there are condensed variables
+    return std::apply(
+        [](auto&&... args) {
+          return SolidFormulation::prepare_condensed_contribution(
+              std::forward<decltype(args)>(args)...);
+        },
+        Internal::get_additional_tuple(preparation_data, history_data));
+  }
+
+  /*!
+   * @brief Update internal condensed variables
+   *
+   * @tparam SolidFormulation
+   * @tparam celltype
+   * @param ele
+   * @param params_interface
+   * @param element_nodes
+   * @param displacement_increments
+   * @param linesearch_step_length (in) : step length for line search algorithms (default 1.0)
+   * @param preparation_data (in) : Preparation that is forwarded to the solid formulation if needed
+   * @param history_data (in/out) : History data that is forwarded to the solid formulation if
+   */
+  template <typename SolidFormulation, Core::FE::CellType celltype>
+  static inline void update_condensed_variables(const Core::Elements::Element& ele,
+      FourC::Solid::Elements::ParamsInterface* params_interface,
+      const ElementNodes<celltype>& element_nodes,
+      const Core::LinAlg::Matrix<Internal::num_dof_per_ele<celltype>, 1>& displacement_increments,
+      const double linesearch_step_length,
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data)
+  {
+    std::apply([](auto&&... args)
+        { SolidFormulation::update_condensed_variables(std::forward<decltype(args)>(args)...); },
+        std::tuple_cat(std::forward_as_tuple(ele, params_interface, element_nodes,
+                           displacement_increments, linesearch_step_length),
+            Internal::get_additional_tuple(preparation_data, history_data)));
+  }
+
+  /*!
+   * @brief Correction of the condensed variables for line search algorithms
+   *
+   * @tparam SolidFormulation
+   * @param ele
+   * @param params_interface
+   * @param linesearch_step_length (in) : new line search step length
+   * @param preparation_data (in) : Preparation that is forwarded to the solid formulation if needed
+   * @param history_data (in/out) : History data that is forwarded to the solid formulation if
+   */
+  template <typename SolidFormulation>
+  static inline void correct_condensed_variables_for_linesearch(const Core::Elements::Element& ele,
+      FourC::Solid::Elements::ParamsInterface* params_interface,
+      const double linesearch_step_length,
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data)
+  {
+    std::apply(
+        [](auto&&... args)
+        {
+          SolidFormulation::correct_condensed_variables_for_linesearch(
+              std::forward<decltype(args)>(args)...);
+        },
+        std::tuple_cat(std::forward_as_tuple(ele, params_interface, linesearch_step_length),
+            Internal::get_additional_tuple(preparation_data, history_data)));
+  }
+
+  /*!
+   * @brief Add the contributions of condensed variables to the element force vector
+   *
+   * @tparam celltype
+   * @tparam SolidFormulation
+   * @param condensed_contribution_data
+   * @param preparation_data (in) : Preparation that is forwarded to the solid formulation if needed
+   * @param history_data (in/out) : History data that is forwarded to the solid formulation if
+   * @param force_vector
+   */
+  template <Core::FE::CellType celltype, typename SolidFormulation>
+  static inline void add_condensed_contribution_to_force_vector(
+      const typename SolidFormulation::CondensedContributionData& condensed_contribution_data,
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data,
+      Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>, 1>&
+          force_vector)
+  {
+    std::apply(
+        [](auto&&... args)
+        {
+          SolidFormulation::add_condensed_contribution_to_force_vector(
+              std::forward<decltype(args)>(args)...);
+        },
+        std::tuple_cat(std::forward_as_tuple(condensed_contribution_data),
+            Internal::get_additional_tuple(preparation_data, history_data),
+            std::forward_as_tuple(force_vector)));
+  }
+
+  /*!
+   * @brief Add the contributions of condensed variables to the element stiffness matrix
+   *
+   * @tparam celltype
+   * @tparam SolidFormulation
+   * @param condensed_contribution_data
+   * @param preparation_data (in) : Preparation that is forwarded to the solid formulation if needed
+   * @param history_data (in/out) : History data that is forwarded to the solid formulation if
+   * @param stiffness_matrix
+   */
+  template <Core::FE::CellType celltype, typename SolidFormulation>
+  static inline void add_condensed_contribution_to_stiffness_matrix(
+      const typename SolidFormulation::CondensedContributionData& condensed_contribution_data,
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data,
+      Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>,
+          Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>& stiffness_matrix)
+  {
+    std::apply(
+        [](auto&&... args)
+        {
+          SolidFormulation::add_condensed_contribution_to_stiffness_matrix(
+              std::forward<decltype(args)>(args)...);
+        },
+        std::tuple_cat(std::forward_as_tuple(condensed_contribution_data),
+            Internal::get_additional_tuple(preparation_data, history_data),
             std::forward_as_tuple(stiffness_matrix)));
   }
 

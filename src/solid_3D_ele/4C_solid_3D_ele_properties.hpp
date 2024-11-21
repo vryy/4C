@@ -22,10 +22,6 @@ namespace Core::Communication
   class UnpackBuffer;
 }  // namespace Core::Communication
 
-namespace Solid::Elements
-{
-  enum class EasType;
-}
 namespace Discret::Elements
 {
   enum class ElementTechnology
