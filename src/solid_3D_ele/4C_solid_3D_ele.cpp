@@ -73,7 +73,9 @@ void Discret::Elements::SolidType::setup_element_definition(
       get_default_line_definition_builder<Core::FE::CellType::tet10>().build();
 
   defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::wedge6)] =
-      get_default_line_definition_builder<Core::FE::CellType::wedge6>().build();
+      get_default_line_definition_builder<Core::FE::CellType::wedge6>()
+          .add_optional_named_string("TECH")
+          .build();
 
   defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::pyramid5)] =
       get_default_line_definition_builder<Core::FE::CellType::pyramid5>()

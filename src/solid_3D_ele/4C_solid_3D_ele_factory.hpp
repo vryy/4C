@@ -64,7 +64,7 @@ namespace Discret::Elements
         Core::FE::CelltypeSequence<Core::FE::CellType::hex8, Core::FE::CellType::pyramid5>>;
 
     using SolidShellEvaluators = Core::FE::apply_celltype_sequence<ANSSolidShellIntegrator,
-        Core::FE::CelltypeSequence<Core::FE::CellType::hex8>>;
+        Core::FE::CelltypeSequence<Core::FE::CellType::hex8, Core::FE::CellType::wedge6>>;
 
     using SolidEvaluators = Core::FE::Join<DisplacementBasedEvaluators,
         DisplacementBasedLinearKinematicsEvaluators, FbarEvaluators, EASEvaluators, MulfEvaluators,

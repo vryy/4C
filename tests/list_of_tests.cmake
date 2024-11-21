@@ -1436,6 +1436,7 @@ four_c_test(TEST_FILE solid_ele_wedge6_Old_element_fibers.dat NP 2 RESTART_STEP 
 four_c_test(TEST_FILE solid_ele_wedge6_Standard_dynamic.dat NP 2 RESTART_STEP 1)
 four_c_test(TEST_FILE solid_ele_wedge6_Standard_element_fibers.dat NP 2 RESTART_STEP 1)
 four_c_test(TEST_FILE solid_ele_wedge6_Standard_mulf.dat NP 2 RESTART_STEP 1)
+four_c_test(TEST_FILE solid_ele_wedge6_Standard_shell_ans.4C.yaml NP 2 RESTART_STEP 1)
 four_c_test(TEST_FILE solid_ele_wedge6_Standard_stressout.dat NP 2 RESTART_STEP 1)
 four_c_test(TEST_FILE solid_nodal_fiber.dat NP 2 POST_ENSIGHT_STRUCTURE ON)
 four_c_test(TEST_FILE solid_nodal_fiber_eletypes.dat NP 2 POST_ENSIGHT_STRUCTURE ON)

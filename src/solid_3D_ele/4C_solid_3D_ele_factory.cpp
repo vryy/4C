@@ -137,12 +137,13 @@ namespace
   /*!
    * @brief Nonlinear total lagrangian solid-shell formulation with ANS
    */
-  template <>
-  struct SolidCalculationFormulation<Core::FE::CellType::hex8,
-      Inpar::Solid::KinemType::nonlinearTotLag, Discret::Elements::ElementTechnology::shell_ans,
-      Discret::Elements::PrestressTechnology::none>
+  template <Core::FE::CellType celltype>
+  struct SolidCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+      Discret::Elements::ElementTechnology::shell_ans, Discret::Elements::PrestressTechnology::none,
+      std::enable_if_t<celltype == Core::FE::CellType::hex8 ||
+                       celltype == Core::FE::CellType::wedge6>>
   {
-    using type = Discret::Elements::ANSSolidShellIntegrator<Core::FE::CellType::hex8>;
+    using type = Discret::Elements::ANSSolidShellIntegrator<celltype>;
   };
 
   /*!
