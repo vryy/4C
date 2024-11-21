@@ -45,12 +45,31 @@ namespace Core::Utils
   {
    public:
     /**
+     * RAII class to ensure that finalize() is called at the end of scope.
+     */
+    class [[nodiscard]] ScopeGuard
+    {
+     public:
+      ScopeGuard() { SingletonOwnerRegistry::initialize(); }
+      ~ScopeGuard() { SingletonOwnerRegistry::finalize(); }
+
+      // Delete special members.
+      ScopeGuard(const ScopeGuard&) = delete;
+      ScopeGuard(ScopeGuard&&) = delete;
+      ScopeGuard& operator=(const ScopeGuard&) = delete;
+      ScopeGuard& operator=(ScopeGuard&&) = delete;
+    };
+
+    /**
      * @brief Initialize the SingletonOwnerRegistry.
      *
      * This function is called at the beginning of the program to ensure that the
      * SingletonOwnerRegistry is initialized before any SingletonOwner objects are created. This is
      * necessary to ensure that the SingletonOwnerRegistry is destroyed after all SingletonOwner
      * objects are destroyed.
+     *
+     * @note Prefer to use the ScopeGuard class to ensure that finalize() is called at the end of
+     * scope.
      *
      */
     static void initialize();
@@ -60,6 +79,8 @@ namespace Core::Utils
      *
      * This function is called at the end of the program to ensure that all singletons are
      * destructed.
+     *
+     * @note Prefer to use the ScopeGuard class which calls this function at the end of scope.
      */
     static void finalize();
 
@@ -187,7 +208,7 @@ namespace Core::Utils
      * call to SingletonOwner::instance() e.g.
      *
      * @code
-     *   singleton_map[disname].Instance(Core::Utils::SingletonAction::create, numdofpernode,
+     *   singleton_map[disname].instance(Core::Utils::SingletonAction::create, numdofpernode,
      * disname);
      * @endoce
      */

@@ -10,6 +10,7 @@
 #include "4C_global_data.hpp"
 #include "4C_mat_electrode.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 namespace
 {
@@ -300,14 +301,6 @@ namespace
           4553.6;  // cathode concentration at 0% state of charge
     }
 
-    void TearDown() override
-    {
-      // We need to make sure the Global::Problem instance created in SetUp is deleted again. If
-      // this is not done, some troubles arise where unit tests influence each other on some
-      // configurations. We suspect that missing singleton destruction might be the reason for that.
-      Global::Problem::done();
-    }
-
     //! cathode material based on half cell open circuit potential obtained from cubic spline
     //! interpolation of *.csv data points
     std::shared_ptr<const Mat::Electrode> cathode_csv_;
@@ -399,6 +392,8 @@ namespace
 
     //! factor F/(RT)
     const double frt_ = faraday_ / (gasconstant_ * 298.0);
+
+    Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };
 
   TEST_F(ElectrodeTest, TestComputeOpenCircuitPotential)

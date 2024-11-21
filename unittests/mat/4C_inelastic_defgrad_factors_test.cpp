@@ -14,6 +14,7 @@
 #include "4C_mat_inelastic_defgrad_factors.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 namespace
 {
@@ -260,14 +261,6 @@ namespace
       lin_temp_iso_->pre_evaluate(params_temp, 0);
     }
 
-    void TearDown() override
-    {
-      // We need to make sure the Global::Problem instance created in SetUp is deleted again. If
-      // this is not done, some troubles arise where unit tests influence each other on some
-      // configurations. We suspect that missing singleton destruction might be the reason for that.
-      Global::Problem::done();
-    }
-
     // deformation gradient
     Core::LinAlg::Matrix<3, 3> FM_;
     // derivative of second Piola-Kirchhoff stress tensor w.r.t. inverse inelastic deformation
@@ -315,6 +308,8 @@ namespace
     std::shared_ptr<Mat::InelasticDefgradLinTempIso> lin_temp_iso_;
     // pointer to parameters of InelasticDefgradLinTempIso
     std::shared_ptr<Mat::PAR::InelasticDefgradLinTempIso> params_lin_temp_iso_;
+
+    Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };
 
   TEST_F(InelasticDefgradFactorsTest, TestEvaluateLinearGrowth)

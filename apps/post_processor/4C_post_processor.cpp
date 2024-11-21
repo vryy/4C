@@ -12,9 +12,9 @@
 #include "4C_post_writer_base.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 #include <Epetra_MpiComm.h>
-
 
 using namespace FourC;
 namespace
@@ -896,6 +896,7 @@ namespace
  */
 int main(int argc, char** argv)
 {
+  Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   try
   {
     std::string filter = get_filter(argc, argv);
@@ -915,17 +916,12 @@ int main(int argc, char** argv)
     char line[] = "=========================================================================\n";
     std::cout << "\n\n" << line << err.what_with_stacktrace() << "\n" << line << "\n" << std::endl;
 
-    // proper cleanup
-    Global::Problem::done();
 #ifdef FOUR_C_ENABLE_CORE_DUMP
     abort();
 #endif
 
     MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
   }  // catch
-
-  // proper cleanup
-  Global::Problem::done();
 
   return 0;
 }

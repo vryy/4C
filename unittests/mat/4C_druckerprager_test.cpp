@@ -19,6 +19,8 @@
 #include "4C_material_base.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
+#include "4C_utils_singleton_owner.hpp"
+
 namespace
 {
   using namespace FourC;
@@ -51,16 +53,11 @@ namespace
           dynamic_cast<Mat::PAR::PlasticDruckerPrager*>(param_druckprag_.get()));
     }
 
-    void TearDown() override
-    {
-      // We need to make sure the Global::Problem instance created in SetUp is deleted again. If
-      // this is not done, some troubles arise where unit tests influence each other on some
-      // configurations. We suspect that missing singleton destruction might be the reason for that.
-      Global::Problem::done();
-    };
     std::shared_ptr<Core::Mat::PAR::Parameter> param_druckprag_;
     Core::Communication::PackBuffer data;
     std::shared_ptr<Mat::PlasticDruckerPrager> druckprag_;
+
+    Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };
 
   //! test member function Pack and unpack

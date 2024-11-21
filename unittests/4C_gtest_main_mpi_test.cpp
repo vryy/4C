@@ -9,10 +9,13 @@
 
 #include "4C_config.hpp"
 
+#include "4C_utils_singleton_owner.hpp"
+
 #include <mpi.h>
 
 int main(int argc, char* argv[])
 {
+  using namespace FourC;
   ::testing::InitGoogleTest(&argc, argv);
 
   // The following flag makes DeathTests thread-safe at the cost of a severely increased runtime
@@ -21,10 +24,15 @@ int main(int argc, char* argv[])
   (void)(::testing::GTEST_FLAG(death_test_style) = "threadsafe");
 
   MPI_Init(&argc, &argv);
+  struct CleanUpMPI
+  {
+    ~CleanUpMPI() { MPI_Finalize(); }
+  } cleanup;
+
+  Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
 
   const int result = RUN_ALL_TESTS();
 
-  MPI_Finalize();
 
   return result;
 }

@@ -15,6 +15,7 @@
 #include "4C_io_legacy_table.hpp"
 #include "4C_post_common.hpp"
 #include "4C_thermo_ele_action.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 #include <Teuchos_CommandLineProcessor.hpp>
 
@@ -1799,6 +1800,8 @@ int main(int argc, char** argv)
 {
   using namespace FourC;
 
+  Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
+
   // command line processor to deal with arguments
   Teuchos::CommandLineProcessor my_comlinproc;
   my_comlinproc.setDocString(
@@ -1995,8 +1998,6 @@ int main(int argc, char** argv)
     }
     break;
   }
-
-  Global::Problem::done();
 
   return 0;
 }
