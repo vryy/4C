@@ -14,15 +14,10 @@ concurrency:
 
 jobs:
   gcc9_build:
-    env:
-      CMAKE_PRESET: docker
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.github_token }}
     defaults:
       run:
         shell: bash
@@ -35,28 +30,15 @@ jobs:
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
           docker_image_hash: $DEPENDENCIES_HASH
-      - run: apt update
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ${{ github.job }}-${{ env.CMAKE_PRESET }}
-      - uses: ./.github/actions/configure_4C
-        with:
-          cmake-preset: ${{ env.CMAKE_PRESET }}
-          build-directory: ${{ github.workspace }}/build
-          additional-cmake-flags: -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
       - uses: ./.github/actions/build_4C
         with:
+          cmake-preset: docker
           build-targets: full
           build-directory: ${{ github.workspace }}/build
-      - name: Package build directory
-        run: tar -cvf $GITHUB_WORKSPACE/4C_build.tar $GITHUB_WORKSPACE/build
-      - name: Upload build folder
-        uses: actions/upload-artifact@v4
+          use-ccache: "true"
+      - uses: ./.github/actions/upload_4C_build
         with:
-          name: 4C-build
-          path: |
-            ${{ github.workspace }}/4C_build.tar
+          build-directory: ${{ github.workspace }}/build
           retention-days: 1
 
   gcc9_test:
@@ -66,9 +48,6 @@ jobs:
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.github_token }}
     strategy:
       fail-fast: false
       matrix:
@@ -88,38 +67,21 @@ jobs:
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
           ./utilities/set_up_dev_env.sh
-      - uses: actions/download-artifact@v4
+      - uses: ./.github/actions/download_4C_build
         with:
-          name: 4C-build
-          path: ${{ github.workspace }}
-      - name: Extract 4C build
-        run: |
-          tar -xvf $GITHUB_WORKSPACE/4C_build.tar -C /
+          build-job: gcc9_build
       - name: Test
         run: |
           cd $GITHUB_WORKSPACE/build
-          time ctest -I $TEST_CHUNK -j `nproc` --output-on-failure --output-junit $GITHUB_WORKSPACE/junit_test_summary.xml
+          time ctest -I $TEST_CHUNK -j `nproc` --output-on-failure
         env:
           TEST_CHUNK: ${{ matrix.test-chunk }}
-      - name: Upload test summary
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-summary-${{ matrix.test-chunk }}
-          path: |
-            junit_test_summary-${{ matrix.test-chunk }}.xml
-          retention-days: 1
 
-  clang18_build_test_minimal:
-    env:
-      CMAKE_PRESET: docker_release_clang18
+  clang18_build:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.github_token }}
     defaults:
       run:
         shell: bash
@@ -132,27 +94,47 @@ jobs:
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
           docker_image_hash: $DEPENDENCIES_HASH
-      - run: apt update
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ${{ github.job }}-${{ env.CMAKE_PRESET }}
-      - uses: ./.github/actions/configure_4C
-        with:
-          cmake-preset: ${{ env.CMAKE_PRESET }}
-          build-directory: ${{ github.workspace }}/build
-          additional-cmake-flags: -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
       - uses: ./.github/actions/build_4C
         with:
+          cmake-preset: docker_release_clang18
           build-targets: full
           build-directory: ${{ github.workspace }}/build
-      - name: Run minimal tests
+          use-ccache: "true"
+      - uses: ./.github/actions/upload_4C_build
+        with:
+          build-directory: ${{ github.workspace }}/build
+          retention-days: 1
+
+  clang18_test_minimal:
+    needs: clang18_build
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check docker hash
+        uses: ./.github/actions/compute-and-check-dependencies-hash
+        with:
+          docker_image_hash: $DEPENDENCIES_HASH
+      - name: Setup developer environment for testing
+        run: |
+          cd $GITHUB_WORKSPACE
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          ./utilities/set_up_dev_env.sh
+      - uses: ./.github/actions/download_4C_build
+        with:
+          build-job: clang18_build
+      - name: Test
         run: |
           cd $GITHUB_WORKSPACE/build
           ctest -L minimal -j `nproc` --output-on-failure
 
   ensure_all_tests_pass:
-    needs: [gcc9_test, gcc9_build, clang18_build_test_minimal]
+    needs: [gcc9_test, gcc9_build, clang18_build, clang18_test_minimal]
     runs-on: ubuntu-latest
     if: always()
     steps:

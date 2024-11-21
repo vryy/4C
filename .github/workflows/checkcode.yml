@@ -29,9 +29,6 @@ jobs:
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.github_token }}
     defaults:
       run:
         shell: bash
@@ -57,9 +54,6 @@ jobs:
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.github_token }}
     defaults:
       run:
         shell: bash
@@ -69,12 +63,10 @@ jobs:
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
           docker_image_hash: $DEPENDENCIES_HASH
-      - uses: ./.github/actions/configure_4C
-        with:
-          cmake-preset: docker
-          build-directory: ${{ github.workspace }}/../verify-header-build
-          additional-cmake-flags: "-DCMAKE_VERIFY_INTERFACE_HEADER_SETS=\"ON\""
       - uses: ./.github/actions/build_4C
         with:
+          cmake-preset: docker
           build-targets: all_verify_interface_header_sets
           build-directory: ${{ github.workspace }}/../verify-header-build
+          use-ccache: "false"
+          additional-cmake-flags: '-DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"'

@@ -18,9 +18,6 @@ jobs:
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.github_token }}
     defaults:
       run:
         shell: bash
@@ -30,14 +27,12 @@ jobs:
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
           docker_image_hash: $DEPENDENCIES_HASH
-      - uses: ./.github/actions/configure_4C
-        with:
-          cmake-preset: docker
-          build-directory: ${{ github.workspace }}/build
       - uses: ./.github/actions/build_4C
         with:
+          cmake-preset: docker
           build-targets: doxygen
           build-directory: ${{ github.workspace }}/build
+          use-ccache: "false"
       - name: Upload doxygen
         uses: actions/upload-artifact@v4
         with:
@@ -46,15 +41,10 @@ jobs:
           retention-days: 1
 
   readthedocs:
-    env:
-      CMAKE_PRESET: docker
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:2083744d
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.github_token }}
     defaults:
       run:
         shell: bash
@@ -64,20 +54,12 @@ jobs:
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
           docker_image_hash: $DEPENDENCIES_HASH
-      - run: apt update
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ${{ github.job }}-${{ env.CMAKE_PRESET }}
-      - uses: ./.github/actions/configure_4C
-        with:
-          cmake-preset: ${{ env.CMAKE_PRESET }}
-          build-directory: ${{ github.workspace }}/build
-          additional-cmake-flags: -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
       - uses: ./.github/actions/build_4C
         with:
+          cmake-preset: docker
           build-targets: readthedocs
           build-directory: ${{ github.workspace }}/build
+          use-ccache: "true"
       - name: Upload readthedocs
         uses: actions/upload-artifact@v4
         with:
