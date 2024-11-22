@@ -15,6 +15,8 @@
 #include <Teuchos_BLAS.hpp>
 #include <Teuchos_LAPACK.hpp>
 
+#include <vector>
+
 FOUR_C_NAMESPACE_OPEN
 
 
