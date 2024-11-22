@@ -11,8 +11,14 @@ inputs:
     description: Number of chunks
     required: true
   junit-report-artifact-name:
-    description: Name of the job that reports the junit summary
-    required: true
+    description: Name of the job that reports the junit summary (leave out if previous runtime should
+      not be used)
+    required: false
+    default: ''
+  base-workflow:
+    description: Name of the workflow file
+    required: false
+    default: nightly_tests.yml
 outputs:
   chunk-array:
     description: Array of chunks
@@ -24,8 +30,9 @@ runs:
       id: download-junit-reports
       continue-on-error: true
       uses: dawidd6/action-download-artifact@v6
+      if: ${{ inputs.junit-report-artifact-name != '' }}
       with:
-        workflow: nightly_tests.yml
+        workflow: ${{ inputs.base-workflow }}
         name: ${{ inputs.junit-report-artifact-name }}
         path: ${{ inputs.source-directory }}
         branch: ${{ github.event.repository.default_branch }}
