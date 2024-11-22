@@ -37,7 +37,6 @@
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rigidsphere.hpp"
 #include "4C_shell7p_ele.hpp"
-#include "4C_so3_hex8fbar.hpp"
 #include "4C_so3_plast_ssn_eletypes.hpp"
 #include "4C_so3_plast_ssn_sosh18.hpp"
 #include "4C_so3_plast_ssn_sosh8.hpp"
@@ -629,11 +628,6 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
     Discret::Elements::Solid* solid = dynamic_cast<Discret::Elements::Solid*>(actele);
     if (solid != nullptr)
       if (solid->have_eas()) iseas_local = 1;
-
-    // Detect fbar
-    Discret::Elements::SoHex8fbar* so_hex8fbar_ele =
-        dynamic_cast<Discret::Elements::SoHex8fbar*>(actele);
-    if (so_hex8fbar_ele != nullptr) isfbar_local = 1;
 
     // Detect non-additive rotation-vector DOFs --------------------------------
     if (actele->element_type() == Discret::Elements::Beam3rType::instance() or

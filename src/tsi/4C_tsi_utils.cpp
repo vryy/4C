@@ -16,9 +16,7 @@
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_so3_plast_ssn.hpp"
-#include "4C_so3_thermo.hpp"
 #include "4C_solid_scatra_3D_ele.hpp"
-#include "4C_thermo_ele_impl_utils.hpp"
 #include "4C_thermo_element.hpp"
 
 #include <Epetra_MpiComm.h>

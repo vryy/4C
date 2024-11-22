@@ -777,8 +777,6 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   }  // elastic step
 
   // -------------------------------- add the temperature dependent stress part
-  // be aware: it will make this constitutive law incompatible
-  //  with old SOLIDXXTHERMO element
 
   const double temperature = [&]()
   {
