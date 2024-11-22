@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_general_cell_type_traits.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 
@@ -188,22 +189,19 @@ namespace Discret::Elements
    *
    * @tparam celltype, eastype
    * @param eas_iteration_data(in/out) : EAS matrices and vectors
-   * @param discretization(in) : reference to the discretization
-   * @param lm(in) : Location vector of the element, i.e., global dof numbers of elemental dofs
+   * @param displ_increment (in) : displacement increment
+   * @param step_length(in) : Length of the step (relevant for line search solvers)
    */
   template <Core::FE::CellType celltype, Discret::Elements::EasType eastype>
   void update_alpha(Discret::Elements::EasIterationData<celltype, eastype>& eas_iteration_data,
-      const Core::FE::Discretization& discretization, const std::vector<int>& lm,
+      const Core::LinAlg::Matrix<Discret::Elements::num_dof_per_ele<celltype>, 1>& displ_inc,
       const double step_length = 1.0)
   {
-    // residual displacement at the previous step
-    Core::LinAlg::Matrix<Discret::Elements::num_dof_per_ele<celltype>, 1> displ_inc(false);
-    displ_inc = get_displacement_increment<celltype>(discretization, lm);
-
     // compute the enhanced strain scalar increment delta_alpha
     update_alpha_increment<celltype, eastype>(displ_inc, eas_iteration_data);
 
-    // update alpha_i with the increment delta_alpha such that alpha_{i+1} = alpha_{i} + delta_alpha
+    // update alpha_i with the increment delta_alpha such that alpha_{i+1} = alpha_{i} +
+    // delta_alpha
     eas_iteration_data.alpha.update(step_length, eas_iteration_data.alpha_inc, 1.0);
   }
 
@@ -344,10 +342,11 @@ namespace Discret::Elements
    *
    * @tparam celltype, eastype
    * @param detJ(in) : Jacobi determinant at Gauss point
-   * @param centroid_transformation(in) : transformation matrix T0^{-T} and Jacobi determinant at
-   * element centroid
+   * @param centroid_transformation(in) : transformation matrix T0^{-T} and Jacobi determinant
+   * at element centroid
    * @param M(in) : matrix M in the parameter space
-   * @return Core::LinAlg::Matrix<num_str, num_eas> : matrix Mtilde in the material configuration
+   * @return Core::LinAlg::Matrix<num_str, num_eas> : matrix Mtilde in the material
+   * configuration
    */
   template <Core::FE::CellType celltype, Discret::Elements::EasType eastype>
   Core::LinAlg::Matrix<Discret::Elements::num_str<celltype>,
@@ -368,16 +367,17 @@ namespace Discret::Elements
   }
 
   /*!
-   * @brief Evaluate the element-wise matrix of the shape functions for the enhanced strains in the
-   * parameter space Mtilde. Therefore set up M (in the material configuration) and map M to Mtilde
-   * via T0^{-T}.
+   * @brief Evaluate the element-wise matrix of the shape functions for the enhanced strains in
+   * the parameter space Mtilde. Therefore set up M (in the material configuration) and map M to
+   * Mtilde via T0^{-T}.
    *
    * @tparam celltype, eastype
    * @param detJ(in) : Jacobi determinant at Gauss point
-   * @param centroid_transformation(in) : transformation matrix T0^{-T} and Jacobi determinant at
-   * element centroid
+   * @param centroid_transformation(in) : transformation matrix T0^{-T} and Jacobi determinant
+   * at element centroid
    * @param xi(in) : coordinate in the parameter space
-   * @return Core::LinAlg::Matrix<num_str, num_eas> : matrix Mtilde in the material configuration
+   * @return Core::LinAlg::Matrix<num_str, num_eas> : matrix Mtilde in the material
+   * configuration
    */
   template <Core::FE::CellType celltype, Discret::Elements::EasType eastype>
   Core::LinAlg::Matrix<Discret::Elements::num_str<celltype>,
@@ -401,8 +401,8 @@ namespace Discret::Elements
    * conventional Green-Lagrange strains E^{u}
    *
    * Background: Choose deformation gradient F as sum of displacement-based F^{u} and enhanced
-   * gradient F^{enh}. Considering F_0 the deformation gradient evaluated at the element centroid,
-   * F^{enh} is computed to F^{enh} = F_0^{u} Mtilde alpha.
+   * gradient F^{enh}. Considering F_0 the deformation gradient evaluated at the element
+   * centroid, F^{enh} is computed to F^{enh} = F_0^{u} Mtilde alpha.
    *
    * @tparam celltype, eastype
    * @param gl_strain(in) : Green-Lagrange strains E^{u}

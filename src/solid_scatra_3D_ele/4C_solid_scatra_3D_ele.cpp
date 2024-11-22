@@ -13,6 +13,7 @@
 #include "4C_so3_line.hpp"
 #include "4C_so3_nullspace.hpp"
 #include "4C_so3_surface.hpp"
+#include "4C_solid_3D_ele_interface_serializable.hpp"
 #include "4C_solid_scatra_3D_ele_factory.hpp"
 #include "4C_solid_scatra_3D_ele_lib.hpp"
 

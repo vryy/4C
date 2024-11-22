@@ -48,16 +48,17 @@ namespace Discret::Elements
     using FbarEvaluators = Core::FE::apply_celltype_sequence<FBarSolidIntegrator,
         Core::FE::CelltypeSequence<Core::FE::CellType::hex8, Core::FE::CellType::pyramid5>>;
     using EASEvaluators = Core::FE::BaseTypeList<
-        SolidEleCalcEas<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_9,
+        EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_9,
             Inpar::Solid::KinemType::nonlinearTotLag>,
-        SolidEleCalcEas<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_21,
+        EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_21,
             Inpar::Solid::KinemType::nonlinearTotLag>,
-        SolidEleCalcEas<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_sh8_7,
+        EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_sh8_7,
             Inpar::Solid::KinemType::nonlinearTotLag>,
-        SolidEleCalcEas<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_9,
+        EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_9,
             Inpar::Solid::KinemType::linear>,
-        SolidEleCalcEas<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_21,
+        EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_21,
             Inpar::Solid::KinemType::linear>>;
+
     using MulfEvaluators =
         Core::FE::apply_celltype_sequence<MulfSolidIntegrator, ImplementedSolidCellTypes>;
     using FBarMulfEvaluators = Core::FE::apply_celltype_sequence<MulfFBarSolidIntegrator,

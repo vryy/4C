@@ -15,11 +15,13 @@
 #include "4C_mat_so3_material.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based_linear_kinematics.hpp"
+#include "4C_solid_3D_ele_calc_eas.hpp"
 #include "4C_solid_3D_ele_calc_fbar.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_calc_lib_formulation.hpp"
 #include "4C_solid_3D_ele_calc_lib_integration.hpp"
 #include "4C_solid_3D_ele_calc_lib_io.hpp"
+#include "4C_solid_3D_ele_formulation.hpp"
 #include "4C_solid_3D_ele_interface_serializable.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -307,6 +309,11 @@ void Discret::Elements::SolidScatraEleCalc<celltype,
   const PreparationData<SolidFormulation> preparation_data =
       prepare(ele, nodal_coordinates, history_data_);
 
+  if constexpr (has_condensed_contribution<SolidFormulation>)
+  {
+    reset_condensed_variable_integration(ele, nodal_coordinates, preparation_data, history_data_);
+  }
+
   double element_mass = 0.0;
   double element_volume = 0.0;
   for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
@@ -329,6 +336,12 @@ void Discret::Elements::SolidScatraEleCalc<celltype,
             {
               const Stress<celltype> stress = evaluate_material_stress<celltype>(
                   solid_material, deformation_gradient, gl_strain, params, gp, ele.id());
+
+              if constexpr (has_condensed_contribution<SolidFormulation>)
+              {
+                integrate_condensed_contribution(
+                    linearization, stress, integration_factor, preparation_data, history_data_, gp);
+              }
 
               if (force.has_value())
               {
@@ -357,6 +370,24 @@ void Discret::Elements::SolidScatraEleCalc<celltype,
               }
             });
       });
+
+  if constexpr (has_condensed_contribution<SolidFormulation>)
+  {
+    const auto condensed_contribution_data =
+        prepare_condensed_contribution(preparation_data, history_data_);
+
+    if (force.has_value())
+    {
+      add_condensed_contribution_to_force_vector<celltype>(
+          condensed_contribution_data, preparation_data, history_data_, *force);
+    }
+
+    if (stiff.has_value())
+    {
+      add_condensed_contribution_to_stiffness_matrix<celltype>(
+          condensed_contribution_data, preparation_data, history_data_, *stiff);
+    }
+  }
 
   if (mass.has_value() && !equal_integration_mass_stiffness)
   {
@@ -461,10 +492,35 @@ void Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
 void Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::recover(
-    const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
+    Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const Core::Elements::LocationArray& la, Teuchos::ParameterList& params)
 {
-  // nothing needs to be done for simple displacement based elements
+  if constexpr (has_condensed_contribution<SolidFormulation>)
+  {
+    FourC::Solid::Elements::ParamsInterface& params_interface =
+        *std::dynamic_pointer_cast<FourC::Solid::Elements::ParamsInterface>(
+            ele.params_interface_ptr());
+
+    const double step_length = params_interface.get_step_length();
+
+    const ElementNodes<celltype> element_nodes =
+        evaluate_element_nodes<celltype>(ele, discretization, la[0].lm_);
+
+    const PreparationData<SolidFormulation> preparation_data =
+        prepare(ele, element_nodes, history_data_);
+
+    if (params_interface.is_default_step())
+    {
+      update_condensed_variables(ele, &params_interface, element_nodes,
+          get_displacement_increment<celltype>(discretization, la[0].lm_), step_length,
+          preparation_data, history_data_);
+    }
+    else
+    {
+      correct_condensed_variables_for_linesearch(
+          ele, &params_interface, step_length, preparation_data, history_data_);
+    }
+  }
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
@@ -787,5 +843,14 @@ template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::nurbs27
 // FBar based formulation
 template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::FBarFormulation<Core::FE::CellType::hex8>>;
+
+// explicit instantiations for hex8 with EAS
+template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
+        Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>>;
+template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
+        Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::nonlinearTotLag>>;
+
 
 FOUR_C_NAMESPACE_CLOSE

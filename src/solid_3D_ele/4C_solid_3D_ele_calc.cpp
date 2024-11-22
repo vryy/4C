@@ -9,10 +9,13 @@
 
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_cell_type_traits.hpp"
+#include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based_linear_kinematics.hpp"
+#include "4C_solid_3D_ele_calc_eas.hpp"
+#include "4C_solid_3D_ele_calc_eas_helpers.hpp"
 #include "4C_solid_3D_ele_calc_fbar.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_calc_lib_formulation.hpp"
@@ -118,11 +121,25 @@ void Discret::Elements::SolidEleCalc<celltype,
   bool equal_integration_mass_stiffness =
       compare_gauss_integration(mass_matrix_integration_, stiffness_matrix_integration_);
 
-
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
   const PreparationData<ElementFormulation> preparation_data =
       prepare(ele, nodal_coordinates, history_data_);
+
+  if constexpr (has_condensed_contribution<ElementFormulation>)
+  {
+    if (!ele.is_params_interface())
+    {
+      // This is noecessary only in the old time integration framework. In the new time integration
+      // framework, condensed, internal variables are updated in recover()
+      const double step_length = 1.0;
+      update_condensed_variables(ele, nullptr, nodal_coordinates,
+          get_displacement_increment<celltype>(discretization, lm), step_length, preparation_data,
+          history_data_);
+    }
+
+    reset_condensed_variable_integration(ele, nodal_coordinates, preparation_data, history_data_);
+  }
 
   // Check for negative Jacobian determinants
   ensure_positive_jacobian_determinant_at_element_nodes(nodal_coordinates);
@@ -144,6 +161,12 @@ void Discret::Elements::SolidEleCalc<celltype,
             {
               const Stress<celltype> stress = evaluate_material_stress<celltype>(
                   solid_material, deformation_gradient, gl_strain, params, gp, ele.id());
+
+              if constexpr (has_condensed_contribution<ElementFormulation>)
+              {
+                integrate_condensed_contribution(
+                    linearization, stress, integration_factor, preparation_data, history_data_, gp);
+              }
 
               if (force.has_value())
               {
@@ -175,6 +198,24 @@ void Discret::Elements::SolidEleCalc<celltype,
             });
       });
 
+  if constexpr (has_condensed_contribution<ElementFormulation>)
+  {
+    const auto condensed_contribution_data =
+        prepare_condensed_contribution(preparation_data, history_data_);
+
+    if (force.has_value())
+    {
+      add_condensed_contribution_to_force_vector<celltype>(
+          condensed_contribution_data, preparation_data, history_data_, *force);
+    }
+
+    if (stiff.has_value())
+    {
+      add_condensed_contribution_to_stiffness_matrix<celltype>(
+          condensed_contribution_data, preparation_data, history_data_, *stiff);
+    }
+  }
+
   if (mass.has_value() && !equal_integration_mass_stiffness)
   {
     // integrate mass matrix
@@ -191,9 +232,35 @@ void Discret::Elements::SolidEleCalc<celltype,
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
 void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::recover(
-    const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
+    Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
+  if constexpr (has_condensed_contribution<ElementFormulation>)
+  {
+    FourC::Solid::Elements::ParamsInterface& params_interface =
+        *std::dynamic_pointer_cast<FourC::Solid::Elements::ParamsInterface>(
+            ele.params_interface_ptr());
+
+    const double step_length = params_interface.get_step_length();
+
+    const ElementNodes<celltype> element_nodes =
+        evaluate_element_nodes<celltype>(ele, discretization, lm);
+
+    const PreparationData<ElementFormulation> preparation_data =
+        prepare(ele, element_nodes, history_data_);
+
+    if (params_interface.is_default_step())
+    {
+      update_condensed_variables(ele, &params_interface, element_nodes,
+          get_displacement_increment<celltype>(discretization, lm), step_length, preparation_data,
+          history_data_);
+    }
+    else
+    {
+      correct_condensed_variables_for_linesearch(
+          ele, &params_interface, step_length, preparation_data, history_data_);
+    }
+  }
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
@@ -564,5 +631,25 @@ template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::ShellANSFormulation<Core::FE::CellType::hex8>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::wedge6,
     Discret::Elements::ShellANSFormulation<Core::FE::CellType::wedge6>>;
+
+// explicit instantiations for hex8 with EAS
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
+        Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
+        Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::nonlinearTotLag>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
+        Discret::Elements::EasType::eastype_sh8_7, Inpar::Solid::KinemType::nonlinearTotLag>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
+        Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::linear>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
+        Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::linear>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
+        Discret::Elements::EasType::eastype_sh8_7, Inpar::Solid::KinemType::linear>>;
 
 FOUR_C_NAMESPACE_CLOSE

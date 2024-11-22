@@ -8,6 +8,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_fem_general_extract_values.hpp"
+#include "4C_legacy_enum_definitions_element_actions.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_solid_3D_ele.hpp"
