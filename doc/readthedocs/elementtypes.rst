@@ -704,49 +704,6 @@ SOLIDH8POROP1SCATRA
 | lambda (opt.)     |  1 x number |
 +-------------------+-------------+
 
-.. _structuresolidh8thermo:
-
-SOLIDH8THERMO
-^^^^^^^^^^^^^
-
-**Note:** This element is deprecated for all use-cases except in combination with EAS element
-formulation. For all other use-cases, use the SOLIDSCATRA element instead.
-
-*Shapes:*
-
-- :ref:`HEX8 <hex8>` (8 nodes)
-
-**Parameters**
-
-+-------------------+-------------+
-| Parameter         | Values      |
-+===================+=============+
-| MAT               |  1 x number |
-+-------------------+-------------+
-| KINEM             |  1 x string |
-+-------------------+-------------+
-| EAS               |  1 x string |
-+-------------------+-------------+
-| AXI (opt.)        |  3 x number |
-+-------------------+-------------+
-| CIR (opt.)        |  3 x number |
-+-------------------+-------------+
-| FIBER1 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER2 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER3 (opt.)     |  3 x number |
-+-------------------+-------------+
-| GROWTHTRIG (opt.) |  1 x number |
-+-------------------+-------------+
-| HU (opt.)         |  1 x number |
-+-------------------+-------------+
-| RAD (opt.)        |  3 x number |
-+-------------------+-------------+
-| STRENGTH (opt.)   |  1 x number |
-+-------------------+-------------+
-| lambda (opt.)     |  1 x number |
-+-------------------+-------------+
 
 .. _structuresolidh8plast:
 

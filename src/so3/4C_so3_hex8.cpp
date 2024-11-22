@@ -18,7 +18,6 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_so3_element_service.hpp"
-#include "4C_so3_hex8fbar.hpp"
 #include "4C_so3_line.hpp"
 #include "4C_so3_nullspace.hpp"
 #include "4C_so3_prestress.hpp"
@@ -267,9 +266,6 @@ void Discret::Elements::SoHex8::unpack(Core::Communication::UnpackBuffer& buffer
     if (prestress_ == nullptr)
     {
       int numgpt = NUMGPT_SOH8;
-      // see whether I am actually a So_hex8fbar element
-      auto* me = dynamic_cast<Discret::Elements::SoHex8fbar*>(this);
-      if (me) numgpt += 1;  // one more history entry for centroid data in hex8fbar
       prestress_ = std::make_shared<Discret::Elements::PreStress>(NUMNOD_SOH8, numgpt);
     }
     Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);

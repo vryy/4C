@@ -956,9 +956,6 @@ void Mat::ThermoPlasticHyperElast::evaluate(const Core::LinAlg::Matrix<3, 3>* de
   );
 
   // -------------------------------- add the temperature dependent stress part
-  // be aware: it will make this constitutive law incompatible
-  //  with old SOLIDXXTHERMO element
-
   // inverse of right Cauchy-Green tensor = F^{-1} . F^{-T}
   Core::LinAlg::Matrix<3, 3> cauchygreen(false);
   cauchygreen.multiply_tn(*defgrd, *defgrd);
