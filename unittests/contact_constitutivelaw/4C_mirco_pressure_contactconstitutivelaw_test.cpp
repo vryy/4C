@@ -13,6 +13,7 @@
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_utils_function.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 #ifdef FOUR_C_WITH_MIRCO
 
@@ -98,6 +99,8 @@ namespace
     std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
 
     std::shared_ptr<CONTACT::Node> cnode;
+
+    Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };
 
   //! test member function Evaluate

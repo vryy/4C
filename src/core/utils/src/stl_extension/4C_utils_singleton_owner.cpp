@@ -7,6 +7,8 @@
 
 #include "4C_utils_singleton_owner.hpp"
 
+#include "4C_utils_exceptions.hpp"
+
 void FourC::Core::Utils::SingletonOwnerRegistry::finalize()
 {
   for (const auto& [_, deleter] : instance().deleters_)

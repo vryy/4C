@@ -17,6 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void Mat::PAR::Bundle::insert(int matid, Core::Utils::LazyPtr<Core::Mat::PAR::Parameter> mat)
 {
+  if (matmap_.count(matid) > 0) FOUR_C_THROW("Material with ID %d already exists", matid);
   matmap_.emplace(matid, mat);
 }
 

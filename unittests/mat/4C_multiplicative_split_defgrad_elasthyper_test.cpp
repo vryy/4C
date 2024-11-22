@@ -14,6 +14,7 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 namespace
 {
@@ -61,13 +62,6 @@ namespace
       set_up_multiplicative_split_object_with_requirements();
     }
 
-    void TearDown() override
-    {
-      // We need to make sure the Global::Problem instance created in SetUp is deleted again. If
-      // this is not done, some troubles arise where unit tests influence each other on some
-      // configurations. We suspect that missing singleton destruction might be the reason for that.
-      Global::Problem::done();
-    }
 
     // note: requirement of the generation of an object of the multiplicative split material is that
     // the global problem is equipped with the corresponding elastic and inelastic material. This is
@@ -320,6 +314,8 @@ namespace
 
     // pointer to material
     std::shared_ptr<Mat::MultiplicativeSplitDefgradElastHyper> multiplicative_split_defgrad_;
+
+    Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateAdditionalCmat)

@@ -20,61 +20,24 @@
 #include "4C_io_control.hpp"
 #include "4C_io_input_file_utils.hpp"
 #include "4C_mat_materialdefinition.hpp"
-#include "4C_particle_engine_particlereader.hpp"
 #include "4C_rebalance_graph_based.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterListExceptions.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include <chrono>
-
 FOUR_C_NAMESPACE_OPEN
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::vector<Global::Problem*> Global::Problem::instances_;
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Global::Problem* Global::Problem::instance(int num)
 {
-  if (num > static_cast<int>(instances_.size()) - 1)
-  {
-    instances_.resize(num + 1);
-    instances_[num] = new Problem();
-  }
-  return instances_[num];
-}
+  static auto singleton_map =
+      Core::Utils::make_singleton_map<int>([]() { return std::unique_ptr<Problem>(new Problem); });
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void Global::Problem::done()
-{
-  // destroy singleton objects when the problem object is still alive
-  for (auto* instance : instances_)
-  {
-    // skip null pointers arising from non-consecutive numbering of problem instances
-    if (!instance) continue;
-  }
-
-  // This is called at the very end of a 4C run.
-  //
-  // It removes all global problem objects. Therefore all
-  // discretizations as well and everything inside those.
-  //
-  // There is a whole lot going on here...
-  for (auto& instance : instances_)
-  {
-    delete instance;
-    instance = nullptr;
-  }
-  instances_.clear();
-
-  // close the parallel output environment to make sure all files are properly closed
-  Core::IO::cout.close();
+  return singleton_map[num].instance(Core::Utils::SingletonAction::create);
 }
 
 

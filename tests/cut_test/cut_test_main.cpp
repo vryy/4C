@@ -11,6 +11,7 @@
 #include "4C_cut_mesh.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_global_data.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 #include <fenv.h>
 #include <Teuchos_CommandLineProcessor.hpp>
@@ -437,10 +438,8 @@ void set_problem_dimension(const std::map<std::string, testfunct>& functable)
  */
 int main(int argc, char** argv)
 {
+  Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   MPI_Init(&argc, &argv);
-  // MPI::init( argc, argv );
-
-  // feenableexcept( FE_INVALID | FE_DIVBYZERO );
 
   std::map<std::string, testfunct> functable;
 
@@ -770,7 +769,6 @@ int main(int argc, char** argv)
 
   set_problem_dimension(functable);
   int result = runtests(argv, functable, testname, ignore_testname);
-  Global::Problem::done();
   MPI_Finalize();
   return result;
 }

@@ -211,9 +211,19 @@ void ntam(int argc, char *argv[]);
  */
 int main(int argc, char *argv[])
 {
-  Core::Utils::SingletonOwnerRegistry::initialize();
+  // Initialize MPI and use RAII to create a guard object that will finalize MPI when it goes out of
+  // scope.
   MPI_Init(&argc, &argv);
+  struct CleanUpMPI
+  {
+    ~CleanUpMPI() { MPI_Finalize(); }
+  } cleanup_mpi;
+
+  // Kokkos should be initilized right after MPI.
   Kokkos::ScopeGuard kokkos_guard{};
+
+  // Initialize our own singleton registry to ensure we clean up all singletons properly.
+  Core::Utils::SingletonOwnerRegistry::ScopeGuard singleton_owner_guard{};
 
   std::shared_ptr<Core::Communication::Communicators> communicators =
       Core::Communication::create_comm(std::vector<std::string>(argv, argv + argc));
@@ -352,8 +362,6 @@ int main(int argc, char *argv[])
         gcomm->Barrier();
       }
 
-      Global::Problem::done();
-
       MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
 #endif
@@ -374,12 +382,6 @@ int main(int argc, char *argv[])
       printf("processor %d finished normally\n", Core::Communication::my_mpi_rank(*lcomm));
     }
   }
-
-  Core::Utils::SingletonOwnerRegistry::finalize();
-
-  Global::Problem::done();
-
-  MPI_Finalize();
 
   return (0);
 }

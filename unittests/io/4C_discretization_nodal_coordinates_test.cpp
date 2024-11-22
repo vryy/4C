@@ -14,6 +14,7 @@
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 #include <Epetra_SerialComm.h>
 
@@ -67,6 +68,8 @@ namespace
     Core::IO::GridGenerator::RectangularCuboidInputs inputData_{};
     std::shared_ptr<Core::FE::Discretization> test_discretization_;
     std::shared_ptr<Epetra_SerialComm> comm_;
+
+    Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };
 
   TEST_F(BuildNodeCoordinatesTest, NodalCoordinatesDefault)

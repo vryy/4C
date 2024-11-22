@@ -110,24 +110,6 @@ namespace Global
    * be confused with the material classes the elements know and work with. The global problem
    * object does not keep track of gauss point material values, all that is known here are the
    * definitions from the input file.
-   *
-   * <h3>Singleton behavior</h3>
-   *
-   * \warning This is a guru only section!
-   *
-   * The global problem behaves like a singleton, so there is always one instance available. But you
-   * can have more than one instance of Problem. In normal situations this will not be needed. So
-   * don't bother. Just call the static instance() function to get the global instance and access
-   * your discretizations.
-   *
-   * In the special case that you want to read more that one input file, however, you will need to
-   * handle the fields from each file separately.
-   *
-   * One artefact that comes from using global variables together with multiple Problem objects is
-   * the notion of activating of problem object. This translates to setting the global variable
-   * pointers to this Problem object's internal variables. Normally, if there is just one Problem
-   * object, this is done by default. If you need more that one, however, you will have to activate
-   * the global problems yourself.
    */
   class Problem
   {
@@ -148,16 +130,6 @@ namespace Global
 
     /// return an instance of this class
     static Problem* instance(int num = 0);
-
-    /// return number of problem instances
-    static unsigned num_instances() { return instances_.size(); }
-
-    /// calculation done, clean up
-    /*!
-      There can be a variety of objects to a problem. Some of them might
-      require proper cleanup. Make sure we always do it.
-     */
-    static void done();
 
     //@}
 
@@ -584,9 +556,6 @@ namespace Global
    private:
     /// private default constructor to disallow creation of instances
     Problem();
-
-    /// the single instance
-    static std::vector<Problem*> instances_;
 
     /// the problem type
     Core::ProblemType probtype_;

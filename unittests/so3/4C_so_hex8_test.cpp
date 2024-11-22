@@ -11,6 +11,7 @@
 #include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_so3_hex8.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 #include <Epetra_SerialComm.h>
 
@@ -46,24 +47,14 @@ namespace
       copytestele_ = std::make_shared<Discret::Elements::SoHex8>(*testele_);
     }
 
-    // Delete pointers.
-    void TearDown() override
-    {
-      copytestele_ = nullptr;
-      testele_ = nullptr;
-      testdis_ = nullptr;
-
-      // We need to make sure the Global::Problem instance created in setUp is deleted again. If
-      // this is not done, some troubles arise where unit tests influence each other on some
-      // configurations. We suspect that missing singleton destruction might be the reason for that.
-      Global::Problem::done();
-    }
     //! dummy discretization for holding element and node pointers
     std::shared_ptr<Core::FE::Discretization> testdis_;
     //! the hex8 element to be tested
     std::shared_ptr<Discret::Elements::SoHex8> testele_;
     //! a copy of the hex8 element to test the copy constructor
     std::shared_ptr<Discret::Elements::SoHex8> copytestele_;
+
+    Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };
 
   /**

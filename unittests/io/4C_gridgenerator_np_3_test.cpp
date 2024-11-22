@@ -17,6 +17,7 @@
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 #include <Epetra_MpiComm.h>
 
@@ -61,6 +62,8 @@ namespace
     Core::IO::GridGenerator::RectangularCuboidInputs inputData_{};
     std::shared_ptr<Core::FE::Discretization> testdis_;
     std::shared_ptr<Epetra_Comm> comm_;
+
+    Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };
 
   TEST_F(GridGeneratorTest, TestGridGeneratorWithHex27Elements)

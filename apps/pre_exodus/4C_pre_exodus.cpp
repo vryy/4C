@@ -22,6 +22,7 @@
 #include "4C_pre_exodus_validate.hpp"
 #include "4C_pre_exodus_writedat.hpp"
 #include "4C_utils_result_test.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_CommandLineProcessor.hpp>
@@ -158,14 +159,13 @@ namespace
 int main(int argc, char** argv)
 {
   using namespace FourC;
+  Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
 
   // communication
   MPI_Init(&argc, &argv);
 
   global_legacy_module_callbacks().RegisterParObjectTypes();
 
-  // create a problem instance
-  Global::Problem* problem = Global::Problem::instance();
   // create default communicators
   std::shared_ptr<Core::Communication::Communicators> communicators =
       Core::Communication::create_comm({});
@@ -208,8 +208,6 @@ int main(int argc, char** argv)
 
     if (parseReturn == Teuchos::CommandLineProcessor::PARSE_HELP_PRINTED)
     {
-      // free the global problem instance
-      problem->done();
       return 0;
     }
     if (parseReturn != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL)
@@ -437,10 +435,6 @@ int main(int argc, char** argv)
     char line[] = "=========================================================================\n";
     std::cout << "\n\n" << line << err.what_with_stacktrace() << "\n" << line << "\n" << std::endl;
 
-    // free the global problem instance and the communicator
-    problem->done();
-    comm = nullptr;
-
 #ifdef FOUR_C_ENABLE_CORE_DUMP
     abort();
 #endif
@@ -448,11 +442,6 @@ int main(int argc, char** argv)
     MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
   }
 
-  // free the global problem instance
-  problem->done();
-
   MPI_Finalize();
-
   return 0;
-
-}  // main.cpp
+}
