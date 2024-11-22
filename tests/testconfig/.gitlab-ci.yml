@@ -477,7 +477,7 @@ verify_headers:
     - |
       cd ${CI_PROJECT_DIR}/../build
       # Configure verification of header sets.
-      cmake ${CI_PROJECT_DIR} --fresh --preset=docker -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
+      cmake ${CI_PROJECT_DIR} --fresh --preset=docker_release_assertions_gcc14 -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
       # verify headers
     - time cmake --build . --target all_verify_interface_header_sets -- -j `nproc` 2>&1 | tee ${CI_PROJECT_DIR}/verify_headers.log
   artifacts:
