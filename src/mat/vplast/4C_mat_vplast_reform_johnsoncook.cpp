@@ -8,9 +8,11 @@
 #include "4C_mat_vplast_reform_johnsoncook.hpp"
 
 #include "4C_global_data.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_vplast_law.hpp"
 
+#include <cmath>
 #include <utility>
 
 FOUR_C_NAMESPACE_OPEN
@@ -55,8 +57,11 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_stress_ratio(
  *--------------------------------------------------------------------*/
 double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
     const double equiv_stress, const double equiv_plastic_strain, const double dt,
-    const bool update_hist_var)
+    const bool log_substep, int& err_status, const bool update_hist_var)
 {
+  // first set error status to 0 (no errors)
+  err_status = 0;
+
   // unwrap variables
   const double p = parameter()->strain_rate_pre_fac();        // prefactor of plastic strain rate
   const double e = 1.0 / parameter()->strain_rate_exp_fac();  // exponent of plastic strain rate
@@ -65,8 +70,8 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
   // substepping)
   if (equiv_plastic_strain < 0.0)
   {
-    throw std::runtime_error(
-        "ERROR 1: Negative Plastic Strain " + std::to_string(equiv_plastic_strain));
+    err_status = 1;
+    return -1;
   }
 
   // compute the viscoplastic strain rate; first we set it to 0
@@ -79,12 +84,13 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
   if (stress_ratio >= 1.0)
   {
     // check if characteristic term too large, throw error overflow error if so
-    if (std::log(dt) + std::log(p) + e * (stress_ratio - 1.0) > std::log(10.0 + p * dt))
+    if (((!log_substep) &&
+            (std::log(dt) + std::log(p) + e * (stress_ratio - 1.0) > std::log(10.0 + p * dt))) ||
+        ((log_substep) && (std::log(dt) + std::log(p) + e * (stress_ratio - 1.0) >
+                              std::log(std::exp(10.0) + p * dt))))
     {
-      throw std::overflow_error(
-          "ERROR 2: Overflow error of the viscoplastic strain rate evaluation: exponent too "
-          "high: " +
-          std::to_string(std::log(dt) + std::log(p) + e * (stress_ratio - 1.0)));
+      err_status = 2;
+      return -1;
     }
 
     equiv_plastic_strain_rate = p * (std::exp(e * (stress_ratio - 1.0)) - 1.0);
@@ -98,8 +104,11 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
 Core::LinAlg::Matrix<2, 1>
 Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_strain_rate(
     const double equiv_stress, const double equiv_plastic_strain, const double dt,
-    const bool update_hist_var)
+    const bool log_substep, int& err_status, const bool update_hist_var)
 {
+  // first set error status to 0 (no errors)
+  err_status = 0;
+
   // unwrap variables
   const double p = parameter()->strain_rate_pre_fac();         // prefactor of plastic strain rate
   const double e = 1.0 / parameter()->strain_rate_exp_fac();   // exponent of plastic strain rate
@@ -121,8 +130,8 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
   // substepping)
   if (equiv_plastic_strain < 0.0)
   {
-    throw std::runtime_error(
-        "ERROR 1: Negative Plastic Strain " + std::to_string(equiv_plastic_strain));
+    err_status = 1;
+    return Core::LinAlg::Matrix<2, 1>{true};
   }
 
   // extraction of yield strength from the plastic strain and the material parameters
@@ -137,13 +146,26 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
   // then we check the yield condition
   if (evaluate_stress_ratio(equiv_stress, used_equiv_plastic_strain) >= 1.0)
   {
-    // compute the exact derivatives
-    equiv_plastic_strain_rate_ders(0, 0) =
-        p * std::exp(e * (equiv_stress / yield_strength - 1.0)) * e / yield_strength;
+    // compute first the logarithms of our derivatives (try to avoid overflow!)
+    double log_deriv_sigma = std::log(p) + e * (equiv_stress / yield_strength - 1.0) + std::log(e) -
+                             std::log(yield_strength);
+    double log_deriv_eps = std::log(p) + e * (equiv_stress / yield_strength - 1.0) + std::log(e) +
+                           std::log(equiv_stress) - 2.0 * std::log(yield_strength) + std::log(B) +
+                           std::log(N) + (N - 1.0) * std::log(used_equiv_plastic_strain);
 
-    equiv_plastic_strain_rate_ders(1, 0) = p * std::exp(e * (equiv_stress / yield_strength - 1.0)) *
-                                           e * (-equiv_stress / std::pow(yield_strength, 2.0)) * B *
-                                           N * std::pow(used_equiv_plastic_strain, N - 1.0);
+    // check overflow error using these logarithms
+    if ((!log_substep && (std::log(dt) + log_deriv_sigma > 10.0) &&
+            (std::log(dt) + log_deriv_eps > 10.0)) &&
+        (log_substep && (std::log(dt) + log_deriv_sigma > std::exp(10.0)) &&
+            (std::log(dt) + log_deriv_eps > std::exp(10.0))))
+    {
+      err_status = 2;
+      return Core::LinAlg::Matrix<2, 1>{true};
+    }
+
+    // compute the exact derivatives using these logarithms
+    equiv_plastic_strain_rate_ders(0, 0) = std::exp(log_deriv_sigma);
+    equiv_plastic_strain_rate_ders(1, 0) = -std::exp(log_deriv_eps);
   }
 
   return equiv_plastic_strain_rate_ders;

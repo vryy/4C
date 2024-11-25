@@ -312,7 +312,10 @@ namespace Mat
       //! get boolean: logarithmic substepping? (true: yes, false: standard substepping)
       [[nodiscard]] bool bool_log_substepping() const { return bool_log_substepping_; };
       //! get maximum number of times a time step can be halved into smaller and smaller substeps
-      [[nodiscard]] int max_halve_number() const { return max_halve_number_; };
+      [[nodiscard]] unsigned int max_halve_number() const
+      {
+        return static_cast<unsigned int>(max_halve_number_);
+      };
 
 
       //! read anisotropy type (true: transversely-isotropic, false: isotropic)
@@ -1365,13 +1368,14 @@ namespace Mat
      * @param[in] iFinM inverse inelastic deformation gradient
      *                  \f[ \boldsymbol{F}_{\text{in}}^{-1} \f] in matrix form
      * @param[in] plastic_strain plastic strain  \f$ \varepsilon_{\text{p}} \f$
+     * @param[out] err_status error status (0: no errors, >0: various error types triggering
+     * substepping)
      * @param[in] int_dt time step (or substep) length used for time integration
-     * @param[in] check_dt time step (or substep) length used for overflow checking (default value:
-     *                     small, to avoid overflow checking in the logarithmic substepping scheme)
+     * @param[in] check_dt time step (or substep) length used for overflow checking
      */
     StateQuantities evaluate_state_quantities(const Core::LinAlg::Matrix<3, 3> &CM,
-        const Core::LinAlg::Matrix<3, 3> &iFinM, const double plastic_strain, const double int_dt,
-        const double check_dt = 1.0e-100);
+        const Core::LinAlg::Matrix<3, 3> &iFinM, const double plastic_strain, int &err_status,
+        const double int_dt, const double check_dt);
 
     /*! @brief Evaluate the current state variable derivatives with respect to the right
      * Cauchy-Green deformation tensor, the inverse plastic deformation gradient and the equivalent
@@ -1381,15 +1385,16 @@ namespace Mat
      * @param[in] iFinM inverse inelastic deformation gradient \f$ \boldsymbol{F}_{\text{in}}^{-1}
      *                  \f$ in matrix form
      * @param[in] plastic_strain plastic strain  \f$ \varepsilon_{\text{p}} \f$
+     * @param[out] err_status error status (0: no errors, >0: various error types triggering
+     * substepping)
      * @param[in] int_dt time step length  \f$ \Delta t \f$ (used for the integration)
-     * @param[in] check_dt time step (or substep) length used for overflow checking (default value:
-     *                     small, to avoid overflow checking in the logarithmic substepping scheme)
+     * @param[in] check_dt time step (or substep) length used for overflow checking
      * @param[in] eval_state boolean: do we want to also evaluate the current state first (true)
      *                       or is this already available from the current state variables (false)
      */
     StateQuantityDerivatives evaluate_state_quantity_derivatives(
         const Core::LinAlg::Matrix<3, 3> &CM, const Core::LinAlg::Matrix<3, 3> &iFinM,
-        const double plastic_strain, const double int_dt, const double check_dt = 1.0e-100,
+        const double plastic_strain, int &err_status, const double int_dt, const double check_dt,
         const bool eval_state = false);
 
     //! return the fiber direction of transverse isotropy for the considered element
@@ -1502,6 +1507,35 @@ namespace Mat
     //! tensor interpolator used in the substepping procedure (one-dimensional, of order 1)
     Core::LinAlg::SecondOrderTensorInterpolator<1> tensor_interpolator_{1};
 
+    //! tensor interpolation: reference matrices
+    std::vector<Core::LinAlg::Matrix<3, 3>> ref_matrices_;
+
+    //! tensor interpolation: 1D reference locations (we always interpolate between 0.0 and 1.0
+    //! based on the reference matrices of the current time step)
+    const std::vector<double> ref_locs_{0.0, 1.0};
+
+    //! struct with substepping parameters
+    struct SubstepParams
+    {
+      //! current time parameter ranging from 0 to the problem time step \f$ \Delta t \f$
+      double t;
+      //! counter of evaluated substeps
+      unsigned int substep_counter;
+      //! current substep size
+      double curr_dt;
+      //! number of times the problem time step \f$ \Delta t \f$ has been halved
+      unsigned int time_step_halving_counter;
+      //!  current maximum number of substeps to be evaluated within the time step \f$ \Delta t
+      //! \f$; this is not always given by time_step_halving_counter, since the
+      //! halving does not have to be uniform (e.g. we could halve the time step twice and still
+      //! have 3 substeps to evaluate instead of 4, i.e. if the first substep was evaluable
+      //! numerically, but the second substep not, leading to another halving of the substep length)
+      unsigned int max_num_of_substeps;
+      //! iteration counter of the Local Newton Loop used to evaluate each substep
+      unsigned int iter;
+    };
+
+
     /*!
      * @brief Calculate the Holzapfel gamma and delta values of the isotropic elastic material
      * components
@@ -1516,6 +1550,22 @@ namespace Mat
         Core::LinAlg::Matrix<3, 1> &gamma, Core::LinAlg::Matrix<8, 1> &delta);
 
     /*!
+     * @brief Check the elastic predictor: is the predictor the solution of the current time step?
+     *
+     * @param[in] CM right Cauchy_Green deformation tensor \f$ \boldsymbol{C} \f$ in matrix form
+     * @param[in] iFinM_pred predictor of the inverse inelastic deformation gradient \f$
+     * \bm{F}_{\text{in, pred}} \f$
+     * @param[in] plastic_strain_pred predictor of the plastic strain \f$ \varepsilon_{\text{p,
+     * pred}} \f$
+     * @param[out] err_status error status (0: no errors, >0: various error types triggering
+     * substepping)
+     * @return boolean value: true (predictor = solution), or false (predictor != solution)
+     */
+    bool check_predictor(const Core::LinAlg::Matrix<3, 3> &CM,
+        const Core::LinAlg::Matrix<3, 3> &iFinM_pred, const double plastic_strain_pred,
+        int &err_status);
+
+    /*!
      * @brief Calculate the residual for the Local Newton Loop (LNL)
      *
      * @param[in] CM right Cauchy_Green deformation tensor \f$ \boldsymbol{C} \f$ in matrix form
@@ -1527,12 +1577,14 @@ namespace Mat
      * @param[in] last_plastic_strain last plastic strain \f$ \varepsilon_{\text{p}, n}\f$
      * @param[in] int_dt time step (or substep) length used for time integration
      * @param[in] check_dt time step (or substep) length used for overflow checking
+     * @param[out] err_status error status (0: no errors, >0: various error types triggering
+     * substepping)
      * @return  residual of the LNL equations
      */
     Core::LinAlg::Matrix<10, 1> calculate_local_newton_loop_residual(
         const Core::LinAlg::Matrix<3, 3> &CM, const Core::LinAlg::Matrix<10, 1> &x,
         const Core::LinAlg::Matrix<3, 3> &last_iFinM, const double last_plastic_strain,
-        const double int_dt, const double check_dt);
+        const double int_dt, const double check_dt, int &err_status);
 
 
     /*!
@@ -1549,12 +1601,15 @@ namespace Mat
      * @param[in] last_plastic_strain last plastic strain \f$ \varepsilon_{\text{p}, n}\f$
      * @param[in] int_dt time step (or substep) length used for time integration
      * @param[in] check_dt time step (or substep) length used for overflow checking
+     * @param[out] err_status error status (0: no errors, >0: various error types triggering
+     * substepping)
      * @return 10x10 jacobian matrix of the Local Newton Loop and of the linearization
      *         \f$ \boldsymbol{J} \f$
      */
     Core::LinAlg::Matrix<10, 10> calculate_jacobian(const Core::LinAlg::Matrix<3, 3> &CM,
         const Core::LinAlg::Matrix<10, 1> &x, const Core::LinAlg::Matrix<3, 3> &last_iFinM,
-        const double last_plastic_strain, const double int_dt, const double check_dt);
+        const double last_plastic_strain, const double int_dt, const double check_dt,
+        int &err_status);
 
 
     /*!
@@ -1565,10 +1620,52 @@ namespace Mat
      * @param[in] x predictor of Local Newton Loop, composed of the components of the
      *              inverse inelastic deformation gradient \f$ \boldsymbol{F}_{\text{in}}^{-1} \f$
      *              and plastic strain \f$ \varepsilon_{\text{p}} \f$
+     * @param[out] err_status error status (0: no errors, >0: various error types triggering
+     * substepping)
      * @return solution vector of the Local Newton Loop, structured analogously to the predictor x
      */
-    Core::LinAlg::Matrix<10, 1> local_newton_loop(
-        const Core::LinAlg::Matrix<3, 3> &defgrad, const Core::LinAlg::Matrix<10, 1> &x);
+    Core::LinAlg::Matrix<10, 1> local_newton_loop(const Core::LinAlg::Matrix<3, 3> &defgrad,
+        const Core::LinAlg::Matrix<10, 1> &x, int &err_status);
+
+
+    /*!
+     * @brief Setup new substep in the Local Newton Loop in case of an encountered evaluation error
+     *
+     * @param[in, out] substep_params parameters of the substepping procedure
+     * @param[out] sol current solution vector of the Local Newton Loop (reset to the last
+     * converged value within this method)
+     * @param[out] curr_CM current right Cauchy-Green deformation tensor, interpolated using
+     * the reference matrices of the time step (interpolated again within this method with the
+     * updated new substep length)
+     * @return error status for the new substep (0: no errors, 1: we have halved the time step too
+     * many times)
+     *
+     */
+    int prepare_new_substep(SubstepParams &substep_params, Core::LinAlg::Matrix<10, 1> &sol,
+        Core::LinAlg::Matrix<3, 3> &curr_CM);
+
+    /*!
+     * @brief Evaluate the additional cmat stiffness tensor using a perturbation-based approach, if
+     * the analytical evaluation fails
+     *
+     * @note For further information on the procedure, refer to:
+     *       -# Master's Thesis : Dragos-Corneliu Ana, Continuum Modeling and Calibration of
+     * Viscoplasticity in the Context of the Lithium Anode in Solid State Batteries, Supervisor:
+     * Christoph Schmidt, 2024
+     *
+     * @param[in] FredM reduced deformation gradient \f$ \boldsymbol{F}_{\text{red}} =
+     * \boldsymbol{F} \boldsymbol{F_{\text{in,other}}^{-1}} \f$ accounting for all the already
+     * computed inelastic defgrad factors
+     * @param[out] cmatadd Additional elasticity stiffness
+     * @param[out] iFin_other Already computed inverse inelastic deformation gradient
+     *              (from already computed inelastic factors in the multiplicative split material)
+     * @param[in] dSdiFinj Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
+     *                     deformation gradient of current inelastic contribution
+     *
+     */
+    void evaluate_additional_cmat_perturb_based(const Core::LinAlg::Matrix<3, 3> &FredM,
+        Core::LinAlg::Matrix<6, 6> &cmatadd, const Core::LinAlg::Matrix<3, 3> &iFin_other,
+        const Core::LinAlg::Matrix<6, 9> &dSdiFinj);
   };
 }  // namespace Mat
 
