@@ -170,16 +170,6 @@ namespace Mat
     /// struct containing various kinematic quantities for the model evaluation
     struct KinematicQuantities
     {
-      // ----- elasticity tensor components ----- //
-
-      /// part of the elasticity tensor as shown in evaluate_stress_cmat_iso
-      Core::LinAlg::Matrix<6, 6> cmatiso{true};
-      /// Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic deformation
-      /// gradient
-      Core::LinAlg::Matrix<6, 9> dSdiFin{true};
-      /// additional elasticity tensor \f$ cmat_{add} \f$
-      Core::LinAlg::Matrix<6, 6> cmatadd{true};
-
       // ----- variables of kinetic quantities ----- //
 
       /// inverse right Cauchy-Green tensor \f$ \mathbf{C}^{-1} \f$ stored as 6x1 vector
@@ -223,7 +213,12 @@ namespace Mat
       Core::LinAlg::Matrix<3, 1> dPIe{true};
       /// second derivatives of principle invariants
       Core::LinAlg::Matrix<6, 1> ddPIIe{true};
+    };
 
+    /// struct containing free-energy related stress factors, as presented in Holzapfel-Nonlinear
+    /// Solid Mechanics
+    struct StressFactors
+    {
       // ----- gamma and delta factors ----- //
 
       // 2nd Piola Kirchhoff stresses factors (according to Holzapfel-Nonlinear Solid Mechanics p.
@@ -314,36 +309,42 @@ namespace Mat
      * @param[in] iCV      Inverse right Cauchy-Green tensor stored as 6x1 vectors
      * @param[in] dSdiFin  Derivative of 2nd Piola Kirchhoff stress w.r.t. the inverse inelastic
      *                     deformation gradient
-     * @param[out] cmatadd Additional elasticity tensor \f$ cmat_{add} \f$
+     * @return Additional elasticity tensor \f$ cmat_{add} \f$
      */
-    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFin,
-        Core::LinAlg::Matrix<6, 6>& cmatadd);
+    Core::LinAlg::Matrix<6, 6> evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFin);
 
     /*!
      * @brief  Evaluate derivative of 2nd Piola Kirchhoff stresses w.r.t. the inelastic deformation
      * gradient for the isotropic components
      *
-     * @param[in, out] kinemat_quant struct containing the kinematic quantities and the elasticity
-     * tensor components
+     * @param[in] kinemat_quant struct containing kinematic quantities
+     * @param[in] stress_fact struct containing \f$ \gamma_i \f$ and \f$ \delta_i \f$ stress
+     * factors, as presented in Holzapfel - Nonlinear Solid Mechanics
+     * @return derivative \f$ \frac{\partial \mathsymbol{S}}{\partial
+     * \mathsymbol{F}^{-1}_{\text{in}}} \f$
      */
-    void evaluated_sdi_fin(KinematicQuantities& kinemat_quant) const;
+    Core::LinAlg::Matrix<6, 9> evaluated_sdi_fin(
+        const KinematicQuantities& kinemat_quant, const StressFactors& stress_factors) const;
 
     /*!
      * @brief  Evaluate the stress and stiffness components of the transversely isotropic components
      * separately
      *
-     * @param[in, out] kinemat_quant struct containing the kinematic quantities and the elasticity
-     * tensor components
+     * @param[in] kinemat_quant struct containing kinematic quantities
      * @param[in] CM Right CG deformation tensor
      * \param[in]  params additional parameters for comp. of material properties
      * \param[in]  gp       Gauss point
      * \param[in]  eleGID element GID
      * @param[out] stress   2nd Piola--Kirchhoff stress tensor
+     * @param[out] cmatiso  part of the elasticity tensor as shown in evaluate_stress_cmat_iso
+     * @param[out] dSdiFin derivative of 2nd Piola Kirchhoff stresses w.r.t. the inelastic
+     * deformation gradient
      */
-    void evaluate_transv_iso_quantities(KinematicQuantities& kinemat_quant,
+    void evaluate_transv_iso_quantities(const KinematicQuantities& kinemat_quant,
         const Core::LinAlg::Matrix<3, 3>& CM, Teuchos::ParameterList& params, const int gp,
-        const int eleGID, Core::LinAlg::Matrix<6, 1>& stress) const;
+        const int eleGID, Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<6, 6>& cmatiso,
+        Core::LinAlg::Matrix<6, 9>& dSdiFin) const;
 
     /*!
      * @brief Evaluates stress and cmat
@@ -391,20 +392,22 @@ namespace Mat
      *   A^{-1}_{ad} A^{-1}_{bc}); \text{ for } A_{ab} = A_{ba}
      * \f] meaning a symmetric 2-tensor \f$A\f$
      *
-     * @param[in, out] kinemat_quant struct containing the kinematic quantities and the elasticity
-     * tensor components
+     * @param[in] kinemat_quant struct containing kinematic quantities
+     * @param[in] stress_fact struct containing \f$ \gamma_i \f$ and \f$ \delta_i \f$ stress
+     * factors, as presented in Holzapfel - Nonlinear Solid Mechanics
      * @param[out] stress   2nd Piola--Kirchhoff stress tensor
+     * @param[out] cmatiso  part of the elasticity tensor as shown above
      */
-    void evaluate_stress_cmat_iso(
-        KinematicQuantities& kinemat_quant, Core::LinAlg::Matrix<6, 1>& stress) const;
+    void evaluate_stress_cmat_iso(const KinematicQuantities& kinemat_quant,
+        const StressFactors& stress_fact, Core::LinAlg::Matrix<6, 1>& stress,
+        Core::LinAlg::Matrix<6, 6>& cmatiso) const;
 
     /*!
      * @brief Evaluates some kinematic quantities that are used in stress and elasticity tensor
      * calculation
      *
      * @param[in] defgrad  Deformation gradient
-     * @param[out] kinemat_quant struct containing the kinematic quantities and the elasticity
-     * tensor components
+     * @param[out] kinemat_quant struct containing kinematic quantities
      */
     void evaluate_kin_quant_elast(
         const Core::LinAlg::Matrix<3, 3>* defgrad, KinematicQuantities& kinemat_quant) const;
