@@ -158,11 +158,6 @@ namespace Discret
 
       std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
-      // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can
-      // inherently handle (3)...
-      void location_vector(const Core::FE::Discretization& dis, Core::Elements::LocationArray& la,
-          bool doDirichlet) const override;
-
       int num_dof_per_element() const override { return 0; }
 
       int num_dof_per_node(const Core::Nodes::Node& node) const override

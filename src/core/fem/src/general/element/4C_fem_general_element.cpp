@@ -141,12 +141,6 @@ Core::Elements::Element::Element(const Element& old)
       face_(old.face_),
       mat_(1, nullptr)
 {
-  // we do NOT want a deep copy of the condition_ as the condition
-  // is only a reference in the elements anyway
-  std::map<std::string, std::shared_ptr<Core::Conditions::Condition>>::const_iterator fool;
-  for (fool = old.condition_.begin(); fool != old.condition_.end(); ++fool)
-    set_condition(fool->first, fool->second);
-
   if (!old.mat_.empty())
   {
     mat_.resize(old.mat_.size());
@@ -400,34 +394,6 @@ void Core::Elements::Element::nodal_connectivity(
         Core::FE::cell_type_to_string(shape()).c_str());
 }
 
-/*----------------------------------------------------------------------*
- |  Get a condition of a certain name                          (public) |
- |                                                            gee 12/06 |
- *----------------------------------------------------------------------*/
-void Core::Elements::Element::get_condition(
-    const std::string& name, std::vector<Core::Conditions::Condition*>& out) const
-{
-  const int num = condition_.count(name);
-  out.resize(num);
-  auto startit = condition_.lower_bound(name);
-  auto endit = condition_.upper_bound(name);
-  int count = 0;
-  std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>>::const_iterator curr;
-  for (curr = startit; curr != endit; ++curr) out[count++] = curr->second.get();
-  if (count != num) FOUR_C_THROW("Mismatch in number of conditions found");
-}
-
-/*----------------------------------------------------------------------*
- |  Get a condition of a certain name                          (public) |
- |                                                            gee 12/06 |
- *----------------------------------------------------------------------*/
-Core::Conditions::Condition* Core::Elements::Element::get_condition(const std::string& name) const
-{
-  auto curr = condition_.find(name);
-  if (curr == condition_.end()) return nullptr;
-  curr = condition_.lower_bound(name);
-  return curr->second.get();
-}
 
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |
@@ -450,7 +416,6 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
   for (int dofset = 0; dofset < la.size(); ++dofset)
   {
     std::vector<int>& lm = la[dofset].lm_;
-    std::vector<int>& lmdirich = la[dofset].lmdirich_;
     std::vector<int>& lmowner = la[dofset].lmowner_;
     std::vector<int>& lmstride = la[dofset].stride_;
 
@@ -471,28 +436,6 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
         {
           lmowner.push_back(owner);
           lm.push_back(dof[j]);
-        }
-
-        if (doDirichlet)
-        {
-          const std::vector<int>* flag = nullptr;
-          Core::Conditions::Condition* dirich = node->get_condition("Dirichlet");
-          if (dirich)
-          {
-            if (dirich->type() != Core::Conditions::PointDirichlet &&
-                dirich->type() != Core::Conditions::LineDirichlet &&
-                dirich->type() != Core::Conditions::SurfaceDirichlet &&
-                dirich->type() != Core::Conditions::VolumeDirichlet)
-              FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-            flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
-          }
-          for (unsigned j = 0; j < dof.size(); ++j)
-          {
-            if (flag && (*flag)[j])
-              lmdirich.push_back(1);
-            else
-              lmdirich.push_back(0);
-          }
         }
       }
     }
@@ -520,28 +463,6 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
           lmowner.push_back(owner);
           lm.push_back(j);
         }
-      }
-    }
-
-    if (doDirichlet)
-    {
-      const std::vector<int>* flag = nullptr;
-      Core::Conditions::Condition* dirich = get_condition("Dirichlet");
-      if (dirich)
-      {
-        if (dirich->type() != Core::Conditions::PointDirichlet &&
-            dirich->type() != Core::Conditions::LineDirichlet &&
-            dirich->type() != Core::Conditions::SurfaceDirichlet &&
-            dirich->type() != Core::Conditions::VolumeDirichlet)
-          FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-        flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
-      }
-      for (unsigned j = 0; j < dof.size(); ++j)
-      {
-        if (flag && (*flag)[j])
-          lmdirich.push_back(1);
-        else
-          lmdirich.push_back(0);
       }
     }
   }
@@ -707,27 +628,12 @@ void Core::Elements::Element::location_vector(
 
     if (doDirichlet)
     {
-      const std::vector<int>* flag = nullptr;
-      Core::Conditions::Condition* dirich = get_condition("Dirichlet");
-      if (dirich)
-      {
-        if (dirich->type() != Core::Conditions::PointDirichlet &&
-            dirich->type() != Core::Conditions::LineDirichlet &&
-            dirich->type() != Core::Conditions::SurfaceDirichlet &&
-            dirich->type() != Core::Conditions::VolumeDirichlet)
-          FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-        flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
-      }
       for (unsigned j = 0; j < dof.size(); ++j)
       {
-        if (flag && (*flag)[j])
-          lmdirich.push_back(1);
-        else
-          lmdirich.push_back(0);
+        lmdirich.push_back(0);
       }
     }
-
-  }  // for (int dofset=0; dofset<la.Size(); ++dofset)
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -746,105 +652,6 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
    */
   location_vector(dis, la, doDirichlet);
 }
-
-/*----------------------------------------------------------------------*
- |  Get degrees of freedom used by this element                (public) |
- |                                                            gee 12/06 |
- *----------------------------------------------------------------------*/
-void Core::Elements::Element::location_vector(const Core::FE::Discretization& dis,
-    std::vector<int>& lm, std::vector<int>& lmdirich, std::vector<int>& lmowner,
-    std::vector<int>& lmstride) const
-{
-  const int numnode = num_node();
-  const Core::Nodes::Node* const* nodes = Element::nodes();
-
-  lm.clear();
-  lmdirich.clear();
-  lmowner.clear();
-  lmstride.clear();
-
-  // fill the vector with nodal dofs
-  if (nodes)
-  {
-    for (int i = 0; i < numnode; ++i)
-    {
-      Core::Conditions::Condition* dirich = nodes[i]->get_condition("Dirichlet");
-      const std::vector<int>* flag = nullptr;
-      if (dirich)
-      {
-        if (dirich->type() != Core::Conditions::PointDirichlet &&
-            dirich->type() != Core::Conditions::LineDirichlet &&
-            dirich->type() != Core::Conditions::SurfaceDirichlet &&
-            dirich->type() != Core::Conditions::VolumeDirichlet)
-          FOUR_C_THROW("condition with name dirichlet is not of type Dirichlet");
-        flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
-      }
-      const int owner = nodes[i]->owner();
-      std::vector<int> dof;
-      dis.dof(dof, nodes[i], 0, 0);
-      const int size = dof.size();
-      lmstride.push_back(size);
-      for (int j = 0; j < size; ++j)
-      {
-        if (flag && (*flag)[j])
-          lmdirich.push_back(1);
-        else
-          lmdirich.push_back(0);
-        lmowner.push_back(owner);
-        lm.push_back(dof[j]);
-      }
-    }
-  }
-
-  // fill the vectors with element dofs
-  unsigned bef = lm.size();
-  dis.dof(0, this, lm);
-  unsigned aft = lm.size();
-  if (aft - bef) lmstride.push_back((int)(aft - bef));
-  lmowner.resize(lm.size(), owner());
-
-  // fill the vector with face dofs
-  if (this->num_dof_per_face(0) > 0)
-  {
-    for (int i = 0; i < num_face(); ++i)
-    {
-      const int owner = face_[i]->owner();
-      std::vector<int> dof = dis.dof(0, face_[i].get());
-      if (!dof.empty()) lmstride.push_back(dof.size());
-      for (int j : dof)
-      {
-        lmowner.push_back(owner);
-        lm.push_back(j);
-      }
-    }
-  }
-
-  // do dirichlet BCs
-  const std::vector<int>* flag = nullptr;
-  Core::Conditions::Condition* dirich = get_condition("Dirichlet");
-  if (dirich)
-  {
-    if (dirich->type() != Core::Conditions::PointDirichlet &&
-        dirich->type() != Core::Conditions::LineDirichlet &&
-        dirich->type() != Core::Conditions::SurfaceDirichlet &&
-        dirich->type() != Core::Conditions::VolumeDirichlet)
-      FOUR_C_THROW("condition with name dirichlet is not of type Dirichlet");
-    flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
-  }
-  const int owner = Element::owner();
-  std::vector<int> dof = dis.dof(this);
-  if (!dof.empty()) lmstride.push_back((int)dof.size());
-  for (unsigned j = 0; j < dof.size(); ++j)
-  {
-    if (flag && (*flag)[j])
-      lmdirich.push_back(1);
-    else
-      lmdirich.push_back(0);
-    lmowner.push_back(owner);
-    lm.push_back(dof[j]);
-  }
-}
-
 
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |

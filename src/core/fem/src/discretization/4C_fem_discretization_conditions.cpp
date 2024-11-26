@@ -26,7 +26,6 @@ void Core::FE::Discretization::boundary_conditions_geometry()
   // As a first step we delete ALL references to any conditions
   // in the discretization
   for (int i = 0; i < num_my_col_nodes(); ++i) l_col_node(i)->clear_conditions();
-  for (int i = 0; i < num_my_col_elements(); ++i) l_col_element(i)->clear_conditions();
 
   // now we delete all old geometries that are attached to any conditions
   // and set a communicator to the condition

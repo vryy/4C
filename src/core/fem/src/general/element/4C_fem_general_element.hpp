@@ -797,69 +797,6 @@ might become invalid after a redistribution of the discretization.
 
     //@}
 
-    //! @name Conditions
-
-    /*!
-    \brief Set a condition with a certain name
-
-    Store a condition with a certain name in the element. The name need not
-    be unique, meaning multiple conditions with the same name can be stored.
-    Conditions can then be accessed with the GetCondition methods.
-
-    \param name : Name of condition
-    \param cond : The Condition class
-
-    \warning If a condition with the exact same name already exists, it will
-             NOT be overwritten but stored twice in the element
-
-    */
-    void set_condition(const std::string& name, std::shared_ptr<Core::Conditions::Condition> cond)
-    {
-      condition_.insert(
-          std::pair<std::string, std::shared_ptr<Core::Conditions::Condition>>(name, cond));
-      return;
-    }
-
-    /*!
-    \brief Get all conditions with a certain name
-
-    Get all conditions with a certain name. A vector of ptrs to all conditions
-    with name name is returned in out. The number of conditions found with name
-    name is out.size(). out.size() is 0 if no condition with that name is found.
-
-    \param name (in): Name of condition
-    \param out  (out): vector of pointers to all conditions with that name
-
-    */
-    virtual void get_condition(
-        const std::string& name, std::vector<Core::Conditions::Condition*>& out) const;
-
-    /*!
-    \brief Get a condition with a certain name
-
-    Returns the first condition with name name found in the multimap.
-    If multiple conditions with the same name exist, the first condition with
-    that name is returned and behaviour is therefore non-deterministic.
-    This method should therefore only be used in cases where the user is
-    positive that name is unique.
-
-    \param name (in): Name of condition
-
-    \return Returns nullptr if condition with that name does not exist
-    */
-    virtual Core::Conditions::Condition* get_condition(const std::string& name) const;
-
-    /*!
-    \brief Delete all conditions set to this element
-    */
-    virtual void clear_conditions()
-    {
-      condition_.clear();
-      return;
-    }
-
-    //@}
-
     //! @name Evaluation methods
 
     /*!
@@ -950,37 +887,6 @@ might become invalid after a redistribution of the discretization.
     */
     virtual void location_vector(const Core::FE::Discretization& dis, LocationArray& la,
         bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const;
-    /*!
-    \brief Return the location vector of this element
-
-    The method computes degrees of freedom this element adresses.
-    Degree of freedom ordering is as follows:<br>
-    First all degrees of freedom of adjacent nodes are numbered in
-    local nodal order, then the element internal degrees of freedom are
-    given if present.<br>
-    If a derived element has to use a different ordering scheme,
-    it is welcome to overload this method as the assembly routines actually
-    don't care as long as matrices and vectors evaluated by the element
-    match the ordering, which is implicitly assumed.<br>
-    Length of the output vector matches number of degrees of freedom
-    exactly.<br>
-
-    \note The degrees of freedom returned are not neccessarily only nodal dofs.
-          Depending on the element implementation, output might also include
-          element dofs.
-
-    \param dis (in)      : the discretization this element belongs to
-    \param lm (out)      : vector of degrees of freedom adressed by this element
-    \param lmdirich (out): vector of zeros and ones indicating which
-                           dofs have dirichlet boundary conditions. Ordering
-                           matches dofs in lm.
-    \param lmowner (out) : vector of proc numbers indicating which dofs are owned
-                           by which procs in a dof row map. Ordering
-                           matches dofs in lm.
-
-    */
-    virtual void location_vector(const Core::FE::Discretization& dis, std::vector<int>& lm,
-        std::vector<int>& lmdirich, std::vector<int>& lmowner, std::vector<int>& lmstride) const;
 
     /*!
     \brief Return the location vector of this element
@@ -1242,18 +1148,6 @@ might become invalid after a redistribution of the discretization.
     /// @}
 
    private:
-    /*!
-    \brief Default Constructor must not be called
-
-    */
-    Element()
-    {
-      FOUR_C_THROW(
-          "Default constructor of Element must not be called. Due to virtual"
-          "inheritance from Element it can be necessary to call the non-default constructor "
-          "explicitly.");
-    }
-
     //! \brief A unique global element id
     int id_;
 
@@ -1272,9 +1166,6 @@ might become invalid after a redistribution of the discretization.
     //! \brief List of my faces, length NumFace(). Only filled if face elements are created, when
     //! using DiscretizationFaces
     std::vector<std::shared_ptr<FaceElement>> face_;
-
-    //! \brief Some conditions e.g. BCs
-    std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>> condition_;
 
     //! vector of material objects of element
     std::vector<std::shared_ptr<Core::Mat::Material>> mat_;
