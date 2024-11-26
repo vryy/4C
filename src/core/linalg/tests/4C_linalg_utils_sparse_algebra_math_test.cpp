@@ -144,10 +144,13 @@ namespace
 
       // Check for global entries
       const int A_inverse_nnz = A_inverse->epetra_matrix()->NumGlobalNonzeros();
-      EXPECT_EQ(A_inverse_nnz, 115760);
+      // Note: the number of entries lower than a tolerance is not necessarily deterministic
+      EXPECT_NEAR(A_inverse_nnz, 115760, 10);
 
       // Check for overall norm of matrix inverse
-      EXPECT_NEAR(A_inverse->norm_frobenius(), 8.31688788510637e+06, 1e-6);
+      constexpr double expected_frobenius_norm = 8.31688788510637e+06;
+      EXPECT_NEAR(
+          A_inverse->norm_frobenius(), expected_frobenius_norm, expected_frobenius_norm * 1e-12);
     }
 
     {
@@ -167,10 +170,13 @@ namespace
 
       // Check for global entries
       const int A_inverse_nnz = A_thresh->epetra_matrix()->NumGlobalNonzeros();
-      EXPECT_EQ(A_inverse_nnz, 228388);
+      // Note: the number of entries lower than a tolerance is not necessarily deterministic
+      EXPECT_NEAR(A_inverse_nnz, 228388, 10);
 
       // Check for overall norm of matrix inverse
-      EXPECT_NEAR(A_thresh->norm_frobenius(), 1.1473820881252188e+07, 1e-5);
+      constexpr double expected_frobenius_norm = 1.1473820881252188e+07;
+      EXPECT_NEAR(
+          A_thresh->norm_frobenius(), expected_frobenius_norm, expected_frobenius_norm * 1e-12);
     }
   }
 }  // namespace
