@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-FROM ubuntu:focal
+FROM ubuntu:noble
 LABEL org.opencontainers.image.description="Image containing all the dependencies required for building and testing 4C"
 LABEL org.4c-multiphysics.project=4C
 
@@ -50,7 +50,7 @@ RUN apt-get update && apt-get install -y \
       libfftw3-dev \
       lld \
       python3 \
-      python3.8-venv \
+      python3-venv \
       python-is-python3 \
       liblapack-dev \
       libopenmpi-dev \

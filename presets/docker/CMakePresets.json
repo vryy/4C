@@ -16,7 +16,7 @@
         "FOUR_C_PVPYTHON": "/opt/4C-dependencies-testing/ParaView-5.5.2-Qt5-MPI-Linux-64bit/bin/pvpython",
         "BUILD_SHARED_LIBS": "ON",
         "FOUR_C_WITH_GOOGLETEST": "ON",
-        "FOUR_C_BUILD_DOXYGEN": "ON",
+        "FOUR_C_BUILD_DOXYGEN": "OFF",
         "FOUR_C_BUILD_READTHEDOCS": "ON",
         "FOUR_C_DOXYGEN_USE_LOCAL_MATHJAX": "ON",
         "FOUR_C_DOXYGEN_LOCAL_MATHJAX_BASEPATH": "/opt/4C-dependencies-testing/MathJax-2.7.9",
@@ -47,7 +47,6 @@
         "CMAKE_CXX_COMPILER": "/opt/4C-dependencies-testing/bin/g++",
         "CMAKE_C_COMPILER": "/opt/4C-dependencies-testing/bin/gcc",
         "CMAKE_BUILD_RPATH": "/opt/4C-dependencies-testing/lib64",
-        "FOUR_C_BUILD_DOXYGEN": "OFF",
         "FOUR_C_BUILD_READTHEDOCS": "OFF"
       }
     },
