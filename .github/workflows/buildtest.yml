@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  gcc9_build:
+  gcc13_build:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:5b510723
@@ -41,8 +41,8 @@ jobs:
           build-directory: ${{ github.workspace }}/build
           retention-days: 1
 
-  gcc9_test:
-    needs: gcc9_build
+  gcc13_test:
+    needs: gcc13_build
     runs-on: ubuntu-latest
     if: github.ref != 'refs/heads/main'
     container:
@@ -69,7 +69,7 @@ jobs:
           ./utilities/set_up_dev_env.sh
       - uses: ./.github/actions/download_4C_build
         with:
-          build-job: gcc9_build
+          build-job: gcc13_build
       - name: Test
         run: |
           cd $GITHUB_WORKSPACE/build
@@ -134,12 +134,12 @@ jobs:
           ctest -L minimal -j `nproc` --output-on-failure
 
   ensure_all_tests_pass:
-    needs: [gcc9_test, gcc9_build, clang18_build, clang18_test_minimal]
+    needs: [gcc13_test, gcc13_build, clang18_build, clang18_test_minimal]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Check for successful builds and tests
         uses: re-actors/alls-green@release/v1
         with:
-          allowed-skips: gcc9_test
+          allowed-skips: gcc13_test
           jobs: ${{ toJSON(needs) }}

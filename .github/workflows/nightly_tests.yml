@@ -5,7 +5,7 @@ on:
     - cron: '0 22 * * *'
 
 jobs:
-  gcc9_build:
+  gcc13_build:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:5b510723
@@ -30,8 +30,8 @@ jobs:
           build-directory: ${{ github.workspace }}/build
           retention-days: 1
 
-  gcc9_test:
-    needs: gcc9_build
+  gcc13_test:
+    needs: gcc13_build
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:5b510723
@@ -57,7 +57,7 @@ jobs:
           ./utilities/set_up_dev_env.sh
       - uses: ./.github/actions/download_4C_build
         with:
-          build-job: gcc9_build
+          build-job: gcc13_build
       - name: Test
         run: |
           cd $GITHUB_WORKSPACE/build
@@ -125,7 +125,7 @@ jobs:
         env:
           TEST_CHUNK: ${{ matrix.test-chunk }}
 
-  gcc9_asan_build:
+  gcc13_asan_build:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:5b510723
@@ -150,8 +150,8 @@ jobs:
           build-directory: ${{ github.workspace }}/build
           retention-days: 1
 
-  gcc9_asan_test:
-    needs: gcc9_asan_build
+  gcc13_asan_test:
+    needs: gcc13_asan_build
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:5b510723
@@ -177,7 +177,7 @@ jobs:
           ./utilities/set_up_dev_env.sh
       - uses: ./.github/actions/download_4C_build
         with:
-          build-job: gcc9_asan_build
+          build-job: gcc13_asan_build
       - name: Test
         run: |
           cd $GITHUB_WORKSPACE/build
