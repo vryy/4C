@@ -12,55 +12,48 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  PROJECT_NAMESPACE: 4c-multiphysics
   IMAGE_SUFFIX: dependencies
-  FOUR_C_DOCKER_DEPENDENCIES_HASH: 5b510723
-  IMAGE_NAME: ghcr.io/4c-multiphysics/4c-dependencies
+  FOUR_C_DOCKER_DEPENDENCIES_HASH: da17023e
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  check-if-docker-build-is-required:
+  check-if-ubuntu20_04-build-is-required:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch'
     outputs:
-      dependencies_hash: ${{ steps.compute-dependencies-hash.outputs.dependencies_hash }}
-      build_docker_image: ${{ steps.check-if-build-is-required.outputs.build }}
+      dependencies_hash: ${{ steps.check-docker-build-required.outputs.dependencies_hash }}
+      build_docker_image: ${{ steps.check-docker-build-required.outputs.build }}
     steps:
       - uses: actions/checkout@v4
-      - id: compute-dependencies-hash
-        uses: ./.github/actions/compute-and-check-dependencies-hash
-        with:
-          docker_image_hash: $FOUR_C_DOCKER_DEPENDENCIES_HASH
-      - name: Log in to the Container registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+      - id: check-docker-build-required
+        uses: ./.github/actions/check_docker_build_required
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - id: check-if-build-is-required
-        name: Check if the docker image needs to be built
-        run: |
-          exit_code=0
-          docker manifest inspect ${{ env.IMAGE_NAME }}:$COMPUTED_DOCKER_DEPENDENCIES_HASH > /dev/null || exit_code=$?
-          echo $exit_code
-          case $exit_code in
-            0)
-              echo "Image exists"
-              echo "build=false" >> $GITHUB_OUTPUT
-              ;;
-            1)
-              echo "Image does not exist"
-              echo "build=true" >> $GITHUB_OUTPUT
-              ;;
-            *)
-              echo "Something went wrong. Exit code $exit_code"
-              exit 1
-              ;;
-          esac
+          image-name: ${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu20.04
 
-  build-and-push-image:
+  check-if-ubuntu24_04-build-is-required:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    outputs:
+      dependencies_hash: ${{ steps.check-docker-build-required.outputs.dependencies_hash }}
+      build_docker_image: ${{ steps.check-docker-build-required.outputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check-docker-build-required
+        uses: ./.github/actions/check_docker_build_required
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          image-name: ${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu24.04
+
+  build-and-push-ubuntu20_04:
     runs-on: ubuntu-latest
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
@@ -69,60 +62,50 @@ jobs:
       attestations: write
       id-token: write
       #
-    needs: check-if-docker-build-is-required
-    if: github.event_name == 'workflow_dispatch' && ${{ needs.check-if-docker-build-is-required.outputs.build_docker_image
+    needs: check-if-ubuntu20_04-build-is-required
+    if: github.event_name == 'workflow_dispatch' && ${{ needs.check-if-ubuntu20_04-build-is-required.outputs.build_docker_image
       == 'true' }}
     steps:
-      # Hack to get the repository name as lower case as Github does not provide this function: https://github.com/orgs/community/discussions/25768
-      - id: repository-to-lower-case
-        run: |
-          echo "repository=${GITHUB_REPOSITORY@L}" >> $GITHUB_OUTPUT
-      - run: echo ${{ steps.repository-to-lower-case.outputs.repository }}
-      - run: |
-          echo ${{ needs.check-if-docker-build-is-required.outputs.build_docker_image }}
-          echo ${{ needs.check-if-docker-build-is-required.outputs.dependencies_hash }}
       - name: Checkout repository
         uses: actions/checkout@v4
-      # Uses the `docker/login-action` action to log in to the Container registry registry using the account and password that will publish the packages. Once published, the packages are scoped to the account defined here.
-      - name: Log in to the Container registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+      - name: Build and push image
+        uses: ./.github/actions/build_dependencies
         with:
+          docker-file: docker/Dockerfile
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      # This step uses [docker/metadata-action](https://github.com/docker/metadata-action#about) to extract tags and labels that will be applied to the specified image. The `id` "meta" allows the output of this step to be referenced in a subsequent step. The `images` value provides the base name for the tags and labels.
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
-        with:
-          images: ${{ env.IMAGE_NAME }}
-          labels: |
-            org.opencontainers.image.description=Image containing all the dependencies required for building and testing 4C
-      # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
-      # It uses the `context` parameter to define the build's context as the set of files located in the specified path. For more information, see "[Usage](https://github.com/docker/build-push-action#usage)" in the README of the `docker/build-push-action` repository.
-      # It uses the `tags` and `labels` parameters to tag and label the image with the output from the "meta" step.
-      - name: Build and push Docker image
-        id: push
-        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
-        with:
-          context: .
-          file: docker/Dockerfile
-          build-args: "DEPENDENCIES_HASH=${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }}"
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ steps.repository-to-lower-case.outputs.repository }}-${{ env.IMAGE_SUFFIX
-            }}:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }}
-          # tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          image-name: ${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu20.04
+          dependencies-hash: ${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH}}
+          ubuntu-version: "20.04"
 
-      # This step generates an artifact attestation for the image, which is an unforgeable statement about where and how it was built. It increases supply chain security for people who consume the image. For more information, see "[AUTOTITLE](/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)."
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@ef244123eb79f2f7a7e75d99086184180e6d0018 # v1.1.4
+  build-and-push-ubuntu24_04:
+    runs-on: ubuntu-latest
+    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+      #
+    needs: check-if-ubuntu24_04-build-is-required
+    if: github.event_name == 'workflow_dispatch' && ${{ needs.check-if-ubuntu24_04-build-is-required.outputs.build_docker_image
+      == 'true' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Build and push image
+        uses: ./.github/actions/build_dependencies
         with:
-          subject-name: ${{ env.IMAGE_NAME }}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
+          docker-file: docker/Dockerfile
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          image-name: ${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu24.04
+          dependencies-hash: ${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH}}
+          ubuntu-version: "24.04"
 
-  tag-image-as-latest:
+  tag-images-as-latest:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     permissions:
@@ -135,8 +118,15 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Pull current dependencies image and tag it with latest
+      - name: Pull current Ubuntu 20.04 dependencies image and tag it with latest
         run: |
+          IMAGE_NAME="${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu20.04"
+          docker pull $IMAGE_NAME:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }}
+          docker image tag $IMAGE_NAME:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }} $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:latest
+      - name: Pull current Ubuntu 24.04 dependencies image and tag it with latest
+        run: |
+          IMAGE_NAME="${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu24.04"
           docker pull $IMAGE_NAME:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }}
           docker image tag $IMAGE_NAME:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }} $IMAGE_NAME:latest
           docker push $IMAGE_NAME:latest
