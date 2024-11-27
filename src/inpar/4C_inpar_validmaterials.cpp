@@ -2405,6 +2405,56 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
   }
 
   /*----------------------------------------------------------------------*/
+  {
+    auto m = std::make_shared<Mat::MaterialDefinition>(
+        "MAT_InelasticDefgradTransvIsotropElastViscoplast",
+        "Versatile transversely isotropic (or isotropic) viscoplasticity model for finite "
+        "deformations with isotropic hardening, using user-defined viscoplasticity laws (flow rule "
+        "+ hardening model)",
+        Core::Materials::mfi_transv_isotrop_elast_viscoplast);
+
+    add_named_int(m, "VISCOPLAST_LAW_ID", "MAT ID of the corresponding viscoplastic law");
+    add_named_int(m, "FIBER_READER_ID",
+        "MAT ID of the used fiber direction reader for transversely isotropic behavior");
+    add_named_real(m, "YIELD_COND_A",
+        "transversely isotropic version of the Hill(1948) yield condition: parameter A, following "
+        "the notation in Dafalias 1989, International Journal of Plasticity, Vol. 5");
+    add_named_real(m, "YIELD_COND_B",
+        "transversely isotropic version of the Hill(1948) yield condition: parameter B, following "
+        "the notation in Dafalias 1989, International Journal of Plasticity, Vol. 5");
+    add_named_real(m, "YIELD_COND_F",
+        "transversely isotropic version of the Hill(1948) yield condition: parameter F, following "
+        "the notation in Dafalias 1989, International Journal of Plasticity, Vol. 5");
+    add_named_string(m, "ANISOTROPY",
+        "Anisotropy type: transversely isotropic (transvisotrop; transverseisotropic; "
+        "transverselyisotropic) | isotropic (isotrop; isotropic; Default)",
+        "isotrop");
+    add_named_bool(m, "LOG_SUBSTEP",
+        "boolean: time integration of internal variables using logarithmic substepping (True) or "
+        "standard substepping (False)?");
+    add_named_int(m, "MAX_HALVE_NUM_SUBSTEP",
+        "maximum number of times the global time step can be halved in the substepping procedure");
+
+    Mat::append_material_definition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  {
+    auto m = std::make_shared<Mat::MaterialDefinition>("MAT_ViscoplasticLawReformulatedJohnsonCook",
+        "Reformulation of the Johnson-Cook viscoplastic law (comprising flow rule and hardening "
+        "law), as shown in Mareau et al. (Mechanics of Materials 143, 2020)",
+        Core::Materials::mvl_reformulated_Johnson_Cook);
+
+    add_named_real(m, "STRAIN_RATE_PREFAC", "plastic strain rate prefactor $\\dot{P}_0$");
+    add_named_real(m, "STRAIN_RATE_EXP_FAC", "exponential factor of plastic strain rate $C$");
+    add_named_real(m, "INIT_YIELD_STRENGTH", "initial yield strength of the material $A_0$");
+    add_named_real(m, "ISOTROP_HARDEN_PREFAC", "prefactor of the isotropic hardening stress $B_0$");
+    add_named_real(m, "ISOTROP_HARDEN_EXP", "exponent of the isotropic hardening stress $n$");
+
+    Mat::append_material_definition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // integration point based and scalar dependent interpolation between to materials
   {
     auto mm = std::make_shared<Mat::MaterialDefinition>("MAT_ScDepInterp",

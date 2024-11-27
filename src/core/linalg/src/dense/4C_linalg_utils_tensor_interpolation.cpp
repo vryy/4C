@@ -33,8 +33,8 @@ namespace
    * @param[in|out]  eigenpairs  eigenpairs to be sorted w.r.t. reference matrix
    */
   void order_eigenpairs_wrt_reference(
-      const std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>& ref_eigenpairs,
-      std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>& eigenpairs)
+      const std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3> &ref_eigenpairs,
+      std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3> &eigenpairs)
   {
     // auxiliaries
     Core::LinAlg::Matrix<3, 1> temp3x1(true);
@@ -125,13 +125,13 @@ namespace
    *
    * @param[in|out]  spectral_pairs  all spectral pairs (eigenvalue, eigenvector) of all
    *                                 available matrices used for interpolation
-   * @param[in]  ref_locs  locations \f$ \bm{x}_j \f$ of the reference matrices
+   * @param[in]  ref_locs  locations \f$ \boldsymbol{x}_j \f$ of the reference matrices
    * @param[in]  base_ind  index of the base matrix within spectral_pairs
    */
   template <unsigned int loc_dim>
   void align_eigenpairs_of_base_matrix(
-      std::vector<std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>>& spectral_pairs,
-      const std::vector<Core::LinAlg::Matrix<loc_dim, 1>>& ref_locs, const unsigned int& base_ind)
+      std::vector<std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>> &spectral_pairs,
+      const std::vector<Core::LinAlg::Matrix<loc_dim, 1>> &ref_locs, const unsigned int &base_ind)
   {
     // difference vector between the locations of matrices and the location of the determined base
     // matrix
@@ -157,7 +157,8 @@ namespace
       {
         // loop through the matrices
         for (unsigned int m = 0; m < ref_locs.size(); ++m)
-        {  // --> find matrix closest to the base matrix (based on location)
+        {
+          // --> find matrix closest to the base matrix (based on location)
 
           // skip base matrix
           if (m == base_ind) continue;
@@ -206,7 +207,7 @@ namespace
         // value
         std::transform(spectral_pairs.begin(), spectral_pairs.end(), max_eigenval.begin(),
             max_eigenval.begin(),
-            [i](const std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>& arr,
+            [i](const std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3> &arr,
                 double curr_val) { return std::max(arr[i].first, curr_val); });
         continue;
       }
@@ -216,7 +217,7 @@ namespace
       {
         // set maximum eigenvalues to the current eigenvalues
         std::transform(spectral_pairs.begin(), spectral_pairs.end(), max_eigenval.begin(),
-            [i](const std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>& arr)
+            [i](const std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3> &arr)
             { return arr[i].first; });
         continue;
       }
@@ -252,9 +253,9 @@ namespace
 template <unsigned int loc_dim>
 Core::LinAlg::Matrix<3, 3>
 Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
-    const std::vector<Core::LinAlg::Matrix<3, 3>>& ref_matrices,
-    const std::vector<Core::LinAlg::Matrix<loc_dim, 1>>& ref_locs,
-    const Core::LinAlg::Matrix<loc_dim, 1>& interp_loc)
+    const std::vector<Core::LinAlg::Matrix<3, 3>> &ref_matrices,
+    const std::vector<Core::LinAlg::Matrix<loc_dim, 1>> &ref_locs,
+    const Core::LinAlg::Matrix<loc_dim, 1> &interp_loc)
 {
   // declare output variable
   Core::LinAlg::Matrix<3, 3> output(true);
@@ -296,28 +297,28 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
 
   // --> declare vectors of variables be updated while looping through reference matrices
 
-  // all \f$ \bm{U}_j \f$
+  // all \f$ \boldsymbol{U}_j \f$
   std::vector<Core::LinAlg::Matrix<3, 3>> all_U(ref_matrices.size());
 
-  // all \f$ \bm{R}_j \f$
+  // all \f$ \boldsymbol{R}_j \f$
   std::vector<Core::LinAlg::Matrix<3, 3>> all_R(ref_matrices.size());
 
-  // all \f$ \bm{Q}_j \f$
+  // all \f$ \boldsymbol{Q}_j \f$
   std::vector<Core::LinAlg::Matrix<3, 3>> all_Q(ref_matrices.size());
 
-  // all \f$ \bm{R}_j^{\text{r}} \f$
+  // all \f$ \boldsymbol{R}_j^{\text{r}} \f$
   std::vector<Core::LinAlg::Matrix<3, 3>> all_R_rel(ref_matrices.size());
 
-  // all \f$ \bm{Q}_j^{\text{r}} \f$
+  // all \f$ \boldsymbol{Q}_j^{\text{r}} \f$
   std::vector<Core::LinAlg::Matrix<3, 3>> all_Q_rel(ref_matrices.size());
 
-  // all \f$ \bm{\theta}_j^{\text{r}} \f$ associated to \f$ \bm{R}_j^{\text{r}} \f$
+  // all \f$ \boldsymbol{\theta}_j^{\text{r}} \f$ associated to \f$ \boldsymbol{R}_j^{\text{r}} \f$
   std::vector<Core::LinAlg::Matrix<3, 1>> all_rot_vect_R_rel(ref_matrices.size());
 
-  // all \f$ \bm{\theta}_j^{\text{r}} \f$ associated to \f$ \bm{Q}_j^{\text{r}} \f$
+  // all \f$ \boldsymbol{\theta}_j^{\text{r}} \f$ associated to \f$ \boldsymbol{Q}_j^{\text{r}} \f$
   std::vector<Core::LinAlg::Matrix<3, 1>> all_rot_vect_Q_rel(ref_matrices.size());
 
-  // all \f$ \bm{\lambda}_j \f$
+  // all \f$ \boldsymbol{\lambda}_j \f$
   std::vector<Core::LinAlg::Matrix<3, 3>> all_lambda(ref_matrices.size());
 
   // all spectral pairs of eigenvalue, eigenvector of all matrices
@@ -367,10 +368,11 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
   // compute relative rotation vector from the relative rotation matrix
   all_rot_vect_Q_rel[base_ind] = calc_rot_vect_from_rot_matrix(all_Q_rel[base_ind]);  // zero vector
 
-  // get \f$ \bm{Q} \f$, normalized weights and build \f$ \bm{P} \f$ matrix along with \f$ \bm{b}^i
+  // get \f$ \boldsymbol{Q} \f$, normalized weights and build \f$ \boldsymbol{P} \f$ matrix along
+  // with \f$ \boldsymbol{b}^i
   // \f$ vectors, as shown in Satheesh, 2024, 10.1002/nme.7373, Eq. (22) and Eq. (37)
 
-  // \f$ \bm{p}_j \f$: p vector of monomial values
+  // \f$ \boldsymbol{p}_j \f$: p vector of monomial values
   Core::LinAlg::SerialDenseVector p_vec(polynomial_space_.size());
   polynomial_space_.evaluate(interp_loc, p_vec);
 
@@ -514,11 +516,10 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
 }
 
 
-
-void Core::LinAlg::matrix_3x3_polar_decomposition(const Core::LinAlg::Matrix<3, 3>& inp_matrix,
-    Core::LinAlg::Matrix<3, 3>& R_matrix, Core::LinAlg::Matrix<3, 3>& U_matrix,
-    Core::LinAlg::Matrix<3, 3>& eigenval_matrix,
-    std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>& spectral_pairs)
+void Core::LinAlg::matrix_3x3_polar_decomposition(const Core::LinAlg::Matrix<3, 3> &inp_matrix,
+    Core::LinAlg::Matrix<3, 3> &R_matrix, Core::LinAlg::Matrix<3, 3> &U_matrix,
+    Core::LinAlg::Matrix<3, 3> &eigenval_matrix,
+    std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3> &spectral_pairs)
 {
   // auxiliaries
   Core::LinAlg::Matrix<3, 3> temp3x3(true);
@@ -569,7 +570,7 @@ void Core::LinAlg::matrix_3x3_polar_decomposition(const Core::LinAlg::Matrix<3, 
 
 
 Core::LinAlg::Matrix<3, 1> Core::LinAlg::calc_rot_vect_from_rot_matrix(
-    const Core::LinAlg::Matrix<3, 3>& rot_matrix)
+    const Core::LinAlg::Matrix<3, 3> &rot_matrix)
 {
   // declare output rotation vector
   Core::LinAlg::Matrix<3, 1> rot_vect(true);
@@ -646,7 +647,7 @@ Core::LinAlg::Matrix<3, 1> Core::LinAlg::calc_rot_vect_from_rot_matrix(
 }
 
 Core::LinAlg::Matrix<3, 3> Core::LinAlg::calc_rot_matrix_from_rot_vect(
-    const Core::LinAlg::Matrix<3, 1>& rot_vect)
+    const Core::LinAlg::Matrix<3, 1> &rot_vect)
 {
   // auxiliaries
   Core::LinAlg::Matrix<3, 3> id3x3(true);
@@ -692,6 +693,32 @@ Core::LinAlg::Matrix<3, 3> Core::LinAlg::calc_rot_matrix_from_rot_vect(
   return rot_matrix;
 }
 
+template <>
+Core::LinAlg::Matrix<3, 3> Core::LinAlg::SecondOrderTensorInterpolator<1>::get_interpolated_matrix(
+    const std::vector<Core::LinAlg::Matrix<3, 3>> &ref_matrices,
+    const std::vector<double> &ref_locs, const double interp_loc)
+{
+  // auxiliaries
+  Core::LinAlg::Matrix<1, 1> temp_matrix;
+
+  // pack reference locations to matrices
+  std::vector<Core::LinAlg::Matrix<1, 1>> converted_ref_locs;
+  for (auto ref_loc : ref_locs)
+  {
+    // save scalar to 1x1 matrix
+    temp_matrix(0) = ref_loc;
+
+    // add 1x1 matrix to its corresponding vector
+    converted_ref_locs.push_back(temp_matrix);
+  }
+
+  // pack interpolation location to matrix
+  Core::LinAlg::Matrix<1, 1> converted_interp_loc(true);
+  converted_interp_loc(0) = interp_loc;
+
+  // call the general constructor with the matrix expressions
+  return get_interpolated_matrix(ref_matrices, converted_ref_locs, converted_interp_loc);
+}
 
 
 // explicit instantiation of template functions

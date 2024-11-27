@@ -568,4 +568,34 @@ void Mat::elast_hyper_check_polyconvexity(const Core::LinAlg::Matrix<3, 3>& defg
         }
 }
 
+void Mat::elast_hyper_get_derivs_of_elastic_right_cg_tensor(const Core::LinAlg::Matrix<3, 3>& iFinM,
+    const Core::LinAlg::Matrix<3, 3>& CM, Core::LinAlg::Matrix<6, 6>& dCedC,
+    Core::LinAlg::Matrix<6, 9>& dCediFin)
+{  // auxiliaries
+  Core::LinAlg::Matrix<3, 3> id3x3(true);
+  for (int i = 0; i < 3; ++i) id3x3(i, i) = 1.0;
+  Core::LinAlg::Matrix<9, 9> temp9x9(true);
+  Core::LinAlg::FourTensor<3> tempFourTensor(true);
+
+  // C * F_{in}^{-1}
+  static Core::LinAlg::Matrix<3, 3> CiFinM(true);
+  CiFinM.multiply_nn(1.0, CM, iFinM, 0.0);
+
+  // \frac{\partial C^e}{\partial C}
+  dCedC.clear();
+  Core::LinAlg::Matrix<3, 3> iFinTM(true);
+  iFinTM.multiply_nt(1.0, id3x3, iFinM, 0.0);
+  Core::LinAlg::Tensor::add_kronecker_tensor_product(dCedC, 1.0, iFinTM, iFinTM, 0.0);
+
+  // \frac{\partial C^e}{\partial F_{in}^{-1}}
+  dCediFin.clear();
+  Core::LinAlg::Matrix<3, 3> iFinTCM(true);
+  iFinTCM.multiply_tn(1.0, iFinM, CM, 0.0);
+  temp9x9.clear();
+  Core::LinAlg::Tensor::add_adbc_tensor_product(1.0, id3x3, iFinTCM, temp9x9);
+  Core::LinAlg::Tensor::add_non_symmetric_product(1.0, iFinTCM, id3x3, temp9x9);
+  Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
+  Core::LinAlg::Voigt::setup_6x9_voigt_matrix_from_four_tensor(dCediFin, tempFourTensor);
+}
+
 FOUR_C_NAMESPACE_CLOSE

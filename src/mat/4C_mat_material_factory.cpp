@@ -101,6 +101,7 @@
 #include "4C_mat_viscoanisotropic.hpp"
 #include "4C_mat_viscoelasthyper.hpp"
 #include "4C_mat_visconeohooke.hpp"
+#include "4C_mat_viscoplastic_laws.hpp"
 #include "4C_mat_viscoplastic_no_yield_surface.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
 #include "4C_matelast_anisoactivestress_evolution.hpp"
@@ -582,6 +583,16 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     case Core::Materials::mfi_time_funct:
     {
       return make_parameter_impl<Mat::PAR::InelasticDefgradTimeFunct>(id, type, input_data);
+    }
+    case Core::Materials::mfi_transv_isotrop_elast_viscoplast:
+    {
+      return make_parameter_impl<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>(
+          id, type, input_data);
+    }
+    case Core::Materials::mvl_reformulated_Johnson_Cook:
+    {
+      return make_parameter_impl<Mat::PAR::ViscoplasticLawReformulatedJohnsonCook>(
+          id, type, input_data);
     }
     case Core::Materials::mix_rule_function:
     {

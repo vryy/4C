@@ -363,6 +363,22 @@ namespace Mat
       const SummandProperties& properties);
 
   /**
+   * \brief Evaluate the derivatives of the elastic right Cauchy-Green deformation tensor w.r.t.
+   * inverse inelastic deformation gradient and the right Cauchy-Green deformation tensor
+   *
+   * @param[in] iFinM    Inverse inelastic deformation gradient
+   * @param[in] CM Right Cauchy-Green deformation tensor
+   * @param[out] dCedC         Partial derivative of the elastic right CG tensor w.r.t. right CG
+   *                           tensor (Voigt stress-stress notation)
+   * @param[out] dCediFin      Partial derivative of the elastic right CG tensor w.r.t. inelastic
+   *                           deformation gradient (Voigt stress notation)
+   *
+   */
+  void elast_hyper_get_derivs_of_elastic_right_cg_tensor(const Core::LinAlg::Matrix<3, 3>& iFinM,
+      const Core::LinAlg::Matrix<3, 3>& CM, Core::LinAlg::Matrix<6, 6>& dCedC,
+      Core::LinAlg::Matrix<6, 9>& dCediFin);
+
+  /**
    * \brief Class for holding the summand formulation properties
    */
   class SummandProperties

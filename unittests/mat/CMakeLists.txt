@@ -18,6 +18,7 @@ set(SOURCE_LIST
     4C_multiplicative_split_defgrad_elasthyper_test.cpp
     4C_muscle_utils_test.cpp
     4C_stvenantkirchhoff_test.cpp
+    4C_viscoplastic_laws_test.cpp
     )
 
 four_c_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})

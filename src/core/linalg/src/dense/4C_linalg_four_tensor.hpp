@@ -81,6 +81,28 @@ namespace Core::LinAlg
     }
 
     /*!
+     * @brief Transpose 4th order tensor w.r.t. to basis vectors 1 and 2
+     * @note transpose \e input and store the result in \e this, \e this (i,j,k,l) =
+     * \e input (j,i,k,l)
+     */
+    void transpose_12(const Core::LinAlg::FourTensor<dim>& input)
+    {
+      for (int i = 0; i < dim; ++i)
+      {
+        for (int j = 0; j < dim; ++j)
+        {
+          for (int k = 0; k < dim; ++k)
+          {
+            for (int l = 0; l < dim; ++l)
+            {
+              four_tensor_[i][j][k][l] = input.get_const()[j][i][k][l];
+            }
+          }
+        }
+      }
+    }
+
+    /*!
      * @brief returns writeable element C_{i1,i2,i3,i4} from 4-tensor C
      *
      * @param[in] i1 index of first basis vector

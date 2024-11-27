@@ -120,7 +120,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
   // set convergence tolerance for the employed series description
   double conv_tol = 1.0e-10;
 
-  // characteristic matrix \f$ \bm{I} - \bm{A} \f$
+  // characteristic matrix \f$ \boldsymbol{I} - \boldsymbol{A} \f$
   Core::LinAlg::Matrix<dim, dim> id_minus_A(true);
   id_minus_A.update(1.0, id, -1.0, input, 0.0);
 
@@ -131,11 +131,11 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     int m = 1;
     int m_max = 50;
 
-    // \f$ \bm{A} - \bm{I} \f$
+    // \f$ \boldsymbol{A} - \boldsymbol{I} \f$
     Core::LinAlg::Matrix<dim, dim> A_minus_id(true);
     A_minus_id.update(1.0, input, -1.0, id);
 
-    //  \f$ \left(\bm{A} - \bm{I}\right)^m \f$
+    //  \f$ \left(\boldsymbol{A} - \boldsymbol{I}\right)^m \f$
     Core::LinAlg::Matrix<dim, dim> A_minus_id_m = A_minus_id;
 
     while (A_minus_id_m.norm2() > conv_tol)
@@ -147,7 +147,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
       // update output matrix
       output.update(std::pow(-1.0, m + 1) / m, A_minus_id_m, 1.0);
 
-      // update \f$ \left(\bm{A} - \bm{I}\right)^m \f$
+      // update \f$ \left(\boldsymbol{A} - \boldsymbol{I}\right)^m \f$
       temp = A_minus_id_m;
       A_minus_id_m.multiply(1.0, temp, A_minus_id, 0.0);
 
@@ -157,15 +157,16 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     return output;
   }
 
-  // \f$ \bm{I} + \bm{A} \f$
+  // \f$ \boldsymbol{I} + \boldsymbol{A} \f$
   Core::LinAlg::Matrix<dim, dim> id_plus_A(true);
   id_plus_A.update(1.0, id, 1.0, input, 0.0);
 
-  // \f$ \left( \bm{I} + \bm{A} \right)^{-1} \f$
+  // \f$ \left( \boldsymbol{I} + \boldsymbol{A} \right)^{-1} \f$
   Core::LinAlg::Matrix<dim, dim> inv_id_plus_A(true);
   inv_id_plus_A.invert(id_plus_A);
 
-  // update matrix: \f$ \left[ \left( \bm{I} - \bm{A} \right) \left( \bm{I} + \bm{A}
+  // update matrix: \f$ \left[ \left( \boldsymbol{I} - \boldsymbol{A} \right) \left( \boldsymbol{I}
+  // + \boldsymbol{A}
   // \right)^{-1} \right] \f$
   Core::LinAlg::Matrix<dim, dim> update_mat(true);
   update_mat.multiply(1.0, id_minus_A, inv_id_plus_A, 0.0);
@@ -177,7 +178,8 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     int m = 0;
     int m_max = 50;
 
-    // \f$ \left[ \left( \bm{I} - \bm{A} \right) \left( \bm{I} + \bm{A} \right)^{-1} \right]^{2m+1}
+    // \f$ \left[ \left( \boldsymbol{I} - \boldsymbol{A} \right) \left( \boldsymbol{I} +
+    // \boldsymbol{A} \right)^{-1} \right]^{2m+1}
     // \f$
     Core::LinAlg::Matrix<dim, dim> update_mat_2mpl1(true);
     update_mat_2mpl1 = update_mat;
@@ -518,7 +520,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
   Core::LinAlg::Matrix<9, 9> output(true);
   // set convergence tolerance
   double conv_tol = 1.0e-10;
-  // characteristic matrix \f$ \bm{I} - \bm{A} \f$
+  // characteristic matrix \f$ \boldsymbol{I} - \boldsymbol{A} \f$
   Core::LinAlg::Matrix<3, 3> id_minus_A(true);
   id_minus_A.update(1.0, id_3x3, -1.0, input, 0.0);
 
@@ -529,7 +531,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
     int m = 1;
     int m_max = 50;
 
-    // \f$ \bm{A} - \bm{I} \f$
+    // \f$ \boldsymbol{A} - \boldsymbol{I} \f$
     Core::LinAlg::Matrix<3, 3> A_minus_id(true);
     A_minus_id.update(1.0, input, -1.0, id_3x3);
 
