@@ -82,6 +82,13 @@ repos:
         pass_filenames: false
         fail_fast: true
 
+      - id: check-dependencies-hash
+        name: Github workflow dependencies hash is up to date
+        language: python
+        entry: utilities/python-venv/bin/check-workflow-dependencies-hash
+        always_run: true
+        pass_filenames: false
+
       - id: cpp-filename-includes
         name: C++ file names and include style
         description: 'Check that all C++ files have the correct file name and include style'
