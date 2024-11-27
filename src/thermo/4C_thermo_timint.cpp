@@ -212,6 +212,9 @@ void Thermo::TimInt::determine_capa_consist_temp_rate()
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     // blank RHS on DBC DOFs
     dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *rhs);
+
+    discret_->compute_null_space_if_necessary(solver_->params());
+
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;

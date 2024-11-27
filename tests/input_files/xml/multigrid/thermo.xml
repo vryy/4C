@@ -1,0 +1,44 @@
+<ParameterList name="MueLu">
+  <!--
+  For thermo problems, these are the recommended settings for MueLu.
+  -->
+  <!-- Factory collection -->
+  <ParameterList name="Factories">
+    <!-- ===========  AGGREGATION  =========== -->
+    <ParameterList name="myCoalesceDropFact">
+      <Parameter name="factory" type="string" value="CoalesceDropFactory_kokkos"/>
+      <Parameter name="aggregation: drop scheme" type="string" value="classical"/>
+      <Parameter name="aggregation: drop tol" type="double" value="0.0"/>
+    </ParameterList>
+    <ParameterList name="myAggregationFact">
+      <Parameter name="factory" type="string" value="UncoupledAggregationFactory"/>
+    </ParameterList>
+    <!-- ===========  SMOOTHING  =========== -->
+    <ParameterList name="mySmoother">
+      <Parameter name="factory" type="string" value="TrilinosSmoother"/>
+      <Parameter name="type" type="string" value="CHEBYSHEV"/>
+      <ParameterList name="ParameterList">
+        <Parameter name="chebyshev: degree" type="int" value="2"/>
+        <Parameter name="chebyshev: ratio eigenvalue" type="double" value="7"/>
+        <Parameter name="chebyshev: min eigenvalue" type="double" value="1.0"/>
+        <Parameter name="chebyshev: zero starting solution" type="bool" value="true"/>
+      </ParameterList>
+    </ParameterList>
+  </ParameterList>
+  <!-- ===========  GENERAL ================ -->
+  <ParameterList name="Hierarchy">
+    <Parameter name="max levels" type="int" value="5"/>
+    <Parameter name="verbosity" type="string" value="None"/>
+    <Parameter name="multigrid algorithm" type="string" value="sa"/>
+    <!-- reduces setup cost for symmetric problems -->
+    <Parameter name="transpose: use implicit" type="bool" value="true"/>
+    <Parameter name="coarse: max size" type="int" value="10"/>
+    <Parameter name="coarse: type" type="string" value="Umfpack"/>
+    <ParameterList name="All">
+      <Parameter name="Graph" type="string" value="myCoalesceDropFact"/>
+      <Parameter name="Aggregates" type="string" value="myAggregationFact"/>
+      <Parameter name="PreSmoother" type="string" value="mySmoother"/>
+      <Parameter name="PostSmoother" type="string" value="mySmoother"/>
+    </ParameterList>
+  </ParameterList>
+</ParameterList>
