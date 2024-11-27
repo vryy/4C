@@ -9,8 +9,8 @@
 
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
+#include "4C_mat_elast_aniso_structuraltensor_strategy.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_matelast_aniso_structuraltensor_strategy.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

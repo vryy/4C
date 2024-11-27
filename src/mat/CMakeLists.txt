@@ -13,7 +13,6 @@ set(_dependencies
     core
     global_data
     inpar
-    matelast
     mixture
     porofluidmultiphase_ele
     red_airways

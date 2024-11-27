@@ -12,9 +12,9 @@
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_anisotropy.hpp"
+#include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_monolithic_solid_scalar_material.hpp"
 #include "4C_mat_so3_material.hpp"
-#include "4C_matelast_couptransverselyisotropic.hpp"
 #include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -13,8 +13,8 @@
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_anisotropy.hpp"
+#include "4C_mat_elast_summand.hpp"
 #include "4C_mat_so3_material.hpp"
-#include "4C_matelast_summand.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_mixture_constituent.hpp"
 #include "4C_mixture_rule.hpp"

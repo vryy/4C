@@ -10,7 +10,7 @@
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
-#include "4C_matelast_aniso_structuraltensor_strategy.hpp"
+#include "4C_mat_elast_aniso_structuraltensor_strategy.hpp"
 
 #include <iostream>
 

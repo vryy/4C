@@ -13,9 +13,9 @@
 #include "4C_linalg_fixedsizematrix_tensor_derivatives.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "4C_mat_elast_aniso_structuraltensor_strategy.hpp"
 #include "4C_mat_muscle_utils.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_matelast_aniso_structuraltensor_strategy.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <variant>

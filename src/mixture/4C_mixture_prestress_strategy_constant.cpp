@@ -10,10 +10,10 @@
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_anisotropy.hpp"
 #include "4C_mat_anisotropy_coordinate_system_provider.hpp"
+#include "4C_mat_elast_isoneohooke.hpp"
+#include "4C_mat_elast_volsussmanbathe.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
-#include "4C_matelast_isoneohooke.hpp"
-#include "4C_matelast_volsussmanbathe.hpp"
 #include "4C_mixture_constituent_elasthyper.hpp"
 #include "4C_mixture_rule.hpp"
 

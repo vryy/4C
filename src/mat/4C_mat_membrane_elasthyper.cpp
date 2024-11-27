@@ -8,8 +8,8 @@
 #include "4C_mat_membrane_elasthyper.hpp"
 
 #include "4C_comm_pack_helpers.hpp"
+#include "4C_mat_elast_summand.hpp"
 #include "4C_mat_membrane_elasthyper_service.hpp"
-#include "4C_matelast_summand.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -12,9 +12,9 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_tensor_interpolation.hpp"
+#include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 #include "4C_mat_viscoplastic_laws.hpp"
-#include "4C_matelast_couptransverselyisotropic.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"

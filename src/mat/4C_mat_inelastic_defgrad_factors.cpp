@@ -14,12 +14,12 @@
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_four_tensor_generators.hpp"
 #include "4C_linalg_utils_densematrix_exp_log.hpp"
+#include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_electrode.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_viscoplastic_laws.hpp"
-#include "4C_matelast_couptransverselyisotropic.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function_of_time.hpp"
 

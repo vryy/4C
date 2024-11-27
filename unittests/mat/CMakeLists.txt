@@ -22,3 +22,5 @@ set(SOURCE_LIST
     )
 
 four_c_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
+
+add_subdirectory(elast)

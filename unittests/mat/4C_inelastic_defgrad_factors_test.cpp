@@ -10,11 +10,11 @@
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_electrode.hpp"
 #include "4C_mat_inelastic_defgrad_factors.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_viscoplastic_laws.hpp"
-#include "4C_matelast_couptransverselyisotropic.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
