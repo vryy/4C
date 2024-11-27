@@ -5,10 +5,11 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_mat_viscoplastic_laws.hpp"
+#include "4C_mat_vplast_reform_johnsoncook.hpp"
 
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
+#include "4C_mat_vplast_law.hpp"
 
 #include <utility>
 
@@ -17,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-Mat::PAR::ViscoplasticLawReformulatedJohnsonCook::ViscoplasticLawReformulatedJohnsonCook(
+Mat::Viscoplastic::PAR::ReformulatedJohnsonCook::ReformulatedJohnsonCook(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
       strain_rate_prefac_(matdata.parameters.get<double>("STRAIN_RATE_PREFAC")),
@@ -30,61 +31,15 @@ Mat::PAR::ViscoplasticLawReformulatedJohnsonCook::ViscoplasticLawReformulatedJoh
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-Mat::ViscoplasticLaws::ViscoplasticLaws(Core::Mat::PAR::Parameter* params) : params_(params) {}
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-Mat::ViscoplasticLaws::ViscoplasticLaws() : params_(nullptr) {}
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-std::shared_ptr<Mat::ViscoplasticLaws> Mat::ViscoplasticLaws::factory(int matnum)
-{
-  // for the sake of safety
-  if (Global::Problem::instance()->materials() == nullptr)
-    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
-
-  // another safety check
-  if (Global::Problem::instance()->materials()->num() == 0)
-    FOUR_C_THROW("List of materials in the global problem instance is empty.");
-
-  // retrieve problem instance to read from
-  const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
-  // retrieve validated input line of material ID in question
-  auto* curmat = Global::Problem::instance(probinst)->materials()->parameter_by_id(matnum);
-
-
-  // get material type and call corresponding constructors
-  const Core::Materials::MaterialType currentMaterialType = curmat->type();
-  switch (currentMaterialType)
-  {
-    case Core::Materials::mvl_reformulated_Johnson_Cook:
-    {
-      // get pointer to parameter class
-      auto* params = dynamic_cast<Mat::PAR::ViscoplasticLawReformulatedJohnsonCook*>(curmat);
-
-      // return pointer to material
-      return std::make_shared<ViscoplasticLawReformulatedJohnsonCook>(params);
-    }
-
-    default:
-      FOUR_C_THROW("cannot deal with type %d", curmat->type());
-  }
-}
-
-
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-Mat::ViscoplasticLawReformulatedJohnsonCook::ViscoplasticLawReformulatedJohnsonCook(
+Mat::Viscoplastic::ReformulatedJohnsonCook::ReformulatedJohnsonCook(
     Core::Mat::PAR::Parameter* params)
-    : ViscoplasticLaws(params)
+    : Mat::Viscoplastic::Law(params)
 {
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-double Mat::ViscoplasticLawReformulatedJohnsonCook::evaluate_stress_ratio(
+double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_stress_ratio(
     const double equiv_stress, const double equiv_plastic_strain)
 {
   // extract yield strength from the plastic strain and the material parameters
@@ -98,7 +53,7 @@ double Mat::ViscoplasticLawReformulatedJohnsonCook::evaluate_stress_ratio(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-double Mat::ViscoplasticLawReformulatedJohnsonCook::evaluate_plastic_strain_rate(
+double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
     const double equiv_stress, const double equiv_plastic_strain, const double dt,
     const bool update_hist_var)
 {
@@ -141,7 +96,7 @@ double Mat::ViscoplasticLawReformulatedJohnsonCook::evaluate_plastic_strain_rate
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Core::LinAlg::Matrix<2, 1>
-Mat::ViscoplasticLawReformulatedJohnsonCook::evaluate_derivatives_of_plastic_strain_rate(
+Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_strain_rate(
     const double equiv_stress, const double equiv_plastic_strain, const double dt,
     const bool update_hist_var)
 {

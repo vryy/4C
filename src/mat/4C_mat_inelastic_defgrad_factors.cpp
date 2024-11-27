@@ -19,7 +19,7 @@
 #include "4C_mat_electrode.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_viscoplastic_laws.hpp"
+#include "4C_mat_vplast_law.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function_of_time.hpp"
 
@@ -725,7 +725,7 @@ std::shared_ptr<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::fact
       auto *params = dynamic_cast<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast *>(curmat);
 
       // create viscoplastic law
-      auto viscoplastic_law = Mat::ViscoplasticLaws::factory(params->viscoplastic_law_id());
+      auto viscoplastic_law = Mat::Viscoplastic::Law::factory(params->viscoplastic_law_id());
 
       // construct fiber reader
       auto *fiber_reader_params = Global::Problem::instance(probinst)->materials()->parameter_by_id(
@@ -1613,7 +1613,7 @@ void Mat::InelasticDefgradTimeFunct::pre_evaluate(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotropElastViscoplast(
-    Core::Mat::PAR::Parameter *params, std::shared_ptr<Mat::ViscoplasticLaws> viscoplastic_law,
+    Core::Mat::PAR::Parameter *params, std::shared_ptr<Mat::Viscoplastic::Law> viscoplastic_law,
     Mat::Elastic::CoupTransverselyIsotropic fiber_reader,
     std::vector<std::shared_ptr<Mat::Elastic::Summand>> pot_sum_el,
     std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>> pot_sum_el_transv_iso)
