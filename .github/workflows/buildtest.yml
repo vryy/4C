@@ -192,5 +192,5 @@ jobs:
       - name: Check for successful builds and tests
         uses: re-actors/alls-green@release/v1
         with:
-          allowed-skips: gcc13_test
+          allowed-skips: gcc13_assertions_test
           jobs: ${{ toJSON(needs) }}
