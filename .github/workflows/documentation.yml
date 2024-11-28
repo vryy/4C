@@ -16,7 +16,7 @@ jobs:
   doxygen:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:da17023e
+      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:bbac1cd9
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     defaults:
       run:
@@ -42,7 +42,7 @@ jobs:
   readthedocs:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:da17023e
+      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:bbac1cd9
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     defaults:
       run:
