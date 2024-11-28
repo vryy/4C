@@ -387,6 +387,8 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
   phi_hat.multiply(ephi_hat, funct_);
   phi2_hat.multiply(ephi2_hat, funct_);
   phiexpression_hat.multiply(ephiexpression_hat, funct_);
+
+  FOUR_C_ASSERT_ALWAYS(nsd_ >= 3, "This function is only well defined for 3D problems!");
   for (unsigned nn = 0; nn < 3; ++nn)
   {
     for (unsigned rr = 0; rr < 3; ++rr)
