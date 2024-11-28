@@ -11,10 +11,10 @@
 #include "4C_linalg_fixedsizematrix_generators.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_mat_anisotropy_extension.hpp"
+#include "4C_mat_elast_aniso_structuraltensor_strategy.hpp"
+#include "4C_mat_elast_isoneohooke.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_matelast_aniso_structuraltensor_strategy.hpp"
-#include "4C_matelast_isoneohooke.hpp"
 #include "4C_mixture_elastin_membrane_prestress_strategy.hpp"
 #include "4C_utils_function.hpp"
 

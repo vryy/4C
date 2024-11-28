@@ -12,9 +12,9 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_tensor_interpolation.hpp"
+#include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
-#include "4C_mat_viscoplastic_laws.hpp"
-#include "4C_matelast_couptransverselyisotropic.hpp"
+#include "4C_mat_vplast_law.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
@@ -1314,7 +1314,7 @@ namespace Mat
      */
 
     explicit InelasticDefgradTransvIsotropElastViscoplast(Core::Mat::PAR::Parameter *params,
-        std::shared_ptr<Mat::ViscoplasticLaws> viscoplastic_law,
+        std::shared_ptr<Mat::Viscoplastic::Law> viscoplastic_law,
         Mat::Elastic::CoupTransverselyIsotropic fiber_reader,
         std::vector<std::shared_ptr<Mat::Elastic::Summand>> pot_sum_el,
         std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>>
@@ -1438,7 +1438,7 @@ namespace Mat
     std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>> potsumel_transviso_;
 
     //! viscoplastic law
-    std::shared_ptr<Mat::ViscoplasticLaws> viscoplastic_law_;
+    std::shared_ptr<Mat::Viscoplastic::Law> viscoplastic_law_;
 
     //! fiber reader (hyperelastic transversely isotropic material used for fiber reading)
     Mat::Elastic::CoupTransverselyIsotropic fiber_reader_;

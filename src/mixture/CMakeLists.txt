@@ -14,7 +14,6 @@ set(_dependencies
     global_data
     inpar
     mat
-    matelast
     )
 
 four_c_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

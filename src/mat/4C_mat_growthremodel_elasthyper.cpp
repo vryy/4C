@@ -12,13 +12,13 @@
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "4C_mat_elast_isoneohooke.hpp"
+#include "4C_mat_elast_remodelfiber.hpp"
+#include "4C_mat_elast_summand.hpp"
+#include "4C_mat_elast_volsussmanbathe.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
-#include "4C_matelast_isoneohooke.hpp"
-#include "4C_matelast_remodelfiber.hpp"
-#include "4C_matelast_summand.hpp"
-#include "4C_matelast_volsussmanbathe.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

@@ -15,11 +15,11 @@
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_anisotropy.hpp"
+#include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_inelastic_defgrad_factors.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_matelast_couptransverselyisotropic.hpp"
 #include "4C_structure_new_enum_lists.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

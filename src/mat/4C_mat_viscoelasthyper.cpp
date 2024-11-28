@@ -13,10 +13,10 @@
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
+#include "4C_mat_elast_summand.hpp"
+#include "4C_mat_elast_visco_generalizedgenmax.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
-#include "4C_matelast_summand.hpp"
-#include "4C_matelast_visco_generalizedgenmax.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

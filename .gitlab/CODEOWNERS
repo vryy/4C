@@ -194,8 +194,6 @@ mat/4C_mat_scatra_multiporo*      @baci/team_poro @baci/team_scatra
 mat/4C_mat_scatra_poro*           @baci/team_poro @baci/team_scatra
 mat/4C_mat_structporo*            @baci/team_poro
 
-matelast/                  @baci/team_material
-
 membrane/                  @baci/team_structure
 
 mixture/                   @baci/team_structure @baci/team_material

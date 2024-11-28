@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_matelast_summand.hpp"
+#include "4C_mat_elast_summand.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

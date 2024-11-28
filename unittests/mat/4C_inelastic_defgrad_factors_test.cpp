@@ -10,11 +10,11 @@
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_electrode.hpp"
 #include "4C_mat_inelastic_defgrad_factors.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_viscoplastic_laws.hpp"
-#include "4C_matelast_couptransverselyisotropic.hpp"
+#include "4C_mat_vplast_reform_johnsoncook.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
@@ -334,9 +334,9 @@ namespace
       problem.materials()->insert(400,
           Mat::make_parameter(400, Core::Materials::MaterialType::mvl_reformulated_Johnson_Cook,
               viscoplastic_law_reformulated_Johnson_Cook_data));
-      std::shared_ptr<Mat::ViscoplasticLawReformulatedJohnsonCook>
+      std::shared_ptr<Mat::Viscoplastic::ReformulatedJohnsonCook>
           viscoplastic_law_reformulated_Johnson_Cook =
-              std::make_shared<Mat::ViscoplasticLawReformulatedJohnsonCook>(
+              std::make_shared<Mat::Viscoplastic::ReformulatedJohnsonCook>(
                   problem.materials()->parameter_by_id(400));
 
 
