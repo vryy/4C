@@ -1,0 +1,46 @@
+name: Build 4C
+description: Build a specified 4C target
+inputs:
+  cmake-preset:
+    description: Name of the preset
+    required: true
+    default: docker
+  build-directory:
+    description: Path to the build directory
+    required: true
+  build-targets:
+    description: Targets to build
+    required: true
+  use-ccache:
+    description: Use ccache to speed up the build
+    required: false
+    default: "true"
+  additional-cmake-flags:
+    description: Additional flags to pass to CMake
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      if: ${{ inputs.use-ccache == 'true' }}
+      run: apt-get update
+    - name: Setup ccache
+      if: ${{ inputs.use-ccache == 'true' }}
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: ${{ github.job }}-${{ inputs.cmake-preset }}
+    - uses: ./.github/actions/configure_4C
+      with:
+        cmake-preset: ${{ inputs.cmake-preset }}
+        build-directory: ${{ inputs.build-directory }}
+        additional-cmake-flags: ${{ ( inputs.use-ccache == 'true' && '-DCMAKE_C_COMPILER_LAUNCHER=ccache
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache' ) }} ${{ inputs.additional-cmake-flags }}
+    - name: Build 4C with targets ${{ inputs.build-targets }}
+      run: |
+        cd $BUILD_DIRECTORY
+        time cmake --build . --target $BUILD_TARGETS -- -j `nproc` 2>&1
+      shell: bash
+      env:
+        BUILD_DIRECTORY: ${{ inputs.build-directory }}
+        BUILD_TARGETS: ${{ inputs.build-targets }}

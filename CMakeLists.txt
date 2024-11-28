@@ -114,7 +114,7 @@ enable_testing()
 # NOTE: --mca orte_tmpdir_base [...] can be removed for openmpi >= 4.1.1 according to
 # https://github.com/open-mpi/ompi/issues/8510#issuecomment-1329297350
 set(MPIEXEC_EXTRA_OPTS_FOR_TESTING
-    "--bind-to none --mca orte_tmpdir_base ${PROJECT_BINARY_DIR}/tmp"
+    "--bind-to none --use-hwthread-cpus --mca orte_tmpdir_base ${PROJECT_BINARY_DIR}/tmp"
     )
 
 if(FOUR_C_ENABLE_ADDRESS_SANITIZER)

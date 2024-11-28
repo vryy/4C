@@ -10,10 +10,10 @@ context in order to copy the installation scripts. So, run the `docker build` in
 
 ```bash
 cd <project_root>
-docker build --tag 4C-dependencies --file docker/Dockerfile .
+docker build --tag 4c-dependencies --file docker/Dockerfile .
 ```
 
-## How to update the docker image
+## How to update the docker image for the Github Actions
 
 1. Make your changes to the Dockerfile or dependencies
 1. Compute the sha1 of the docker and dependencies folder
@@ -23,5 +23,8 @@ cd <project_root>
 find dependencies docker -not -wholename '*/trilinos_develop/*' -not -name 'README.md' -type f -exec sha1sum {} \; | sort | sha1sum | cut -c -8
 ```
 
-1. Update `FOUR_C_DOCKER_DEPENDENCIES_HASH` in the `.gitlab-ci.yml` file.
-1. Run a manual pipeline with `FOUR_C_DOCKER_BUILD_IMAGES: True`
+1. Update the `FOUR_C_DOCKER_DEPENDENCIES_HASH` variable in `docker.yml` and all mentions of the old hash (search and replace) in all workflows `.github/workflows` file (The hash should only occur in `container.image`).
+1. Push a branch directly to the 4C repo (not your fork)
+1. Open a PR (the automatically triggered workflows will fail)
+1. Trigger the docker workflow manually on the branch in the 4C repo to build the docker image.
+1. Update the branch such that the workflows are triggered again.

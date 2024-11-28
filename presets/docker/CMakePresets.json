@@ -16,7 +16,7 @@
         "FOUR_C_PVPYTHON": "/opt/4C-dependencies-testing/ParaView-5.5.2-Qt5-MPI-Linux-64bit/bin/pvpython",
         "BUILD_SHARED_LIBS": "ON",
         "FOUR_C_WITH_GOOGLETEST": "ON",
-        "FOUR_C_BUILD_DOXYGEN": "ON",
+        "FOUR_C_BUILD_DOXYGEN": "OFF",
         "FOUR_C_BUILD_READTHEDOCS": "ON",
         "FOUR_C_DOXYGEN_USE_LOCAL_MATHJAX": "ON",
         "FOUR_C_DOXYGEN_LOCAL_MATHJAX_BASEPATH": "/opt/4C-dependencies-testing/MathJax-2.7.9",
@@ -35,26 +35,21 @@
       ]
     },
     {
-      "name": "docker_release_assertions_gcc14",
-      "displayName": "Optimized build with assertions for Docker image (with GCC 14)",
+      "name": "docker_assertions",
+      "displayName": "Optimized build with assertions for Docker image",
       "description": "Build release version including debug assertions on a Docker image",
       "inherits": [
         ".docker_base"
       ],
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RELEASE",
         "FOUR_C_ENABLE_ASSERTIONS": "ON",
-        "CMAKE_CXX_COMPILER": "/opt/4C-dependencies-testing/bin/g++",
-        "CMAKE_C_COMPILER": "/opt/4C-dependencies-testing/bin/gcc",
-        "CMAKE_BUILD_RPATH": "/opt/4C-dependencies-testing/lib64",
-        "FOUR_C_BUILD_DOXYGEN": "OFF",
         "FOUR_C_BUILD_READTHEDOCS": "OFF"
       }
     },
     {
-      "name": "docker_release_clang18",
-      "displayName": "Release build with LLVM Clang 18",
-      "description": "Release build with LLVM Clang 18",
+      "name": "docker_clang",
+      "displayName": "Release build with LLVM Clang",
+      "description": "Release build with LLVM Clang",
       "inherits": [
         ".docker_base"
       ],
@@ -84,7 +79,10 @@
       ],
       "cacheVariables": {
         "FOUR_C_ENABLE_WARNINGS_AS_ERRORS": "OFF",
-        "FOUR_C_ENABLE_ASSERTIONS": "ON"
+        "FOUR_C_ENABLE_ASSERTIONS": "ON",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "FOUR_C_BUILD_READTHEDOCS": "OFF",
+        "CMAKE_UNITY_BUILD": "ON"
       }
     },
     {

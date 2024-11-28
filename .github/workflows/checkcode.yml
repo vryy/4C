@@ -1,0 +1,72 @@
+# Check for code style
+name: checkcode
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checkcode:
+    runs-on: ubuntu-20.04
+    env:
+      SKIP: no-commit-to-branch
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run pre-commit
+        run: |
+          ./utilities/set_up_dev_env.sh
+          source ./utilities/python-venv/bin/activate
+          pre-commit clean
+          pre-commit run --all-files --show-diff-on-failure
+
+  clang-tidy:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:da17023e
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check docker hash
+        uses: ./.github/actions/compute-and-check-dependencies-hash
+        with:
+          docker_image_hash: $DEPENDENCIES_HASH
+      - uses: ./.github/actions/configure_4C
+        with:
+          cmake-preset: docker_codeclimate
+          build-directory: ${{ github.workspace }}/../clang-tidy-build
+      - name: Run Clang-tidy on codebase
+        run: |
+          cd $GITHUB_WORKSPACE/../clang-tidy-build
+          mkdir -p clang-tidy-issues
+          ESCAPED_PROJECT_DIR=$(echo "${GITHUB_WORKSPACE}" | sed 's/\//\\\//g')
+          run-clang-tidy -j `nproc` -config-file ${GITHUB_WORKSPACE}/utilities/code_climate/clang-tidy-config -use-color -p . -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*" 2>&1 | python ${GITHUB_WORKSPACE}/utilities/code_climate/filter_clang_tidy_output.py
+
+  verify-headers:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:da17023e
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check docker hash
+        uses: ./.github/actions/compute-and-check-dependencies-hash
+        with:
+          docker_image_hash: $DEPENDENCIES_HASH
+      - uses: ./.github/actions/build_4C
+        with:
+          cmake-preset: docker
+          build-targets: all_verify_interface_header_sets
+          build-directory: ${{ github.workspace }}/../verify-header-build
+          use-ccache: "false"
+          additional-cmake-flags: '-DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"'

@@ -36,12 +36,8 @@ variables:
     description: Type of pipeline
     options: [default, nightly, coverage, trilinos develop]
 
-  # Variables for docker
-  # Whether to build the docker images and push them to the CI registry
-  FOUR_C_DOCKER_BUILD_IMAGES: 'False'
-  FOUR_C_DOCKER_DEPENDENCIES_HASH: 7a6ad12e
-  FOUR_C_DOCKER_DEPENDENCIES_IMAGE: 4c-dependencies
-  FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $FOUR_C_DOCKER_DEPENDENCIES_IMAGE:$FOUR_C_DOCKER_DEPENDENCIES_HASH
+  # Hash of all relevant dependencies for the docker image
+  FOUR_C_DOCKER_DEPENDENCIES_HASH: da17023e
 
   # Variables for Trilinos pipeline
   # The default Trilinos commit ref the Trilinos pipeline is running on
@@ -63,14 +59,14 @@ before_script:
 
 .clean-build-folder-for-nightly-pipelines: &clean-build-folder-for-nightly-pipelines
   # Delete build folder for a clean build for the nightly pipeline
-  - if [ $GITLAB_PIPELINE_TYPE == "nightly" ]; then echo "Removing build folder"; rm -rf ${CI_PROJECT_DIR}/../build/;
+  - if [ $GITLAB_PIPELINE_TYPE == "nightly" ]; then echo "Removing build folder"; rm -rf ${CI_PROJECT_DIR}/build/;
     fi
 
 .build-only: &build-only
-  - mkdir -p ${CI_PROJECT_DIR}/../build
+  - mkdir -p ${CI_PROJECT_DIR}/build
   # configure
   - |
-    cd ${CI_PROJECT_DIR}/../build
+    cd ${CI_PROJECT_DIR}/build
     cmake ${CI_PROJECT_DIR} --fresh --preset=${CMAKE_PRESET}
   - echo Building the following targets ${BUILD_TARGETS}
   # build
@@ -85,7 +81,7 @@ before_script:
 
 .post_process_log_files: &post_process_log_files
   # sort output of pipeline
-  - cd ${CI_PROJECT_DIR}/../build
+  - cd ${CI_PROJECT_DIR}/build
   - python_venv_build_test/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py ${CI_PROJECT_DIR}/test.log
     ${CI_PROJECT_DIR}/test.log
   # Write selection of the output into the terminal and therefore to GITLAB
@@ -134,7 +130,7 @@ stages:
 # Check for code style
 checkcode:
   stage: checkcode
-  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:$FOUR_C_DOCKER_DEPENDENCIES_HASH
   script:
     - echo code check
     - ./utilities/set_up_dev_env.sh
@@ -201,13 +197,12 @@ danger_review:
 
 codeclimate:
   stage: checkcode
-  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:$FOUR_C_DOCKER_DEPENDENCIES_HASH
   script:
     - *clean-build-folder-for-nightly-pipelines
-    - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
+    - mkdir -p ${CI_PROJECT_DIR}/../build2 && cd ${CI_PROJECT_DIR}/../build2
     # configure to get a compilation database: use a unity build for faster parsing of files
-    - cmake ${CI_PROJECT_DIR} --fresh -DCMAKE_CXX_COMPILER="clang++" -DFOUR_C_BUILD_READTHEDOCS=OFF -DCMAKE_UNITY_BUILD=ON
-      --preset=docker_codeclimate
+    - cmake ${CI_PROJECT_DIR} --fresh --preset=docker_codeclimate
     # create and activate virtual environment
     - python3 -m venv venv
     - . venv/bin/activate
@@ -238,7 +233,7 @@ codeclimate:
 # Full tests with coverage are performed and a coverage report is created
 buildtest_coverage:
   stage: buildtest
-  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:$FOUR_C_DOCKER_DEPENDENCIES_HASH
   variables:
     BUILD_TARGETS: full
     # enable coverage option of ctest
@@ -247,10 +242,10 @@ buildtest_coverage:
     - *clean-build-folder-for-nightly-pipelines
     - *build-and-test
     # generate the coverage_base.info: the "baseline" coverage data file that contains zero coverage for every instrumented line.
-    - lcov --capture --initial --no-external --directory ../build/ --base-directory . --output-file coverage_base.info
+    - lcov --capture --initial --no-external --directory build/ --base-directory . --output-file coverage_base.info
       > ${CI_PROJECT_DIR}/coverage_base.log
     # generate the coverage_tests.info based on tests run above
-    - lcov --capture --no-external --directory ../build/ --base-directory . --output-file coverage_tests.info
+    - lcov --capture --no-external --directory build/ --base-directory . --output-file coverage_tests.info
       > ${CI_PROJECT_DIR}/coverage_tests.log
     # combine the baseline coverage with the coverage from the tests
     - lcov --add-tracefile coverage_base.info --add-tracefile coverage_tests.info --output-file coverage.info  >
@@ -335,14 +330,14 @@ pages: # job name needs to be pages
 
 doxygen:
   stage: documentation
-  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:$FOUR_C_DOCKER_DEPENDENCIES_HASH
   script:
     - echo Doxygen
     - *clean-build-folder-for-nightly-pipelines
-    - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
+    - mkdir -p ${CI_PROJECT_DIR}/build && cd ${CI_PROJECT_DIR}/build
 
     # Configure and build (setting FOUR_C_BUILD_READTHEDOCS=OFF, so that we don't need the python virtual environment
-    - cmake ${CI_PROJECT_DIR} --fresh --preset=docker -DFOUR_C_BUILD_READTHEDOCS=OFF
+    - cmake ${CI_PROJECT_DIR} --fresh --preset=docker -DFOUR_C_BUILD_READTHEDOCS=OFF -DFOUR_C_BUILD_DOXYGEN="ON"
     - cmake --build . --target doxygen > ${CI_PROJECT_DIR}/doxygen.log
 
     # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
@@ -351,7 +346,7 @@ doxygen:
     - if grep -qE '^! ' ${CI_PROJECT_DIR}/doxygen.log; then echo "Found at least one LaTeX error during
       doxygen build."; exit 1; else echo "Doxygen builds without LaTeX errors."; fi
     # Move final doxygen into the base folder for the next stage
-    - mv $CI_PROJECT_DIR/../build/doc/doxygen/html $CI_PROJECT_DIR/doxygen
+    - mv $CI_PROJECT_DIR/build/doc/doxygen/html $CI_PROJECT_DIR/doxygen
   after_script:
     # Write Selection of the output into the terminal and therefore to GITLAB
     - sed -n '/* Extra verbosity turned on/,/Test project /p' ${CI_PROJECT_DIR}/doxygen.log
@@ -373,31 +368,9 @@ doxygen:
       optional: true
       # Always run this job, no rules needed.
 
-# Build the docker image with all dependencies for 4C
-build_base_dependencies:
-  stage: build-docker-images
-  tags:
-    - build-docker-image
-  image: docker:20.10.16
-  services:
-    - docker:20.10.16-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - *compute_dependencies_hash
-    - echo $CI_REGISTRY_IMAGE
-    - echo $CI_REGISTRY
-    - echo "Generating 4C dependencies docker image with version-hash $COMPUTED_DOCKER_DEPENDENCIES_HASH"
-    - FULL_IMAGE_PATH="$CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE:$COMPUTED_DOCKER_DEPENDENCIES_HASH"
-    - docker build --no-cache --tag $FULL_IMAGE_PATH --file docker/Dockerfile .
-    - docker push $FULL_IMAGE_PATH
-  rules:
-    - if: $FOUR_C_DOCKER_BUILD_IMAGES == "True"
-      when: manual
-
 gcc9:
   extends: .buildtest_base
-  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu20.04:$FOUR_C_DOCKER_DEPENDENCIES_HASH
   variables:
     CMAKE_PRESET: docker
   tags:
@@ -413,7 +386,7 @@ gcc9:
 
 gcc9_asan:
   extends: .buildtest_base
-  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu20.04:$FOUR_C_DOCKER_DEPENDENCIES_HASH
   variables:
     CMAKE_PRESET: docker_asan
   after_script:
@@ -430,9 +403,9 @@ gcc9_asan:
 
 gcc14_assertions:
   extends: .buildtest_base
-  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:$FOUR_C_DOCKER_DEPENDENCIES_HASH
   variables:
-    CMAKE_PRESET: docker_release_assertions_gcc14
+    CMAKE_PRESET: docker_assertions
   tags:
     - buildtest
   needs:
@@ -446,9 +419,9 @@ gcc14_assertions:
 
 clang18:
   extends: .buildtest_base
-  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:$FOUR_C_DOCKER_DEPENDENCIES_HASH
   variables:
-    CMAKE_PRESET: docker_release_clang18
+    CMAKE_PRESET: docker_clang
   tags:
     - buildtest
   needs:
@@ -461,7 +434,7 @@ clang18:
   interruptible: true
 
 verify_headers:
-  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:$FOUR_C_DOCKER_DEPENDENCIES_HASH
   variables:
     NUMBER_OF_BUILD_THREADS: '10'
   tags:
@@ -472,12 +445,12 @@ verify_headers:
   stage: checkcode
   script:
     - *clean-build-folder-for-nightly-pipelines
-    - mkdir -p ${CI_PROJECT_DIR}/../build
+    - mkdir -p ${CI_PROJECT_DIR}/build
     # configure
     - |
-      cd ${CI_PROJECT_DIR}/../build
+      cd ${CI_PROJECT_DIR}/build
       # Configure verification of header sets.
-      cmake ${CI_PROJECT_DIR} --fresh --preset=docker_release_assertions_gcc14 -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
+      cmake ${CI_PROJECT_DIR} --fresh --preset=docker_assertions -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
       # verify headers
     - time cmake --build . --target all_verify_interface_header_sets -- -j `nproc` 2>&1 | tee ${CI_PROJECT_DIR}/verify_headers.log
   artifacts:
@@ -494,11 +467,11 @@ verify_headers:
 
 readthedocs:
   stage: documentation
-  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:$FOUR_C_DOCKER_DEPENDENCIES_HASH
   script:
     - echo Create ReadTheDocs documentation
     - *clean-build-folder-for-nightly-pipelines
-    - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
+    - mkdir -p ${CI_PROJECT_DIR}/build && cd ${CI_PROJECT_DIR}/build
 
     # Configure and build
     - cmake ${CI_PROJECT_DIR} --fresh --preset=docker
@@ -509,7 +482,7 @@ readthedocs:
       one fatal error during readthedocs generation.'; exit 1; else echo 'ReadTheDocs documentation builds
       without fatal errors.'; fi
     # Move final readthedocs into the base folder for the next stage
-    - mv $CI_PROJECT_DIR/../build/doc/readthedocs/html $CI_PROJECT_DIR/readthedocs
+    - mv $CI_PROJECT_DIR/build/doc/readthedocs/html $CI_PROJECT_DIR/readthedocs
   after_script:
     # Write Selection of the output into the terminal and therefore to GITLAB
     - sed -n '/* Extra verbosity turned on/,/Test project /p' ${CI_PROJECT_DIR}/readthedocs.log
@@ -566,7 +539,7 @@ gcc9_assertions_trilinos_develop:
   extends: .buildtest_base
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_TRILINOS
   variables:
-    CMAKE_PRESET: docker_release_assertions
+    CMAKE_PRESET: docker_assertions
   tags:
     - buildtest
   needs:

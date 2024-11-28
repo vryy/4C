@@ -1,0 +1,196 @@
+name: buildtest
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+  push:
+    branches:
+      - 'main'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gcc13_assertions_build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:da17023e
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check docker hash
+        uses: ./.github/actions/compute-and-check-dependencies-hash
+        with:
+          docker_image_hash: $DEPENDENCIES_HASH
+      - uses: ./.github/actions/build_4C
+        with:
+          cmake-preset: docker_assertions
+          build-targets: full
+          build-directory: ${{ github.workspace }}/build
+          use-ccache: "true"
+      - uses: ./.github/actions/upload_4C_build
+        with:
+          build-directory: ${{ github.workspace }}/build
+          retention-days: 1
+
+  gcc13_assertions_test:
+    needs: gcc13_assertions_build
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+    container:
+      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:da17023e
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    strategy:
+      fail-fast: false
+      matrix:
+        test-chunk: ["1,315", "316,443", "444,699", "700,804", "805,965", "966,1112", "1113,1502", "1503,1652",
+          "1653,2128", "2129,2429", "2430,2580", "2581,2696", "2697,2719", "2720,2737", "2738,"]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check docker hash
+        uses: ./.github/actions/compute-and-check-dependencies-hash
+        with:
+          docker_image_hash: $DEPENDENCIES_HASH
+      - name: Setup developer environment for testing
+        run: |
+          cd $GITHUB_WORKSPACE
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          ./utilities/set_up_dev_env.sh
+      - uses: ./.github/actions/download_4C_build
+        with:
+          build-job: gcc13_assertions_build
+      - name: Test
+        run: |
+          cd $GITHUB_WORKSPACE/build
+          ctest -I $TEST_CHUNK -j `nproc` --output-on-failure
+        env:
+          TEST_CHUNK: ${{ matrix.test-chunk }}
+
+  gcc9_build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu20.04:da17023e
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check docker hash
+        uses: ./.github/actions/compute-and-check-dependencies-hash
+        with:
+          docker_image_hash: $DEPENDENCIES_HASH
+      - uses: ./.github/actions/build_4C
+        with:
+          cmake-preset: docker
+          build-targets: full
+          build-directory: ${{ github.workspace }}/build
+          use-ccache: "true"
+      - uses: ./.github/actions/upload_4C_build
+        with:
+          build-directory: ${{ github.workspace }}/build
+          retention-days: 1
+
+  gcc9_test_minimal:
+    needs: gcc9_build
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu20.04:da17023e
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check docker hash
+        uses: ./.github/actions/compute-and-check-dependencies-hash
+        with:
+          docker_image_hash: $DEPENDENCIES_HASH
+      - name: Setup developer environment for testing
+        run: |
+          cd $GITHUB_WORKSPACE
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          ./utilities/set_up_dev_env.sh
+      - uses: ./.github/actions/download_4C_build
+        with:
+          build-job: gcc9_build
+      - name: Test
+        run: |
+          cd $GITHUB_WORKSPACE/build
+          ctest -L minimal -j `nproc` --output-on-failure
+
+  clang18_build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:da17023e
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # Due to a bug in runner action the variables $GITHUB_WORKSPACE and ${{ github.workspace }} are different inside a container. https://github.com/actions/runner/issues/2058
+      # The repo gets cloned to `/__w/4C/4C` ($GITHUB_WORKSPACE) while ${{ github.workspace }} points to `/home/runner/work/4C/4C`.`
+      # Use $GITHUB_WORKSPACE instead of ${{ github.workspace }}
+      - uses: actions/checkout@v4
+      - name: Check docker hash
+        uses: ./.github/actions/compute-and-check-dependencies-hash
+        with:
+          docker_image_hash: $DEPENDENCIES_HASH
+      - uses: ./.github/actions/build_4C
+        with:
+          cmake-preset: docker_clang
+          build-targets: full
+          build-directory: ${{ github.workspace }}/build
+          use-ccache: "true"
+      - uses: ./.github/actions/upload_4C_build
+        with:
+          build-directory: ${{ github.workspace }}/build
+          retention-days: 1
+
+  clang18_test_minimal:
+    needs: clang18_build
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:da17023e
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check docker hash
+        uses: ./.github/actions/compute-and-check-dependencies-hash
+        with:
+          docker_image_hash: $DEPENDENCIES_HASH
+      - name: Setup developer environment for testing
+        run: |
+          cd $GITHUB_WORKSPACE
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          ./utilities/set_up_dev_env.sh
+      - uses: ./.github/actions/download_4C_build
+        with:
+          build-job: clang18_build
+      - name: Test
+        run: |
+          cd $GITHUB_WORKSPACE/build
+          ctest -L minimal -j `nproc` --output-on-failure
+
+  ensure_all_tests_pass:
+    needs: [gcc9_build, gcc9_test_minimal, gcc13_assertions_test, gcc13_assertions_build, clang18_build,
+      clang18_test_minimal]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check for successful builds and tests
+        uses: re-actors/alls-green@release/v1
+        with:
+          allowed-skips: gcc13_assertions_test
+          jobs: ${{ toJSON(needs) }}

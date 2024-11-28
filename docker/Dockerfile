@@ -5,8 +5,10 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-FROM ubuntu:focal
-LABEL project=4C
+ARG UBUNTU_VERSION=20.04
+FROM ubuntu:${UBUNTU_VERSION}
+LABEL org.opencontainers.image.description="Image containing all the dependencies required for building and testing 4C"
+LABEL org.4c-multiphysics.project=4C
 
 # Prevents tzdata asking for user feedback
 ENV DEBIAN_FRONTEND=noninteractive
@@ -15,8 +17,9 @@ USER root
 
 # Set locale information:. region and timezone
 RUN apt-get update && apt-get install -y locales && \
-    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
-RUN locale-gen en_US.UTF-8
+    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
+    locale-gen en_US.UTF-8 && \
+    rm -rf /var/lib/apt/lists/*
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
@@ -31,10 +34,9 @@ RUN apt-get update && apt-get install -y \
       sudo \
       unzip \
       vim \
-      wget
-
-RUN apt-get update && apt-get install -y \
-      cxxtest \
+      wget \
+      && \
+    apt-get update && apt-get install -y \
       doxygen \
       graphviz \
       texinfo \
@@ -48,14 +50,19 @@ RUN apt-get update && apt-get install -y \
       libfftw3-dev \
       lld \
       python3 \
-      python3.8-venv \
+      python3-venv \
       python-is-python3 \
       liblapack-dev \
       libopenmpi-dev \
       libparmetis-dev \
       metis \
       ninja-build \
-      libyaml-dev
+      libyaml-dev \
+      clang \
+      clang-tidy \
+      clang-tools \
+      libomp-dev \
+  && rm -rf /var/lib/apt/lists/*
 
 # Create directory for dependencies
 ARG NPROCS=12
@@ -70,7 +77,7 @@ RUN /dependencies/current/cmake/install.sh /usr/local
 # Install SuiteSparse 5.4.0
 RUN /dependencies/current/suitesparse/install.sh ${INSTALL_DIR}
 
-# Install superLU_dist 2.5
+# Install superLU_dist 7.2.0
 RUN /dependencies/current/superlu_dist/install.sh ${INSTALL_DIR}
 
 # Install qhull 2012.1
@@ -87,17 +94,17 @@ RUN /dependencies/current/backtrace/install.sh ${INSTALL_DIR}
 ENV FOUR_C_TESTING_DEPENDENCIES_DIR="/opt/4C-dependencies-testing/"
 RUN mkdir ${FOUR_C_TESTING_DEPENDENCIES_DIR}
 
-# Install LLVM (use standard install directory)
-RUN /dependencies/testing/llvm/install.sh /usr/local
-
-# Install newer GCC
-RUN /dependencies/testing/gcc/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}
-
 # Install Mathjax
 RUN /dependencies/testing/mathjax/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}
 
 # Install Paraview
 RUN /dependencies/testing/paraview/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}
+
+# Add dependencies hash
+# The label is added at the end because the label causes a cache miss
+ARG DEPENDENCIES_HASH
+LABEL org.4c-multiphysics.dependencies_hash="${DEPENDENCIES_HASH}"
+ENV DEPENDENCIES_HASH=${DEPENDENCIES_HASH}
 
 # add and enable the default user
 ENV USER=user

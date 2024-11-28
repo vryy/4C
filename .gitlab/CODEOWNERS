@@ -414,6 +414,8 @@ Gemfile.lock                                   @baci/team_infrastructure
 # template files
 .github/ISSUE_TEMPLATE/bug_report.md                                         @baci/baci_developers
 .github/ISSUE_TEMPLATE/enhancement.md                                        @baci/baci_developers
+.github/workflows/                                                           @baci/team_infrastructure
+.github/actions/                                                             @baci/team_infrastructure
 .github/pull_request_template.md                                             @baci/baci_developers
 .gitlab/issue_templates/BUG_REPORT.md                                        @baci/team_infrastructure
 .gitlab/issue_templates/DEVELOPER_MEETING_TEMPLATE.md                        @baci/baci_developers
