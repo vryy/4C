@@ -16,7 +16,7 @@ number_of_warnings = re.compile(r"^\d+ warnings generated.$")
 supressed_warnings_hint = re.compile(r"^Suppressed \d+ warnings")
 display_warning_hint = re.compile(r"^Use -header-filter=\.\* to display errors")
 
-clang_invocation = re.compile(r"^\/\S+\/clang-tidy ")
+clang_invocation = re.compile(r"^\/?\S*\/?clang-tidy-?\d* ")
 
 color_output_regex = re.compile(r"\033\[[0-9;]+m")
 
