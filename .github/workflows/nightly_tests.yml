@@ -54,7 +54,6 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-          ./utilities/set_up_dev_env.sh
       - uses: ./.github/actions/download_4C_build
         with:
           build-job: gcc13_assertions_build
@@ -114,7 +113,6 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-          ./utilities/set_up_dev_env.sh
       - uses: ./.github/actions/download_4C_build
         with:
           build-job: gcc9_build
@@ -174,7 +172,6 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-          ./utilities/set_up_dev_env.sh
       - uses: ./.github/actions/download_4C_build
         with:
           build-job: clang18_build
@@ -234,7 +231,6 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-          ./utilities/set_up_dev_env.sh
       - uses: ./.github/actions/download_4C_build
         with:
           build-job: gcc13_asan_build
