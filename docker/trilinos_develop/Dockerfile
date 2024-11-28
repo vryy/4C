@@ -33,7 +33,6 @@ RUN apt-get update && apt-get install -y \
       wget
 
 RUN apt-get update && apt-get install -y \
-      cxxtest \
       doxygen \
       graphviz \
       texinfo \

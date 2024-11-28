@@ -1,0 +1,56 @@
+name: Check if docker build is required
+description: Check if the docker image needs to be built
+inputs:
+  registry:
+    description: Name of the docker container registry
+    required: true
+  image-name:
+    description: Name of the image
+    required: true
+  username:
+    description: Username to log in to the Docker registry
+    required: true
+  password:
+    description: Password to log in to the Docker registry
+    required: true
+outputs:
+  build_docker_image:
+    description: Whether the docker image needs to be built
+    value: ${{ steps.check-if-build-is-required.outputs.build }}
+  dependencies_hash:
+    description: Hash of the dependencies
+    value: ${{ steps.compute-dependencies-hash.outputs.dependencies_hash }}
+runs:
+  using: composite
+  steps:
+    - id: compute-dependencies-hash
+      uses: ./.github/actions/compute-and-check-dependencies-hash
+      with:
+        docker_image_hash: $FOUR_C_DOCKER_DEPENDENCIES_HASH
+    - name: Log in to the Container registry
+      uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+    - id: check-if-build-is-required
+      shell: bash
+      name: Check if the docker image needs to be built
+      run: |
+        exit_code=0
+        docker manifest inspect ${{ inputs.image-name }}:$COMPUTED_DOCKER_DEPENDENCIES_HASH > /dev/null || exit_code=$?
+        echo $exit_code
+        case $exit_code in
+          0)
+            echo "Image exists"
+            echo "build=false" >> $GITHUB_OUTPUT
+            ;;
+          1)
+            echo "Image does not exist"
+            echo "build=true" >> $GITHUB_OUTPUT
+            ;;
+          *)
+            echo "Something went wrong. Exit code $exit_code"
+            exit 1
+            ;;
+        esac

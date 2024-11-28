@@ -5,7 +5,8 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-FROM ubuntu:noble
+ARG UBUNTU_VERSION=20.04
+FROM ubuntu:${UBUNTU_VERSION}
 LABEL org.opencontainers.image.description="Image containing all the dependencies required for building and testing 4C"
 LABEL org.4c-multiphysics.project=4C
 
@@ -36,7 +37,6 @@ RUN apt-get update && apt-get install -y \
       wget \
       && \
     apt-get update && apt-get install -y \
-      cxxtest \
       doxygen \
       graphviz \
       texinfo \
@@ -58,7 +58,11 @@ RUN apt-get update && apt-get install -y \
       metis \
       ninja-build \
       libyaml-dev \
-      && rm -rf /var/lib/apt/lists/*
+      clang \
+      clang-tidy \
+      clang-tools \
+      libomp-dev \
+  && rm -rf /var/lib/apt/lists/*
 
 # Create directory for dependencies
 ARG NPROCS=12
@@ -89,12 +93,6 @@ RUN /dependencies/current/backtrace/install.sh ${INSTALL_DIR}
 # Installation directory for dependencies concerning testing
 ENV FOUR_C_TESTING_DEPENDENCIES_DIR="/opt/4C-dependencies-testing/"
 RUN mkdir ${FOUR_C_TESTING_DEPENDENCIES_DIR}
-
-# Install LLVM (use standard install directory)
-RUN /dependencies/testing/llvm/install.sh /usr/local
-
-# Install newer GCC
-# RUN /dependencies/testing/gcc/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}
 
 # Install Mathjax
 RUN /dependencies/testing/mathjax/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}
