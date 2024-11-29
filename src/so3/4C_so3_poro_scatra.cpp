@@ -209,4 +209,4 @@ Core::Elements::ElementType& Discret::Elements::So3PoroScatra<So3Ele, distype>::
 
 FOUR_C_NAMESPACE_CLOSE
 
-#include "4C_so3_poro_scatra_fwd.hpp"
+#include "4C_so3_poro_scatra.inst.hpp"

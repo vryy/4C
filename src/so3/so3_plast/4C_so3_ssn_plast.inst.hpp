@@ -5,8 +5,8 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_SO3_SSN_PLAST_FWD_HPP
-#define FOUR_C_SO3_SSN_PLAST_FWD_HPP
+#ifndef FOUR_C_SO3_SSN_PLAST_INST_HPP
+#define FOUR_C_SO3_SSN_PLAST_INST_HPP
 
 FOUR_C_NAMESPACE_OPEN
 

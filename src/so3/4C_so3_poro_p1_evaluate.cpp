@@ -877,4 +877,4 @@ void Discret::Elements::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1_od(
 
 FOUR_C_NAMESPACE_CLOSE
 
-#include "4C_so3_poro_p1_fwd.hpp"
+#include "4C_so3_poro_p1.inst.hpp"

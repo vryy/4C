@@ -5,18 +5,8 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_SCATRA_ELE_CALC_NO_PHYSICS_FWD_HPP
-#define FOUR_C_SCATRA_ELE_CALC_NO_PHYSICS_FWD_HPP
-
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief forward declarations for scatra_ele_calc_no_physics classes
-
-\level 2
-
-
-*/
+#ifndef FOUR_C_SCATRA_ELE_CALC_NO_PHYSICS_INST_HPP
+#define FOUR_C_SCATRA_ELE_CALC_NO_PHYSICS_INST_HPP
 
 FOUR_C_NAMESPACE_OPEN
 

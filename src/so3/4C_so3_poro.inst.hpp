@@ -5,15 +5,8 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_SO3_PORO_FWD_HPP
-#define FOUR_C_SO3_PORO_FWD_HPP
-
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief forward declarations (explicit instantiation) of the templated poro elements
-
-\level 2
-*----------------------------------------------------------------------*/
+#ifndef FOUR_C_SO3_PORO_INST_HPP
+#define FOUR_C_SO3_PORO_INST_HPP
 
 FOUR_C_NAMESPACE_OPEN
 

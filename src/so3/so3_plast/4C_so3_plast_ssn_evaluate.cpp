@@ -15,7 +15,7 @@
 #include "4C_mat_service.hpp"
 #include "4C_so3_element_service.hpp"
 #include "4C_so3_plast_ssn.hpp"
-#include "4C_so3_ssn_plast_fwd.hpp"
+#include "4C_so3_ssn_plast.inst.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_structure_new_gauss_point_data_output_manager.hpp"
 #include "4C_utils_function.hpp"

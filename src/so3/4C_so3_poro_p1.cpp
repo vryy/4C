@@ -131,4 +131,4 @@ Core::Elements::ElementType& Discret::Elements::So3PoroP1<So3Ele, distype>::elem
 
 FOUR_C_NAMESPACE_CLOSE
 
-#include "4C_so3_poro_p1_fwd.hpp"
+#include "4C_so3_poro_p1.inst.hpp"
