@@ -4756,7 +4756,7 @@ void CONTACT::LagrangeStrategy::update_active_set()
   // broadcast convergence status among processors
   int convcheck = 0;
   int localcheck = activesetconv_;
-  get_comm().SumAll(&localcheck, &convcheck, 1);
+  Core::Communication::sum_all(&localcheck, &convcheck, 1, get_comm());
 
   // active set is only converged, if converged on all procs
   // if not, increase no. of active set steps too
@@ -4955,7 +4955,7 @@ void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstSt
   // broadcast convergence status among processors
   int convcheck = 0;
   int localcheck = activesetconv_;
-  get_comm().SumAll(&localcheck, &convcheck, 1);
+  Core::Communication::sum_all(&localcheck, &convcheck, 1, get_comm());
 
   // active set is only converged, if converged on all procs
   // if not, increase no. of active set steps too
@@ -5150,13 +5150,13 @@ void CONTACT::LagrangeStrategy::update(std::shared_ptr<const Core::LinAlg::Vecto
   ////  {
   ////    lssum+=(*fconservationS)[i];
   ////  }
-  ////  Comm().SumAll(&lssum,&gssum,1);
+  ////  Core::Communication::sum_all(&lssum,&gssum,1, Comm());
   ////  // master
   ////  for (int i=0;i<fconservationM->MyLength();++i)
   ////  {
   ////    lmsum+=(*fconservationM)[i];
   ////  }
-  ////  Comm().SumAll(&lmsum,&gmsum,1);
+  ////  Core::Communication::sum_all(&lmsum,&gmsum,1, Comm());
   //
   //
   //

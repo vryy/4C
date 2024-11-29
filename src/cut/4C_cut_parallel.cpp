@@ -41,7 +41,7 @@ Cut::Parallel::Parallel(const std::shared_ptr<Core::FE::Discretization>& discret
 void Cut::Parallel::communicate_node_positions()
 {
   // wait for all processors before the Communication starts
-  discret_->get_comm().Barrier();
+  Core::Communication::barrier(discret_->get_comm());
 
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 5/6 --- cut_positions_dofsets --- communicate_node_positions");
 
@@ -109,7 +109,7 @@ void Cut::Parallel::communicate_node_positions()
   }
 #endif
 
-  discret_->get_comm().Barrier();
+  Core::Communication::barrier(discret_->get_comm());
 
   //----------------------------------------------------------
 
@@ -164,7 +164,7 @@ void Cut::Parallel::export_communication_finished(bool& procDone)
     if ((bool)allProcsDone == false) procDone = false;
 
     // processors wait for each other
-    discret_->get_comm().Barrier();
+    Core::Communication::barrier(discret_->get_comm());
   }
 
 
@@ -260,7 +260,7 @@ void Cut::Parallel::export_node_position_data()
         //--------------------
       }
 
-      discret_->get_comm().Barrier();  // processors wait for each other
+      Core::Communication::barrier(discret_->get_comm());  // processors wait for each other
     }
 
 
@@ -447,7 +447,7 @@ void Cut::Parallel::set_position_for_node(const Node* n, const Point::PointPosit
 void Cut::Parallel::communicate_node_dof_set_numbers(bool include_inner)
 {
   // wait for all processors before the Communication starts
-  discret_->get_comm().Barrier();
+  Core::Communication::barrier(discret_->get_comm());
 
   TEUCHOS_FUNC_TIME_MONITOR(
       "Cut --- 5/6 --- cut_positions_dofsets --- communicate_node_dof_set_numbers");
@@ -473,7 +473,7 @@ void Cut::Parallel::communicate_node_dof_set_numbers(bool include_inner)
   // procs set the information
   distribute_dof_set_data();
 
-  discret_->get_comm().Barrier();
+  Core::Communication::barrier(discret_->get_comm());
 
   //  const double t_diff = Teuchos::Time::wallTime()-t_start;
   //  if ( myrank_ == 0 )
@@ -553,7 +553,7 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
 
 
 
-      discret_->get_comm().Barrier();  // processors wait for each other
+      Core::Communication::barrier(discret_->get_comm());  // processors wait for each other
     }
 
 

@@ -254,7 +254,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::setup()
   immersed_info_isvalid_ = false;
 
   // wait for all processors to arrive here
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
 
   // set flag issetup true
   set_is_setup(true);

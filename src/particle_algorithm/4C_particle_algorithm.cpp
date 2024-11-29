@@ -733,7 +733,8 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::check_max_position_increment()
   if (particleinteraction_)
   {
     double maxinteractiondistance = particleinteraction_->max_interaction_distance();
-    get_comm().MaxAll(&maxinteractiondistance, &allprocmaxinteractiondistance, 1);
+    Core::Communication::max_all(
+        &maxinteractiondistance, &allprocmaxinteractiondistance, 1, get_comm());
   }
 
   // get max particle position increment since last transfer
@@ -808,7 +809,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::get_max_particle_position_increment(
     FOUR_C_THROW("a particle traveled more than one bin on this processor!");
 
   // get maximum particle position increment on all processors
-  get_comm().MaxAll(&maxpositionincrement, &allprocmaxpositionincrement, 1);
+  Core::Communication::max_all(&maxpositionincrement, &allprocmaxpositionincrement, 1, get_comm());
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::transfer_load_between_procs()
@@ -851,7 +852,7 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::check_load_redistribution_needed()
 
   // get maximum percentage change of particles
   double maxpercentagechange = 0.0;
-  get_comm().MaxAll(&percentagechange, &maxpercentagechange, 1);
+  Core::Communication::max_all(&percentagechange, &maxpercentagechange, 1, get_comm());
 
   // criterion for load redistribution based on maximum percentage change of the number of particles
   redistributeload |= (maxpercentagechange > percentagelimit);

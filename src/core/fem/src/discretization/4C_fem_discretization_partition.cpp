@@ -126,9 +126,9 @@ void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
   for (auto& fool : sendmap) receivers.push_back(fool.first);
 
   size = (int)receivers.size();
-  get_comm().Broadcast(&size, 1, 0);
+  Core::Communication::broadcast(&size, 1, 0, get_comm());
   if (myrank != 0) receivers.resize(size);
-  get_comm().Broadcast(receivers.data(), size, 0);
+  Core::Communication::broadcast(receivers.data(), size, 0, get_comm());
   int foundme = -1;
   if (myrank != 0)
     for (int i = 0; i < size; ++i)
@@ -181,7 +181,7 @@ void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
   if (!myrank)
     for (int i = 0; i < size; ++i) exporter.wait(request[i]);
 
-  get_comm().Barrier();  // I feel better this way ;-)
+  Core::Communication::barrier(get_comm());  // I feel better this way ;-)
   reset();
 }
 
@@ -227,9 +227,9 @@ void Core::FE::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& tar
        ++fool)
     receivers.push_back(fool->first);
   size = (int)receivers.size();
-  get_comm().Broadcast(&size, 1, 0);
+  Core::Communication::broadcast(&size, 1, 0, get_comm());
   if (myrank != 0) receivers.resize(size);
-  get_comm().Broadcast(receivers.data(), size, 0);
+  Core::Communication::broadcast(receivers.data(), size, 0, get_comm());
   int foundme = -1;
   if (myrank != 0)
     for (int i = 0; i < size; ++i)
@@ -284,7 +284,7 @@ void Core::FE::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& tar
   if (!myrank)
     for (int i = 0; i < size; ++i) exporter.wait(request[i]);
 
-  get_comm().Barrier();  // feel better this way ;-)
+  Core::Communication::barrier(get_comm());  // feel better this way ;-)
   reset();
 }
 
@@ -478,7 +478,7 @@ Core::FE::Discretization::build_element_row_column(
   // communicate number of nodes per proc
   std::vector<int> nodesperproc(numproc);
   int nummynodes = noderowmap.NumMyElements();
-  get_comm().GatherAll(&nummynodes, nodesperproc.data(), 1);
+  Core::Communication::gather_all(&nummynodes, nodesperproc.data(), 1, get_comm());
 
   // estimate no. of elements equal to no. of nodes
   std::vector<int> myele(nummynodes);
@@ -493,11 +493,11 @@ Core::FE::Discretization::build_element_row_column(
   for (int proc = 0; proc < numproc; ++proc)
   {
     int size = stoposize;
-    get_comm().Broadcast(&size, 1, proc);
+    Core::Communication::broadcast(&size, 1, proc, get_comm());
     if (size > (int)rtopo.size()) rtopo.resize(size);
     if (proc == myrank)
       for (int i = 0; i < size; ++i) rtopo[i] = stopo[i];
-    get_comm().Broadcast(rtopo.data(), size, proc);
+    Core::Communication::broadcast(rtopo.data(), size, proc, get_comm());
     for (int i = 0; i < size;)
     {
       const int elegid = rtopo[i++];

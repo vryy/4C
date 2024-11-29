@@ -38,6 +38,53 @@ namespace Core::Communication
    */
   int num_mpi_ranks(const Epetra_Comm& comm);
 
+  /**
+   * Wait until all ranks in the communicator @p comm have reached this point.
+   *
+   * @note You should rarely need to call this function. All MPI communication functions perform any
+   * necessary synchronization automatically.
+   */
+  void barrier(const Epetra_Comm& comm);
+
+  /**
+   * Broadcast the value @p value from the MPI rank @p root to all other ranks in the communicator
+   * @p comm. The array @p value is assumed to have @p count elements.
+   */
+  template <typename T>
+  void broadcast(T* value, int count, int root, const Epetra_Comm& comm);
+
+  /**
+   * Compute the sum of all values in the array @p partial on all MPI ranks and store the result in
+   * @p global. The arrays @p partial and @p global are assumed to have @p count elements. The
+   * result is distributed to all ranks.
+   */
+  template <typename T>
+  void sum_all(T* partial, T* global, int count, const Epetra_Comm& comm);
+
+  /**
+   * Compute the maximum of all values in the array @p partial on all MPI ranks and store the result
+   * in @p global. The arrays @p partial and @p global are assumed to have @p count elements. The
+   * result is distributed to all ranks.
+   */
+  template <typename T>
+  void max_all(T* partial, T* global, int count, const Epetra_Comm& comm);
+
+  /**
+   * Compute the minimum of all values in the array @p partial on all MPI ranks and store the result
+   * in @p global. The arrays @p partial and @p global are assumed to have @p count elements. The
+   * result is distributed to all ranks.
+   */
+  template <typename T>
+  void min_all(T* partial, T* global, int count, const Epetra_Comm& comm);
+
+  /**
+   * Gather values @p my_values from all procs to @p all_values. The array @p my_values must have
+   * @p count elements. The array @p all_values must have @p count * num_mpi_ranks(comm) elements.
+   * The result is distributed to all procs.
+   */
+  template <typename T>
+  void gather_all(T* my_values, T* all_values, int count, const Epetra_Comm& comm);
+
   //! Merge map @p map_in (key of type @p T and value of type @p U) from all procs to a merged
   //! map (key of type @p T and value of type @p U). It is distributed to all procs.
   template <typename T, typename U>
@@ -120,7 +167,80 @@ namespace Core::Communication::Internal
       vec_out2.emplace_back(vec2[i]);
     }
   }
+
+
+
+  //! MPI datatype for type T
+  template <typename T>
+  MPI_Datatype mpi_type()
+  {
+    if constexpr (std::is_same_v<T, int>)
+      return MPI_INT;
+    else if constexpr (std::is_same_v<T, unsigned>)
+      return MPI_UNSIGNED;
+    else if constexpr (std::is_same_v<T, long>)
+      return MPI_LONG;
+    else if constexpr (std::is_same_v<T, unsigned long>)
+      return MPI_UNSIGNED_LONG;
+    else if constexpr (std::is_same_v<T, long long>)
+      return MPI_LONG_LONG;
+    else if constexpr (std::is_same_v<T, unsigned long long>)
+      return MPI_UNSIGNED_LONG_LONG;
+    else if constexpr (std::is_same_v<T, float>)
+      return MPI_FLOAT;
+    else if constexpr (std::is_same_v<T, double>)
+      return MPI_DOUBLE;
+    else if constexpr (std::is_same_v<T, long double>)
+      return MPI_LONG_DOUBLE;
+    else if constexpr (std::is_same_v<T, char>)
+      return MPI_CHAR;
+    else if constexpr (std::is_same_v<T, unsigned char>)
+      return MPI_UNSIGNED_CHAR;
+    else if constexpr (std::is_same_v<T, short>)
+      return MPI_SHORT;
+    else if constexpr (std::is_same_v<T, unsigned short>)
+      return MPI_UNSIGNED_SHORT;
+    else
+      FOUR_C_THROW("Unsupported type for MPI datatype.");
+  }
 }  // namespace Core::Communication::Internal
+
+template <typename T>
+void Core::Communication::broadcast(T* value, int count, int root, const Epetra_Comm& comm)
+{
+  MPI_Comm mpi_comm = dynamic_cast<const Epetra_MpiComm&>(comm).Comm();
+  MPI_Bcast(value, count, Internal::mpi_type<T>(), root, mpi_comm);
+}
+
+template <typename T>
+void Core::Communication::sum_all(T* partial, T* global, int count, const Epetra_Comm& comm)
+{
+  MPI_Comm mpi_comm = dynamic_cast<const Epetra_MpiComm&>(comm).Comm();
+  MPI_Allreduce(partial, global, count, Internal::mpi_type<T>(), MPI_SUM, mpi_comm);
+}
+
+template <typename T>
+void Core::Communication::max_all(T* partial, T* global, int count, const Epetra_Comm& comm)
+{
+  MPI_Comm mpi_comm = dynamic_cast<const Epetra_MpiComm&>(comm).Comm();
+  MPI_Allreduce(partial, global, count, Internal::mpi_type<T>(), MPI_MAX, mpi_comm);
+}
+
+template <typename T>
+void Core::Communication::min_all(T* partial, T* global, int count, const Epetra_Comm& comm)
+{
+  MPI_Comm mpi_comm = dynamic_cast<const Epetra_MpiComm&>(comm).Comm();
+  MPI_Allreduce(partial, global, count, Internal::mpi_type<T>(), MPI_MIN, mpi_comm);
+}
+
+template <typename T>
+void Core::Communication::gather_all(
+    T* my_values, T* all_values, int count, const Epetra_Comm& comm)
+{
+  MPI_Comm mpi_comm = dynamic_cast<const Epetra_MpiComm&>(comm).Comm();
+  MPI_Allgather(my_values, count, Internal::mpi_type<T>(), all_values, count,
+      Internal::mpi_type<T>(), mpi_comm);
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

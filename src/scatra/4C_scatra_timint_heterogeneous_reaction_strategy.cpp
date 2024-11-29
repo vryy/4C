@@ -276,7 +276,7 @@ void ScaTra::HeterogeneousReactionStrategy::heterogeneous_reaction_sanity_check(
   }  // loop over row elements
 
 
-  com.Barrier();
+  Core::Communication::barrier(com);
   if (Core::Communication::my_mpi_rank(com) == 0) std::cout << " Passed." << std::endl;
 
   return;

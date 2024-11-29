@@ -107,7 +107,8 @@ namespace Core::Binstrategy::Utils
     // -----------------------------------------------------------------------
     // ---- prepare receiving procs -----
     std::vector<int> summedtargets(numproc, 0);
-    discret.get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+    Core::Communication::sum_all(
+        targetprocs.data(), summedtargets.data(), numproc, discret.get_comm());
 
     // ---- receive ----
     for (int rec = 0; rec < summedtargets[Core::Communication::my_mpi_rank(discret.get_comm())];
@@ -152,7 +153,7 @@ namespace Core::Binstrategy::Utils
     // wait for all communications to finish
     for (int i = 0; i < length; ++i) exporter.wait(request[i]);
     // safety, should be a no time operation if everything works fine before
-    discret.get_comm().Barrier();
+    Core::Communication::barrier(discret.get_comm());
   }
 
   /*-----------------------------------------------------------------------------*
@@ -201,7 +202,8 @@ namespace Core::Binstrategy::Utils
     // -----------------------------------------------------------------------
     // ---- prepare receiving procs -----
     std::vector<int> summedtargets(numproc, 0);
-    discret.get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+    Core::Communication::sum_all(
+        targetprocs.data(), summedtargets.data(), numproc, discret.get_comm());
 
     // ---- receive ----
     for (int rec = 0; rec < summedtargets[Core::Communication::my_mpi_rank(discret.get_comm())];
@@ -234,7 +236,7 @@ namespace Core::Binstrategy::Utils
     // wait for all communications to finish
     for (int i = 0; i < length; ++i) exporter.wait(request[i]);
     // safety, should be a no time operation if everything works fine before
-    discret.get_comm().Barrier();
+    Core::Communication::barrier(discret.get_comm());
   }
 
   /*----------------------------------------------------------------------*/

@@ -284,7 +284,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     {
       double min;
 
-      discret_->get_comm().MinAll(&((*boundingbox_)(0, row)), &min, 1);
+      Core::Communication::min_all(&((*boundingbox_)(0, row)), &min, 1, discret_->get_comm());
       (*boundingbox_)(0, row) = min;
     }
 
@@ -293,7 +293,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     {
       double max;
 
-      discret_->get_comm().MaxAll(&((*boundingbox_)(1, row)), &max, 1);
+      Core::Communication::max_all(&((*boundingbox_)(1, row)), &max, 1, discret_->get_comm());
       (*boundingbox_)(1, row) = max;
     }
 
@@ -346,7 +346,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
         {
           // for safety
-          exporter.get_comm().Barrier();
+          Core::Communication::barrier(exporter.get_comm());
         }
 
         // Unpack received block into set of all planes.
@@ -608,7 +608,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     std::vector<double> lnodeplanes(*nodeplanes_);
     std::vector<double> lplanecoordinates(*planecoordinates_);
 
-    discret_->get_comm().SumAll(lnodeplanes.data(), nodeplanes_->data(), nodeplanes_->size());
+    Core::Communication::sum_all(
+        lnodeplanes.data(), nodeplanes_->data(), nodeplanes_->size(), discret_->get_comm());
     discret_->get_comm().SumAll(
         lplanecoordinates.data(), planecoordinates_->data(), planecoordinates_->size());
 
@@ -635,7 +636,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     {
       double min;
 
-      discret_->get_comm().MinAll(&((*boundingbox_)(0, row)), &min, 1);
+      Core::Communication::min_all(&((*boundingbox_)(0, row)), &min, 1, discret_->get_comm());
       (*boundingbox_)(0, row) = min;
     }
 
@@ -644,7 +645,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     {
       double max;
 
-      discret_->get_comm().MaxAll(&((*boundingbox_)(1, row)), &max, 1);
+      Core::Communication::max_all(&((*boundingbox_)(1, row)), &max, 1, discret_->get_comm());
       (*boundingbox_)(1, row) = max;
     }
   }
@@ -1434,7 +1435,7 @@ void FLD::TurbulenceStatisticsCha::do_time_sample(
         {
           local_inc += (*toggleu_)[rr] * (*toggleu_)[rr];
         }
-        discret_->get_comm().SumAll(&local_inc, &inc, 1);
+        Core::Communication::sum_all(&local_inc, &inc, 1, discret_->get_comm());
 
         if (abs(inc) < 1e-9)
         {
@@ -1446,7 +1447,7 @@ void FLD::TurbulenceStatisticsCha::do_time_sample(
         {
           local_inc += (force)[rr] * (*toggleu_)[rr];
         }
-        discret_->get_comm().SumAll(&local_inc, &inc, 1);
+        Core::Communication::sum_all(&local_inc, &inc, 1, discret_->get_comm());
         sumforceu_ += inc;
 
         local_inc = 0.0;
@@ -1454,7 +1455,7 @@ void FLD::TurbulenceStatisticsCha::do_time_sample(
         {
           local_inc += (force)[rr] * (*togglev_)[rr];
         }
-        discret_->get_comm().SumAll(&local_inc, &inc, 1);
+        Core::Communication::sum_all(&local_inc, &inc, 1, discret_->get_comm());
         sumforcev_ += inc;
 
 
@@ -1463,7 +1464,7 @@ void FLD::TurbulenceStatisticsCha::do_time_sample(
         {
           local_inc += (force)[rr] * (*togglew_)[rr];
         }
-        discret_->get_comm().SumAll(&local_inc, &inc, 1);
+        Core::Communication::sum_all(&local_inc, &inc, 1, discret_->get_comm());
         sumforcew_ += inc;
       }
     }
@@ -1960,20 +1961,20 @@ void FLD::TurbulenceStatisticsCha::evaluate_integral_mean_values_in_planes()
 
   //----------------------------------------------------------------------
   // add contributions from all processors
-  discret_->get_comm().SumAll(locarea->data(), globarea->data(), size);
+  Core::Communication::sum_all(locarea->data(), globarea->data(), size, discret_->get_comm());
 
-  discret_->get_comm().SumAll(locsumu->data(), globsumu->data(), size);
-  discret_->get_comm().SumAll(locsumv->data(), globsumv->data(), size);
-  discret_->get_comm().SumAll(locsumw->data(), globsumw->data(), size);
-  discret_->get_comm().SumAll(locsump->data(), globsump->data(), size);
+  Core::Communication::sum_all(locsumu->data(), globsumu->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumv->data(), globsumv->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumw->data(), globsumw->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsump->data(), globsump->data(), size, discret_->get_comm());
 
-  discret_->get_comm().SumAll(locsumsqu->data(), globsumsqu->data(), size);
-  discret_->get_comm().SumAll(locsumsqv->data(), globsumsqv->data(), size);
-  discret_->get_comm().SumAll(locsumsqw->data(), globsumsqw->data(), size);
-  discret_->get_comm().SumAll(locsumuv->data(), globsumuv->data(), size);
-  discret_->get_comm().SumAll(locsumuw->data(), globsumuw->data(), size);
-  discret_->get_comm().SumAll(locsumvw->data(), globsumvw->data(), size);
-  discret_->get_comm().SumAll(locsumsqp->data(), globsumsqp->data(), size);
+  Core::Communication::sum_all(locsumsqu->data(), globsumsqu->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumsqv->data(), globsumsqv->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumsqw->data(), globsumsqw->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumuv->data(), globsumuv->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumuw->data(), globsumuw->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumvw->data(), globsumvw->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumsqp->data(), globsumsqp->data(), size, discret_->get_comm());
 
 
   //----------------------------------------------------------------------
@@ -1984,7 +1985,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_integral_mean_values_in_planes()
 
   if (nurbsdis == nullptr)
   {
-    discret_->get_comm().SumAll(&locprocessedeles, &numele_, 1);
+    Core::Communication::sum_all(&locprocessedeles, &numele_, 1, discret_->get_comm());
   }
   else
   {
@@ -2190,35 +2191,37 @@ void FLD::TurbulenceStatisticsCha::evaluate_loma_integral_mean_values_in_planes(
 
   //----------------------------------------------------------------------
   // add contributions from all processors
-  discret_->get_comm().SumAll(locarea->data(), globarea->data(), size);
+  Core::Communication::sum_all(locarea->data(), globarea->data(), size, discret_->get_comm());
 
-  discret_->get_comm().SumAll(locsumu->data(), globsumu->data(), size);
-  discret_->get_comm().SumAll(locsumv->data(), globsumv->data(), size);
-  discret_->get_comm().SumAll(locsumw->data(), globsumw->data(), size);
-  discret_->get_comm().SumAll(locsump->data(), globsump->data(), size);
-  discret_->get_comm().SumAll(locsumrho->data(), globsumrho->data(), size);
-  discret_->get_comm().SumAll(locsumT->data(), globsumT->data(), size);
-  discret_->get_comm().SumAll(locsumrhou->data(), globsumrhou->data(), size);
-  discret_->get_comm().SumAll(locsumrhouT->data(), globsumrhouT->data(), size);
+  Core::Communication::sum_all(locsumu->data(), globsumu->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumv->data(), globsumv->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumw->data(), globsumw->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsump->data(), globsump->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumrho->data(), globsumrho->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumT->data(), globsumT->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumrhou->data(), globsumrhou->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(
+      locsumrhouT->data(), globsumrhouT->data(), size, discret_->get_comm());
 
-  discret_->get_comm().SumAll(locsumsqu->data(), globsumsqu->data(), size);
-  discret_->get_comm().SumAll(locsumsqv->data(), globsumsqv->data(), size);
-  discret_->get_comm().SumAll(locsumsqw->data(), globsumsqw->data(), size);
-  discret_->get_comm().SumAll(locsumsqp->data(), globsumsqp->data(), size);
-  discret_->get_comm().SumAll(locsumsqrho->data(), globsumsqrho->data(), size);
-  discret_->get_comm().SumAll(locsumsqT->data(), globsumsqT->data(), size);
+  Core::Communication::sum_all(locsumsqu->data(), globsumsqu->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumsqv->data(), globsumsqv->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumsqw->data(), globsumsqw->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumsqp->data(), globsumsqp->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(
+      locsumsqrho->data(), globsumsqrho->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumsqT->data(), globsumsqT->data(), size, discret_->get_comm());
 
-  discret_->get_comm().SumAll(locsumuv->data(), globsumuv->data(), size);
-  discret_->get_comm().SumAll(locsumuw->data(), globsumuw->data(), size);
-  discret_->get_comm().SumAll(locsumvw->data(), globsumvw->data(), size);
-  discret_->get_comm().SumAll(locsumuT->data(), globsumuT->data(), size);
-  discret_->get_comm().SumAll(locsumvT->data(), globsumvT->data(), size);
-  discret_->get_comm().SumAll(locsumwT->data(), globsumwT->data(), size);
+  Core::Communication::sum_all(locsumuv->data(), globsumuv->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumuw->data(), globsumuw->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumvw->data(), globsumvw->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumuT->data(), globsumuT->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumvT->data(), globsumvT->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumwT->data(), globsumwT->data(), size, discret_->get_comm());
 
 
   //----------------------------------------------------------------------
   // the sums are divided by the layers area to get the area average
-  discret_->get_comm().SumAll(&locprocessedeles, &numele_, 1);
+  Core::Communication::sum_all(&locprocessedeles, &numele_, 1, discret_->get_comm());
 
 
   for (unsigned i = 0; i < planecoordinates_->size(); ++i)
@@ -2404,31 +2407,32 @@ void FLD::TurbulenceStatisticsCha::evaluate_scatra_integral_mean_values_in_plane
 
   //----------------------------------------------------------------------
   // add contributions from all processors
-  discret_->get_comm().SumAll(locarea->data(), globarea->data(), size);
+  Core::Communication::sum_all(locarea->data(), globarea->data(), size, discret_->get_comm());
 
-  discret_->get_comm().SumAll(locsumu->data(), globsumu->data(), size);
-  discret_->get_comm().SumAll(locsumv->data(), globsumv->data(), size);
-  discret_->get_comm().SumAll(locsumw->data(), globsumw->data(), size);
-  discret_->get_comm().SumAll(locsump->data(), globsump->data(), size);
-  discret_->get_comm().SumAll(locsumphi->data(), globsumphi->data(), size);
+  Core::Communication::sum_all(locsumu->data(), globsumu->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumv->data(), globsumv->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumw->data(), globsumw->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsump->data(), globsump->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumphi->data(), globsumphi->data(), size, discret_->get_comm());
 
-  discret_->get_comm().SumAll(locsumsqu->data(), globsumsqu->data(), size);
-  discret_->get_comm().SumAll(locsumsqv->data(), globsumsqv->data(), size);
-  discret_->get_comm().SumAll(locsumsqw->data(), globsumsqw->data(), size);
-  discret_->get_comm().SumAll(locsumsqp->data(), globsumsqp->data(), size);
-  discret_->get_comm().SumAll(locsumsqphi->data(), globsumsqphi->data(), size);
+  Core::Communication::sum_all(locsumsqu->data(), globsumsqu->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumsqv->data(), globsumsqv->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumsqw->data(), globsumsqw->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumsqp->data(), globsumsqp->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(
+      locsumsqphi->data(), globsumsqphi->data(), size, discret_->get_comm());
 
-  discret_->get_comm().SumAll(locsumuv->data(), globsumuv->data(), size);
-  discret_->get_comm().SumAll(locsumuw->data(), globsumuw->data(), size);
-  discret_->get_comm().SumAll(locsumvw->data(), globsumvw->data(), size);
-  discret_->get_comm().SumAll(locsumuphi->data(), globsumuphi->data(), size);
-  discret_->get_comm().SumAll(locsumvphi->data(), globsumvphi->data(), size);
-  discret_->get_comm().SumAll(locsumwphi->data(), globsumwphi->data(), size);
+  Core::Communication::sum_all(locsumuv->data(), globsumuv->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumuw->data(), globsumuw->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumvw->data(), globsumvw->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumuphi->data(), globsumuphi->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumvphi->data(), globsumvphi->data(), size, discret_->get_comm());
+  Core::Communication::sum_all(locsumwphi->data(), globsumwphi->data(), size, discret_->get_comm());
 
 
   //----------------------------------------------------------------------
   // the sums are divided by the layers area to get the area average
-  discret_->get_comm().SumAll(&locprocessedeles, &numele_, 1);
+  Core::Communication::sum_all(&locprocessedeles, &numele_, 1, discret_->get_comm());
 
 
   for (unsigned i = 0; i < planecoordinates_->size(); ++i)
@@ -2558,7 +2562,8 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
 
     int countnodesinplaneonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodesinplane, &countnodesinplaneonallprocs, 1);
+    Core::Communication::sum_all(
+        &countnodesinplane, &countnodesinplaneonallprocs, 1, discret_->get_comm());
 
     if (countnodesinplaneonallprocs)
     {
@@ -2572,7 +2577,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*meanvelnp_)[rr] * (*toggleu_)[rr];
         }
-        discret_->get_comm().SumAll(&local_inc, &inc, 1);
+        Core::Communication::sum_all(&local_inc, &inc, 1, discret_->get_comm());
         (*pointsumu_)[planenum] += inc / countnodesinplaneonallprocs;
 
         local_inc = 0.0;
@@ -2580,7 +2585,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*meanvelnp_)[rr] * (*togglev_)[rr];
         }
-        discret_->get_comm().SumAll(&local_inc, &inc, 1);
+        Core::Communication::sum_all(&local_inc, &inc, 1, discret_->get_comm());
         (*pointsumv_)[planenum] += inc / countnodesinplaneonallprocs;
 
         local_inc = 0.0;
@@ -2588,7 +2593,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*meanvelnp_)[rr] * (*togglew_)[rr];
         }
-        discret_->get_comm().SumAll(&local_inc, &inc, 1);
+        Core::Communication::sum_all(&local_inc, &inc, 1, discret_->get_comm());
         (*pointsumw_)[planenum] += inc / countnodesinplaneonallprocs;
 
         local_inc = 0.0;
@@ -2596,7 +2601,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*meanvelnp_)[rr] * (*togglep_)[rr];
         }
-        discret_->get_comm().SumAll(&local_inc, &inc, 1);
+        Core::Communication::sum_all(&local_inc, &inc, 1, discret_->get_comm());
         (*pointsump_)[planenum] += inc / countnodesinplaneonallprocs;
 
         //----------------------------------------------------------------------
@@ -2607,7 +2612,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*pointsquaredvelnp_)[rr] * (*toggleu_)[rr];
         }
-        discret_->get_comm().SumAll(&local_inc, &inc, 1);
+        Core::Communication::sum_all(&local_inc, &inc, 1, discret_->get_comm());
         (*pointsumsqu_)[planenum] += inc / countnodesinplaneonallprocs;
 
         local_inc = 0.0;
@@ -2615,7 +2620,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*pointsquaredvelnp_)[rr] * (*togglev_)[rr];
         }
-        discret_->get_comm().SumAll(&local_inc, &inc, 1);
+        Core::Communication::sum_all(&local_inc, &inc, 1, discret_->get_comm());
         (*pointsumsqv_)[planenum] += inc / countnodesinplaneonallprocs;
 
         local_inc = 0.0;
@@ -2623,7 +2628,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*pointsquaredvelnp_)[rr] * (*togglew_)[rr];
         }
-        discret_->get_comm().SumAll(&local_inc, &inc, 1);
+        Core::Communication::sum_all(&local_inc, &inc, 1, discret_->get_comm());
         (*pointsumsqw_)[planenum] += inc / countnodesinplaneonallprocs;
 
         local_inc = 0.0;
@@ -2631,7 +2636,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*pointsquaredvelnp_)[rr] * (*togglep_)[rr];
         }
-        discret_->get_comm().SumAll(&local_inc, &inc, 1);
+        Core::Communication::sum_all(&local_inc, &inc, 1, discret_->get_comm());
         (*pointsumsqp_)[planenum] += inc / countnodesinplaneonallprocs;
       }
     }
@@ -3342,61 +3347,85 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
     // global sums
 
     // compute global sum, volume
-    discret_->get_comm().SumAll(local_vol->data(), global_vol->data(), presize);
+    Core::Communication::sum_all(
+        local_vol->data(), global_vol->data(), presize, discret_->get_comm());
 
     // compute global sum, element sizes
-    discret_->get_comm().SumAll(local_incrhk->data(), global_incrhk->data(), presize);
+    Core::Communication::sum_all(
+        local_incrhk->data(), global_incrhk->data(), presize, discret_->get_comm());
 
     // compute global sum, element sizes in viscous regime, Bazilevs parameter
-    discret_->get_comm().SumAll(local_incrhbazilevs->data(), global_incrhbazilevs->data(), presize);
+    Core::Communication::sum_all(
+        local_incrhbazilevs->data(), global_incrhbazilevs->data(), presize, discret_->get_comm());
 
     // compute global sum, element sizes
-    discret_->get_comm().SumAll(local_incrstrle->data(), global_incrstrle->data(), presize);
+    Core::Communication::sum_all(
+        local_incrstrle->data(), global_incrstrle->data(), presize, discret_->get_comm());
 
     // compute global sum, gradient based element sizes
-    discret_->get_comm().SumAll(local_incrgradle->data(), global_incrgradle->data(), presize);
+    Core::Communication::sum_all(
+        local_incrgradle->data(), global_incrgradle->data(), presize, discret_->get_comm());
 
     // compute global sums, stabilisation parameters
-    discret_->get_comm().SumAll(local_incrtauM->data(), global_incrtauM->data(), presize);
-    discret_->get_comm().SumAll(local_incrtauC->data(), global_incrtauC->data(), presize);
+    Core::Communication::sum_all(
+        local_incrtauM->data(), global_incrtauM->data(), presize, discret_->get_comm());
+    Core::Communication::sum_all(
+        local_incrtauC->data(), global_incrtauC->data(), presize, discret_->get_comm());
 
     // compute global sum, mk
-    discret_->get_comm().SumAll(local_incrmk->data(), global_incrmk->data(), presize);
+    Core::Communication::sum_all(
+        local_incrmk->data(), global_incrmk->data(), presize, discret_->get_comm());
 
     // compute global sums, momentum equation residuals
-    discret_->get_comm().SumAll(local_incrres->data(), global_incrres->data(), velsize);
-    discret_->get_comm().SumAll(local_incrres_sq->data(), global_incrres_sq->data(), velsize);
+    Core::Communication::sum_all(
+        local_incrres->data(), global_incrres->data(), velsize, discret_->get_comm());
+    Core::Communication::sum_all(
+        local_incrres_sq->data(), global_incrres_sq->data(), velsize, discret_->get_comm());
     discret_->get_comm().SumAll(
         local_incrtauinvsvel->data(), global_incrtauinvsvel->data(), velsize);
-    discret_->get_comm().SumAll(local_incrabsres->data(), global_incrabsres->data(), presize);
+    Core::Communication::sum_all(
+        local_incrabsres->data(), global_incrabsres->data(), presize, discret_->get_comm());
 
-    discret_->get_comm().SumAll(local_incrsvelaf->data(), global_incrsvelaf->data(), velsize);
-    discret_->get_comm().SumAll(local_incrsvelaf_sq->data(), global_incrsvelaf_sq->data(), velsize);
-    discret_->get_comm().SumAll(local_incrabssvelaf->data(), global_incrabssvelaf->data(), presize);
+    Core::Communication::sum_all(
+        local_incrsvelaf->data(), global_incrsvelaf->data(), velsize, discret_->get_comm());
+    Core::Communication::sum_all(
+        local_incrsvelaf_sq->data(), global_incrsvelaf_sq->data(), velsize, discret_->get_comm());
+    Core::Communication::sum_all(
+        local_incrabssvelaf->data(), global_incrabssvelaf->data(), presize, discret_->get_comm());
 
     // compute global sums, incompressibility residuals
-    discret_->get_comm().SumAll(local_incrresC->data(), global_incrresC->data(), presize);
-    discret_->get_comm().SumAll(local_incrresC_sq->data(), global_incrresC_sq->data(), presize);
+    Core::Communication::sum_all(
+        local_incrresC->data(), global_incrresC->data(), presize, discret_->get_comm());
+    Core::Communication::sum_all(
+        local_incrresC_sq->data(), global_incrresC_sq->data(), presize, discret_->get_comm());
 
-    discret_->get_comm().SumAll(local_incrspressnp->data(), global_incrspressnp->data(), presize);
+    Core::Communication::sum_all(
+        local_incrspressnp->data(), global_incrspressnp->data(), presize, discret_->get_comm());
     discret_->get_comm().SumAll(
         local_incrspressnp_sq->data(), global_incrspressnp_sq->data(), presize);
 
     // compute global sums, disspiation rates
 
-    discret_->get_comm().SumAll(local_incr_eps_pspg->data(), global_incr_eps_pspg->data(), presize);
-    discret_->get_comm().SumAll(local_incr_eps_supg->data(), global_incr_eps_supg->data(), presize);
+    Core::Communication::sum_all(
+        local_incr_eps_pspg->data(), global_incr_eps_pspg->data(), presize, discret_->get_comm());
+    Core::Communication::sum_all(
+        local_incr_eps_supg->data(), global_incr_eps_supg->data(), presize, discret_->get_comm());
     discret_->get_comm().SumAll(
         local_incr_eps_cross->data(), global_incr_eps_cross->data(), presize);
-    discret_->get_comm().SumAll(local_incr_eps_rey->data(), global_incr_eps_rey->data(), presize);
+    Core::Communication::sum_all(
+        local_incr_eps_rey->data(), global_incr_eps_rey->data(), presize, discret_->get_comm());
     discret_->get_comm().SumAll(
         local_incr_eps_graddiv->data(), global_incr_eps_graddiv->data(), presize);
     discret_->get_comm().SumAll(
         local_incr_eps_eddyvisc->data(), global_incr_eps_eddyvisc->data(), presize);
-    discret_->get_comm().SumAll(local_incr_eps_visc->data(), global_incr_eps_visc->data(), presize);
-    discret_->get_comm().SumAll(local_incr_eps_conv->data(), global_incr_eps_conv->data(), presize);
-    discret_->get_comm().SumAll(local_incr_eps_avm3->data(), global_incr_eps_avm3->data(), presize);
-    discret_->get_comm().SumAll(local_incr_eps_mfs->data(), global_incr_eps_mfs->data(), presize);
+    Core::Communication::sum_all(
+        local_incr_eps_visc->data(), global_incr_eps_visc->data(), presize, discret_->get_comm());
+    Core::Communication::sum_all(
+        local_incr_eps_conv->data(), global_incr_eps_conv->data(), presize, discret_->get_comm());
+    Core::Communication::sum_all(
+        local_incr_eps_avm3->data(), global_incr_eps_avm3->data(), presize, discret_->get_comm());
+    Core::Communication::sum_all(
+        local_incr_eps_mfs->data(), global_incr_eps_mfs->data(), presize, discret_->get_comm());
     discret_->get_comm().SumAll(
         local_incr_eps_mfscross->data(), global_incr_eps_mfscross->data(), presize);
     discret_->get_comm().SumAll(
@@ -3631,7 +3660,8 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
       // global sums
 
       // compute global sum, volume
-      discret_->get_comm().SumAll(local_scatra_vol->data(), global_scatra_vol->data(), phisize);
+      Core::Communication::sum_all(
+          local_scatra_vol->data(), global_scatra_vol->data(), phisize, discret_->get_comm());
 
       // compute global sums, stabilisation parameters
       discret_->get_comm().SumAll(

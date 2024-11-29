@@ -29,13 +29,13 @@ void Core::LinAlg::print_matrix_in_matlab_format(
   for (int iproc = 0; iproc < num_proc; iproc++)
   {
     int num_rows_iproc = sparsematrix.NumMyRows();
-    comm.Broadcast(&num_rows_iproc, 1, iproc);
+    Core::Communication::broadcast(&num_rows_iproc, 1, iproc, comm);
 
     for (int row_lid_iproc = 0; row_lid_iproc < num_rows_iproc; ++row_lid_iproc)
     {
       // get gid of this row and communicate to all procs
       int row_gid_iproc = iproc == my_PID ? sparsematrix.GRID(row_lid_iproc) : 0;
-      comm.Broadcast(&row_gid_iproc, 1, iproc);
+      Core::Communication::broadcast(&row_gid_iproc, 1, iproc, comm);
 
       // get indices and values of this row and communicate to all procs
       int num_indices_iproc;
@@ -50,12 +50,12 @@ void Core::LinAlg::print_matrix_in_matlab_format(
         sparsematrix.ExtractGlobalRowCopy(row_gid_iproc, max_num_inidces, num_indices_iproc,
             values_iproc.data(), indices_iproc.data());
       }
-      comm.Broadcast(&num_indices_iproc, 1, iproc);
+      Core::Communication::broadcast(&num_indices_iproc, 1, iproc, comm);
       values_iproc.resize(num_indices_iproc);
       indices_iproc.resize(num_indices_iproc);
 
-      comm.Broadcast(values_iproc.data(), num_indices_iproc, iproc);
-      comm.Broadcast(indices_iproc.data(), num_indices_iproc, iproc);
+      Core::Communication::broadcast(values_iproc.data(), num_indices_iproc, iproc, comm);
+      Core::Communication::broadcast(indices_iproc.data(), num_indices_iproc, iproc, comm);
 
       if (my_PID == 0)
       {
@@ -77,7 +77,7 @@ void Core::LinAlg::print_matrix_in_matlab_format(
       }
     }
     // wait, until proc 0 has written
-    comm.Barrier();
+    Core::Communication::barrier(comm);
   }
 }
 
@@ -113,8 +113,8 @@ void Core::LinAlg::print_vector_in_matlab_format(
     int num_elements_iproc = vector.Map().NumMyElements();
     int max_element_size_iproc = vector.Map().MaxElementSize();
 
-    comm.Broadcast(&num_elements_iproc, 1, iproc);
-    comm.Broadcast(&max_element_size_iproc, 1, iproc);
+    Core::Communication::broadcast(&num_elements_iproc, 1, iproc, comm);
+    Core::Communication::broadcast(&max_element_size_iproc, 1, iproc, comm);
 
     std::vector<int> global_elements_iproc(num_elements_iproc);
     std::vector<double> values_iproc(num_elements_iproc);
@@ -130,9 +130,10 @@ void Core::LinAlg::print_vector_in_matlab_format(
       }
     }
 
-    comm.Broadcast(global_elements_iproc.data(), num_elements_iproc, iproc);
-    comm.Broadcast(values_iproc.data(), num_elements_iproc, iproc);
-    comm.Broadcast(first_point_in_element_list_iproc.data(), num_elements_iproc, iproc);
+    Core::Communication::broadcast(global_elements_iproc.data(), num_elements_iproc, iproc, comm);
+    Core::Communication::broadcast(values_iproc.data(), num_elements_iproc, iproc, comm);
+    Core::Communication::broadcast(
+        first_point_in_element_list_iproc.data(), num_elements_iproc, iproc, comm);
 
     if (my_PID == 0)
     {
@@ -166,7 +167,7 @@ void Core::LinAlg::print_vector_in_matlab_format(
       }
     }
     // wait, until proc 0 has written
-    comm.Barrier();
+    Core::Communication::barrier(comm);
   }
 }
 
@@ -186,8 +187,8 @@ void Core::LinAlg::print_map_in_matlab_format(
     int num_elements_iproc = map.NumMyElements();
     int max_element_size_iproc = map.MaxElementSize();
 
-    comm.Broadcast(&num_elements_iproc, 1, iproc);
-    comm.Broadcast(&max_element_size_iproc, 1, iproc);
+    Core::Communication::broadcast(&num_elements_iproc, 1, iproc, comm);
+    Core::Communication::broadcast(&max_element_size_iproc, 1, iproc, comm);
 
     std::vector<int> global_elements_iproc(num_elements_iproc);
 
@@ -196,7 +197,7 @@ void Core::LinAlg::print_map_in_matlab_format(
       for (int i = 0; i < num_elements_iproc; ++i)
         global_elements_iproc[i] = map.MyGlobalElements()[i];
     }
-    comm.Broadcast(global_elements_iproc.data(), num_elements_iproc, iproc);
+    Core::Communication::broadcast(global_elements_iproc.data(), num_elements_iproc, iproc, comm);
 
     if (my_PID == 0)
     {
@@ -225,7 +226,7 @@ void Core::LinAlg::print_map_in_matlab_format(
       os << std::flush;
     }
     // wait, until proc 0 has written
-    comm.Barrier();
+    Core::Communication::barrier(comm);
   }
 }
 

@@ -122,7 +122,7 @@ void SSTI::SSTIMono::assemble_mat_and_rhs()
       residual_, scatra_field()->residual(), *structure_field()->rhs(), thermo_field()->residual());
 
   double mydt = timer_->wallTime() - starttime;
-  get_comm().MaxAll(&mydt, &dtassemble_, 1);
+  Core::Communication::max_all(&mydt, &dtassemble_, 1, get_comm());
 }
 
 /*-------------------------------------------------------------------------------*
@@ -421,7 +421,7 @@ void SSTI::SSTIMono::newton_loop()
   }
 
   double mydt = timer_->wallTime() - starttime;
-  get_comm().MaxAll(&mydt, &dtnewton_, 1);
+  Core::Communication::max_all(&mydt, &dtnewton_, 1, get_comm());
 }
 
 /*--------------------------------------------------------------------------*
@@ -565,7 +565,7 @@ void SSTI::SSTIMono::evaluate_subproblems()
   }
 
   double mydt = timer_->wallTime() - starttime;
-  get_comm().MaxAll(&mydt, &dtevaluate_, 1);
+  Core::Communication::max_all(&mydt, &dtevaluate_, 1, get_comm());
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -592,7 +592,7 @@ void SSTI::SSTIMono::linear_solve()
   strategy_equilibration_->unequilibrate_increment(increment_);
 
   double mydt = timer_->wallTime() - starttime;
-  get_comm().MaxAll(&mydt, &dtsolve_, 1);
+  Core::Communication::max_all(&mydt, &dtsolve_, 1, get_comm());
 }
 
 /*--------------------------------------------------------------------------------------*

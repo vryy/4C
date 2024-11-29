@@ -679,7 +679,7 @@ void CONTACT::Interface::visualize_gmsh(
       fclose(fps);
       fclose(fpm);
     }
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
   }
 
 
@@ -692,7 +692,7 @@ void CONTACT::Interface::visualize_gmsh(
   int lnslayers = binarytree_->Streenodesmap().size();
   int gnmlayers = binarytree_->Mtreenodesmap().size();
   int gnslayers = 0;
-  Comm().MaxAll(&lnslayers, &gnslayers, 1);
+  Core::Communication::max_all(&lnslayers, &gnslayers, 1, Comm());
 
   // create files for visualization of slave dops for every layer
   std::ostringstream filenametn;
@@ -739,7 +739,7 @@ void CONTACT::Interface::visualize_gmsh(
     }
   }
 
-  Comm().Barrier();
+  Core::Communication::barrier(Comm());
 
   // for every proc, one after another, put data of slabs into files
   for (int i = 0; i < Core::Communication::num_mpi_ranks(Comm()); i++)
@@ -784,10 +784,10 @@ void CONTACT::Interface::visualize_gmsh(
       }
     }
 
-    Comm().Barrier();
+    Core::Communication::barrier(Comm());
   }
 
-  Comm().Barrier();
+  Core::Communication::barrier(Comm());
   // close all slave-gmsh files
   if (Core::Communication::my_mpi_rank(Comm()) == 0)
   {
@@ -804,7 +804,7 @@ void CONTACT::Interface::visualize_gmsh(
       fclose(fp);
     }
   }
-  Comm().Barrier();
+  Core::Communication::barrier(Comm());
 
   // create master slabs
   if (Core::Communication::my_mpi_rank(Comm()) == 0)
@@ -895,7 +895,7 @@ void CONTACT::Interface::visualize_gmsh(
   int lcontactmapsize = (int)(binarytree_->coupling_map()[0].size());
   int gcontactmapsize;
 
-  Comm().MaxAll(&lcontactmapsize, &gcontactmapsize, 1);
+  Core::Communication::max_all(&lcontactmapsize, &gcontactmapsize, 1, Comm());
 
   if (gcontactmapsize > 0)
   {
@@ -958,7 +958,7 @@ void CONTACT::Interface::visualize_gmsh(
           (binarytree_->coupling_map()[1][j])->PrintDopsForGmsh(currentfilename.str().c_str());
         }
       }
-      Comm().Barrier();
+      Core::Communication::barrier(Comm());
     }
 
     // close file
@@ -7082,7 +7082,7 @@ void CONTACT::Interface::write_nodal_coordinates_to_file(
     of.close();
   }
 
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
 
   for (int p = 0; p < Core::Communication::num_mpi_ranks(get_comm()); ++p)
   {
@@ -7111,7 +7111,7 @@ void CONTACT::Interface::write_nodal_coordinates_to_file(
       }
       of.close();
     }
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
   }
 }
 

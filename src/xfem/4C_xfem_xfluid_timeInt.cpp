@@ -126,7 +126,8 @@ void XFEM::XFluidTimeInt::set_and_print_status(const bool screenout)
   }
 
   // reduce and sum over all procs
-  dis_->get_comm().SumAll(cpu_methods.data(), glob_methods.data(), nummethods);
+  Core::Communication::sum_all(
+      cpu_methods.data(), glob_methods.data(), nummethods, dis_->get_comm());
 
   if (screenout)
   {
@@ -2177,7 +2178,7 @@ void XFEM::XFluidTimeInt::export_methods(
         }
       }
 
-      dis_->get_comm().Barrier();  // processors wait for each other
+      Core::Communication::barrier(dis_->get_comm());  // processors wait for each other
     }
 
     //---------------------------------------------------------------------------------------------------------------

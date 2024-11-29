@@ -7,6 +7,7 @@
 
 #include "4C_structure_new_integrator.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_pstream.hpp"
@@ -526,7 +527,7 @@ double Solid::Integrator::get_condensed_solution_update_rms(
   // get total dof number
   int gdofnumber = get_condensed_dof_number(qtype);
   // sum over all procs
-  gstate_ptr_->get_comm().SumAll(&myrmsnorm, &grmsnorm, 1);
+  Core::Communication::sum_all(&myrmsnorm, &grmsnorm, 1, gstate_ptr_->get_comm());
 
   // calculate the root mean square and return the value
   return (std::sqrt(grmsnorm) / static_cast<double>(gdofnumber));
@@ -541,7 +542,7 @@ int Solid::Integrator::get_condensed_dof_number(
   // global dof number of the given quantity
   int gdofnumber = 0.0;
   int mydofnumber = eval_data_ptr_->get_my_dof_number(qtype);
-  gstate_ptr_->get_comm().SumAll(&mydofnumber, &gdofnumber, 1);
+  Core::Communication::sum_all(&mydofnumber, &gdofnumber, 1, gstate_ptr_->get_comm());
   return gdofnumber;
 }
 
@@ -557,18 +558,18 @@ double Solid::Integrator::get_condensed_global_norm(
   {
     case ::NOX::Abstract::Vector::OneNorm:
     {
-      gstate_ptr_->get_comm().SumAll(&mynorm, &gnorm, 1);
+      Core::Communication::sum_all(&mynorm, &gnorm, 1, gstate_ptr_->get_comm());
       break;
     }
     case ::NOX::Abstract::Vector::TwoNorm:
     {
-      gstate_ptr_->get_comm().SumAll(&mynorm, &gnorm, 1);
+      Core::Communication::sum_all(&mynorm, &gnorm, 1, gstate_ptr_->get_comm());
       gnorm = std::sqrt(gnorm);
       break;
     }
     case ::NOX::Abstract::Vector::MaxNorm:
     {
-      gstate_ptr_->get_comm().MaxAll(&mynorm, &gnorm, 1);
+      Core::Communication::max_all(&mynorm, &gnorm, 1, gstate_ptr_->get_comm());
       break;
     }
   }

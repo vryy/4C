@@ -428,7 +428,7 @@ void Solid::TimIntImpl::predict()
   if (fresn_str_ != nullptr)
   {
     double loc = params.get<double>("cond_rhs_norm");
-    discret_->get_comm().SumAll(&loc, &cond_res_, 1);
+    Core::Communication::sum_all(&loc, &cond_res_, 1, discret_->get_comm());
   }
 
   // rotate to local coordinate systems
@@ -556,7 +556,8 @@ void Solid::TimIntImpl::prepare_line_search()
         (actele->element_type() == Discret::Elements::SoShw6Type::instance()))
       haveCondensationLocal = 1;
   }
-  discret_->get_comm().MaxAll(&haveCondensationLocal, &haveCondensationGlobal, 1);
+  Core::Communication::max_all(
+      &haveCondensationLocal, &haveCondensationGlobal, 1, discret_->get_comm());
   if (haveCondensationGlobal)
   {
     fresn_str_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
@@ -1437,7 +1438,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimIntImpl::solve()
   // since it is possible that the nonlinear solution fails only on some procs
   // we need to communicate the error
   int lnonlin_error = nonlin_error;
-  discretization()->get_comm().MaxAll(&lnonlin_error, &nonlin_error, 1);
+  Core::Communication::max_all(&lnonlin_error, &nonlin_error, 1, discretization()->get_comm());
 
   Inpar::Solid::ConvergenceStatus status =
       static_cast<Inpar::Solid::ConvergenceStatus>(nonlin_error);
@@ -1945,7 +1946,7 @@ int Solid::TimIntImpl::newton_ls()
         exceptcount = 1;
 #endif
       int tmp = 0;
-      discret_->get_comm().SumAll(&exceptcount, &tmp, 1);
+      Core::Communication::sum_all(&exceptcount, &tmp, 1, discret_->get_comm());
       if (tmp) eval_error = true;
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
       feclearexcept(FE_ALL_EXCEPT);
@@ -1957,7 +1958,7 @@ int Solid::TimIntImpl::newton_ls()
     if (fresn_str_ != nullptr)
     {
       double loc = params.get<double>("cond_rhs_norm");
-      discret_->get_comm().SumAll(&loc, &cond_res_, 1);
+      Core::Communication::sum_all(&loc, &cond_res_, 1, discret_->get_comm());
     }
 
     // blank residual at (locally oriented) Dirichlet DOFs
@@ -2184,7 +2185,7 @@ void Solid::TimIntImpl::ls_update_structural_rh_sand_stiff(bool& isexcept, doubl
   if (fresn_str_ != nullptr)
   {
     double loc = params.get<double>("cond_rhs_norm");
-    discret_->get_comm().SumAll(&loc, &cond_res_, 1);
+    Core::Communication::sum_all(&loc, &cond_res_, 1, discret_->get_comm());
   }
 
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
@@ -2195,7 +2196,7 @@ void Solid::TimIntImpl::ls_update_structural_rh_sand_stiff(bool& isexcept, doubl
 
   // synchronize the exception flag isexcept on all processors
   int exceptsum = 0;
-  discret_->get_comm().SumAll(&exceptcount, &exceptsum, 1);
+  Core::Communication::sum_all(&exceptcount, &exceptsum, 1, discret_->get_comm());
   if (exceptsum > 0)
     isexcept = true;
   else
@@ -2263,7 +2264,7 @@ int Solid::TimIntImpl::ls_eval_merit_fct(double& merit_fct)
   if (fetestexcept(FE_OVERFLOW)) exceptcount = 1;
 #endif
   int exceptsum = 0;
-  discret_->get_comm().SumAll(&exceptcount, &exceptsum, 1);
+  Core::Communication::sum_all(&exceptcount, &exceptsum, 1, discret_->get_comm());
   if (exceptsum != 0) return err;
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
   feclearexcept(FE_ALL_EXCEPT);

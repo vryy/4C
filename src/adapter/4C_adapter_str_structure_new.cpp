@@ -639,19 +639,19 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
   }
 
   // plasticity - sum over all processors
-  actdis_->get_comm().SumAll(&isplasticity_local, &isplasticity_global, 1);
+  Core::Communication::sum_all(&isplasticity_local, &isplasticity_global, 1, actdis_->get_comm());
   if (isplasticity_global > 0) eletechs.insert(Inpar::Solid::EleTech::plasticity);
 
   // eas - sum over all processors
-  actdis_->get_comm().SumAll(&iseas_local, &iseas_global, 1);
+  Core::Communication::sum_all(&iseas_local, &iseas_global, 1, actdis_->get_comm());
   if (iseas_global > 0) eletechs.insert(Inpar::Solid::EleTech::eas);
 
   // fbar - sum over all processors
-  actdis_->get_comm().SumAll(&isfbar_local, &isfbar_global, 1);
+  Core::Communication::sum_all(&isfbar_local, &isfbar_global, 1, actdis_->get_comm());
   if (isfbar_global > 0) eletechs.insert(Inpar::Solid::EleTech::fbar);
 
   // rotation vector DOFs - sum over all processors
-  actdis_->get_comm().SumAll(&isrotvec_local, &isrotvec_global, 1);
+  Core::Communication::sum_all(&isrotvec_local, &isrotvec_global, 1, actdis_->get_comm());
   if (isrotvec_global > 0) eletechs.insert(Inpar::Solid::EleTech::rotvec);
 }
 

@@ -57,9 +57,9 @@ void ScaTra::LevelSet::Intersection::capture_zero_level_set(const Core::LinAlg::
   get_zero_level_set(phi, scatradis, elementBoundaryIntCells);
 
   // collect contributions from all procs and store in respective variables
-  scatradis.get_comm().SumAll(&volume_plus(), &volumedomainplus, 1);
-  scatradis.get_comm().SumAll(&volume_minus(), &volumedomainminus, 1);
-  scatradis.get_comm().SumAll(&surface(), &zerosurface, 1);
+  Core::Communication::sum_all(&volume_plus(), &volumedomainplus, 1, scatradis.get_comm());
+  Core::Communication::sum_all(&volume_minus(), &volumedomainminus, 1, scatradis.get_comm());
+  Core::Communication::sum_all(&surface(), &zerosurface, 1, scatradis.get_comm());
 
   // export also interface to all procs
   export_interface(elementBoundaryIntCells, scatradis.get_comm());
@@ -494,7 +494,7 @@ void ScaTra::LevelSet::Intersection::export_interface(
     dataSend = dataRecv;
 
     // processors wait for each other
-    comm.Barrier();
+    Core::Communication::barrier(comm);
   }
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   Core::IO::cout << "proc " << myrank << " interface pieces for " << myinterface.size()

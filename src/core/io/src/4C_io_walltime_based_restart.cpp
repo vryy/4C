@@ -83,7 +83,7 @@ bool Core::IO::RestartManager::restart(const int step, const Epetra_Comm& comm)
         if (walltimerestart) ++restartcounter_;
       }
     }
-    comm.Broadcast(&restarttime, 1, 0);
+    Core::Communication::broadcast(&restarttime, 1, 0, comm);
     return restarttime;
   }
 

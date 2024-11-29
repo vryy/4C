@@ -182,7 +182,7 @@ void Core::FE::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
   // communicate elements to processor 0
 
   int mysize = sendblock.size();
-  comm.SumAll(&mysize, &size, 1);
+  Core::Communication::sum_all(&mysize, &size, 1, comm);
   int mypos = Core::LinAlg::find_my_pos(sendblock.size(), comm);
 
   std::vector<int> send(size);
@@ -190,7 +190,7 @@ void Core::FE::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
   std::copy(sendblock.begin(), sendblock.end(), &send[mypos]);
   sendblock.clear();
   std::vector<int> recv(size);
-  comm.SumAll(send.data(), recv.data(), size);
+  Core::Communication::sum_all(send.data(), recv.data(), size, comm);
   send.clear();
 
   // unpack, unify and sort elements on processor 0
@@ -240,9 +240,9 @@ void Core::FE::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
 
   // broadcast sorted elements to all processors
 
-  comm.Broadcast(&size, 1, 0);
+  Core::Communication::broadcast(&size, 1, 0, comm);
   send.resize(size);
-  comm.Broadcast(send.data(), send.size(), 0);
+  Core::Communication::broadcast(send.data(), send.size(), 0, comm);
 
   // Unpack sorted elements. Take element position for gid.
 

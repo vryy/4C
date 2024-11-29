@@ -142,7 +142,7 @@ namespace ScaTra
 
         {
           // for safety
-          exporter.get_comm().Barrier();
+          Core::Communication::barrier(exporter.get_comm());
         }
 
         // unpack received block into set of all coordinates
@@ -255,7 +255,7 @@ namespace ScaTra
                 // use this version to get random field different from fluid
                 random_theta = 0.5 * random->uni() + 0.5;
               }
-              discret_->get_comm().Broadcast(&random_theta, 1, 0);
+              Core::Communication::broadcast(&random_theta, 1, 0, discret_->get_comm());
 
               // estimate energy at wave number from energy spectrum
               const double energy = calculate_energy_from_spectrum(k);

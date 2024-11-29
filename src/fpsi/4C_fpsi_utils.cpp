@@ -210,7 +210,7 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
   ///////////////////////////////////////////////////////////////////////////////////
   int slavegeomsize = slavegeom.size();
   int globalslavegeomsize;
-  mastercomm.SumAll(&slavegeomsize, &globalslavegeomsize, 1);
+  Core::Communication::sum_all(&slavegeomsize, &globalslavegeomsize, 1, mastercomm);
 
   // do for every slave interface element
   for (curr = slavegeom.begin(); curr != slavegeom.end(); ++curr)
@@ -253,7 +253,7 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
 
   }  // do for every global slave element
 
-  mastercomm.Barrier();  // wait for procs
+  Core::Communication::barrier(mastercomm);  // wait for procs
 
   //  // printout
   //  for(int proc = 0; proc < (mastercomm.NumProc()+1); proc++)
@@ -274,7 +274,7 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
   //      }
   //    }
   //    else
-  //      mastercomm.Barrier();
+  //      Core::Communication::barrier(mastercomm);
   //  }
 
   //  int count=0;
@@ -301,8 +301,8 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
     int mastergeomsize = mastergeom.size();
     std::vector<int> sizelist(Core::Communication::num_mpi_ranks(
         mastercomm));  // how many master interface elements has each processor
-    mastercomm.GatherAll(&mastergeomsize, sizelist.data(), 1);
-    mastercomm.Barrier();  // wait for procs
+    Core::Communication::gather_all(&mastergeomsize, sizelist.data(), 1, mastercomm);
+    Core::Communication::barrier(mastercomm);  // wait for procs
 
     bool done;
     if (sizelist[proc])
@@ -351,11 +351,11 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
         if (parenteleowner == -1) FOUR_C_THROW("Couldn't get master parent element Owner() ...");
       }
 
-      mastercomm.Broadcast(&parenteleid, 1, proc);
-      mastercomm.Broadcast(&parenteleowner, 1, proc);
-      mastercomm.Broadcast(masterloc.data(), masterloc.size(), proc);
+      Core::Communication::broadcast(&parenteleid, 1, proc, mastercomm);
+      Core::Communication::broadcast(&parenteleowner, 1, proc, mastercomm);
+      Core::Communication::broadcast(masterloc.data(), masterloc.size(), proc, mastercomm);
 
-      mastercomm.Barrier();
+      Core::Communication::barrier(mastercomm);
       // match current master element
       // compare position to every element on interface slave side, every processor compares
       // masterloc of current master element of processor[proc]
@@ -392,11 +392,11 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
         }
       }  // end matching
 
-      mastercomm.Barrier();
+      Core::Communication::barrier(mastercomm);
 
       for (int p = 0; p < Core::Communication::num_mpi_ranks(mastercomm); ++p)
       {
-        mastercomm.Barrier();
+        Core::Communication::barrier(mastercomm);
         if (Core::Communication::my_mpi_rank(mastercomm) == p)
         {
           if (matchcurr != nullptr)
@@ -407,7 +407,7 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
         }
       }
 
-      mastercomm.Barrier();
+      Core::Communication::barrier(mastercomm);
 
       if (counter < (sizelist[Core::Communication::my_mpi_rank(mastercomm)] - 1))
         curr++;  // increment iterator
@@ -419,19 +419,19 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
         FOUR_C_THROW("tried to match more master elements as are on proc ... ");
 
     }  // while iterating master elements on proc
-    mastercomm.Barrier();
+    Core::Communication::barrier(mastercomm);
   }  // loop over procs
 
   int mymatchedelements = interfacefacingelementmap.size();
   int globalmatchedelements = 0;
 
-  mastercomm.SumAll(&mymatchedelements, &globalmatchedelements, 1);
+  Core::Communication::sum_all(&mymatchedelements, &globalmatchedelements, 1, mastercomm);
 
   if (Core::Communication::my_mpi_rank(mastercomm) == 0)
     std::cout << "Could match " << globalmatchedelements << " " << slavedis.name()
               << " interface elements to " << masterdis.name() << " bulk elements." << std::endl;
 
-  mastercomm.Barrier();  // wait for procs
+  Core::Communication::barrier(mastercomm);  // wait for procs
 
   if (abs(globalslavegeomsize - globalmatchedelements) < 1e-6 and
       Core::Communication::my_mpi_rank(mastercomm) == 0)
@@ -468,8 +468,8 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
   int mymapsize = interfacefacingelementmap.size();
   int globalmapsize;
   std::vector<int> mapsizearray(Core::Communication::num_mpi_ranks(comm));
-  comm.GatherAll(&mymapsize, mapsizearray.data(), 1);
-  comm.SumAll(&mymapsize, &globalmapsize, 1);
+  Core::Communication::gather_all(&mymapsize, mapsizearray.data(), 1, comm);
+  Core::Communication::sum_all(&mymapsize, &globalmapsize, 1, comm);
 
   int counter = 0;
   for (int proc = 0; proc < Core::Communication::num_mpi_ranks(comm); ++proc)
@@ -501,8 +501,8 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
         mastereleid = mapcurr->second;
         slaveeleid = mapcurr->first;
       }
-      comm.Broadcast(&mastereleid, 1, proc);
-      comm.Broadcast(&slaveeleid, 1, proc);
+      Core::Communication::broadcast(&mastereleid, 1, proc, comm);
+      Core::Communication::broadcast(&slaveeleid, 1, proc, comm);
 
       if (masterdis.have_global_element(mastereleid))
       {
@@ -516,7 +516,7 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
         }
       }  // only the owner of the masterele has a pointer != nullptr and mastereleowner != -1
 
-      comm.GatherAll(&mastereleowner, mastereleowners.data(), 1);
+      Core::Communication::gather_all(&mastereleowner, mastereleowners.data(), 1, comm);
 
       for (int i = 0; i < Core::Communication::num_mpi_ranks(comm); i++)
       {
@@ -525,7 +525,7 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
 
       std::vector<int> procHasMasterEle(Core::Communication::num_mpi_ranks(comm));
       HasMasterEle = masterdis.have_global_element(mastereleid);
-      comm.GatherAll(&HasMasterEle, procHasMasterEle.data(), 1);
+      Core::Communication::gather_all(&HasMasterEle, procHasMasterEle.data(), 1, comm);
 
       // ghost parent master element on master discretization of proc owning the matching slave
       // interface element
@@ -546,7 +546,7 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
       }
 
       int globalsize;
-      comm.SumAll(&myglobalelementsize, &globalsize, 1);
+      Core::Communication::sum_all(&myglobalelementsize, &globalsize, 1, comm);
       Epetra_Map newelecolmap(globalsize, myglobalelementsize, myglobalelements.data(), 0, comm);
 
       if (mastereleid == printid)
@@ -567,7 +567,7 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
           // "<<masterdis->HaveGlobalElement(mastereleid)<<" on proc "<<slaveeleowner<<endl;
           before = masterdis.have_global_element(mastereleid);
         }
-        comm.Barrier();
+        Core::Communication::barrier(comm);
         masterdis.extended_ghosting(newelecolmap, true, false, true, true);
         if (Core::Communication::my_mpi_rank(comm) == proc)
         {
@@ -587,12 +587,12 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
         done = 1;
 
       if (counter == globalmapsize) done = 1;
-      comm.Broadcast(&done, 1, proc);
+      Core::Communication::broadcast(&done, 1, proc, comm);
 
       if (done == 0) counter++;
 
     }  // for all elements of interfacefacingelementmap
-    comm.Barrier();
+    Core::Communication::barrier(comm);
   }  // for all procs
 
   if (Core::Communication::my_mpi_rank(comm) == 0)

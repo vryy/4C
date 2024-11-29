@@ -91,7 +91,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
           mygpvec[igp] = static_cast<int>(((*gp_vector)(igp))[mylid]);
 
       // communicate to all via summation
-      get_comm().SumAll(mygpvec.data(), sumgpvec.data(), numgp_per_artele);
+      Core::Communication::sum_all(mygpvec.data(), sumgpvec.data(), numgp_per_artele, get_comm());
 
       // this is ok for now, either the GID does not exist or the entire element protrudes.
       // Inform user and continue
@@ -137,14 +137,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
     numgp = numgp + coupl_elepairs_[i]->num_gp();
   }
   // safety check
-  get_comm().SumAll(&numgp, &total_num_gp, 1);
+  Core::Communication::sum_all(&numgp, &total_num_gp, 1, get_comm());
   if (numgp_desired != total_num_gp - duplicates)
     FOUR_C_THROW("It seems as if some GPs could not be projected");
 
   // output
   int total_numactive_pairs = 0;
   int numactive_pairs = static_cast<int>(coupl_elepairs_.size());
-  get_comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
+  Core::Communication::sum_all(&numactive_pairs, &total_numactive_pairs, 1, get_comm());
   if (contdis_->name() == "porofluid" && myrank_ == 0)
     std::cout << "Only " << total_numactive_pairs
               << " Artery-to-PoroMultiphaseScatra coupling pairs are active" << std::endl;

@@ -472,7 +472,7 @@ void ScaTra::ScaTraTimIntElchSCL::write_coupling_to_csv(
         }
       }
     }
-    discret_->get_comm().Barrier();
+    Core::Communication::barrier(discret_->get_comm());
   }
 }
 
@@ -710,7 +710,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
   {
     if (iproc == Core::Communication::my_mpi_rank(comm))
       micro_problem_counter += static_cast<int>(num_my_macro_slave_node_gids);
-    comm.Broadcast(&micro_problem_counter, 1, iproc);
+    Core::Communication::broadcast(&micro_problem_counter, 1, iproc, comm);
 
     // start of micro discretization of this proc is end of last proc
     if (iproc == Core::Communication::my_mpi_rank(comm) - 1)

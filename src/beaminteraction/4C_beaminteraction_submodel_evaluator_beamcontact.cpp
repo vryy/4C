@@ -26,6 +26,7 @@
 #include "4C_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.hpp"
 #include "4C_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.hpp"
 #include "4C_binstrategy.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_geometric_search_bvh.hpp"
 #include "4C_fem_geometric_search_params.hpp"
 #include "4C_fem_geometric_search_visualization.hpp"
@@ -1026,7 +1027,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
   // simulation crashes if the assembly manager is not on all ranks.
   int my_direct_pairs = assembly_pairs_direct.size();
   int global_direct_pairs = 0;
-  discret().get_comm().SumAll(&my_direct_pairs, &global_direct_pairs, 1);
+  Core::Communication::sum_all(&my_direct_pairs, &global_direct_pairs, 1, discret().get_comm());
 
   // Create the needed assembly manager.
   if (global_direct_pairs > 0)

@@ -468,7 +468,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> ScaTra::ScaTraTimIntImpl::cal
     discret_->get_comm().SumAll(
         normfluxintegral.data(), parnormfluxintegral.data(), num_dof_per_node());
     double parboundaryint = 0.0;
-    discret_->get_comm().SumAll(&boundaryint, &parboundaryint, 1);
+    Core::Communication::sum_all(&boundaryint, &parboundaryint, 1, discret_->get_comm());
 
     for (int idof = 0; idof < num_dof_per_node(); ++idof)
     {
@@ -1293,7 +1293,7 @@ void ScaTra::ScaTraTimIntImpl::output_integr_reac(const int num)
     // global integral of reaction terms
     std::vector<double> intreacterm(num_scal(), 0.0);
     for (int k = 0; k < num_scal(); ++k)
-      phinp_->Map().Comm().SumAll(&((*myreacnp)[k]), &intreacterm[k], 1);
+      Core::Communication::sum_all(&((*myreacnp)[k]), &intreacterm[k], 1, phinp_->Map().Comm());
 
     // print out values
     if (myrank_ == 0)
@@ -1595,8 +1595,8 @@ void ScaTra::ScaTraTimIntImpl::recompute_mean_csgs_b()
     }
 
     // gather contibutions of all procs
-    discret_->get_comm().SumAll(&local_sumCai, &global_sumCai, 1);
-    discret_->get_comm().SumAll(&local_sumVol, &global_sumVol, 1);
+    Core::Communication::sum_all(&local_sumCai, &global_sumCai, 1, discret_->get_comm());
+    Core::Communication::sum_all(&local_sumVol, &global_sumVol, 1, discret_->get_comm());
 
     // calculate mean Cai
     meanCai = global_sumCai / global_sumVol;
@@ -1926,7 +1926,7 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
     // check whether current column index is a valid global column index and continue loop if not
     int collid(sysmat_original->ColMap().LID(colgid));
     int maxcollid(-1);
-    discret_->get_comm().MaxAll(&collid, &maxcollid, 1);
+    Core::Communication::max_all(&collid, &maxcollid, 1, discret_->get_comm());
     if (maxcollid < 0) continue;
 
     // fill state vector with original state variables
@@ -2047,11 +2047,11 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
 
   // communicate tracking variables
   int counterglobal(0);
-  discret_->get_comm().SumAll(&counter, &counterglobal, 1);
+  Core::Communication::sum_all(&counter, &counterglobal, 1, discret_->get_comm());
   double maxabserrglobal(0.);
-  discret_->get_comm().MaxAll(&maxabserr, &maxabserrglobal, 1);
+  Core::Communication::max_all(&maxabserr, &maxabserrglobal, 1, discret_->get_comm());
   double maxrelerrglobal(0.);
-  discret_->get_comm().MaxAll(&maxrelerr, &maxrelerrglobal, 1);
+  Core::Communication::max_all(&maxrelerr, &maxrelerrglobal, 1, discret_->get_comm());
 
   // final screen output
   if (myrank_ == 0)
@@ -2978,7 +2978,7 @@ void ScaTra::ScalarHandler::setup(const ScaTraTimIntImpl* const scatratimint)
   // number of different numbers of dofs on this procs
   int mysize = static_cast<int>(mynumdofpernode.size());
   // communicate
-  discret->get_comm().MaxAll(&mysize, &maxsize, 1);
+  Core::Communication::max_all(&mysize, &maxsize, 1, discret->get_comm());
 
   // copy mynumdofpernode into std::vector for communication
   std::vector<int> vecmynumdofpernode(mynumdofpernode.begin(), mynumdofpernode.end());
@@ -3041,7 +3041,7 @@ int ScaTra::ScalarHandler::num_dof_per_node_in_condition(
   // number of different numbers of dofs on this procs
   int mysize = static_cast<int>(mynumdofpernode.size());
   // communicate
-  discret.get_comm().MaxAll(&mysize, &maxsize, 1);
+  Core::Communication::max_all(&mysize, &maxsize, 1, discret.get_comm());
 
   // copy mynumdofpernode into std::vector for communication
   std::vector<int> vecmynumdofpernode(mynumdofpernode.begin(), mynumdofpernode.end());

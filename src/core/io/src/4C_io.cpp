@@ -277,13 +277,13 @@ void Core::IO::DiscretizationReader::read_redundant_double_vector(
   }
 
   // communicate the length of the vector to come
-  get_comm().Broadcast(&length, 1, 0);
+  Core::Communication::broadcast(&length, 1, 0, get_comm());
 
   // make vector having the correct length on all procs
   doublevec->resize(length);
 
   // now distribute information to all procs
-  get_comm().Broadcast(doublevec->data(), length, 0);
+  Core::Communication::broadcast(doublevec->data(), length, 0, get_comm());
   return;
 }
 
@@ -306,13 +306,13 @@ void Core::IO::DiscretizationReader::read_redundant_int_vector(
   }
 
   // communicate the length of the vector to come
-  get_comm().Broadcast(&length, 1, 0);
+  Core::Communication::broadcast(&length, 1, 0, get_comm());
 
   // make vector having the correct length on all procs
   intvec->resize(length);
 
   // now distribute information to all procs
-  get_comm().Broadcast(intvec->data(), length, 0);
+  Core::Communication::broadcast(intvec->data(), length, 0, get_comm());
   return;
 }
 

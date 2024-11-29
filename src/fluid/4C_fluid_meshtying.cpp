@@ -1476,7 +1476,7 @@ void FLD::Meshtying::analyze_matrix(Core::LinAlg::SparseMatrix& sparsematrix)
       }
     }
 
-    discret_->get_comm().SumAll(&localmatrixentries, &parmatrixentries, 1);
+    Core::Communication::sum_all(&localmatrixentries, &parmatrixentries, 1, discret_->get_comm());
   }
   double normfrob = matrix->NormFrobenius();
   double norminf = matrix->NormInf();

@@ -1069,7 +1069,7 @@ void Core::FE::DiscretizationFaces::print_faces(std::ostream& os) const
     for (ecurr = faces_.begin(); ecurr != faces_.end(); ++ecurr)
       if (ecurr->second->owner() == Core::Communication::my_mpi_rank(get_comm())) nummyfaces++;
 
-    get_comm().SumAll(&nummyfaces, &numglobalfaces, 1);
+    Core::Communication::sum_all(&nummyfaces, &numglobalfaces, 1, get_comm());
   }
 
   // print head
@@ -1100,7 +1100,7 @@ void Core::FE::DiscretizationFaces::print_faces(std::ostream& os) const
       }
       os << std::endl;
     }
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
   }
 
   return;

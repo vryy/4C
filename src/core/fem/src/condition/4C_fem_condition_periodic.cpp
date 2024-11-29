@@ -171,12 +171,17 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
       my_n_ghostele[mypid] = discret_->num_my_col_elements() - discret_->num_my_row_elements();
       my_n_dof[mypid] = dofrowmap->NumMyElements();
 
-      discret_->get_comm().SumAll(my_n_nodes.data(), n_nodes.data(), numprocs);
-      discret_->get_comm().SumAll(my_n_master.data(), n_master.data(), numprocs);
-      discret_->get_comm().SumAll(my_n_slave.data(), n_slave.data(), numprocs);
-      discret_->get_comm().SumAll(my_n_elements.data(), n_elements.data(), numprocs);
-      discret_->get_comm().SumAll(my_n_ghostele.data(), n_ghostele.data(), numprocs);
-      discret_->get_comm().SumAll(my_n_dof.data(), n_dof.data(), numprocs);
+      Core::Communication::sum_all(
+          my_n_nodes.data(), n_nodes.data(), numprocs, discret_->get_comm());
+      Core::Communication::sum_all(
+          my_n_master.data(), n_master.data(), numprocs, discret_->get_comm());
+      Core::Communication::sum_all(
+          my_n_slave.data(), n_slave.data(), numprocs, discret_->get_comm());
+      Core::Communication::sum_all(
+          my_n_elements.data(), n_elements.data(), numprocs, discret_->get_comm());
+      Core::Communication::sum_all(
+          my_n_ghostele.data(), n_ghostele.data(), numprocs, discret_->get_comm());
+      Core::Communication::sum_all(my_n_dof.data(), n_dof.data(), numprocs, discret_->get_comm());
 
       if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
       {
@@ -847,7 +852,7 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
 
           // wait for all communication to finish
           exporter.wait(request);
-          discret_->get_comm().Barrier();  // I feel better this way ;-)
+          Core::Communication::barrier(discret_->get_comm());  // I feel better this way ;-)
 
           //--------------------------------------------------
           // -> 3) Try to complete the matchings
@@ -1022,8 +1027,8 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       }
     }
 
-    discret_->get_comm().SumAll(&myerase, &numerase, 1);
-    discret_->get_comm().SumAll(&mycerase, &numcerase, 1);
+    Core::Communication::sum_all(&myerase, &numerase, 1, discret_->get_comm());
+    Core::Communication::sum_all(&mycerase, &numcerase, 1, discret_->get_comm());
     if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
     {
       std::cout << " Erased " << numerase << " slaves from nodeset.\n";
@@ -1059,7 +1064,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       }
     }
 
-    discret_->get_comm().SumAll(&mynumappend, &numappend, 1);
+    Core::Communication::sum_all(&mynumappend, &numappend, 1, discret_->get_comm());
     if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
     {
       std::cout << " Appended " << numappend << " ids which belong to slave ";
@@ -1094,9 +1099,9 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
         }
       }
 
-      discret_->get_comm().SumAll(&myallcouplednodes, &allcouplednodes, 1);
-      discret_->get_comm().MaxAll(&mymax, &max, 1);
-      discret_->get_comm().MinAll(&mymin, &min, 1);
+      Core::Communication::sum_all(&myallcouplednodes, &allcouplednodes, 1, discret_->get_comm());
+      Core::Communication::max_all(&mymax, &max, 1, discret_->get_comm());
+      Core::Communication::min_all(&mymin, &min, 1, discret_->get_comm());
 
       if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
       {
@@ -1112,7 +1117,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       int myn = (int)nodesonthisproc.size();
       int gn = 0;
 
-      discret_->get_comm().SumAll(&myn, &gn, 1);
+      Core::Communication::sum_all(&myn, &gn, 1, discret_->get_comm());
 
       if (gn != discret_->num_global_nodes())
       {

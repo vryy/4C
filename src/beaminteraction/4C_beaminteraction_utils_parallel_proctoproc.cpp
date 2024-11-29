@@ -64,7 +64,8 @@ void Discret::Utils::i_send_receive_any(Core::FE::Discretization& discret,
   // -----------------------------------------------------------------------
   // ---- prepare receiving procs -----
   std::vector<int> summedtargets(numproc, 0);
-  discret.get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+  Core::Communication::sum_all(
+      targetprocs.data(), summedtargets.data(), numproc, discret.get_comm());
 
   // ---- receive ----
   for (int rec = 0; rec < summedtargets[myrank]; ++rec)
@@ -94,7 +95,7 @@ void Discret::Utils::i_send_receive_any(Core::FE::Discretization& discret,
   for (int i = 0; i < length; ++i) exporter.wait(request[i]);
 
   // safety, should be a no time operation if everything works fine before
-  discret.get_comm().Barrier();
+  Core::Communication::barrier(discret.get_comm());
 }
 
 FOUR_C_NAMESPACE_CLOSE

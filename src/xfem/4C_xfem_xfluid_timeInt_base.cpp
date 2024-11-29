@@ -3274,7 +3274,7 @@ void XFEM::XfluidStd::export_start_data()
         searchedProcs, counter, dMin, (TimeIntData::Type)newtype));
   }
 
-  discret_->get_comm().Barrier();  // processors wait for each other
+  Core::Communication::barrier(discret_->get_comm());  // processors wait for each other
 }  // end exportStartData
 
 
@@ -3383,7 +3383,7 @@ void XFEM::XfluidStd::export_final_data()
     }  // end loop over number of nodes to get
 
     // processors wait for each other
-    discret_->get_comm().Barrier();
+    Core::Communication::barrier(discret_->get_comm());
   }  // end loop over processors
 }  // end exportfinalData
 

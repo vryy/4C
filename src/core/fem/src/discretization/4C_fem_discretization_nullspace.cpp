@@ -7,6 +7,7 @@
 
 #include "4C_fem_discretization_nullspace.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_elementtype.hpp"
 #include "4C_fem_general_node.hpp"
@@ -39,7 +40,7 @@ namespace Core::FE
         for (int j = 0; j < 3; ++j) x0send[j] += dis.l_row_node(i)->x()[j];
 
       std::array<double, 3> x0;
-      dis.get_comm().SumAll(x0send.data(), x0.data(), 3);
+      Core::Communication::sum_all(x0send.data(), x0.data(), 3, dis.get_comm());
 
       for (int i = 0; i < 3; ++i) x0[i] /= dis.num_global_nodes();
 

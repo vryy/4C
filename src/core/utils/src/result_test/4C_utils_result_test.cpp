@@ -168,13 +168,13 @@ void Core::Utils::ResultTestManager::test_all(const Epetra_Comm& comm)
 
   // print number of unevaluated tests to screen
   int guneval_test_count = 0;
-  comm.SumAll(&uneval_test_count, &guneval_test_count, 1);
+  Core::Communication::sum_all(&uneval_test_count, &guneval_test_count, 1, comm);
   if (guneval_test_count > 0 and Core::Communication::my_mpi_rank(comm) == 0)
     Core::IO::cout << guneval_test_count << " tests stay unevaluated" << Core::IO::endl;
 
   // determine the total number of errors
   int numerr;
-  comm.SumAll(&nerr, &numerr, 1);
+  Core::Communication::sum_all(&nerr, &numerr, 1, comm);
 
   if (numerr > 0)
   {
@@ -188,7 +188,7 @@ void Core::Utils::ResultTestManager::test_all(const Epetra_Comm& comm)
   if (test_count > -1)
   {
     int lcount = test_count + uneval_test_count;
-    comm.SumAll(&lcount, &count, 1);
+    Core::Communication::sum_all(&lcount, &count, 1, comm);
 
     /* It's indeed possible to count more tests than expected if you
      * happen to test values of a boundary element. We don't want this

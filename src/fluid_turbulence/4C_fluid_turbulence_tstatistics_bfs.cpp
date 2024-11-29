@@ -128,20 +128,20 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
   // communicate x2mins and x2maxs
   double min2;
-  discret_->get_comm().MinAll(&x2min_, &min2, 1);
+  Core::Communication::min_all(&x2min_, &min2, 1, discret_->get_comm());
   x2min_ = min2;
 
   double max2;
-  discret_->get_comm().MaxAll(&x2max_, &max2, 1);
+  Core::Communication::max_all(&x2max_, &max2, 1, discret_->get_comm());
   x2max_ = max2;
 
   // communicate x3mins and x3maxs
   double min3;
-  discret_->get_comm().MinAll(&x3min_, &min3, 1);
+  Core::Communication::min_all(&x3min_, &min3, 1, discret_->get_comm());
   x3min_ = min3;
 
   double max3;
-  discret_->get_comm().MaxAll(&x3max_, &max3, 1);
+  Core::Communication::max_all(&x3max_, &max3, 1, discret_->get_comm());
   x3max_ = max3;
 
   //--------------------------------------------------------------------
@@ -194,7 +194,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
 
       //--------------------------------------------------
@@ -250,7 +250,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
 
       //--------------------------------------------------
@@ -643,7 +643,7 @@ void FLD::TurbulenceStatisticsBfs::do_time_sample(
 
       int countnodesonallprocs = 0;
 
-      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -737,7 +737,7 @@ void FLD::TurbulenceStatisticsBfs::do_time_sample(
 
       int countnodesonallprocs = 0;
 
-      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -775,17 +775,17 @@ void FLD::TurbulenceStatisticsBfs::do_time_sample(
         {
           locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
         }
-        discret_->get_comm().SumAll(&locuv, &uv, 1);
+        Core::Communication::sum_all(&locuv, &uv, 1, discret_->get_comm());
         for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
           locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->get_comm().SumAll(&locuw, &uw, 1);
+        Core::Communication::sum_all(&locuw, &uw, 1, discret_->get_comm());
         for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
           locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->get_comm().SumAll(&locvw, &vw, 1);
+        Core::Communication::sum_all(&locvw, &vw, 1, discret_->get_comm());
 
         //----------------------------------------------------------------------
         // calculate spatial means on this line
@@ -887,7 +887,7 @@ void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
 
       int countnodesonallprocs = 0;
 
-      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -987,7 +987,7 @@ void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
 
       int countnodesonallprocs = 0;
 
-      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -1029,17 +1029,17 @@ void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
         {
           locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
         }
-        discret_->get_comm().SumAll(&locuv, &uv, 1);
+        Core::Communication::sum_all(&locuv, &uv, 1, discret_->get_comm());
         for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
           locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->get_comm().SumAll(&locuw, &uw, 1);
+        Core::Communication::sum_all(&locuw, &uw, 1, discret_->get_comm());
         for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
           locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->get_comm().SumAll(&locvw, &vw, 1);
+        Core::Communication::sum_all(&locvw, &vw, 1, discret_->get_comm());
 
         double TT;
         squaredscanp_->Dot(*togglep_, &TT);
@@ -1052,12 +1052,12 @@ void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
         {
           locuT += ((velnp)[rr - 3] * (*toggleu_)[rr - 3]) * ((scanp)[rr] * (*togglep_)[rr]);
         }
-        discret_->get_comm().SumAll(&locuT, &uT, 1);
+        Core::Communication::sum_all(&locuT, &uT, 1, discret_->get_comm());
         for (int rr = 3; rr < velnp.MyLength(); ++rr)
         {
           locvT += ((velnp)[rr - 2] * (*togglev_)[rr - 2]) * ((scanp)[rr] * (*togglep_)[rr]);
         }
-        discret_->get_comm().SumAll(&locvT, &vT, 1);
+        Core::Communication::sum_all(&locvT, &vT, 1, discret_->get_comm());
 
         double rho;
         invscanp_->Dot(*togglep_, &rho);
@@ -1076,13 +1076,13 @@ void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
           locrhou += (eosfac * ((*invscanp_)[rr] * (*togglep_)[rr])) *
                      ((velnp)[rr - 3] * (*toggleu_)[rr - 3]);
         }
-        discret_->get_comm().SumAll(&locrhou, &rhou, 1);
+        Core::Communication::sum_all(&locrhou, &rhou, 1, discret_->get_comm());
         for (int rr = 3; rr < velnp.MyLength(); ++rr)
         {
           locrhov += (eosfac * ((*invscanp_)[rr] * (*togglep_)[rr])) *
                      ((velnp)[rr - 2] * (*togglev_)[rr - 2]);
         }
-        discret_->get_comm().SumAll(&locrhov, &rhov, 1);
+        Core::Communication::sum_all(&locrhov, &rhov, 1, discret_->get_comm());
 
 
         //----------------------------------------------------------------------
@@ -1189,7 +1189,7 @@ void FLD::TurbulenceStatisticsBfs::do_scatra_time_sample(
 
       int countnodesonallprocs = 0;
 
-      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -1282,7 +1282,7 @@ void FLD::TurbulenceStatisticsBfs::do_scatra_time_sample(
 
       int countnodesonallprocs = 0;
 
-      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -1324,17 +1324,17 @@ void FLD::TurbulenceStatisticsBfs::do_scatra_time_sample(
         {
           locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
         }
-        discret_->get_comm().SumAll(&locuv, &uv, 1);
+        Core::Communication::sum_all(&locuv, &uv, 1, discret_->get_comm());
         for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
           locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->get_comm().SumAll(&locuw, &uw, 1);
+        Core::Communication::sum_all(&locuw, &uw, 1, discret_->get_comm());
         for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
           locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->get_comm().SumAll(&locvw, &vw, 1);
+        Core::Communication::sum_all(&locvw, &vw, 1, discret_->get_comm());
 
         double TT;
         squaredscanp_->Dot(*togglep_, &TT);
@@ -1347,12 +1347,12 @@ void FLD::TurbulenceStatisticsBfs::do_scatra_time_sample(
         {
           locuT += ((velnp)[rr - 3] * (*toggleu_)[rr - 3]) * ((scanp)[rr] * (*togglep_)[rr]);
         }
-        discret_->get_comm().SumAll(&locuT, &uT, 1);
+        Core::Communication::sum_all(&locuT, &uT, 1, discret_->get_comm());
         for (int rr = 3; rr < velnp.MyLength(); ++rr)
         {
           locvT += ((velnp)[rr - 2] * (*togglev_)[rr - 2]) * ((scanp)[rr] * (*togglep_)[rr]);
         }
-        discret_->get_comm().SumAll(&locvT, &vT, 1);
+        Core::Communication::sum_all(&locvT, &vT, 1, discret_->get_comm());
 
         //----------------------------------------------------------------------
         // calculate spatial means on this line

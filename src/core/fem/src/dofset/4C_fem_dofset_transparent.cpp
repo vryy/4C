@@ -484,7 +484,7 @@ void Core::DOFSets::TransparentDofSet::receive_block(int numproc, int myrank,
   exporter.wait(request);
 
   // for safety
-  exporter.get_comm().Barrier();
+  Core::Communication::barrier(exporter.get_comm());
 
   return;
 }  // receive_block
@@ -511,7 +511,7 @@ void Core::DOFSets::TransparentDofSet::send_block(int numproc, int myrank,
 
 
   // for safety
-  exporter.get_comm().Barrier();
+  Core::Communication::barrier(exporter.get_comm());
 
   return;
 }  // send_block

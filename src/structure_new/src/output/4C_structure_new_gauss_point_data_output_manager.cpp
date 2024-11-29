@@ -182,7 +182,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::distribute_quantities(
   const Core::Communication::Exporter exporter(comm);
 
   int max_quantities = quantities_.size();
-  comm.MaxAll(&max_quantities, &max_quantities, 1);
+  Core::Communication::max_all(&max_quantities, &max_quantities, 1, comm);
 
   if (max_quantities == 0)
   {
@@ -191,7 +191,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::distribute_quantities(
   }
 
   // Communicate max number of Gauss points
-  comm.MaxAll(&max_num_gp_, &max_num_gp_, 1);
+  Core::Communication::max_all(&max_num_gp_, &max_num_gp_, 1, comm);
 
   // Collect all quantities on proc 0
   if (Core::Communication::my_mpi_rank(comm) == 0)

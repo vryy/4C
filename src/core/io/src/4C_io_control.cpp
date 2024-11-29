@@ -75,11 +75,9 @@ Core::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string prob
     {
       int length = static_cast<int>(filename_.length());
       std::vector<int> name(filename_.begin(), filename_.end());
-      int err = comm.Broadcast(&length, 1, 0);
-      if (err) FOUR_C_THROW("communication error");
+      Core::Communication::broadcast(&length, 1, 0, comm);
       name.resize(length);
-      err = comm.Broadcast(name.data(), length, 0);
-      if (err) FOUR_C_THROW("communication error");
+      Core::Communication::broadcast(name.data(), length, 0, comm);
       filename_.assign(name.begin(), name.end());
     }
   }
@@ -155,11 +153,9 @@ Core::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string prob
     {
       int length = static_cast<int>(filename_.length());
       std::vector<int> name(filename_.begin(), filename_.end());
-      int err = comm.Broadcast(&length, 1, 0);
-      if (err) FOUR_C_THROW("communication error");
+      Core::Communication::broadcast(&length, 1, 0, comm);
       name.resize(length);
-      err = comm.Broadcast(name.data(), length, 0);
-      if (err) FOUR_C_THROW("communication error");
+      Core::Communication::broadcast(name.data(), length, 0, comm);
       filename_.assign(name.begin(), name.end());
     }
   }

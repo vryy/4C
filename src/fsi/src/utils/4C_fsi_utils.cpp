@@ -132,7 +132,7 @@ FSI::Utils::SlideAleUtils::SlideAleUtils(std::shared_ptr<Core::FE::Discretizatio
     }
   }
 
-  structdis->get_comm().MaxAll(&max_id, &maxid_, 1);
+  Core::Communication::max_all(&max_id, &maxid_, 1, structdis->get_comm());
 
   // declare fluid objects in interface
   std::map<int, std::map<int, std::shared_ptr<Core::Elements::Element>>> fluidelements;
@@ -368,8 +368,8 @@ std::vector<double> FSI::Utils::SlideAleUtils::centerdisp(
   structdis->clear_state();
 
   // Communicate to 'assemble' length and center displacements
-  comm.SumAll(&mylengthcirc, &lengthcirc, 1);
-  comm.SumAll(mycenterdisp.data(), centerdisp.data(), dim);
+  Core::Communication::sum_all(&mylengthcirc, &lengthcirc, 1, comm);
+  Core::Communication::sum_all(mycenterdisp.data(), centerdisp.data(), dim, comm);
 
   if (lengthcirc <= 1.0E-6) FOUR_C_THROW("Zero interface length!");
 
@@ -622,7 +622,7 @@ void FSI::Utils::SlideAleUtils::redundant_elements(
     int globsum = 0;
     int partsum = (vstruslideleids.size());
 
-    comm.SumAll(&partsum, &globsum, 1);
+    Core::Communication::sum_all(&partsum, &globsum, 1, comm);
     // map with ele ids
     Epetra_Map mstruslideleids(globsum, vstruslideleids.size(), vstruslideleids.data(), 0, comm);
     // redundant version of it
@@ -739,8 +739,8 @@ void FSI::Utils::SlideAleUtils::rotation(
     }  // end of ele loop
 
     // Communicate to 'assemble' length and center displacements
-    comm.SumAll(&mylengthcirc, &lengthcirc, 1);
-    comm.SumAll(&myrotation, &rotation, 1);
+    Core::Communication::sum_all(&mylengthcirc, &lengthcirc, 1, comm);
+    Core::Communication::sum_all(&myrotation, &rotation, 1, comm);
 
     if (lengthcirc >= 1.0E-6)
     {

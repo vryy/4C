@@ -92,7 +92,7 @@ int Core::DOFSets::DofSetBase::max_gi_din_list(const Epetra_Comm& comm) const
     }
   }
   int max;
-  comm.MaxAll(&count, &max, 1);
+  Core::Communication::max_all(&count, &max, 1, comm);
   return max;
 }
 

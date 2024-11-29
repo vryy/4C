@@ -280,7 +280,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
   // output
   int total_numactive_pairs = 0;
   numactive_pairs = static_cast<int>(coupl_elepairs_.size());
-  get_comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
+  Core::Communication::sum_all(&numactive_pairs, &total_numactive_pairs, 1, get_comm());
 
 
   if (myrank_ == 0)
@@ -373,7 +373,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
   // output
   int total_numactive_pairs = 0;
   numactive_pairs = static_cast<int>(coupl_elepairs_.size());
-  get_comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
+  Core::Communication::sum_all(&numactive_pairs, &total_numactive_pairs, 1, get_comm());
 
 
   if (myrank_ == 0)
@@ -412,7 +412,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::set_varyin
 
   // sum over all procs.
   int sum_has_varying_diam = 0;
-  get_comm().SumAll(&has_varying_diam, &sum_has_varying_diam, 1);
+  Core::Communication::sum_all(&has_varying_diam, &sum_has_varying_diam, 1, get_comm());
   // if one has a varying diameter set the flag to true
   if (sum_has_varying_diam > 0) has_varying_diam_ = true;
 }

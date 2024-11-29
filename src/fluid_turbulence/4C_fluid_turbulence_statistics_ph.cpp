@@ -123,7 +123,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
 
       //--------------------------------------------------
@@ -179,7 +179,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
 
       //--------------------------------------------------
@@ -353,7 +353,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
 
         {
           // for safety
-          exporter.get_comm().Barrier();
+          Core::Communication::barrier(exporter.get_comm());
         }
 
         //--------------------------------------------------
@@ -525,7 +525,7 @@ void FLD::TurbulenceStatisticsPh::do_time_sample(
       }
       int countnodesonallprocs = 0;
 
-      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -570,7 +570,7 @@ void FLD::TurbulenceStatisticsPh::do_time_sample(
       }
       int countnodesonallprocs = 0;
 
-      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -615,7 +615,7 @@ void FLD::TurbulenceStatisticsPh::do_time_sample(
       }
       int countnodesonallprocs = 0;
 
-      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -674,7 +674,7 @@ void FLD::TurbulenceStatisticsPh::do_time_sample(
     }
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     // reduce by 1 due to periodic boundary condition
     countnodesonallprocs -= 1;
@@ -750,7 +750,7 @@ void FLD::TurbulenceStatisticsPh::do_time_sample(
 
       int countnodesonallprocs = 0;
 
-      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -788,17 +788,17 @@ void FLD::TurbulenceStatisticsPh::do_time_sample(
         {
           locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
         }
-        discret_->get_comm().SumAll(&locuv, &uv, 1);
+        Core::Communication::sum_all(&locuv, &uv, 1, discret_->get_comm());
         for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
           locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->get_comm().SumAll(&locuw, &uw, 1);
+        Core::Communication::sum_all(&locuw, &uw, 1, discret_->get_comm());
         for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
           locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->get_comm().SumAll(&locvw, &vw, 1);
+        Core::Communication::sum_all(&locvw, &vw, 1, discret_->get_comm());
 
         //----------------------------------------------------------------------
         // calculate spatial means on this line

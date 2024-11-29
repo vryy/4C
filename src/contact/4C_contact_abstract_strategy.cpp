@@ -331,7 +331,7 @@ bool CONTACT::AbstractStrategy::redistribute_with_safe_ghosting(
     const Core::LinAlg::Vector<double>& displacement, const Core::LinAlg::Vector<double>& velocity)
 {
   // time measurement
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   const double t_start = Teuchos::Time::wallTime();
 
   const Inpar::Mortar::ExtendGhosting ghosting_strategy =
@@ -364,7 +364,7 @@ bool CONTACT::AbstractStrategy::redistribute_with_safe_ghosting(
   if (perform_rebalancing) setup(true, false);
 
   // time measurement
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   const double t_end = Teuchos::Time::wallTime() - t_start;
   if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\nTime for parallel redistribution..............." << std::scientific
@@ -389,7 +389,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
   if (!doredist) return false;
 
   // time measurement
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   const double t_start = Teuchos::Time::wallTime();
 
   // Prepare for extending the ghosting
@@ -429,7 +429,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
   setup(true, false);
 
   // time measurement
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   double t_end = Teuchos::Time::wallTime() - t_start;
   if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\nTime for parallel redistribution..............." << std::scientific
@@ -853,13 +853,13 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(
   if (doAccurateTimeMeasurements)
   {
     // mortar initialization and evaluation
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
     const double t_start1 = Teuchos::Time::wallTime();
     set_state(Mortar::state_new_displacement, *dis);
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
     const double t_end1 = Teuchos::Time::wallTime() - t_start1;
 
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
     const double t_start2 = Teuchos::Time::wallTime();
     //---------------------------------------------------------------
     // For selfcontact the master/slave sets are updated within the -
@@ -879,11 +879,11 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(
       initialize_and_evaluate_interface();  // evaluate mortar terms (integrate...)
       assemble_mortar();                    // assemble mortar terms into global matrices
     }
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
     const double t_end2 = Teuchos::Time::wallTime() - t_start2;
 
     // evaluate relative movement for friction
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
     const double t_start3 = Teuchos::Time::wallTime();
     if (predictor)
       predict_relative_movement();
@@ -893,17 +893,17 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(
     // update active set
     if (!predictor) update_active_set_semi_smooth();
 
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
     const double t_end3 = Teuchos::Time::wallTime() - t_start3;
 
     // apply contact forces and stiffness
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
     const double t_start4 = Teuchos::Time::wallTime();
     initialize();           // init lin-matrices
     evaluate(kt, f, dis);   // assemble lin. matrices, condensation ...
     evaluate_constr_rhs();  // evaluate the constraint rhs (saddle-point system only)
 
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
     const double t_end4 = Teuchos::Time::wallTime() - t_start4;
 
     // only for debugging:
@@ -1238,8 +1238,8 @@ void CONTACT::AbstractStrategy::update_parallel_distribution_status(const double
   // divided by the minimum local processor time)
   double maxall = 0.0;
   double minall = 0.0;
-  get_comm().MaxAll(&t_end_for_maxall, &maxall, 1);
-  get_comm().MinAll(&t_end_for_minall, &minall, 1);
+  Core::Communication::max_all(&t_end_for_maxall, &maxall, 1, get_comm());
+  Core::Communication::min_all(&t_end_for_minall, &minall, 1, get_comm());
 
   // check for plausibility before storing
   if (maxall == 0.0 && minall == 1.0e12)
@@ -1253,13 +1253,13 @@ void CONTACT::AbstractStrategy::update_parallel_distribution_status(const double
   {
     // find out how many close slave elements in total
     int totrowele = 0;
-    get_comm().SumAll(&numcrowele[i], &totrowele, 1);
+    Core::Communication::sum_all(&numcrowele[i], &totrowele, 1, get_comm());
 
     // find out how many procs have work on this interface
     int lhascrowele = 0;
     int ghascrowele = 0;
     if (numcrowele[i] > 0) lhascrowele = 1;
-    get_comm().SumAll(&lhascrowele, &ghascrowele, 1);
+    Core::Communication::sum_all(&lhascrowele, &ghascrowele, 1, get_comm());
 
     // minimum number of elements per proc
     int minele = params().sublist("PARALLEL REDISTRIBUTION").get<int>("MIN_ELEPROC");
@@ -1286,7 +1286,7 @@ void CONTACT::AbstractStrategy::update_parallel_distribution_status(const double
   // obtain global info on element unbalance
   int geleunbalance = 0;
   int leleunbalance = (int)(eleunbalance);
-  get_comm().SumAll(&leleunbalance, &geleunbalance, 1);
+  Core::Communication::sum_all(&leleunbalance, &geleunbalance, 1, get_comm());
   if (geleunbalance > 0)
     data().unbalance_element_factors().push_back(1);
   else
@@ -2316,12 +2316,12 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
   // summing up over all processors
   for (int i = 0; i < 3; ++i)
   {
-    get_comm().SumAll(&gfcs[i], &ggfcs[i], 1);
-    get_comm().SumAll(&gfcm[i], &ggfcm[i], 1);
-    get_comm().SumAll(&gmcs[i], &ggmcs[i], 1);
-    get_comm().SumAll(&gmcm[i], &ggmcm[i], 1);
-    get_comm().SumAll(&gmcsnew[i], &ggmcsnew[i], 1);
-    get_comm().SumAll(&gmcmnew[i], &ggmcmnew[i], 1);
+    Core::Communication::sum_all(&gfcs[i], &ggfcs[i], 1, get_comm());
+    Core::Communication::sum_all(&gfcm[i], &ggfcm[i], 1, get_comm());
+    Core::Communication::sum_all(&gmcs[i], &ggmcs[i], 1, get_comm());
+    Core::Communication::sum_all(&gmcm[i], &ggmcm[i], 1, get_comm());
+    Core::Communication::sum_all(&gmcsnew[i], &ggmcsnew[i], 1, get_comm());
+    Core::Communication::sum_all(&gmcmnew[i], &ggmcmnew[i], 1, get_comm());
   }
 
   // print interface results to file
@@ -2386,12 +2386,12 @@ void CONTACT::AbstractStrategy::print(std::ostream& os) const
        << "Contact interfaces: " << (int)interfaces().size() << std::endl
        << "-------------------------------------------------------------\n";
   }
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     std::cout << *(interfaces()[i]);
   }
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
 }
 
 /*----------------------------------------------------------------------*
@@ -2400,7 +2400,7 @@ void CONTACT::AbstractStrategy::print(std::ostream& os) const
 void CONTACT::AbstractStrategy::print_active_set() const
 {
   // output message
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     printf("\nActive contact set--------------------------------------------------------------\n");
@@ -2715,12 +2715,12 @@ void CONTACT::AbstractStrategy::print_active_set() const
   }
 
   // sum among all processors
-  get_comm().SumAll(&activenodes, &gactivenodes, 1);
-  get_comm().SumAll(&inactivenodes, &ginactivenodes, 1);
-  get_comm().SumAll(&slipnodes, &gslipnodes, 1);
-  get_comm().SumAll(&edgenodes, &gedgenodes, 1);
-  get_comm().SumAll(&cornernodes, &gcornernodes, 1);
-  get_comm().SumAll(&surfacenodes, &gsurfacenodes, 1);
+  Core::Communication::sum_all(&activenodes, &gactivenodes, 1, get_comm());
+  Core::Communication::sum_all(&inactivenodes, &ginactivenodes, 1, get_comm());
+  Core::Communication::sum_all(&slipnodes, &gslipnodes, 1, get_comm());
+  Core::Communication::sum_all(&edgenodes, &gedgenodes, 1, get_comm());
+  Core::Communication::sum_all(&cornernodes, &gcornernodes, 1, get_comm());
+  Core::Communication::sum_all(&surfacenodes, &gsurfacenodes, 1, get_comm());
 
   // print active set information
   if (Core::Communication::my_mpi_rank(get_comm()) == 0)
@@ -2746,7 +2746,7 @@ void CONTACT::AbstractStrategy::print_active_set() const
   }
 #endif  // #ifdef CONTACTASOUTPUT
   // output line
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     printf("--------------------------------------------------------------------------------\n\n");

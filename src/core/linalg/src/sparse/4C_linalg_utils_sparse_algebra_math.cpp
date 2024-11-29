@@ -164,7 +164,7 @@ void Core::LinAlg::add(const Epetra_CrsMatrix& A, const bool transposeA, const d
   int rowsAdded = do_add(*Aprime, scalarA, *B.epetra_matrix(), scalarB);
   int localSuccess = rowsAdded == Aprime->RowMap().NumMyElements();
   int globalSuccess = 0;
-  B.Comm().MinAll(&localSuccess, &globalSuccess, 1);
+  Core::Communication::min_all(&localSuccess, &globalSuccess, 1, B.Comm());
   if (!globalSuccess)
   {
     if (!B.filled()) FOUR_C_THROW("Unexpected state of B (expected: B not filled, got: B filled)");

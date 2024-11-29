@@ -142,8 +142,9 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
 
     // wait for all communication to finish
     exporter.wait(request);
-    binstrategy_->bin_discret()->get_comm().Barrier();  // I feel better this way ;-)
-  }                                                     // end for irobin
+    Core::Communication::barrier(
+        binstrategy_->bin_discret()->get_comm());  // I feel better this way ;-)
+  }                                                // end for irobin
 
   if (homelesslinker.size())
   {
@@ -238,7 +239,8 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
 
   // ---- prepare receiving procs -----
   std::vector<int> summedtargets(numproc, 0);
-  binstrategy_->bin_discret()->get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+  Core::Communication::sum_all(
+      targetprocs.data(), summedtargets.data(), numproc, binstrategy_->bin_discret()->get_comm());
 
   // ---- send ----
   Core::Communication::Exporter exporter(binstrategy_->bin_discret()->get_comm());
@@ -260,7 +262,8 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
     for (int i = 0; i < length; ++i) exporter.wait(request[i]);
   }
 
-  binstrategy_->bin_discret()->get_comm().Barrier();  // I feel better this way ;-)
+  Core::Communication::barrier(
+      binstrategy_->bin_discret()->get_comm());  // I feel better this way ;-)
 
   return removedlinker;
 }
@@ -364,7 +367,8 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
   // -----------------------------------------------------------------------
   // ---- prepare receiving procs -----
   std::vector<int> summedtargets(numproc, 0);
-  binstrategy_->bin_discret()->get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+  Core::Communication::sum_all(
+      targetprocs.data(), summedtargets.data(), numproc, binstrategy_->bin_discret()->get_comm());
 
   // ---- receive -----
   receive_linker_and_fill_them_in_bins(summedtargets[myrank_], exporter, homelesslinker);
@@ -373,7 +377,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
   for (int i = 0; i < length; ++i) exporter.wait(request[i]);
 
   // should be no time operation (if we have done everything correctly)
-  binstrategy_->bin_discret()->get_comm().Barrier();
+  Core::Communication::barrier(binstrategy_->bin_discret()->get_comm());
 
   return removedlinker;
 }

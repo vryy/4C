@@ -1882,7 +1882,7 @@ void Airway::RedAirwayImplicitTimeInt::extract_pressure(Core::LinAlg::Vector<dou
       }
     }
     double parpres = 0.;
-    discret_->get_comm().SumAll(&pressure, &parpres, 1);
+    Core::Communication::sum_all(&pressure, &parpres, 1, discret_->get_comm());
     (couppres)[i] = parpres;
   }
 }

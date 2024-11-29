@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_cardiovascular0d_mor_pod.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_dofset.hpp"
 
@@ -66,7 +67,7 @@ namespace Utils
       int lmin = dofrowmap_->MinMyGID();
       if (dofrowmap_->NumMyElements() == 0) lmin = std::numeric_limits<int>::max();
       int gmin = std::numeric_limits<int>::max();
-      dofrowmap_->Comm().MinAll(&lmin, &gmin, 1);
+      Core::Communication::min_all(&lmin, &gmin, 1, dofrowmap_->Comm());
       return gmin;
     };
 

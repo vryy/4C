@@ -43,7 +43,8 @@ void POROFLUIDMULTIPHASE::ResultTest::test_node(
 
   int havenode(porotimint_.discretization()->have_global_node(node));
   int isnodeofanybody(0);
-  porotimint_.discretization()->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
+  Core::Communication::sum_all(
+      &havenode, &isnodeofanybody, 1, porotimint_.discretization()->get_comm());
 
   if (isnodeofanybody == 0)
   {
@@ -91,7 +92,8 @@ void POROFLUIDMULTIPHASE::ResultTest::test_element(
 
   int haveelement(porotimint_.discretization()->have_global_element(element));
   int iselementofanybody(0);
-  porotimint_.discretization()->get_comm().SumAll(&haveelement, &iselementofanybody, 1);
+  Core::Communication::sum_all(
+      &haveelement, &iselementofanybody, 1, porotimint_.discretization()->get_comm());
 
   if (iselementofanybody == 0)
   {

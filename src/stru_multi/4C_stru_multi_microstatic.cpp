@@ -91,7 +91,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   dt_ = sdyn_macro.get<double>("TIMESTEP");
   // broadcast important data that must be consistent on macro and micro scale (master and
   // supporting procs)
-  discret_->get_comm().Broadcast(&dt_, 1, 0);
+  Core::Communication::broadcast(&dt_, 1, 0, discret_->get_comm());
   time_ = 0.0;
   timen_ = time_ + dt_;
   step_ = 0;
@@ -124,9 +124,9 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
   // broadcast important data that must be consistent on macro and micro scale (master and
   // supporting procs)
-  discret_->get_comm().Broadcast(&numstep_, 1, 0);
-  discret_->get_comm().Broadcast(&restart_, 1, 0);
-  discret_->get_comm().Broadcast(&restartevry_, 1, 0);
+  Core::Communication::broadcast(&numstep_, 1, 0, discret_->get_comm());
+  Core::Communication::broadcast(&restart_, 1, 0, discret_->get_comm());
+  Core::Communication::broadcast(&restartevry_, 1, 0, discret_->get_comm());
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -254,7 +254,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   discret_->clear_state();
 
   // compute volume of all elements
-  discret_->get_comm().SumAll(&my_micro_discretization_volume, &V0_, 1);
+  Core::Communication::sum_all(&my_micro_discretization_volume, &V0_, 1, discret_->get_comm());
 
   // compute density of all elements
   double micro_discretization_density_integration = 0.0;
@@ -963,7 +963,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
       P(i, j) /= V0_;
       // sum P(i,j) over the microdis
       double sum = 0.0;
-      discret_->get_comm().SumAll(&(P(i, j)), &sum, 1);
+      Core::Communication::sum_all(&(P(i, j)), &sum, 1, discret_->get_comm());
       P(i, j) = sum;
     }
   }
@@ -1092,7 +1092,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
 
     // sum result of matrix-matrix product over procs
     std::vector<double> sum(81, 0.0);
-    discret_->get_comm().SumAll(val.data(), sum.data(), 81);
+    Core::Communication::sum_all(val.data(), sum.data(), 81, discret_->get_comm());
 
     if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     {

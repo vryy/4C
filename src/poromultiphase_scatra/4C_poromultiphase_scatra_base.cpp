@@ -200,7 +200,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::timeloop()
     time_step();
     // *********** time measurement ***********
     double mydttimestep = timertimestep_.wallTime() - dtcpu;
-    get_comm().MaxAll(&mydttimestep, &dttimestep_, 1);
+    Core::Communication::max_all(&mydttimestep, &dttimestep_, 1, get_comm());
     // *********** time measurement ***********
 
     update_and_output();

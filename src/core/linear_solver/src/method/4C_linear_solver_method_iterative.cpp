@@ -160,7 +160,7 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
   int my_error = 0;
   if (ret != Belos::Converged) my_error = 1;
   int glob_error = 0;
-  comm_.SumAll(&my_error, &glob_error, 1);
+  Core::Communication::sum_all(&my_error, &glob_error, 1, comm_);
 
   if (glob_error > 0 and Core::Communication::my_mpi_rank(this->comm_) == 0)
     std::cout << std::endl
@@ -199,7 +199,7 @@ bool Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::allow_reuse_pr
   int nProc = Core::Communication::num_mpi_ranks(comm_);
   int lAllowReuse = bAllowReuse == true ? 1 : 0;
   int gAllowReuse = 0;
-  comm_.SumAll(&lAllowReuse, &gAllowReuse, 1);
+  Core::Communication::sum_all(&lAllowReuse, &gAllowReuse, 1, comm_);
 
   return gAllowReuse == nProc;
 }

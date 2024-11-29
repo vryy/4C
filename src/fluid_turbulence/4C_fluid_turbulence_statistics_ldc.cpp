@@ -108,29 +108,29 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 
   // communicate x1mins and x1maxs
   double min1;
-  discret_->get_comm().MinAll(&x1min_, &min1, 1);
+  Core::Communication::min_all(&x1min_, &min1, 1, discret_->get_comm());
   x1min_ = min1;
 
   double max1;
-  discret_->get_comm().MaxAll(&x1max_, &max1, 1);
+  Core::Communication::max_all(&x1max_, &max1, 1, discret_->get_comm());
   x1max_ = max1;
 
   // communicate x2mins and x2maxs
   double min2;
-  discret_->get_comm().MinAll(&x2min_, &min2, 1);
+  Core::Communication::min_all(&x2min_, &min2, 1, discret_->get_comm());
   x2min_ = min2;
 
   double max2;
-  discret_->get_comm().MaxAll(&x2max_, &max2, 1);
+  Core::Communication::max_all(&x2max_, &max2, 1, discret_->get_comm());
   x2max_ = max2;
 
   // communicate x3mins and x3maxs
   double min3;
-  discret_->get_comm().MinAll(&x3min_, &min3, 1);
+  Core::Communication::min_all(&x3min_, &min3, 1, discret_->get_comm());
   x3min_ = min3;
 
   double max3;
-  discret_->get_comm().MaxAll(&x3max_, &max3, 1);
+  Core::Communication::max_all(&x3max_, &max3, 1, discret_->get_comm());
   x3max_ = max3;
 
   //--------------------------------------------------------------------
@@ -184,7 +184,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
 
       //--------------------------------------------------
@@ -241,7 +241,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
 
       //--------------------------------------------------
@@ -298,7 +298,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
 
       //--------------------------------------------------
@@ -572,7 +572,7 @@ void FLD::TurbulenceStatisticsLdc::do_time_sample(Core::LinAlg::Vector<double>& 
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (countnodesonallprocs)
     {
@@ -659,7 +659,7 @@ void FLD::TurbulenceStatisticsLdc::do_time_sample(Core::LinAlg::Vector<double>& 
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (countnodesonallprocs)
     {
@@ -746,7 +746,7 @@ void FLD::TurbulenceStatisticsLdc::do_time_sample(Core::LinAlg::Vector<double>& 
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (countnodesonallprocs)
     {
@@ -846,7 +846,7 @@ void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(Core::LinAlg::Vector<doub
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (countnodesonallprocs)
     {
@@ -947,7 +947,7 @@ void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(Core::LinAlg::Vector<doub
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (countnodesonallprocs)
     {
@@ -1047,7 +1047,7 @@ void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(Core::LinAlg::Vector<doub
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (countnodesonallprocs)
     {

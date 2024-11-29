@@ -776,7 +776,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::assemble_mat_and_rhs()
 
   // end time measurement for element
   double mydtele = Teuchos::Time::wallTime() - tcpuele;
-  discret_->get_comm().MaxAll(&mydtele, &dtele_, 1);
+  Core::Communication::max_all(&mydtele, &dtele_, 1, discret_->get_comm());
 
   return;
 }  // TimIntImpl::assemble_mat_and_rhs
@@ -1117,7 +1117,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::linear_solve(
 
   // end time measurement for solver
   double mydtsolve = Teuchos::Time::wallTime() - tcpusolve;
-  discret_->get_comm().MaxAll(&mydtsolve, &dtsolve_, 1);
+  Core::Communication::max_all(&mydtsolve, &dtsolve_, 1, discret_->get_comm());
 
   return;
 }
@@ -2185,7 +2185,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::fd_check()
     // check whether current column index is a valid global column index and continue loop if not
     int collid(sysmat_original->ColMap().LID(colgid));
     int maxcollid(-1);
-    discret_->get_comm().MaxAll(&collid, &maxcollid, 1);
+    Core::Communication::max_all(&collid, &maxcollid, 1, discret_->get_comm());
     if (maxcollid < 0) continue;
 
     // fill state vector with original state variables
@@ -2307,11 +2307,11 @@ void POROFLUIDMULTIPHASE::TimIntImpl::fd_check()
 
   // communicate tracking variables
   int counterglobal(0);
-  discret_->get_comm().SumAll(&counter, &counterglobal, 1);
+  Core::Communication::sum_all(&counter, &counterglobal, 1, discret_->get_comm());
   double maxabserrglobal(0.);
-  discret_->get_comm().MaxAll(&maxabserr, &maxabserrglobal, 1);
+  Core::Communication::max_all(&maxabserr, &maxabserrglobal, 1, discret_->get_comm());
   double maxrelerrglobal(0.);
-  discret_->get_comm().MaxAll(&maxrelerr, &maxrelerrglobal, 1);
+  Core::Communication::max_all(&maxrelerr, &maxrelerrglobal, 1, discret_->get_comm());
 
   // final screen output
   if (myrank_ == 0)

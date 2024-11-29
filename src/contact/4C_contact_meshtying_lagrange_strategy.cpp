@@ -57,7 +57,7 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(
   }
 
   // time measurement
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   const double t_start = Teuchos::Time::wallTime();
 
   // refer call to parent class
@@ -165,7 +165,7 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(
   lm_diag_matrix_ = nullptr;
 
   // time measurement
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   const double t_end = Teuchos::Time::wallTime() - t_start;
   if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "in...." << std::scientific << std::setprecision(6) << t_end << " secs"
@@ -193,7 +193,7 @@ CONTACT::MtLagrangeStrategy::mesh_initialization()
   }
 
   // time measurement
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   const double t_start = Teuchos::Time::wallTime();
 
   //**********************************************************************
@@ -301,7 +301,7 @@ CONTACT::MtLagrangeStrategy::mesh_initialization()
   MtAbstractStrategy::mesh_initialization(Xslavemod);
 
   // time measurement
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   const double t_end = Teuchos::Time::wallTime() - t_start;
   if (Core::Communication::my_mpi_rank(get_comm()) == 0)
   {

@@ -391,20 +391,29 @@ void Mortar::Interface::print_parallel_distribution() const
       my_s_ghostele[myrank] = selerowmap_->NumGlobalElements() - my_s_elements[myrank];
     }
 
-    discret().get_comm().SumAll(my_n_nodes.data(), n_nodes.data(), numproc);
-    discret().get_comm().SumAll(my_n_ghostnodes.data(), n_ghostnodes.data(), numproc);
-    discret().get_comm().SumAll(my_n_elements.data(), n_elements.data(), numproc);
-    discret().get_comm().SumAll(my_n_ghostele.data(), n_ghostele.data(), numproc);
+    Core::Communication::sum_all(my_n_nodes.data(), n_nodes.data(), numproc, discret().get_comm());
+    Core::Communication::sum_all(
+        my_n_ghostnodes.data(), n_ghostnodes.data(), numproc, discret().get_comm());
+    Core::Communication::sum_all(
+        my_n_elements.data(), n_elements.data(), numproc, discret().get_comm());
+    Core::Communication::sum_all(
+        my_n_ghostele.data(), n_ghostele.data(), numproc, discret().get_comm());
 
-    discret().get_comm().SumAll(my_s_nodes.data(), s_nodes.data(), numproc);
-    discret().get_comm().SumAll(my_s_ghostnodes.data(), s_ghostnodes.data(), numproc);
-    discret().get_comm().SumAll(my_s_elements.data(), s_elements.data(), numproc);
-    discret().get_comm().SumAll(my_s_ghostele.data(), s_ghostele.data(), numproc);
+    Core::Communication::sum_all(my_s_nodes.data(), s_nodes.data(), numproc, discret().get_comm());
+    Core::Communication::sum_all(
+        my_s_ghostnodes.data(), s_ghostnodes.data(), numproc, discret().get_comm());
+    Core::Communication::sum_all(
+        my_s_elements.data(), s_elements.data(), numproc, discret().get_comm());
+    Core::Communication::sum_all(
+        my_s_ghostele.data(), s_ghostele.data(), numproc, discret().get_comm());
 
-    discret().get_comm().SumAll(my_m_nodes.data(), m_nodes.data(), numproc);
-    discret().get_comm().SumAll(my_m_ghostnodes.data(), m_ghostnodes.data(), numproc);
-    discret().get_comm().SumAll(my_m_elements.data(), m_elements.data(), numproc);
-    discret().get_comm().SumAll(my_m_ghostele.data(), m_ghostele.data(), numproc);
+    Core::Communication::sum_all(my_m_nodes.data(), m_nodes.data(), numproc, discret().get_comm());
+    Core::Communication::sum_all(
+        my_m_ghostnodes.data(), m_ghostnodes.data(), numproc, discret().get_comm());
+    Core::Communication::sum_all(
+        my_m_elements.data(), m_elements.data(), numproc, discret().get_comm());
+    Core::Communication::sum_all(
+        my_m_ghostele.data(), m_ghostele.data(), numproc, discret().get_comm());
 
     if (myrank == 0)
     {
@@ -615,7 +624,7 @@ void Mortar::Interface::communicate_quad_slave_status_among_all_procs()
 {
   int localstatus = static_cast<int>(quadslave_);
   int globalstatus = 0;
-  get_comm().SumAll(&localstatus, &globalstatus, 1);
+  Core::Communication::sum_all(&localstatus, &globalstatus, 1, get_comm());
   quadslave_ = static_cast<bool>(globalstatus);
 }
 
@@ -1012,8 +1021,8 @@ std::shared_ptr<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_bin
   double globmax[3];
 
   // do the necessary communication
-  get_comm().MinAll(locmin, globmin, 3);
-  get_comm().MaxAll(locmax, globmax, 3);
+  Core::Communication::min_all(locmin, globmin, 3, get_comm());
+  Core::Communication::max_all(locmax, globmax, 3, get_comm());
 
   // compute cutoff radius:
   double global_slave_max_edge_size = -1.0;
@@ -1032,7 +1041,7 @@ std::shared_ptr<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_bin
   }
 
   double cutoff = -1.0;
-  get_comm().MaxAll(&global_slave_max_edge_size, &cutoff, 1);
+  Core::Communication::max_all(&global_slave_max_edge_size, &cutoff, 1, get_comm());
 
   // extend cutoff based on problem interface velocity
   // --> only for contact problems
@@ -1922,12 +1931,12 @@ std::shared_ptr<Epetra_Map> Mortar::Interface::redistribute_lag_mult_sets() cons
   }
 
   std::vector<int> g_related_gids;
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   for (int p = 0; p < Core::Communication::num_mpi_ranks(get_comm()); ++p)
   {
     int num_mygids = plmdofmap_->NumMyElements();
 
-    get_comm().Broadcast(&num_mygids, 1, p);
+    Core::Communication::broadcast(&num_mygids, 1, p, get_comm());
     // skip processors which hold no correlation info
     if (num_mygids == 0) continue;
     g_related_gids.resize(2 * num_mygids);
@@ -1937,7 +1946,7 @@ std::shared_ptr<Epetra_Map> Mortar::Interface::redistribute_lag_mult_sets() cons
     if (p == Core::Communication::my_mpi_rank(get_comm()))
       for (std::size_t i = 0; i < my_related_gids.size(); ++i)
         g_related_gids[i] = my_related_gids[i];
-    get_comm().Broadcast(g_related_gids.data(), 2 * num_mygids, p);
+    Core::Communication::broadcast(g_related_gids.data(), 2 * num_mygids, p, get_comm());
 
     for (int i = 0; i < num_mygids; ++i)
     {
@@ -1949,7 +1958,7 @@ std::shared_ptr<Epetra_Map> Mortar::Interface::redistribute_lag_mult_sets() cons
       if (my_sllid != -1) lmdof[my_sllid] = g_related_gids[2 * i];
     }
     // wait for the arrival of all procs
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
   }
 
   // create deterministic interface LM map
@@ -2139,7 +2148,7 @@ void Mortar::Interface::set_element_areas()
 void Mortar::Interface::evaluate_geometry(std::vector<std::shared_ptr<Mortar::IntCell>>& intcells)
 {
   // time measurement
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   const double t_start = Teuchos::Time::wallTime();
 
   // check
@@ -2226,7 +2235,7 @@ void Mortar::Interface::evaluate_geometry(std::vector<std::shared_ptr<Mortar::In
   }  // end sele loop
 
   // time measurement
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   const double evaltime = Teuchos::Time::wallTime() - t_start;
 
   // time output

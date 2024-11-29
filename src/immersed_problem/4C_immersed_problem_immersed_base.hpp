@@ -808,7 +808,7 @@ namespace Immersed
 
         // wait for all communication to finish
         exporter.wait(request);
-        comm.Barrier();
+        Core::Communication::barrier(comm);
       }  // only if num procs > 1
 
       if (mysearchboxgeomsize > 0)
@@ -1129,7 +1129,7 @@ namespace Immersed
 
         // wait for all communication to finish
         exporter.wait(request);
-        comm.Barrier();
+        Core::Communication::barrier(comm);
       }  // only if numproc > 1
 
     }  // end for irobin
@@ -1533,7 +1533,7 @@ namespace Immersed
 
         // wait for all communication to finish
         exporter.wait(request);
-        comm.Barrier();
+        Core::Communication::barrier(comm);
       }  // only if numproc > 1
 
     }  // loop over all procs

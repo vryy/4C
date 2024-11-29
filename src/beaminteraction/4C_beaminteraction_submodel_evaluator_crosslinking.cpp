@@ -184,7 +184,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
   int loc_newlinks = static_cast<int>(newlinker.size() > 0);
   // global flag
   int g_newlinks = 0;
-  bin_discret().get_comm().MaxAll(&loc_newlinks, &g_newlinks, 1);
+  Core::Communication::max_all(&loc_newlinks, &g_newlinks, 1, bin_discret().get_comm());
 
   newlinker.clear();
 
@@ -489,7 +489,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_initial_linke
     }
 
     // first: proc i tells all procs how many pairs it has
-    com.Broadcast(&numpairs, 1, iproc);
+    Core::Communication::broadcast(&numpairs, 1, iproc, com);
     // second: proc i tells all procs which pairs it has
     elegid_1_i.resize(numpairs);
     elegid_2_i.resize(numpairs);
@@ -498,12 +498,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_initial_linke
     type_i.resize(numpairs);
     mat_i.resize(numpairs);
 
-    com.Broadcast(elegid_1_i.data(), numpairs, iproc);
-    com.Broadcast(elegid_2_i.data(), numpairs, iproc);
-    com.Broadcast(locbspot_1_i.data(), numpairs, iproc);
-    com.Broadcast(locbspot_2_i.data(), numpairs, iproc);
-    com.Broadcast(type_i.data(), numpairs, iproc);
-    com.Broadcast(mat_i.data(), numpairs, iproc);
+    Core::Communication::broadcast(elegid_1_i.data(), numpairs, iproc, com);
+    Core::Communication::broadcast(elegid_2_i.data(), numpairs, iproc, com);
+    Core::Communication::broadcast(locbspot_1_i.data(), numpairs, iproc, com);
+    Core::Communication::broadcast(locbspot_2_i.data(), numpairs, iproc, com);
+    Core::Communication::broadcast(type_i.data(), numpairs, iproc, com);
+    Core::Communication::broadcast(mat_i.data(), numpairs, iproc, com);
 
     elegid_1.insert(elegid_1.end(), elegid_1_i.begin(), elegid_1_i.end());
     elegid_2.insert(elegid_2.end(), elegid_2_i.begin(), elegid_2_i.end());
@@ -645,8 +645,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup_my_initial_double_b
   // initialize std::vector for communication
   std::vector<int> numnewlinks(Core::Communication::num_mpi_ranks(com), 0);
   // communicate
-  com.GatherAll(nummynewlinks.data(), numnewlinks.data(), nummynewlinks.size());
-  com.Barrier();
+  Core::Communication::gather_all(
+      nummynewlinks.data(), numnewlinks.data(), nummynewlinks.size(), com);
+  Core::Communication::barrier(com);
 
   // calculate starting index on myrank
   int mystartgid = 0;
@@ -2039,7 +2040,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
   //  /*the global flag is set to the maximal value of any local flag
   //   * i.e. if on any processor loc_changed_maps == true, the flag g_changed_maps is set to
   //   * one*/
-  //  BinDiscret().Comm().MaxAll( &loc_changed_maps, &g_changed_maps, 1 );
+  //  Core::Communication::max_all( &loc_changed_maps, &g_changed_maps, 1 , BinDiscret().Comm());
   //
   //  if ( g_changed_maps )
   cl_exporter_ = std::make_shared<Core::Communication::Exporter>(
@@ -2095,7 +2096,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
   //  /*the global flag is set to the maximal value of any local flag
   //   * i.e. if on any processor loc_changed_maps == true, the flag g_changed_maps is set to
   //   * one*/
-  //  discret().Comm().MaxAll( &loc_changed_maps, &g_changed_maps, 1 );
+  //  Core::Communication::max_all( &loc_changed_maps, &g_changed_maps, 1 , discret().Comm());
   //
   //  if ( g_changed_maps )
   beam_exporter_ = std::make_shared<Core::Communication::Exporter>(
@@ -3675,7 +3676,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_bin_ids(
 
   // ---- prepare receiving procs -----
   std::vector<int> summedtargets(numproc, 0);
-  discret().get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+  Core::Communication::sum_all(
+      targetprocs.data(), summedtargets.data(), numproc, discret().get_comm());
 
   // ---- receive ----- (we do not need to unpack anything)
   for (int rec = 0; rec < summedtargets[myrank]; ++rec)
@@ -3970,7 +3972,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
   // -----------------------------------------------------------------------
   // ---- prepare receiving procs -----
   std::vector<int> summedtargets(numproc, 0);
-  discret_ptr()->get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+  Core::Communication::sum_all(
+      targetprocs.data(), summedtargets.data(), numproc, discret_ptr()->get_comm());
 
   // myrank receive all packs that are sent to him
   for (int rec = 0; rec < summedtargets[g_state().get_my_rank()]; ++rec)
@@ -4083,7 +4086,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
     targetprocs[prociter->first] = 1;
   // store number of messages myrank receives
   summedtargets.resize(numproc, 0);
-  discret().get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+  Core::Communication::sum_all(
+      targetprocs.data(), summedtargets.data(), numproc, discret().get_comm());
 }
 
 /*-----------------------------------------------------------------------------*
@@ -4166,7 +4170,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::wait(
   for (int i = 0; i < length; ++i) exporter.wait(request[i]);
 
   // note: if we have done everything correct, this should be a no time operation
-  bin_discret().get_comm().Barrier();
+  Core::Communication::barrier(bin_discret().get_comm());
 }
 
 /*----------------------------------------------------------------------------*

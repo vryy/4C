@@ -342,11 +342,11 @@ namespace BEAMINTERACTION
 
         // proc i tells all procs how many nodegids it has
         int numnodes = requirednodes.size();
-        discret.get_comm().Broadcast(&numnodes, 1, iproc);
+        Core::Communication::broadcast(&numnodes, 1, iproc, discret.get_comm());
 
         // proc i actually sends nodegids
         requirednodes.resize(numnodes);
-        discret.get_comm().Broadcast(requirednodes.data(), numnodes, iproc);
+        Core::Communication::broadcast(requirednodes.data(), numnodes, iproc, discret.get_comm());
 
         std::set<int> sdata;
         std::set<int> rdata;

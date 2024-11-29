@@ -641,7 +641,7 @@ std::shared_ptr<Epetra_Map> Core::LinAlg::split_map(
   }
   myaugids.resize(count);
   int gcount;
-  Comm.SumAll(&count, &gcount, 1);
+  Core::Communication::sum_all(&count, &gcount, 1, Comm);
   std::shared_ptr<Epetra_Map> Aunknown =
       std::make_shared<Epetra_Map>(gcount, count, myaugids.data(), 0, Comm);
 

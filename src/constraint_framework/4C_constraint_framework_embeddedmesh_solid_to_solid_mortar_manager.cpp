@@ -120,7 +120,8 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::setup(
   // to construct the lambda_dof_rowmap_.
   std::vector<int> lambda_dof_per_rank(Core::Communication::num_mpi_ranks(discret_->get_comm()), 0);
   int temp_my_n_lambda_dof = (int)n_lambda_dof;
-  discret_->get_comm().GatherAll(&temp_my_n_lambda_dof, &lambda_dof_per_rank[0], 1);
+  Core::Communication::gather_all(
+      &temp_my_n_lambda_dof, &lambda_dof_per_rank[0], 1, discret_->get_comm());
 
   // Get the start GID for the lambda DOFs on this processor.
   int my_lambda_gid_start_value = start_value_lambda_gid_;

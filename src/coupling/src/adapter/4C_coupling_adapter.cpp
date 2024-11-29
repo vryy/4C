@@ -60,8 +60,8 @@ void Coupling::Adapter::Coupling::setup_condition_coupling(
   int localslavecount = static_cast<int>(slavenodes.size());
   int slavecount;
 
-  masterdis.get_comm().SumAll(&localmastercount, &mastercount, 1);
-  slavedis.get_comm().SumAll(&localslavecount, &slavecount, 1);
+  Core::Communication::sum_all(&localmastercount, &mastercount, 1, masterdis.get_comm());
+  Core::Communication::sum_all(&localslavecount, &slavecount, 1, slavedis.get_comm());
 
   if (mastercount != slavecount)
     FOUR_C_THROW("got %d master nodes but %d slave nodes for coupling", mastercount, slavecount);
@@ -188,8 +188,8 @@ void Coupling::Adapter::Coupling::setup_constrained_condition_coupling(
   int localslavecount = static_cast<int>(slavenodes.size());
   int slavecount;
 
-  masterdis.get_comm().SumAll(&localmastercount, &mastercount, 1);
-  slavedis.get_comm().SumAll(&localslavecount, &slavecount, 1);
+  Core::Communication::sum_all(&localmastercount, &mastercount, 1, masterdis.get_comm());
+  Core::Communication::sum_all(&localslavecount, &slavecount, 1, slavedis.get_comm());
 
   if (mastercount != slavecount and matchall)
     FOUR_C_THROW("got %d master nodes but %d slave nodes for coupling", mastercount, slavecount);

@@ -2599,7 +2599,8 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   double top_force_global = 0.0;
 
   // sum all nodal forces (top_force_local) in one global vector (top_force_global)
-  structure_field()->discretization()->get_comm().SumAll(&top_force_local, &top_force_global, 1);
+  Core::Communication::sum_all(
+      &top_force_local, &top_force_global, 1, structure_field()->discretization()->get_comm());
 
   // --------------------------------------------- reaction force of whole body
   // due to symmetry only 1/8 is simulated, i.e. only 1/4 of the surface is considered

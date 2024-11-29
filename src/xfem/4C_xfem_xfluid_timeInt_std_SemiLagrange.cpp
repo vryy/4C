@@ -1889,7 +1889,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
     }                 // end loop over number of nodes to get
 
     // processors wait for each other
-    discret_->get_comm().Barrier();
+    Core::Communication::barrier(discret_->get_comm());
   }  // end loop over processors
 }  // end export_alternativ_algo_data
 
@@ -1939,7 +1939,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
     if (allProcsDone == false) procDone = false;
 
     // processors wait for each other
-    discret_->get_comm().Barrier();
+    Core::Communication::barrier(discret_->get_comm());
   }
 
   /*--------------------------------------*
@@ -2015,7 +2015,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
     }  // end loop over number of points to get
 
     // processors wait for each other
-    discret_->get_comm().Barrier();
+    Core::Communication::barrier(discret_->get_comm());
   }  // end if procfinished == false
 }  // end export_iter_data
 

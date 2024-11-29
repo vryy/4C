@@ -289,7 +289,7 @@ bool Core::LinAlg::SparseMatrixBase::is_dbc_applied(
 
   int lisdbc = static_cast<int>(isdbc);
   int gisdbc = 0;
-  Comm().MinAll(&lisdbc, &gisdbc, 1);
+  Core::Communication::min_all(&lisdbc, &gisdbc, 1, Comm());
 
   return (gisdbc == 1);
 }

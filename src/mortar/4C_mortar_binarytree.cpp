@@ -489,7 +489,7 @@ void Mortar::BinaryTree::init()
   // print binarytree to std::cout
   for (int k=0;k<Comm().NumProc();++k)
   {
-    Comm().Barrier();
+    Core::Communication::barrier(Comm());
     if (Core::Communication::my_mpi_rank(Comm())==k)
     {
       std::cout << "\n" << Core::Communication::my_mpi_rank(Comm()) << " Print tree with direct
@@ -498,12 +498,12 @@ void Mortar::BinaryTree::init()
       std::cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
       print_tree(mroot_);
     }
-    Comm().Barrier();
+    Core::Communication::barrier(Comm());
   }
 
   for (int k=0;k<Comm().NumProc();++k)
   {
-    Comm().Barrier();
+    Core::Communication::barrier(Comm());
     if (Core::Communication::my_mpi_rank(Comm())==k)
     {
       std::cout << "\n" << Core::Communication::my_mpi_rank(Comm()) << " Print tree with print
@@ -511,7 +511,7 @@ void Mortar::BinaryTree::init()
   Tree:"; print_tree_of_map(streenodesmap_); std::cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
       print_tree_of_map(mtreenodesmap_);
     }
-    Comm().Barrier();
+    Core::Communication::barrier(Comm());
   }
   */
 

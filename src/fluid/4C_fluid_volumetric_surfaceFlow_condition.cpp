@@ -382,9 +382,9 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::center_of_mass_calculation(
     double par_n_val = 0.0;
 
     // Summ all of the local processor values in one values
-    discret_->get_comm().SumAll(&act_val, &par_val, 1);
-    discret_->get_comm().SumAll(&act_n_val, &par_n_val, 1);
-    discret_->get_comm().SumAll(&act_area, &par_area, 1);
+    Core::Communication::sum_all(&act_val, &par_val, 1, discret_->get_comm());
+    Core::Communication::sum_all(&act_n_val, &par_n_val, 1, discret_->get_comm());
+    Core::Communication::sum_all(&act_area, &par_area, 1, discret_->get_comm());
 
     // finally evaluate the actual center of mass and avarage normal
     (*coords)[i] = par_val / par_area;
@@ -502,7 +502,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
       double par_val = 0.0;
 
       // Summ all of the local processor values in one values
-      discret_->get_comm().SumAll(&act_val, &par_val, 1);
+      Core::Communication::sum_all(&act_val, &par_val, 1, discret_->get_comm());
 
       // set the coordinate of the nodes on the local processor
       (it->second)[i] = par_val;
@@ -1354,7 +1354,7 @@ double FLD::Utils::FluidVolumetricSurfaceFlowBc::flow_rate_calculation(
   }
 
   double flowrate = 0.0;
-  dofrowmap->Comm().SumAll(&local_flowrate, &flowrate, 1);
+  Core::Communication::sum_all(&local_flowrate, &flowrate, 1, dofrowmap->Comm());
 
   return flowrate;
 
@@ -1592,7 +1592,7 @@ double FLD::Utils::FluidVolumetricSurfaceFlowBc::area(
   int theproc = -1;  // the lowest proc that has the desired information
   std::vector<double> alldens(numproc);
 
-  discret_->get_comm().GatherAll(&density, alldens.data(), 1);
+  Core::Communication::gather_all(&density, alldens.data(), 1, discret_->get_comm());
   for (int i = 0; i < numproc; i++)
     if (alldens[i] > 0.0)
     {
@@ -1602,13 +1602,13 @@ double FLD::Utils::FluidVolumetricSurfaceFlowBc::area(
   if (theproc < 0) FOUR_C_THROW("Something parallel went terribly wrong!");
 
   // do the actual communication of density ...
-  discret_->get_comm().Broadcast(&density, 1, theproc);
+  Core::Communication::broadcast(&density, 1, theproc, discret_->get_comm());
   // ... and viscosity
-  discret_->get_comm().Broadcast(&viscosity, 1, theproc);
+  Core::Communication::broadcast(&viscosity, 1, theproc, discret_->get_comm());
 
   // get total area in parallel case
   double pararea = 0.0;
-  discret_->get_comm().SumAll(&actarea, &pararea, 1);
+  Core::Communication::sum_all(&actarea, &pararea, 1, discret_->get_comm());
 
   if (myrank_ == 0)
   {

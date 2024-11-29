@@ -10,6 +10,7 @@
 #include "4C_beam3_base.hpp"
 #include "4C_beam3_reissner.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
@@ -1514,7 +1515,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
 
   std::vector<std::vector<double>> global_sum(3, std::vector<double>(3, 0.0));
   for (int dir = 0; dir < 3; ++dir)
-    discretization_->get_comm().SumAll(fint_sum[dir].data(), global_sum[dir].data(), 3);
+    Core::Communication::sum_all(
+        fint_sum[dir].data(), global_sum[dir].data(), 3, discretization_->get_comm());
 
   // loop over all my elements and build force sum of myrank's cut element
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
@@ -1632,7 +1634,7 @@ int BeamDiscretizationRuntimeOutputWriter::get_global_number_of_gauss_points_per
 {
   int my_num_gp_signed = (int)my_num_gp;
   int global_num_gp = 0;
-  discretization_->get_comm().MaxAll(&my_num_gp_signed, &global_num_gp, 1);
+  Core::Communication::max_all(&my_num_gp_signed, &global_num_gp, 1, discretization_->get_comm());
 
   // Safety checks.
   if (my_num_gp_signed > 0 and my_num_gp_signed != global_num_gp)
