@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 06/2018 |
+ | constructor                                                               |
  *---------------------------------------------------------------------------*/
 Mat::PAR::ParticleMaterialBase::ParticleMaterialBase(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),

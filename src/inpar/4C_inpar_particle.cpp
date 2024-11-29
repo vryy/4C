@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
- | set the particle parameters                                sfuchs 03/2018 |
+ | set the particle parameters                                               |
  *---------------------------------------------------------------------------*/
 void Inpar::PARTICLE::set_valid_parameters(Teuchos::ParameterList& list)
 {
@@ -548,7 +548,7 @@ void Inpar::PARTICLE::set_valid_parameters(Teuchos::ParameterList& list)
 }
 
 /*---------------------------------------------------------------------------*
- | set the particle conditions                                sfuchs 08/2019 |
+ | set the particle conditions                                               |
  *---------------------------------------------------------------------------*/
 void Inpar::PARTICLE::set_valid_conditions(
     std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)

@@ -14,12 +14,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
- | define static class member                                 sfuchs 06/2018 |
+ | define static class member                                                |
  *---------------------------------------------------------------------------*/
 Mat::ParticleMaterialSPHFluidType Mat::ParticleMaterialSPHFluidType::instance_;
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 06/2018 |
+ | constructor                                                               |
  *---------------------------------------------------------------------------*/
 Mat::PAR::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(
     const Core::Mat::PAR::Parameter::Data& matdata)
@@ -38,7 +38,7 @@ Mat::PAR::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(
 }
 
 /*---------------------------------------------------------------------------*
- | create material instance of matching type with parameters  sfuchs 06/2018 |
+ | create material instance of matching type with parameters                 |
  *---------------------------------------------------------------------------*/
 std::shared_ptr<Core::Mat::Material> Mat::PAR::ParticleMaterialSPHFluid::create_material()
 {
@@ -56,7 +56,7 @@ Core::Communication::ParObject* Mat::ParticleMaterialSPHFluidType::create(
 }
 
 /*---------------------------------------------------------------------------*
- | constructor (empty material object)                        sfuchs 06/2018 |
+ | constructor (empty material object)                                       |
  *---------------------------------------------------------------------------*/
 Mat::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid() : params_(nullptr)
 {
@@ -64,7 +64,7 @@ Mat::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid() : params_(nullptr)
 }
 
 /*---------------------------------------------------------------------------*
- | constructor (with given material parameters)               sfuchs 06/2018 |
+ | constructor (with given material parameters)                              |
  *---------------------------------------------------------------------------*/
 Mat::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(Mat::PAR::ParticleMaterialSPHFluid* params)
     : params_(params)
@@ -73,7 +73,7 @@ Mat::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(Mat::PAR::ParticleMateri
 }
 
 /*---------------------------------------------------------------------------*
- | pack                                                       sfuchs 06/2018 |
+ | pack                                                                      |
  *---------------------------------------------------------------------------*/
 void Mat::ParticleMaterialSPHFluid::pack(Core::Communication::PackBuffer& data) const
 {
@@ -88,7 +88,7 @@ void Mat::ParticleMaterialSPHFluid::pack(Core::Communication::PackBuffer& data) 
 }
 
 /*---------------------------------------------------------------------------*
- | unpack                                                     sfuchs 06/2018 |
+ | unpack                                                                    |
  *---------------------------------------------------------------------------*/
 void Mat::ParticleMaterialSPHFluid::unpack(Core::Communication::UnpackBuffer& buffer)
 {

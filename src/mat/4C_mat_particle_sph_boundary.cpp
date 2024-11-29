@@ -14,12 +14,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
- | define static class member                                 sfuchs 06/2018 |
+ | define static class member                                                |
  *---------------------------------------------------------------------------*/
 Mat::ParticleMaterialSPHBoundaryType Mat::ParticleMaterialSPHBoundaryType::instance_;
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 06/2018 |
+ | constructor                                                               |
  *---------------------------------------------------------------------------*/
 Mat::PAR::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
     const Core::Mat::PAR::Parameter::Data& matdata)
@@ -29,7 +29,7 @@ Mat::PAR::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
 }
 
 /*---------------------------------------------------------------------------*
- | create material instance of matching type with parameters  sfuchs 06/2018 |
+ | create material instance of matching type with parameters                 |
  *---------------------------------------------------------------------------*/
 std::shared_ptr<Core::Mat::Material> Mat::PAR::ParticleMaterialSPHBoundary::create_material()
 {
@@ -47,7 +47,7 @@ Core::Communication::ParObject* Mat::ParticleMaterialSPHBoundaryType::create(
 }
 
 /*---------------------------------------------------------------------------*
- | constructor (empty material object)                        sfuchs 06/2018 |
+ | constructor (empty material object)                                       |
  *---------------------------------------------------------------------------*/
 Mat::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary() : params_(nullptr)
 {
@@ -55,7 +55,7 @@ Mat::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary() : params_(nullpt
 }
 
 /*---------------------------------------------------------------------------*
- | constructor (with given material parameters)               sfuchs 06/2018 |
+ | constructor (with given material parameters)                              |
  *---------------------------------------------------------------------------*/
 Mat::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
     Mat::PAR::ParticleMaterialSPHBoundary* params)
@@ -65,7 +65,7 @@ Mat::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
 }
 
 /*---------------------------------------------------------------------------*
- | pack                                                       sfuchs 06/2018 |
+ | pack                                                                      |
  *---------------------------------------------------------------------------*/
 void Mat::ParticleMaterialSPHBoundary::pack(Core::Communication::PackBuffer& data) const
 {
@@ -80,7 +80,7 @@ void Mat::ParticleMaterialSPHBoundary::pack(Core::Communication::PackBuffer& dat
 }
 
 /*---------------------------------------------------------------------------*
- | unpack                                                     sfuchs 06/2018 |
+ | unpack                                                                    |
  *---------------------------------------------------------------------------*/
 void Mat::ParticleMaterialSPHBoundary::unpack(Core::Communication::UnpackBuffer& buffer)
 {
