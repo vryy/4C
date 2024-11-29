@@ -1,7 +1,18 @@
+<h1 align="center">
+  4C
+</h1>
+
+<div align="center">
+
+[![workflows/checkcode](https://github.com/4C-multiphysics/4C/actions/workflows/checkcode.yml/badge.svg?branch=main)](https://github.com/4C-multiphysics/4C/actions/workflows/checkcode.yml?query=branch%3Amain)
+[![workflows/buildtest](https://github.com/4C-multiphysics/4C/actions/workflows/buildtest.yml/badge.svg?branch=main)](https://github.com/4C-multiphysics/4C/actions/workflows/buildtest.yml?query=branch%3Amain)
+[![workflows/nightly_tests](https://github.com/4C-multiphysics/4C/actions/workflows/nightly_tests.yml/badge.svg?branch=main)](https://github.com/4C-multiphysics/4C/actions/workflows/nightly_tests.yml?query=branch%3Amain)
+[![workflows/documentation](https://github.com/4C-multiphysics/4C/actions/workflows/documentation.yml/badge.svg?branch=main)](https://github.com/4C-multiphysics/4C/actions/workflows/documentation.yml?query=branch%3Amain)
+
+</div>
+
 > [!WARNING]
 > We are currently migrating the project from GitLab. Links might be out-dated.
-
-# 4C
 
 4C ("Comprehensive Computational Community Code") is a parallel multiphysics research code
 to address a plethora of physical problems by means of _computational mechanics_.
