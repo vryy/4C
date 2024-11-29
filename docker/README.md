@@ -20,7 +20,7 @@ docker build --tag 4c-dependencies --file docker/Dockerfile .
 
 ```bash
 cd <project_root>
-find dependencies docker -not -wholename '*/trilinos_develop/*' -not -name 'README.md' -type f -exec sha1sum {} \; | sort | sha1sum | cut -c -8
+./docker/compute_dependencies_hash.sh
 ```
 
 1. Update the `FOUR_C_DOCKER_DEPENDENCIES_HASH` variable in `docker.yml` and all mentions of the old hash (search and replace) in all workflows `.github/workflows` file (The hash should only occur in `container.image`).

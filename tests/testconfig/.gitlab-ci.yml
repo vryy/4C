@@ -37,7 +37,7 @@ variables:
     options: [default, nightly, coverage, trilinos develop]
 
   # Hash of all relevant dependencies for the docker image
-  FOUR_C_DOCKER_DEPENDENCIES_HASH: da17023e
+  FOUR_C_DOCKER_DEPENDENCIES_HASH: 371a2fb9
 
   # Variables for Trilinos pipeline
   # The default Trilinos commit ref the Trilinos pipeline is running on
@@ -46,8 +46,7 @@ variables:
 
 .compute_dependencies_hash: &compute_dependencies_hash
   # compute short hash from contents of folder dependencies and docker (exclude trilinos_config and README.md files)
-  - COMPUTED_DOCKER_DEPENDENCIES_HASH=`find dependencies docker -not -wholename '*/trilinos_develop/*'
-    -not -name 'README.md' -type f -exec sha1sum {} \; | sort | sha1sum | cut -c -8`
+  - COMPUTED_DOCKER_DEPENDENCIES_HASH=`./docker/compute_dependencies_hash.sh`
 
 before_script:
   - git config --global --add safe.directory ${CI_PROJECT_DIR}

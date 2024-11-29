@@ -14,7 +14,6 @@ env:
   REGISTRY: ghcr.io
   PROJECT_NAMESPACE: 4c-multiphysics
   IMAGE_SUFFIX: dependencies
-  FOUR_C_DOCKER_DEPENDENCIES_HASH: da17023e
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -76,7 +75,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           image-name: ${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu20.04
-          dependencies-hash: ${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH}}
+          dependencies-hash: ${{ needs.check-if-ubuntu20_04-build-is-required.outputs.dependencies_hash
+            }}
           ubuntu-version: "20.04"
 
   build-and-push-ubuntu24_04:
@@ -102,7 +102,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           image-name: ${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu24.04
-          dependencies-hash: ${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH}}
+          dependencies-hash: ${{ needs.check-if-ubuntu24_04-build-is-required.outputs.dependencies_hash
+            }}
           ubuntu-version: "24.04"
 
   tag-images-as-latest:
@@ -112,6 +113,11 @@ jobs:
       contents: read
       packages: write
     steps:
+      - uses: actions/checkout@v4
+      - id: compute-dependencies-hash
+        uses: ./.github/actions/compute-and-check-dependencies-hash
+        with:
+          skip-check: 'true'
       - name: Log in to the Container registry
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
@@ -121,12 +127,12 @@ jobs:
       - name: Pull current Ubuntu 20.04 dependencies image and tag it with latest
         run: |
           IMAGE_NAME="${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu20.04"
-          docker pull $IMAGE_NAME:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }}
-          docker image tag $IMAGE_NAME:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }} $IMAGE_NAME:latest
+          docker pull $IMAGE_NAME:${{ steps.compute-dependencies-hash.outputs.computed_dependencies_hash }}
+          docker image tag $IMAGE_NAME:${{ steps.compute-dependencies-hash.outputs.computed_dependencies_hash }} $IMAGE_NAME:latest
           docker push $IMAGE_NAME:latest
       - name: Pull current Ubuntu 24.04 dependencies image and tag it with latest
         run: |
           IMAGE_NAME="${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu24.04"
-          docker pull $IMAGE_NAME:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }}
-          docker image tag $IMAGE_NAME:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }} $IMAGE_NAME:latest
+          docker pull $IMAGE_NAME:${{ steps.compute-dependencies-hash.outputs.computed_dependencies_hash }}
+          docker image tag $IMAGE_NAME:${{ steps.compute-dependencies-hash.outputs.computed_dependencies_hash }} $IMAGE_NAME:latest
           docker push $IMAGE_NAME:latest
