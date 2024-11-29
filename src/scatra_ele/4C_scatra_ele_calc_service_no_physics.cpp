@@ -48,4 +48,4 @@ int Discret::Elements::ScaTraEleCalcNoPhysics<distype, probdim>::evaluate_action
 FOUR_C_NAMESPACE_CLOSE
 
 // include forward declaration of template classes
-#include "4C_scatra_ele_calc_no_physics_fwd.hpp"
+#include "4C_scatra_ele_calc_no_physics.inst.hpp"

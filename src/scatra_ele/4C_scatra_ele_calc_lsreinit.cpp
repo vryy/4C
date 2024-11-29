@@ -1337,7 +1337,7 @@ FOUR_C_NAMESPACE_CLOSE
 
 // template classes
 
-#include "4C_scatra_ele_calc_fwd.hpp"
+#include "4C_scatra_ele_calc.inst.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

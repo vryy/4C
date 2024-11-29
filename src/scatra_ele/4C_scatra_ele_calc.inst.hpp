@@ -5,8 +5,8 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_SCATRA_ELE_CALC_FWD_HPP
-#define FOUR_C_SCATRA_ELE_CALC_FWD_HPP
+#ifndef FOUR_C_SCATRA_ELE_CALC_INST_HPP
+#define FOUR_C_SCATRA_ELE_CALC_INST_HPP
 
 /*----------------------------------------------------------------------*/
 /*! \file

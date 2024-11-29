@@ -873,4 +873,4 @@ int Discret::Elements::plast_eas_type_to_num_eas_v(Discret::Elements::So3PlastEa
 
 FOUR_C_NAMESPACE_CLOSE
 
-#include "4C_so3_ssn_plast_fwd.hpp"
+#include "4C_so3_ssn_plast.inst.hpp"

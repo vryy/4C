@@ -297,4 +297,4 @@ inline int Discret::Elements::So3Poro<So3Ele, distype>::id() const
 
 FOUR_C_NAMESPACE_CLOSE
 
-#include "4C_so3_poro_fwd.hpp"
+#include "4C_so3_poro.inst.hpp"

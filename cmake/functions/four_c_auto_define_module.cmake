@@ -54,13 +54,13 @@ function(four_c_auto_define_module)
     CONFIGURE_DEPENDS *.h *.hpp
     )
 
-  # Remove headers that only contain template instantiations
+  # Remove headers that only contain explicit template instantiations
   list(
     FILTER
     _headers
     EXCLUDE
     REGEX
-    "_fwd\.h(pp)?|\.inst\.[hH]"
+    "\.inst\.h(pp)?"
     )
 
   # Check that every header includes 4C_config.hpp
