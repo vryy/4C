@@ -18,15 +18,34 @@
 #include "4C_scatra_ele_parameter_timint.hpp"
 #include "4C_scatra_timint_ost.hpp"
 #include "4C_utils_parameter_list.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 #include <filesystem>
 
 FOUR_C_NAMESPACE_OPEN
 
-// instantiate static maps
-std::map<int, std::shared_ptr<ScaTra::TimIntOneStepTheta>>
-    Mat::ScatraMultiScaleGP::microdisnum_microtimint_map_;
-std::map<int, int> Mat::ScatraMultiScaleGP::microdisnum_nummacrogp_map_;
+namespace
+{
+  struct GlobalMicroState
+  {
+    //! map between number of micro-scale discretization and micro-scale time integrator
+    std::map<int, std::shared_ptr<ScaTra::TimIntOneStepTheta>> microdisnum_microtimint_map_;
+
+    //! map between number of micro-scale discretization and number of associated macro-scale
+    //! Gauss points
+    std::map<int, int> microdisnum_nummacrogp_map_;
+  };
+
+  // Manage a global state within a singleton
+  GlobalMicroState& global_micro_state()
+  {
+    static auto global_micro_state =
+        Core::Utils::make_singleton_owner([]() { return std::make_unique<GlobalMicroState>(); });
+
+    return *global_micro_state.instance(Core::Utils::SingletonAction::create);
+  }
+
+}  // namespace
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
@@ -58,11 +77,11 @@ Mat::ScatraMultiScaleGP::ScatraMultiScaleGP(
 Mat::ScatraMultiScaleGP::~ScatraMultiScaleGP()
 {
   // decrement number of macro-scale Gauss points associated with micro-scale time integrator
-  --microdisnum_nummacrogp_map_[microdisnum_];
+  --global_micro_state().microdisnum_nummacrogp_map_[microdisnum_];
 
   // once all macro-scale Gauss point submaterials are removed, destruct micro-scale time integrator
-  if (microdisnum_nummacrogp_map_[microdisnum_] == 0)
-    microdisnum_microtimint_map_[microdisnum_] = nullptr;
+  if (global_micro_state().microdisnum_nummacrogp_map_[microdisnum_] == 0)
+    global_micro_state().microdisnum_microtimint_map_[microdisnum_] = nullptr;
 }
 
 /*--------------------------------------------------------------------*
@@ -85,8 +104,9 @@ void Mat::ScatraMultiScaleGP::init()
   hist_ = Core::LinAlg::create_vector(*microdis->dof_row_map(), true);
 
   // set up micro-scale time integrator for micro-scale problem if not already done
-  if (microdisnum_microtimint_map_.find(microdisnum_) == microdisnum_microtimint_map_.end() or
-      microdisnum_microtimint_map_[microdisnum_] == nullptr)
+  if (global_micro_state().microdisnum_microtimint_map_.find(microdisnum_) ==
+          global_micro_state().microdisnum_microtimint_map_.end() or
+      global_micro_state().microdisnum_microtimint_map_[microdisnum_] == nullptr)
   {
     // extract macro-scale parameter list
     const Teuchos::ParameterList& sdyn_macro =
@@ -209,26 +229,28 @@ void Mat::ScatraMultiScaleGP::init()
         Global::Problem::instance(microdisnum_)->fluid_dynamic_params().sublist("TURBULENCE MODEL");
 
     // instantiate and initialize micro-scale time integrator
-    microdisnum_microtimint_map_[microdisnum_] = std::make_shared<ScaTra::TimIntOneStepTheta>(
-        microdis, solver, sdyn_micro, extraparams, nullptr, microdisnum_);
-    microdisnum_microtimint_map_[microdisnum_]->init();
-    microdisnum_microtimint_map_[microdisnum_]->set_number_of_dof_set_velocity(1);
-    microdisnum_microtimint_map_[microdisnum_]->setup();
+    global_micro_state().microdisnum_microtimint_map_[microdisnum_] =
+        std::make_shared<ScaTra::TimIntOneStepTheta>(
+            microdis, solver, sdyn_micro, extraparams, nullptr, microdisnum_);
+    global_micro_state().microdisnum_microtimint_map_[microdisnum_]->init();
+    global_micro_state().microdisnum_microtimint_map_[microdisnum_]->set_number_of_dof_set_velocity(
+        1);
+    global_micro_state().microdisnum_microtimint_map_[microdisnum_]->setup();
 
     // set initial velocity field
-    microdisnum_microtimint_map_[microdisnum_]->set_velocity_field();
+    global_micro_state().microdisnum_microtimint_map_[microdisnum_]->set_velocity_field();
 
     // create counter for number of macro-scale Gauss points associated with micro-scale time
     // integrator
-    microdisnum_nummacrogp_map_[microdisnum_] = 0;
+    global_micro_state().microdisnum_nummacrogp_map_[microdisnum_] = 0;
   }
 
   // increment counter
-  ++microdisnum_nummacrogp_map_[microdisnum_];
+  ++global_micro_state().microdisnum_nummacrogp_map_[microdisnum_];
 
   // extract initial state vectors from micro-scale time integrator
-  phin_->Scale(1., *microdisnum_microtimint_map_[microdisnum_]->phin());
-  phinp_->Scale(1., *microdisnum_microtimint_map_[microdisnum_]->phinp());
+  phin_->Scale(1., *global_micro_state().microdisnum_microtimint_map_[microdisnum_]->phin());
+  phinp_->Scale(1., *global_micro_state().microdisnum_microtimint_map_[microdisnum_]->phinp());
 
   // create new result file
   new_result_file();
@@ -240,7 +262,7 @@ void Mat::ScatraMultiScaleGP::prepare_time_step(const std::vector<double>& phinp
 {
   // extract micro-scale time integrator
   const std::shared_ptr<ScaTra::TimIntOneStepTheta>& microtimint =
-      microdisnum_microtimint_map_[microdisnum_];
+      global_micro_state().microdisnum_microtimint_map_[microdisnum_];
 
   // set current state in micro-scale time integrator
   microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,
@@ -264,7 +286,7 @@ void Mat::ScatraMultiScaleGP::evaluate(const std::vector<double>& phinp_macro, d
 {
   // extract micro-scale time integrator
   const std::shared_ptr<ScaTra::TimIntOneStepTheta>& microtimint =
-      microdisnum_microtimint_map_[microdisnum_];
+      global_micro_state().microdisnum_microtimint_map_[microdisnum_];
 
   // set current state in micro-scale time integrator
   microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,
@@ -310,7 +332,8 @@ void Mat::ScatraMultiScaleGP::evaluate(const std::vector<double>& phinp_macro, d
 double Mat::ScatraMultiScaleGP::evaluate_mean_concentration() const
 {
   // extract micro-scale discretization
-  Core::FE::Discretization& discret = *microdisnum_microtimint_map_[microdisnum_]->discretization();
+  Core::FE::Discretization& discret =
+      *global_micro_state().microdisnum_microtimint_map_[microdisnum_]->discretization();
 
   // set micro-scale state vector
   discret.clear_state();
@@ -343,7 +366,8 @@ double Mat::ScatraMultiScaleGP::evaluate_mean_concentration() const
 double Mat::ScatraMultiScaleGP::evaluate_mean_concentration_time_derivative() const
 {
   // extract micro-scale discretization
-  Core::FE::Discretization& discret = *microdisnum_microtimint_map_[microdisnum_]->discretization();
+  Core::FE::Discretization& discret =
+      *global_micro_state().microdisnum_microtimint_map_[microdisnum_]->discretization();
 
   // set micro-scale state vector
   discret.clear_state();
@@ -382,7 +406,7 @@ void Mat::ScatraMultiScaleGP::update()
 
   // extract micro-scale time integrator
   std::shared_ptr<ScaTra::TimIntOneStepTheta> microtimint =
-      microdisnum_microtimint_map_[microdisnum_];
+      global_micro_state().microdisnum_microtimint_map_[microdisnum_];
 
   // set current state in micro-scale time integrator
   microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,
@@ -494,7 +518,7 @@ void Mat::ScatraMultiScaleGP::collect_and_write_output_data()
   {
     // extract micro-scale time integrator
     std::shared_ptr<ScaTra::TimIntOneStepTheta> microtimint =
-        microdisnum_microtimint_map_[microdisnum_];
+        global_micro_state().microdisnum_microtimint_map_[microdisnum_];
 
     // set current state in micro-scale time integrator
     microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,
@@ -518,7 +542,7 @@ void Mat::ScatraMultiScaleGP::output()
   {
     // extract micro-scale time integrator
     std::shared_ptr<ScaTra::TimIntOneStepTheta> microtimint =
-        microdisnum_microtimint_map_[microdisnum_];
+        global_micro_state().microdisnum_microtimint_map_[microdisnum_];
 
     // set current state in micro-scale time integrator
     microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,
@@ -550,7 +574,7 @@ void Mat::ScatraMultiScaleGP::read_restart()
 {
   // extract micro-scale time integrator
   std::shared_ptr<ScaTra::TimIntOneStepTheta> microtimint =
-      microdisnum_microtimint_map_[microdisnum_];
+      global_micro_state().microdisnum_microtimint_map_[microdisnum_];
 
   // extract restart step
   step_ = Global::Problem::instance()->restart();
@@ -629,7 +653,7 @@ void Mat::ScatraMultiScaleGP::set_time_stepping(const double dt, const double ti
 #endif
 
   std::shared_ptr<ScaTra::TimIntOneStepTheta> microtimint =
-      microdisnum_microtimint_map_[microdisnum_];
+      global_micro_state().microdisnum_microtimint_map_[microdisnum_];
   microtimint->set_dt(dt);
   microtimint->set_time_step(time, step);
 }

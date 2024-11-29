@@ -92,13 +92,6 @@ namespace Mat
     void set_time_stepping(double dt, double time, int step);
 
    private:
-    //! map between number of micro-scale discretization and micro-scale time integrator
-    static std::map<int, std::shared_ptr<ScaTra::TimIntOneStepTheta>> microdisnum_microtimint_map_;
-
-    //! map between number of micro-scale discretization and number of associated macro-scale Gauss
-    //! points
-    static std::map<int, int> microdisnum_nummacrogp_map_;
-
     //! create new result file
     void new_result_file();
 
@@ -160,6 +153,7 @@ namespace Mat
     //! indicates if macro dis deforms
     const bool is_ale_;
   };  // class Mat::ScatraMultiScaleGP
+
 }  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE
 
