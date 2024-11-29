@@ -20,7 +20,7 @@ runs:
         echo "dependencies_hash=$COMPUTED_DOCKER_DEPENDENCIES_HASH" >> $GITHUB_OUTPUT
       shell: bash
     - id: check-if-dependencies-hash-matches
-      if: ${{ inputs.skip-check == 'true' }}
+      if: ${{ inputs.skip-check != 'true' }}
       name: Check if the dependencies hash matches
       shell: bash
       # Note: The dependencies hash is stored in the environment variable DEPENDENCIES_HASH in the docker image
