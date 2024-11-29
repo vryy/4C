@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
- | entry point for TSI in DRT                                dano 12/09 |
+ | entry point for TSI in discretization management          dano 12/09 |
  *----------------------------------------------------------------------*/
 void tsi_dyn_drt()
 {

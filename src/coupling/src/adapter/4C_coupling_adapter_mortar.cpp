@@ -660,7 +660,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
   // dealing with the classical finite element evaluation. Thus, it is
   // very important that we apply the nodal relocation to BOTH the
   // Mortar::Node(s) in the meshtying interface discretization AND to the
-  // DRT:Nodes in the underlying problem discretization.
+  // Nodes in the underlying problem discretization.
   // Finally, we have to ask ourselves whether the node column distribution
   // of the slave nodes in the interface discretization is IDENTICAL
   // to the distribution in the underlying problem discretization. This

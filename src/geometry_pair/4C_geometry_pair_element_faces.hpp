@@ -40,7 +40,7 @@ namespace Inpar
 namespace GEOMETRYPAIR
 {
   /**
-   * \brief This structure "converts" a DRT face element type to the underlying volume element.
+   * \brief This structure "converts" a face element type to the underlying volume element.
    */
   template <Core::FE::CellType discretization>
   struct FaceDiscretizationTypeToVolumeElement
@@ -88,7 +88,7 @@ namespace GEOMETRYPAIR
    public:
     /**
      * \brief Constructor.
-     * @param core_element (in) Pointer to the DRT element.
+     * @param core_element (in) Pointer to the element.
      */
     FaceElement(const std::shared_ptr<const Core::Elements::Element>& core_element)
         : core_element_(core_element), part_of_pair_(false), patch_dof_gid_(){};
@@ -99,7 +99,7 @@ namespace GEOMETRYPAIR
     virtual ~FaceElement() = default;
 
     /**
-     * \brief Get the RCP to the DRT element.
+     * \brief Get the pointer to the element.
      */
     const Core::Elements::Element* get_element() const { return core_element_.get(); }
 
@@ -497,7 +497,7 @@ namespace GEOMETRYPAIR
 
   /**
    * \brief Create the templated version of the face element.
-   * @param core_element (in) Pointer to the DRT element.
+   * @param core_element (in) Pointer to the element.
    * @param fad_order (in) Order of the created FAD type (0 means double).
    * @param surface_normal_strategy (in) strategy to be used for surface normals.
    * @return RCP to the created GEOMETRYPAIR FaceElement.

@@ -1805,7 +1805,7 @@ int main(int argc, char** argv)
   // command line processor to deal with arguments
   Teuchos::CommandLineProcessor my_comlinproc;
   my_comlinproc.setDocString(
-      "Post DRT monitoring filter\n\nwrite nodal result data of specified node into outfile.mon");
+      "Post monitoring filter\n\nwrite nodal result data of specified node into outfile.mon");
 
   bool required = true;
   /* Set an additional integer command line option which is the global node Id

@@ -459,7 +459,7 @@ namespace Discret
       /*!
         \brief evaluate function for fluid element
 
-        Specific evaluate function without any knowledge about DRT objects. This
+        Specific evaluate function without any knowledge about discretization objects. This
         way the element evaluation is independent of the specific mesh storage.
        */
       virtual int evaluate(Teuchos::ParameterList& params,

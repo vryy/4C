@@ -45,11 +45,11 @@ namespace GEOMETRYPAIR
   };
 
   /**
-   * \brief This structure "converts" the DRT discretization type to a geometry type.
+   * \brief This structure "converts" the discretization type to a geometry type.
    *
    * For some geometry pairs we need to know if a geometry is a triangle / a quad / tetrahedra or
    * hexahedron (linear, quadratic, ...) this structure "returns" the correct type depending on the
-   * DRT discretization type of the element.
+   * discretization type of the element.
    */
   template <Core::FE::CellType discretization>
   struct ElementDiscretizationToGeometryType

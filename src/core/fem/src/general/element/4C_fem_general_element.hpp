@@ -144,7 +144,7 @@ namespace Core::Elements
   };
 
   /*!
-  \brief A virtual class all elements that are used in DRT have to implement
+  \brief A virtual class all elements used in the discretization management have to implement
 
   This is the pure virtual base class for all finite elements to be used with
   the Core::FE::Discretization. Every element (and boundary condition) to be used
@@ -1173,7 +1173,8 @@ might become invalid after a redistribution of the discretization.
 
 
   /*!
-  \brief A virtual class all face elements that are used in DRT have to implement
+  \brief A virtual class all face elements used in the discretization management module have to
+  implement
 
   This is the base class for all face elements. Every element that is attached to another
   (parent) element needs to implement this class, in particular boundary elements used for

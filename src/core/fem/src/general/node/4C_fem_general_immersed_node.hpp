@@ -35,7 +35,7 @@ namespace Core::Nodes
   };
 
   /*!
-  \brief A virtual class all nodes that are used in DRT have to implement
+  \brief A virtual class all nodes used in the discretization management module have to implement
 
   */
   class ImmersedNode : public Node

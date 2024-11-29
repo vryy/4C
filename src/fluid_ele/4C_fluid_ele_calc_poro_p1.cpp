@@ -190,7 +190,7 @@ int Discret::Elements::FluidEleCalcPoroP1<distype>::evaluate(Discret::Elements::
 
   Base::pre_evaluate(params, ele, discretization);
 
-  // call inner evaluate (does not know about DRT element or discretization object)
+  // call inner evaluate (does not know about element or discretization object)
   int result = Base::evaluate(params, ebofoaf, elemat1, elevec1, evelaf, epreaf, evelnp, eveln,
       eprenp, epren, emhist, echist, epressnp_timederiv, epressam_timederiv, epressn_timederiv,
       eaccam, edispnp, edispn, egridv, egridvn, escaaf, &eporositynp, &eporositydot, &eporositydotn,
@@ -411,7 +411,7 @@ int Discret::Elements::FluidEleCalcPoroP1<distype>::evaluate_od(Discret::Element
 
   Base::pre_evaluate(params, ele, discretization);
 
-  // call inner evaluate (does not know about DRT element or discretization object)
+  // call inner evaluate (does not know about element or discretization object)
   int result = evaluate_od(params, ebofoaf, elemat1, elevec1, evelaf, epreaf, evelnp, eveln, eprenp,
       epren, emhist, echist, epressnp_timederiv, epressam_timederiv, epressn_timederiv, eaccam,
       edispnp, edispn, egridv, egridvn, escaaf, &eporositynp, mat, ele->is_ale(), intpoints);
