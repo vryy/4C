@@ -199,8 +199,8 @@ void BEAMINTERACTION::BeamPotentialParams::init(const double restart_time)
   /****************************************************************************/
 
   // outdated: octtree for search of potential-based interaction pairs
-  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::OctreeType>(
-          beam_potential_params_list, "BEAMPOT_OCTREE") != Inpar::BEAMCONTACT::boct_none)
+  if (Teuchos::getIntegralValue<Inpar::BeamContact::OctreeType>(
+          beam_potential_params_list, "BEAMPOT_OCTREE") != Inpar::BeamContact::boct_none)
   {
     FOUR_C_THROW("Octree-based search for potential-based beam interactions is deprecated!");
   }

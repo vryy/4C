@@ -350,7 +350,7 @@ namespace CONTACT
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, double> ele2pos_lastiter_;
 
     //! variable to check which smoothing type should be applied
-    Inpar::BEAMCONTACT::Smoothing smoothing_;
+    Inpar::BeamContact::Smoothing smoothing_;
 
     //! sgn(normal*normal_old)
     double sgn_;

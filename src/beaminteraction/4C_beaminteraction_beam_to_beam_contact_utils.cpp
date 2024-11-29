@@ -69,7 +69,7 @@ double BEAMINTERACTION::calc_ele_radius(const Core::Elements::Element* ele)
     eleradius = thissphere->radius();
   else
     FOUR_C_THROW(
-        "BEAMCONTACT::CalcEleRadius: unknown element type; cannot determine cross-section radius");
+        "BeamContact::CalcEleRadius: unknown element type; cannot determine cross-section radius");
 
   return eleradius;
 }

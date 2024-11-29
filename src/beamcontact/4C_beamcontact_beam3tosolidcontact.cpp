@@ -325,8 +325,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
 #ifdef FADCHECKLINCONTACTINTERVALBORDER
     // Set known parameters xi1, xi2, eta and element positions as primary variables
     // for checking the linearization of the contact interval borders with FAD
-    BEAMCONTACT::SetFADParCoordDofs<numnodessol, numnodes, numnodalvalues>(xi1, xi2, eta);
-    BEAMCONTACT::SetFADDispDofs<numnodessol, numnodes, numnodalvalues>(ele1pos_, ele2pos_, 3);
+    BeamContact::SetFADParCoordDofs<numnodessol, numnodes, numnodalvalues>(xi1, xi2, eta);
+    BeamContact::SetFADDispDofs<numnodessol, numnodes, numnodalvalues>(ele1pos_, ele2pos_, 3);
 #endif
 
     // Update shape functions and their derivatives for beam and surface element
@@ -487,8 +487,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
 #ifdef FADCHECKSTIFFNESS
     // Set known parameters xi1, xi2, contact interval borders eta_a, eta_b and element
     // positions as primary variables for checking the contact stiffness with FAD
-    BEAMCONTACT::SetFADParCoordDofs<numnodessol, numnodes, numnodalvalues>(xi1, xi2, eta_a, eta_b);
-    BEAMCONTACT::SetFADDispDofs<numnodessol, numnodes, numnodalvalues>(ele1pos_, ele2pos_, 4);
+    BeamContact::SetFADParCoordDofs<numnodessol, numnodes, numnodalvalues>(xi1, xi2, eta_a, eta_b);
+    BeamContact::SetFADDispDofs<numnodessol, numnodes, numnodalvalues>(ele1pos_, ele2pos_, 4);
 
     // Calculate eta again depending on eta_a and eta_b, because at this point all FAD paramater
     // coordinates are known
@@ -499,8 +499,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
     // Set known parameters xi1, xi2, eta and element positions as primary variables for
     // checking the linearization of surface parameters xi1 and xi2, gap and surface unit normal
     // vector n2
-    BEAMCONTACT::SetFADParCoordDofs<numnodessol, numnodes, numnodalvalues>(xi1, xi2, eta);
-    BEAMCONTACT::SetFADDispDofs<numnodessol, numnodes, numnodalvalues>(ele1pos_, ele2pos_, 3);
+    BeamContact::SetFADParCoordDofs<numnodessol, numnodes, numnodalvalues>(xi1, xi2, eta);
+    BeamContact::SetFADDispDofs<numnodessol, numnodes, numnodalvalues>(ele1pos_, ele2pos_, 3);
 #endif
 
     // Update shape functions and their derivatives for beam and surface element
@@ -1923,8 +1923,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::projec
 #ifdef FADCHECKLINORTHOGONALITYCONDITION
     // Set known parameters xi1, xi2, eta and element positions as primary variables for checking
     // the linearization of the orthogonality conditions (Jacobi-matrix J) borders with FAD
-    BEAMCONTACT::SetFADParCoordDofs<numnodessol, numnodes, numnodalvalues>(xi1, xi2, eta);
-    BEAMCONTACT::SetFADDispDofs<numnodessol, numnodes, numnodalvalues>(ele1pos_, ele2pos_, 3);
+    BeamContact::SetFADParCoordDofs<numnodessol, numnodes, numnodalvalues>(xi1, xi2, eta);
+    BeamContact::SetFADDispDofs<numnodessol, numnodes, numnodalvalues>(ele1pos_, ele2pos_, 3);
 #endif
 
     // Update shape functions and their derivatives for beam and surface element

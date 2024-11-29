@@ -206,7 +206,7 @@ void Inpar::BEAMINTERACTION::set_valid_conditions(
   condlist.push_back(penalty_coupling_condition);
 
   // beam-to-beam interactions
-  Inpar::BEAMCONTACT::set_valid_conditions(condlist);
+  Inpar::BeamContact::set_valid_conditions(condlist);
 
   // beam-to-solid interactions
   Inpar::BeamToSolid::set_valid_conditions(condlist);

@@ -26,7 +26,7 @@ namespace Core::Conditions
 
 namespace Inpar
 {
-  namespace BEAMCONTACT
+  namespace BeamContact
   {
     /// Type of employed solving strategy
     /// (this enum represents the input file parameter BEAMS_STRATEGY)
@@ -93,7 +93,7 @@ namespace Inpar
      */
     void set_valid_conditions(
         std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist);
-  }  // namespace BEAMCONTACT
+  }  // namespace BeamContact
 
 }  // namespace Inpar
 

@@ -398,12 +398,12 @@ namespace CONTACT
     */
     double get_energy() override
     {
-      if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
-              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lp and
-          Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
-              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_qp and
-          Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
-              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lpqp)
+      if (Teuchos::getIntegralValue<Inpar::BeamContact::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BeamContact::pl_lp and
+          Teuchos::getIntegralValue<Inpar::BeamContact::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BeamContact::pl_qp and
+          Teuchos::getIntegralValue<Inpar::BeamContact::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BeamContact::pl_lpqp)
         FOUR_C_THROW("Contact Energy calculation not implemented for the chosen penalty law!");
 
 
@@ -438,12 +438,12 @@ namespace CONTACT
     */
     double get_unscaled_perp_energy() override
     {
-      if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
-              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lp and
-          Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
-              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_qp and
-          Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
-              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lpqp)
+      if (Teuchos::getIntegralValue<Inpar::BeamContact::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BeamContact::pl_lp and
+          Teuchos::getIntegralValue<Inpar::BeamContact::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BeamContact::pl_qp and
+          Teuchos::getIntegralValue<Inpar::BeamContact::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BeamContact::pl_lpqp)
         FOUR_C_THROW("Contact Energy calculation not implemented for the chosen penalty law!");
 
 
@@ -463,12 +463,12 @@ namespace CONTACT
     */
     double get_unscaled_parallel_energy() override
     {
-      if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
-              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lp and
-          Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
-              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_qp and
-          Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
-              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lpqp)
+      if (Teuchos::getIntegralValue<Inpar::BeamContact::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BeamContact::pl_lp and
+          Teuchos::getIntegralValue<Inpar::BeamContact::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BeamContact::pl_qp and
+          Teuchos::getIntegralValue<Inpar::BeamContact::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != Inpar::BeamContact::pl_lpqp)
         FOUR_C_THROW("Contact Energy calculation not implemented for the chosen penalty law!");
 
       double energy = 0.0;

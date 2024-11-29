@@ -50,7 +50,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
   extrusionvalue_ = std::make_shared<std::vector<double>>();
   extrusionvalue_->clear();
 
-  Inpar::BEAMCONTACT::OctreeType bboxtype_input = Inpar::BEAMCONTACT::boct_none;
+  Inpar::BeamContact::OctreeType bboxtype_input = Inpar::BeamContact::boct_none;
 
   // This OctTree may be used for contact search as well as search for potential-based interaction
   // it will thus be called with slightly different parameter sets
@@ -60,7 +60,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
   {
     // octree specs
     bboxtype_input =
-        Teuchos::getIntegralValue<Inpar::BEAMCONTACT::OctreeType>(params, "BEAMS_OCTREE");
+        Teuchos::getIntegralValue<Inpar::BeamContact::OctreeType>(params, "BEAMS_OCTREE");
 
     // additive or multiplicative extrusion of bounding boxes
     if (params.get<bool>("BEAMS_ADDITEXT"))
@@ -95,7 +95,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
   else if (params.name() == "DAT FILE->BEAM POTENTIAL")
   {
     bboxtype_input =
-        Teuchos::getIntegralValue<Inpar::BEAMCONTACT::OctreeType>(params, "BEAMPOT_OCTREE");
+        Teuchos::getIntegralValue<Inpar::BeamContact::OctreeType>(params, "BEAMPOT_OCTREE");
 
     additiveextrusion_ = true;
     extrusionvalue_->push_back(Teuchos::getDoubleParameter(params, "CUTOFFRADIUS"));
@@ -134,14 +134,14 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
   // determine bounding box type
   switch (bboxtype_input)
   {
-    case Inpar::BEAMCONTACT::boct_aabb:
+    case Inpar::BeamContact::boct_aabb:
     {
       if (!Core::Communication::my_mpi_rank(discret_.get_comm()))
         std::cout << "Search routine:\nOctree + Axis Aligned BBs" << std::endl;
       boundingbox_ = Beam3ContactOctTree::axisaligned;
     }
     break;
-    case Inpar::BEAMCONTACT::boct_cobb:
+    case Inpar::BeamContact::boct_cobb:
     {
       if (!Core::Communication::my_mpi_rank(discret_.get_comm()))
         std::cout << "Search routine:\nOctree + Cylindrical Oriented BBs" << std::endl;
@@ -152,7 +152,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
             "Only axis aligned or spherical bounding boxes possible for beam-to-solid contact!");
     }
     break;
-    case Inpar::BEAMCONTACT::boct_spbb:
+    case Inpar::BeamContact::boct_spbb:
     {
       if (!Core::Communication::my_mpi_rank(discret_.get_comm()))
         std::cout << "Search routine:\nOctree + Spherical BBs" << std::endl;

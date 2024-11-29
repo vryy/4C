@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::BeamToBeamContactParams::BeamToBeamContactParams()
     : isinit_(false),
       issetup_(false),
-      strategy_(Inpar::BEAMCONTACT::bstr_none),
-      penalty_law_(Inpar::BEAMCONTACT::pl_lp),
+      strategy_(Inpar::BeamContact::bstr_none),
+      penalty_law_(Inpar::BeamContact::pl_lp),
       btb_penalty_law_regularization_g0_(-1.0),
       btb_penalty_law_regularization_f0_(-1.0),
       btb_penalty_law_regularization_c0_(-1.0),
@@ -52,16 +52,16 @@ void BEAMINTERACTION::BeamToBeamContactParams::init()
   /****************************************************************************/
   // get and check required parameters
   /****************************************************************************/
-  strategy_ = Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Strategy>(
+  strategy_ = Teuchos::getIntegralValue<Inpar::BeamContact::Strategy>(
       beam_contact_params_list, "BEAMS_STRATEGY");
 
-  if (strategy_ != Inpar::BEAMCONTACT::bstr_penalty)
+  if (strategy_ != Inpar::BeamContact::bstr_penalty)
     FOUR_C_THROW(
         "currently only a penalty strategy is supported for beam contact"
         " if not using the 'old' beam contact manager!");
 
   /****************************************************************************/
-  penalty_law_ = Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
+  penalty_law_ = Teuchos::getIntegralValue<Inpar::BeamContact::PenaltyLaw>(
       beam_contact_params_list, "BEAMS_PENALTYLAW");
 
   /****************************************************************************/
@@ -70,7 +70,7 @@ void BEAMINTERACTION::BeamToBeamContactParams::init()
   btb_penalty_law_regularization_c0_ = beam_contact_params_list.get<double>("BEAMS_PENREGPARAM_C0");
 
   // Todo check and refine these safety checks
-  if (penalty_law_ != Inpar::BEAMCONTACT::pl_lp and penalty_law_ != Inpar::BEAMCONTACT::pl_qp)
+  if (penalty_law_ != Inpar::BeamContact::pl_lp and penalty_law_ != Inpar::BeamContact::pl_qp)
   {
     if (btb_penalty_law_regularization_g0_ == -1.0 or btb_penalty_law_regularization_f0_ == -1.0 or
         btb_penalty_law_regularization_c0_ == -1.0)
@@ -82,7 +82,7 @@ void BEAMINTERACTION::BeamToBeamContactParams::init()
   // Todo check this parameter
   gap_shift_ = beam_contact_params_list.get<double>("BEAMS_GAPSHIFTPARAM");
 
-  if (gap_shift_ != 0.0 and penalty_law_ != Inpar::BEAMCONTACT::pl_lpqp)
+  if (gap_shift_ != 0.0 and penalty_law_ != Inpar::BeamContact::pl_lpqp)
     FOUR_C_THROW("BEAMS_GAPSHIFTPARAM only possible for penalty law LinPosQuadPen!");
 
   /****************************************************************************/
@@ -178,13 +178,13 @@ void BEAMINTERACTION::BeamToBeamContactParams::init()
     FOUR_C_THROW("currently only beam-to-(BEAM/SPHERE) contact supported!");
 
   /****************************************************************************/
-  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Smoothing>(
-          beam_contact_params_list, "BEAMS_SMOOTHING") != Inpar::BEAMCONTACT::bsm_none)
+  if (Teuchos::getIntegralValue<Inpar::BeamContact::Smoothing>(
+          beam_contact_params_list, "BEAMS_SMOOTHING") != Inpar::BeamContact::bsm_none)
     FOUR_C_THROW("BEAMS_SMOOTHING currently not supported!");
 
   /****************************************************************************/
-  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Damping>(
-          beam_contact_params_list, "BEAMS_DAMPING") != Inpar::BEAMCONTACT::bd_no or
+  if (Teuchos::getIntegralValue<Inpar::BeamContact::Damping>(
+          beam_contact_params_list, "BEAMS_DAMPING") != Inpar::BeamContact::bd_no or
       beam_contact_params_list.get<double>("BEAMS_DAMPINGPARAM") != -1000.0 or
       beam_contact_params_list.get<double>("BEAMS_DAMPREGPARAM1") != -1000.0 or
       beam_contact_params_list.get<double>("BEAMS_DAMPREGPARAM2") != -1000.0)
@@ -199,8 +199,8 @@ void BEAMINTERACTION::BeamToBeamContactParams::init()
   if (btb_basicstiff_gap_ != -1.0) FOUR_C_THROW("BEAMS_BASICSTIFFGAP currently not supported!");
 
   /****************************************************************************/
-  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::OctreeType>(
-          beam_contact_params_list, "BEAMS_OCTREE") != Inpar::BEAMCONTACT::boct_none or
+  if (Teuchos::getIntegralValue<Inpar::BeamContact::OctreeType>(
+          beam_contact_params_list, "BEAMS_OCTREE") != Inpar::BeamContact::boct_none or
       not beam_contact_params_list.get<bool>("BEAMS_ADDITEXT") or
       beam_contact_params_list.get<int>("BEAMS_TREEDEPTH") != 6 or
       beam_contact_params_list.get<int>("BEAMS_BOXESINOCT") != 8)
