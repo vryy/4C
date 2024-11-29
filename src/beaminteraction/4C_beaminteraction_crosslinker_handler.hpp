@@ -41,7 +41,7 @@ namespace Core::LinAlg
   class MapExtractor;
 }
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamCrosslinkerHandler
   {
@@ -130,7 +130,7 @@ namespace BEAMINTERACTION
     std::shared_ptr<Epetra_Map> bincolmap_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 
 /*----------------------------------------------------------------------*/

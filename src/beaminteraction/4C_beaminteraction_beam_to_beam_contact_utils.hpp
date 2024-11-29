@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 typedef Sacado::Fad::DFad<double> FAD;
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /*!
   \brief Calculate angle encompassed by two lines: returns an angle \in [0;pi/2]
@@ -248,7 +248,7 @@ namespace BEAMINTERACTION
     return segment_id;
   }
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

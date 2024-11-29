@@ -34,7 +34,7 @@ namespace Core::LinAlg
   class SerialDenseMatrix;
 }  // namespace Core::LinAlg
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   template <unsigned int numnodes, unsigned int numnodalvalues>
   class BeamToBeamContactVariables;
@@ -152,10 +152,10 @@ namespace BEAMINTERACTION
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele2pos_;
 
     //! neighbor elements of element 1
-    std::shared_ptr<BEAMINTERACTION::B3CNeighbor> neighbors1_;
+    std::shared_ptr<BeamInteraction::B3CNeighbor> neighbors1_;
 
     //! neighbor elements of element 2
-    std::shared_ptr<BEAMINTERACTION::B3CNeighbor> neighbors2_;
+    std::shared_ptr<BeamInteraction::B3CNeighbor> neighbors2_;
 
     //! cross section radius of first beam
     double r1_;
@@ -629,7 +629,7 @@ namespace BEAMINTERACTION
 
     //@}
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

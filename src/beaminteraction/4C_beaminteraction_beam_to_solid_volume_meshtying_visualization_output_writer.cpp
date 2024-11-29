@@ -33,10 +33,10 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
+BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
         Core::IO::VisualizationParameters visualization_params,
-        std::shared_ptr<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
+        std::shared_ptr<const BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
             output_params_ptr)
     : output_params_ptr_(output_params_ptr),
       output_writer_base_ptr_(nullptr),
@@ -44,7 +44,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 {
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ =
-      std::make_shared<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
+      std::make_shared<BeamInteraction::BeamToSolidVisualizationOutputWriterBase>(
 
           "beam-to-solid-volume", visualization_params_);
 
@@ -57,7 +57,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
   {
     if (output_params_ptr_->get_nodal_force_output_flag())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("nodal-forces", "btsv-nodal-forces");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
@@ -68,7 +68,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
     if (output_params_ptr_->get_mortar_lambda_discret_output_flag())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("mortar", "btsv-mortar");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
@@ -82,7 +82,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
     if (output_params_ptr_->get_mortar_lambda_continuous_output_flag())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer(
               "mortar-continuous", "btsv-mortar-continuous");
       auto& visualization_data = visualization_writer->get_visualization_data();
@@ -99,7 +99,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
     if (output_params_ptr_->get_integration_points_output_flag())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer(
               "integration-points", "btsv-integration-points");
       auto& visualization_data = visualization_writer->get_visualization_data();
@@ -114,7 +114,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
     if (output_params_ptr_->get_segmentation_output_flag())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("segmentation", "btsv-segmentation");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
@@ -130,8 +130,8 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::write_output_runtime(
-    const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact) const
+void BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::write_output_runtime(
+    const BeamInteraction::SUBMODELEVALUATOR::BeamContact* beam_contact) const
 {
   // Get the time step and time for the output file. If output is desired at every iteration, the
   // values are padded. The runtime output is written when the time step is already set to the
@@ -145,9 +145,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::write
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
+void BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     write_output_runtime_iteration(
-        const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const
+        const BeamInteraction::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const
 {
   if (output_params_ptr_->get_output_every_iteration())
   {
@@ -161,9 +161,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
+void BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     write_output_beam_to_solid_volume_mesh_tying(
-        const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
+        const BeamInteraction::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
         double time) const
 {
   // Parameter list that will be passed to all contact pairs when they create their visualization.
@@ -175,7 +175,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
   // Add the nodal forces resulting from beam contact. The forces are split up into beam and solid
   // nodes.
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization =
       output_writer_base_ptr_->get_visualization_writer("btsv-nodal-forces");
   if (visualization != nullptr)
     add_beam_interaction_nodal_forces(visualization, beam_contact->discret_ptr(),
@@ -191,7 +191,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
   {
     // Add pair specific output for direct assembly managers.
     auto direct_assembly_manager = std::dynamic_pointer_cast<
-        BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(assembly_manager);
+        BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(assembly_manager);
     if (not(direct_assembly_manager == nullptr))
     {
       for (const auto& pair : direct_assembly_manager->get_contact_pairs())
@@ -200,7 +200,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
     // Add pair specific output for indirect assembly managers.
     auto indirect_assembly_manager = std::dynamic_pointer_cast<
-        BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(assembly_manager);
+        BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(assembly_manager);
     if (not(indirect_assembly_manager == nullptr))
     {
       // Get the global vector with the Lagrange Multiplier values and add it to the parameter
@@ -210,7 +210,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
       visualization_params.set<std::shared_ptr<Core::LinAlg::Vector<double>>>("lambda", lambda);
 
       // The pairs will need the mortar manager to extract their Lambda DOFs.
-      visualization_params.set<std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+      visualization_params.set<std::shared_ptr<const BeamInteraction::BeamToSolidMortarManager>>(
           "mortar_manager", indirect_assembly_manager->get_mortar_manager());
 
       // This map is used to ensure, that each discrete Lagrange multiplier is only written once

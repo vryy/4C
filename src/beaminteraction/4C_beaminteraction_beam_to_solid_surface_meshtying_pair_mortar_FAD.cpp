@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface,
+BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface,
     Mortar>::BeamToSolidSurfaceMeshtyingPairMortarFAD()
     : base_class()
 {
@@ -41,7 +41,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surf
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface,
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface,
     Mortar>::evaluate_and_assemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const std::shared_ptr<Epetra_FEVector>& force_vector,
@@ -125,7 +125,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface,
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface,
     Mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
@@ -316,7 +316,7 @@ void get_surface_rotation_vector_averaged(const Core::LinAlg::Matrix<3, 1, doubl
 
   // Get the solid rotation vector from the deformation gradient via construction in the cross
   // section plane.
-  BEAMINTERACTION::get_solid_rotation_vector_deformation_gradient_3d_general_in_cross_section_plane(
+  BeamInteraction::get_solid_rotation_vector_deformation_gradient_3d_general_in_cross_section_plane(
       surface_F, triad_beam_ref, psi_solid);
 }
 
@@ -435,7 +435,7 @@ void get_surface_rotation_vector_cross_section_director(
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
 template <typename ScalarTypeRotVec>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface,
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface,
     Mortar>::get_surface_rotation_vector(const Core::LinAlg::Matrix<3, 1, double>& xi,
     const GEOMETRYPAIR::ElementData<Surface, double>& q_solid_ref,
     const GEOMETRYPAIR::ElementData<Surface, ScalarTypeRotVec>& q_solid,
@@ -463,7 +463,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface,
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface,
     Mortar>::evaluate_and_assemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const std::shared_ptr<Epetra_FEVector>& force_vector,
@@ -725,7 +725,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface,
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface,
     Mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
@@ -983,7 +983,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface,
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface,
     Mortar>::get_pair_rotational_gid(const Core::FE::Discretization& discret,
     std::vector<int>& gid_surface, Core::LinAlg::Matrix<n_dof_rot_, 1, int>& gid_rot) const
 {
@@ -999,11 +999,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BeamInteraction::BeamContactPair>
 beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar_rotation(
     const bool rotational_coupling)
 {
-  using namespace BEAMINTERACTION;
+  using namespace BeamInteraction;
   using namespace GEOMETRYPAIR;
 
   if (!rotational_coupling)
@@ -1018,11 +1018,11 @@ beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar_rotation(
  *
  */
 template <typename Mortar>
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BeamInteraction::BeamContactPair>
 beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar(
     const Core::FE::CellType surface_shape, const bool rotational_coupling)
 {
-  using namespace BEAMINTERACTION;
+  using namespace BeamInteraction;
   using namespace GEOMETRYPAIR;
 
   switch (surface_shape)
@@ -1056,11 +1056,11 @@ beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar(
  *
  */
 template <typename Mortar>
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BeamInteraction::BeamContactPair>
 beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar_x_volume(
     const Core::FE::CellType surface_shape, const bool rotational_coupling)
 {
-  using namespace BEAMINTERACTION;
+  using namespace BeamInteraction;
   using namespace GEOMETRYPAIR;
 
   switch (surface_shape)
@@ -1086,8 +1086,8 @@ beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar_x_volume(
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::beam_to_solid_surface_meshtying_pair_mortar_fad_factory(
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::beam_to_solid_surface_meshtying_pair_mortar_fad_factory(
     const Core::FE::CellType surface_shape,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction,
     const bool rotational_coupling,

@@ -30,7 +30,7 @@ namespace Core::Elements
   class Element;
 }
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   // forward declaration ...
   class BeamPotentialParams;
@@ -58,7 +58,7 @@ namespace BEAMINTERACTION
     */
     virtual ~BeamPotentialPair() = default;
     //! Initialization
-    void init(const std::shared_ptr<BEAMINTERACTION::BeamPotentialParams> params_ptr,
+    void init(const std::shared_ptr<BeamInteraction::BeamPotentialParams> params_ptr,
         Core::Elements::Element const* element1, Core::Elements::Element const* element2);
 
     //! Setup
@@ -67,7 +67,7 @@ namespace BEAMINTERACTION
     //! return appropriate derived (templated) class (acts as a simple factory)
     static std::shared_ptr<BeamPotentialPair> create(
         std::vector<Core::Elements::Element const*> const& ele_ptrs,
-        BEAMINTERACTION::BeamPotentialParams const& beam_potential_params);
+        BeamInteraction::BeamPotentialParams const& beam_potential_params);
 
     //@}
 
@@ -95,7 +95,7 @@ namespace BEAMINTERACTION
 
     //! @name Access methods
 
-    inline std::shared_ptr<BEAMINTERACTION::BeamPotentialParams> params() const
+    inline std::shared_ptr<BeamInteraction::BeamPotentialParams> params() const
     {
       return beam_potential_params_;
     }
@@ -191,7 +191,7 @@ namespace BEAMINTERACTION
 
    private:
     //! beam potential parameter data container
-    std::shared_ptr<BEAMINTERACTION::BeamPotentialParams> beam_potential_params_;
+    std::shared_ptr<BeamInteraction::BeamPotentialParams> beam_potential_params_;
 
     //! first element of interacting pair
     Core::Elements::Element const* element1_;
@@ -200,7 +200,7 @@ namespace BEAMINTERACTION
     Core::Elements::Element const* element2_;
     //@}
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

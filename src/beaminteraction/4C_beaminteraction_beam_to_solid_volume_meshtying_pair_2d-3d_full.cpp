@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::pre_evaluate()
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::pre_evaluate()
 {
   // Call pre_evaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
@@ -44,7 +44,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::pre_e
  *
  */
 template <typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evaluate_and_assemble(
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evaluate_and_assemble(
     const std::shared_ptr<const Core::FE::Discretization>& discret,
     const std::shared_ptr<Epetra_FEVector>& force_vector,
     const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -287,7 +287,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
  *
  */
 template <typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::reset_rotation_state(
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::reset_rotation_state(
     const Core::FE::Discretization& discret,
     const std::shared_ptr<const Core::LinAlg::Vector<double>>& ia_discolnp)
 {
@@ -299,7 +299,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::reset
  *
  */
 template <typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::get_triad_at_xi_double(
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::get_triad_at_xi_double(
     const double xi, Core::LinAlg::Matrix<3, 3, double>& triad, const bool reference) const
 {
   if (reference)
@@ -316,7 +316,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::get_t
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -325,6 +325,6 @@ namespace BEAMINTERACTION
   template class BeamToSolidVolumeMeshtyingPair2D3DFull<t_hermite, t_hex27>;
   template class BeamToSolidVolumeMeshtyingPair2D3DFull<t_hermite, t_tet4>;
   template class BeamToSolidVolumeMeshtyingPair2D3DFull<t_hermite, t_tet10>;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

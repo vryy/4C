@@ -31,7 +31,7 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamContactPair;
 }

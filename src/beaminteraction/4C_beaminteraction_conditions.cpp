@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamInteractionConditionBase::BeamInteractionConditionBase(
+BeamInteraction::BeamInteractionConditionBase::BeamInteractionConditionBase(
     const std::shared_ptr<const Core::Conditions::Condition>& condition_line)
     : condition_line_(condition_line), line_ids_()
 {
@@ -38,7 +38,7 @@ BEAMINTERACTION::BeamInteractionConditionBase::BeamInteractionConditionBase(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditionBase::build_id_sets(
+void BeamInteraction::BeamInteractionConditionBase::build_id_sets(
     const std::shared_ptr<const Core::FE::Discretization>& discretization)
 {
   // Set the IDs of the line elements.
@@ -50,7 +50,7 @@ void BEAMINTERACTION::BeamInteractionConditionBase::build_id_sets(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditionBase::setup(
+void BeamInteraction::BeamInteractionConditionBase::setup(
     const std::shared_ptr<const Core::FE::Discretization>& discret)
 {
 }
@@ -58,29 +58,29 @@ void BEAMINTERACTION::BeamInteractionConditionBase::setup(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditionBase::clear() {}
+void BeamInteraction::BeamInteractionConditionBase::clear() {}
 
 /**
  *
  */
-BEAMINTERACTION::BeamInteractionConditions::BeamInteractionConditions() {}
+BeamInteraction::BeamInteractionConditions::BeamInteractionConditions() {}
 
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions(
+void BeamInteraction::BeamInteractionConditions::set_beam_interaction_conditions(
     const Core::FE::Discretization& discret, const BeamContactParams& params_ptr)
 {
   condition_map_.clear();
 
   // Get all available interaction types.
-  std::vector<Inpar::BEAMINTERACTION::BeamInteractionConditions> interaction_types;
-  Inpar::BEAMINTERACTION::beam_interaction_conditions_get_all(interaction_types);
+  std::vector<Inpar::BeamInteraction::BeamInteractionConditions> interaction_types;
+  Inpar::BeamInteraction::beam_interaction_conditions_get_all(interaction_types);
 
   // Loop over interaction types.
   for (const auto& interaction_type : interaction_types)
   {
-    if (interaction_type == Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_contact)
+    if (interaction_type == Inpar::BeamInteraction::BeamInteractionConditions::beam_to_beam_contact)
     {
       // Add all beam-to-beam contitions.
       std::vector<std::shared_ptr<BeamInteractionConditionBase>>& interaction_vector =
@@ -118,7 +118,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
         {
           // We found the matching conditions, now create the beam-to-beam condition objects.
           interaction_vector.push_back(
-              std::make_shared<BEAMINTERACTION::BeamToBeamContactCondition>(
+              std::make_shared<BeamInteraction::BeamToBeamContactCondition>(
                   condition_1, condition_2));
         }
         else
@@ -132,12 +132,12 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
         FOUR_C_THROW("There are multiple definitions of the same COUPLING_ID for %s",
             condition_name.c_str());
     }
-    else if (interaction_type == Inpar::BEAMINTERACTION::BeamInteractionConditions::
+    else if (interaction_type == Inpar::BeamInteraction::BeamInteractionConditions::
                                      beam_to_solid_volume_meshtying or
-             interaction_type == Inpar::BEAMINTERACTION::BeamInteractionConditions::
+             interaction_type == Inpar::BeamInteraction::BeamInteractionConditions::
                                      beam_to_solid_surface_meshtying or
              interaction_type ==
-                 Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact)
+                 Inpar::BeamInteraction::BeamInteractionConditions::beam_to_solid_surface_contact)
     {
       // Add all beam-to-solid conditions.
       std::vector<std::shared_ptr<BeamInteractionConditionBase>>& interaction_vector =
@@ -174,18 +174,18 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
           // We found the matching conditions, now create the beam-to-solid condition objects.
           std::shared_ptr<BeamInteractionConditionBase> new_condition;
           if (interaction_type ==
-              Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying)
-            new_condition = std::make_shared<BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying>(
+              Inpar::BeamInteraction::BeamInteractionConditions::beam_to_solid_volume_meshtying)
+            new_condition = std::make_shared<BeamInteraction::BeamToSolidConditionVolumeMeshtying>(
                 map_item.second.first, map_item.second.second,
                 params_ptr.beam_to_solid_volume_meshtying_params());
-          else if (interaction_type == Inpar::BEAMINTERACTION::BeamInteractionConditions::
+          else if (interaction_type == Inpar::BeamInteraction::BeamInteractionConditions::
                                            beam_to_solid_surface_meshtying)
-            new_condition = std::make_shared<BEAMINTERACTION::BeamToSolidConditionSurface>(
+            new_condition = std::make_shared<BeamInteraction::BeamToSolidConditionSurface>(
                 map_item.second.first, map_item.second.second,
                 params_ptr.beam_to_solid_surface_meshtying_params(), true);
           else if (interaction_type ==
-                   Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact)
-            new_condition = std::make_shared<BEAMINTERACTION::BeamToSolidConditionSurface>(
+                   Inpar::BeamInteraction::BeamInteractionConditions::beam_to_solid_surface_contact)
+            new_condition = std::make_shared<BeamInteraction::BeamToSolidConditionSurface>(
                 map_item.second.first, map_item.second.second,
                 params_ptr.beam_to_solid_surface_contact_params(), false);
           else
@@ -204,7 +204,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
             condition_names[0].c_str(), condition_names[1].c_str());
     }
     else if (interaction_type ==
-             Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_point_coupling)
+             Inpar::BeamInteraction::BeamInteractionConditions::beam_to_beam_point_coupling)
     {
       std::vector<std::shared_ptr<BeamInteractionConditionBase>>& interaction_vector =
           condition_map_[interaction_type];
@@ -217,7 +217,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
         // We found the matching conditions, now create the beam-to-beam coupling condition object
         std::shared_ptr<BeamInteractionConditionBase> new_condition;
 
-        new_condition = std::make_shared<BEAMINTERACTION::BeamToBeamPointCouplingCondition>(
+        new_condition = std::make_shared<BeamInteraction::BeamToBeamPointCouplingCondition>(
             condition, condition->parameters().get<double>("POSITIONAL_PENALTY_PARAMETER"),
             condition->parameters().get<double>("ROTATIONAL_PENALTY_PARAMETER"));
 
@@ -232,7 +232,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::build_id_sets(
+void BeamInteraction::BeamInteractionConditions::build_id_sets(
     std::shared_ptr<Core::FE::Discretization> discretization)
 {
   for (auto const& map_pair : condition_map_)
@@ -242,7 +242,7 @@ void BEAMINTERACTION::BeamInteractionConditions::build_id_sets(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::set_state(
+void BeamInteraction::BeamInteractionConditions::set_state(
     const std::shared_ptr<const Core::FE::Discretization>& discret,
     const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>&
         beaminteraction_data_state)
@@ -255,7 +255,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_state(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::setup(
+void BeamInteraction::BeamInteractionConditions::setup(
     const std::shared_ptr<const Core::FE::Discretization>& discret)
 {
   for (auto const& map_pair : condition_map_)
@@ -265,7 +265,7 @@ void BEAMINTERACTION::BeamInteractionConditions::setup(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::clear()
+void BeamInteraction::BeamInteractionConditions::clear()
 {
   for (auto const& map_pair : condition_map_)
     for (auto const& condition : map_pair.second) condition->clear();
@@ -274,11 +274,11 @@ void BEAMINTERACTION::BeamInteractionConditions::clear()
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamInteractionConditions::create_contact_pair(
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::BeamInteractionConditions::create_contact_pair(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
-  std::shared_ptr<BEAMINTERACTION::BeamContactPair> new_pair;
+  std::shared_ptr<BeamInteraction::BeamContactPair> new_pair;
   for (auto& map_pair : condition_map_)
   {
     for (auto& condition : map_pair.second)
@@ -295,11 +295,11 @@ BEAMINTERACTION::BeamInteractionConditions::create_contact_pair(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::create_indirect_assembly_managers(
+void BeamInteraction::BeamInteractionConditions::create_indirect_assembly_managers(
     const std::shared_ptr<const Core::FE::Discretization>& discret,
     std::vector<std::shared_ptr<SUBMODELEVALUATOR::BeamContactAssemblyManager>>& assembly_managers)
 {
-  std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>
+  std::shared_ptr<BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManager>
       condition_assembly_manager = nullptr;
   for (auto& map_pair : condition_map_)
   {
@@ -315,7 +315,7 @@ void BEAMINTERACTION::BeamInteractionConditions::create_indirect_assembly_manage
 /**
  *
  */
-void BEAMINTERACTION::condition_to_element_ids(
+void BeamInteraction::condition_to_element_ids(
     const Core::Conditions::Condition& condition, std::vector<int>& element_ids)
 {
   // Loop over the elements in the condition and get the "real" element by comparing the node IDs.

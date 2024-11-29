@@ -44,7 +44,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidCondition::BeamToSolidCondition(
+BeamInteraction::BeamToSolidCondition::BeamToSolidCondition(
     const std::shared_ptr<const Core::Conditions::Condition>& condition_line,
     const std::shared_ptr<const Core::Conditions::Condition>& condition_other,
     const std::shared_ptr<const BeamToSolidParamsBase>& beam_to_solid_params)
@@ -59,7 +59,7 @@ BEAMINTERACTION::BeamToSolidCondition::BeamToSolidCondition(
 /**
  *
  */
-bool BEAMINTERACTION::BeamToSolidCondition::ids_in_condition(
+bool BeamInteraction::BeamToSolidCondition::ids_in_condition(
     const int id_line, const int id_other) const
 {
   if (line_ids_.find(id_line) != line_ids_.end())
@@ -70,7 +70,7 @@ bool BEAMINTERACTION::BeamToSolidCondition::ids_in_condition(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidCondition::clear()
+void BeamInteraction::BeamToSolidCondition::clear()
 {
   BeamInteractionConditionBase::clear();
   geometry_evaluation_data_->clear();
@@ -80,15 +80,15 @@ void BEAMINTERACTION::BeamToSolidCondition::clear()
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToSolidCondition::create_contact_pair(
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::BeamToSolidCondition::create_contact_pair(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   // Check if the given elements are in this condition.
   if (!ids_in_condition(ele_ptrs[0]->id(), ele_ptrs[1]->id())) return nullptr;
 
   // Create the beam contact pair.
-  std::shared_ptr<BEAMINTERACTION::BeamContactPair> contact_pair =
+  std::shared_ptr<BeamInteraction::BeamContactPair> contact_pair =
       create_contact_pair_internal(ele_ptrs);
 
   if (contact_pair != nullptr)
@@ -111,8 +111,8 @@ BEAMINTERACTION::BeamToSolidCondition::create_contact_pair(
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>
-BEAMINTERACTION::BeamToSolidCondition::create_indirect_assembly_manager(
+std::shared_ptr<BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManager>
+BeamInteraction::BeamToSolidCondition::create_indirect_assembly_manager(
     const std::shared_ptr<const Core::FE::Discretization>& discret)
 {
   if (beam_to_solid_params_->get_contact_discretization() ==
@@ -127,12 +127,12 @@ BEAMINTERACTION::BeamToSolidCondition::create_indirect_assembly_manager(
     if (std::dynamic_pointer_cast<const BeamToSolidSurfaceContactParams>(beam_to_solid_params_) ==
         nullptr)
     {
-      mortar_manager = std::make_shared<BEAMINTERACTION::BeamToSolidMortarManager>(
+      mortar_manager = std::make_shared<BeamInteraction::BeamToSolidMortarManager>(
           discret, beam_to_solid_params_, start_gid_lambda);
     }
     else
     {
-      mortar_manager = std::make_shared<BEAMINTERACTION::BeamToSolidMortarManagerContact>(
+      mortar_manager = std::make_shared<BeamInteraction::BeamToSolidMortarManagerContact>(
           discret, beam_to_solid_params_, start_gid_lambda);
     }
 
@@ -150,7 +150,7 @@ BEAMINTERACTION::BeamToSolidCondition::create_indirect_assembly_manager(
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolumeMeshtying(
+BeamInteraction::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolumeMeshtying(
     const std::shared_ptr<const Core::Conditions::Condition>& condition_line,
     const std::shared_ptr<const Core::Conditions::Condition>& condition_other,
     const std::shared_ptr<const BeamToSolidParamsBase>& beam_to_solid_params)
@@ -169,7 +169,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolume
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::build_id_sets(
+void BeamInteraction::BeamToSolidConditionVolumeMeshtying::build_id_sets(
     const std::shared_ptr<const Core::FE::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
@@ -185,8 +185,8 @@ void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::build_id_sets(
  *
  */
 template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::create_beam_to_solid_volume_pair_shape(const Core::FE::CellType shape)
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::create_beam_to_solid_volume_pair_shape(const Core::FE::CellType shape)
 {
   switch (shape)
   {
@@ -218,8 +218,8 @@ BEAMINTERACTION::create_beam_to_solid_volume_pair_shape(const Core::FE::CellType
  *
  */
 template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::create_beam_to_solid_volume_pair_shape_no_nurbs(const Core::FE::CellType shape)
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::create_beam_to_solid_volume_pair_shape_no_nurbs(const Core::FE::CellType shape)
 {
   switch (shape)
   {
@@ -249,8 +249,8 @@ BEAMINTERACTION::create_beam_to_solid_volume_pair_shape_no_nurbs(const Core::FE:
  */
 template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments,
     typename... BtsMortarShape>
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::create_beam_to_solid_volume_pair_mortar(const Core::FE::CellType shape,
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::create_beam_to_solid_volume_pair_mortar(const Core::FE::CellType shape,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
     BtsMortarShape... other_mortar_shape_function)
 {
@@ -275,8 +275,8 @@ BEAMINTERACTION::create_beam_to_solid_volume_pair_mortar(const Core::FE::CellTyp
  *
  */
 template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments>
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::create_beam_to_solid_volume_pair_mortar(const Core::FE::CellType shape)
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::create_beam_to_solid_volume_pair_mortar(const Core::FE::CellType shape)
 {
   return create_beam_to_solid_volume_pair_shape<BtsClass, BtsMortarTemplateArguments...>(shape);
 }
@@ -284,8 +284,8 @@ BEAMINTERACTION::create_beam_to_solid_volume_pair_mortar(const Core::FE::CellTyp
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::create_contact_pair_internal(
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::BeamToSolidConditionVolumeMeshtying::create_contact_pair_internal(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   const Core::FE::CellType shape = ele_ptrs[1]->shape();
@@ -355,7 +355,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::create_contact_pair_intern
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidConditionSurface::BeamToSolidConditionSurface(
+BeamInteraction::BeamToSolidConditionSurface::BeamToSolidConditionSurface(
     const std::shared_ptr<const Core::Conditions::Condition>& condition_line,
     const std::shared_ptr<const Core::Conditions::Condition>& condition_other,
     const std::shared_ptr<const BeamToSolidParamsBase>& beam_to_solid_params,
@@ -381,7 +381,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::BeamToSolidConditionSurface(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidConditionSurface::build_id_sets(
+void BeamInteraction::BeamToSolidConditionSurface::build_id_sets(
     const std::shared_ptr<const Core::FE::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
@@ -417,7 +417,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::build_id_sets(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidConditionSurface::setup(
+void BeamInteraction::BeamToSolidConditionSurface::setup(
     const std::shared_ptr<const Core::FE::Discretization>& discret)
 {
   // Call the parent method.
@@ -528,7 +528,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::setup(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidConditionSurface::set_state(
+void BeamInteraction::BeamToSolidConditionSurface::set_state(
     const std::shared_ptr<const Core::FE::Discretization>& discret,
     const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>&
         beaminteraction_data_state)
@@ -556,8 +556,8 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::set_state(
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::BeamToSolidConditionSurface::create_contact_pair_internal(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   using namespace GEOMETRYPAIR;

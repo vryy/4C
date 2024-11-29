@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToBeamContactParams
   {
@@ -146,7 +146,7 @@ namespace BEAMINTERACTION
     bool btb_endpoint_penalty_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

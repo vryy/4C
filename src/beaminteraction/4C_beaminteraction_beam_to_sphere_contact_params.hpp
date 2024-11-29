@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSphereContactParams
   {
@@ -60,7 +60,7 @@ namespace BEAMINTERACTION
     double penalty_parameter_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

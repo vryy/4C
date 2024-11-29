@@ -44,7 +44,7 @@ namespace GEOMETRYPAIR
 }  // namespace GEOMETRYPAIR
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   // forward declaration ...
   class BeamContactParams;
@@ -71,7 +71,7 @@ namespace BEAMINTERACTION
     */
     virtual ~BeamContactPair() = default;
     //! Initialization
-    virtual void init(const std::shared_ptr<BEAMINTERACTION::BeamContactParams> params_ptr,
+    virtual void init(const std::shared_ptr<BeamInteraction::BeamContactParams> params_ptr,
         std::vector<Core::Elements::Element const*> elements);
 
     //! Setup
@@ -98,7 +98,7 @@ namespace BEAMINTERACTION
     //! return appropriate internal implementation class (acts as a simple factory)
     static std::shared_ptr<BeamContactPair> create(
         std::vector<Core::Elements::Element const*> const& ele_ptrs,
-        BEAMINTERACTION::BeamInteractionConditions& beam_interaction_conditions_ptr);
+        BeamInteraction::BeamInteractionConditions& beam_interaction_conditions_ptr);
 
     /*
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
@@ -117,7 +117,7 @@ namespace BEAMINTERACTION
 
     //! @name Access methods
 
-    inline std::shared_ptr<BEAMINTERACTION::BeamContactParams> params() const { return params_; }
+    inline std::shared_ptr<BeamInteraction::BeamContactParams> params() const { return params_; }
 
     /*!
     \brief Get an element pointer by the elements index.
@@ -414,7 +414,7 @@ namespace BEAMINTERACTION
 
    private:
     //! beam contact parameter data container
-    std::shared_ptr<BEAMINTERACTION::BeamContactParams> params_;
+    std::shared_ptr<BeamInteraction::BeamContactParams> params_;
 
     //! first element of interacting pair
     const Core::Elements::Element* element1_;
@@ -423,7 +423,7 @@ namespace BEAMINTERACTION
     const Core::Elements::Element* element2_;
     //@}
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

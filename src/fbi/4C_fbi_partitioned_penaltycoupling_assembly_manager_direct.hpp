@@ -24,7 +24,7 @@ namespace FBI
   }
 }  // namespace FBI
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   namespace SUBMODELEVALUATOR
   {
@@ -44,7 +44,7 @@ namespace BEAMINTERACTION
        * the global one
        */
       PartitionedBeamInteractionAssemblyManagerDirect(
-          const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>
+          const std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>
               assembly_contact_elepairs,
           std::shared_ptr<FBI::Utils::FBIAssemblyStrategy> assemblystrategy);
 
@@ -73,7 +73,7 @@ namespace BEAMINTERACTION
       std::shared_ptr<FBI::Utils::FBIAssemblyStrategy> assemblystrategy_;
     };
   }  // namespace SUBMODELEVALUATOR
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

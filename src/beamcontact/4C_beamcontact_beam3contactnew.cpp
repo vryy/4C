@@ -118,8 +118,8 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   // for tangent smoothing but also in order to determine the vector normalold_ of the neighbor,
   // which is needed to perform sliding contact (with changing active pairs) for slender beams.
   {
-    neighbors1_ = BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(element1);
-    neighbors2_ = BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(element2);
+    neighbors1_ = BeamInteraction::Beam3TangentSmoothing::determine_neigbors(element1);
+    neighbors2_ = BeamInteraction::Beam3TangentSmoothing::determine_neigbors(element2);
   }
 
   // Calculate initial length of beam elements (approximation for initially curved elements!)
@@ -162,7 +162,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
     // TODO: Here we need a warning in case we have no additive bounding box extrusion value!
   }
 
-  searchboxinc_ = BEAMINTERACTION::determine_searchbox_inc(beamcontactparams);
+  searchboxinc_ = BeamInteraction::determine_searchbox_inc(beamcontactparams);
 
   if (searchboxinc_ < 0.0)
     FOUR_C_THROW("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
@@ -2333,9 +2333,9 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::closest_point_projectio
 
     // Evaluate nodal tangents in each case. However, they are used only if
     // smoothing_=Inpar::BeamContact::bsm_cpp
-    BEAMINTERACTION::Beam3TangentSmoothing::compute_tangents_and_derivs<numnodes, numnodalvalues>(
+    BeamInteraction::Beam3TangentSmoothing::compute_tangents_and_derivs<numnodes, numnodalvalues>(
         t1, t1_xi, nodaltangentssmooth1_, N1, N1_xi);
-    BEAMINTERACTION::Beam3TangentSmoothing::compute_tangents_and_derivs<numnodes, numnodalvalues>(
+    BeamInteraction::Beam3TangentSmoothing::compute_tangents_and_derivs<numnodes, numnodalvalues>(
         t2, t2_xi, nodaltangentssmooth2_, N2, N2_xi);
 
     // evaluate f at current eta1, eta2
@@ -3560,7 +3560,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_ele_smooth_tange
     elepos_aux(i) = Core::FADUtils::cast_to_double(ele1pos_(i));
 
   nodaltangentssmooth1_ =
-      BEAMINTERACTION::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
+      BeamInteraction::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
           currentpositions, elepos_aux, element1_, *neighbors1_);
 
   elepos_aux.clear();
@@ -3569,7 +3569,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_ele_smooth_tange
     elepos_aux(i) = Core::FADUtils::cast_to_double(ele2pos_(i));
 
   nodaltangentssmooth2_ =
-      BEAMINTERACTION::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
+      BeamInteraction::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
           currentpositions, elepos_aux, element2_, *neighbors2_);
 }
 /*----------------------------------------------------------------------*

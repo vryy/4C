@@ -27,7 +27,7 @@ namespace Core::Elements
 {
   class FaceElement;
 }
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidParamsBase;
 }
@@ -40,7 +40,7 @@ namespace Inpar
 }  // namespace Inpar
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief This base class represents a single beam-to-solid interaction condition.
@@ -74,7 +74,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Create the beam to solid pairs needed for this condition (derived).
      */
-    std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair(
+    std::shared_ptr<BeamInteraction::BeamContactPair> create_contact_pair(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) override;
 
     /**
@@ -117,7 +117,7 @@ namespace BEAMINTERACTION
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
      * @return Pointer to the created pair.
      */
-    virtual std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
+    virtual std::shared_ptr<BeamInteraction::BeamContactPair> create_contact_pair_internal(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) = 0;
 
    protected:
@@ -162,7 +162,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the created beam contact pair for this condition. (derived)
      */
-    std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
+    std::shared_ptr<BeamInteraction::BeamContactPair> create_contact_pair_internal(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) override;
 
     /**
@@ -222,7 +222,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the created beam contact pair for this condition. (derived)
      */
-    std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
+    std::shared_ptr<BeamInteraction::BeamContactPair> create_contact_pair_internal(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) override;
 
     /**
@@ -262,7 +262,7 @@ namespace BEAMINTERACTION
    * @return The created beam-to-solid pair
    */
   template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
-  std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_shape(
+  std::shared_ptr<BeamInteraction::BeamContactPair> create_beam_to_solid_volume_pair_shape(
       const Core::FE::CellType shape);
 
   /**
@@ -276,7 +276,7 @@ namespace BEAMINTERACTION
    * @return The created beam-to-solid pair
    */
   template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
-  std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_shape_no_nurbs(
+  std::shared_ptr<BeamInteraction::BeamContactPair> create_beam_to_solid_volume_pair_shape_no_nurbs(
       const Core::FE::CellType shape);
 
   /**
@@ -294,7 +294,7 @@ namespace BEAMINTERACTION
    */
   template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments,
       typename... BtsMortarShape>
-  std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_mortar(
+  std::shared_ptr<BeamInteraction::BeamContactPair> create_beam_to_solid_volume_pair_mortar(
       const Core::FE::CellType shape,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
       BtsMortarShape... other_mortar_shape_function);
@@ -308,9 +308,9 @@ namespace BEAMINTERACTION
    * @return The created beam-to-solid pair
    */
   template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments>
-  std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_mortar(
+  std::shared_ptr<BeamInteraction::BeamContactPair> create_beam_to_solid_volume_pair_mortar(
       const Core::FE::CellType shape);
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

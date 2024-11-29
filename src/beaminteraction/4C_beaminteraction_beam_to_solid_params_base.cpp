@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidParamsBase::BeamToSolidParamsBase()
+BeamInteraction::BeamToSolidParamsBase::BeamToSolidParamsBase()
     : isinit_(false),
       issetup_(false),
       constraint_enforcement_(Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::none),
@@ -35,7 +35,7 @@ BEAMINTERACTION::BeamToSolidParamsBase::BeamToSolidParamsBase()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidParamsBase::set_base_params(
+void BeamInteraction::BeamToSolidParamsBase::set_base_params(
     const Teuchos::ParameterList& beam_to_solid_params_list)
 {
   // Get parameters form input file.
@@ -72,7 +72,7 @@ void BEAMINTERACTION::BeamToSolidParamsBase::set_base_params(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidParamsBase::setup()
+void BeamInteraction::BeamToSolidParamsBase::setup()
 {
   check_init();
 

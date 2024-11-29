@@ -17,12 +17,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declaration.
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidSurfaceVisualizationOutputParams;
 }
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for beam to solid contact parameters.
@@ -108,7 +108,7 @@ namespace BEAMINTERACTION
     std::shared_ptr<BeamToSolidSurfaceVisualizationOutputParams> output_params_ptr_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

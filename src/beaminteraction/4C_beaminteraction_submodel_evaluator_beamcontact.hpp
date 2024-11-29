@@ -27,7 +27,7 @@ namespace Core::GeometricSearch
   class geometric_search_params;
   class GeometricSearchVisualization;
 }  // namespace Core::GeometricSearch
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamContactParams;
   class BeamContactPair;
@@ -53,12 +53,12 @@ namespace BEAMINTERACTION
       void post_setup() override;
 
       //! Returns the type of the current submodel evaluator
-      Inpar::BEAMINTERACTION::SubModelType type() const override
+      Inpar::BeamInteraction::SubModelType type() const override
       {
-        return Inpar::BEAMINTERACTION::submodel_beamcontact;
+        return Inpar::BeamInteraction::submodel_beamcontact;
       }
 
-      //! @name Derived public BEAMINTERACTION::SUBMODELEVALUATOR::Generic methods
+      //! @name Derived public BeamInteraction::SUBMODELEVALUATOR::Generic methods
       //! @{
       //! \brief reset submodel specific variables
       //! derived
@@ -141,7 +141,7 @@ namespace BEAMINTERACTION
        * \brief Return the assembly managers in this submodel evaluator.
        */
       inline const std::vector<
-          std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
+          std::shared_ptr<BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
       get_assembly_managers() const
       {
         return assembly_managers_;
@@ -150,7 +150,7 @@ namespace BEAMINTERACTION
       /**
        * \brief Return the geometry pairs in this submodel evaluator.
        */
-      inline const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>&
+      inline const std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>&
       get_contact_pairs() const
       {
         return contact_elepairs_;
@@ -159,7 +159,7 @@ namespace BEAMINTERACTION
       /**
        * \brief Return the conditions in this submodel evaluator.
        */
-      inline std::shared_ptr<const BEAMINTERACTION::BeamInteractionConditions> get_conditions()
+      inline std::shared_ptr<const BeamInteraction::BeamInteractionConditions> get_conditions()
           const
       {
         return beam_interaction_conditions_ptr_;
@@ -182,19 +182,19 @@ namespace BEAMINTERACTION
       //! @}
 
      private:
-      inline BEAMINTERACTION::BeamContactParams const& beam_contact_params() const
+      inline BeamInteraction::BeamContactParams const& beam_contact_params() const
       {
         check_init();
         return *beam_contact_params_ptr_;
       }
 
-      inline BEAMINTERACTION::BeamContactParams& beam_contact_params()
+      inline BeamInteraction::BeamContactParams& beam_contact_params()
       {
         check_init();
         return *beam_contact_params_ptr_;
       }
 
-      inline std::shared_ptr<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr() const
+      inline std::shared_ptr<BeamInteraction::BeamContactParams> beam_contact_params_ptr() const
       {
         check_init();
         return beam_contact_params_ptr_;
@@ -251,13 +251,13 @@ namespace BEAMINTERACTION
       //! @}
 
       //! data container holding all beam contact related parameters
-      std::shared_ptr<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr_;
+      std::shared_ptr<BeamInteraction::BeamContactParams> beam_contact_params_ptr_;
 
       //! data container holding all beam interaction related parameters
-      std::shared_ptr<BEAMINTERACTION::BeamInteractionParams> beam_interaction_params_ptr_;
+      std::shared_ptr<BeamInteraction::BeamInteractionParams> beam_interaction_params_ptr_;
 
       //! data container holding all beam interactions defined by conditions
-      std::shared_ptr<BEAMINTERACTION::BeamInteractionConditions> beam_interaction_conditions_ptr_;
+      std::shared_ptr<BeamInteraction::BeamInteractionConditions> beam_interaction_conditions_ptr_;
 
       //! data container holding all geometric search related parameters
       std::shared_ptr<Core::GeometricSearch::GeometricSearchParams> geometric_search_params_ptr_;
@@ -266,10 +266,10 @@ namespace BEAMINTERACTION
       std::vector<Core::Binstrategy::Utils::BinContentType> contactelementtypes_;
 
       //! interacting pairs of beam elements that might exert forces on each other
-      std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> contact_elepairs_;
+      std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>> contact_elepairs_;
 
       //! Objects to evaluate system contributions for stiffness and force terms.
-      std::vector<std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>
+      std::vector<std::shared_ptr<BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManager>>
           assembly_managers_;
 
       //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
@@ -279,15 +279,15 @@ namespace BEAMINTERACTION
       std::shared_ptr<Core::IO::VisualizationManager> visualization_manager_ptr_;
 
       //! This object handles all beam to solid volume related visualization output.
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>
+      std::shared_ptr<BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>
           beam_to_solid_volume_meshtying_visualization_output_writer_ptr_;
 
       //! This object handles all beam to solid surface mesh tying related visualization output.
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>
+      std::shared_ptr<BeamInteraction::BeamToSolidSurfaceVisualizationOutputWriter>
           beam_to_solid_surface_visualization_output_writer_ptr_;
 
       //! This object handles all beam to solid surface contact related visualization output.
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriterContact>
+      std::shared_ptr<BeamInteraction::BeamToSolidSurfaceVisualizationOutputWriterContact>
           beam_to_solid_surface_visualization_output_writer_contact_ptr_;
 
       //! This object handles all geometric search related visualization output.
@@ -296,7 +296,7 @@ namespace BEAMINTERACTION
     };
 
   }  // namespace SUBMODELEVALUATOR
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

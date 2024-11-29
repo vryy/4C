@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
+BeamInteraction::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
     Surface>::BeamToSolidSurfaceMeshtyingPairBase()
     : base_class(), meshtying_is_evaluated_(false)
 {
@@ -38,7 +38,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
  *
  */
 template <typename ScalarTypeFad, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarTypeFad, Beam, Solid>::reset_state(
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairBase<ScalarTypeFad, Beam, Solid>::reset_state(
     const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& solid_nodal_dofvec)
 {
@@ -53,7 +53,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarTypeFad, Beam, S
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>::pre_evaluate()
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>::pre_evaluate()
 {
   // Call pre_evaluate on the geometry Pair.
   if (!meshtying_is_evaluated_)
@@ -67,7 +67,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surf
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
     Surface>::get_pair_visualization(std::shared_ptr<BeamToSolidVisualizationOutputWriterBase>
                                          visualization_writer,
     Teuchos::ParameterList& visualization_params) const
@@ -76,7 +76,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
   // Add segmentation and integration point data.
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>
       visualization_segmentation =
           visualization_writer->get_visualization_writer("btss-coupling-segmentation");
   if (visualization_segmentation != nullptr)
@@ -88,7 +88,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
     add_visualization_integration_points(*visualization_segmentation, points, visualization_params);
   }
 
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>
       visualization_integration_points =
           visualization_writer->get_visualization_writer("btss-coupling-integration-points");
   if (visualization_integration_points != nullptr)
@@ -106,9 +106,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>::
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>::
     add_visualization_integration_points(
-        BEAMINTERACTION::BeamToSolidOutputWriterVisualization& visualization_writer,
+        BeamInteraction::BeamToSolidOutputWriterVisualization& visualization_writer,
         const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points,
         const Teuchos::ParameterList& visualization_params) const
 {
@@ -166,7 +166,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surf
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
     Surface>::create_geometry_pair(const Core::Elements::Element* element1,
     const Core::Elements::Element* element2,
     const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
@@ -179,7 +179,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
     Surface>::set_face_element(std::shared_ptr<GEOMETRYPAIR::FaceElement>& face_element)
 {
   face_element_ = std::dynamic_pointer_cast<GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>>(
@@ -199,7 +199,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
  */
 template <typename ScalarType, typename Beam, typename Surface>
 std::shared_ptr<GEOMETRYPAIR::GeometryPairLineToSurface<double, Beam, Surface>>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
+BeamInteraction::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
     Surface>::cast_geometry_pair() const
 {
   return std::dynamic_pointer_cast<GEOMETRYPAIR::GeometryPairLineToSurface<double, Beam, Surface>>(
@@ -211,7 +211,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
  */
 template <typename ScalarType, typename Beam, typename Surface>
 Core::LinAlg::Matrix<3, 1, ScalarType>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>::evaluate_coupling(
+BeamInteraction::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>::evaluate_coupling(
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& evaluation_point) const
 {
   using namespace Inpar::BeamToSolid;
@@ -272,7 +272,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>:
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -307,6 +307,6 @@ namespace BEAMINTERACTION
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8>;
   template class BeamToSolidSurfaceMeshtyingPairBase<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9>;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

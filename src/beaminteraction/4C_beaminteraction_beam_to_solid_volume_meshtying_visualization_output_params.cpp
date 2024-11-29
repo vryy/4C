@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::
+BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputParams::
     BeamToSolidVolumeMeshtyingVisualizationOutputParams()
     : isinit_(false),
       issetup_(false),
@@ -37,7 +37,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::init()
+void BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputParams::init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -46,7 +46,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::init(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::setup()
+void BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputParams::setup()
 {
   check_init();
 

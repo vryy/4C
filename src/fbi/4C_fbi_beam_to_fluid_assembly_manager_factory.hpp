@@ -33,7 +33,7 @@ namespace FBI
     class FBIAssemblyStrategy;
   }
 }  // namespace FBI
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamContactPair;
 
@@ -41,7 +41,7 @@ namespace BEAMINTERACTION
   {
     class PartitionedBeamInteractionAssemblyManager;
   }
-  // namespace BEAMINTERACTION
+  // namespace BeamInteraction
   /**
    *  \brief Factory that creates the appropriate beam to fluid meshtying assembly manager for the
    * desired discretization
@@ -68,14 +68,14 @@ namespace BEAMINTERACTION
      * \return beam interaction assembly manager
      */
     static std::shared_ptr<
-        BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
+        BeamInteraction::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
     create_assembly_manager(std::shared_ptr<const Core::FE::Discretization> discretization1,
         std::shared_ptr<const Core::FE::Discretization> discretization2,
-        std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
+        std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>> interaction_pairs,
         const std::shared_ptr<FBI::BeamToFluidMeshtyingParams> params_ptr,
         std::shared_ptr<FBI::Utils::FBIAssemblyStrategy> assemblystrategy);
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

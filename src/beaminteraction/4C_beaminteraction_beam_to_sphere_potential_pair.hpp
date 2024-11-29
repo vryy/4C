@@ -38,14 +38,14 @@ namespace Discret
   }  // namespace Elements
 }  // namespace Discret
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /*!
    \brief class for potential-based interaction of a 3D beam element and a rigid sphere
    */
 
   template <unsigned int numnodes, unsigned int numnodalvalues>
-  class BeamToSpherePotentialPair : public BEAMINTERACTION::BeamPotentialPair
+  class BeamToSpherePotentialPair : public BeamInteraction::BeamPotentialPair
   {
    public:
     //! @name Friends
@@ -227,7 +227,7 @@ namespace BEAMINTERACTION
 
     //@}
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

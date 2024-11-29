@@ -41,7 +41,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::SphereBeamLinking()
+BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::SphereBeamLinking()
     : sm_crosslinkink_ptr_(nullptr),
       spherebeamlinking_params_ptr_(nullptr),
       visualization_manager_ptr_(nullptr),
@@ -51,19 +51,19 @@ BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::SphereBeamLinking()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::setup()
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::setup()
 {
   check_init();
 
   // construct, init and setup data container for crosslinking
-  spherebeamlinking_params_ptr_ = std::make_shared<BEAMINTERACTION::SphereBeamLinkingParams>();
+  spherebeamlinking_params_ptr_ = std::make_shared<BeamInteraction::SphereBeamLinkingParams>();
   spherebeamlinking_params_ptr_->init(g_state());
   spherebeamlinking_params_ptr_->setup();
 
   random_number_sphere_beam_linking_step_ = -1;
 
   // this includes temporary change in ghosting
-  BEAMINTERACTION::Utils::set_filament_binding_spot_positions(
+  BeamInteraction::Utils::set_filament_binding_spot_positions(
       discret_ptr(), *spherebeamlinking_params_ptr_);
 
   // build runtime visualization output writer
@@ -75,7 +75,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::setup()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::post_setup()
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::post_setup()
 {
   check_init_setup();
   // nothing to do (yet)
@@ -83,7 +83,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::post_setup()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_submodel_dependencies(
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::init_submodel_dependencies(
     std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
@@ -91,15 +91,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_submodel_depend
   // init pointer to crosslinker submodel
   Solid::ModelEvaluator::BeamInteraction::Map::const_iterator miter;
   for (miter = (*submodelmap).begin(); miter != (*submodelmap).end(); ++miter)
-    if (miter->first == Inpar::BEAMINTERACTION::submodel_crosslinking)
+    if (miter->first == Inpar::BeamInteraction::submodel_crosslinking)
       sm_crosslinkink_ptr_ =
-          std::dynamic_pointer_cast<BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking>(
+          std::dynamic_pointer_cast<BeamInteraction::SUBMODELEVALUATOR::Crosslinking>(
               miter->second);
 }
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset()
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::reset()
 {
   check_init_setup();
 
@@ -114,7 +114,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset()
     // loop over bonds of current sphere
     for (auto const& ipair : sphere->get_bond_map())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BeamInteraction::BeamLinkPinJointed> elepairptr = ipair.second;
 
       // get elements
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -132,7 +132,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset()
 
       // sphere current position
       std::vector<double> sphereeledisp;
-      BEAMINTERACTION::Utils::get_current_element_dis(
+      BeamInteraction::Utils::get_current_element_dis(
           discret(), sphere, *beam_interaction_data_state().get_dis_col_np(), sphereeledisp);
 
       // note: sphere has just one node (with three translational dofs)
@@ -141,7 +141,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset()
 
       // beam bspot pos
       std::vector<double> beameledisp;
-      BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), beamele,
+      BeamInteraction::Utils::get_current_unshifted_element_dis(discret(), beamele,
           *beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
       beamele->get_pos_of_binding_spot(pos[1], beameledisp,
           spherebeamlinking_params_ptr_->get_linker_material()->linker_type(),
@@ -162,7 +162,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force()
+bool BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force()
 {
   check_init_setup();
 
@@ -187,7 +187,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force()
     // loop over bonds of current sphere
     for (auto const& ipair : sphere->get_bond_map())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BeamInteraction::BeamLinkPinJointed> elepairptr = ipair.second;
 
       for (unsigned int i = 0; i < 2; ++i)
       {
@@ -200,14 +200,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force()
 
       // apply forces on binding spots to parent elements
       // and get their discrete element force vectors
-      BEAMINTERACTION::Utils::apply_binding_spot_force_to_parent_elements<
+      BeamInteraction::Utils::apply_binding_spot_force_to_parent_elements<
           Discret::Elements::Rigidsphere, Discret::Elements::Beam3Base>(discret(),
           *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
           *elepairptr, bspotforce, eleforce);
 
       // assemble the contributions into force vector class variable
       // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-      BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
+      BeamInteraction::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
           elegids, eleforce, dummystiff, beam_interaction_data_state_ptr()->get_force_np(),
           nullptr);
     }
@@ -218,7 +218,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_stiff()
+bool BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_stiff()
 {
   check_init_setup();
 
@@ -248,7 +248,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_stiff()
     // loop over bonds of current sphere
     for (auto const& ipair : sphere->get_bond_map())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BeamInteraction::BeamLinkPinJointed> elepairptr = ipair.second;
 
       for (unsigned int i = 0; i < 2; ++i)
       {
@@ -262,14 +262,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_stiff()
           bspotstiff[0][0], bspotstiff[0][1], bspotstiff[1][0], bspotstiff[1][1]);
 
       // apply linearizations to parent elements and get their discrete element stiffness matrices
-      BEAMINTERACTION::Utils::apply_binding_spot_stiff_to_parent_elements<
+      BeamInteraction::Utils::apply_binding_spot_stiff_to_parent_elements<
           Discret::Elements::Rigidsphere, Discret::Elements::Beam3Base>(discret(),
           *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
           *elepairptr, bspotstiff, elestiff);
 
       // assemble the contributions into stiffness matrix class variable
       // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
-      BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
+      BeamInteraction::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
           elegids, dummyforce, elestiff, nullptr, beam_interaction_data_state_ptr()->get_stiff());
     }
   }
@@ -279,7 +279,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_stiff()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force_stiff()
+bool BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force_stiff()
 {
   check_init_setup();
 
@@ -312,7 +312,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force_stiff
     // loop over bonds of current sphere
     for (auto const& ipair : sphere->get_bond_map())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BeamInteraction::BeamLinkPinJointed> elepairptr = ipair.second;
 
       for (unsigned int i = 0; i < 2; ++i)
       {
@@ -328,14 +328,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force_stiff
 
       // apply forces on binding spots and corresponding linearizations to parent elements
       // and get their discrete element force vectors and stiffness matrices
-      BEAMINTERACTION::Utils::apply_binding_spot_force_stiff_to_parent_elements<
+      BeamInteraction::Utils::apply_binding_spot_force_stiff_to_parent_elements<
           Discret::Elements::Rigidsphere, Discret::Elements::Beam3Base>(discret(),
           *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
           *elepairptr, bspotforce, bspotstiff, eleforce, elestiff);
 
       // assemble the contributions into force and stiffness class variables
       // f_crosslink_np_ptr_, stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
-      BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
+      BeamInteraction::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
           elegids, eleforce, elestiff, beam_interaction_data_state_ptr()->get_force_np(),
           beam_interaction_data_state_ptr()->get_stiff());
     }
@@ -346,14 +346,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force_stiff
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::update_step_state(
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::update_step_state(
     const double& timefac_n)
 {
   check_init_setup();
 }
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::pre_update_step_element(
+bool BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::pre_update_step_element(
     bool beam_redist)
 {
   check_init_setup();
@@ -363,7 +363,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::pre_update_step_elem
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::update_step_element(
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::update_step_element(
     bool repartition_was_done)
 {
   check_init_setup();
@@ -418,7 +418,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::update_step_element(
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::post_update_step_element()
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::post_update_step_element()
 {
   check_init_setup();
 
@@ -445,7 +445,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::post_update_step_ele
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 std::map<Solid::EnergyType, double>
-BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::get_energy() const
+BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::get_energy() const
 {
   check_init_setup();
 
@@ -472,7 +472,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::get_energy() const
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::output_step_state(
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
@@ -480,7 +480,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::output_step_state(
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::runtime_output_step_state() const
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::runtime_output_step_state() const
 {
   check_init_setup();
 
@@ -489,7 +489,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::runtime_output_step_
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset_step_state()
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::reset_step_state()
 {
   check_init_setup();
 
@@ -499,7 +499,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset_step_state()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_restart(
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::write_restart(
     Core::IO::DiscretizationWriter& ia_writer, Core::IO::DiscretizationWriter& bin_writer) const
 {
   check_init_setup();
@@ -509,14 +509,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_restart(
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::pre_read_restart()
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::pre_read_restart()
 {
   // empty
 }
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::read_restart(
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::read_restart(
     Core::IO::DiscretizationReader& ia_reader, Core::IO::DiscretizationReader& bin_reader)
 {
   check_init_setup();
@@ -526,14 +526,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::read_restart(
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::post_read_restart()
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::post_read_restart()
 {
   // empty
 }
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::add_bins_to_bin_col_map(
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::add_bins_to_bin_col_map(
     std::set<int>& colbins)
 {
   // empty
@@ -541,7 +541,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::add_bins_to_bin_col_
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::
     add_bins_with_relevant_content_for_ia_discret_col_map(std::set<int>& colbins) const
 {
   check_init_setup();
@@ -550,7 +550,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::get_half_interaction_distance(
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::get_half_interaction_distance(
     double& half_interaction_distance)
 {
   double spherebeamlinking_half_interaction_distance = 0.0;
@@ -596,7 +596,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::get_half_interaction
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_output_runtime()
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::init_output_runtime()
 {
   check_init();
 
@@ -609,7 +609,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_output_runtime(
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_output_runtime() const
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::write_output_runtime() const
 {
   check_init_setup();
 
@@ -651,7 +651,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_output_runtime
     // loop over bonds of current sphere
     for (auto const& ipair : sphere->get_bond_map())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BeamInteraction::BeamLinkPinJointed> elepairptr = ipair.second;
 
       Discret::Elements::Beam3Base const* beamele =
           dynamic_cast<Discret::Elements::Beam3Base const*>(
@@ -662,7 +662,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_output_runtime
 
       // sphere current position
       std::vector<double> sphereeledisp;
-      BEAMINTERACTION::Utils::get_current_element_dis(
+      BeamInteraction::Utils::get_current_element_dis(
           discret(), sphere, *beam_interaction_data_state().get_dis_col_np(), sphereeledisp);
 
       // note: sphere has just one node (with three translational dofs)
@@ -671,7 +671,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_output_runtime
 
       // beam bspot pos
       std::vector<double> beameledisp;
-      BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), beamele,
+      BeamInteraction::Utils::get_current_unshifted_element_dis(discret(), beamele,
           *beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
       beamele->get_pos_of_binding_spot(pos[1], beameledisp,
           spherebeamlinking_params_ptr_->get_linker_material()->linker_type(),
@@ -707,11 +707,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_output_runtime
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::find_and_store_neighboring_elements(
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::find_and_store_neighboring_elements(
     std::map<int, std::vector<std::pair<int, int>>>& newlinks)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "BEAMINTERACTION::SUBMODELEVALUATOR::"
+      "BeamInteraction::SUBMODELEVALUATOR::"
       "SphereBeamLinking::find_and_store_neighboring_elements");
 
   check_init_setup();
@@ -720,7 +720,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::find_and_store_neigh
 
   // loop over all sphere elements
   int unsigned const numrowsphereeles = ele_type_map_extractor_ptr()->sphere_map()->NumMyElements();
-  std::vector<int> rand_row_sphere = BEAMINTERACTION::Utils::permutation(numrowsphereeles);
+  std::vector<int> rand_row_sphere = BeamInteraction::Utils::permutation(numrowsphereeles);
 
   for (unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i)
   {
@@ -757,7 +757,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::find_and_store_neigh
     // -------------------------------------------------------------------------
     std::vector<Core::Elements::Element const*> beamvec(
         neighboring_elements.begin(), neighboring_elements.end());
-    std::sort(beamvec.begin(), beamvec.end(), BEAMINTERACTION::Utils::Less());
+    std::sort(beamvec.begin(), beamvec.end(), BeamInteraction::Utils::Less());
 
     // sort out elements that do not meet bind event criteria
     check_feasibility_of_new_link(currsphere, beamvec, tobebonded, newlinks);
@@ -766,7 +766,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::find_and_store_neigh
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of_new_link(
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of_new_link(
     Core::Elements::Element const* currele,
     std::vector<Core::Elements::Element const*> const& neighbors,
     std::unordered_set<int>& tobebonded,
@@ -781,7 +781,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
 
   // current sphere position
   std::vector<double> sphereeledisp;
-  BEAMINTERACTION::Utils::get_current_element_dis(
+  BeamInteraction::Utils::get_current_element_dis(
       discret(), currele, *beam_interaction_data_state().get_dis_col_np(), sphereeledisp);
 
   // note: sphere has just one node (with three translational dofs)
@@ -790,7 +790,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
     spherepos(dim) = sphere->nodes()[0]->x()[dim] + sphereeledisp[dim];
 
   // loop over all neighboring elements
-  std::vector<int> rand_ele = BEAMINTERACTION::Utils::permutation(neighbors.size());
+  std::vector<int> rand_ele = BeamInteraction::Utils::permutation(neighbors.size());
   for (auto const& eiter : rand_ele)
   {
     Discret::Elements::Beam3Base const* beamele =
@@ -802,7 +802,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
 #endif
 
     std::vector<double> beameledisp;
-    BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), beamele,
+    BeamInteraction::Utils::get_current_unshifted_element_dis(discret(), beamele,
         *beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
 
     Core::LinAlg::Matrix<3, 1> bspotpos(true);
@@ -811,12 +811,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
     // loop over binding spots of neighboring element
     unsigned int numbspots = beamele->get_number_of_binding_spots(
         spherebeamlinking_params_ptr_->get_linker_material()->linker_type());
-    std::vector<int> rand_bsp = BEAMINTERACTION::Utils::permutation(numbspots);
+    std::vector<int> rand_bsp = BeamInteraction::Utils::permutation(numbspots);
     for (unsigned int bspot_i = 0; bspot_i < numbspots; ++bspot_i)
     {
       // build unique linker id from elegid and local binding spot id
       std::pair<int, int> bspotpair = std::make_pair(beamele->id(), rand_bsp[bspot_i]);
-      int bpspotgid = BEAMINTERACTION::Utils::cantor_pairing(bspotpair);
+      int bpspotgid = BeamInteraction::Utils::cantor_pairing(bspotpair);
 
       // criterion: has sphere reached maximum number of admissible bonds?
       if ((sphere->get_number_of_bonds() + numnewbondsthisstep) ==
@@ -866,7 +866,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
           spherebeamlinking_params_ptr_->get_linker_material()->linking_length_tolerance();
 
 
-      if (BEAMINTERACTION::Utils::is_distance_out_of_range(
+      if (BeamInteraction::Utils::is_distance_out_of_range(
               spherepos, bspotpos, linkdistmin, linkdistmax))
         continue;
 
@@ -896,7 +896,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
           spherebeamlinking_params_ptr_->get_linker_material()->linking_angle() +
           spherebeamlinking_params_ptr_->get_linker_material()->linking_angle_tolerance();
 
-      if (BEAMINTERACTION::Utils::is_enclosed_angle_out_of_range(
+      if (BeamInteraction::Utils::is_enclosed_angle_out_of_range(
               dist_vec, curr_bindingspot_beam_tangent, linkanglemin, linkanglemax))
 
         // criterion: check if bspot will already be bonded this step
@@ -914,7 +914,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_sphere_joint(
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_sphere_joint(
     std::map<int, std::vector<std::pair<int, int>>> const& newlinks)
 {
   check_init_setup();
@@ -937,7 +937,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
 
     // sphere current position
     std::vector<double> sphereeledisp;
-    BEAMINTERACTION::Utils::get_current_element_dis(
+    BeamInteraction::Utils::get_current_element_dis(
         discret(), sphere, *beam_interaction_data_state().get_dis_col_np(), sphereeledisp);
 
     // note: sphere has just one node (with three translational dofs)
@@ -956,7 +956,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
 
       // beam bspot pos
       std::vector<double> beameledisp;
-      BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), beamele,
+      BeamInteraction::Utils::get_current_unshifted_element_dis(discret(), beamele,
           *beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
       beamele->get_pos_of_binding_spot(pos[1], beameledisp,
           spherebeamlinking_params_ptr_->get_linker_material()->linker_type(), bspotiter.second,
@@ -965,11 +965,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
       // create and initialize objects of beam-to-beam connections
       // Todo introduce enum for type of linkage (only linear Beam3r element possible so far)
       //      and introduce corresponding input parameter
-      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr =
-          BEAMINTERACTION::BeamLinkPinJointed::create(Inpar::BEAMINTERACTION::truss);
+      std::shared_ptr<BeamInteraction::BeamLinkPinJointed> linkelepairptr =
+          BeamInteraction::BeamLinkPinJointed::create(Inpar::BeamInteraction::truss);
 
       // unique linker id is bspot elegid and locspot id paired
-      int id = BEAMINTERACTION::Utils::cantor_pairing(eleids[1]);
+      int id = BeamInteraction::Utils::cantor_pairing(eleids[1]);
 
       // dummy triad
       std::vector<Core::LinAlg::Matrix<3, 3>> dummy_triad(2, Core::LinAlg::Matrix<3, 3>(true));
@@ -990,7 +990,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::unbind_sphere_beam_bonds(
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::unbind_sphere_beam_bonds(
     int& num_dissolved)
 {
   check_init_setup();
@@ -1017,7 +1017,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::unbind_sphere_beam_b
 
   // sphere loop
   int unsigned const numrowsphereeles = ele_type_map_extractor_ptr()->sphere_map()->NumMyElements();
-  std::vector<int> rand_row_sphere = BEAMINTERACTION::Utils::permutation(numrowsphereeles);
+  std::vector<int> rand_row_sphere = BeamInteraction::Utils::permutation(numrowsphereeles);
   for (unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i)
   {
     int const elegid = ele_type_map_extractor_ptr()->sphere_map()->GID(rand_row_sphere[rowele_i]);
@@ -1029,7 +1029,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::unbind_sphere_beam_b
     to_dissolve.reserve(sphere->get_bond_map().size());
     for (auto const& ipair : sphere->get_bond_map())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BeamInteraction::BeamLinkPinJointed> elepairptr = ipair.second;
 
       // check if linker was set this time step
       if (elepairptr->get_time_link_was_set() == g_state().get_time_np()) continue;
@@ -1052,9 +1052,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::unbind_sphere_beam_b
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::
     calc_force_dependent_catch_slip_bond_unbind_probability(
-        std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr, double& p_unbind)
+        std::shared_ptr<BeamInteraction::BeamLinkPinJointed> linkelepairptr, double& p_unbind)
 {
   check_init_setup();
 
@@ -1115,14 +1115,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::update_linker_length()
+void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::update_linker_length()
 {
   check_init_setup();
 
   // adapt force/strain in linker
   // note: problem time step is used here
   double contraction_per_dt =
-      spherebeamlinking_params_ptr_->contraction_rate(Inpar::BEAMINTERACTION::linkertype_integrin) *
+      spherebeamlinking_params_ptr_->contraction_rate(Inpar::BeamInteraction::linkertype_integrin) *
       (*g_state().get_delta_time())[0];
   double scalefac = 0.0;
   int unsigned const numrowsphereeles = ele_type_map_extractor_ptr()->sphere_map()->NumMyElements();
@@ -1141,7 +1141,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::update_linker_length
     for (auto const& ipair : sphere->get_bond_map())
     {
       // get pair object
-      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BeamInteraction::BeamLinkPinJointed> elepairptr = ipair.second;
 
       // only contract if linker size > sphere radius * factor
       double factor = 1.01;

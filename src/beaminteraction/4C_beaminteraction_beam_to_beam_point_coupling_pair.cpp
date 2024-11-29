@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename Beam>
-BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::BeamToBeamPointCouplingPair(
+BeamInteraction::BeamToBeamPointCouplingPair<Beam>::BeamToBeamPointCouplingPair(
     double penalty_parameter_rot, double penalty_parameter_pos,
     std::array<double, 2> pos_in_parameterspace)
     : BeamContactPair(),
@@ -41,7 +41,7 @@ BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::BeamToBeamPointCouplingPair(
  *
  */
 template <typename Beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::setup()
+void BeamInteraction::BeamToBeamPointCouplingPair<Beam>::setup()
 {
   // This pair only works for Simo Reissner beam elements.
   const auto check_simo_reissner_beam = [](auto element)
@@ -60,7 +60,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::setup()
  *
  */
 template <typename Beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble(
+void BeamInteraction::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble(
     const std::shared_ptr<const Core::FE::Discretization>& discret,
     const std::shared_ptr<Epetra_FEVector>& force_vector,
     const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -76,7 +76,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble(
  *
  */
 template <typename Beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_positional_coupling(
+void BeamInteraction::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_positional_coupling(
     const Core::FE::Discretization& discret, const std::shared_ptr<Epetra_FEVector>& force_vector,
     const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Core::LinAlg::Vector<double>& displacement_vector) const
@@ -107,7 +107,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
     std::vector<double> element_posdofvec_absolutevalues(Beam::n_dof_, 0.0);
     std::vector<int> lm(Beam::n_dof_);
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++) lm[i_dof] = gid_pos[i_beam](i_dof);
-    BEAMINTERACTION::Utils::extract_pos_dof_vec_absolute_values(
+    BeamInteraction::Utils::extract_pos_dof_vec_absolute_values(
         discret, beam_ele[i_beam], displacement_vector, element_posdofvec_absolutevalues);
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
       beam_pos[i_beam].element_position_(i_dof) =
@@ -167,7 +167,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
  *
  */
 template <typename Beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_rotational_coupling(
+void BeamInteraction::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_rotational_coupling(
     const Core::FE::Discretization& discret, const std::shared_ptr<Epetra_FEVector>& force_vector,
     const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Core::LinAlg::Vector<double>& displacement_vector) const
@@ -196,7 +196,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double>
         ref_triad_interpolation_scheme;
-    BEAMINTERACTION::get_beam_triad_interpolation_scheme(discret, displacement_vector,
+    BeamInteraction::get_beam_triad_interpolation_scheme(discret, displacement_vector,
         beam_ele[i_beam], triad_interpolation_scheme, ref_triad_interpolation_scheme);
 
     // Calculate the rotation vector of the beam cross sections and its FAD representation.
@@ -296,7 +296,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
  *
  */
 template <typename Beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::print(std::ostream& out) const
+void BeamInteraction::BeamToBeamPointCouplingPair<Beam>::print(std::ostream& out) const
 {
   check_init_setup();
 
@@ -311,7 +311,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::print(std::ostream& out
  *
  */
 template <typename Beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<
+void BeamInteraction::BeamToBeamPointCouplingPair<
     Beam>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   check_init_setup();
@@ -324,11 +324,11 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
   template class BeamToBeamPointCouplingPair<t_hermite>;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

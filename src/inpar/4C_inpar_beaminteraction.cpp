@@ -16,17 +16,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::BEAMINTERACTION::beam_interaction_conditions_get_all(
-    std::vector<Inpar::BEAMINTERACTION::BeamInteractionConditions>& interactions)
+void Inpar::BeamInteraction::beam_interaction_conditions_get_all(
+    std::vector<Inpar::BeamInteraction::BeamInteractionConditions>& interactions)
 {
-  interactions = {Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_contact,
-      Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_point_coupling,
-      Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying,
-      Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying,
-      Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact};
+  interactions = {Inpar::BeamInteraction::BeamInteractionConditions::beam_to_beam_contact,
+      Inpar::BeamInteraction::BeamInteractionConditions::beam_to_beam_point_coupling,
+      Inpar::BeamInteraction::BeamInteractionConditions::beam_to_solid_volume_meshtying,
+      Inpar::BeamInteraction::BeamInteractionConditions::beam_to_solid_surface_meshtying,
+      Inpar::BeamInteraction::BeamInteractionConditions::beam_to_solid_surface_contact};
 }
 
-void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::ParameterList& list)
+void Inpar::BeamInteraction::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -34,10 +34,10 @@ void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::ParameterList& list)
 
   Teuchos::ParameterList& beaminteraction = list.sublist("BEAM INTERACTION", false, "");
 
-  setStringToIntegralParameter<Inpar::BEAMINTERACTION::RepartitionStrategy>("REPARTITIONSTRATEGY",
+  setStringToIntegralParameter<Inpar::BeamInteraction::RepartitionStrategy>("REPARTITIONSTRATEGY",
       "Adaptive", "Type of employed repartitioning strategy",
       tuple<std::string>("Adaptive", "adaptive", "Everydt", "everydt"),
-      tuple<Inpar::BEAMINTERACTION::RepartitionStrategy>(
+      tuple<Inpar::BeamInteraction::RepartitionStrategy>(
           repstr_adaptive, repstr_adaptive, repstr_everydt, repstr_everydt),
       &beaminteraction);
 
@@ -141,9 +141,9 @@ void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::ParameterList& list)
   Teuchos::ParameterList& beamtobeamcontact =
       beaminteraction.sublist("BEAM TO BEAM CONTACT", false, "");
 
-  setStringToIntegralParameter<Inpar::BEAMINTERACTION::Strategy>("STRATEGY", "None",
+  setStringToIntegralParameter<Inpar::BeamInteraction::Strategy>("STRATEGY", "None",
       "Type of employed solving strategy", tuple<std::string>("None", "none", "Penalty", "penalty"),
-      tuple<Inpar::BEAMINTERACTION::Strategy>(bstr_none, bstr_none, bstr_penalty, bstr_penalty),
+      tuple<Inpar::BeamInteraction::Strategy>(bstr_none, bstr_none, bstr_penalty, bstr_penalty),
       &beamtobeamcontact);
 
   // ...
@@ -154,9 +154,9 @@ void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::ParameterList& list)
   Teuchos::ParameterList& beamtospherecontact =
       beaminteraction.sublist("BEAM TO SPHERE CONTACT", false, "");
 
-  setStringToIntegralParameter<Inpar::BEAMINTERACTION::Strategy>("STRATEGY", "None",
+  setStringToIntegralParameter<Inpar::BeamInteraction::Strategy>("STRATEGY", "None",
       "Type of employed solving strategy", tuple<std::string>("None", "none", "Penalty", "penalty"),
-      tuple<Inpar::BEAMINTERACTION::Strategy>(bstr_none, bstr_none, bstr_penalty, bstr_penalty),
+      tuple<Inpar::BeamInteraction::Strategy>(bstr_none, bstr_none, bstr_penalty, bstr_penalty),
       &beamtospherecontact);
 
   Core::Utils::double_parameter("PENALTY_PARAMETER", 0.0,
@@ -169,7 +169,7 @@ void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::ParameterList& list)
   BeamToSolid::set_valid_parameters(list);
 }
 
-void Inpar::BEAMINTERACTION::set_valid_conditions(
+void Inpar::BeamInteraction::set_valid_conditions(
     std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;

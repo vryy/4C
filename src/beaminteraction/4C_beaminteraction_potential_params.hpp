@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToBeamPotentialRuntimeOutputParams;
 
@@ -124,7 +124,7 @@ namespace BEAMINTERACTION
     }
 
     //! get the data container for parameters regarding visualization output
-    inline std::shared_ptr<const BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
+    inline std::shared_ptr<const BeamInteraction::BeamToBeamPotentialRuntimeOutputParams>
     get_beam_potential_visualization_output_params() const
     {
       throw_error_if_not_init_and_setup();
@@ -185,7 +185,7 @@ namespace BEAMINTERACTION
 
     //! data container for input parameters related to visualization output of beam contact at
     //! runtime
-    std::shared_ptr<BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
+    std::shared_ptr<BeamInteraction::BeamToBeamPotentialRuntimeOutputParams>
         params_runtime_visualization_output_btb_potential_;
 
     //! within this length starting from the master beam end point the potential is smoothly
@@ -194,7 +194,7 @@ namespace BEAMINTERACTION
     double potential_reduction_length_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

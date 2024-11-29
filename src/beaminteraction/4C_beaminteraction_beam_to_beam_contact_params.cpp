@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamToBeamContactParams::BeamToBeamContactParams()
+BeamInteraction::BeamToBeamContactParams::BeamToBeamContactParams()
     : isinit_(false),
       issetup_(false),
       strategy_(Inpar::BeamContact::bstr_none),
@@ -41,7 +41,7 @@ BEAMINTERACTION::BeamToBeamContactParams::BeamToBeamContactParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamContactParams::init()
+void BeamInteraction::BeamToBeamContactParams::init()
 {
   issetup_ = false;
 
@@ -215,7 +215,7 @@ void BEAMINTERACTION::BeamToBeamContactParams::init()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamContactParams::setup()
+void BeamInteraction::BeamToBeamContactParams::setup()
 {
   check_init();
 

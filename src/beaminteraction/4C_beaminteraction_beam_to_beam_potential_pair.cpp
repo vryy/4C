@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::BeamToBeamPotentialPair()
+BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::BeamToBeamPotentialPair()
     : BeamPotentialPair(),
       beam_element1_(nullptr),
       beam_element2_(nullptr),
@@ -49,7 +49,7 @@ BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::BeamToBea
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::setup()
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::setup()
 {
   check_init();
 
@@ -95,7 +95,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::setu
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::evaluate(
+bool BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22,
@@ -192,7 +192,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::eval
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     evaluate_fpotand_stiffpot_large_sep_approx(
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot1,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot2,
@@ -452,7 +452,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     T>::evaluate_stiffpot_analytic_contributions_large_sep_approx(Core::LinAlg::Matrix<3, 1,
                                                                       double> const& dist,
     double const& norm_dist, double const& norm_dist_exp1, double q1q2_JacFac_GaussWeights,
@@ -559,7 +559,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     evaluate_fpotand_stiffpot_double_length_specific_small_sep_approx(
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot1,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot2,
@@ -931,7 +931,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     evaluate_stiffpot_analytic_contributions_double_length_specific_small_sep_approx(
         Core::LinAlg::Matrix<3, 1, double> const& dist, double const& norm_dist, double const& gap,
         double const& gap_regularized, double const& gap_exp1, double q1q2_JacFac_GaussWeights,
@@ -1044,7 +1044,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     evaluate_fpotand_stiffpot_single_length_specific_small_sep_approx(
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot1,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot2,
@@ -1300,7 +1300,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       iter_projection = 0;
 
       while (iter_projection < num_initial_values and
-             (not BEAMINTERACTION::Geo::point_to_curve_projection<numnodes, numnodalvalues, T>(
+             (not BeamInteraction::Geo::point_to_curve_projection<numnodes, numnodalvalues, T>(
                  r_slave, xi_master, xi_master_initial_guess_values[iter_projection], ele2pos_,
                  element2()->shape(), ele2length_)))
       {
@@ -1366,7 +1366,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       }
 
       // mutual angle of tangent vectors at unilateral closest points
-      BEAMINTERACTION::Geo::calc_enclosed_angle(alpha, cos_alpha, r_xi_slave, r_xi_master);
+      BeamInteraction::Geo::calc_enclosed_angle(alpha, cos_alpha, r_xi_slave, r_xi_master);
 
       if (alpha < 0.0 or alpha > M_PI_2)
         FOUR_C_THROW("alpha=%f, should be in [0,pi/2]", Core::FADUtils::cast_to_double(alpha));
@@ -1380,12 +1380,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           numnodalvalues>(
           N_i_master, N_i_xi_master, N_i_xixi_master, N_master, N_xi_master, N_xixi_master);
 
-      BEAMINTERACTION::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master<
+      BeamInteraction::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master<
           numnodes, numnodalvalues>(lin_xi_master_slaveDofs, lin_xi_master_masterDofs, dist_ul,
           r_xi_master, r_xixi_master, N_slave, N_master, N_xixi_master);
 
 
-      BEAMINTERACTION::Geo::calc_point_to_curve_projection_parameter_coord_master_partial_derivs(
+      BeamInteraction::Geo::calc_point_to_curve_projection_parameter_coord_master_partial_derivs(
           xi_master_partial_r_slave, xi_master_partial_r_master, xi_master_partial_r_xi_master,
           dist_ul, r_xi_master, r_xixi_master);
 
@@ -1465,7 +1465,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     evaluate_stiffpot_analytic_contributions_single_length_specific_small_sep_approx_simple(
         Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double> const& N_i_slave,
         Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double> const& N_i_xi_slave,
@@ -1919,7 +1919,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   Core::LinAlg::Matrix<3, 1, double> dist_ul(true);
   dist_ul.update(norm_dist_ul, normal_ul);
 
-  BEAMINTERACTION::Geo::calc_point_to_curve_projection_parameter_coord_master_partial2nd_derivs(
+  BeamInteraction::Geo::calc_point_to_curve_projection_parameter_coord_master_partial2nd_derivs(
       xi_master_partial_r_slave_partial_r_slave, xi_master_partial_r_slave_partial_r_master,
       xi_master_partial_r_slave_partial_r_xi_master,
       xi_master_partial_r_slave_partial_r_xixi_master, xi_master_partial_r_master_partial_r_slave,
@@ -2359,7 +2359,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
+bool BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     T>::evaluate_full_disk_cylinder_potential(T& interaction_potential_GP,
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot_slave_GP,
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot_master_GP,
@@ -3018,7 +3018,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
+bool BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     T>::evaluate_simple_disk_cylinder_potential(Core::LinAlg::Matrix<3, 1, T> const& dist_ul,
     T norm_dist_ul, T alpha, T cos_alpha, Core::LinAlg::Matrix<3, 1, T> const& r_slave,
     Core::LinAlg::Matrix<3, 1, T> const& r_xi_slave, T norm_r_xi_slave,
@@ -3467,7 +3467,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     T>::scale_stiffpot_analytic_contributions_if_required(double const& scalefactor,
     Core::LinAlg::SerialDenseMatrix& stiffmat11, Core::LinAlg::SerialDenseMatrix& stiffmat12,
     Core::LinAlg::SerialDenseMatrix& stiffmat21, Core::LinAlg::SerialDenseMatrix& stiffmat22) const
@@ -3481,7 +3481,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     calc_stiffmat_automatic_differentiation_if_required(
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>> const&
             force_pot1,
@@ -3513,7 +3513,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     add_stiffmat_contributions_xi_master_automatic_differentiation_if_required(
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>> const&
             force_pot1,
@@ -3555,7 +3555,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     calc_fpot_gausspoint_automatic_differentiation_if_required(
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot1,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot2,
@@ -3583,7 +3583,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     calc_fpot_gausspoint_automatic_differentiation_if_required(
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
             force_pot1,
@@ -3613,7 +3613,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::print(
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::print(
     std::ostream& out) const
 {
   check_init_setup();
@@ -3631,7 +3631,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::prin
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     T>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   check_init_setup();
@@ -3644,7 +3644,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::get_shape_functions(
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::get_shape_functions(
     std::vector<Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double>>& N1_i,
     std::vector<Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double>>& N2_i,
     std::vector<Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double>>& N1_i_xi,
@@ -3663,7 +3663,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::get_
 
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 template <typename T2>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     T>::compute_centerline_position(Core::LinAlg::Matrix<3, 1, T>& r,
     const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T2>& N_i,
     const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const
@@ -3675,7 +3675,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 template <typename T2>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     T>::compute_centerline_tangent(Core::LinAlg::Matrix<3, 1, T>& r_xi,
     const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T2>& N_i_xi,
     const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const
@@ -3687,7 +3687,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::reset_state(double time,
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::reset_state(double time,
     const std::vector<double>& centerline_dofvec_ele1,
     const std::vector<double>& centerline_dofvec_ele2)
 {
@@ -3711,7 +3711,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::rese
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     set_automatic_differentiation_variables_if_required(
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
             ele1centerlinedofvec,
@@ -3730,7 +3730,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     set_automatic_differentiation_variables_if_required(
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
             ele1centerlinedofvec,
@@ -3753,7 +3753,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
+bool BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     T>::are_elements_much_more_separated_than_cutoff_distance()
 {
   const unsigned int num_spatial_dim = 3;
@@ -3811,15 +3811,15 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 }
 
 // explicit template instantiations
-template class BEAMINTERACTION::BeamToBeamPotentialPair<2, 1, double>;
-template class BEAMINTERACTION::BeamToBeamPotentialPair<2, 1, Sacado::Fad::DFad<double>>;
-template class BEAMINTERACTION::BeamToBeamPotentialPair<3, 1, double>;
-template class BEAMINTERACTION::BeamToBeamPotentialPair<3, 1, Sacado::Fad::DFad<double>>;
-template class BEAMINTERACTION::BeamToBeamPotentialPair<4, 1, double>;
-template class BEAMINTERACTION::BeamToBeamPotentialPair<4, 1, Sacado::Fad::DFad<double>>;
-template class BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, double>;
-template class BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, Sacado::Fad::DFad<double>>;
-template class BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, double>;
-template class BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, Sacado::Fad::DFad<double>>;
+template class BeamInteraction::BeamToBeamPotentialPair<2, 1, double>;
+template class BeamInteraction::BeamToBeamPotentialPair<2, 1, Sacado::Fad::DFad<double>>;
+template class BeamInteraction::BeamToBeamPotentialPair<3, 1, double>;
+template class BeamInteraction::BeamToBeamPotentialPair<3, 1, Sacado::Fad::DFad<double>>;
+template class BeamInteraction::BeamToBeamPotentialPair<4, 1, double>;
+template class BeamInteraction::BeamToBeamPotentialPair<4, 1, Sacado::Fad::DFad<double>>;
+template class BeamInteraction::BeamToBeamPotentialPair<5, 1, double>;
+template class BeamInteraction::BeamToBeamPotentialPair<5, 1, Sacado::Fad::DFad<double>>;
+template class BeamInteraction::BeamToBeamPotentialPair<2, 2, double>;
+template class BeamInteraction::BeamToBeamPotentialPair<2, 2, Sacado::Fad::DFad<double>>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -43,8 +43,8 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
       bcparams_(beamcontactparams),
       iter_(0),
       numstep_(0),
-      r1_(BEAMINTERACTION::calc_ele_radius(element1)),
-      r2_(BEAMINTERACTION::calc_ele_radius(element2)),
+      r1_(BeamInteraction::calc_ele_radius(element1)),
+      r2_(BeamInteraction::calc_ele_radius(element2)),
       maxactivegap_(get_max_active_dist()),
       maxsegdist1_(0.0),
       maxsegdist2_(0.0),
@@ -75,8 +75,8 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
     // For both elements the 2 direct neighbor elements are determined and saved in the
     // B3CNeighbor-Class variables neighbors1_ and neighbors2_.
     {
-      neighbors1_ = BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(element1);
-      neighbors2_ = BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(element2);
+      neighbors1_ = BeamInteraction::Beam3TangentSmoothing::determine_neigbors(element1);
+      neighbors2_ = BeamInteraction::Beam3TangentSmoothing::determine_neigbors(element2);
     }
   }
 
@@ -93,8 +93,8 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
 
   if (determine_neighbors)
   {
-    neighbors1_ = BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(element1);
-    neighbors2_ = BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(element2);
+    neighbors1_ = BeamInteraction::Beam3TangentSmoothing::determine_neigbors(element1);
+    neighbors2_ = BeamInteraction::Beam3TangentSmoothing::determine_neigbors(element2);
 
     bool leftboundarynode1 = false;
     bool rightboundarynode1 = false;
@@ -820,7 +820,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_small_angle_pai
           // TODO: This procedure can also be made more efficient by deleting all segments of
           // curintsegpairs which are not relevant for the following Gauss points anymore (see
           // intersection of integration intervals and segment pairs)
-          if (BEAMINTERACTION::within_interval(eta1_slave, eta1_segleft, eta1_segright))
+          if (BeamInteraction::within_interval(eta1_slave, eta1_segleft, eta1_segright))
           {
             double eta2_segleft = (curintsegpairs[k]).second;
             double eta2_master = 0.0;
@@ -838,8 +838,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_small_angle_pai
               {
                 TYPE eta1 = eta1_slave;
                 TYPE eta2 = eta2_master;
-                int leftpoint_id1 = BEAMINTERACTION::get_segment_id(eta1_slave, numseg1_);
-                int leftpoint_id2 = BEAMINTERACTION::get_segment_id(eta2_master, numseg2_);
+                int leftpoint_id1 = BeamInteraction::get_segment_id(eta1_slave, numseg1_);
+                int leftpoint_id2 = BeamInteraction::get_segment_id(eta2_master, numseg2_);
                 std::pair<TYPE, TYPE> closestpoint(std::make_pair(eta1, eta2));
                 std::pair<int, int> integration_ids = std::make_pair(numgp, interval);
                 std::pair<int, int> leftpoint_ids = std::make_pair(leftpoint_id1, leftpoint_id2);
@@ -1934,8 +1934,8 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::check_segment(
   Core::LinAlg::Matrix<3, 1, double> diffvec(true);
   diffvec = Core::FADUtils::diff_vector(rm_lin, rm);
   dist = (double)Core::FADUtils::vector_norm<3>(diffvec);
-  angle1 = (double)BEAMINTERACTION::calc_angle(t1, t_lin);
-  angle2 = (double)BEAMINTERACTION::calc_angle(t2, t_lin);
+  angle1 = (double)BeamInteraction::calc_angle(t1, t_lin);
+  angle2 = (double)BeamInteraction::calc_angle(t2, t_lin);
 
   if (fabs(angle1) < segangle and fabs(angle2) < segangle)  // segment distribution is fine enough
   {
@@ -1990,13 +1990,13 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_close_segments(
       r2_b = endpoints2[j + 1];
       t2 = Core::FADUtils::diff_vector(r2_b, r2_a);
 
-      angle = BEAMINTERACTION::calc_angle(t1, t2);
+      angle = BeamInteraction::calc_angle(t1, t2);
 
       //*******1) intersection between two parallel
       // cylinders*********************************************************
       if (fabs(angle) < ANGLETOL)
       {
-        if (BEAMINTERACTION::intersect_parallel_cylinders(r1_a, r1_b, r2_a, r2_b, distancelimit))
+        if (BeamInteraction::intersect_parallel_cylinders(r1_a, r1_b, r2_a, r2_b, distancelimit))
         {
           Core::LinAlg::Matrix<3, 1, double> segmentdata(true);
           segmentdata(0) = angle;   // segment angle
@@ -2025,7 +2025,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_close_segments(
       {
         std::pair<double, double> closestpoints(std::make_pair(0.0, 0.0));
         bool etaset = false;
-        if (BEAMINTERACTION::intersect_arbitrary_cylinders(
+        if (BeamInteraction::intersect_arbitrary_cylinders(
                 r1_a, r1_b, r2_a, r2_b, distancelimit, closestpoints, etaset))
         {
           Core::LinAlg::Matrix<3, 1, double> segmentdata(true);
@@ -2211,9 +2211,9 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::closest_point_projection(d
       {
         // Evaluate nodal tangents in each case. However, they are used only if
         // smoothing=Inpar::BeamContact::bsm_cpp
-        BEAMINTERACTION::Beam3TangentSmoothing::compute_tangents_and_derivs<numnodes,
+        BeamInteraction::Beam3TangentSmoothing::compute_tangents_and_derivs<numnodes,
             numnodalvalues>(t1, t1_xi, nodaltangentssmooth1_, N1, N1_xi);
-        BEAMINTERACTION::Beam3TangentSmoothing::compute_tangents_and_derivs<numnodes,
+        BeamInteraction::Beam3TangentSmoothing::compute_tangents_and_derivs<numnodes,
             numnodalvalues>(t2, t2_xi, nodaltangentssmooth2_, N2, N2_xi);
       }
 
@@ -2443,7 +2443,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::closest_point_projection(d
           FOUR_C_THROW("Tangent vector of zero length, choose smaller time step!");
 
         double angle =
-            fabs(BEAMINTERACTION::calc_angle(Core::FADUtils::cast_to_double<TYPE, 3, 1>(r1_xi),
+            fabs(BeamInteraction::calc_angle(Core::FADUtils::cast_to_double<TYPE, 3, 1>(r1_xi),
                 Core::FADUtils::cast_to_double<TYPE, 3, 1>(r2_xi)));
 
         double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * M_PI;
@@ -2813,7 +2813,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::point_to_line_projection(d
 
         bool relevant_angle = true;
         double angle =
-            fabs(BEAMINTERACTION::calc_angle(Core::FADUtils::cast_to_double<TYPE, 3, 1>(r1_xi),
+            fabs(BeamInteraction::calc_angle(Core::FADUtils::cast_to_double<TYPE, 3, 1>(r1_xi),
                 Core::FADUtils::cast_to_double<TYPE, 3, 1>(r2_xi)));
         if (smallanglepair)
         {
@@ -5007,7 +5007,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::compute_normal(
   variables->set_gap(gap);
   variables->set_normal(normal);
   variables->set_angle(
-      BEAMINTERACTION::calc_angle(Core::FADUtils::cast_to_double<TYPE, 3, 1>(r1_xi),
+      BeamInteraction::calc_angle(Core::FADUtils::cast_to_double<TYPE, 3, 1>(r1_xi),
           Core::FADUtils::cast_to_double<TYPE, 3, 1>(r2_xi)));
 
   return;
@@ -5233,7 +5233,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::update_ele_smooth_tangents
     elepos_aux(i) = Core::FADUtils::cast_to_double(ele1pos_(i));
 
   nodaltangentssmooth1_ =
-      BEAMINTERACTION::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
+      BeamInteraction::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
           currentpositions, elepos_aux, element1_, *neighbors1_);
 
   elepos_aux.clear();
@@ -5242,7 +5242,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::update_ele_smooth_tangents
     elepos_aux(i) = Core::FADUtils::cast_to_double(ele2pos_(i));
 
   nodaltangentssmooth2_ =
-      BEAMINTERACTION::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
+      BeamInteraction::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
           currentpositions, elepos_aux, element2_, *neighbors2_);
 }
 /*----------------------------------------------------------------------*

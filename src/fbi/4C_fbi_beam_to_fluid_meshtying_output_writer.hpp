@@ -23,7 +23,7 @@ namespace Adapter
 {
   class FBIConstraintenforcer;
 }
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidVisualizationOutputWriterBase;
 }
@@ -36,7 +36,7 @@ namespace Solid::TimeInt
   class ParamsRuntimeOutput;
 }
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief This class manages and creates all visualization output for beam to solid volume
@@ -94,14 +94,14 @@ namespace BEAMINTERACTION
     std::shared_ptr<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr_;
 
     //! Pointer to the output writer, which handles the actual output data for this object.
-    std::shared_ptr<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>
+    std::shared_ptr<BeamInteraction::BeamToSolidVisualizationOutputWriterBase>
         output_writer_base_ptr_;
 
     //! visualization parameters
     Core::IO::VisualizationParameters visualization_params_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

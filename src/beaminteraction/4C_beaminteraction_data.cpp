@@ -20,28 +20,28 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamInteractionParams::BeamInteractionParams()
+BeamInteraction::BeamInteractionParams::BeamInteractionParams()
     : isinit_(false),
       issetup_(false),
-      rep_strategy_(Inpar::BEAMINTERACTION::repstr_adaptive),
-      search_strategy_(Inpar::BEAMINTERACTION::SearchStrategy::bruteforce_with_binning)
+      rep_strategy_(Inpar::BeamInteraction::repstr_adaptive),
+      search_strategy_(Inpar::BeamInteraction::SearchStrategy::bruteforce_with_binning)
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamInteractionParams::init()
+void BeamInteraction::BeamInteractionParams::init()
 {
   issetup_ = false;
 
   Teuchos::ParameterList const& params_list =
       Global::Problem::instance()->beam_interaction_params();
 
-  rep_strategy_ = Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::RepartitionStrategy>(
+  rep_strategy_ = Teuchos::getIntegralValue<Inpar::BeamInteraction::RepartitionStrategy>(
       params_list, "REPARTITIONSTRATEGY");
 
-  search_strategy_ = Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::SearchStrategy>(
+  search_strategy_ = Teuchos::getIntegralValue<Inpar::BeamInteraction::SearchStrategy>(
       params_list, "SEARCH_STRATEGY");
 
   isinit_ = true;
@@ -49,7 +49,7 @@ void BEAMINTERACTION::BeamInteractionParams::init()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamInteractionParams::setup()
+void BeamInteraction::BeamInteractionParams::setup()
 {
   check_init();
 
@@ -61,14 +61,14 @@ void BEAMINTERACTION::BeamInteractionParams::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::Data::CrosslinkerData::CrosslinkerData() : id_(-1), pos_(true), numbond_(0)
+BeamInteraction::Data::CrosslinkerData::CrosslinkerData() : id_(-1), pos_(true), numbond_(0)
 {
   bspots_ = std::vector<std::pair<int, int>>(2, std::pair<int, int>(-1, -1));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::CrosslinkerData::pack(Core::Communication::PackBuffer& data) const
+void BeamInteraction::Data::CrosslinkerData::pack(Core::Communication::PackBuffer& data) const
 {
   // pack id
   add_to_pack(data, id_);
@@ -82,7 +82,7 @@ void BEAMINTERACTION::Data::CrosslinkerData::pack(Core::Communication::PackBuffe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::CrosslinkerData::unpack(Core::Communication::UnpackBuffer& buffer)
+void BeamInteraction::Data::CrosslinkerData::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // id
   extract_from_pack(buffer, id_);
@@ -97,7 +97,7 @@ void BEAMINTERACTION::Data::CrosslinkerData::unpack(Core::Communication::UnpackB
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::Data::BeamData::BeamData() : id_(-1)
+BeamInteraction::Data::BeamData::BeamData() : id_(-1)
 {
   bspotpos_.clear();
   bspottriad_.clear();
@@ -106,7 +106,7 @@ BEAMINTERACTION::Data::BeamData::BeamData() : id_(-1)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::BeamData::pack(Core::Communication::PackBuffer& data) const
+void BeamInteraction::Data::BeamData::pack(Core::Communication::PackBuffer& data) const
 {
   // pack id
   add_to_pack(data, id_);
@@ -122,7 +122,7 @@ void BEAMINTERACTION::Data::BeamData::pack(Core::Communication::PackBuffer& data
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::BeamData::unpack(Core::Communication::UnpackBuffer& buffer)
+void BeamInteraction::Data::BeamData::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // id
   extract_from_pack(buffer, id_);
@@ -140,7 +140,7 @@ void BEAMINTERACTION::Data::BeamData::unpack(Core::Communication::UnpackBuffer& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::Data::BindEventData::BindEventData()
+BeamInteraction::Data::BindEventData::BindEventData()
     : clgid_(-1), elegid_(-1), bspotlocn_(-1), requestproc_(-1), permission_(-1)
 {
   // empty
@@ -148,7 +148,7 @@ BEAMINTERACTION::Data::BindEventData::BindEventData()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::BindEventData::init(
+void BeamInteraction::Data::BindEventData::init(
     int clgid, int elegid, int bspotlocn, int requestproc, int permission)
 {
   clgid_ = clgid;
@@ -160,7 +160,7 @@ void BEAMINTERACTION::Data::BindEventData::init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::BindEventData::pack(Core::Communication::PackBuffer& data) const
+void BeamInteraction::Data::BindEventData::pack(Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, clgid_);
 
@@ -177,7 +177,7 @@ void BEAMINTERACTION::Data::BindEventData::pack(Core::Communication::PackBuffer&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::BindEventData::unpack(Core::Communication::UnpackBuffer& buffer)
+void BeamInteraction::Data::BindEventData::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   extract_from_pack(buffer, clgid_);
 
@@ -196,17 +196,17 @@ void BEAMINTERACTION::Data::BindEventData::unpack(Core::Communication::UnpackBuf
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::Data::UnBindEventData::UnBindEventData()
+BeamInteraction::Data::UnBindEventData::UnBindEventData()
     : clgid_(-1),
       eletoupdate_(std::make_pair(-1, -1)),
-      linkertype_(Inpar::BEAMINTERACTION::linkertype_arbitrary)
+      linkertype_(Inpar::BeamInteraction::linkertype_arbitrary)
 {
   // empty
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::UnBindEventData::pack(Core::Communication::PackBuffer& data) const
+void BeamInteraction::Data::UnBindEventData::pack(Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, clgid_);
 
@@ -219,7 +219,7 @@ void BEAMINTERACTION::Data::UnBindEventData::pack(Core::Communication::PackBuffe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::UnBindEventData::unpack(Core::Communication::UnpackBuffer& buffer)
+void BeamInteraction::Data::UnBindEventData::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   extract_from_pack(buffer, clgid_);
 
@@ -234,7 +234,7 @@ void BEAMINTERACTION::Data::UnBindEventData::unpack(Core::Communication::UnpackB
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BEAMINTERACTION::Data::BspotLinkerData::BspotLinkerData()
+BeamInteraction::Data::BspotLinkerData::BspotLinkerData()
     : elegid_1_(-1),
       elegid_2_(-1),
       locbspot_1_(-1),
@@ -248,7 +248,7 @@ BEAMINTERACTION::Data::BspotLinkerData::BspotLinkerData()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::Data::BspotLinkerData::same_as(BspotLinkerData bspotlinker)
+bool BeamInteraction::Data::BspotLinkerData::same_as(BspotLinkerData bspotlinker)
 {
   if (bspotlinker.get_ele_gid1() == elegid_1_ and bspotlinker.get_ele_gid2() == elegid_2_ and
       bspotlinker.get_loc_bspot_id1() == locbspot_1_ and

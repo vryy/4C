@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   namespace SUBMODELEVALUATOR
   {
@@ -33,7 +33,7 @@ namespace BEAMINTERACTION
        * class.
        */
       BeamContactAssemblyManagerDirect(
-          const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>&
+          const std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>&
               assembly_contact_elepairs);
 
 
@@ -53,7 +53,7 @@ namespace BEAMINTERACTION
        * \brief Return a const reference to the contact pairs in this assembly manager.
        * @return Reference to the pair vector.
        */
-      const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& get_contact_pairs()
+      const std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>& get_contact_pairs()
           const
       {
         return assembly_contact_elepairs_;
@@ -61,10 +61,10 @@ namespace BEAMINTERACTION
 
      protected:
       //! Vector of pairs to be evaluated by this class.
-      std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs_;
+      std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>> assembly_contact_elepairs_;
     };
   }  // namespace SUBMODELEVALUATOR
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

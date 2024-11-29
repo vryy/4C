@@ -26,7 +26,7 @@ namespace Core::LargeRotations
 }  // namespace Core::LargeRotations
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for point-wise beam to beam mesh tying.
@@ -209,8 +209,8 @@ namespace BEAMINTERACTION
 
     //! Coupling point positions in the element parameter spaces.
     std::array<double, 2> position_in_parameterspace_;
-  };  // namespace BEAMINTERACTION
-}  // namespace BEAMINTERACTION
+  };  // namespace BeamInteraction
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

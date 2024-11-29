@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename Beam, typename Solid, typename Mortar>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
+BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
     Mortar>::BeamToSolidVolumeMeshtyingPairMortar()
     : base_class(), n_mortar_rot_(0)
 {
@@ -39,7 +39,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
  *
  */
 template <typename Beam, typename Solid, typename Mortar>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
     Mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
@@ -84,7 +84,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
  *
  */
 template <typename Beam, typename Solid, typename Mortar>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
     Mortar>::get_pair_visualization(std::shared_ptr<BeamToSolidVisualizationOutputWriterBase>
                                         visualization_writer,
     Teuchos::ParameterList& visualization_params) const
@@ -92,9 +92,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
   // Get visualization of base method.
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_discret =
       visualization_writer->get_visualization_writer("btsv-mortar");
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_continuous =
       visualization_writer->get_visualization_writer("btsv-mortar-continuous");
   if (!visualization_discret and visualization_continuous == nullptr) return;
 
@@ -117,8 +117,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
-    std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
-        visualization_params.get<std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+    std::shared_ptr<const BeamInteraction::BeamToSolidMortarManager> mortar_manager =
+        visualization_params.get<std::shared_ptr<const BeamInteraction::BeamToSolidMortarManager>>(
             "mortar_manager");
     std::shared_ptr<Core::LinAlg::Vector<double>> lambda =
         visualization_params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("lambda");
@@ -272,7 +272,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
  *
  */
 template <typename Beam, typename Solid, typename Mortar>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid, Mortar>::evaluate_dm(
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid, Mortar>::evaluate_dm(
     Core::LinAlg::Matrix<Mortar::n_dof_, Beam::n_dof_, double>& local_D,
     Core::LinAlg::Matrix<Mortar::n_dof_, Solid::n_dof_, double>& local_M,
     Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>& local_kappa,
@@ -382,7 +382,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid, Mortar>:
  *
  */
 template <typename Beam, typename Solid, typename Mortar>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
     Mortar>::evaluate_penalty_force_double(const Core::LinAlg::Matrix<3, 1, double>& r_beam,
     const Core::LinAlg::Matrix<3, 1, double>& r_solid,
     Core::LinAlg::Matrix<3, 1, double>& force) const
@@ -394,7 +394,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -418,6 +418,6 @@ namespace BEAMINTERACTION
   template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet4, t_line4>;
   template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet10, t_line4>;
   template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_line4>;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

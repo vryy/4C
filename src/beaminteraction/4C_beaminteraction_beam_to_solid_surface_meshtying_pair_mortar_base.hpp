@@ -17,14 +17,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Base class for Mortar beam to surface surface mesh tying.
    * @tparam scalar_type Type for scalar variables.
    * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @tparam surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
-   * @tparam mortar Type from BEAMINTERACTION::ElementDiscretization... representing the mortar
+   * @tparam mortar Type from BeamInteraction::ElementDiscretization... representing the mortar
    * shape functions.
    */
   template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
@@ -68,7 +68,7 @@ namespace BEAMINTERACTION
     //! Number of rotational Lagrange multipliers.
     unsigned int n_mortar_rot_;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -586,19 +586,19 @@ namespace Discret
       //! get centerline pos at binding spot with locn x stored in element parameter space
       //! coordinates \in [-1,1] from displacement state vector
       void get_pos_of_binding_spot(Core::LinAlg::Matrix<3, 1>& pos, std::vector<double>& disp,
-          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn,
+          Inpar::BeamInteraction::CrosslinkerType linkertype, int bspotlocn,
           Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox) const;
 
       //! get triad at binding spot with locn x stored in element parameter space coordinates \in
       //! [-1,1] from displacement state vector
       void get_triad_of_binding_spot(Core::LinAlg::Matrix<3, 3>& triad, std::vector<double>& disp,
-          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn) const;
+          Inpar::BeamInteraction::CrosslinkerType linkertype, int bspotlocn) const;
 
       /** \brief get entire binding spot information of element
        *
        *  \author eichinger
        *  \date 06/17 */
-      std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::vector<double>> const&
+      std::map<Inpar::BeamInteraction::CrosslinkerType, std::vector<double>> const&
       get_binding_spots() const
       {
         return bspotposxi_;
@@ -615,7 +615,7 @@ namespace Discret
        *  \author eichinger
        *  \date 06/17 */
       unsigned int get_number_of_binding_spots(
-          Inpar::BEAMINTERACTION::CrosslinkerType linkertype) const
+          Inpar::BeamInteraction::CrosslinkerType linkertype) const
       {
         return bspotposxi_.at(linkertype).size();
       }
@@ -625,7 +625,7 @@ namespace Discret
        *  \author eichinger
        *  \date 03/17 */
       double get_binding_spot_xi(
-          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, unsigned int bspotlocn) const
+          Inpar::BeamInteraction::CrosslinkerType linkertype, unsigned int bspotlocn) const
       {
         if (bspotlocn > bspotposxi_.at(linkertype).size())
           FOUR_C_THROW("number of requested binding spot exceeds total number of binding spots");
@@ -638,7 +638,7 @@ namespace Discret
        *  \author eichinger
        *  \date 03/17 */
       void set_binding_spots(
-          std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::vector<double>> bspotposxi)
+          std::map<Inpar::BeamInteraction::CrosslinkerType, std::vector<double>> bspotposxi)
       {
         bspotposxi_.clear();
         bspotposxi_ = bspotposxi;
@@ -649,7 +649,7 @@ namespace Discret
        *  \author eichinger
        *  \date 03/17 */
       void set_positions_of_binding_spot_type(
-          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, std::vector<double> const& bspotposxi)
+          Inpar::BeamInteraction::CrosslinkerType linkertype, std::vector<double> const& bspotposxi)
       {
         bspotposxi_[linkertype] = bspotposxi;
       }
@@ -658,12 +658,12 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 03/17 */
-      void set_filament_type(Inpar::BEAMINTERACTION::FilamentType filamenttype)
+      void set_filament_type(Inpar::BeamInteraction::FilamentType filamenttype)
       {
         filamenttype_ = filamenttype;
       }
 
-      Inpar::BEAMINTERACTION::FilamentType get_filament_type() const { return filamenttype_; }
+      Inpar::BeamInteraction::FilamentType get_filament_type() const { return filamenttype_; }
 
       /**
        * \brief Get the bounding volume of the element for geometric search
@@ -680,10 +680,10 @@ namespace Discret
      private:
       //! position of binding spots on beam element in local coordinate system
       //! size of vector equals number of binding spots on this element
-      std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::vector<double>> bspotposxi_;
+      std::map<Inpar::BeamInteraction::CrosslinkerType, std::vector<double>> bspotposxi_;
 
       //! type of filament element belongs to
-      Inpar::BEAMINTERACTION::FilamentType filamenttype_;
+      Inpar::BeamInteraction::FilamentType filamenttype_;
 
       //! @}
 

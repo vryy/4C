@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
  |  constructor (public)                                     meier 01/14|
  *----------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-BEAMINTERACTION::BeamToBeamContactVariables<numnodes, numnodalvalues>::BeamToBeamContactVariables(
+BeamInteraction::BeamToBeamContactVariables<numnodes, numnodalvalues>::BeamToBeamContactVariables(
     std::pair<TYPE, TYPE>& closestpoint, std::pair<int, int>& segids, std::pair<int, int>& intids,
     const double& pp, TYPE jacobi)
     : closestpoint_(closestpoint),
@@ -44,10 +44,10 @@ BEAMINTERACTION::BeamToBeamContactVariables<numnodes, numnodalvalues>::BeamToBea
  *----------------------------------------------------------------------*/
 
 // Possible template cases: this is necessary for the compiler
-template class BEAMINTERACTION::BeamToBeamContactVariables<2, 1>;
-template class BEAMINTERACTION::BeamToBeamContactVariables<3, 1>;
-template class BEAMINTERACTION::BeamToBeamContactVariables<4, 1>;
-template class BEAMINTERACTION::BeamToBeamContactVariables<5, 1>;
-template class BEAMINTERACTION::BeamToBeamContactVariables<2, 2>;
+template class BeamInteraction::BeamToBeamContactVariables<2, 1>;
+template class BeamInteraction::BeamToBeamContactVariables<3, 1>;
+template class BeamInteraction::BeamToBeamContactVariables<4, 1>;
+template class BeamInteraction::BeamToBeamContactVariables<5, 1>;
+template class BeamInteraction::BeamToBeamContactVariables<2, 2>;
 
 FOUR_C_NAMESPACE_CLOSE

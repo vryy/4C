@@ -39,7 +39,7 @@ namespace Core::LinAlg
   class SparseMatrix;
   class SparseOperator;
 }  // namespace Core::LinAlg
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamContactPair;
 }
@@ -67,7 +67,7 @@ namespace Adapter
    * constraint enforcement technique with a discretization approach for Fluid-beam interaction.
    *
    * The idea is, that this method should act a bit like a mini
-   * BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact and manage the fluid-beam interaction pairs and
+   * BeamInteraction::SUBMODELEVALUATOR::BeamContact and manage the fluid-beam interaction pairs and
    * their assembly into global contribution matrices
    */
   class FBIConstraintBridge
@@ -110,14 +110,14 @@ namespace Adapter
      */
     virtual void reset_pair(const std::vector<double> beam_centerline_dofvec,
         const std::vector<double> fluid_nodal_dofvec,
-        std::shared_ptr<BEAMINTERACTION::BeamContactPair> interactionpair);
+        std::shared_ptr<BeamInteraction::BeamContactPair> interactionpair);
 
     /// Creates a fluid_beam_meshtying pair
     virtual void create_pair(std::vector<Core::Elements::Element const*> elements,
         std::vector<double> beam_centerline_dofvec, std::vector<double> fluid_nodal_dofvec);
 
     // Get function for the meshtying pairs meshtying_pairs_
-    virtual std::shared_ptr<std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>>
+    virtual std::shared_ptr<std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>>
     get_pairs() const final
     {
       return meshtying_pairs_;
@@ -177,7 +177,7 @@ namespace Adapter
 
    private:
     /// meshtying pairs
-    std::shared_ptr<std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>>
+    std::shared_ptr<std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>>
         meshtying_pairs_;
 
     /// data container holding all geometry related evaluation data

@@ -30,7 +30,7 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidOutputWriterVisualization;
 }
@@ -40,7 +40,7 @@ namespace GEOMETRYPAIR
 }
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Add the nodal forces of beams and solid discretization to the output writer.
@@ -51,7 +51,7 @@ namespace BEAMINTERACTION
    * @param write_unique_ids (in) If unique IDs should be written.
    */
   void add_beam_interaction_nodal_forces(
-      const std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
+      const std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>& visualization,
       const std::shared_ptr<const Core::FE::Discretization>& discret_ptr,
       const std::shared_ptr<const Core::LinAlg::MultiVector<double>>& displacement,
       const Core::LinAlg::MultiVector<double>& force, const bool write_unique_ids = false);
@@ -66,7 +66,7 @@ namespace BEAMINTERACTION
    * @param write_unique_ids (in) If unique IDs should be written.
    */
   void add_averaged_nodal_normals(
-      BEAMINTERACTION::BeamToSolidOutputWriterVisualization& output_writer_base_ptr,
+      BeamInteraction::BeamToSolidOutputWriterVisualization& output_writer_base_ptr,
       const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements,
       const int condition_coupling_id, const bool write_unique_ids = false);
 
@@ -97,7 +97,7 @@ namespace BEAMINTERACTION
   void get_node_coupling_force_resultants(const std::vector<double>& local_force,
       const std::vector<double>& local_position, Core::LinAlg::Matrix<3, 2, double>& resultant);
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

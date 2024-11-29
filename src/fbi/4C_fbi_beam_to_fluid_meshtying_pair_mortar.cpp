@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename Beam, typename Fluid, typename Mortar>
-BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid,
+BeamInteraction::BeamToFluidMeshtyingPairMortar<Beam, Fluid,
     Mortar>::BeamToFluidMeshtyingPairMortar()
     : BeamToFluidMeshtyingPairBase<Beam, Fluid>()
 {
@@ -38,7 +38,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid,
  *
  */
 template <typename Beam, typename Fluid, typename Mortar>
-bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::evaluate_dm(
+bool BeamInteraction::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::evaluate_dm(
     Core::LinAlg::SerialDenseMatrix& local_D, Core::LinAlg::SerialDenseMatrix& local_M,
     Core::LinAlg::SerialDenseVector& local_kappa,
     Core::LinAlg::SerialDenseVector& local_constraint_offset)
@@ -144,7 +144,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::evalu
  *
  */
 template <typename Beam, typename Fluid, typename Mortar>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_pair_visualization(
+void BeamInteraction::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_pair_visualization(
     std::shared_ptr<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
@@ -153,9 +153,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_p
       visualization_writer, visualization_params);
 
 
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_discret =
       visualization_writer->get_visualization_writer("mortar");
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_continuous =
       visualization_writer->get_visualization_writer("mortar-continuous");
   if (visualization_discret != nullptr || visualization_continuous != nullptr)
   {
@@ -169,8 +169,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_p
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
-    std::shared_ptr<const BEAMINTERACTION::BeamToFluidMortarManager> mortar_manager =
-        visualization_params.get<std::shared_ptr<const BEAMINTERACTION::BeamToFluidMortarManager>>(
+    std::shared_ptr<const BeamInteraction::BeamToFluidMortarManager> mortar_manager =
+        visualization_params.get<std::shared_ptr<const BeamInteraction::BeamToFluidMortarManager>>(
             "mortar_manager");
     std::shared_ptr<Core::LinAlg::Vector<double>> lambda =
         visualization_params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("lambda");
@@ -271,7 +271,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_p
 }
 
 template <typename Beam, typename Fluid, typename Mortar>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::evaluate_penalty_force(
+void BeamInteraction::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::evaluate_penalty_force(
     Core::LinAlg::Matrix<3, 1, scalar_type>& force,
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
     Core::LinAlg::Matrix<3, 1, scalar_type> v_beam) const
@@ -281,37 +281,37 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::evalu
 /**
  * Explicit template initialization of template class.
  */
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2>;
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line2>;
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line2>;
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line2>;
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line2>;
 
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line3>;
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line3>;
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line3>;
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line3>;
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line3>;
 
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line4>;
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line4>;
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line4>;
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line4>;
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>;
 
 FOUR_C_NAMESPACE_CLOSE

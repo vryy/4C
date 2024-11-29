@@ -30,7 +30,7 @@ namespace Discret
   }
 }  // namespace Discret
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamLinkBeam3rLine2RigidJointedType : public Core::Communication::ParObjectType
   {
@@ -182,7 +182,7 @@ namespace BEAMINTERACTION
     //@}
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

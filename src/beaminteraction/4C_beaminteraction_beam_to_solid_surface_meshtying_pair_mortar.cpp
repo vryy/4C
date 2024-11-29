@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename Beam, typename Surface, typename Mortar>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface,
+BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface,
     Mortar>::BeamToSolidSurfaceMeshtyingPairMortar()
     : base_class()
 {
@@ -33,7 +33,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface,
  *
  */
 template <typename Beam, typename Surface, typename Mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface,
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface,
     Mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
@@ -75,7 +75,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface,
  *
  */
 template <typename Beam, typename Surface, typename Mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Mortar>::evaluate_dm(
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Mortar>::evaluate_dm(
     Core::LinAlg::Matrix<Mortar::n_dof_, Beam::n_dof_, double>& local_D,
     Core::LinAlg::Matrix<Mortar::n_dof_, Surface::n_dof_, double>& local_M,
     Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>& local_kappa,
@@ -208,8 +208,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Morta
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::beam_to_solid_surface_meshtying_pair_mortar_factory(
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::beam_to_solid_surface_meshtying_pair_mortar_factory(
     const Core::FE::CellType surface_shape,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction)
 {

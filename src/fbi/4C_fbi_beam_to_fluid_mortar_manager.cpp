@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToFluidMortarManager::BeamToFluidMortarManager(
+BeamInteraction::BeamToFluidMortarManager::BeamToFluidMortarManager(
     std::shared_ptr<const Core::FE::Discretization> discretization1,
     std::shared_ptr<const Core::FE::Discretization> discretization2,
     std::shared_ptr<const FBI::BeamToFluidMeshtyingParams> params, int start_value_lambda_gid)
@@ -78,7 +78,7 @@ BEAMINTERACTION::BeamToFluidMortarManager::BeamToFluidMortarManager(
 /**
  *
  */
-void BEAMINTERACTION::BeamToFluidMortarManager::setup()
+void BeamInteraction::BeamToFluidMortarManager::setup()
 {
   // Get the global ids of all beam centerline nodes on this rank.
   std::vector<int> my_nodes_gid;
@@ -86,7 +86,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::setup()
        i_node++)
   {
     Core::Nodes::Node const& node = *(discretization_structure_->l_row_node(i_node));
-    if (BEAMINTERACTION::Utils::is_beam_centerline_node(node)) my_nodes_gid.push_back(node.id());
+    if (BeamInteraction::Utils::is_beam_centerline_node(node)) my_nodes_gid.push_back(node.id());
   }
 
   // Get the global ids of all beam elements on this rank.
@@ -95,7 +95,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::setup()
        i_element++)
   {
     Core::Elements::Element const& element = *(discretization_structure_->l_row_element(i_element));
-    if (BEAMINTERACTION::Utils::is_beam_element(element)) my_elements_gid.push_back(element.id());
+    if (BeamInteraction::Utils::is_beam_element(element)) my_elements_gid.push_back(element.id());
   }
 
   // Calculate the local number of centerline nodes, beam elements and Lagrange multiplier DOF.
@@ -197,7 +197,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::setup()
 /**
  *
  */
-void BEAMINTERACTION::BeamToFluidMortarManager::set_global_maps()
+void BeamInteraction::BeamToFluidMortarManager::set_global_maps()
 {
   // Loop over all nodes on this processor -> we assume all beam and fluid DOFs are based on nodes.
   std::vector<std::vector<int>> field_dofs(2);
@@ -206,7 +206,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::set_global_maps()
        i_node++)
   {
     const Core::Nodes::Node* node = discretization_structure_->l_row_node(i_node);
-    if (BEAMINTERACTION::Utils::is_beam_node(*node))
+    if (BeamInteraction::Utils::is_beam_node(*node))
       discretization_structure_->dof(node, field_dofs[0]);
     else
       FOUR_C_THROW("The given structure element is not a beam element!");
@@ -235,8 +235,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::set_global_maps()
 /**
  *
  */
-void BEAMINTERACTION::BeamToFluidMortarManager::set_local_maps(
-    const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
+void BeamInteraction::BeamToFluidMortarManager::set_local_maps(
+    const std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>& contact_pairs)
 {
   check_setup();
   check_global_maps();
@@ -251,7 +251,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::set_local_maps(
   // Loop over the pairs and get the global node and element indices needed on this rank.
   for (unsigned int i_pair = 0; i_pair < contact_pairs.size(); i_pair++)
   {
-    const std::shared_ptr<BEAMINTERACTION::BeamContactPair>& pair = contact_pairs[i_pair];
+    const std::shared_ptr<BeamInteraction::BeamContactPair>& pair = contact_pairs[i_pair];
 
     // The first (beam) element should always be on the same processor as the pair.
     if (pair->element1()->owner() !=
@@ -344,8 +344,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::set_local_maps(
 /**
  *
  */
-void BEAMINTERACTION::BeamToFluidMortarManager::location_vector(
-    const BEAMINTERACTION::BeamContactPair& contact_pair, std::vector<int>& lambda_row) const
+void BeamInteraction::BeamToFluidMortarManager::location_vector(
+    const BeamInteraction::BeamContactPair& contact_pair, std::vector<int>& lambda_row) const
 {
   check_setup();
   check_local_maps();
@@ -359,7 +359,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::location_vector(
     for (int i_node = 0; i_node < contact_pair.element1()->num_node(); i_node++)
     {
       const Core::Nodes::Node& node = *(contact_pair.element1()->nodes()[i_node]);
-      if (BEAMINTERACTION::Utils::is_beam_centerline_node(node))
+      if (BeamInteraction::Utils::is_beam_centerline_node(node))
       {
         // Get the global id of the node.
         int node_id = node.id();
@@ -376,7 +376,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::location_vector(
   // Get the global DOFs ids of the element Lagrange multipliers.
   if (n_lambda_element_ > 0)
   {
-    if (BEAMINTERACTION::Utils::is_beam_element(*contact_pair.element1()))
+    if (BeamInteraction::Utils::is_beam_element(*contact_pair.element1()))
     {
       // Get the global id of the element.
       int element_id = contact_pair.element1()->id();
@@ -393,8 +393,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::location_vector(
 /**
  *
  */
-void BEAMINTERACTION::BeamToFluidMortarManager::evaluate_global_dm(
-    const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
+void BeamInteraction::BeamToFluidMortarManager::evaluate_global_dm(
+    const std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>& contact_pairs)
 {
   check_setup();
   check_global_maps();
@@ -435,7 +435,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::evaluate_global_dm(
       // use the FEAssembly here, since the contact pairs are not ghosted.
 
       // Assemble the centerline matrix calculated by EvaluateDM into the full element matrix.
-      BEAMINTERACTION::Utils::assemble_centerline_dof_col_matrix_into_element_col_matrix(
+      BeamInteraction::Utils::assemble_centerline_dof_col_matrix_into_element_col_matrix(
           *discretization_structure_, elepairptr->element1(), local_D_centerlineDOFs,
           local_D_elementDOFs);
 
@@ -491,7 +491,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::evaluate_global_dm(
 /**
  *
  */
-void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contributions(
+void BeamInteraction::BeamToFluidMortarManager::add_global_force_stiffness_contributions(
     std::shared_ptr<Epetra_FEVector> fluid_force, Epetra_FEVector& beam_force,
     std::shared_ptr<Core::LinAlg::SparseMatrix> kbb,
     std::shared_ptr<Core::LinAlg::SparseMatrix> kbf,
@@ -568,7 +568,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contr
  *
  */
 std::shared_ptr<Core::LinAlg::Vector<double>>
-BEAMINTERACTION::BeamToFluidMortarManager::get_global_lambda(
+BeamInteraction::BeamToFluidMortarManager::get_global_lambda(
     const Core::LinAlg::Vector<double>& vel) const
 {
   check_setup();
@@ -610,7 +610,7 @@ BEAMINTERACTION::BeamToFluidMortarManager::get_global_lambda(
  *
  */
 std::shared_ptr<Core::LinAlg::Vector<double>>
-BEAMINTERACTION::BeamToFluidMortarManager::get_global_lambda_col(
+BeamInteraction::BeamToFluidMortarManager::get_global_lambda_col(
     std::shared_ptr<const Core::LinAlg::Vector<double>> vel) const
 {
   std::shared_ptr<Core::LinAlg::Vector<double>> lambda_col =
@@ -623,7 +623,7 @@ BEAMINTERACTION::BeamToFluidMortarManager::get_global_lambda_col(
  *
  */
 std::shared_ptr<Core::LinAlg::Vector<double>>
-BEAMINTERACTION::BeamToFluidMortarManager::invert_kappa() const
+BeamInteraction::BeamToFluidMortarManager::invert_kappa() const
 {
   // Create the inverse vector.
   std::shared_ptr<Core::LinAlg::Vector<double>> global_kappa_inv =

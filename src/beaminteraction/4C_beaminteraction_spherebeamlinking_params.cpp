@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::SphereBeamLinkingParams::SphereBeamLinkingParams()
+BeamInteraction::SphereBeamLinkingParams::SphereBeamLinkingParams()
     : isinit_(false), issetup_(false), deltatime_(-1.0), own_deltatime_(true)
 {
   mat_.clear();
@@ -36,7 +36,7 @@ BEAMINTERACTION::SphereBeamLinkingParams::SphereBeamLinkingParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SphereBeamLinkingParams::init(
+void BeamInteraction::SphereBeamLinkingParams::init(
     Solid::TimeInt::BaseDataGlobalState const& gstate)
 {
   issetup_ = false;
@@ -286,7 +286,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SphereBeamLinkingParams::setup()
+void BeamInteraction::SphereBeamLinkingParams::setup()
 {
   check_init();
 
@@ -297,7 +297,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SphereBeamLinkingParams::reset_time_step(double structure_delta_time)
+void BeamInteraction::SphereBeamLinkingParams::reset_time_step(double structure_delta_time)
 {
   check_init_setup();
 

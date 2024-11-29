@@ -18,7 +18,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidVolumeMeshtyingVisualizationOutputParams
   {
@@ -169,7 +169,7 @@ namespace BEAMINTERACTION
     bool write_unique_ids_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

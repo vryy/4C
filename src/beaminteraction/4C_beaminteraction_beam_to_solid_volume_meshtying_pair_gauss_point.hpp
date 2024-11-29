@@ -31,7 +31,7 @@ namespace LargeRotations
 }  // namespace LargeRotations
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for beam to solid meshtying using Gauss point projection.
@@ -115,7 +115,7 @@ namespace BEAMINTERACTION
         Core::LinAlg::Matrix<n_dof_pair_, 1, double>& local_force,
         Core::LinAlg::Matrix<n_dof_pair_, n_dof_pair_, double>& local_stiff) const;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

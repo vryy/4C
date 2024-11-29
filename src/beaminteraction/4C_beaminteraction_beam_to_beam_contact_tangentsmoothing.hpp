@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   //! \brief Small class that stores neighbor element information necessary for nodal tangent
   //! smoothing
@@ -194,7 +194,7 @@ namespace BEAMINTERACTION
     }
 
   }  // namespace Beam3TangentSmoothing
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

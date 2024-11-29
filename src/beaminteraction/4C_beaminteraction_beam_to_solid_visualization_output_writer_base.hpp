@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declarations.
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidOutputWriterVisualization;
 }
@@ -31,7 +31,7 @@ namespace Solid::TimeInt
 }
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief A class that stores and manages the output for a visualization in ParaView. This object
@@ -62,7 +62,7 @@ namespace BEAMINTERACTION
      * @param writer_name_key (in) Key for the new writer in the writer map.
      * @return RCP to the newly created writer.
      */
-    std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> add_visualization_writer(
+    std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> add_visualization_writer(
         const std::string& writer_name, const std::string& writer_name_key);
 
     /**
@@ -70,7 +70,7 @@ namespace BEAMINTERACTION
      * @param writer_name (in) Name of the new writer. If the name already exists, throw an error.
      * @return RCP to the newly created writer.
      */
-    std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> add_visualization_writer(
+    std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> add_visualization_writer(
         const std::string& writer_name);
 
     /**
@@ -79,7 +79,7 @@ namespace BEAMINTERACTION
      * be returned.
      * @return RCP to the writer.
      */
-    std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> get_visualization_writer(
+    std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> get_visualization_writer(
         const std::string& writer_name);
 
     /**
@@ -93,14 +93,14 @@ namespace BEAMINTERACTION
     std::string base_output_name_;
 
     //! Map of the sub output writers.
-    std::map<std::string, std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>>
+    std::map<std::string, std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>>
         visualization_writers_;
 
     //! visualization parameters
     const Core::IO::VisualizationParameters visualization_params_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

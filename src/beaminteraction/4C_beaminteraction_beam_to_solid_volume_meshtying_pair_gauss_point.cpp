@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename Beam, typename Solid>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam,
+BeamInteraction::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam,
     Solid>::BeamToSolidVolumeMeshtyingPairGaussPoint()
     : base_class()
 {
@@ -39,7 +39,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam,
  *
  */
 template <typename Beam, typename Solid>
-bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam, Solid>::evaluate(
+bool BeamInteraction::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam, Solid>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
@@ -179,7 +179,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam, Solid>::eva
  *
  */
 template <typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam, Solid>::evaluate_and_assemble(
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam, Solid>::evaluate_and_assemble(
     const std::shared_ptr<const Core::FE::Discretization>& discret,
     const std::shared_ptr<Epetra_FEVector>& force_vector,
     const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -267,7 +267,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam, Solid>::eva
  *
  */
 template <typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam,
     Solid>::evaluate_rotational_coupling_terms(  //
     const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
     const GEOMETRYPAIR::ElementData<Solid, scalar_type_rot_2nd>& q_solid,
@@ -434,7 +434,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam,
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -444,6 +444,6 @@ namespace BEAMINTERACTION
   template class BeamToSolidVolumeMeshtyingPairGaussPoint<t_hermite, t_tet4>;
   template class BeamToSolidVolumeMeshtyingPairGaussPoint<t_hermite, t_tet10>;
   template class BeamToSolidVolumeMeshtyingPairGaussPoint<t_hermite, t_nurbs27>;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

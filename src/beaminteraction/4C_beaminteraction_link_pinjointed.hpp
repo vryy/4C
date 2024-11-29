@@ -44,7 +44,7 @@ namespace Core::LinAlg
   class SerialDenseMatrix;
 }  // namespace Core::LinAlg
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamLinkPinJointedType : public Core::Communication::ParObjectType
   {
@@ -81,7 +81,7 @@ namespace BEAMINTERACTION
     void init(int id, const std::vector<std::pair<int, int>>& eleids,
         const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
         const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
-        Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset) override;
+        Inpar::BeamInteraction::CrosslinkerType linkertype, double timelinkwasset) override;
 
     //! Setup
     void setup(const int matnum) override;
@@ -156,7 +156,7 @@ namespace BEAMINTERACTION
         std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad) override;
 
     //! return appropriate instance of the desired class (acts as a simple factory)
-    static std::shared_ptr<BeamLinkPinJointed> create(Inpar::BEAMINTERACTION::JointType type);
+    static std::shared_ptr<BeamLinkPinJointed> create(Inpar::BeamInteraction::JointType type);
 
     void print(std::ostream& out) const;
     //@}
@@ -165,7 +165,7 @@ namespace BEAMINTERACTION
     //@}
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

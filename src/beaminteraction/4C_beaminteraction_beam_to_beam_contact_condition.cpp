@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToBeamContactCondition::BeamToBeamContactCondition(
+BeamInteraction::BeamToBeamContactCondition::BeamToBeamContactCondition(
     const std::shared_ptr<const Core::Conditions::Condition>& condition_line_1,
     const std::shared_ptr<const Core::Conditions::Condition>& condition_line_2)
     : BeamInteractionConditionBase(condition_line_1),
@@ -33,7 +33,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::BeamToBeamContactCondition(
 /**
  *
  */
-void BEAMINTERACTION::BeamToBeamContactCondition::build_id_sets(
+void BeamInteraction::BeamToBeamContactCondition::build_id_sets(
     const std::shared_ptr<const Core::FE::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
@@ -48,7 +48,7 @@ void BEAMINTERACTION::BeamToBeamContactCondition::build_id_sets(
 /**
  *
  */
-bool BEAMINTERACTION::BeamToBeamContactCondition::ids_in_condition(
+bool BeamInteraction::BeamToBeamContactCondition::ids_in_condition(
     const int id_line, const int id_other) const
 {
   if (id_is_in_condition(line_ids_, id_line) and id_is_in_condition(other_line_ids_, id_other))
@@ -61,7 +61,7 @@ bool BEAMINTERACTION::BeamToBeamContactCondition::ids_in_condition(
 /**
  *
  */
-void BEAMINTERACTION::BeamToBeamContactCondition::clear()
+void BeamInteraction::BeamToBeamContactCondition::clear()
 {
   BeamInteractionConditionBase::clear();
   condition_contact_pairs_.clear();
@@ -70,8 +70,8 @@ void BEAMINTERACTION::BeamToBeamContactCondition::clear()
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToBeamContactCondition::create_contact_pair(
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::BeamToBeamContactCondition::create_contact_pair(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   // Check if the given elements are in this condition.
@@ -95,19 +95,19 @@ BEAMINTERACTION::BeamToBeamContactCondition::create_contact_pair(
       {
         case 2:
         {
-          return std::make_shared<BEAMINTERACTION::BeamToBeamContactPair<2, 1>>();
+          return std::make_shared<BeamInteraction::BeamToBeamContactPair<2, 1>>();
         }
         case 3:
         {
-          return std::make_shared<BEAMINTERACTION::BeamToBeamContactPair<3, 1>>();
+          return std::make_shared<BeamInteraction::BeamToBeamContactPair<3, 1>>();
         }
         case 4:
         {
-          return std::make_shared<BEAMINTERACTION::BeamToBeamContactPair<4, 1>>();
+          return std::make_shared<BeamInteraction::BeamToBeamContactPair<4, 1>>();
         }
         case 5:
         {
-          return std::make_shared<BEAMINTERACTION::BeamToBeamContactPair<5, 1>>();
+          return std::make_shared<BeamInteraction::BeamToBeamContactPair<5, 1>>();
         }
         default:
         {
@@ -127,7 +127,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::create_contact_pair(
       {
         case 2:
         {
-          return std::make_shared<BEAMINTERACTION::BeamToBeamContactPair<2, 2>>();
+          return std::make_shared<BeamInteraction::BeamToBeamContactPair<2, 2>>();
         }
         default:
         {

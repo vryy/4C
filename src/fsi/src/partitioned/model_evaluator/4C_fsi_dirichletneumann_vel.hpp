@@ -21,7 +21,7 @@ namespace Adapter
   class FBIConstraintenforcer;
 }
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToFluidMeshtyingVtkOutputWriter;
 }
@@ -129,7 +129,7 @@ namespace FSI
      */
     std::shared_ptr<Adapter::FBIConstraintenforcer> constraint_manager_;
 
-    std::shared_ptr<BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter>
+    std::shared_ptr<BeamInteraction::BeamToFluidMeshtyingVtkOutputWriter>
         visualization_output_writer_;
   };
 }  // namespace FSI

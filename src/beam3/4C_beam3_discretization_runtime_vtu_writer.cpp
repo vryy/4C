@@ -149,13 +149,13 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
       // this is needed in case your input file contains shifted/cut elements
       if (periodic_boundingbox_ != nullptr)
       {
-        BEAMINTERACTION::Utils::get_current_unshifted_element_dis(*discretization_, ele,
+        BeamInteraction::Utils::get_current_unshifted_element_dis(*discretization_, ele,
             displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector);
       }
       // this is needed in case your input file does not contain shifted/cut elements
       else
       {
-        BEAMINTERACTION::Utils::get_current_element_dis(
+        BeamInteraction::Utils::get_current_element_dis(
             *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
       }
     }
@@ -286,7 +286,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_displacement_field(
     // get the displacement state vector for this element
     std::vector<double> beamelement_displacement_vector;
 
-    BEAMINTERACTION::Utils::get_current_element_dis(
+    BeamInteraction::Utils::get_current_element_dis(
         *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
 
     /* loop over the chosen visualization points (equidistant distribution in the element
@@ -382,7 +382,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_triad_field(
     // get the displacement state vector for this element
     std::vector<double> beamelement_displacement_vector;
 
-    BEAMINTERACTION::Utils::get_current_element_dis(
+    BeamInteraction::Utils::get_current_element_dis(
         *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
 
 
@@ -622,7 +622,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_filament_id_and_type(
       FOUR_C_THROW(" No filament number assigned to element with gid %i .", ele->id());
 
     double current_id = cond->parameters().get<int>("ID");
-    double current_type = Inpar::BEAMINTERACTION::string_to_filament_type(
+    double current_type = Inpar::BeamInteraction::string_to_filament_type(
         (cond->parameters().get<std::string>("TYPE")));
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
@@ -730,7 +730,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_point_circular_cross_section_
     // get the displacement state vector for this element
     std::vector<double> beamelement_displacement_vector;
 
-    BEAMINTERACTION::Utils::get_current_element_dis(
+    BeamInteraction::Utils::get_current_element_dis(
         *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
 
 
@@ -1483,9 +1483,9 @@ void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
     const Discret::Elements::Beam3Base* beamele =
         dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
-    BEAMINTERACTION::Utils::get_current_element_dis(
+    BeamInteraction::Utils::get_current_element_dis(
         *discretization_, ele, displacement_state_vector, beamelement_shift_displacement_vector);
-    BEAMINTERACTION::Utils::get_current_unshifted_element_dis(*discretization_, ele,
+    BeamInteraction::Utils::get_current_unshifted_element_dis(*discretization_, ele,
         displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector);
 
     beamele->get_pos_at_xi(pos_node_1, -1.0, beamelement_displacement_vector);

@@ -535,12 +535,12 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
           ->beam_interaction_params()
           .sublist("SPHERE BEAM LINK")
           .get<bool>("SPHEREBEAMLINKING") or
-      Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+      Teuchos::getIntegralValue<Inpar::BeamInteraction::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
-          "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
-      Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+          "STRATEGY") != Inpar::BeamInteraction::bstr_none or
+      Teuchos::getIntegralValue<Inpar::BeamInteraction::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
-          "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
+          "STRATEGY") != Inpar::BeamInteraction::bstr_none or
       Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
           Global::Problem::instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),

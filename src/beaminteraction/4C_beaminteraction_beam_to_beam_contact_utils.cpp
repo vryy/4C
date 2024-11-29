@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Check, if current element is a solid contact element      popp 05/16|
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::solid_contact_element(const Core::Elements::Element& element)
+bool BeamInteraction::solid_contact_element(const Core::Elements::Element& element)
 {
   const Core::Elements::ElementType& ele_type = element.element_type();
 
@@ -33,7 +33,7 @@ bool BEAMINTERACTION::solid_contact_element(const Core::Elements::Element& eleme
 /*----------------------------------------------------------------------*
  |  Check, if two elements share a node -> neighbor elements meier 05/14|
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::elements_share_node(
+bool BeamInteraction::elements_share_node(
     const Core::Elements::Element& element1, const Core::Elements::Element& element2)
 {
   bool sharenode = false;
@@ -54,7 +54,7 @@ bool BEAMINTERACTION::elements_share_node(
 /*----------------------------------------------------------------------*
  |  Calculate beam radius                                    meier 10/14|
  *----------------------------------------------------------------------*/
-double BEAMINTERACTION::calc_ele_radius(const Core::Elements::Element* ele)
+double BeamInteraction::calc_ele_radius(const Core::Elements::Element* ele)
 {
   double eleradius = 0.0;
 
@@ -77,7 +77,7 @@ double BEAMINTERACTION::calc_ele_radius(const Core::Elements::Element* ele)
 /*----------------------------------------------------------------------*
  |  Test intersection of two parallel cylinders              meier 10/14|
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::intersect_parallel_cylinders(Core::LinAlg::Matrix<3, 1, double>& r1_a,
+bool BeamInteraction::intersect_parallel_cylinders(Core::LinAlg::Matrix<3, 1, double>& r1_a,
     Core::LinAlg::Matrix<3, 1, double>& r1_b, Core::LinAlg::Matrix<3, 1, double>& r2_a,
     Core::LinAlg::Matrix<3, 1, double>& r2_b, double& distancelimit)
 {
@@ -110,7 +110,7 @@ bool BEAMINTERACTION::intersect_parallel_cylinders(Core::LinAlg::Matrix<3, 1, do
 /*-----------------------------------------------------------------------------------*
  |  Test intersection of two non-parallel, arbitrary oriented cylinders   meier 10/14|
  *-----------------------------------------------------------------------------------*/
-bool BEAMINTERACTION::intersect_arbitrary_cylinders(Core::LinAlg::Matrix<3, 1, double>& r1_a,
+bool BeamInteraction::intersect_arbitrary_cylinders(Core::LinAlg::Matrix<3, 1, double>& r1_a,
     Core::LinAlg::Matrix<3, 1, double>& r1_b, Core::LinAlg::Matrix<3, 1, double>& r2_a,
     Core::LinAlg::Matrix<3, 1, double>& r2_b, double& distancelimit,
     std::pair<double, double>& closestpoints, bool& etaset)
@@ -183,7 +183,7 @@ bool BEAMINTERACTION::intersect_arbitrary_cylinders(Core::LinAlg::Matrix<3, 1, d
     {
       etaset = false;
 
-      closestnodaldist = BEAMINTERACTION::get_closest_endpoint_dist(r1_a, r1_b, r2_a, r2_b);
+      closestnodaldist = BeamInteraction::get_closest_endpoint_dist(r1_a, r1_b, r2_a, r2_b);
       if (fabs(closestnodaldist) < distancelimit)
       {
         return true;
@@ -220,7 +220,7 @@ bool BEAMINTERACTION::intersect_arbitrary_cylinders(Core::LinAlg::Matrix<3, 1, d
 /*----------------------------------------------------------------------*
  |  Calculate closest distance of a point and a line         meier 10/14|
  *----------------------------------------------------------------------*/
-double BEAMINTERACTION::calc_point_line_dist(
+double BeamInteraction::calc_point_line_dist(
     Core::LinAlg::Matrix<3, 1, double>& rline_a,  // at eta=-1.0
     Core::LinAlg::Matrix<3, 1, double>& rline_b,  // at eta=1.0
     Core::LinAlg::Matrix<3, 1, double>& rp, double& eta)
@@ -248,7 +248,7 @@ double BEAMINTERACTION::calc_point_line_dist(
 /*----------------------------------------------------------------------*
  |  Calculate angle enclosed by two vectors a and b          meier 10/14|
  *----------------------------------------------------------------------*/
-double BEAMINTERACTION::calc_angle(
+double BeamInteraction::calc_angle(
     Core::LinAlg::Matrix<3, 1, double> a, Core::LinAlg::Matrix<3, 1, double> b)
 {
   if (Core::FADUtils::vector_norm<3>(a) < 1.0e-12 or Core::FADUtils::vector_norm<3>(b) < 1.0e-12)
@@ -277,7 +277,7 @@ double BEAMINTERACTION::calc_angle(
  |  Get closest distance between the endpoints of two lines   meier 10/14|
  *----------------------------------------------------------------------*/
 template <typename Type>
-Type BEAMINTERACTION::get_closest_endpoint_dist(Core::LinAlg::Matrix<3, 1, Type> r1_a,
+Type BeamInteraction::get_closest_endpoint_dist(Core::LinAlg::Matrix<3, 1, Type> r1_a,
     Core::LinAlg::Matrix<3, 1, Type> r1_b, Core::LinAlg::Matrix<3, 1, Type> r2_a,
     Core::LinAlg::Matrix<3, 1, Type> r2_b)
 {
@@ -301,7 +301,7 @@ Type BEAMINTERACTION::get_closest_endpoint_dist(Core::LinAlg::Matrix<3, 1, Type>
 /*----------------------------------------------------------------------------------------*
  |  Determine inpute parameter representing the additive searchbox increment   meier 10/14|
  *----------------------------------------------------------------------------------------*/
-double BEAMINTERACTION::determine_searchbox_inc(Teuchos::ParameterList& beamcontactparams)
+double BeamInteraction::determine_searchbox_inc(Teuchos::ParameterList& beamcontactparams)
 {
   double searchboxinc = 0.0;
 

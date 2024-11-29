@@ -34,7 +34,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   namespace Utils
   {
@@ -238,7 +238,7 @@ namespace BEAMINTERACTION
       discret->get_condition("BeamLineFilamentCondition", filamentconditions);
 
       // compute number of linker types
-      std::vector<Inpar::BEAMINTERACTION::CrosslinkerType> linkertypes = params.linker_types();
+      std::vector<Inpar::BeamInteraction::CrosslinkerType> linkertypes = params.linker_types();
 
       // loop over all relevant (on myrank) filaments
       for (auto const& filiter : relevantfilaments)
@@ -303,7 +303,7 @@ namespace BEAMINTERACTION
               << Core::IO::endl;
           Core::IO::cout(Core::IO::debug)
               << numbspot << " binding spots of type "
-              << Inpar::BEAMINTERACTION::crosslinker_type_to_string(linkertypes[linkertype_i])
+              << Inpar::BeamInteraction::crosslinker_type_to_string(linkertypes[linkertype_i])
               << " on filament " << filiter << " (consists of "
               << static_cast<int>(sortedfilamenteles.size()) << " elements)"
               << " with: " << Core::IO::endl;
@@ -454,7 +454,7 @@ namespace BEAMINTERACTION
      *-----------------------------------------------------------------------------*/
     void set_binding_spots_positions_on_filament(
         std::vector<Core::Elements::Element*>& sortedfilamenteles, double start,
-        Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int numbspot,
+        Inpar::BeamInteraction::CrosslinkerType linkertype, int numbspot,
         double filamentbspotinterval, double tol)
     {
       // default no occupied binding spots
@@ -501,7 +501,7 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void get_pos_and_triad_of_binding_spot(Core::Elements::Element* ele,
-        Core::Geo::MeshFree::BoundingBox& pbb, Inpar::BEAMINTERACTION::CrosslinkerType linkertype,
+        Core::Geo::MeshFree::BoundingBox& pbb, Inpar::BeamInteraction::CrosslinkerType linkertype,
         int locbspotnum, Core::LinAlg::Matrix<3, 1>& bspotpos,
         Core::LinAlg::Matrix<3, 3>& bspottriad, std::vector<double>& eledisp)
     {
@@ -523,7 +523,7 @@ namespace BEAMINTERACTION
      *-----------------------------------------------------------------------------*/
     void get_pos_and_triad_of_binding_spot(Core::FE::Discretization const& discret,
         Core::Elements::Element* ele, Core::LinAlg::Vector<double>& ia_discolnp,
-        Core::Geo::MeshFree::BoundingBox& pbb, Inpar::BEAMINTERACTION::CrosslinkerType linkertype,
+        Core::Geo::MeshFree::BoundingBox& pbb, Inpar::BeamInteraction::CrosslinkerType linkertype,
         int locbspotnum, Core::LinAlg::Matrix<3, 1>& bspotpos,
         Core::LinAlg::Matrix<3, 3>& bspottriad)
     {
@@ -918,7 +918,7 @@ namespace BEAMINTERACTION
     template <class T1, class T2>
     void apply_binding_spot_force_to_parent_elements(Core::FE::Discretization const& discret,
         Core::Geo::MeshFree::BoundingBox& pbb, Core::LinAlg::Vector<double>& disp_np_col,
-        BEAMINTERACTION::BeamLink& elepairptr,
+        BeamInteraction::BeamLink& elepairptr,
         std::vector<Core::LinAlg::SerialDenseVector> const& bspotforce,
         std::vector<Core::LinAlg::SerialDenseVector>& eleforce)
     {
@@ -961,7 +961,7 @@ namespace BEAMINTERACTION
     template <class T1, class T2>
     void apply_binding_spot_stiff_to_parent_elements(Core::FE::Discretization const& discret,
         Core::Geo::MeshFree::BoundingBox& pbb, Core::LinAlg::Vector<double>& disp_np_col,
-        BEAMINTERACTION::BeamLink& elepairptr,
+        BeamInteraction::BeamLink& elepairptr,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& bspotstiff,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>& elestiff)
     {
@@ -1065,7 +1065,7 @@ namespace BEAMINTERACTION
     template <class T1, class T2>
     void apply_binding_spot_force_stiff_to_parent_elements(Core::FE::Discretization const& discret,
         Core::Geo::MeshFree::BoundingBox& pbb, Core::LinAlg::Vector<double>& disp_np_col,
-        BEAMINTERACTION::BeamLink& elepairptr,
+        BeamInteraction::BeamLink& elepairptr,
         std::vector<Core::LinAlg::SerialDenseVector> const& bspotforce,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& bspotstiff,
         std::vector<Core::LinAlg::SerialDenseVector>& eleforce,
@@ -1341,45 +1341,45 @@ namespace BEAMINTERACTION
     // explicit template instantiation (to please every compiler)
     //-----------------------------------------------------------------------------
     template void set_filament_binding_spot_positions(
-        std::shared_ptr<Core::FE::Discretization>, BEAMINTERACTION::CrosslinkingParams&);
+        std::shared_ptr<Core::FE::Discretization>, BeamInteraction::CrosslinkingParams&);
     template void set_filament_binding_spot_positions(
-        std::shared_ptr<Core::FE::Discretization>, BEAMINTERACTION::SphereBeamLinkingParams&);
+        std::shared_ptr<Core::FE::Discretization>, BeamInteraction::SphereBeamLinkingParams&);
 
     template void apply_binding_spot_force_to_parent_elements<Discret::Elements::Beam3Base,
         Discret::Elements::Beam3Base>(Core::FE::Discretization const&,
         Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
-        BEAMINTERACTION::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
+        BeamInteraction::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<Core::LinAlg::SerialDenseVector>&);
     template void apply_binding_spot_force_to_parent_elements<Discret::Elements::Rigidsphere,
         Discret::Elements::Beam3Base>(Core::FE::Discretization const&,
         Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
-        BEAMINTERACTION::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
+        BeamInteraction::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<Core::LinAlg::SerialDenseVector>&);
 
     template void apply_binding_spot_stiff_to_parent_elements<Discret::Elements::Beam3Base,
         Discret::Elements::Beam3Base>(Core::FE::Discretization const&,
         Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
-        BEAMINTERACTION::BeamLink&,
+        BeamInteraction::BeamLink&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
     template void apply_binding_spot_stiff_to_parent_elements<Discret::Elements::Rigidsphere,
         Discret::Elements::Beam3Base>(Core::FE::Discretization const&,
         Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
-        BEAMINTERACTION::BeamLink&,
+        BeamInteraction::BeamLink&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
 
     template void apply_binding_spot_force_stiff_to_parent_elements<Discret::Elements::Beam3Base,
         Discret::Elements::Beam3Base>(Core::FE::Discretization const&,
         Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
-        BEAMINTERACTION::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
+        BeamInteraction::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
         std::vector<Core::LinAlg::SerialDenseVector>&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
     template void apply_binding_spot_force_stiff_to_parent_elements<Discret::Elements::Rigidsphere,
         Discret::Elements::Beam3Base>(Core::FE::Discretization const&,
         Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
-        BEAMINTERACTION::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
+        BeamInteraction::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
         std::vector<Core::LinAlg::SerialDenseVector>&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
@@ -1390,6 +1390,6 @@ namespace BEAMINTERACTION
         const Core::Elements::Element*, Core::LinAlg::Matrix<12, 1, int>&);
 
   }  // namespace Utils
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

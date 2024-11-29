@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamPotentialPair::BeamPotentialPair()
+BeamInteraction::BeamPotentialPair::BeamPotentialPair()
     : isinit_(false),
       issetup_(false),
       beam_potential_params_(nullptr),
@@ -33,8 +33,8 @@ BEAMINTERACTION::BeamPotentialPair::BeamPotentialPair()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialPair::init(
-    const std::shared_ptr<BEAMINTERACTION::BeamPotentialParams> params_ptr,
+void BeamInteraction::BeamPotentialPair::init(
+    const std::shared_ptr<BeamInteraction::BeamPotentialParams> params_ptr,
     const Core::Elements::Element* element1, const Core::Elements::Element* element2)
 {
   issetup_ = false;
@@ -50,7 +50,7 @@ void BEAMINTERACTION::BeamPotentialPair::init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialPair::setup()
+void BeamInteraction::BeamPotentialPair::setup()
 {
   check_init();
 
@@ -59,9 +59,9 @@ void BEAMINTERACTION::BeamPotentialPair::setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-std::shared_ptr<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialPair::create(
+std::shared_ptr<BeamInteraction::BeamPotentialPair> BeamInteraction::BeamPotentialPair::create(
     std::vector<Core::Elements::Element const*> const& ele_ptrs,
-    BEAMINTERACTION::BeamPotentialParams const& beam_potential_params)
+    BeamInteraction::BeamPotentialParams const& beam_potential_params)
 {
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
   // numnodalvalues = 1: only positions as primary nodal DoFs ==> Lagrange interpolation
@@ -83,53 +83,53 @@ std::shared_ptr<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotenti
         case 2:
         {
           if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
-            return std::make_shared<BEAMINTERACTION::BeamToSpherePotentialPair<2, 1>>();
+            return std::make_shared<BeamInteraction::BeamToSpherePotentialPair<2, 1>>();
           else
           {
             if (beam_potential_params.use_fad())
               return std::make_shared<
-                  BEAMINTERACTION::BeamToBeamPotentialPair<2, 1, Sacado::Fad::DFad<double>>>();
+                  BeamInteraction::BeamToBeamPotentialPair<2, 1, Sacado::Fad::DFad<double>>>();
             else
-              return std::make_shared<BEAMINTERACTION::BeamToBeamPotentialPair<2, 1, double>>();
+              return std::make_shared<BeamInteraction::BeamToBeamPotentialPair<2, 1, double>>();
           }
         }
         case 3:
         {
           if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
-            return std::make_shared<BEAMINTERACTION::BeamToSpherePotentialPair<3, 1>>();
+            return std::make_shared<BeamInteraction::BeamToSpherePotentialPair<3, 1>>();
           else
           {
             if (beam_potential_params.use_fad())
               return std::make_shared<
-                  BEAMINTERACTION::BeamToBeamPotentialPair<3, 1, Sacado::Fad::DFad<double>>>();
+                  BeamInteraction::BeamToBeamPotentialPair<3, 1, Sacado::Fad::DFad<double>>>();
             else
-              return std::make_shared<BEAMINTERACTION::BeamToBeamPotentialPair<3, 1, double>>();
+              return std::make_shared<BeamInteraction::BeamToBeamPotentialPair<3, 1, double>>();
           }
         }
         case 4:
         {
           if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
-            return std::make_shared<BEAMINTERACTION::BeamToSpherePotentialPair<4, 1>>();
+            return std::make_shared<BeamInteraction::BeamToSpherePotentialPair<4, 1>>();
           else
           {
             if (beam_potential_params.use_fad())
               return std::make_shared<
-                  BEAMINTERACTION::BeamToBeamPotentialPair<4, 1, Sacado::Fad::DFad<double>>>();
+                  BeamInteraction::BeamToBeamPotentialPair<4, 1, Sacado::Fad::DFad<double>>>();
             else
-              return std::make_shared<BEAMINTERACTION::BeamToBeamPotentialPair<4, 1, double>>();
+              return std::make_shared<BeamInteraction::BeamToBeamPotentialPair<4, 1, double>>();
           }
         }
         case 5:
         {
           if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
-            return std::make_shared<BEAMINTERACTION::BeamToSpherePotentialPair<5, 1>>();
+            return std::make_shared<BeamInteraction::BeamToSpherePotentialPair<5, 1>>();
           else
           {
             if (beam_potential_params.use_fad())
               return std::make_shared<
-                  BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, Sacado::Fad::DFad<double>>>();
+                  BeamInteraction::BeamToBeamPotentialPair<5, 1, Sacado::Fad::DFad<double>>>();
             else
-              return std::make_shared<BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, double>>();
+              return std::make_shared<BeamInteraction::BeamToBeamPotentialPair<5, 1, double>>();
           }
         }
         default:
@@ -151,14 +151,14 @@ std::shared_ptr<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotenti
         case 2:
         {
           if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
-            return std::make_shared<BEAMINTERACTION::BeamToSpherePotentialPair<2, 2>>();
+            return std::make_shared<BeamInteraction::BeamToSpherePotentialPair<2, 2>>();
           else
           {
             if (beam_potential_params.use_fad())
               return std::make_shared<
-                  BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, Sacado::Fad::DFad<double>>>();
+                  BeamInteraction::BeamToBeamPotentialPair<2, 2, Sacado::Fad::DFad<double>>>();
             else
-              return std::make_shared<BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, double>>();
+              return std::make_shared<BeamInteraction::BeamToBeamPotentialPair<2, 2, double>>();
           }
         }
         default:
@@ -187,21 +187,21 @@ std::shared_ptr<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotenti
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialPair::check_init() const
+void BeamInteraction::BeamPotentialPair::check_init() const
 {
   if (not is_init()) FOUR_C_THROW("Call init() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialPair::check_init_setup() const
+void BeamInteraction::BeamPotentialPair::check_init_setup() const
 {
   if (not is_init() or not is_setup()) FOUR_C_THROW("Call init() and setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Core::FE::GaussRule1D BEAMINTERACTION::BeamPotentialPair::get_gauss_rule() const
+Core::FE::GaussRule1D BeamInteraction::BeamPotentialPair::get_gauss_rule() const
 {
   switch (params()->number_gauss_points())
   {

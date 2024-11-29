@@ -22,17 +22,17 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType
-    BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::instance_;
+BeamInteraction::BeamLinkBeam3rLine2RigidJointedType
+    BeamInteraction::BeamLinkBeam3rLine2RigidJointedType::instance_;
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Communication::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::create(
+Core::Communication::ParObject* BeamInteraction::BeamLinkBeam3rLine2RigidJointedType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed* my_beam3rline2 =
-      new BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed();
+  BeamInteraction::BeamLinkBeam3rLine2RigidJointed* my_beam3rline2 =
+      new BeamInteraction::BeamLinkBeam3rLine2RigidJointed();
   my_beam3rline2->unpack(buffer);
   return my_beam3rline2;
 }
@@ -40,7 +40,7 @@ Core::Communication::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::BeamLinkBeam3rLine2RigidJointed()
+BeamInteraction::BeamLinkBeam3rLine2RigidJointed::BeamLinkBeam3rLine2RigidJointed()
     : BeamLinkRigidJointed(),
       linkele_(nullptr),
       bspotforces_(2, Core::LinAlg::SerialDenseVector(true))
@@ -49,9 +49,9 @@ BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::BeamLinkBeam3rLine2RigidJointe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::BeamLinkBeam3rLine2RigidJointed(
-    const BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed& old)
-    : BEAMINTERACTION::BeamLinkRigidJointed(old),
+BeamInteraction::BeamLinkBeam3rLine2RigidJointed::BeamLinkBeam3rLine2RigidJointed(
+    const BeamInteraction::BeamLinkBeam3rLine2RigidJointed& old)
+    : BeamInteraction::BeamLinkRigidJointed(old),
       bspotforces_(2, Core::LinAlg::SerialDenseVector(true))
 {
   if (linkele_ != nullptr)
@@ -63,17 +63,17 @@ BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::BeamLinkBeam3rLine2RigidJointe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::shared_ptr<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::clone()
+std::shared_ptr<BeamInteraction::BeamLink> BeamInteraction::BeamLinkBeam3rLine2RigidJointed::clone()
     const
 {
-  std::shared_ptr<BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed> newlinker =
-      std::make_shared<BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed>(*this);
+  std::shared_ptr<BeamInteraction::BeamLinkBeam3rLine2RigidJointed> newlinker =
+      std::make_shared<BeamInteraction::BeamLinkBeam3rLine2RigidJointed>(*this);
   return newlinker;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::setup(int matnum)
+void BeamInteraction::BeamLinkBeam3rLine2RigidJointed::setup(int matnum)
 {
   check_init();
 
@@ -133,7 +133,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::setup(int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::pack(
+void BeamInteraction::BeamLinkBeam3rLine2RigidJointed::pack(
     Core::Communication::PackBuffer& data) const
 {
   check_init_setup();
@@ -158,7 +158,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::pack(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::unpack(
+void BeamInteraction::BeamLinkBeam3rLine2RigidJointed::unpack(
     Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
@@ -184,7 +184,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::unpack(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::evaluate_force(
+bool BeamInteraction::BeamLinkBeam3rLine2RigidJointed::evaluate_force(
     Core::LinAlg::SerialDenseVector& forcevec1, Core::LinAlg::SerialDenseVector& forcevec2)
 {
   check_init_setup();
@@ -212,7 +212,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::evaluate_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::evaluate_stiff(
+bool BeamInteraction::BeamLinkBeam3rLine2RigidJointed::evaluate_stiff(
     Core::LinAlg::SerialDenseMatrix& stiffmat11, Core::LinAlg::SerialDenseMatrix& stiffmat12,
     Core::LinAlg::SerialDenseMatrix& stiffmat21, Core::LinAlg::SerialDenseMatrix& stiffmat22)
 {
@@ -244,7 +244,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::evaluate_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::evaluate_force_stiff(
+bool BeamInteraction::BeamLinkBeam3rLine2RigidJointed::evaluate_force_stiff(
     Core::LinAlg::SerialDenseVector& forcevec1, Core::LinAlg::SerialDenseVector& forcevec2,
     Core::LinAlg::SerialDenseMatrix& stiffmat11, Core::LinAlg::SerialDenseMatrix& stiffmat12,
     Core::LinAlg::SerialDenseMatrix& stiffmat21, Core::LinAlg::SerialDenseMatrix& stiffmat22)
@@ -281,7 +281,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::evaluate_force_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::fill_state_variables_for_element_evaluation(
+void BeamInteraction::BeamLinkBeam3rLine2RigidJointed::fill_state_variables_for_element_evaluation(
     Core::LinAlg::Matrix<6, 1, double>& disp_totlag_centerline,
     std::vector<Core::LinAlg::Matrix<4, 1, double>>& Qnode) const
 {
@@ -297,14 +297,14 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::fill_state_variables_for_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::get_internal_energy() const
+double BeamInteraction::BeamLinkBeam3rLine2RigidJointed::get_internal_energy() const
 {
   return linkele_->get_internal_energy();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::get_kinetic_energy() const
+double BeamInteraction::BeamLinkBeam3rLine2RigidJointed::get_kinetic_energy() const
 {
   return linkele_->get_kinetic_energy();
 }

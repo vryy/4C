@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename ScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<ScalarType, Beam,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DBase<ScalarType, Beam,
     Solid>::create_geometry_pair(const Core::Elements::Element* element1,
     const Core::Elements::Element* element2,
     const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
@@ -44,7 +44,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<ScalarType, Beam,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DBase<ScalarType, Beam,
     Solid>::evaluate_beam_position_double(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                               integration_point,
     Core::LinAlg::Matrix<3, 1, double>& r_beam, bool reference) const
@@ -77,7 +77,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<ScalarType, Beam,
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -97,6 +97,6 @@ namespace BEAMINTERACTION
       line_to_volume_scalar_type<t_hermite, t_tet4>, t_hermite, t_tet4>;
   template class BeamToSolidVolumeMeshtyingPair2D3DBase<
       line_to_volume_scalar_type<t_hermite, t_tet10>, t_hermite, t_tet10>;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

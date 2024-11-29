@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingParams()
+BeamInteraction::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingParams()
     : BeamToSolidParamsBase(),
       integration_points_circumference_(0),
       n_fourier_modes_(-1),
@@ -37,7 +37,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingPar
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::init()
+void BeamInteraction::BeamToSolidVolumeMeshtyingParams::init()
 {
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_solid_contact_params_list =
@@ -102,8 +102,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::init()
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::get_visualization_output_params_ptr()
+std::shared_ptr<BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
+BeamInteraction::BeamToSolidVolumeMeshtyingParams::get_visualization_output_params_ptr()
 {
   return output_params_ptr_;
 };

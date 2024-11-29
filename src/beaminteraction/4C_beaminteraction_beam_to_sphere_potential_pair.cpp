@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::BeamToSpherePotentialPair()
+BeamInteraction::BeamToSpherePotentialPair<numnodes, numnodalvalues>::BeamToSpherePotentialPair()
     : BeamPotentialPair(),
       beam_element_(nullptr),
       sphere_element_(nullptr),
@@ -47,7 +47,7 @@ BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::BeamToSphe
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::setup()
+void BeamInteraction::BeamToSpherePotentialPair<numnodes, numnodalvalues>::setup()
 {
   check_init();
 
@@ -73,7 +73,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::setup
         " must be a beam element!");
 
   // get radius and stress-free reference length of beam element
-  radius1_ = BEAMINTERACTION::calc_ele_radius(beam_element_);
+  radius1_ = BeamInteraction::calc_ele_radius(beam_element_);
   beamele_reflength_ = beam_element_->ref_length();
 
   // cast second element to RigidSphere
@@ -96,7 +96,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::setup
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::evaluate(
+bool BeamInteraction::BeamToSpherePotentialPair<numnodes, numnodalvalues>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22,
@@ -210,7 +210,7 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::evalu
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
+void BeamInteraction::BeamToSpherePotentialPair<numnodes,
     numnodalvalues>::evaluate_fpotand_stiffpot_large_sep_approx()
 {
   // get cutoff radius
@@ -476,7 +476,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::print(
+void BeamInteraction::BeamToSpherePotentialPair<numnodes, numnodalvalues>::print(
     std::ostream& out) const
 {
   check_init_setup();
@@ -493,7 +493,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::print
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
+void BeamInteraction::BeamToSpherePotentialPair<numnodes,
     numnodalvalues>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   check_init_setup();
@@ -506,7 +506,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::get_shape_functions(
+void BeamInteraction::BeamToSpherePotentialPair<numnodes, numnodalvalues>::get_shape_functions(
     std::vector<Core::LinAlg::Matrix<1, numnodes * numnodalvalues>>& N1_i,
     std::vector<Core::LinAlg::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
     Core::FE::IntegrationPoints1D& gausspoints)
@@ -549,7 +549,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::get_s
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::compute_coords(
+void BeamInteraction::BeamToSpherePotentialPair<numnodes, numnodalvalues>::compute_coords(
     Core::LinAlg::Matrix<3, 1, TYPE>& r,
     const Core::LinAlg::Matrix<1, numnodes * numnodalvalues>& N_i,
     const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos)
@@ -571,7 +571,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::compu
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::reset_state(double time,
+void BeamInteraction::BeamToSpherePotentialPair<numnodes, numnodalvalues>::reset_state(double time,
     const std::vector<double>& centerline_dofvec_ele1,
     const std::vector<double>& centerline_dofvec_ele2)
 {
@@ -594,10 +594,10 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::reset
 
 
 // Possible template cases: this is necessary for the compiler
-template class BEAMINTERACTION::BeamToSpherePotentialPair<2, 1>;
-template class BEAMINTERACTION::BeamToSpherePotentialPair<3, 1>;
-template class BEAMINTERACTION::BeamToSpherePotentialPair<4, 1>;
-template class BEAMINTERACTION::BeamToSpherePotentialPair<5, 1>;
-template class BEAMINTERACTION::BeamToSpherePotentialPair<2, 2>;
+template class BeamInteraction::BeamToSpherePotentialPair<2, 1>;
+template class BeamInteraction::BeamToSpherePotentialPair<3, 1>;
+template class BeamInteraction::BeamToSpherePotentialPair<4, 1>;
+template class BeamInteraction::BeamToSpherePotentialPair<5, 1>;
+template class BeamInteraction::BeamToSpherePotentialPair<2, 2>;
 
 FOUR_C_NAMESPACE_CLOSE

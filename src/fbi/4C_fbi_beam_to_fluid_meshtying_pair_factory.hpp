@@ -20,10 +20,10 @@ namespace Core::Elements
   class Element;
 }
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamContactPair;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 namespace FBI
 {
   class BeamToFluidMeshtyingParams;
@@ -51,7 +51,7 @@ namespace FBI
      *
      * \return Beam contact pair
      */
-    static std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_pair(
+    static std::shared_ptr<BeamInteraction::BeamContactPair> create_pair(
         std::vector<Core::Elements::Element const*> const& ele_ptrs,
         FBI::BeamToFluidMeshtyingParams& params_ptr);
   };

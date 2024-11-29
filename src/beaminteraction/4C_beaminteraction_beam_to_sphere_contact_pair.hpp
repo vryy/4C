@@ -43,7 +43,7 @@ namespace Discret
   }  // namespace Elements
 }  // namespace Discret
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   template <unsigned int numnodes, unsigned int numnodalvalues>
   class BeamToSphereContactPair : public BeamContactPair
@@ -341,7 +341,7 @@ namespace BEAMINTERACTION
 
     //@}
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

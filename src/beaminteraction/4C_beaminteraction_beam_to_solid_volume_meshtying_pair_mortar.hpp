@@ -21,14 +21,14 @@ namespace
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for beam to solid meshtying using mortar shape functions for the contact
    * tractions.
    * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
-   * @param mortar Type from BEAMINTERACTION::ElementDiscretization... representing the mortar shape
+   * @param mortar Type from BeamInteraction::ElementDiscretization... representing the mortar shape
    * functions.
    */
   template <typename Beam, typename Solid, typename Mortar>
@@ -106,7 +106,7 @@ namespace BEAMINTERACTION
     //! Number of rotational Lagrange multiplier DOFS.
     unsigned int n_mortar_rot_;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

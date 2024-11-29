@@ -17,16 +17,16 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declaration.
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToFluidMortarManager;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 namespace FBI
 {
   class BeamToFluidMeshtyingParams;
 }
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   namespace SUBMODELEVALUATOR
   {
@@ -45,7 +45,7 @@ namespace BEAMINTERACTION
        * class.
        */
       PartitionedBeamInteractionAssemblyManagerIndirect(
-          std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& assembly_contact_elepairs,
+          std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>& assembly_contact_elepairs,
           std::shared_ptr<const Core::FE::Discretization>& discretization1,
           std::shared_ptr<const Core::FE::Discretization>& discretization2,
           std::shared_ptr<FBI::BeamToFluidMeshtyingParams> beam_contact_params_ptr);
@@ -69,7 +69,7 @@ namespace BEAMINTERACTION
       /**
        * \brief Return a const pointer to the mortar manager.
        */
-      inline std::shared_ptr<const BEAMINTERACTION::BeamToFluidMortarManager> get_mortar_manager()
+      inline std::shared_ptr<const BeamInteraction::BeamToFluidMortarManager> get_mortar_manager()
           const
       {
         return mortar_manager_;
@@ -77,11 +77,11 @@ namespace BEAMINTERACTION
 
      private:
       //! Pointer to the mortar manager. This object stores the relevant mortar matrices.
-      std::shared_ptr<BEAMINTERACTION::BeamToFluidMortarManager> mortar_manager_;
+      std::shared_ptr<BeamInteraction::BeamToFluidMortarManager> mortar_manager_;
     };
 
   }  // namespace SUBMODELEVALUATOR
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -35,10 +35,10 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
+BeamInteraction::BeamToSolidSurfaceVisualizationOutputWriter::
     BeamToSolidSurfaceVisualizationOutputWriter(
         Core::IO::VisualizationParameters visualization_params,
-        std::shared_ptr<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
+        std::shared_ptr<const BeamInteraction::BeamToSolidSurfaceVisualizationOutputParams>
             output_params_ptr)
     : output_params_ptr_(output_params_ptr),
       output_writer_base_ptr_(nullptr),
@@ -46,7 +46,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 {
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ =
-      std::make_shared<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
+      std::make_shared<BeamInteraction::BeamToSolidVisualizationOutputWriterBase>(
 
           "beam-to-solid-surface", visualization_params_);
 
@@ -59,7 +59,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
   {
     if (output_params_ptr_->get_nodal_force_output_flag())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer(
               "nodal-forces", "btss-coupling-nodal-forces");
       auto& visualization_data = visualization_writer->get_visualization_data();
@@ -75,7 +75,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 
     if (output_params_ptr_->get_averaged_normals_output_flag())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer(
               "averaged-normals", "btss-coupling-averaged-normals");
       auto& visualization_data = visualization_writer->get_visualization_data();
@@ -88,7 +88,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 
     if (output_params_ptr_->get_mortar_lambda_discret_output_flag())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("mortar", "btss-coupling-mortar");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
@@ -102,7 +102,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 
     if (output_params_ptr_->get_mortar_lambda_continuous_output_flag())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer(
               "mortar-continuous", "btss-coupling-mortar-continuous");
       auto& visualization_data = visualization_writer->get_visualization_data();
@@ -119,7 +119,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 
     if (output_params_ptr_->get_integration_points_output_flag())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer(
               "integration-points", "btss-coupling-integration-points");
       auto& visualization_data = visualization_writer->get_visualization_data();
@@ -134,7 +134,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 
     if (output_params_ptr_->get_segmentation_output_flag())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer(
               "segmentation", "btss-coupling-segmentation");
       auto& visualization_data = visualization_writer->get_visualization_data();
@@ -152,8 +152,8 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_runtime(
-    const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact) const
+void BeamInteraction::BeamToSolidSurfaceVisualizationOutputWriter::write_output_runtime(
+    const BeamInteraction::SUBMODELEVALUATOR::BeamContact* beam_contact) const
 {
   // Get the time step and time for the output file. If output is desired at every iteration, the
   // values are padded. The runtime output is written when the time step is already set to the next
@@ -167,8 +167,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_runtime_iteration(
-    const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const
+void BeamInteraction::BeamToSolidSurfaceVisualizationOutputWriter::write_output_runtime_iteration(
+    const BeamInteraction::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const
 {
   if (output_params_ptr_->get_output_every_iteration())
   {
@@ -182,9 +182,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
+void BeamInteraction::BeamToSolidSurfaceVisualizationOutputWriter::
     write_output_beam_to_solid_surface(
-        const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
+        const BeamInteraction::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
         double time) const
 {
   // Parameter list that will be passed to all contact pairs when they create their visualization.
@@ -194,14 +194,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 
 
   // Add the averaged nodal normal output.
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>
       visualization_averaged_normals =
           output_writer_base_ptr_->get_visualization_writer("btss-coupling-averaged-normals");
   if (visualization_averaged_normals != nullptr)
   {
     const std::vector<std::shared_ptr<BeamInteractionConditionBase>>& surface_condition_vector =
         beam_contact->get_conditions()->get_condition_map().at(
-            Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying);
+            Inpar::BeamInteraction::BeamInteractionConditions::beam_to_solid_surface_meshtying);
     for (const auto& condition : surface_condition_vector)
     {
       // Get the line-to-surface evaluation data for the current condition.
@@ -225,7 +225,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 
   // Add the nodal forces resulting from beam contact. The forces are split up into beam and
   // solid nodes.
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> nodal_force_visualization =
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> nodal_force_visualization =
       output_writer_base_ptr_->get_visualization_writer("btss-coupling-nodal-forces");
   if (nodal_force_visualization != nullptr)
     add_beam_interaction_nodal_forces(nodal_force_visualization, beam_contact->discret_ptr(),
@@ -240,7 +240,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
   {
     // Add pair specific output for direct assembly managers.
     auto direct_assembly_manager = std::dynamic_pointer_cast<
-        BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(assembly_manager);
+        BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(assembly_manager);
     if (not(direct_assembly_manager == nullptr))
     {
       for (const auto& pair : direct_assembly_manager->get_contact_pairs())
@@ -249,7 +249,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 
     // Add pair specific output for indirect assembly managers.
     auto indirect_assembly_manager = std::dynamic_pointer_cast<
-        BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(assembly_manager);
+        BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(assembly_manager);
     if (not(indirect_assembly_manager == nullptr))
     {
       // If needed, setup the vector with the global moments around the origin.
@@ -268,7 +268,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
       visualization_params.set<std::shared_ptr<Core::LinAlg::Vector<double>>>("lambda", lambda);
 
       // The pairs will need the mortar manager to extract their Lambda DOFs.
-      visualization_params.set<std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+      visualization_params.set<std::shared_ptr<const BeamInteraction::BeamToSolidMortarManager>>(
           "mortar_manager", indirect_assembly_manager->get_mortar_manager());
 
       // This map is used to ensure, that each discrete Lagrange multiplier is only written once per

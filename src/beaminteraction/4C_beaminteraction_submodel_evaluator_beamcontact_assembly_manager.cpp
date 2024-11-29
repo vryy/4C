@@ -15,6 +15,6 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager::BeamContactAssemblyManager() {}
+BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManager::BeamContactAssemblyManager() {}
 
 FOUR_C_NAMESPACE_CLOSE

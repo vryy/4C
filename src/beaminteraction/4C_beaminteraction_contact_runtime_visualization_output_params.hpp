@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamContactRuntimeVisualizationOutputParams
   {
@@ -104,7 +104,7 @@ namespace BEAMINTERACTION
     bool output_gaps_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

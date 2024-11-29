@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declarations.
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidVolumeMeshtyingVisualizationOutputParams;
   class BeamToSolidVisualizationOutputWriterBase;
@@ -27,14 +27,14 @@ namespace BEAMINTERACTION
   {
     class BeamContact;
   }
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 namespace Solid::TimeInt
 {
   class ParamsRuntimeOutput;
 }
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief This class manages and creates all visualization output for beam to solid volume
@@ -48,7 +48,7 @@ namespace BEAMINTERACTION
      */
     explicit BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
         Core::IO::VisualizationParameters visualization_params,
-        std::shared_ptr<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
+        std::shared_ptr<const BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
             output_params_ptr);
 
     /**
@@ -66,7 +66,7 @@ namespace BEAMINTERACTION
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      */
     void setup(
-        std::shared_ptr<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
+        std::shared_ptr<const BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
             output_params_ptr);
 
     /**
@@ -76,7 +76,7 @@ namespace BEAMINTERACTION
      * (and probably can not) have a RCP to itself.
      */
     void write_output_runtime(
-        const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact) const;
+        const BeamInteraction::SUBMODELEVALUATOR::BeamContact* beam_contact) const;
 
     /**
      * \brief Setup post iteration output creation, and call WriteOutputData.
@@ -86,7 +86,7 @@ namespace BEAMINTERACTION
      * @param i_iteration (in) current number of iteration.
      */
     void write_output_runtime_iteration(
-        const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const;
+        const BeamInteraction::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const;
 
    private:
     /**
@@ -98,7 +98,7 @@ namespace BEAMINTERACTION
      * @param time (in) Scalar time value for this visualization step.
      */
     void write_output_beam_to_solid_volume_mesh_tying(
-        const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
+        const BeamInteraction::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
         double time) const;
 
    private:
@@ -106,14 +106,14 @@ namespace BEAMINTERACTION
     std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams> output_params_ptr_;
 
     //! Pointer to the output writer, which handles the actual output data for this object.
-    std::shared_ptr<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>
+    std::shared_ptr<BeamInteraction::BeamToSolidVisualizationOutputWriterBase>
         output_writer_base_ptr_;
 
     //! visualization parameters
     const Core::IO::VisualizationParameters visualization_params_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -320,9 +320,9 @@ namespace
       << Mortar::NodeType::instance().name() << " " << Mortar::ElementType::instance().name() << " "
       << CONTACT::NodeType::instance().name() << " " << CONTACT::FriNodeType::instance().name()
       << " " << CONTACT::ElementType::instance().name() << " "
-      << BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::instance().name() << " "
-      << BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::instance().name() << " "
-      << BEAMINTERACTION::BeamLinkTrussType::instance().name() << " "
+      << BeamInteraction::BeamLinkBeam3rLine2RigidJointedType::instance().name() << " "
+      << BeamInteraction::BeamLinkBeam3rLine2PinJointedType::instance().name() << " "
+      << BeamInteraction::BeamLinkTrussType::instance().name() << " "
       << PARTICLEENGINE::ParticleObjectType::instance().name() << " "
       << MultiScale::MicroStaticParObjectType::instance().name() << " ";
   }

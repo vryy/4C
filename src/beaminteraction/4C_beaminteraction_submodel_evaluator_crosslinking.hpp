@@ -50,7 +50,7 @@ namespace CrossLinking
 {
   class CrosslinkerNode;
 }
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   namespace Data
   {
@@ -81,9 +81,9 @@ namespace BEAMINTERACTION
       void post_setup() override;
 
       //! Returns the type of the current model evaluator
-      Inpar::BEAMINTERACTION::SubModelType type() const override
+      Inpar::BeamInteraction::SubModelType type() const override
       {
-        return Inpar::BEAMINTERACTION::submodel_crosslinking;
+        return Inpar::BeamInteraction::submodel_crosslinking;
       }
 
       //! derived
@@ -214,28 +214,28 @@ namespace BEAMINTERACTION
       /// set double bonded linker between all binding spots that match certain
       /// neigbhoring criteria
       void set_all_possible_initial_double_bonded_crosslinker(
-          std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>& newlinker,
+          std::vector<std::shared_ptr<BeamInteraction::Data::CrosslinkerData>>& newlinker,
           std::map<int, NewDoubleBonds>& mynewdbondcl);
 
       /// get all possible links between beam binding spots
       void get_all_possible_bspot_links(
-          std::vector<BEAMINTERACTION::Data::BspotLinkerData>& my_bspot_linker);
+          std::vector<BeamInteraction::Data::BspotLinkerData>& my_bspot_linker);
 
       /// communicate initial linker
       void communicate_initial_linker(
-          std::vector<BEAMINTERACTION::Data::BspotLinkerData> const& my_bspot_linker,
-          std::map<int, std::vector<BEAMINTERACTION::Data::BspotLinkerData>>& global_bspot_linker);
+          std::vector<BeamInteraction::Data::BspotLinkerData> const& my_bspot_linker,
+          std::map<int, std::vector<BeamInteraction::Data::BspotLinkerData>>& global_bspot_linker);
 
       /// all procs decide in the same way which bonds are valid
       void unambiguous_decisions_on_all_procs(
-          std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>& newlinker,
-          std::map<int, std::vector<BEAMINTERACTION::Data::BspotLinkerData>> const&
+          std::vector<std::shared_ptr<BeamInteraction::Data::CrosslinkerData>>& newlinker,
+          std::map<int, std::vector<BeamInteraction::Data::BspotLinkerData>> const&
               global_bspot_linker,
           std::vector<int>& newlinkermatid);
 
       /// setup my initial double bonded linker
       void setup_my_initial_double_bonded_linker(
-          std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>& newlinker,
+          std::vector<std::shared_ptr<BeamInteraction::Data::CrosslinkerData>>& newlinker,
           std::map<int, NewDoubleBonds>& mynewdbondcl, std::vector<int> const& newlinkermatid);
 
       /// diffuse crosslinker depending on number of bonds they have
@@ -243,7 +243,7 @@ namespace BEAMINTERACTION
 
       /// diffuse unbound crosslinker according to brownian dynamics
       void diffuse_unbound_crosslinker(
-          Core::Nodes::Node* crosslinker, BEAMINTERACTION::Data::CrosslinkerData* cldata_i);
+          Core::Nodes::Node* crosslinker, BeamInteraction::Data::CrosslinkerData* cldata_i);
 
       /// get binding spot of crosslinker that is currently occupied
       int get_single_occupied_cl_bspot(std::vector<std::pair<int, int>> const& clbspots) const;
@@ -254,12 +254,12 @@ namespace BEAMINTERACTION
 
       /// new position after transition from single to not bonded
       void set_position_of_newly_free_crosslinker(CrossLinking::CrosslinkerNode* crosslinker,
-          BEAMINTERACTION::Data::CrosslinkerData* cldata);
+          BeamInteraction::Data::CrosslinkerData* cldata);
 
       /// new position after transition from double to single bonded
       void set_position_of_newly_single_bonded_crosslinker(
           CrossLinking::CrosslinkerNode* crosslinker,
-          BEAMINTERACTION::Data::CrosslinkerData* cldata, int stayoccpotid);
+          BeamInteraction::Data::CrosslinkerData* cldata, int stayoccpotid);
 
       /// fill epetar vectors to write vtp output
       void fill_state_data_vectors_for_output(Core::LinAlg::Vector<double>& displacement,
@@ -301,14 +301,14 @@ namespace BEAMINTERACTION
       *  \author J. Eichinger
        -------------------------------------------------------------------------*/
       void find_potential_binding_events(
-          std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-          std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+          std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& mybonds,
+          std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
               undecidedbonds);
 
       /// find potential binding events in one bin
       void find_potential_binding_events_in_bin_and_neighborhood(Core::Elements::Element* bin,
-          std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-          std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+          std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& mybonds,
+          std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
               undecidedbonds,
           std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,
           bool checklinkingprop);
@@ -322,8 +322,8 @@ namespace BEAMINTERACTION
       /// communication to ensure correct binding over all procs is done afterwards
       void prepare_binding(Core::Nodes::Node* node_i,
           std::set<Core::Elements::Element*> const& neighboring_beams,
-          std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-          std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+          std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& mybonds,
+          std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
               undecidedbonds,
           std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,
           bool checklinkingprop);
@@ -331,46 +331,46 @@ namespace BEAMINTERACTION
       /// check criteria if binding event is feasible
       bool check_bind_event_criteria(CrossLinking::CrosslinkerNode const* const crosslinker_i,
           Core::Elements::Element const* const potbeampartner,
-          BEAMINTERACTION::Data::CrosslinkerData* cldata_i,
-          BEAMINTERACTION::Data::BeamData const* beamdata_i, int locnbspot,
+          BeamInteraction::Data::CrosslinkerData* cldata_i,
+          BeamInteraction::Data::BeamData const* beamdata_i, int locnbspot,
           std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,
           bool checklinkingprop) const;
 
       // check if identical bond alread exists
       bool return_false_if_identical_bond_already_exists(
           CrossLinking::CrosslinkerNode const* const crosslinker_i,
-          BEAMINTERACTION::Data::CrosslinkerData* cldata_i,
+          BeamInteraction::Data::CrosslinkerData* cldata_i,
           std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,
-          BEAMINTERACTION::Data::BeamData const* beamdata_i, int locnbspot,
+          BeamInteraction::Data::BeamData const* beamdata_i, int locnbspot,
           int potbeampartnerrowlid) const;
 
       /// check if crosslinke and filament type are compatible
       bool check_linker_and_filament_type_compatibility(
-          Inpar::BEAMINTERACTION::CrosslinkerType linkertype,
-          Inpar::BEAMINTERACTION::FilamentType filamenttype) const;
+          Inpar::BeamInteraction::CrosslinkerType linkertype,
+          Inpar::BeamInteraction::FilamentType filamenttype) const;
 
       /// if crosslinker is singly bound, we fetch the orientation vector of the
       /// filament axis at the already occupied binding spot for the orientation
       /// criterion (enclosed angle) to be checked later on
       void get_occupied_cl_b_spot_beam_tangent(
           CrossLinking::CrosslinkerNode const* const crosslinker_i,
-          BEAMINTERACTION::Data::CrosslinkerData* cldata_i,
+          BeamInteraction::Data::CrosslinkerData* cldata_i,
           Core::LinAlg::Matrix<3, 1>& occ_bindingspot_beam_tangent, int clgid) const;
 
       /// decide by asking other procs who is allowed to set specific crosslinker,
       /// this is necessary to avoid setting crosslinker more than once per time step
       void manage_binding_in_parallel(
-          std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>&
+          std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>&
               mybonds,  // clgid to cldata
-          std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+          std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
               undecidedbonds,  // owner of cldatas in vector to be requested
-          std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& myelebonds) const;
+          std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& myelebonds) const;
 
       /// communicate requests
       void communicate_undecided_bonds(
-          std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+          std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
               undecidedbonds,
-          std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+          std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
               requestedcl) const;
 
       /*
@@ -384,17 +384,17 @@ namespace BEAMINTERACTION
          has to be made
        -------------------------------------------------------------------------*/
       void decide_binding_in_parallel(
-          std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+          std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
               requestedcl,
-          std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-          std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+          std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& mybonds,
+          std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
               decidedbonds) const;
 
       /// communicate decisions for binding events
       void communicate_decided_bonds(
-          std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+          std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
               decidedbonds,
-          std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& myelebonds) const;
+          std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& myelebonds) const;
 
       /* now have two distinct maps of binding events on each proc, depending
          on ownership of crosslinker and elements myrank has different tasks:
@@ -404,17 +404,17 @@ namespace BEAMINTERACTION
          bonded linker
                                                                               */
       int update_my_crosslinker_and_element_binding_states(
-          std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-          std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& myelebonds);
+          std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& mybonds,
+          std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& myelebonds);
 
       /// bind row linker of myrank
       void update_my_crosslinker_binding_states(
-          std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> const& mybonds,
+          std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>> const& mybonds,
           std::map<int, NewDoubleBonds>& mynewdbondcl);
 
       /// bind row elements of myrank
       void update_my_element_binding_states(
-          std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> const& myelebonds);
+          std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>> const& myelebonds);
 
       /// setup new double bonds
       void create_new_double_bonded_crosslinker_element_pairs(
@@ -426,18 +426,18 @@ namespace BEAMINTERACTION
       /// calclulate force dependent unbind probability for double bonded crosslinker
       /// according to Bell's equation (Howard, eq 5.10, p.89)
       void calc_bells_force_dependent_unbind_probability(CrossLinking::CrosslinkerNode* linker,
-          BEAMINTERACTION::BeamLink& elepairptr, std::vector<double>& punlinkforcedependent) const;
+          BeamInteraction::BeamLink& elepairptr, std::vector<double>& punlinkforcedependent) const;
 
       /// communicate crosslinker unbinding event data
       void communicate_crosslinker_unbinding(
-          std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>>&
+          std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>>&
               sendunbindevent,
-          std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>& myrankunbindevent)
+          std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>& myrankunbindevent)
           const;
 
       /// update binding status of beams after unbinding
       void update_beam_binding_status_after_unbinding(
-          std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>> const& unbindevent);
+          std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>> const& unbindevent);
 
       /// -------------------------------------------------------------------------
       /// in case we have double bonded crosslinker on myrank we have to check if
@@ -452,14 +452,14 @@ namespace BEAMINTERACTION
 
       /// dissolve certain bonds
       void dissolve_bond(Core::Nodes::Node* linker, int freedbspotid, int numbondsold,
-          std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>>&
+          std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>>&
               sendunbindevents,
-          std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>& myrankunbindevents);
+          std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>& myrankunbindevents);
 
       /// send double bonds to new owner if crosslinker ownership change
       /// in the course of redistribution
       void communicate_beam_link_after_redistribution(
-          std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::BeamLink>>>& dbondcltosend);
+          std::map<int, std::vector<std::shared_ptr<BeamInteraction::BeamLink>>>& dbondcltosend);
 
       /// send data T to rank= mapkey
       template <typename T>
@@ -488,7 +488,7 @@ namespace BEAMINTERACTION
 
       /// debug feature to check bindevent structs
       void print_and_check_bind_event_data(
-          BEAMINTERACTION::Data::BindEventData& bindeventdata) const;
+          BeamInteraction::Data::BindEventData& bindeventdata) const;
 
       //! @}
 
@@ -497,11 +497,11 @@ namespace BEAMINTERACTION
       //! @{
 
       //! data container holding all beam contact related parameters
-      std::shared_ptr<BEAMINTERACTION::CrosslinkingParams> crosslinking_params_ptr_;
+      std::shared_ptr<BeamInteraction::CrosslinkingParams> crosslinking_params_ptr_;
 
       //! temporary storage for all relevant crosslinker data
       //! (vector key is col lid of crosslinker)
-      std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>> crosslinker_data_;
+      std::vector<std::shared_ptr<BeamInteraction::Data::CrosslinkerData>> crosslinker_data_;
 
       //! crosslinker exporter for crosslinker data container
       std::shared_ptr<Core::Communication::Exporter> cl_exporter_;
@@ -511,10 +511,10 @@ namespace BEAMINTERACTION
 
       //! temporary storage for all relevant beam data during crosslinking
       //  (vector index is col lid of beamele)
-      std::vector<std::shared_ptr<BEAMINTERACTION::Data::BeamData>> beam_data_;
+      std::vector<std::shared_ptr<BeamInteraction::Data::BeamData>> beam_data_;
 
       //! double bonded crosslinker that exert forces on network (map key is crosslinker gid)
-      std::map<int, std::shared_ptr<BEAMINTERACTION::BeamLink>> doublebondcl_;
+      std::map<int, std::shared_ptr<BeamInteraction::BeamLink>> doublebondcl_;
 
       //! linker, i.e. crosslinker molecule discretization runtime vtp writer
       std::shared_ptr<Core::IO::DiscretizationVisualizationWriterNodes>
@@ -545,7 +545,7 @@ namespace BEAMINTERACTION
     };
 
   }  // namespace SUBMODELEVALUATOR
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

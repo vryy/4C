@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, Beam,
+BeamInteraction::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, Beam,
     Surface>::BeamToSolidSurfaceMeshtyingPairGaussPointFAD()
     : base_class()
 {
@@ -32,7 +32,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, Beam,
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, Beam,
     Surface>::evaluate_and_assemble(const std::shared_ptr<const Core::FE::Discretization>& discret,
     const std::shared_ptr<Epetra_FEVector>& force_vector,
     const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -77,7 +77,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, B
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -99,6 +99,6 @@ namespace BEAMINTERACTION
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8>;
   template class BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9>;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename Beam, typename Solid, typename Mortar, typename MortarRot>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar,
+BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar,
     MortarRot>::BeamToSolidVolumeMeshtyingPairMortarRotation()
     : BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid, Mortar>()
 {
@@ -41,7 +41,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Morta
  *
  */
 template <typename Beam, typename Solid, typename Mortar, typename MortarRot>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar,
     MortarRot>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
@@ -145,7 +145,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
  *
  */
 template <typename Beam, typename Solid, typename Mortar, typename MortarRot>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar,
     MortarRot>::evaluate_rotational_coupling_terms(  //
     const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
     const GEOMETRYPAIR::ElementData<Solid, scalar_type_rot_1st>& q_solid,
@@ -326,7 +326,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
  *
  */
 template <typename Beam, typename Solid, typename Mortar, typename MortarRot>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar,
     MortarRot>::evaluate_and_assemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const std::shared_ptr<Epetra_FEVector>& force_vector,
@@ -424,7 +424,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
  *
  */
 template <typename Beam, typename Solid, typename Mortar, typename MortarRot>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar, MortarRot>::
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar, MortarRot>::
     evaluate_rotational_coupling_stiff_terms(
         const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
         const GEOMETRYPAIR::ElementData<Solid, scalar_type_rot_2nd>& q_solid,
@@ -614,7 +614,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -644,6 +644,6 @@ namespace BEAMINTERACTION
   initialize_template_beam_to_solid_volume_meshtying_pair_mortar_rotation(t_line4, t_line2);
   initialize_template_beam_to_solid_volume_meshtying_pair_mortar_rotation(t_line4, t_line3);
   initialize_template_beam_to_solid_volume_meshtying_pair_mortar_rotation(t_line4, t_line4);
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

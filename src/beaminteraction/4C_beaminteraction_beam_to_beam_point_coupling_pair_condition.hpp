@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief This base class represents a single beam point coupling condition.
@@ -45,7 +45,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Create the beam contact pairs needed for this condition (derived).
      */
-    std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair(
+    std::shared_ptr<BeamInteraction::BeamContactPair> create_contact_pair(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) override;
 
     /**
@@ -64,7 +64,7 @@ namespace BEAMINTERACTION
     /// Element-local parameter coordinates of the coupling nodes
     std::array<double, 2> local_parameter_coordinates_;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -15,13 +15,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Forward declaration
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidParamsBase;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief This is a specialization of the mesh tying mortar manager for contact
@@ -37,7 +37,7 @@ namespace BEAMINTERACTION
      * @params start_value_lambda_gid (in) Start value for the Lagrange multiplier global IDs.
      */
     BeamToSolidMortarManagerContact(const std::shared_ptr<const Core::FE::Discretization>& discret,
-        const std::shared_ptr<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
+        const std::shared_ptr<const BeamInteraction::BeamToSolidParamsBase>& params,
         int start_value_lambda_gid);
 
    protected:
@@ -49,7 +49,7 @@ namespace BEAMINTERACTION
         std::shared_ptr<Core::LinAlg::Vector<double>>>
     get_penalty_regularization(const bool compute_linearization = false) const override;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

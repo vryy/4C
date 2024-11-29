@@ -15,7 +15,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToBeamContactParams;
   class BeamToSphereContactParams;
@@ -54,37 +54,37 @@ namespace BEAMINTERACTION
     void build_beam_contact_runtime_output_params(double restart_time);
 
 
-    inline std::shared_ptr<BEAMINTERACTION::BeamToBeamContactParams> beam_to_beam_contact_params()
+    inline std::shared_ptr<BeamInteraction::BeamToBeamContactParams> beam_to_beam_contact_params()
         const
     {
       return beam_to_beam_contact_params_;
     }
 
-    inline std::shared_ptr<BEAMINTERACTION::BeamToSphereContactParams>
+    inline std::shared_ptr<BeamInteraction::BeamToSphereContactParams>
     beam_to_sphere_contact_params() const
     {
       return beam_to_sphere_contact_params_;
     }
 
-    inline std::shared_ptr<BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>
+    inline std::shared_ptr<BeamInteraction::BeamToSolidVolumeMeshtyingParams>
     beam_to_solid_volume_meshtying_params() const
     {
       return beam_to_solid_volume_meshtying_params_;
     }
 
-    inline std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>
+    inline std::shared_ptr<BeamInteraction::BeamToSolidSurfaceMeshtyingParams>
     beam_to_solid_surface_meshtying_params() const
     {
       return beam_to_solid_surface_meshtying_params_;
     }
 
-    inline std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceContactParams>
+    inline std::shared_ptr<BeamInteraction::BeamToSolidSurfaceContactParams>
     beam_to_solid_surface_contact_params() const
     {
       return beam_to_solid_surface_contact_params_;
     }
 
-    inline std::shared_ptr<BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams>
+    inline std::shared_ptr<BeamInteraction::BeamContactRuntimeVisualizationOutputParams>
     beam_contact_runtime_visualization_output_params() const
     {
       return beam_contact_runtime_output_params_;
@@ -93,29 +93,29 @@ namespace BEAMINTERACTION
 
    private:
     //! pointer to the parameter class of beam-to-beam contact
-    std::shared_ptr<BEAMINTERACTION::BeamToBeamContactParams> beam_to_beam_contact_params_;
+    std::shared_ptr<BeamInteraction::BeamToBeamContactParams> beam_to_beam_contact_params_;
 
     //! pointer to the parameter class of beam-to-sphere contact
-    std::shared_ptr<BEAMINTERACTION::BeamToSphereContactParams> beam_to_sphere_contact_params_;
+    std::shared_ptr<BeamInteraction::BeamToSphereContactParams> beam_to_sphere_contact_params_;
 
     //! pointer to the parameter class of beam-to-solid-volume contact
-    std::shared_ptr<BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>
+    std::shared_ptr<BeamInteraction::BeamToSolidVolumeMeshtyingParams>
         beam_to_solid_volume_meshtying_params_;
 
     //! pointer to the parameter class of beam-to-solid-surface mesh tying
-    std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>
+    std::shared_ptr<BeamInteraction::BeamToSolidSurfaceMeshtyingParams>
         beam_to_solid_surface_meshtying_params_;
 
     //! pointer to the parameter class of beam-to-solid-surface contact
-    std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceContactParams>
+    std::shared_ptr<BeamInteraction::BeamToSolidSurfaceContactParams>
         beam_to_solid_surface_contact_params_;
 
     //! pointer to the parameter class of beam contact visualization output
-    std::shared_ptr<BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams>
+    std::shared_ptr<BeamInteraction::BeamContactRuntimeVisualizationOutputParams>
         beam_contact_runtime_output_params_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

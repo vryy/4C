@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam, Surface,
+BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam, Surface,
     Mortar>::BeamToSolidSurfaceMeshtyingPairMortarBase()
     : base_class(), n_mortar_rot_(0)
 {
@@ -36,7 +36,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam, Sur
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam, Surface,
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam, Surface,
     Mortar>::get_pair_visualization(std::shared_ptr<BeamToSolidVisualizationOutputWriterBase>
                                         visualization_writer,
     Teuchos::ParameterList& visualization_params) const
@@ -44,11 +44,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
   // Get visualization of base method.
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_discret =
       visualization_writer->get_visualization_writer("btss-coupling-mortar");
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_continuous =
       visualization_writer->get_visualization_writer("btss-coupling-mortar-continuous");
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>
       visualization_nodal_forces =
           visualization_writer->get_visualization_writer("btss-coupling-nodal-forces");
   if (!visualization_discret and !visualization_continuous and
@@ -72,8 +72,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
-    std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
-        visualization_params.get<std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+    std::shared_ptr<const BeamInteraction::BeamToSolidMortarManager> mortar_manager =
+        visualization_params.get<std::shared_ptr<const BeamInteraction::BeamToSolidMortarManager>>(
             "mortar_manager");
     std::shared_ptr<Core::LinAlg::Vector<double>> lambda =
         visualization_params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("lambda");
@@ -284,7 +284,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -393,6 +393,6 @@ namespace BEAMINTERACTION
   template class BeamToSolidSurfaceMeshtyingPairMortarBase<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9,
       t_line4>;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

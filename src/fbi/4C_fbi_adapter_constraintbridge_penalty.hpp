@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToFluidMeshtyingVtkOutputWriter;
 }
@@ -39,7 +39,7 @@ namespace Adapter
   {
     friend class ConstraintEnforcerFactory;
     friend class FBIPenaltyConstraintenforcer;
-    friend class BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter;
+    friend class BeamInteraction::BeamToFluidMeshtyingVtkOutputWriter;
     friend class FBIConstraintenforcer;
 
    public:

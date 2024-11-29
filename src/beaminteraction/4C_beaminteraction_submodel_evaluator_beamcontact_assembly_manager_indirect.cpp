@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::evaluate_force_stiff(
+void BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::evaluate_force_stiff(
     std::shared_ptr<Core::FE::Discretization> discret,
     const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
     std::shared_ptr<Epetra_FEVector> fe_sysvec,
@@ -31,7 +31,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::eva
 }
 
 
-double BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::get_energy(
+double BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::get_energy(
     const std::shared_ptr<const Core::LinAlg::Vector<double>>& disp) const
 {
   const double global_mortar_energy = mortar_manager_->get_energy();

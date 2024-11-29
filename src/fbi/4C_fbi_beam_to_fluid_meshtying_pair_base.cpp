@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 template <typename Beam, typename Fluid>
-BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::BeamToFluidMeshtyingPairBase()
+BeamInteraction::BeamToFluidMeshtyingPairBase<Beam, Fluid>::BeamToFluidMeshtyingPairBase()
     : base_class()
 {
   // Empty constructor.
@@ -40,7 +40,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::BeamToFluidMeshtying
 /*------------------------------------------------------------------------------------------------*/
 
 template <typename Beam, typename Fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::setup()
+void BeamInteraction::BeamToFluidMeshtyingPairBase<Beam, Fluid>::setup()
 {
   this->check_init();
 
@@ -65,7 +65,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::setup()
  *
  */
 template <typename Beam, typename Fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam,
+void BeamInteraction::BeamToFluidMeshtyingPairBase<Beam,
     Fluid>::reset_state(  // todo somehow hand in nodal velocities
     const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& fluid_nodal_dofvec)
@@ -92,7 +92,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam,
 }
 
 template <typename Beam, typename Fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::create_geometry_pair(
+void BeamInteraction::BeamToFluidMeshtyingPairBase<Beam, Fluid>::create_geometry_pair(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
@@ -105,7 +105,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::create_geometry
  *
  */
 template <typename Beam, typename Fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::pre_evaluate()
+void BeamInteraction::BeamToFluidMeshtyingPairBase<Beam, Fluid>::pre_evaluate()
 {
   // Call pre_evaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
@@ -118,7 +118,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::pre_evaluate()
  *
  */
 template <typename Beam, typename Fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::print(std::ostream& out) const
+void BeamInteraction::BeamToFluidMeshtyingPairBase<Beam, Fluid>::print(std::ostream& out) const
 {
   this->check_init_setup();
 
@@ -140,7 +140,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::print(std::ostr
  *
  */
 template <typename Beam, typename Fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam,
+void BeamInteraction::BeamToFluidMeshtyingPairBase<Beam,
     Fluid>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   this->check_init_setup();
@@ -169,7 +169,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam,
  *
  */
 template <typename Beam, typename Fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visualization(
+void BeamInteraction::BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visualization(
     std::shared_ptr<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
@@ -178,7 +178,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visual
 
 
   // If a writer exists for integration point data, add the integration point data.
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization =
       visualization_writer->get_visualization_writer("integration-points");
   if (visualization != nullptr)
   {
@@ -250,7 +250,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visual
 }
 
 template <typename Beam, typename Fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::evaluate_beam_position(
+void BeamInteraction::BeamToFluidMeshtyingPairBase<Beam, Fluid>::evaluate_beam_position(
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
     Core::LinAlg::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
 {
@@ -264,19 +264,19 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::evaluate_beam_p
  * Explicit template initialization of template class.
  */
 // Hermite beam element, hex8 solid element.
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex8>;
 // Hermite beam element, hex20 solid element.
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex20>;
 // Hermite beam element, hex27 solid element.
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex27>;
 // Hermite beam element, tet4 solid element.
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet4>;
 // Hermite beam element, tet10 solid element.
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10>;
 
 FOUR_C_NAMESPACE_CLOSE

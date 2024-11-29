@@ -39,14 +39,14 @@ namespace Core::LargeRotations
 }  // namespace Core::LargeRotations
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for Mortar beam to surface surface mesh tying.
    * @tparam scalar_type Type for scalar variables.
    * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @tparam surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
-   * @tparam mortar Type from BEAMINTERACTION::ElementDiscretization... representing the mortar
+   * @tparam mortar Type from BeamInteraction::ElementDiscretization... representing the mortar
    * shape functions.
    */
   template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
@@ -95,7 +95,7 @@ namespace BEAMINTERACTION
    * \brief Class for beam to solid surface rotational mesh tying.
    * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @param surface Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
-   * @param mortar Type from BEAMINTERACTION::ElementDiscretization... representing the mortar shape
+   * @param mortar Type from BeamInteraction::ElementDiscretization... representing the mortar shape
    * functions for displacement coupling.
    *
    * @tparam scalar_type Scalar type for position DOFs.
@@ -190,12 +190,12 @@ namespace BEAMINTERACTION
    * @param surface_normal_strategy (in) Strategy for surface normal evaluation.
    * @return Pointer to the created pair.
    */
-  std::shared_ptr<BEAMINTERACTION::BeamContactPair>
+  std::shared_ptr<BeamInteraction::BeamContactPair>
   beam_to_solid_surface_meshtying_pair_mortar_fad_factory(const Core::FE::CellType surface_shape,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction,
       const bool rotational_coupling,
       const Inpar::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

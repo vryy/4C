@@ -45,7 +45,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Crosslinking()
+BeamInteraction::SUBMODELEVALUATOR::Crosslinking::Crosslinking()
     : crosslinking_params_ptr_(nullptr),
       cl_exporter_(nullptr),
       beam_exporter_(nullptr),
@@ -65,19 +65,19 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Crosslinking()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::setup()
 {
   check_init();
 
   // construct, init and setup data container for crosslinking
-  crosslinking_params_ptr_ = std::make_shared<BEAMINTERACTION::CrosslinkingParams>();
+  crosslinking_params_ptr_ = std::make_shared<BeamInteraction::CrosslinkingParams>();
   crosslinking_params_ptr_->init(g_state());
   crosslinking_params_ptr_->setup();
 
   // set binding spot positions on filament elements according input file specifications
   set_filament_types();
   // this includes temporary change in ghosting
-  BEAMINTERACTION::Utils::set_filament_binding_spot_positions(
+  BeamInteraction::Utils::set_filament_binding_spot_positions(
       discret_ptr(), *crosslinking_params_ptr_);
 
   // add crosslinker to bin discretization
@@ -99,7 +99,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
+bool BeamInteraction::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
 {
   check_init_setup();
 
@@ -117,10 +117,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
     if (beamele_i == nullptr) continue;
 
     std::vector<double> eledisp;
-    BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), beamele_i,
+    BeamInteraction::Utils::get_current_unshifted_element_dis(discret(), beamele_i,
         *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
 
-    beam_data_[i] = std::make_shared<BEAMINTERACTION::Data::BeamData>();
+    beam_data_[i] = std::make_shared<BeamInteraction::Data::BeamData>();
     beam_data_[i]->set_id(beamele_i->id());
 
     // loop over all binding spots of current element
@@ -133,7 +133,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
       Core::LinAlg::Matrix<3, 3> triad(true);
       for (int unsigned k = 0; k < numbbspot; ++k)
       {
-        BEAMINTERACTION::Utils::get_pos_and_triad_of_binding_spot(
+        BeamInteraction::Utils::get_pos_and_triad_of_binding_spot(
             beamele_i, *periodic_bounding_box_ptr(), iter.first, k, pos, triad, eledisp);
 
         beam_data_[i]->set_b_spot_position(iter.first, k, pos);
@@ -143,7 +143,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
     }
   }
 
-  std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>> newlinker;
+  std::vector<std::shared_ptr<BeamInteraction::Data::CrosslinkerData>> newlinker;
   // map key is crosslinker gid to be able to uniquely address one entry over all procs
   std::map<int, NewDoubleBonds> mynewdbondcl;
   set_all_possible_initial_double_bonded_crosslinker(newlinker, mynewdbondcl);
@@ -158,7 +158,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
   for (unsigned int i = 0; i < numrowcl; ++i)
   {
     Core::Nodes::Node* cl = bin_discret().l_row_node(i);
-    crosslinker_data_[cl->lid()] = std::make_shared<BEAMINTERACTION::Data::CrosslinkerData>();
+    crosslinker_data_[cl->lid()] = std::make_shared<BeamInteraction::Data::CrosslinkerData>();
 
     crosslinker_data_[cl->lid()]->set_id(cl->id());
   }
@@ -195,7 +195,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_setup()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::post_setup()
 {
   check_init_setup();
 
@@ -234,7 +234,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::init_submodel_dependencies(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::init_submodel_dependencies(
     std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
@@ -243,7 +243,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::init_submodel_dependencie
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::set_filament_types()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::set_filament_types()
 {
   check_init();
 
@@ -261,7 +261,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::set_filament_types()
     if (cond == nullptr) continue;
 
     // get filament type
-    Inpar::BEAMINTERACTION::FilamentType filtype = Inpar::BEAMINTERACTION::string_to_filament_type(
+    Inpar::BeamInteraction::FilamentType filtype = Inpar::BeamInteraction::string_to_filament_type(
         (cond->parameters().get<std::string>("TYPE")));
 
     for (int i = 0; i < currnode->num_element(); ++i)
@@ -281,9 +281,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::set_filament_types()
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::
     set_all_possible_initial_double_bonded_crosslinker(
-        std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>& newlinker,
+        std::vector<std::shared_ptr<BeamInteraction::Data::CrosslinkerData>>& newlinker,
         std::map<int, NewDoubleBonds>& mynewdbondcl)
 {
   check_init();
@@ -293,8 +293,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
   if (crosslinking_params_ptr_->total_num_init_crosslinker() == 0) return;
 
   // get all possible bspot partners
-  std::vector<BEAMINTERACTION::Data::BspotLinkerData> my_bspot_linker;
-  std::map<int, std::vector<BEAMINTERACTION::Data::BspotLinkerData>> global_bspot_linker;
+  std::vector<BeamInteraction::Data::BspotLinkerData> my_bspot_linker;
+  std::map<int, std::vector<BeamInteraction::Data::BspotLinkerData>> global_bspot_linker;
 
   // loop over all binding spots and find matching ones
   get_all_possible_bspot_links(my_bspot_linker);
@@ -312,8 +312,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_links(
-    std::vector<BEAMINTERACTION::Data::BspotLinkerData>& my_bspot_linker)
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_links(
+    std::vector<BeamInteraction::Data::BspotLinkerData>& my_bspot_linker)
 {
   check_init();
 
@@ -327,10 +327,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
     Discret::Elements::Beam3Base* beamele = dynamic_cast<Discret::Elements::Beam3Base*>(
         discret().g_element(ele_type_map_extractor_ptr()->beam_map()->GID(rowbeam_i)));
 
-    BEAMINTERACTION::Data::BeamData const* beamdata_i = beam_data_[beamele->lid()].get();
+    BeamInteraction::Data::BeamData const* beamdata_i = beam_data_[beamele->lid()].get();
 
     // exclude current element/filament if filtype_none
-    if (beamele->get_filament_type() == Inpar::BEAMINTERACTION::filtype_none) continue;
+    if (beamele->get_filament_type() == Inpar::BeamInteraction::filtype_none) continue;
 
     // loop over all binding spot types of current filament
     for (auto const& iter : beamdata_i->get_b_spot_status())
@@ -366,14 +366,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
           Discret::Elements::Beam3Base* nb_beamele =
               dynamic_cast<Discret::Elements::Beam3Base*>(nb_ele_i);
 
-          BEAMINTERACTION::Data::BeamData const* nb_beamdata_i =
+          BeamInteraction::Data::BeamData const* nb_beamdata_i =
               beam_data_[nb_beamele->lid()].get();
 
           // exclude linking of touching elements
-          if (BEAMINTERACTION::Utils::do_beam_elements_share_nodes(beamele, nb_beamele)) continue;
+          if (BeamInteraction::Utils::do_beam_elements_share_nodes(beamele, nb_beamele)) continue;
 
           // exclude neighbor element/filament if filtype_none
-          if (nb_beamele->get_filament_type() == Inpar::BEAMINTERACTION::filtype_none) continue;
+          if (nb_beamele->get_filament_type() == Inpar::BeamInteraction::filtype_none) continue;
 
           // loop over binding spots of neighboring element
           for (unsigned int nb_locbspot_i = 0;
@@ -404,7 +404,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
                     "lower bound for bin size, this can lead to missed binding events");
 #endif
 
-              if (BEAMINTERACTION::Utils::is_distance_out_of_range(
+              if (BeamInteraction::Utils::is_distance_out_of_range(
                       beamdata_i->get_b_spot_position(iter.first, locbspot_i),
                       nb_beamdata_i->get_b_spot_position(iter.first, nb_locbspot_i), linkdistmin,
                       linkdistmax))
@@ -428,13 +428,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
                 nb_bindingspot_beam_tangent(idim) =
                     nb_beamdata_i->get_b_spot_triad(iter.first, nb_locbspot_i)(idim, 0);
 
-              if (BEAMINTERACTION::Utils::is_enclosed_angle_out_of_range(bindingspot_beam_tangent,
+              if (BeamInteraction::Utils::is_enclosed_angle_out_of_range(bindingspot_beam_tangent,
                       nb_bindingspot_beam_tangent, linkanglemin, linkanglemax))
                 continue;
 
               // if all criteria were met for a certain linker, add this bond to linker specific
               // bond list
-              BEAMINTERACTION::Data::BspotLinkerData bspotlinkerdata;
+              BeamInteraction::Data::BspotLinkerData bspotlinkerdata;
               bspotlinkerdata.set_ele_gid1(beamele->id());
               bspotlinkerdata.set_loc_bspot_id1(locbspot_i);
               bspotlinkerdata.set_ele_gid2(nb_beamele->id());
@@ -457,9 +457,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_initial_linker(
-    std::vector<BEAMINTERACTION::Data::BspotLinkerData> const& my_bspot_linker,
-    std::map<int, std::vector<BEAMINTERACTION::Data::BspotLinkerData>>& global_bspot_linker)
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::communicate_initial_linker(
+    std::vector<BeamInteraction::Data::BspotLinkerData> const& my_bspot_linker,
+    std::map<int, std::vector<BeamInteraction::Data::BspotLinkerData>>& global_bspot_linker)
 {
   check_init();
 
@@ -515,11 +515,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_initial_linke
 
   // rebuild bspot_linker_data
   int numglobalpairs = elegid_1.size();
-  std::map<int, std::map<long long, BEAMINTERACTION::Data::BspotLinkerData>> sort_data;
+  std::map<int, std::map<long long, BeamInteraction::Data::BspotLinkerData>> sort_data;
   long long bspotgid = -1;
   for (int i = 0; i < numglobalpairs; ++i)
   {
-    BEAMINTERACTION::Data::BspotLinkerData bspotlinkerdata;
+    BeamInteraction::Data::BspotLinkerData bspotlinkerdata;
     bspotlinkerdata.set_ele_gid1(elegid_1[i]);
     bspotlinkerdata.set_loc_bspot_id1(locbspot_1[i]);
     bspotlinkerdata.set_ele_gid2(elegid_2[i]);
@@ -527,7 +527,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_initial_linke
     bspotlinkerdata.set_type(type[i]);
     bspotlinkerdata.set_mat_id(mat[i]);
 
-    bspotgid = BEAMINTERACTION::Utils::cantor_pairing(std::make_pair(elegid_2[i], locbspot_2[i]));
+    bspotgid = BeamInteraction::Utils::cantor_pairing(std::make_pair(elegid_2[i], locbspot_2[i]));
 
     sort_data[elegid_1[i]][bspotgid] = bspotlinkerdata;
   }
@@ -539,9 +539,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_initial_linke
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_all_procs(
-    std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>& newlinker,
-    std::map<int, std::vector<BEAMINTERACTION::Data::BspotLinkerData>> const& global_bspot_linker,
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_all_procs(
+    std::vector<std::shared_ptr<BeamInteraction::Data::CrosslinkerData>>& newlinker,
+    std::map<int, std::vector<BeamInteraction::Data::BspotLinkerData>> const& global_bspot_linker,
     std::vector<int>& newlinkermatid)
 {
   // initialize a box within linker are spawned
@@ -553,7 +553,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
   // loop over bspotpairs and make decision
   newlinker.reserve(global_bspot_linker.size());
   std::map<long long, int> bondsperbindingspot;
-  std::set<std::pair<long long, long long>, BEAMINTERACTION::Utils::StdPairComparatorOrderCounts>
+  std::set<std::pair<long long, long long>, BeamInteraction::Utils::StdPairComparatorOrderCounts>
       doublebonds;
   std::map<int, int> numpertype;
   Core::LinAlg::Matrix<3, 1> clpos(true);
@@ -561,13 +561,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
   {
     for (auto const& iter : iter_sort.second)
     {
-      long long bspotgid = BEAMINTERACTION::Utils::cantor_pairing(
+      long long bspotgid = BeamInteraction::Utils::cantor_pairing(
           std::make_pair(iter.get_ele_gid1(), iter.get_loc_bspot_id1()));
-      long long nb_bspotgid = BEAMINTERACTION::Utils::cantor_pairing(
+      long long nb_bspotgid = BeamInteraction::Utils::cantor_pairing(
           std::make_pair(iter.get_ele_gid2(), iter.get_loc_bspot_id2()));
 
-      Inpar::BEAMINTERACTION::CrosslinkerType linkertype =
-          static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(iter.get_type());
+      Inpar::BeamInteraction::CrosslinkerType linkertype =
+          static_cast<Inpar::BeamInteraction::CrosslinkerType>(iter.get_type());
 
       // check if binding spot has reached its maximum number of bonds
       if (bondsperbindingspot.find(bspotgid) != bondsperbindingspot.end() and
@@ -604,8 +604,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
       if (discret().element_row_map()->LID(iter.get_ele_gid1()) == -1) continue;
 
       // store data of new crosslinker
-      std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cldata =
-          std::make_shared<BEAMINTERACTION::Data::CrosslinkerData>();
+      std::shared_ptr<BeamInteraction::Data::CrosslinkerData> cldata =
+          std::make_shared<BeamInteraction::Data::CrosslinkerData>();
 
       // set positions
       clpos.clear();
@@ -633,8 +633,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup_my_initial_double_bonded_linker(
-    std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>& newlinker,
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::setup_my_initial_double_bonded_linker(
+    std::vector<std::shared_ptr<BeamInteraction::Data::CrosslinkerData>>& newlinker,
     std::map<int, NewDoubleBonds>& mynewdbondcl, std::vector<int> const& newlinkermatid)
 {
   // determine unique gids on each proc (ascending over all procs)
@@ -707,7 +707,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup_my_initial_double_b
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_crosslinker_to_bin_discretization()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::add_crosslinker_to_bin_discretization()
 {
   check_init();
 
@@ -752,21 +752,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_crosslinker_to_bin_di
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::reset()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::reset()
 {
   check_init_setup();
 
   // reset crosslinker pairs
   for (auto const& iter : doublebondcl_)
   {
-    std::shared_ptr<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
+    std::shared_ptr<BeamInteraction::BeamLink> elepairptr = iter.second;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
 
     CrossLinking::CrosslinkerNode* cl_i =
         dynamic_cast<CrossLinking::CrosslinkerNode*>(bin_discret_ptr()->g_node(elepairptr->id()));
     // safety check
-    BEAMINTERACTION::Data::CrosslinkerData const* cldata_i = crosslinker_data_[cl_i->lid()].get();
+    BeamInteraction::Data::CrosslinkerData const* cldata_i = crosslinker_data_[cl_i->lid()].get();
 
     if (cldata_i->get_number_of_bonds() != 2)
       FOUR_C_THROW("Cl with gid %i Owner %i on myrank %i and numbonds %i", elepairptr->id(),
@@ -791,7 +791,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::reset()
       int locbspotnum = elepairptr->get_loc_b_spot_num(i);
       Core::Elements::Element* ele = discret_ptr()->g_element(elegid);
 
-      BEAMINTERACTION::Utils::get_pos_and_triad_of_binding_spot(discret(), ele,
+      BeamInteraction::Utils::get_pos_and_triad_of_binding_spot(discret(), ele,
           *beam_interaction_data_state_ptr()->get_dis_col_np(), *periodic_bounding_box_ptr(),
           elepairptr->get_linker_type(), locbspotnum, pos[i], triad[i]);
     }
@@ -825,7 +825,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::reset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force()
+bool BeamInteraction::SUBMODELEVALUATOR::Crosslinking::evaluate_force()
 {
   check_init_setup();
 
@@ -842,7 +842,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force()
 
   for (auto const& iter : doublebondcl_)
   {
-    std::shared_ptr<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
+    std::shared_ptr<BeamInteraction::BeamLink> elepairptr = iter.second;
 
     for (int i = 0; i < 2; ++i)
     {
@@ -855,14 +855,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force()
 
     // apply forces on binding spots to parent elements
     // and get their discrete element force vectors
-    BEAMINTERACTION::Utils::apply_binding_spot_force_to_parent_elements<
+    BeamInteraction::Utils::apply_binding_spot_force_to_parent_elements<
         Discret::Elements::Beam3Base, Discret::Elements::Beam3Base>(discret(),
         *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
         *elepairptr, bspotforce, eleforce);
 
     // assemble the contributions into force vector class variable
     // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-    BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
+    BeamInteraction::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
         elegids, eleforce, dummystiff, beam_interaction_data_state_ptr()->get_force_np(), nullptr);
   }
 
@@ -871,7 +871,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_stiff()
+bool BeamInteraction::SUBMODELEVALUATOR::Crosslinking::evaluate_stiff()
 {
   check_init_setup();
 
@@ -893,7 +893,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_stiff()
 
   for (auto const& iter : doublebondcl_)
   {
-    std::shared_ptr<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
+    std::shared_ptr<BeamInteraction::BeamLink> elepairptr = iter.second;
 
     for (int i = 0; i < 2; ++i)
     {
@@ -907,14 +907,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_stiff()
         bspotstiff[0][0], bspotstiff[0][1], bspotstiff[1][0], bspotstiff[1][1]);
 
     // apply linearizations to parent elements and get their discrete element stiffness matrices
-    BEAMINTERACTION::Utils::apply_binding_spot_stiff_to_parent_elements<
+    BeamInteraction::Utils::apply_binding_spot_stiff_to_parent_elements<
         Discret::Elements::Beam3Base, Discret::Elements::Beam3Base>(discret(),
         *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
         *elepairptr, bspotstiff, elestiff);
 
     // assemble the contributions into stiffness matrix class variable
     // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
-    BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
+    BeamInteraction::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
         elegids, dummyforce, elestiff, nullptr, beam_interaction_data_state_ptr()->get_stiff());
   }
 
@@ -923,7 +923,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force_stiff()
+bool BeamInteraction::SUBMODELEVALUATOR::Crosslinking::evaluate_force_stiff()
 {
   check_init_setup();
 
@@ -949,7 +949,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force_stiff()
 
   for (auto const& iter : doublebondcl_)
   {
-    std::shared_ptr<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
+    std::shared_ptr<BeamInteraction::BeamLink> elepairptr = iter.second;
     for (int i = 0; i < 2; ++i)
     {
       elegids[i] = elepairptr->get_ele_gid(i);
@@ -964,14 +964,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force_stiff()
 
     // apply forces on binding spots and corresponding linearizations to parent elements
     // and get their discrete element force vectors and stiffness matrices
-    BEAMINTERACTION::Utils::apply_binding_spot_force_stiff_to_parent_elements<
+    BeamInteraction::Utils::apply_binding_spot_force_stiff_to_parent_elements<
         Discret::Elements::Beam3Base, Discret::Elements::Beam3Base>(discret(),
         *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
         *elepairptr, bspotforce, bspotstiff, eleforce, elestiff);
 
     // assemble the contributions into force and stiffness class variables
     // f_crosslink_np_ptr_, stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
-    BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
+    BeamInteraction::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
         elegids, eleforce, elestiff, beam_interaction_data_state_ptr()->get_force_np(),
         beam_interaction_data_state_ptr()->get_stiff());
   }
@@ -981,7 +981,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_step_state(const double& timefac_n)
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::update_step_state(const double& timefac_n)
 {
   check_init_setup();
 
@@ -991,7 +991,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_step_state(const d
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(bool beam_redist)
+bool BeamInteraction::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(bool beam_redist)
 {
   check_init_setup();
 
@@ -1066,7 +1066,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(b
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_step_element(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::update_step_element(
     bool repartition_was_done)
 {
   check_init_setup();
@@ -1074,7 +1074,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_step_element(
   if (repartition_was_done)
   {
     // adapt map of vector to map after redistribution
-    BEAMINTERACTION::Utils::update_dof_map_of_vector(*bin_discret_ptr(), dis_at_last_redistr_);
+    BeamInteraction::Utils::update_dof_map_of_vector(*bin_discret_ptr(), dis_at_last_redistr_);
 
     // update double bonded linker
     update_my_double_bonds_after_redistribution();
@@ -1092,14 +1092,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_step_element(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_update_step_element()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::post_update_step_element()
 {
   // empty
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<Solid::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_energy()
+std::map<Solid::EnergyType, double> BeamInteraction::SUBMODELEVALUATOR::Crosslinking::get_energy()
     const
 {
   check_init_setup();
@@ -1116,7 +1116,7 @@ std::map<Solid::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::Crosslin
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::output_step_state(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
@@ -1125,12 +1125,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::output_step_state(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::runtime_output_step_state() const
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::runtime_output_step_state() const
 {
   check_init_setup();
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::"
+      "BeamInteraction::SUBMODELEVALUATOR::Crosslinking::"
       "runtime_output_step_state");
 
   if (visualization_output_writer_ptr_ != nullptr) write_output_runtime_structure();
@@ -1138,7 +1138,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::runtime_output_step_state
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::init_output_runtime_structure()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::init_output_runtime_structure()
 {
   check_init();
 
@@ -1151,7 +1151,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::init_output_runtime_struc
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_structure() const
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_structure() const
 {
   check_init_setup();
 
@@ -1277,7 +1277,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::fill_state_data_vectors_for_output(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::fill_state_data_vectors_for_output(
     Core::LinAlg::Vector<double>& displacement, Core::LinAlg::Vector<double>& orientation,
     Core::LinAlg::Vector<double>& numberofbonds, Core::LinAlg::Vector<double>& owner,
     Core::LinAlg::Vector<double>& force) const
@@ -1296,7 +1296,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::fill_state_data_vectors_f
     std::vector<int> dofnode = bindis.dof(crosslinker_i);
     int numbonds = crosslinker_data_[crosslinker_i->lid()]->get_number_of_bonds();
 
-    std::shared_ptr<BEAMINTERACTION::BeamLink> beamlink = nullptr;
+    std::shared_ptr<BeamInteraction::BeamLink> beamlink = nullptr;
 
     if (numbonds == 2)
     {
@@ -1330,11 +1330,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::fill_state_data_vectors_f
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::reset_step_state() { check_init_setup(); }
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::reset_step_state() { check_init_setup(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::write_restart(
     Core::IO::DiscretizationWriter& ia_writer, Core::IO::DiscretizationWriter& bin_writer) const
 {
   check_init_setup();
@@ -1345,7 +1345,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
   Core::Communication::PackBuffer linker_buffer;
   for (auto const& iter : doublebondcl_)
   {
-    std::shared_ptr<BEAMINTERACTION::BeamLink> btbl = iter.second;
+    std::shared_ptr<BeamInteraction::BeamLink> btbl = iter.second;
     btbl->pack(linker_buffer);
   }
 
@@ -1360,7 +1360,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
   for (unsigned int i = 0; i < numrowcl; ++i)
   {
     int const clgid = bin_discret().node_row_map()->GID(i);
-    std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cl_data_i =
+    std::shared_ptr<BeamInteraction::Data::CrosslinkerData> cl_data_i =
         crosslinker_data_[bin_discret().node_col_map()->LID(clgid)];
 
     cl_data_i->pack(cldata_buffer);
@@ -1377,7 +1377,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
   for (unsigned int i = 0; i < numrowbeam; ++i)
   {
     int const beamgid = ele_type_map_extractor().beam_map()->GID(i);
-    std::shared_ptr<BEAMINTERACTION::Data::BeamData> beam_data_i =
+    std::shared_ptr<BeamInteraction::Data::BeamData> beam_data_i =
         beam_data_[discret().element_col_map()->LID(beamgid)];
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -1401,7 +1401,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_read_restart()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::pre_read_restart()
 {
   check_init_setup();
   beam_crosslinker_handler_ptr()->remove_all_linker();
@@ -1409,7 +1409,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_read_restart()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::read_restart(
     Core::IO::DiscretizationReader& ia_reader, Core::IO::DiscretizationReader& bin_reader)
 {
   check_init_setup();
@@ -1425,8 +1425,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
     while (!buffer.at_end())
     {
       std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::factory(buffer));
-      std::shared_ptr<BEAMINTERACTION::BeamLink> beamtobeamlink =
-          std::dynamic_pointer_cast<BEAMINTERACTION::BeamLink>(object);
+      std::shared_ptr<BeamInteraction::BeamLink> beamtobeamlink =
+          std::dynamic_pointer_cast<BeamInteraction::BeamLink>(object);
       if (beamtobeamlink == nullptr) FOUR_C_THROW("Failed to build a node from the node data");
 
       // insert in my list of double bonded crosslinker
@@ -1442,7 +1442,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   bin_reader.read_char_vector(cldata_charvec, "ClData");
   crosslinker_data_.resize(bin_discret().num_my_col_nodes());
 
-  std::map<int, std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>> cl_not_owned;
+  std::map<int, std::shared_ptr<BeamInteraction::Data::CrosslinkerData>> cl_not_owned;
   std::set<int> not_owned_gids;
   std::map<int, std::vector<char>> cl_datapacks;
   std::vector<int> read_node_ids;
@@ -1450,8 +1450,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   while (!buffer.at_end())
   {
     // unpack
-    std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cl_data(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
+    std::shared_ptr<BeamInteraction::Data::CrosslinkerData> cl_data(
+        BeamInteraction::Data::create_data_container<BeamInteraction::Data::CrosslinkerData>(
             buffer));
 
     int const cl_gid = cl_data->get_id();
@@ -1480,8 +1480,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   for (auto& iter : cl_datapacks)
   {
     Core::Communication::UnpackBuffer cl_buffer(iter.second);
-    std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cl_data(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
+    std::shared_ptr<BeamInteraction::Data::CrosslinkerData> cl_data(
+        BeamInteraction::Data::create_data_container<BeamInteraction::Data::CrosslinkerData>(
             cl_buffer));
     crosslinker_data_[bin_discret().node_col_map()->LID(cl_data->get_id())] = cl_data;
   }
@@ -1493,7 +1493,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   bin_reader.read_char_vector(beamdata_charvec, "BeamData");
   beam_data_.resize(discret().num_my_col_elements());
 
-  std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BeamData>> beams_not_owned;
+  std::map<int, std::shared_ptr<BeamInteraction::Data::BeamData>> beams_not_owned;
   not_owned_gids.clear();
   std::map<int, std::vector<char>> beam_datapacks;
   std::vector<int> read_ele_ids;
@@ -1501,8 +1501,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   while (!beamdata_buffer.at_end())
   {
     // unpack
-    std::shared_ptr<BEAMINTERACTION::Data::BeamData> beam_data(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(
+    std::shared_ptr<BeamInteraction::Data::BeamData> beam_data(
+        BeamInteraction::Data::create_data_container<BeamInteraction::Data::BeamData>(
             beamdata_buffer));
 
     int const beam_gid = beam_data->get_id();
@@ -1530,8 +1530,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   for (auto& iter : beam_datapacks)
   {
     Core::Communication::UnpackBuffer buffer(iter.second);
-    std::shared_ptr<BEAMINTERACTION::Data::BeamData> beam_data(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(buffer));
+    std::shared_ptr<BeamInteraction::Data::BeamData> beam_data(
+        BeamInteraction::Data::create_data_container<BeamInteraction::Data::BeamData>(buffer));
     beam_data_[discret().element_col_map()->LID(beam_data->get_id())] = beam_data;
   }
 
@@ -1541,7 +1541,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_read_restart()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::post_read_restart()
 {
   check_init_setup();
 
@@ -1569,7 +1569,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_read_restart()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_bins_to_bin_col_map(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::add_bins_to_bin_col_map(
     std::set<int>& colbins)
 {
   // nothing to do
@@ -1577,7 +1577,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_bins_to_bin_col_map(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::
     add_bins_with_relevant_content_for_ia_discret_col_map(std::set<int>& colbins) const
 {
   check_init_setup();
@@ -1629,7 +1629,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_half_interaction_distance(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::get_half_interaction_distance(
     double& half_interaction_distance)
 {
   check_init_setup();
@@ -1672,7 +1672,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_half_interaction_dist
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
 {
   check_init_setup();
 
@@ -1689,7 +1689,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
       FOUR_C_THROW("More than one element for this crosslinker");
 #endif
 
-    BEAMINTERACTION::Data::CrosslinkerData* cldata_i =
+    BeamInteraction::Data::CrosslinkerData* cldata_i =
         crosslinker_data_[crosslinker_i->lid()].get();
 
     // different treatment according to number of bonds a crosslinker has
@@ -1732,7 +1732,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
         // get current position of filament binding spot
         Core::LinAlg::Matrix<3, 1> bbspotpos;
         std::vector<double> eledisp;
-        BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), ele,
+        BeamInteraction::Utils::get_current_unshifted_element_dis(discret(), ele,
             *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
         ele->get_pos_of_binding_spot(bbspotpos, eledisp,
             crosslinker_i->get_material()->linker_type(),
@@ -1784,7 +1784,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
         // get current position of filament binding spot
         Core::LinAlg::Matrix<3, 1> bbspotposone;
         std::vector<double> eledisp;
-        BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), ele,
+        BeamInteraction::Utils::get_current_unshifted_element_dis(discret(), ele,
             *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
         ele->get_pos_of_binding_spot(bbspotposone, eledisp,
             crosslinker_i->get_material()->linker_type(), cldata_i->get_b_spots()[0].second,
@@ -1820,7 +1820,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
 
         // get current position of filament binding spot
         Core::LinAlg::Matrix<3, 1> bbspotpostwo;
-        BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), ele,
+        BeamInteraction::Utils::get_current_unshifted_element_dis(discret(), ele,
             *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
         ele->get_pos_of_binding_spot(bbspotpostwo, eledisp,
             crosslinker_i->get_material()->linker_type(), cldata_i->get_b_spots()[1].second,
@@ -1849,8 +1849,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_unbound_crosslinker(
-    Core::Nodes::Node* crosslinker_i, BEAMINTERACTION::Data::CrosslinkerData* cldata_i)
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::diffuse_unbound_crosslinker(
+    Core::Nodes::Node* crosslinker_i, BeamInteraction::Data::CrosslinkerData* cldata_i)
 {
   check_init();
 
@@ -1907,7 +1907,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_unbound_crosslink
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_single_occupied_cl_bspot(
+int BeamInteraction::SUBMODELEVALUATOR::Crosslinking::get_single_occupied_cl_bspot(
     std::vector<std::pair<int, int>> const& clbspots) const
 {
   check_init();
@@ -1924,7 +1924,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_single_occupied_cl_bsp
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::
     set_position_of_double_bonded_crosslinker_pb_cconsistent(Core::LinAlg::Matrix<3, 1>& clpos,
         Core::LinAlg::Matrix<3, 1> const& bspot1pos,
         Core::LinAlg::Matrix<3, 1> const& bspot2pos) const
@@ -1948,8 +1948,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::set_position_of_newly_free_crosslinker(
-    CrossLinking::CrosslinkerNode* crosslinker, BEAMINTERACTION::Data::CrosslinkerData* cldata)
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::set_position_of_newly_free_crosslinker(
+    CrossLinking::CrosslinkerNode* crosslinker, BeamInteraction::Data::CrosslinkerData* cldata)
 {
   check_init();
 
@@ -1979,9 +1979,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::set_position_of_newly_fre
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::
     set_position_of_newly_single_bonded_crosslinker(CrossLinking::CrosslinkerNode* crosslinker,
-        BEAMINTERACTION::Data::CrosslinkerData* cldata, int stayoccpotid)
+        BeamInteraction::Data::CrosslinkerData* cldata, int stayoccpotid)
 {
   check_init();
 
@@ -1996,7 +1996,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
         cldata->get_b_spots()[stayoccpotid].first, g_state().get_my_rank());
 #endif
 
-  BEAMINTERACTION::Data::BeamData const* beamdata_i = beam_data_[collidoccbeam].get();
+  BeamInteraction::Data::BeamData const* beamdata_i = beam_data_[collidoccbeam].get();
   Core::LinAlg::Matrix<3, 1> clpos(beamdata_i->get_b_spot_position(
       crosslinker->get_material()->linker_type(), cldata->get_b_spots()[stayoccpotid].second));
 
@@ -2009,7 +2009,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::store_maps_prior_redistribution()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::store_maps_prior_redistribution()
 {
   check_init();
 
@@ -2020,12 +2020,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::store_maps_prior_redistri
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crosslinker_data()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::update_and_export_crosslinker_data()
 {
   check_init();
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::"
+      "BeamInteraction::SUBMODELEVALUATOR::Crosslinking::"
       "update_and_export_crosslinker_data");
 
   //  // if one proc has changed maps, all procs have to update exporter
@@ -2051,7 +2051,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
   for (unsigned int i = 0; i < numrowcl; ++i)
   {
     int const clgid = cl_noderowmap_prior_redistr_->GID(i);
-    std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cl_data_i =
+    std::shared_ptr<BeamInteraction::Data::CrosslinkerData> cl_data_i =
         crosslinker_data_[cl_nodecolmap_prior_redistr_->LID(clgid)];
 
     Core::Communication::PackBuffer data;
@@ -2067,8 +2067,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
   for (auto& iter : allpacks)
   {
     Core::Communication::UnpackBuffer buffer(iter.second);
-    std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData> cl_data(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
+    std::shared_ptr<BeamInteraction::Data::CrosslinkerData> cl_data(
+        BeamInteraction::Data::create_data_container<BeamInteraction::Data::CrosslinkerData>(
             buffer));
     crosslinker_data_[bin_discret().node_col_map()->LID(cl_data->get_id())] = cl_data;
   }
@@ -2076,12 +2076,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_data(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_data(
     bool update_states)
 {
   check_init();
 
-  //  TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::"
+  //  TEUCHOS_FUNC_TIME_MONITOR("BeamInteraction::SUBMODELEVALUATOR::Crosslinking::"
   //      "update_and_export_beam_data");
   //
   //  // if maps have change on one proc, all procs have to rebuild the exporter object
@@ -2108,7 +2108,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
   {
     int const elegid = beam_elerowmap_prior_redistr_->GID(i);
 
-    std::shared_ptr<BEAMINTERACTION::Data::BeamData> beam_data_i =
+    std::shared_ptr<BeamInteraction::Data::BeamData> beam_data_i =
         beam_data_[beam_elecolmap_prior_redistr_->LID(elegid)];
 
     // safety check
@@ -2132,7 +2132,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
 #endif
 
       std::vector<double> eledisp;
-      BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), beamele_i,
+      BeamInteraction::Utils::get_current_unshifted_element_dis(discret(), beamele_i,
           *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
 
       // loop over binding spot types of current element
@@ -2144,7 +2144,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
         Core::LinAlg::Matrix<3, 3> triad(true);
         for (int unsigned k = 0; k < numbbspot; ++k)
         {
-          BEAMINTERACTION::Utils::get_pos_and_triad_of_binding_spot(
+          BeamInteraction::Utils::get_pos_and_triad_of_binding_spot(
               beamele_i, *periodic_bounding_box_ptr(), iter.first, k, pos, triad, eledisp);
 
           beam_data_i->set_b_spot_position(iter.first, k, pos);
@@ -2167,20 +2167,20 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
   for (auto& iter : allpacks)
   {
     Core::Communication::UnpackBuffer buffer(iter.second);
-    std::shared_ptr<BEAMINTERACTION::Data::BeamData> beam_data(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(buffer));
+    std::shared_ptr<BeamInteraction::Data::BeamData> beam_data(
+        BeamInteraction::Data::create_data_container<BeamInteraction::Data::BeamData>(buffer));
     beam_data_[discret().element_col_map()->LID(beam_data->get_id())] = beam_data;
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::bind_and_unbind_crosslinker()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::bind_and_unbind_crosslinker()
 {
   check_init_setup();
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "BEAMINTERACTION::SUBMODELEVALUATOR::"
+      "BeamInteraction::SUBMODELEVALUATOR::"
       "Crosslinking::bind_and_unbind_crosslinker");
 
   // manage binding events
@@ -2211,17 +2211,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::bind_and_unbind_crosslink
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::bind_crosslinker()
+int BeamInteraction::SUBMODELEVALUATOR::Crosslinking::bind_crosslinker()
 {
   check_init();
 
   Global::Problem::instance()->random()->set_rand_range(0.0, 1.0);
 
   // intended bonds of row crosslinker on myrank (key is clgid)
-  std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> mybonds;
+  std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>> mybonds;
   mybonds.clear();
   // intended bond col crosslinker to row element (key is owner of crosslinker != myrank)
-  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>> undecidedbonds;
+  std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>> undecidedbonds;
   undecidedbonds.clear();
 
   // fill binding event maps
@@ -2229,7 +2229,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::bind_crosslinker()
 
   // bind events where myrank only owns the elements, cl are taken care
   // of by their owner (key is clgid)
-  std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> myelebonds;
+  std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>> myelebonds;
 
   // now each row owner of a linker gets requests, makes a random decision and
   // informs back its requesters
@@ -2241,15 +2241,15 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::bind_crosslinker()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::find_potential_binding_events(
-    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::find_potential_binding_events(
+    std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& mybonds,
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
         undecidedbonds)
 {
   check_init();
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::find_potential_binding_events");
+      "BeamInteraction::SUBMODELEVALUATOR::Crosslinking::find_potential_binding_events");
 
   // this variable is used to check if a beam binding spot is linked twice on
   // myrank during a time step
@@ -2264,7 +2264,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::find_potential_binding_ev
   // loop over all column crosslinker in random order
   // create random order of indices
   std::vector<int> rordercolcl =
-      BEAMINTERACTION::Utils::permutation(bin_discret_ptr()->num_my_col_nodes());
+      BeamInteraction::Utils::permutation(bin_discret_ptr()->num_my_col_nodes());
 
   for (auto const& icl : rordercolcl)
   {
@@ -2296,10 +2296,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::find_potential_binding_ev
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::
     find_potential_binding_events_in_bin_and_neighborhood(Core::Elements::Element* bin,
-        std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-        std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+        std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& mybonds,
+        std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
             undecidedbonds,
         std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,
         bool checklinkingprop)
@@ -2334,7 +2334,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
   const int numcrosslinker = bin->num_node();
 
   // obtain random order in which crosslinker are addressed
-  std::vector<int> randorder = BEAMINTERACTION::Utils::permutation(numcrosslinker);
+  std::vector<int> randorder = BeamInteraction::Utils::permutation(numcrosslinker);
 
   // loop over all crosslinker in CurrentBin in random order
   for (auto const& randcliter : randorder)
@@ -2353,7 +2353,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_if_sphere_prohibits_binding(
+bool BeamInteraction::SUBMODELEVALUATOR::Crosslinking::check_if_sphere_prohibits_binding(
     std::set<Core::Elements::Element*> const& neighboring_col_spheres,
     Core::Nodes::Node* node_i) const
 {
@@ -2364,7 +2364,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_if_sphere_prohibits
 
   if (std::abs(crosslinker_i->get_material()->no_bond_dist_sphere()) < 1.0e-8) return false;
 
-  BEAMINTERACTION::Data::CrosslinkerData* cldata_i = crosslinker_data_[crosslinker_i->lid()].get();
+  BeamInteraction::Data::CrosslinkerData* cldata_i = crosslinker_data_[crosslinker_i->lid()].get();
 
   for (auto const& sphere_iter : neighboring_col_spheres)
   {
@@ -2373,7 +2373,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_if_sphere_prohibits
 
     // sphere current position
     std::vector<double> sphereeledisp;
-    BEAMINTERACTION::Utils::get_current_element_dis(
+    BeamInteraction::Utils::get_current_element_dis(
         discret(), sphere_iter, *beam_interaction_data_state().get_dis_col_np(), sphereeledisp);
 
     // note: sphere has just one node (with three translational dofs)
@@ -2392,10 +2392,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_if_sphere_prohibits
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(Core::Nodes::Node* node_i,
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::prepare_binding(Core::Nodes::Node* node_i,
     std::set<Core::Elements::Element*> const& neighboring_beams,
-    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+    std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& mybonds,
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
         undecidedbonds,
     std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,
     bool checklinkingprop)
@@ -2406,7 +2406,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(Core::Nod
       dynamic_cast<CrossLinking::CrosslinkerNode*>(node_i);
 
   // get precomputed data of crosslinker i
-  BEAMINTERACTION::Data::CrosslinkerData* cldata_i = crosslinker_data_[crosslinker_i->lid()].get();
+  BeamInteraction::Data::CrosslinkerData* cldata_i = crosslinker_data_[crosslinker_i->lid()].get();
 
   // -------------------------------------------------------------------------
   // We now check all criteria that need to be passed for a binding event one
@@ -2423,17 +2423,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(Core::Nod
   // NOTE: This is crucial for reproducibility to ensure that computation does
   // not depend on pointer addresses (see also comment of class Less)
   // -------------------------------------------------------------------------
-  std::sort(beamvec.begin(), beamvec.end(), BEAMINTERACTION::Utils::Less());
+  std::sort(beamvec.begin(), beamvec.end(), BeamInteraction::Utils::Less());
 
   std::vector<int> randorder =
-      BEAMINTERACTION::Utils::permutation(static_cast<int>(beamvec.size()));
+      BeamInteraction::Utils::permutation(static_cast<int>(beamvec.size()));
   for (auto const& randiter : randorder)
   {
     // get neighboring (nb) beam element
     Core::Elements::Element* nbbeam = beamvec[randiter];
 
     // get pre computed data of current nbbeam
-    BEAMINTERACTION::Data::BeamData* beamdata_i = beam_data_[nbbeam->lid()].get();
+    BeamInteraction::Data::BeamData* beamdata_i = beam_data_[nbbeam->lid()].get();
 
     if (cldata_i->get_number_of_bonds() == 1)
     {
@@ -2447,14 +2447,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(Core::Nod
       // 2. criterion:
       // exclude binding of a single bonded crosslinker in close proximity on the
       // same filament (i.e. element cloud of old element binding partner is excluded)
-      if (BEAMINTERACTION::Utils::do_beam_elements_share_nodes(
+      if (BeamInteraction::Utils::do_beam_elements_share_nodes(
               discret().g_element(cl_bondedtogid), nbbeam))
         continue;
     }
 
     // loop over all binding spots of current element in random order
     std::vector<int> randbspot =
-        BEAMINTERACTION::Utils::permutation(beamdata_i->get_number_of_binding_spots_of_type(
+        BeamInteraction::Utils::permutation(beamdata_i->get_number_of_binding_spots_of_type(
             crosslinker_i->get_material()->linker_type()));
 
     for (auto const& rbspotiter : randbspot)
@@ -2471,8 +2471,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(Core::Nod
       // if we made it this far, we can add this potential binding event to its
       // corresponding map
       // ---------------------------------------------------------------------
-      std::shared_ptr<BEAMINTERACTION::Data::BindEventData> bindeventdata =
-          std::make_shared<BEAMINTERACTION::Data::BindEventData>();
+      std::shared_ptr<BeamInteraction::Data::BindEventData> bindeventdata =
+          std::make_shared<BeamInteraction::Data::BindEventData>();
       // default permission is true, is changed if owner of cl has something against it
       bindeventdata->init(crosslinker_i->id(), nbbeam->id(), locnbspot, g_state().get_my_rank(), 1);
 
@@ -2497,18 +2497,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(Core::Nod
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_bind_event_criteria(
+bool BeamInteraction::SUBMODELEVALUATOR::Crosslinking::check_bind_event_criteria(
     CrossLinking::CrosslinkerNode const* const crosslinker_i,
     Core::Elements::Element const* const potbeampartner,
-    BEAMINTERACTION::Data::CrosslinkerData* cldata_i,
-    BEAMINTERACTION::Data::BeamData const* beamdata_i, int locnbspot,
+    BeamInteraction::Data::CrosslinkerData* cldata_i,
+    BeamInteraction::Data::BeamData const* beamdata_i, int locnbspot,
     std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,
     bool checklinkingprop) const
 {
   check_init();
 
   int const potbeampartnerrowlid = discret().element_row_map()->LID(potbeampartner->id());
-  Inpar::BEAMINTERACTION::CrosslinkerType linkertype = crosslinker_i->get_material()->linker_type();
+  Inpar::BeamInteraction::CrosslinkerType linkertype = crosslinker_i->get_material()->linker_type();
 
   // check compatibility of crosslinker type and filament type (some linker can only
   // bind to certain filament types)
@@ -2563,10 +2563,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_bind_event_criteria
 #endif
 
   if ((cldata_i->get_number_of_bonds() == 0 and
-          BEAMINTERACTION::Utils::is_distance_out_of_range(
+          BeamInteraction::Utils::is_distance_out_of_range(
               cldata_i->get_position(), currbbspos, 0.5 * linkdistmin, 0.5 * linkdistmax)) or
       (cldata_i->get_number_of_bonds() == 1 and
-          BEAMINTERACTION::Utils::is_distance_out_of_range(
+          BeamInteraction::Utils::is_distance_out_of_range(
               cldata_i->get_position(), currbbspos, linkdistmin, linkdistmax)))
     return false;
 
@@ -2591,7 +2591,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_bind_event_criteria
         beamdata_i->get_b_spot_triad(linkertype, locnbspot)(idim, 0);
 
   if (cldata_i->get_number_of_bonds() == 1 and
-      BEAMINTERACTION::Utils::is_enclosed_angle_out_of_range(
+      BeamInteraction::Utils::is_enclosed_angle_out_of_range(
           occ_bindingspot_beam_tangent, curr_bindingspot_beam_tangent, linkanglemin, linkanglemax))
     return false;
 
@@ -2628,15 +2628,15 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_bind_event_criteria
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
+bool BeamInteraction::SUBMODELEVALUATOR::Crosslinking::
     return_false_if_identical_bond_already_exists(
         CrossLinking::CrosslinkerNode const* const crosslinker_i,
-        BEAMINTERACTION::Data::CrosslinkerData* cldata_i,
+        BeamInteraction::Data::CrosslinkerData* cldata_i,
         std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,
-        BEAMINTERACTION::Data::BeamData const* beamdata_i, int locnbspot,
+        BeamInteraction::Data::BeamData const* beamdata_i, int locnbspot,
         int potbeampartnerrowlid) const
 {
-  Inpar::BEAMINTERACTION::CrosslinkerType linkertype = crosslinker_i->get_material()->linker_type();
+  Inpar::BeamInteraction::CrosslinkerType linkertype = crosslinker_i->get_material()->linker_type();
 
   if (not(cldata_i->get_number_of_bonds() == 1 and
           crosslinking_params_ptr_->max_number_of_bonds_per_filament_bspot(linkertype) > 1))
@@ -2676,7 +2676,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
       FOUR_C_THROW(" Linker with gid %i not on rank %i", iter, g_state().get_my_rank());
 #endif
 
-    BEAMINTERACTION::Data::CrosslinkerData const* bondedcl_data_i =
+    BeamInteraction::Data::CrosslinkerData const* bondedcl_data_i =
         crosslinker_data_[bonded_crosslinker_i->lid()].get();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -2720,29 +2720,29 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_linker_and_filament_type_compatibility(
-    Inpar::BEAMINTERACTION::CrosslinkerType linkertype,
-    Inpar::BEAMINTERACTION::FilamentType filamenttype) const
+bool BeamInteraction::SUBMODELEVALUATOR::Crosslinking::check_linker_and_filament_type_compatibility(
+    Inpar::BeamInteraction::CrosslinkerType linkertype,
+    Inpar::BeamInteraction::FilamentType filamenttype) const
 {
   switch (linkertype)
   {
-    case Inpar::BEAMINTERACTION::linkertype_arbitrary:
+    case Inpar::BeamInteraction::linkertype_arbitrary:
     {
       // no check of filament type necessary
       return true;
       break;
     }
-    case Inpar::BEAMINTERACTION::linkertype_actin:
+    case Inpar::BeamInteraction::linkertype_actin:
     {
-      if (filamenttype == Inpar::BEAMINTERACTION::filtype_actin)
+      if (filamenttype == Inpar::BeamInteraction::filtype_actin)
         return true;
       else
         return false;
       break;
     }
-    case Inpar::BEAMINTERACTION::linkertype_collagen:
+    case Inpar::BeamInteraction::linkertype_collagen:
     {
-      if (filamenttype == Inpar::BEAMINTERACTION::filtype_collagen)
+      if (filamenttype == Inpar::BeamInteraction::filtype_collagen)
         return true;
       else
         return false;
@@ -2761,9 +2761,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_linker_and_filament
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_occupied_cl_b_spot_beam_tangent(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::get_occupied_cl_b_spot_beam_tangent(
     CrossLinking::CrosslinkerNode const* const crosslinker_i,
-    BEAMINTERACTION::Data::CrosslinkerData* cldata_i,
+    BeamInteraction::Data::CrosslinkerData* cldata_i,
     Core::LinAlg::Matrix<3, 1>& occ_bindingspot_beam_tangent, int clgid) const
 {
   check_init_setup();
@@ -2788,29 +2788,29 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_occupied_cl_b_spot_be
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::manage_binding_in_parallel(
-    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::manage_binding_in_parallel(
+    std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& mybonds,
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
         undecidedbonds,
-    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& myelebonds) const
+    std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& myelebonds) const
 {
   check_init();
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::manage_binding_in_parallel");
+      "BeamInteraction::SUBMODELEVALUATOR::Crosslinking::manage_binding_in_parallel");
 
   // -------------------------------------------------------------------------
   // 1) each procs makes his requests and receives the request of other procs
   // -------------------------------------------------------------------------
   // store requested cl and its data
-  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>> requestedcl;
+  std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>> requestedcl;
   communicate_undecided_bonds(undecidedbonds, requestedcl);
 
   // -------------------------------------------------------------------------
   // 2) now myrank needs to decide which proc is allowed to set the requested
   //    link
   // -------------------------------------------------------------------------
-  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>> decidedbonds;
+  std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>> decidedbonds;
   decide_binding_in_parallel(requestedcl, mybonds, decidedbonds);
 
   // -------------------------------------------------------------------------
@@ -2823,10 +2823,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::manage_binding_in_paralle
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
+int BeamInteraction::SUBMODELEVALUATOR::Crosslinking::
     update_my_crosslinker_and_element_binding_states(
-        std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-        std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& myelebonds)
+        std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& mybonds,
+        std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& myelebonds)
 {
   check_init();
 
@@ -2847,8 +2847,8 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_crosslinker_binding_states(
-    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> const& mybonds,
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::update_my_crosslinker_binding_states(
+    std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>> const& mybonds,
     std::map<int, NewDoubleBonds>& mynewdbondcl)
 {
   check_init();
@@ -2856,7 +2856,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_crosslinker_bin
   for (auto const& cliter : mybonds)
   {
     // get binding event data
-    BEAMINTERACTION::Data::BindEventData* binevdata = cliter.second.get();
+    BeamInteraction::Data::BindEventData* binevdata = cliter.second.get();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (binevdata->get_permission() != 1)
@@ -2879,10 +2879,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_crosslinker_bin
         dynamic_cast<CrossLinking::CrosslinkerNode*>(bin_discret_ptr()->l_col_node(clcollid));
 
     // get crosslinker data
-    BEAMINTERACTION::Data::CrosslinkerData* cldata_i = crosslinker_data_[clcollid].get();
+    BeamInteraction::Data::CrosslinkerData* cldata_i = crosslinker_data_[clcollid].get();
 
     Core::Elements::Element* beamele_i = discret_ptr()->l_col_element(colelelid);
-    BEAMINTERACTION::Data::BeamData* beamdata_i = beam_data_[colelelid].get();
+    BeamInteraction::Data::BeamData* beamdata_i = beam_data_[colelelid].get();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // safety checks
@@ -3038,8 +3038,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_crosslinker_bin
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_element_binding_states(
-    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> const& myelebonds)
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::update_my_element_binding_states(
+    std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>> const& myelebonds)
 {
   check_init();
 
@@ -3052,7 +3052,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_element_binding
   for (auto const& cliter : myelebonds)
   {
     // get binding event data
-    BEAMINTERACTION::Data::BindEventData* binevdata = cliter.second.get();
+    BeamInteraction::Data::BindEventData* binevdata = cliter.second.get();
 
     // get linker data and beam data
     CrossLinking::CrosslinkerNode* linker =
@@ -3070,9 +3070,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_element_binding
 
     // linker
     int const clcollid = linker->lid();
-    BEAMINTERACTION::Data::CrosslinkerData* cldata_i = crosslinker_data_[clcollid].get();
+    BeamInteraction::Data::CrosslinkerData* cldata_i = crosslinker_data_[clcollid].get();
 
-    BEAMINTERACTION::Data::BeamData* beamdata_i = beam_data_[colelelid].get();
+    BeamInteraction::Data::BeamData* beamdata_i = beam_data_[colelelid].get();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // safety checks
@@ -3112,7 +3112,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_element_binding
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::
     create_new_double_bonded_crosslinker_element_pairs(
         std::map<int, NewDoubleBonds> const& mynewdbondcl)
 {
@@ -3126,13 +3126,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
     // create and initialize objects of beam-to-beam connections
     // Todo move this inside the create routines (or one create routine in BeamLink class)
-    std::shared_ptr<BEAMINTERACTION::BeamLink> linkelepairptr;
-    if (cl_node->get_material()->joint_type() == Inpar::BEAMINTERACTION::beam3r_line2_rigid)
-      linkelepairptr = BEAMINTERACTION::BeamLinkRigidJointed::create();
-    else if (cl_node->get_material()->joint_type() == Inpar::BEAMINTERACTION::beam3r_line2_pin or
-             cl_node->get_material()->joint_type() == Inpar::BEAMINTERACTION::truss)
+    std::shared_ptr<BeamInteraction::BeamLink> linkelepairptr;
+    if (cl_node->get_material()->joint_type() == Inpar::BeamInteraction::beam3r_line2_rigid)
+      linkelepairptr = BeamInteraction::BeamLinkRigidJointed::create();
+    else if (cl_node->get_material()->joint_type() == Inpar::BeamInteraction::beam3r_line2_pin or
+             cl_node->get_material()->joint_type() == Inpar::BeamInteraction::truss)
       linkelepairptr =
-          BEAMINTERACTION::BeamLinkPinJointed::create(cl_node->get_material()->joint_type());
+          BeamInteraction::BeamLinkPinJointed::create(cl_node->get_material()->joint_type());
 
     // finally initialize and setup object
     linkelepairptr->init(iter.first, newdoublebond_i.eleids, newdoublebond_i.bspotposs,
@@ -3148,7 +3148,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
     Core::Nodes::Node* crosslinker_i = bin_discret_ptr()->g_node(linkelepairptr->id());
 
     // safety check
-    BEAMINTERACTION::Data::CrosslinkerData const* cldata_i =
+    BeamInteraction::Data::CrosslinkerData const* cldata_i =
         crosslinker_data_[crosslinker_i->lid()].get();
 
     if (cldata_i->get_number_of_bonds() != 2)
@@ -3161,7 +3161,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::
     double_bind_crosslinker_in_bins_and_neighborhood(std::set<int> const& bingids)
 {
   check_init();
@@ -3171,9 +3171,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
   for (unsigned int bond_i = 0; bond_i < maxbonds; ++bond_i)
   {
     // intended bonds of row crosslinker on myrank (key is clgid)
-    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> mybonds;
+    std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>> mybonds;
     // intended bond col crosslinker to row element (key is owner of crosslinker != myrank)
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>
         undecidedbonds;
 
     // store bins that have already been examined
@@ -3214,7 +3214,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
     // bind events where myrank only owns the elements, cl are taken care
     // of by their owner (key is clgid)
-    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> myelebonds;
+    std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>> myelebonds;
 
     // now each row owner of a linker gets requests, makes a random decision and
     // informs back its requesters
@@ -3227,7 +3227,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::un_bind_crosslinker()
+int BeamInteraction::SUBMODELEVALUATOR::Crosslinking::un_bind_crosslinker()
 {
   check_init();
 
@@ -3235,11 +3235,11 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::un_bind_crosslinker()
 
   // data containing information about elements that need to be updated on
   // procs != myrank
-  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>>
+  std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>>
       sendunbindevents;
   sendunbindevents.clear();
   // elements that need to be updated on myrank
-  std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>> myrankunbindevents;
+  std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>> myrankunbindevents;
   myrankunbindevents.clear();
   int num_db_dissolved = 0;
 
@@ -3250,7 +3250,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::un_bind_crosslinker()
    * to col element, we potentially need to communicate if such an element
    * needs to be updated*/
   const int numrowcl = bin_discret_ptr()->num_my_row_nodes();
-  std::vector<int> rorderrowcl = BEAMINTERACTION::Utils::permutation(numrowcl);
+  std::vector<int> rorderrowcl = BeamInteraction::Utils::permutation(numrowcl);
   for (auto const& rowcli : rorderrowcl)
   {
     CrossLinking::CrosslinkerNode* linker =
@@ -3260,7 +3260,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::un_bind_crosslinker()
     if (linker->get_material()->k_off() < 1e-08) continue;
 
     const int clcollid = linker->lid();
-    BEAMINTERACTION::Data::CrosslinkerData* cldata_i = crosslinker_data_[clcollid].get();
+    BeamInteraction::Data::CrosslinkerData* cldata_i = crosslinker_data_[clcollid].get();
 
     // probability with which a crosslink breaks up in the current time step
     double p_unlink = 1.0 - exp((-1.0) * crosslinking_params_ptr_->delta_time() *
@@ -3296,7 +3296,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::un_bind_crosslinker()
           p_unlink_db[0] = p_unlink_db[1] = p_unlink;
 
         // loop through crosslinker bonds in random order
-        std::vector<int> ro = BEAMINTERACTION::Utils::permutation(cldata_i->get_number_of_bonds());
+        std::vector<int> ro = BeamInteraction::Utils::permutation(cldata_i->get_number_of_bonds());
         for (auto const& clbspotiter : ro)
         {
           // if probability criterion isn't met, go to next spot
@@ -3333,9 +3333,9 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::un_bind_crosslinker()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::
     calc_bells_force_dependent_unbind_probability(CrossLinking::CrosslinkerNode* linker,
-        BEAMINTERACTION::BeamLink& elepairptr, std::vector<double>& punlinkforcedependent) const
+        BeamInteraction::BeamLink& elepairptr, std::vector<double>& punlinkforcedependent) const
 {
   check_init_setup();
 
@@ -3400,8 +3400,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_beam_binding_status_after_unbinding(
-    std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>> const& unbindevent)
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::update_beam_binding_status_after_unbinding(
+    std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>> const& unbindevent)
 {
   check_init();
 
@@ -3428,15 +3428,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_beam_binding_statu
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_double_bonds_after_redistribution()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::update_my_double_bonds_after_redistribution()
 {
   check_init();
 
-  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::BeamLink>>> dbcltosend;
+  std::map<int, std::vector<std::shared_ptr<BeamInteraction::BeamLink>>> dbcltosend;
   std::set<int> dbtoerase;
 
   // loop over all double bonds on myrank
-  std::map<int, std::shared_ptr<BEAMINTERACTION::BeamLink>>::iterator iter;
+  std::map<int, std::shared_ptr<BeamInteraction::BeamLink>>::iterator iter;
   for (iter = doublebondcl_.begin(); iter != doublebondcl_.end(); ++iter)
   {
     const int clgid = iter->first;
@@ -3471,14 +3471,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_double_bonds_af
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_double_bonds_remote_id_list()
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::update_my_double_bonds_remote_id_list()
 {
   check_init();
 
   // loop over all double bonded crosslinker that were read during restart and
   // get the ones that do not belong to myrank
   std::set<int> notonmyrank;
-  std::map<int, std::shared_ptr<BEAMINTERACTION::BeamLink>>::iterator iter;
+  std::map<int, std::shared_ptr<BeamInteraction::BeamLink>>::iterator iter;
   for (iter = doublebondcl_.begin(); iter != doublebondcl_.end(); ++iter)
   {
     // double bonded crosslinker gid
@@ -3497,7 +3497,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_double_bonds_re
       size, unique_clgidlist.data(), unique_pidlist.data(), nullptr);
   if (err < 0) FOUR_C_THROW("Epetra_BlockMap::RemoteIDList returned err=%d", err);
 
-  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::BeamLink>>> dbcltosend;
+  std::map<int, std::vector<std::shared_ptr<BeamInteraction::BeamLink>>> dbcltosend;
   for (unsigned int i = 0; i < static_cast<unsigned int>(unique_clgidlist.size()); ++i)
     dbcltosend[unique_pidlist[i]].push_back(doublebondcl_[unique_clgidlist[i]]);
 
@@ -3510,7 +3510,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_double_bonds_re
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unbind_crosslinker_in_bins_and_neighborhood(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::unbind_crosslinker_in_bins_and_neighborhood(
     std::set<int> const& bingids)
 {
   check_init();
@@ -3520,7 +3520,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unbind_crosslinker_in_bin
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unbind_crosslinker_in_bins_and_neighborhood(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::unbind_crosslinker_in_bins_and_neighborhood(
     std::set<int> const& bingids, bool doubleunbind)
 {
   check_init_setup();
@@ -3530,10 +3530,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unbind_crosslinker_in_bin
 
   // data containing information about elements that need to be updated on
   // procs != myrank
-  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>>
+  std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>>
       sendunbindevents;
   // elements that need to be updated on myrank
-  std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>> myrankunbindevents;
+  std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>> myrankunbindevents;
 
   for (auto const& nb_iter : binsonmyrank)
   {
@@ -3547,7 +3547,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unbind_crosslinker_in_bin
     {
       // get crosslinker in current bin
       Core::Nodes::Node* crosslinker_i = clincurrentbin[i];
-      BEAMINTERACTION::Data::CrosslinkerData* cldata_i =
+      BeamInteraction::Data::CrosslinkerData* cldata_i =
           crosslinker_data_[crosslinker_i->lid()].get();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -3576,7 +3576,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unbind_crosslinker_in_bin
         {
           // dissolve random bond and update states
           dissolve_bond(crosslinker_i,
-              BEAMINTERACTION::Utils::permutation(cldata_i->get_number_of_bonds())[0],
+              BeamInteraction::Utils::permutation(cldata_i->get_number_of_bonds())[0],
               cldata_i->get_number_of_bonds(), sendunbindevents, myrankunbindevents);
 
           // in case we want to allow transition from double bonded to free, take same linker
@@ -3603,7 +3603,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unbind_crosslinker_in_bin
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::
     determine_responsilbe_procs_for_forced_crosslinker_unbinding(
         std::set<int> const& bingids, std::set<int>& binsonmyrank) const
 {
@@ -3648,7 +3648,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_bin_ids(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::communicate_bin_ids(
     std::map<int, std::vector<int>> const& binstosend, std::set<int>& binsonmyrank) const
 {
   check_init_setup();
@@ -3698,11 +3698,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_bin_ids(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::dissolve_bond(Core::Nodes::Node* linker,
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::dissolve_bond(Core::Nodes::Node* linker,
     int freedbspotid, int numbondsold,
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>>&
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>>&
         sendunbindevents,
-    std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>& myrankunbindevents)
+    std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>& myrankunbindevents)
 {
   check_init_setup();
 
@@ -3715,11 +3715,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::dissolve_bond(Core::Nodes
 
   // get linker data
   const int clcollid = crosslinker->lid();
-  BEAMINTERACTION::Data::CrosslinkerData* cldata = crosslinker_data_[clcollid].get();
+  BeamInteraction::Data::CrosslinkerData* cldata = crosslinker_data_[clcollid].get();
 
   // store unbinding event data
-  std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData> unbindevent =
-      std::make_shared<BEAMINTERACTION::Data::UnBindEventData>();
+  std::shared_ptr<BeamInteraction::Data::UnBindEventData> unbindevent =
+      std::make_shared<BeamInteraction::Data::UnBindEventData>();
   unbindevent->set_cl_id(linker->id());
   unbindevent->set_ele_toupdate(cldata->get_b_spots()[freedbspotid]);
   unbindevent->set_linker_type(crosslinker->get_material()->linker_type());
@@ -3771,16 +3771,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::dissolve_bond(Core::Nodes
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_undecided_bonds(
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>&
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::communicate_undecided_bonds(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>&
         undecidedbonds,
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>& requestedcl)
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>& requestedcl)
     const
 {
   check_init();
 
   // do communication
-  std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> recvbindevent;
+  std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>> recvbindevent;
   i_send_recv_any(undecidedbonds, recvbindevent);
 
   for (unsigned int i = 0; i < recvbindevent.size(); ++i)
@@ -3791,14 +3791,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_undecided_bon
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_decided_bonds(
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>& decidedbonds,
-    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& myelebonds) const
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::communicate_decided_bonds(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>& decidedbonds,
+    std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& myelebonds) const
 {
   check_init();
 
   // communicate decided bonds
-  std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>> recvbindevent;
+  std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>> recvbindevent;
   i_send_recv_any(decidedbonds, recvbindevent);
 
   // loop over received binding events
@@ -3813,15 +3813,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_decided_bonds
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::decide_binding_in_parallel(
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>& requestedcl,
-    std::map<int, std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>& mybonds,
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>& decidedbonds)
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::decide_binding_in_parallel(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>& requestedcl,
+    std::map<int, std::shared_ptr<BeamInteraction::Data::BindEventData>>& mybonds,
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>& decidedbonds)
     const
 {
   check_init();
 
-  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>>::iterator
+  std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>>::iterator
       cliter;
   // loop over all requested cl (note myrank is owner of these)
   for (cliter = requestedcl.begin(); cliter != requestedcl.end(); ++cliter)
@@ -3878,7 +3878,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::decide_binding_in_paralle
       // note: this means link is set between row cl and row ele on myrank,
       // all relevant information for myrank is stored in mybonds
       // loop over all requesters and store their veto
-      std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>::iterator iter;
+      std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>::iterator iter;
       for (iter = cliter->second.begin(); iter != cliter->second.end(); ++iter)
       {
         (*iter)->set_permission(0);
@@ -3889,7 +3889,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::decide_binding_in_paralle
     else
     {
       // loop over all requesters and store veto for all requester except for one
-      std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>::iterator iter;
+      std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>::iterator iter;
 
       int counter = 0;
       for (iter = cliter->second.begin(); iter != cliter->second.end(); ++iter)
@@ -3925,8 +3925,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::decide_binding_in_paralle
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_after_redistribution(
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::BeamLink>>>& dbondcltosend)
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_after_redistribution(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::BeamLink>>>& dbondcltosend)
 {
   check_init();
 
@@ -3940,10 +3940,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
   // ---- pack data for sending -----
   std::map<int, std::vector<char>> sdata;
   std::vector<int> targetprocs(numproc, 0);
-  std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::BeamLink>>>::const_iterator p;
+  std::map<int, std::vector<std::shared_ptr<BeamInteraction::BeamLink>>>::const_iterator p;
   for (p = dbondcltosend.begin(); p != dbondcltosend.end(); ++p)
   {
-    std::vector<std::shared_ptr<BEAMINTERACTION::BeamLink>>::const_iterator iter;
+    std::vector<std::shared_ptr<BeamInteraction::BeamLink>>::const_iterator iter;
     for (iter = p->second.begin(); iter != p->second.end(); ++iter)
     {
       Core::Communication::PackBuffer data;
@@ -3991,8 +3991,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
     {
       std::shared_ptr<Core::Communication::ParObject> object =
           std::shared_ptr<Core::Communication::ParObject>(Core::Communication::factory(buffer));
-      std::shared_ptr<BEAMINTERACTION::BeamLink> beamtobeamlink =
-          std::dynamic_pointer_cast<BEAMINTERACTION::BeamLink>(object);
+      std::shared_ptr<BeamInteraction::BeamLink> beamtobeamlink =
+          std::dynamic_pointer_cast<BeamInteraction::BeamLink>(object);
       if (beamtobeamlink == nullptr) FOUR_C_THROW("Received object is not a beam to beam linkage");
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -4018,10 +4018,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_crosslinker_unbinding(
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>>&
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::communicate_crosslinker_unbinding(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>>&
         sendunbindevent,
-    std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>& myrankunbindevent) const
+    std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>& myrankunbindevent) const
 {
   check_init();
 
@@ -4031,7 +4031,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_crosslinker_u
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::i_send(
     Core::Communication::Exporter& exporter, std::vector<MPI_Request>& request,
     std::map<int, std::vector<std::shared_ptr<T>>> const& send) const
 {
@@ -4068,7 +4068,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
     std::map<int, std::vector<std::shared_ptr<T>>> const& datasenttorank,
     std::vector<int>& summedtargets) const
 {
@@ -4089,7 +4089,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::recv_any(
     Core::Communication::Exporter& exporter, int receivesize,
     std::vector<std::shared_ptr<T>>& recv) const
 {
@@ -4112,7 +4112,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
     Core::Communication::UnpackBuffer buffer(rdata);
     while (!buffer.at_end())
     {
-      std::shared_ptr<T> data_container(BEAMINTERACTION::Data::create_data_container<T>(buffer));
+      std::shared_ptr<T> data_container(BeamInteraction::Data::create_data_container<T>(buffer));
 
       // add received data to list
       recv.push_back(data_container);
@@ -4123,7 +4123,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
     std::map<int, std::vector<std::shared_ptr<T>>> const& send,
     std::vector<std::shared_ptr<T>>& recv) const
 {
@@ -4157,7 +4157,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::wait(
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::wait(
     Core::Communication::Exporter& exporter, std::vector<MPI_Request>& request, int length) const
 {
   check_init();
@@ -4171,8 +4171,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::wait(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::print_and_check_bind_event_data(
-    BEAMINTERACTION::Data::BindEventData& bindeventdata) const
+void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::print_and_check_bind_event_data(
+    BeamInteraction::Data::BindEventData& bindeventdata) const
 {
   check_init();
 
@@ -4194,61 +4194,61 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::print_and_check_bind_even
 //-----------------------------------------------------------------------------
 // explicit template instantiation (to please every compiler)
 //-----------------------------------------------------------------------------
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send(
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::i_send(
     Core::Communication::Exporter&, std::vector<MPI_Request>&,
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>> const&)
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::CrosslinkerData>>> const&)
     const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send(
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::i_send(
     Core::Communication::Exporter&, std::vector<MPI_Request>&,
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BeamData>>> const&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BeamData>>> const&) const;
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::i_send(
     Core::Communication::Exporter&, std::vector<MPI_Request>&,
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>> const&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>> const&) const;
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::i_send(
     Core::Communication::Exporter&, std::vector<MPI_Request>&,
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>> const&)
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>> const&)
     const;
 
 
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>> const&,
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::CrosslinkerData>>> const&,
     std::vector<int>&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BeamData>>> const&,
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BeamData>>> const&,
     std::vector<int>&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>> const&,
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>> const&,
     std::vector<int>&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>> const&,
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::prepare_receiving_procs(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>> const&,
     std::vector<int>&) const;
 
 
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::recv_any(
     Core::Communication::Exporter&, int const,
-    std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
+    std::vector<std::shared_ptr<BeamInteraction::Data::CrosslinkerData>>&) const;
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::recv_any(
     Core::Communication::Exporter&, int const,
-    std::vector<std::shared_ptr<BEAMINTERACTION::Data::BeamData>>&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
+    std::vector<std::shared_ptr<BeamInteraction::Data::BeamData>>&) const;
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::recv_any(
     Core::Communication::Exporter&, int const,
-    std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
+    std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>&) const;
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::recv_any(
     Core::Communication::Exporter&, int const,
-    std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>&) const;
+    std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>&) const;
 
 
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>> const&,
-    std::vector<std::shared_ptr<BEAMINTERACTION::Data::CrosslinkerData>>&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BeamData>>> const&,
-    std::vector<std::shared_ptr<BEAMINTERACTION::Data::BeamData>>&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>> const&,
-    std::vector<std::shared_ptr<BEAMINTERACTION::Data::BindEventData>>&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
-    std::map<int, std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>> const&,
-    std::vector<std::shared_ptr<BEAMINTERACTION::Data::UnBindEventData>>&) const;
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::CrosslinkerData>>> const&,
+    std::vector<std::shared_ptr<BeamInteraction::Data::CrosslinkerData>>&) const;
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BeamData>>> const&,
+    std::vector<std::shared_ptr<BeamInteraction::Data::BeamData>>&) const;
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>> const&,
+    std::vector<std::shared_ptr<BeamInteraction::Data::BindEventData>>&) const;
+template void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
+    std::map<int, std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>> const&,
+    std::vector<std::shared_ptr<BeamInteraction::Data::UnBindEventData>>&) const;
 
 FOUR_C_NAMESPACE_CLOSE

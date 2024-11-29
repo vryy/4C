@@ -23,11 +23,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Forward declarations.
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidMortarManager;
   class BeamContactPair;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 namespace Inpar
 {
   namespace BeamToSolid
@@ -58,15 +58,15 @@ namespace LargeRotations
   template <unsigned int numnodes, typename T>
   class TriadInterpolationLocalRotationVectors;
 }
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamContactPair;
   class BeamToSolidMortarManager;
   class BeamToSolidSurfaceContactParams;
   class BeamToSolidParamsBase;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   // FAD type templated for two variables with a maximum derivative order of 1
   using fad_type_1st_order_2_variables =
@@ -302,7 +302,7 @@ namespace BEAMINTERACTION
    * @param n_mortar_rot (int) Number of total rotational Lagrange multiplier DOFs per beam.
    */
   template <typename Beam, typename Other, typename Mortar>
-  void assemble_local_mortar_contributions(const BEAMINTERACTION::BeamContactPair* pair,
+  void assemble_local_mortar_contributions(const BeamInteraction::BeamContactPair* pair,
       const Core::FE::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
       Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
       Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
@@ -362,7 +362,7 @@ namespace BEAMINTERACTION
     return pair_gid;
   }
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -21,15 +21,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-BEAMINTERACTION::BeamLinkTrussType BEAMINTERACTION::BeamLinkTrussType::instance_;
+BeamInteraction::BeamLinkTrussType BeamInteraction::BeamLinkTrussType::instance_;
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Communication::ParObject* BEAMINTERACTION::BeamLinkTrussType::create(
+Core::Communication::ParObject* BeamInteraction::BeamLinkTrussType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  BEAMINTERACTION::BeamLinkTruss* my_truss_linker = new BEAMINTERACTION::BeamLinkTruss();
+  BeamInteraction::BeamLinkTruss* my_truss_linker = new BeamInteraction::BeamLinkTruss();
   my_truss_linker->unpack(buffer);
   return my_truss_linker;
 }
@@ -37,7 +37,7 @@ Core::Communication::ParObject* BEAMINTERACTION::BeamLinkTrussType::create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss()
+BeamInteraction::BeamLinkTruss::BeamLinkTruss()
     : BeamLinkPinJointed(),
       linkele_(nullptr),
       bspotforces_(2, Core::LinAlg::SerialDenseVector(true))
@@ -46,8 +46,8 @@ BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss(const BEAMINTERACTION::BeamLinkTruss& old)
-    : BEAMINTERACTION::BeamLinkPinJointed(old),
+BeamInteraction::BeamLinkTruss::BeamLinkTruss(const BeamInteraction::BeamLinkTruss& old)
+    : BeamInteraction::BeamLinkPinJointed(old),
       bspotforces_(2, Core::LinAlg::SerialDenseVector(true))
 {
   if (linkele_ != nullptr)
@@ -59,19 +59,19 @@ BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss(const BEAMINTERACTION::BeamLinkTru
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::shared_ptr<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkTruss::clone() const
+std::shared_ptr<BeamInteraction::BeamLink> BeamInteraction::BeamLinkTruss::clone() const
 {
-  std::shared_ptr<BEAMINTERACTION::BeamLinkTruss> newlinker =
-      std::make_shared<BEAMINTERACTION::BeamLinkTruss>(*this);
+  std::shared_ptr<BeamInteraction::BeamLinkTruss> newlinker =
+      std::make_shared<BeamInteraction::BeamLinkTruss>(*this);
   return newlinker;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::init(int id, const std::vector<std::pair<int, int>>& eleids,
+void BeamInteraction::BeamLinkTruss::init(int id, const std::vector<std::pair<int, int>>& eleids,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
-    Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
+    Inpar::BeamInteraction::CrosslinkerType linkertype, double timelinkwasset)
 {
   issetup_ = false;
 
@@ -80,7 +80,7 @@ void BEAMINTERACTION::BeamLinkTruss::init(int id, const std::vector<std::pair<in
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::setup(const int matnum)
+void BeamInteraction::BeamLinkTruss::setup(const int matnum)
 {
   check_init();
 
@@ -126,7 +126,7 @@ void BEAMINTERACTION::BeamLinkTruss::setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::pack(Core::Communication::PackBuffer& data) const
+void BeamInteraction::BeamLinkTruss::pack(Core::Communication::PackBuffer& data) const
 {
   check_init_setup();
 
@@ -150,7 +150,7 @@ void BEAMINTERACTION::BeamLinkTruss::pack(Core::Communication::PackBuffer& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::unpack(Core::Communication::UnpackBuffer& buffer)
+void BeamInteraction::BeamLinkTruss::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -173,7 +173,7 @@ void BEAMINTERACTION::BeamLinkTruss::unpack(Core::Communication::UnpackBuffer& b
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkTruss::evaluate_force(
+bool BeamInteraction::BeamLinkTruss::evaluate_force(
     Core::LinAlg::SerialDenseVector& forcevec1, Core::LinAlg::SerialDenseVector& forcevec2)
 {
   check_init_setup();
@@ -197,7 +197,7 @@ bool BEAMINTERACTION::BeamLinkTruss::evaluate_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkTruss::evaluate_stiff(Core::LinAlg::SerialDenseMatrix& stiffmat11,
+bool BeamInteraction::BeamLinkTruss::evaluate_stiff(Core::LinAlg::SerialDenseMatrix& stiffmat11,
     Core::LinAlg::SerialDenseMatrix& stiffmat12, Core::LinAlg::SerialDenseMatrix& stiffmat21,
     Core::LinAlg::SerialDenseMatrix& stiffmat22)
 {
@@ -227,7 +227,7 @@ bool BEAMINTERACTION::BeamLinkTruss::evaluate_stiff(Core::LinAlg::SerialDenseMat
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkTruss::evaluate_force_stiff(
+bool BeamInteraction::BeamLinkTruss::evaluate_force_stiff(
     Core::LinAlg::SerialDenseVector& forcevec1, Core::LinAlg::SerialDenseVector& forcevec2,
     Core::LinAlg::SerialDenseMatrix& stiffmat11, Core::LinAlg::SerialDenseMatrix& stiffmat12,
     Core::LinAlg::SerialDenseMatrix& stiffmat21, Core::LinAlg::SerialDenseMatrix& stiffmat22)
@@ -261,7 +261,7 @@ bool BEAMINTERACTION::BeamLinkTruss::evaluate_force_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::reset_state(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
+void BeamInteraction::BeamLinkTruss::reset_state(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
     std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad)
 {
   check_init_setup();
@@ -271,7 +271,7 @@ void BEAMINTERACTION::BeamLinkTruss::reset_state(std::vector<Core::LinAlg::Matri
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::fill_state_variables_for_element_evaluation(
+void BeamInteraction::BeamLinkTruss::fill_state_variables_for_element_evaluation(
     Core::LinAlg::Matrix<6, 1, double>& absolute_nodal_positions) const
 {
   for (unsigned int i = 0; i < 3; ++i)
@@ -283,7 +283,7 @@ void BEAMINTERACTION::BeamLinkTruss::fill_state_variables_for_element_evaluation
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::get_disp_for_element_evaluation(
+void BeamInteraction::BeamLinkTruss::get_disp_for_element_evaluation(
     std::map<std::string, std::vector<double>>& ele_state) const
 {
   const auto ref_position = linkele_->x();
@@ -299,14 +299,14 @@ void BEAMINTERACTION::BeamLinkTruss::get_disp_for_element_evaluation(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::scale_linker_reference_length(double scalefac)
+void BeamInteraction::BeamLinkTruss::scale_linker_reference_length(double scalefac)
 {
   linkele_->scale_reference_length(scalefac);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::get_binding_spot_force(
+void BeamInteraction::BeamLinkTruss::get_binding_spot_force(
     int bspotid, Core::LinAlg::SerialDenseVector& bspotforce) const
 {
   bspotforce = bspotforces_[bspotid];
@@ -314,7 +314,7 @@ void BEAMINTERACTION::BeamLinkTruss::get_binding_spot_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkTruss::get_current_linker_length() const
+double BeamInteraction::BeamLinkTruss::get_current_linker_length() const
 {
   Core::LinAlg::Matrix<6, 1> xcurr;
 
@@ -333,13 +333,13 @@ double BEAMINTERACTION::BeamLinkTruss::get_current_linker_length() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkTruss::get_internal_energy() const
+double BeamInteraction::BeamLinkTruss::get_internal_energy() const
 {
   return linkele_->get_internal_energy();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkTruss::get_kinetic_energy() const { return 0.0; }
+double BeamInteraction::BeamLinkTruss::get_kinetic_energy() const { return 0.0; }
 
 FOUR_C_NAMESPACE_CLOSE

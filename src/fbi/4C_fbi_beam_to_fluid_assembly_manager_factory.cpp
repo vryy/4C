@@ -19,11 +19,11 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
-BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
+std::shared_ptr<BeamInteraction::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
+BeamInteraction::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
     std::shared_ptr<const Core::FE::Discretization> discretization1,
     std::shared_ptr<const Core::FE::Discretization> discretization2,
-    std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
+    std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>> interaction_pairs,
     const std::shared_ptr<FBI::BeamToFluidMeshtyingParams> params_ptr,
     std::shared_ptr<FBI::Utils::FBIAssemblyStrategy> assemblystrategy)
 {
@@ -35,13 +35,13 @@ BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
   {
     case Inpar::FBI::BeamToFluidDiscretization::mortar:
       return std::make_shared<
-          BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect>(
+          BeamInteraction::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect>(
 
           interaction_pairs, discretization1, discretization2, params_ptr);
       break;
     case Inpar::FBI::BeamToFluidDiscretization::gauss_point_to_segment:
       return std::make_shared<
-          BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect>(
+          BeamInteraction::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect>(
 
           interaction_pairs, assemblystrategy);
       break;
