@@ -1477,6 +1477,7 @@ void XFEM::XFluidContactComm::create_new_gmsh_files()
   plot_data_.resize(sections.size());
 #endif
 
+  sum_gps_.resize(5);
   std::vector<int> g_sum_gps(5);
   Core::Communication::sum_all(sum_gps_.data(), g_sum_gps.data(), 5, fluiddis_->get_comm());
   if (!Core::Communication::my_mpi_rank(fluiddis_->get_comm()))
