@@ -13,8 +13,6 @@
 #include "4C_so3_tet4.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 
-#include <Epetra_SerialComm.h>
-
 namespace
 {
   using namespace FourC;
@@ -28,7 +26,7 @@ namespace
     {
       // create a discretization, to store the created elements and nodes
       testdis_ = std::make_shared<Core::FE::Discretization>(
-          "dummy", std::make_shared<Epetra_SerialComm>(), 3);
+          "dummy", std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD), 3);
 
       // create hex8 element and store it in the test discretization
       const std::array<int, 8> nodeidshex8 = {0, 1, 2, 3, 4, 5, 6, 7};

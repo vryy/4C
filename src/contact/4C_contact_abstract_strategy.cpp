@@ -31,7 +31,6 @@
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_utils_parameter_list.hpp"
 
-#include <Epetra_SerialComm.h>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
 #include <Teuchos_Time.hpp>
 

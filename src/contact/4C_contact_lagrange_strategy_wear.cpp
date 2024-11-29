@@ -25,7 +25,6 @@
 #include "4C_mortar_utils.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Epetra_SerialComm.h>
 #include <Teuchos_Time.hpp>
 
 FOUR_C_NAMESPACE_OPEN

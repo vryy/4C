@@ -16,7 +16,6 @@
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
-#include <Epetra_SerialComm.h>
 
 namespace
 {
@@ -41,7 +40,7 @@ namespace
     {
       create_material_in_global_problem();
 
-      comm_ = std::make_shared<Epetra_SerialComm>();
+      comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
       test_discretization_ = std::make_shared<Core::FE::Discretization>("dummy", comm_, 3);
 
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
@@ -67,7 +66,7 @@ namespace
    protected:
     Core::IO::GridGenerator::RectangularCuboidInputs inputData_{};
     std::shared_ptr<Core::FE::Discretization> test_discretization_;
-    std::shared_ptr<Epetra_SerialComm> comm_;
+    std::shared_ptr<Epetra_Comm> comm_;
 
     Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };

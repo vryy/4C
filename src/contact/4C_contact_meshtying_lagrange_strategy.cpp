@@ -22,7 +22,6 @@
 #include "4C_mortar_utils.hpp"
 #include "4C_utils_parameter_list.hpp"
 
-#include <Epetra_SerialComm.h>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 

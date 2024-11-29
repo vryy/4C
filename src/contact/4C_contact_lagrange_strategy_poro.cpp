@@ -21,7 +21,6 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mortar_utils.hpp"
 
-#include <Epetra_SerialComm.h>
 
 FOUR_C_NAMESPACE_OPEN
 

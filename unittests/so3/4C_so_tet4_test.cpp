@@ -13,7 +13,6 @@
 #include "4C_so3_tet4.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
-#include <Epetra_SerialComm.h>
 
 namespace
 {
@@ -26,7 +25,7 @@ namespace
     {
       // create a discretization, that creates node to element pointers and keeps the nodes alive
       testdis_ = std::make_shared<Core::FE::Discretization>(
-          "dummy", std::make_shared<Epetra_SerialComm>(), 3);
+          "dummy", std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD), 3);
 
       // create 4 nodes
       const std::array<int, 4> nodeids = {0, 1, 2, 3};
