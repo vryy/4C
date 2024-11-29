@@ -208,9 +208,6 @@ enum Inpar::Solid::EleTech Solid::Nln::convert_quantity_type2_ele_tech(
   enum Inpar::Solid::EleTech eletech;
   switch (qtype)
   {
-    case NOX::Nln::StatusTest::quantity_plasticity:
-      eletech = Inpar::Solid::EleTech::plasticity;
-      break;
     case NOX::Nln::StatusTest::quantity_eas:
       eletech = Inpar::Solid::EleTech::eas;
       break;

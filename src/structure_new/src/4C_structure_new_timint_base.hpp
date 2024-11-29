@@ -264,13 +264,6 @@ namespace Solid
         return datasdyn_->have_model_type(Inpar::Solid::model_lag_pen_constraint);
       }
 
-      /// do we need a semi-smooth Newton-type plasticity algorithm
-      virtual bool have_semi_smooth_plasticity()
-      {
-        check_init_setup();
-        return datasdyn_->have_ele_tech(Inpar::Solid::EleTech::plasticity);
-      }
-
       /// FixMe get constraint manager defined in the structure
       std::shared_ptr<CONSTRAINTS::ConstrManager> get_constraint_manager() override
       {

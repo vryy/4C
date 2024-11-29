@@ -11,7 +11,6 @@
 #include "4C_contact_abstract_strategy.hpp"
 #include "4C_contact_lagrange_strategy_tsi.hpp"
 #include "4C_contact_meshtying_contact_bridge.hpp"
-#include "4C_contact_nitsche_strategy_tsi.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
@@ -220,13 +219,6 @@ void TSI::Partitioned::time_loop_one_way()
 {
   if (displacementcoupling_)  // (temperature change due to deformation)
   {
-    if (contact_strategy_nitsche_ != nullptr)
-    {
-      // update the structure field with temperature from the thermal field.
-      // It is important for TSI contact in the first step
-      apply_thermo_coupling_state(thermo_field()->tempnp());
-    }
-
     // -------------------------------------------------- structure field
 
     // predict the structure field without influence of temperatures
@@ -1315,15 +1307,6 @@ void TSI::Partitioned::prepare_output()
 void TSI::Partitioned::prepare_contact_strategy()
 {
   TSI::Algorithm::prepare_contact_strategy();
-
-  if (contact_strategy_nitsche_ != nullptr)
-  {
-    const auto& model_eval = structure_field()->model_evaluator(Inpar::Solid::model_structure);
-    const auto cparams = model_eval.eval_data().contact_ptr();
-    auto cparams_new = cparams;
-    cparams_new->set_coupling_scheme(Inpar::CONTACT::CouplingScheme::partitioning);
-    thermo_field()->set_nitsche_contact_parameters(cparams_new);
-  }
 }  // prepare_contact_strategy()
 
 

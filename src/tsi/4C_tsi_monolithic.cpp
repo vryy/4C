@@ -13,7 +13,6 @@
 #include "4C_contact_interface.hpp"
 #include "4C_contact_lagrange_strategy_tsi.hpp"
 #include "4C_contact_meshtying_contact_bridge.hpp"
-#include "4C_contact_nitsche_strategy_tsi.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_fem_condition_locsys.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
@@ -222,10 +221,6 @@ void TSI::Monolithic::read_restart(int step)
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::prepare_time_step()
 {
-  // we may have changed the ghosting when redistributing contact
-  // so we make sure all maps in the system are up to date
-  if (contact_strategy_nitsche_ != nullptr) setup_system();
-
   // counter and print header
   // increment time and step counter
   increment_time_and_step();
@@ -1896,11 +1891,6 @@ void TSI::Monolithic::apply_str_coupl_matrix(
   structure_field()->discretization()->evaluate(sparams, structuralstrategy);
   structure_field()->discretization()->clear_state(true);
 
-  // add nitsche contact integral
-  if (contact_strategy_nitsche_ != nullptr)
-    k_st->add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::displ_temp),
-        false, 1., 1.);
-
   // TODO 2013-11-11 move scaling to the so3_thermo element
   // --> consistent with thermo element and clearer, more consistent
 
@@ -1964,13 +1954,11 @@ void TSI::Monolithic::apply_thr_coupl_matrix(
   tparams.set<Inpar::Thermo::DynamicType>("time integrator",
       Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYPE"));
   tparams.set<Inpar::Solid::DynamicType>("structural time integrator", strmethodname_);
-  double timefac = -1.;
   switch (Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYPE"))
   {
     // static analysis
     case Inpar::Thermo::dyna_statics:
     {
-      timefac = 1.;
       // continue
       break;
     }
@@ -1980,15 +1968,12 @@ void TSI::Monolithic::apply_thr_coupl_matrix(
       // K_Td = theta . k_Td^e
       double theta = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
       tparams.set("theta", theta);
-      timefac = theta;
       break;
     }
     case Inpar::Thermo::dyna_genalpha:
     {
       double alphaf = tdyn.sublist("GENALPHA").get<double>("ALPHA_F");
       tparams.set("alphaf", alphaf);
-
-      timefac = alphaf;
       break;
     }
     case Inpar::Thermo::dyna_undefined:
@@ -2047,11 +2032,6 @@ void TSI::Monolithic::apply_thr_coupl_matrix(
   // evaluate the thermal-mechanical system matrix on the thermal element
   thermo_field()->discretization()->evaluate(tparams, thermostrategy);
   thermo_field()->discretization()->clear_state(true);
-
-  // add nitsche contact integral
-  if (contact_strategy_nitsche_ != nullptr)
-    k_ts->add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::temp_displ),
-        false, timefac, 1.);
 }  // ApplyThrCouplMatrix()
 
 
@@ -2774,19 +2754,7 @@ void TSI::Monolithic::prepare_output()
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::prepare_contact_strategy()
-{
-  TSI::Algorithm::prepare_contact_strategy();
-
-  if (contact_strategy_nitsche_ != nullptr)
-  {
-    const auto& model_eval = structure_field()->model_evaluator(Inpar::Solid::model_structure);
-    const auto cparams = model_eval.eval_data().contact_ptr();
-    auto cparams_new = cparams;
-    cparams_new->set_coupling_scheme(Inpar::CONTACT::CouplingScheme::monolithic);
-    thermo_field()->set_nitsche_contact_parameters(cparams_new);
-  }
-}
+void TSI::Monolithic::prepare_contact_strategy() { TSI::Algorithm::prepare_contact_strategy(); }
 
 /*----------------------------------------------------------------------*
  |                                                                      |

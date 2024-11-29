@@ -14,7 +14,6 @@
 #include "4C_contact_nitsche_integrator_poro.hpp"
 #include "4C_contact_nitsche_integrator_ssi.hpp"
 #include "4C_contact_nitsche_integrator_ssi_elch.hpp"
-#include "4C_contact_nitsche_integrator_tsi.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -29,12 +28,7 @@ std::shared_ptr<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integra
   {
     case Inpar::CONTACT::solution_nitsche:
     {
-      if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)
-      {
-        integrator =
-            std::make_shared<CONTACT::IntegratorNitscheTsi>(mortar_params, slave_type, comm);
-      }
-      else if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi)
+      if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi)
       {
         integrator =
             std::make_shared<CONTACT::IntegratorNitscheSsi>(mortar_params, slave_type, comm);

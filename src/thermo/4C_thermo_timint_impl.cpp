@@ -7,8 +7,6 @@
 
 #include "4C_thermo_timint_impl.hpp"
 
-#include "4C_contact_nitsche_strategy_tsi.hpp"
-#include "4C_contact_paramsinterface.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_thermo_aux.hpp"
@@ -173,13 +171,6 @@ void Thermo::TimIntImpl::predict()
   else
   {
     FOUR_C_THROW("Trouble in determining predictor %i", pred_);
-  }
-
-  // integrate the contact to obtain the contact-induced boundary condition
-  if (contact_strategy_nitsche_ != nullptr)
-  {
-    // re-evaluate the contact
-    contact_strategy_nitsche_->integrate(*contact_params_interface_);
   }
 
   // apply Dirichlet BCs

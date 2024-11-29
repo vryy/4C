@@ -119,13 +119,6 @@ namespace Thermo
                           //!< have been changed.
     );
 
-    //! prepare thermal contact
-    void set_nitsche_contact_strategy(
-        std::shared_ptr<CONTACT::NitscheStrategyTsi> strategy) override
-    {
-      contact_strategy_nitsche_ = strategy;
-    }
-
     //! prepare thermal contact parameters
     void set_nitsche_contact_parameters(
         std::shared_ptr<CONTACT::ParamsInterface> params_interface) override
@@ -513,12 +506,6 @@ namespace Thermo
       return dbcmaps_;
     }
 
-    //! Return thermal contact manager
-    std::shared_ptr<CONTACT::NitscheStrategyTsi> nitsche_contact_strategy()
-    {
-      return contact_strategy_nitsche_;
-    }
-
     //@}
 
    protected:
@@ -618,9 +605,6 @@ namespace Thermo
 
     //! @name Nitsche contact stuff
     //@{
-
-    // thermo contact manager
-    std::shared_ptr<CONTACT::NitscheStrategyTsi> contact_strategy_nitsche_;
 
     // thermo contact parameters
     std::shared_ptr<CONTACT::ParamsInterface> contact_params_interface_;

@@ -7,7 +7,6 @@
 
 #include "4C_thermo_timint.hpp"
 
-#include "4C_contact_nitsche_strategy_tsi.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -719,22 +718,6 @@ void Thermo::TimInt::apply_force_tang_internal(
 
   discret_->evaluate(p, tang, nullptr, fint, nullptr, nullptr);
 
-  // apply contact terms
-  if (contact_strategy_nitsche_ != nullptr)
-  {
-    if (fint->Update(
-            1., *contact_strategy_nitsche_->get_rhs_block_ptr(CONTACT::VecBlockType::temp), 1.))
-      FOUR_C_THROW("update failed");
-    if (contact_params_interface_->get_coupling_scheme() ==
-        Inpar::CONTACT::CouplingScheme::monolithic)
-    {
-      tang->un_complete();
-      tang->add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::temp_temp),
-          false, p.get<double>("timefac"), 1.);
-      tang->complete();
-    }
-  }
-
   discret_->clear_state();
 
   // that's it
@@ -784,21 +767,6 @@ void Thermo::TimInt::apply_force_tang_internal(
   // call the element evaluate()
   discret_->evaluate(p, tang, nullptr, fint, nullptr, fcap);
 
-  // apply contact terms
-  if (contact_strategy_nitsche_ != nullptr)
-  {
-    fint->Update(
-        1., *contact_strategy_nitsche_->get_rhs_block_ptr(CONTACT::VecBlockType::temp), 1.);
-    if (contact_params_interface_->get_coupling_scheme() ==
-        Inpar::CONTACT::CouplingScheme::monolithic)
-    {
-      tang->un_complete();
-      tang->add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::temp_temp),
-          false, p.get<double>("timefac"), 1.);
-      tang->complete();
-    }
-  }
-
   discret_->clear_state();
 
   // that's it
@@ -834,15 +802,6 @@ void Thermo::TimInt::apply_force_internal(
   // call the element evaluate()
   discret_->evaluate(p, nullptr, nullptr, fint, nullptr, nullptr);
   discret_->clear_state();
-
-  // apply contact terms
-  if (contact_strategy_nitsche_ != nullptr)
-    fint->Update(
-        1., *contact_strategy_nitsche_->get_rhs_block_ptr(CONTACT::VecBlockType::temp), 1.);
-
-  // where the fun starts
-  return;
-
 }  // apply_force_tang_internal()
 
 

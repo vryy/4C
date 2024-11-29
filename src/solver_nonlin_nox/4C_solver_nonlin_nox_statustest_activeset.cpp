@@ -37,7 +37,7 @@ NOX::Nln::StatusTest::ActiveSet::ActiveSet(
   // clear the cycling maps at the beginning of a new time step
   if (problem.getNumIterations() == 0) cycling_maps_.clear();
 
-  if (checkType == ::NOX::StatusTest::None || qtype_ == NOX::Nln::StatusTest::quantity_plasticity)
+  if (checkType == ::NOX::StatusTest::None)
   {
     status_ = ::NOX::StatusTest::Unevaluated;
     activesetsize_ = 0;

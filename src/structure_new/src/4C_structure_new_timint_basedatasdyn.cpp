@@ -62,20 +62,10 @@ Solid::TimeInt::BaseDataSDyn::BaseDataSDyn()
       toltype_pres_(Inpar::Solid::convnorm_abs),
       tol_inco_(-1.0),
       toltype_inco_(Inpar::Solid::convnorm_abs),
-      tol_plast_res_(-1.0),
-      toltype_plast_res_(Inpar::Solid::convnorm_abs),
-      tol_plast_incr_(-1.0),
-      toltype_plast_incr_(Inpar::Solid::convnorm_abs),
-      tol_eas_res_(-1.0),
-      toltype_eas_res_(Inpar::Solid::convnorm_abs),
-      tol_eas_incr_(-1.0),
-      toltype_eas_incr_(Inpar::Solid::convnorm_abs),
       normcombo_disp_pres_(Inpar::Solid::bop_and),
       normcombo_fres_inco_(Inpar::Solid::bop_and),
       normcombo_fres_eas_res_(Inpar::Solid::bop_and),
       normcombo_disp_eas_incr_(Inpar::Solid::bop_and),
-      normcombo_fres_plast_res_(Inpar::Solid::bop_and),
-      normcombo_disp_plast_incr_(Inpar::Solid::bop_and),
       normcombo_fres_disp_(Inpar::Solid::bop_and),
       toltype_cardvasc0d_res_(Inpar::Solid::convnorm_abs),
       tol_cardvasc0d_res_(-1.0),
@@ -226,14 +216,6 @@ void Solid::TimeInt::BaseDataSDyn::init(const std::shared_ptr<Core::FE::Discreti
     tol_inco_ = sdynparams.get<double>("TOLINCO");
     toltype_inco_ = Inpar::Solid::convnorm_abs;
 
-    tol_plast_res_ =
-        Global::Problem::instance()->semi_smooth_plast_params().get<double>("TOLPLASTCONSTR");
-    toltype_plast_res_ = Inpar::Solid::convnorm_abs;
-
-    tol_plast_incr_ =
-        Global::Problem::instance()->semi_smooth_plast_params().get<double>("TOLDELTALP");
-    toltype_plast_incr_ = Inpar::Solid::convnorm_abs;
-
     tol_eas_res_ = Global::Problem::instance()->semi_smooth_plast_params().get<double>("TOLEASRES");
     toltype_eas_res_ = Inpar::Solid::convnorm_abs;
 
@@ -245,10 +227,6 @@ void Solid::TimeInt::BaseDataSDyn::init(const std::shared_ptr<Core::FE::Discreti
         Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_DISPPRES");
     normcombo_fres_inco_ =
         Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO");
-    normcombo_fres_plast_res_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
-        Global::Problem::instance()->semi_smooth_plast_params(), "NORMCOMBI_RESFPLASTCONSTR");
-    normcombo_disp_plast_incr_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
-        Global::Problem::instance()->semi_smooth_plast_params(), "NORMCOMBI_DISPPLASTINCR");
     normcombo_fres_eas_res_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
         Global::Problem::instance()->semi_smooth_plast_params(), "NORMCOMBI_EASRES");
     normcombo_disp_eas_incr_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
@@ -368,9 +346,6 @@ double Solid::TimeInt::BaseDataSDyn::get_res_tolerance(
     case NOX::Nln::StatusTest::quantity_lag_pen_constraint:
       return tol_constr_res_;
       break;
-    case NOX::Nln::StatusTest::quantity_plasticity:
-      return tol_plast_res_;
-      break;
     case NOX::Nln::StatusTest::quantity_pressure:
       return tol_inco_;
       break;
@@ -410,9 +385,6 @@ double Solid::TimeInt::BaseDataSDyn::get_incr_tolerance(
       break;
     case NOX::Nln::StatusTest::quantity_lag_pen_constraint:
       return tol_constr_incr_;
-      break;
-    case NOX::Nln::StatusTest::quantity_plasticity:
-      return tol_plast_incr_;
       break;
     case NOX::Nln::StatusTest::quantity_pressure:
       return tol_pres_;
@@ -454,9 +426,6 @@ enum Inpar::Solid::ConvNorm Solid::TimeInt::BaseDataSDyn::get_res_tolerance_type
     case NOX::Nln::StatusTest::quantity_lag_pen_constraint:
       return toltype_constr_res_;
       break;
-    case NOX::Nln::StatusTest::quantity_plasticity:
-      return toltype_plast_res_;
-      break;
     case NOX::Nln::StatusTest::quantity_pressure:
       return toltype_inco_;
       break;
@@ -496,9 +465,6 @@ enum Inpar::Solid::ConvNorm Solid::TimeInt::BaseDataSDyn::get_incr_tolerance_typ
       break;
     case NOX::Nln::StatusTest::quantity_lag_pen_constraint:
       return toltype_constr_incr_;
-      break;
-    case NOX::Nln::StatusTest::quantity_plasticity:
-      return toltype_plast_incr_;
       break;
     case NOX::Nln::StatusTest::quantity_pressure:
       return toltype_pres_;
@@ -546,12 +512,6 @@ enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::get_res_combo_type(
            (qtype_1 == NOX::Nln::StatusTest::quantity_eas and
                qtype_2 == NOX::Nln::StatusTest::quantity_structure))
     return normcombo_fres_eas_res_;
-  // combination: STRUCTURE <--> PLASTICITY
-  else if ((qtype_1 == NOX::Nln::StatusTest::quantity_structure and
-               qtype_2 == NOX::Nln::StatusTest::quantity_plasticity) or
-           (qtype_1 == NOX::Nln::StatusTest::quantity_plasticity and
-               qtype_2 == NOX::Nln::StatusTest::quantity_structure))
-    return normcombo_fres_plast_res_;
   // combination: STRUCTURE <--> CONTACT
   else if ((qtype_1 == NOX::Nln::StatusTest::quantity_structure and
                qtype_2 == NOX::Nln::StatusTest::quantity_contact_normal) or
@@ -622,12 +582,6 @@ enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::get_incr_combo_type(
            (qtype_1 == NOX::Nln::StatusTest::quantity_eas and
                qtype_2 == NOX::Nln::StatusTest::quantity_structure))
     return normcombo_disp_eas_incr_;
-  // combination: STRUCTURE <--> PLASTICITY
-  else if ((qtype_1 == NOX::Nln::StatusTest::quantity_structure and
-               qtype_2 == NOX::Nln::StatusTest::quantity_plasticity) or
-           (qtype_1 == NOX::Nln::StatusTest::quantity_plasticity and
-               qtype_2 == NOX::Nln::StatusTest::quantity_structure))
-    return normcombo_disp_plast_incr_;
   // combination: STRUCTURE <--> CONTACT
   else if ((qtype_1 == NOX::Nln::StatusTest::quantity_structure and
                qtype_2 == NOX::Nln::StatusTest::quantity_contact_normal) or

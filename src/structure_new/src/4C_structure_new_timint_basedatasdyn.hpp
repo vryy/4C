@@ -851,18 +851,6 @@ namespace Solid
       /// pressure forces
       enum Inpar::Solid::ConvNorm toltype_inco_;
 
-      /// tolerance plasticity residual
-      double tol_plast_res_;
-
-      /// tolerance type for the convergence check of the plasticity residual
-      enum Inpar::Solid::ConvNorm toltype_plast_res_;
-
-      /// tolerance plasticity increment
-      double tol_plast_incr_;
-
-      /// tolerance type for the convergence check of the plasticity increment
-      enum Inpar::Solid::ConvNorm toltype_plast_incr_;
-
       /// tolerance EAS residual
       double tol_eas_res_;
 
@@ -886,12 +874,6 @@ namespace Solid
 
       /// type of combination of the displacement and the EAS increment
       enum Inpar::Solid::BinaryOp normcombo_disp_eas_incr_;
-
-      /// type of combination of the force and the plasticity residual
-      enum Inpar::Solid::BinaryOp normcombo_fres_plast_res_;
-
-      /// type of combination of the displacement and the plasticity increment
-      enum Inpar::Solid::BinaryOp normcombo_disp_plast_incr_;
 
       /// type of combination of the force and the displacement test
       enum Inpar::Solid::BinaryOp normcombo_fres_disp_;

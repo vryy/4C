@@ -14,7 +14,6 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
-#include "4C_so3_plast_ssn.hpp"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
@@ -460,9 +459,6 @@ void CONTACT::NitscheStrategy::reconnect_parent_elements()
       if (!vele) FOUR_C_THROW("Cannot find element with gid %", volgid);
 
       faceele->set_parent_master_element(vele, faceele->face_parent_number());
-
-      auto* vele_plast = dynamic_cast<Discret::Elements::So3Plast<Core::FE::CellType::hex8>*>(vele);
-      if (vele_plast) vele_plast->set_is_nitsche_contact_ele(true);
     }
   }
 }
