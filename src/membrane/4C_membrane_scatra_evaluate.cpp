@@ -15,7 +15,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- |  pre-evaluate the element (public)                      sfuchs 05/18 |
+ |  pre-evaluate the element (public)                                   |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::MembraneScatra<distype>::pre_evaluate(Teuchos::ParameterList& params,
@@ -98,7 +98,7 @@ void Discret::Elements::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                          sfuchs 05/18 |
+ |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::Elements::MembraneScatra<distype>::evaluate(Teuchos::ParameterList& params,

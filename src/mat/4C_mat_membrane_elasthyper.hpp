@@ -9,7 +9,7 @@
 #define FOUR_C_MAT_MEMBRANE_ELASTHYPER_HPP
 
 /*----------------------------------------------------------------------*
- | headers                                               sfuchs 08/2017 |
+ | headers                                                              |
  *----------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- | hyperelastic material for membranes                   sfuchs 08/2017 |
+ | hyperelastic material for membranes                                  |
  *----------------------------------------------------------------------*/
 namespace Mat
 {

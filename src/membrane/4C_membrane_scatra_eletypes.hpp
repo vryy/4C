@@ -24,7 +24,7 @@ namespace Discret
   namespace Elements
   {
     /*----------------------------------------------------------------------*
-     |  TRI 3 Element                                          sfuchs 05/18 |
+     |  TRI 3 Element                                                       |
      *----------------------------------------------------------------------*/
     class MembraneScatraTri3Type : public MembraneTri3Type
     {
@@ -49,7 +49,7 @@ namespace Discret
     };
 
     /*----------------------------------------------------------------------*
-     |  TRI 6 Element                                          sfuchs 05/18 |
+     |  TRI 6 Element                                                       |
      *----------------------------------------------------------------------*/
     class MembraneScatraTri6Type : public MembraneTri6Type
     {
@@ -74,7 +74,7 @@ namespace Discret
     };
 
     /*----------------------------------------------------------------------*
-     |  QUAD 4 Element                                         sfuchs 05/18 |
+     |  QUAD 4 Element                                                      |
      *----------------------------------------------------------------------*/
     class MembraneScatraQuad4Type : public MembraneQuad4Type
     {
@@ -99,7 +99,7 @@ namespace Discret
     };
 
     /*----------------------------------------------------------------------*
-     |  QUAD 9 Element                                         sfuchs 05/18 |
+     |  QUAD 9 Element                                                      |
      *----------------------------------------------------------------------*/
     class MembraneScatraQuad9Type : public MembraneQuad9Type
     {

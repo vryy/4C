@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- |  constructor (public)                                   sfuchs 05/18 |
+ |  constructor (public)                                                |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::Elements::MembraneScatra<distype>::MembraneScatra(int id, int owner)
@@ -23,7 +23,7 @@ Discret::Elements::MembraneScatra<distype>::MembraneScatra(int id, int owner)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-constructor (public)                              sfuchs 05/18 |
+ |  copy-constructor (public)                                           |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::Elements::MembraneScatra<distype>::MembraneScatra(
@@ -34,7 +34,7 @@ Discret::Elements::MembraneScatra<distype>::MembraneScatra(
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of MembraneScatra              sfuchs 05/18 |
+ |  Deep copy this instance of MembraneScatra                           |
  |  and return pointer to it (public)                                   |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
@@ -47,7 +47,7 @@ Core::Elements::Element* Discret::Elements::MembraneScatra<distype>::clone() con
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                         sfuchs 05/18 |
+ |                                                                      |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::MembraneScatra<distype>::pack(Core::Communication::PackBuffer& data) const
@@ -69,7 +69,7 @@ void Discret::Elements::MembraneScatra<distype>::pack(Core::Communication::PackB
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                         sfuchs 05/18 |
+ |                                                                      |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::MembraneScatra<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
@@ -91,7 +91,7 @@ void Discret::Elements::MembraneScatra<distype>::unpack(Core::Communication::Unp
 }
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                            sfuchs 05/18 |
+ |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::MembraneScatra<distype>::print(std::ostream& os) const
@@ -103,7 +103,7 @@ void Discret::Elements::MembraneScatra<distype>::print(std::ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
- |  read this element (public)                             sfuchs 05/18 |
+ |  read this element (public)                                          |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 bool Discret::Elements::MembraneScatra<distype>::read_element(const std::string& eletype,
@@ -138,7 +138,7 @@ bool Discret::Elements::MembraneScatra<distype>::read_element(const std::string&
 }
 
 /*----------------------------------------------------------------------*
- |  Get vector of ptrs to nodes (private)                  sfuchs 05/18 |
+ |  Get vector of ptrs to nodes (private)                               |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 inline Core::Nodes::Node** Discret::Elements::MembraneScatra<distype>::nodes()
@@ -147,7 +147,7 @@ inline Core::Nodes::Node** Discret::Elements::MembraneScatra<distype>::nodes()
 }
 
 /*----------------------------------------------------------------------*
- |  Get shape type of element (private)                    sfuchs 05/18 |
+ |  Get shape type of element (private)                                 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Core::FE::CellType Discret::Elements::MembraneScatra<distype>::shape() const

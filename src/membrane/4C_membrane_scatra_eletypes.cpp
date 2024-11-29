@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- |  TRI 3 Element                                          sfuchs 05/18 |
+ |  TRI 3 Element                                                       |
  *----------------------------------------------------------------------*/
 Discret::Elements::MembraneScatraTri3Type Discret::Elements::MembraneScatraTri3Type::instance_;
 
@@ -66,7 +66,7 @@ void Discret::Elements::MembraneScatraTri3Type::setup_element_definition(
 }
 
 /*----------------------------------------------------------------------*
- |  TRI 6 Element                                          sfuchs 05/18 |
+ |  TRI 6 Element                                                       |
  *----------------------------------------------------------------------*/
 Discret::Elements::MembraneScatraTri6Type Discret::Elements::MembraneScatraTri6Type::instance_;
 
@@ -119,7 +119,7 @@ void Discret::Elements::MembraneScatraTri6Type::setup_element_definition(
 }
 
 /*----------------------------------------------------------------------*
- |  QUAD 4 Element                                         sfuchs 05/18 |
+ |  QUAD 4 Element                                                      |
  *----------------------------------------------------------------------*/
 Discret::Elements::MembraneScatraQuad4Type Discret::Elements::MembraneScatraQuad4Type::instance_;
 
@@ -172,7 +172,7 @@ void Discret::Elements::MembraneScatraQuad4Type::setup_element_definition(
 }
 
 /*----------------------------------------------------------------------*
- |  QUAD 9 Element                                         sfuchs 05/18 |
+ |  QUAD 9 Element                                                      |
  *----------------------------------------------------------------------*/
 Discret::Elements::MembraneScatraQuad9Type Discret::Elements::MembraneScatraQuad9Type::instance_;
 

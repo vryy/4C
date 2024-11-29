@@ -1480,7 +1480,7 @@ void Discret::Elements::Membrane<distype>::mem_defgrd_global(
 }  // Discret::Elements::Membrane::mem_defgrd_global
 
 /*-------------------------------------------------------------------------------------------------*
- |  determine extrapolation matrix                                                    sfuchs 02/18 |
+ |  determine extrapolation matrix                                                                 |
  *-------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Thermo::DisTypeToNumGaussPoints<distype>::nquad>

@@ -9,7 +9,7 @@
 #define FOUR_C_INPAR_PARTICLE_HPP
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
@@ -24,7 +24,7 @@ namespace Core::Conditions
   class ConditionDefinition;
 }
 /*---------------------------------------------------------------------------*
- | input parameters for particle problems                     sfuchs 03/2018 |
+ | input parameters for particle problems                                    |
  *---------------------------------------------------------------------------*/
 namespace Inpar
 {

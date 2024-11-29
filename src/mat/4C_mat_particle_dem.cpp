@@ -14,12 +14,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
- | define static class member                                 sfuchs 07/2018 |
+ | define static class member                                                |
  *---------------------------------------------------------------------------*/
 Mat::ParticleMaterialDEMType Mat::ParticleMaterialDEMType::instance_;
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2018 |
+ | constructor                                                               |
  *---------------------------------------------------------------------------*/
 Mat::PAR::ParticleMaterialDEM::ParticleMaterialDEM(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata), ParticleMaterialBase(matdata)
@@ -28,7 +28,7 @@ Mat::PAR::ParticleMaterialDEM::ParticleMaterialDEM(const Core::Mat::PAR::Paramet
 }
 
 /*---------------------------------------------------------------------------*
- | create material instance of matching type with parameters  sfuchs 07/2018 |
+ | create material instance of matching type with parameters                 |
  *---------------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ParticleMaterialDEM::create_material()
 {
@@ -46,7 +46,7 @@ Core::Communication::ParObject* Mat::ParticleMaterialDEMType::create(
 }
 
 /*---------------------------------------------------------------------------*
- | constructor (empty material object)                        sfuchs 07/2018 |
+ | constructor (empty material object)                                       |
  *---------------------------------------------------------------------------*/
 Mat::ParticleMaterialDEM::ParticleMaterialDEM() : params_(nullptr)
 {
@@ -54,7 +54,7 @@ Mat::ParticleMaterialDEM::ParticleMaterialDEM() : params_(nullptr)
 }
 
 /*---------------------------------------------------------------------------*
- | constructor (with given material parameters)               sfuchs 07/2018 |
+ | constructor (with given material parameters)                              |
  *---------------------------------------------------------------------------*/
 Mat::ParticleMaterialDEM::ParticleMaterialDEM(Mat::PAR::ParticleMaterialDEM* params)
     : params_(params)
@@ -63,7 +63,7 @@ Mat::ParticleMaterialDEM::ParticleMaterialDEM(Mat::PAR::ParticleMaterialDEM* par
 }
 
 /*---------------------------------------------------------------------------*
- | pack                                                       sfuchs 07/2018 |
+ | pack                                                                      |
  *---------------------------------------------------------------------------*/
 void Mat::ParticleMaterialDEM::pack(Core::Communication::PackBuffer& data) const
 {
@@ -80,7 +80,7 @@ void Mat::ParticleMaterialDEM::pack(Core::Communication::PackBuffer& data) const
 }
 
 /*---------------------------------------------------------------------------*
- | unpack                                                     sfuchs 07/2018 |
+ | unpack                                                                    |
  *---------------------------------------------------------------------------*/
 void Mat::ParticleMaterialDEM::unpack(Core::Communication::UnpackBuffer& buffer)
 {

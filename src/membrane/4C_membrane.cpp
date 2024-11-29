@@ -179,7 +179,7 @@ void Discret::Elements::Membrane<distype>::unpack(Core::Communication::UnpackBuf
 
 
 /*----------------------------------------------------------------------*
- |  return solid material (public)                         sfuchs 05/17 |
+ |  return solid material (public)                                      |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Teuchos::RCP<Mat::So3Material> Discret::Elements::Membrane<distype>::solid_material(

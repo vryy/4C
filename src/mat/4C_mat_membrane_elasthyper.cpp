@@ -14,7 +14,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- | constructor                                           sfuchs 08/2017 |
+ | constructor                                                          |
  *----------------------------------------------------------------------*/
 Mat::PAR::MembraneElastHyper::MembraneElastHyper(const Core::Mat::PAR::Parameter::Data& matdata)
     : Mat::PAR::ElastHyper(matdata)
@@ -23,7 +23,7 @@ Mat::PAR::MembraneElastHyper::MembraneElastHyper(const Core::Mat::PAR::Parameter
 }  // Mat::PAR::MembraneElastHyper::MembraneElastHyper
 
 /*----------------------------------------------------------------------*
- |                                                       sfuchs 08/2017 |
+ |                                                                      |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MembraneElastHyper::create_material()
 {
@@ -44,7 +44,7 @@ Core::Communication::ParObject* Mat::MembraneElastHyperType::create(
 }  // Mat::Membrane_ElastHyperType::Create
 
 /*----------------------------------------------------------------------*
- |                                                       sfuchs 08/2017 |
+ |                                                                      |
  *----------------------------------------------------------------------*/
 Mat::MembraneElastHyper::MembraneElastHyper() : Mat::ElastHyper(), fibervecs_(true)
 {
@@ -52,7 +52,7 @@ Mat::MembraneElastHyper::MembraneElastHyper() : Mat::ElastHyper(), fibervecs_(tr
 }  // Mat::MembraneElastHyper::MembraneElastHyper()
 
 /*----------------------------------------------------------------------*
- |                                                       sfuchs 08/2017 |
+ |                                                                      |
  *----------------------------------------------------------------------*/
 Mat::MembraneElastHyper::MembraneElastHyper(Mat::PAR::MembraneElastHyper* params)
     : Mat::ElastHyper(params), fibervecs_(true)
@@ -61,7 +61,7 @@ Mat::MembraneElastHyper::MembraneElastHyper(Mat::PAR::MembraneElastHyper* params
 }  // Mat::MembraneElastHyper::MembraneElastHyper()
 
 /*----------------------------------------------------------------------*
- |                                                       sfuchs 08/2017 |
+ |                                                                      |
  *----------------------------------------------------------------------*/
 void Mat::MembraneElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
@@ -80,7 +80,7 @@ void Mat::MembraneElastHyper::pack(Core::Communication::PackBuffer& data) const
 }  // Mat::MembraneElastHyper::pack()
 
 /*----------------------------------------------------------------------*
- |                                                       sfuchs 08/2017 |
+ |                                                                      |
  *----------------------------------------------------------------------*/
 void Mat::MembraneElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
 {
@@ -98,7 +98,7 @@ void Mat::MembraneElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
 }  // Mat::MembraneElastHyper::unpack()
 
 /*----------------------------------------------------------------------*
- |                                                       sfuchs 08/2017 |
+ |                                                                      |
  *----------------------------------------------------------------------*/
 void Mat::MembraneElastHyper::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
@@ -111,7 +111,7 @@ void Mat::MembraneElastHyper::setup(int numgp, const Core::IO::InputParameterCon
 }  // Mat::MembraneElastHyper::setup()
 
 /*----------------------------------------------------------------------*
- | hyperelastic stress response plus elasticity tensor   sfuchs 08/2017 |
+ | hyperelastic stress response plus elasticity tensor                  |
  *----------------------------------------------------------------------*/
 void Mat::MembraneElastHyper::evaluate_membrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
     const Core::LinAlg::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
@@ -161,7 +161,7 @@ void Mat::MembraneElastHyper::evaluate_membrane(const Core::LinAlg::Matrix<3, 3>
 }  // Mat::MembraneElastHyper::Evaluate
 
 /*----------------------------------------------------------------------*
- | evaluate strain energy function                       sfuchs 08/2017 |
+ | evaluate strain energy function                                      |
  *----------------------------------------------------------------------*/
 void Mat::MembraneElastHyper::strain_energy(
     Core::LinAlg::Matrix<3, 3>& cauchygreen, double& psi, const int gp, const int eleGID)
@@ -195,7 +195,7 @@ void Mat::MembraneElastHyper::strain_energy(
 }  // Mat::MembraneElastHyper::StrainEnergy
 
 /*----------------------------------------------------------------------*
- | calculate anisotropic stress and elasticity tensor    sfuchs 08/2017 |
+ | calculate anisotropic stress and elasticity tensor                   |
  *----------------------------------------------------------------------*/
 void Mat::MembraneElastHyper::evaluate_anisotropic_stress_cmat(
     Core::LinAlg::Matrix<3, 1>& stress_aniso, Core::LinAlg::Matrix<3, 3>& cmat_aniso,
