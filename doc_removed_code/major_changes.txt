@@ -1,5 +1,11 @@
 List of major features that were removed from 4C, including date and revision where code was removed
 
+TSI Nitsche contact and So3Plast elements
+- The TSI Nitsche contact framework is only used by so3plast elements which are removed.
+- reasons: unused in current research, block removal of old solid elements
+- removed in commit e3c2f9bbd69bde588134686df7ea75dd2361338e
+- removed by Amadeus Gebauer
+
 Lung monolithic fluid-structure interaction
 - The lung monolithic fluid-structure interaction implemenation is removed. In addition the special block
   preconditioner taylored to this problem type is deleted.
