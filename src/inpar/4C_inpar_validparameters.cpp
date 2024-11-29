@@ -242,7 +242,7 @@ std::shared_ptr<const Teuchos::ParameterList> Input::valid_parameters()
   Inpar::Wear::set_valid_parameters(*list);
   Inpar::IORuntimeOutput::FLUID::set_valid_parameters(*list);
   Inpar::IORuntimeOutput::Solid::set_valid_parameters(*list);
-  Inpar::IORuntimeOutput::BEAMS::set_valid_parameters(*list);
+  Inpar::IORuntimeOutput::Beam::set_valid_parameters(*list);
   Inpar::BEAMCONTACT::set_valid_parameters(*list);
   Inpar::BEAMPOTENTIAL::set_valid_parameters(*list);
   Inpar::BEAMINTERACTION::set_valid_parameters(*list);
