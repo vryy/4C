@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::BEAMPOTENTIAL::set_valid_parameters(Teuchos::ParameterList& list)
+void Inpar::BeamPotential::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -33,21 +33,21 @@ void Inpar::BEAMPOTENTIAL::set_valid_parameters(Teuchos::ParameterList& list)
       "prefactor(s) \f$k_i\f$ of potential law \f$\\Phi(r) = \\sum_i (k_i * r^{-m_i})\f$.",
       &beampotential);
 
-  setStringToIntegralParameter<Inpar::BEAMPOTENTIAL::BeamPotentialType>("BEAMPOTENTIAL_TYPE",
+  setStringToIntegralParameter<Inpar::BeamPotential::BeamPotentialType>("BEAMPOTENTIAL_TYPE",
       "Surface", "Type of potential interaction: surface (default) or volume potential",
       tuple<std::string>("Surface", "surface", "Volume", "volume"),
-      tuple<Inpar::BEAMPOTENTIAL::BeamPotentialType>(
+      tuple<Inpar::BeamPotential::BeamPotentialType>(
           beampot_surf, beampot_surf, beampot_vol, beampot_vol),
       &beampotential);
 
-  setStringToIntegralParameter<Inpar::BEAMPOTENTIAL::BeamPotentialStrategy>("STRATEGY",
+  setStringToIntegralParameter<Inpar::BeamPotential::BeamPotentialStrategy>("STRATEGY",
       "DoubleLengthSpecific_LargeSepApprox",
       "strategy to evaluate interaction potential: double/single length specific, "
       "small/large separation approximation, ...",
       tuple<std::string>("DoubleLengthSpecific_LargeSepApprox",
           "DoubleLengthSpecific_SmallSepApprox", "SingleLengthSpecific_SmallSepApprox",
           "SingleLengthSpecific_SmallSepApprox_Simple"),
-      tuple<Inpar::BEAMPOTENTIAL::BeamPotentialStrategy>(strategy_doublelengthspec_largesepapprox,
+      tuple<Inpar::BeamPotential::BeamPotentialStrategy>(strategy_doublelengthspec_largesepapprox,
           strategy_doublelengthspec_smallsepapprox, strategy_singlelengthspec_smallsepapprox,
           strategy_singlelengthspec_smallsepapprox_simple),
       &beampotential);
@@ -57,10 +57,10 @@ void Inpar::BEAMPOTENTIAL::set_valid_parameters(Teuchos::ParameterList& list)
       "than this cutoff radius",
       &beampotential);
 
-  setStringToIntegralParameter<Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType>(
+  setStringToIntegralParameter<Inpar::BeamPotential::BeamPotentialRegularizationType>(
       "REGULARIZATION_TYPE", "none", "Type of regularization applied to the force law",
       tuple<std::string>("linear_extrapolation", "constant_extrapolation", "None", "none"),
-      tuple<Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType>(
+      tuple<Inpar::BeamPotential::BeamPotentialRegularizationType>(
           regularization_linear, regularization_constant, regularization_none, regularization_none),
       &beampotential);
 
@@ -153,7 +153,7 @@ void Inpar::BEAMPOTENTIAL::set_valid_parameters(Teuchos::ParameterList& list)
       &beampotential_output_sublist);
 }
 
-void Inpar::BEAMPOTENTIAL::set_valid_conditions(
+void Inpar::BeamPotential::set_valid_conditions(
     std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;

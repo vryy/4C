@@ -969,12 +969,12 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamPotential::print_console_welcome_me
 
     switch (beam_potential_params().potential_type())
     {
-      case Inpar::BEAMPOTENTIAL::beampot_surf:
+      case Inpar::BeamPotential::beampot_surf:
       {
         std::cout << "Potential Type:      Surface" << std::endl;
         break;
       }
-      case Inpar::BEAMPOTENTIAL::beampot_vol:
+      case Inpar::BeamPotential::beampot_vol:
       {
         std::cout << "Potential Type:      Volume" << std::endl;
         break;

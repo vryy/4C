@@ -23,7 +23,7 @@ namespace Core::Conditions
 }  // namespace Core::Conditions
 namespace Inpar
 {
-  namespace BEAMPOTENTIAL
+  namespace BeamPotential
   {
     /// type of potential interaction
     /// (this enum represents the input file parameter BEAMPOTENTIAL_TYPE)
@@ -74,7 +74,7 @@ namespace Inpar
     void set_valid_conditions(
         std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist);
 
-  }  // namespace BEAMPOTENTIAL
+  }  // namespace BeamPotential
 
 }  // namespace Inpar
 

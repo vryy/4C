@@ -151,7 +151,7 @@ bool BeamInteraction::BeamToSpherePotentialPair<numnodes, numnodalvalues>::evalu
   // Todo allow for independent choice of strategy for beam-to-sphere potentials
   switch (params()->strategy())
   {
-    case Inpar::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox:
+    case Inpar::BeamPotential::strategy_doublelengthspec_largesepapprox:
     {
       evaluate_fpotand_stiffpot_large_sep_approx();
       break;
@@ -271,10 +271,10 @@ void BeamInteraction::BeamToSpherePotentialPair<numnodes,
 
   switch (params()->potential_type())  // Todo do we need a own Beam-to-sphere potential type here?
   {
-    case Inpar::BEAMPOTENTIAL::beampot_surf:
+    case Inpar::BeamPotential::beampot_surf:
       prefactor *= 2 * radius1_ * M_PI;
       break;
-    case Inpar::BEAMPOTENTIAL::beampot_vol:
+    case Inpar::BeamPotential::beampot_vol:
       prefactor *= std::pow(radius1_, 2) * M_PI;
       break;
     default:

@@ -24,15 +24,15 @@ BeamInteraction::BeamPotentialParams::BeamPotentialParams()
       issetup_(false),
       pot_law_exponents_(nullptr),
       pot_law_prefactors_(nullptr),
-      potential_type_(Inpar::BEAMPOTENTIAL::beampot_vague),
-      strategy_(Inpar::BEAMPOTENTIAL::strategy_vague),
+      potential_type_(Inpar::BeamPotential::beampot_vague),
+      strategy_(Inpar::BeamPotential::strategy_vague),
       cutoff_radius_(0.0),
-      regularization_type_(Inpar::BEAMPOTENTIAL::regularization_none),
+      regularization_type_(Inpar::BeamPotential::regularization_none),
       regularization_separation_(0.0),
       num_integration_segments_(-1),
       num_gp_s_(-1),
       use_fad_(false),
-      choice_master_slave_(Inpar::BEAMPOTENTIAL::MasterSlaveChoice::choice_master_slave_vague),
+      choice_master_slave_(Inpar::BeamPotential::MasterSlaveChoice::choice_master_slave_vague),
       visualization_output_(false),
       params_runtime_visualization_output_btb_potential_(nullptr),
       potential_reduction_length_(0.0)
@@ -98,21 +98,21 @@ void BeamInteraction::BeamPotentialParams::init(const double restart_time)
   }
 
   /****************************************************************************/
-  strategy_ = Teuchos::getIntegralValue<Inpar::BEAMPOTENTIAL::BeamPotentialStrategy>(
+  strategy_ = Teuchos::getIntegralValue<Inpar::BeamPotential::BeamPotentialStrategy>(
       beam_potential_params_list, "STRATEGY");
 
-  if (strategy_ == Inpar::BEAMPOTENTIAL::strategy_vague)
+  if (strategy_ == Inpar::BeamPotential::strategy_vague)
     FOUR_C_THROW("You must specify a strategy to be used to evaluate beam interaction potential!");
 
   /****************************************************************************/
-  potential_type_ = Teuchos::getIntegralValue<Inpar::BEAMPOTENTIAL::BeamPotentialType>(
+  potential_type_ = Teuchos::getIntegralValue<Inpar::BeamPotential::BeamPotentialType>(
       beam_potential_params_list, "BEAMPOTENTIAL_TYPE");
 
-  if (potential_type_ == Inpar::BEAMPOTENTIAL::beampot_vague)
+  if (potential_type_ == Inpar::BeamPotential::beampot_vague)
     FOUR_C_THROW("You must specify the type of the specified beam interaction potential!");
 
-  if (potential_type_ == Inpar::BEAMPOTENTIAL::beampot_surf and
-      strategy_ != Inpar::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox)
+  if (potential_type_ == Inpar::BeamPotential::beampot_surf and
+      strategy_ != Inpar::BeamPotential::strategy_doublelengthspec_largesepapprox)
   {
     FOUR_C_THROW("Surface interaction is not implemented for this strategy yet!");
   }
@@ -125,13 +125,13 @@ void BeamInteraction::BeamPotentialParams::init(const double restart_time)
 
   /****************************************************************************/
   regularization_type_ =
-      Teuchos::getIntegralValue<Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType>(
+      Teuchos::getIntegralValue<Inpar::BeamPotential::BeamPotentialRegularizationType>(
           beam_potential_params_list, "REGULARIZATION_TYPE");
 
-  if ((regularization_type_ != Inpar::BEAMPOTENTIAL::regularization_none and
-          strategy_ == Inpar::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox) or
-      (regularization_type_ == Inpar::BEAMPOTENTIAL::regularization_constant and
-          strategy_ == Inpar::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox))
+  if ((regularization_type_ != Inpar::BeamPotential::regularization_none and
+          strategy_ == Inpar::BeamPotential::strategy_doublelengthspec_largesepapprox) or
+      (regularization_type_ == Inpar::BeamPotential::regularization_constant and
+          strategy_ == Inpar::BeamPotential::strategy_singlelengthspec_smallsepapprox))
   {
     FOUR_C_THROW(
         "This kind of regularization of the force law is not implemented for this strategy yet!");
@@ -140,7 +140,7 @@ void BeamInteraction::BeamPotentialParams::init(const double restart_time)
   /****************************************************************************/
   regularization_separation_ = beam_potential_params_list.get<double>("REGULARIZATION_SEPARATION");
 
-  if (regularization_type_ != Inpar::BEAMPOTENTIAL::regularization_none and
+  if (regularization_type_ != Inpar::BeamPotential::regularization_none and
       regularization_separation_ <= 0.0)
   {
     FOUR_C_THROW(
@@ -163,10 +163,10 @@ void BeamInteraction::BeamPotentialParams::init(const double restart_time)
   use_fad_ = beam_potential_params_list.get<bool>("AUTOMATIC_DIFFERENTIATION");
 
   /****************************************************************************/
-  choice_master_slave_ = Teuchos::getIntegralValue<Inpar::BEAMPOTENTIAL::MasterSlaveChoice>(
+  choice_master_slave_ = Teuchos::getIntegralValue<Inpar::BeamPotential::MasterSlaveChoice>(
       beam_potential_params_list, "CHOICE_MASTER_SLAVE");
 
-  if (choice_master_slave_ == Inpar::BEAMPOTENTIAL::MasterSlaveChoice::choice_master_slave_vague)
+  if (choice_master_slave_ == Inpar::BeamPotential::MasterSlaveChoice::choice_master_slave_vague)
   {
     FOUR_C_THROW("Invalid choice of master and slave!");
   }
