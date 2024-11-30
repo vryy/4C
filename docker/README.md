@@ -1,6 +1,6 @@
 # Docker
 
-This folder contains Dockerfiles for different configurations. The `Dockerfile` in this folder is the main Dockerfile to
+This folder contains Dockerfiles for different configurations. The `Dockerfile` in the folder `dependencies` is the Dockerfile to
 build the project with the current dependencies. Other configurations reside in different subfolders.
 
 ## Build docker images locally
@@ -10,7 +10,7 @@ context in order to copy the installation scripts. So, run the `docker build` in
 
 ```bash
 cd <project_root>
-docker build --tag 4c-dependencies --file docker/Dockerfile .
+docker build --tag 4c-dependencies --file docker/dependencies/Dockerfile .
 ```
 
 ## How to update the docker image for the Github Actions
@@ -20,7 +20,7 @@ docker build --tag 4c-dependencies --file docker/Dockerfile .
 
 ```bash
 cd <project_root>
-./docker/compute_dependencies_hash.sh
+./docker/dependencies/compute_dependencies_hash.sh
 ```
 
 1. Update the `FOUR_C_DOCKER_DEPENDENCIES_HASH` variable in `docker.yml` and all mentions of the old hash (search and replace) in all workflows `.github/workflows` file (The hash should only occur in `container.image`).

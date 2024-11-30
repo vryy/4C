@@ -70,7 +70,7 @@ jobs:
       - name: Build and push image
         uses: ./.github/actions/build_dependencies
         with:
-          docker-file: docker/Dockerfile
+          docker-file: docker/dependencies/Dockerfile
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
@@ -97,7 +97,7 @@ jobs:
       - name: Build and push image
         uses: ./.github/actions/build_dependencies
         with:
-          docker-file: docker/Dockerfile
+          docker-file: docker/dependencies/Dockerfile
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
