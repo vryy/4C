@@ -10,7 +10,7 @@
 #include "4C_adapter_porofluidmultiphase.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_fem_geometry_intersection_service.hpp"
-#include "4C_fem_geometry_intersection_service_templates.hpp"
+#include "4C_fem_geometry_intersection_service.templates.hpp"
 #include "4C_fem_geometry_position_array.hpp"
 #include "4C_fem_geometry_searchtree.hpp"
 #include "4C_fem_geometry_searchtree_service.hpp"

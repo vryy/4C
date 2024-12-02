@@ -10,7 +10,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_geometry_element_coordtrafo.hpp"
 #include "4C_fem_geometry_intersection_service.hpp"
-#include "4C_fem_geometry_intersection_service_templates.hpp"
+#include "4C_fem_geometry_intersection_service.templates.hpp"
 #include "4C_fem_geometry_position_array.hpp"
 #include "4C_fem_geometry_searchtree_nearestobject.hpp"
 
