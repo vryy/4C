@@ -164,6 +164,14 @@ namespace Mixture
     }
 
     /*!
+     * \brief Update of the internal variables
+     *
+     * This method is called once per element between each time step to update the internal
+     * variables. Not needed for simple constituents.
+     */
+    virtual void update() {}
+
+    /*!
      * @brief Update of the internal variables used for mixture rules evaluating the elastic part of
      * the deformation. This method must be explicitly called by the mixture rule and will not be
      * invoked automatically!

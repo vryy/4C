@@ -260,6 +260,17 @@ void Mat::Mixture::post_setup(Teuchos::ParameterList& params, const int eleGID)
   setup_ = true;
 }
 
+void Mat::Mixture::update()
+{
+  // Update all constituents
+  for (const auto& constituent : *constituents_)
+  {
+    constituent->update();
+  }
+
+  mixture_rule_->update();
+}
+
 // This method is called between two timesteps
 void Mat::Mixture::update(Core::LinAlg::Matrix<3, 3> const& defgrd, const int gp,
     Teuchos::ParameterList& params, const int eleGID)

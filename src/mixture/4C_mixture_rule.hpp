@@ -187,6 +187,14 @@ namespace Mixture
     }
 
     /*!
+     * \brief Update of the internal variables
+     *
+     * This method is called once per element between each time step to update the internal
+     * variables. Not needed for simple mixture rules.
+     */
+    virtual void update() {}
+
+    /*!
      *
      * @brief Method that is executed before the first evaluate call, once for each Gauss point
      *

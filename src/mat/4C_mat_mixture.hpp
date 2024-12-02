@@ -183,6 +183,13 @@ namespace Mat
      * \brief Update of the material
      *
      * This method will be called between each timestep.
+     */
+    void update() override;
+
+    /*!
+     * \brief Update of the material
+     *
+     * This method will be called between each timestep.
      *
      * @param defgrd Deformation gradient
      * @param gp Gauss point
