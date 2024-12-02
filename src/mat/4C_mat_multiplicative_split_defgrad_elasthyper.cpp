@@ -219,29 +219,43 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
   // do all stuff that only has to be done once per evaluate() call
   pre_evaluate(params, gp, eleGID);
 
+  // compute kinematic quantities
   KinematicQuantities kinematic_quantities =
       evaluate_kinematic_quantities(*this, *inelastic_, *defgrad, gp, eleGID);
+
+  // compute stress factors
+  StressFactors stress_factors;
+  Mat::calculate_gamma_delta(stress_factors.gamma, stress_factors.delta, kinematic_quantities.prinv,
+      kinematic_quantities.dPIe, kinematic_quantities.ddPIIe);
+
+  // derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic deformation
+  // gradient
+  Core::LinAlg::Matrix<6, 9> dSdiFin = evaluated_sdi_fin(kinematic_quantities, stress_factors);
 
   // right Cauchy-Green deformation tensor
   Core::LinAlg::Matrix<3, 3> CM(true);
   CM.multiply_tn(1.0, *defgrad, *defgrad, 0.0);
 
+  /// part of the elasticity tensor as shown in evaluate_stress_cmat_iso
+  Core::LinAlg::Matrix<6, 6> cmatiso{true};
+
   // cmat = 2 dS/dC = 2 \frac{\partial S}{\partial C} + 2 \frac{\partial S}{\partial F_{in}^{-1}}
   // : \frac{\partial F_{in}^{-1}}{\partial C} = cmatiso + cmatadd
-  evaluate_stress_cmat_iso(kinematic_quantities, *stress);
+  evaluate_stress_cmat_iso(kinematic_quantities, stress_factors, *stress, cmatiso);
   // separate update coming from the transversely isotropic components
   if (!(potsumel_transviso_.empty()))
   {
-    evaluate_transv_iso_quantities(kinematic_quantities, CM, params, gp, eleGID, *stress);
+    evaluate_transv_iso_quantities(
+        kinematic_quantities, CM, params, gp, eleGID, *stress, cmatiso, dSdiFin);
   }
-  cmat->update(1.0, kinematic_quantities.cmatiso, 0.0);
+  cmat->update(1.0, cmatiso, 0.0);
 
   // evaluate additional terms for the elasticity tensor
   // cmatadd = 2 \frac{\partial S}{\partial F_{in}^{-1}} : \frac{\partial F_{in}^{-1}}{\partial
   // C}, where F_{in}^{-1} can be multiplicatively composed of several inelastic contributions
-  evaluate_additional_cmat(defgrad, kinematic_quantities.iCV, kinematic_quantities.dSdiFin,
-      kinematic_quantities.cmatadd);
-  cmat->update(1.0, kinematic_quantities.cmatadd, 1.0);
+  Core::LinAlg::Matrix<6, 6> cmatadd =
+      evaluate_additional_cmat(defgrad, kinematic_quantities.iCV, dSdiFin);
+  cmat->update(1.0, cmatadd, 1.0);
 }
 
 Core::LinAlg::Matrix<6, 1> Mat::MultiplicativeSplitDefgradElastHyper::evaluate_d_stress_d_scalar(
@@ -266,9 +280,13 @@ Core::LinAlg::Matrix<6, 1> Mat::MultiplicativeSplitDefgradElastHyper::evaluate_d
 
   KinematicQuantities kinematic_quantities =
       evaluate_kinematic_quantities(*this, *inelastic_, defgrad, gp, eleGID);
+  StressFactors stress_factors;
+  Mat::calculate_gamma_delta(stress_factors.gamma, stress_factors.delta, kinematic_quantities.prinv,
+      kinematic_quantities.dPIe, kinematic_quantities.ddPIIe);
+  Core::LinAlg::Matrix<6, 9> dSdiFin = evaluated_sdi_fin(kinematic_quantities, stress_factors);
 
   Core::LinAlg::Matrix<6, 1> d_stress_d_scalar(true);
-  evaluate_od_stiff_mat(source, &defgrad, kinematic_quantities.dSdiFin, d_stress_d_scalar);
+  evaluate_od_stiff_mat(source, &defgrad, dSdiFin, d_stress_d_scalar);
   return d_stress_d_scalar;
 }
 
@@ -487,17 +505,17 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_linearization_od(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_stress_cmat_iso(
-    Mat::MultiplicativeSplitDefgradElastHyper::KinematicQuantities& kinemat_quant,
-    Core::LinAlg::Matrix<6, 1>& stress) const
+    const Mat::MultiplicativeSplitDefgradElastHyper::KinematicQuantities& kinemat_quant,
+    const Mat::MultiplicativeSplitDefgradElastHyper::StressFactors& stress_fact,
+    Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<6, 6>& cmatiso) const
 {
   // extract variables from kinemat_quant
   const Core::LinAlg::Matrix<6, 1>& iCV = kinemat_quant.iCV;
   const Core::LinAlg::Matrix<6, 1>& iCinV = kinemat_quant.iCinV;
   const Core::LinAlg::Matrix<6, 1>& iCinCiCinV = kinemat_quant.iCinCiCinV;
-  const Core::LinAlg::Matrix<3, 1>& gamma = kinemat_quant.gamma;
-  const Core::LinAlg::Matrix<8, 1>& delta = kinemat_quant.delta;
+  const Core::LinAlg::Matrix<3, 1>& gamma = stress_fact.gamma;
+  const Core::LinAlg::Matrix<8, 1>& delta = stress_fact.delta;
   const double detFin = kinemat_quant.detFin;
-  Core::LinAlg::Matrix<6, 6>& cmatiso = kinemat_quant.cmatiso;
 
   // clear variables
   stress.clear();
@@ -621,12 +639,16 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_invariant_derivatives(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::evaluated_sdi_fin(
-    Mat::MultiplicativeSplitDefgradElastHyper::KinematicQuantities& kinemat_quant) const
+Core::LinAlg::Matrix<6, 9> Mat::MultiplicativeSplitDefgradElastHyper::evaluated_sdi_fin(
+    const Mat::MultiplicativeSplitDefgradElastHyper::KinematicQuantities& kinemat_quant,
+    const Mat::MultiplicativeSplitDefgradElastHyper::StressFactors& stress_fact) const
 {
+  // declare output variables
+  Core::LinAlg::Matrix<6, 9> dSdiFin{true};
+
   // extract variables from kinemat_quant
-  const Core::LinAlg::Matrix<3, 1>& gamma = kinemat_quant.gamma;
-  const Core::LinAlg::Matrix<8, 1>& delta = kinemat_quant.delta;
+  const Core::LinAlg::Matrix<3, 1>& gamma = stress_fact.gamma;
+  const Core::LinAlg::Matrix<8, 1>& delta = stress_fact.delta;
   const Core::LinAlg::Matrix<3, 3>& iFinM = kinemat_quant.iFinM;
   const Core::LinAlg::Matrix<3, 3>& iCinCM = kinemat_quant.iCinCM;
   const Core::LinAlg::Matrix<6, 1>& iCinV = kinemat_quant.iCinV;
@@ -637,7 +659,6 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluated_sdi_fin(
   const Core::LinAlg::Matrix<6, 1>& iCV = kinemat_quant.iCV;
   const Core::LinAlg::Matrix<3, 3>& iFinCeM = kinemat_quant.iFinCeM;
   const double detFin = kinemat_quant.detFin;
-  Core::LinAlg::Matrix<6, 9>& dSdiFin = kinemat_quant.dSdiFin;
 
   // clear variable
   dSdiFin.clear();
@@ -681,21 +702,22 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluated_sdi_fin(
 
   // chain rule to get dS/d(det(Fin)) * d(det(Fin))/diFin
   dSdiFin.multiply_nt(1.0, dSddetFin, ddetFindiFinV, 1.0);
+
+  return dSdiFin;
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_transv_iso_quantities(
-    Mat::MultiplicativeSplitDefgradElastHyper::KinematicQuantities& kinemat_quant,
+    const Mat::MultiplicativeSplitDefgradElastHyper::KinematicQuantities& kinemat_quant,
     const Core::LinAlg::Matrix<3, 3>& CM, Teuchos::ParameterList& params, const int gp,
-    const int eleGID, Core::LinAlg::Matrix<6, 1>& stress) const
+    const int eleGID, Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<6, 6>& cmatiso,
+    Core::LinAlg::Matrix<6, 9>& dSdiFin) const
 {
   // extract variables from kinemat_quant
   const Core::LinAlg::Matrix<3, 3>& iFinM = kinemat_quant.iFinM;
   const Core::LinAlg::Matrix<6, 6>& dCedC = kinemat_quant.dCedC;
   const Core::LinAlg::Matrix<6, 9>& dCediFin = kinemat_quant.dCediFin;
-  Core::LinAlg::Matrix<6, 9>& dSdiFin = kinemat_quant.dSdiFin;
-  Core::LinAlg::Matrix<6, 6>& cmatiso = kinemat_quant.cmatiso;
 
   // auxiliaries
   Core::LinAlg::Matrix<3, 3> id3x3(true);
@@ -806,12 +828,12 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_transv_iso_quantities(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
+Core::LinAlg::Matrix<6, 6> Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
     const Core::LinAlg::Matrix<3, 3>* const defgrad, const Core::LinAlg::Matrix<6, 1>& iCV,
-    const Core::LinAlg::Matrix<6, 9>& dSdiFin, Core::LinAlg::Matrix<6, 6>& cmatadd)
+    const Core::LinAlg::Matrix<6, 9>& dSdiFin)
 {
-  // clear variable
-  cmatadd.clear();
+  // declare output variable
+  Core::LinAlg::Matrix<6, 6> cmatadd{true};
 
   const auto& facdefgradin = inelastic_->fac_def_grad_in();
   const auto& iFinjM = inelastic_->geti_finj();
@@ -881,6 +903,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
   }
   else
     FOUR_C_THROW("You should not be here");
+
+  return cmatadd;
 }
 
 /*--------------------------------------------------------------------*
@@ -1166,14 +1190,6 @@ Mat::MultiplicativeSplitDefgradElastHyper::evaluate_kinematic_quantities(
   splitdefgrd.evaluate_invariant_derivatives(quantities.prinv, gp, eleGID, quantities.dPIe,
       quantities.ddPIIe);  // NOTE: we exclude the transversely isotropic hyperelastic
                            // components in this function --> we deal with them separately
-
-
-  // compose coefficients
-  Mat::calculate_gamma_delta(
-      quantities.gamma, quantities.delta, quantities.prinv, quantities.dPIe, quantities.ddPIIe);
-
-  // evaluate dSdiFin
-  splitdefgrd.evaluated_sdi_fin(quantities);
 
   return quantities;
 }

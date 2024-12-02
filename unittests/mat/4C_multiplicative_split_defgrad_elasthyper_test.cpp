@@ -417,8 +417,7 @@ namespace
     const double concentration(44327.362);
     set_concentration_to_inelastic_material(concentration);
 
-    // actual call that is tested
-    Core::LinAlg::Matrix<6, 6> cMatAdd(true);
+
     // reference solution
     Core::LinAlg::Matrix<6, 6> cMatAdd_ref;
     cMatAdd_ref(0, 0) = -0.701208493301168;
@@ -458,7 +457,9 @@ namespace
     cMatAdd_ref(5, 4) = -0.002993573976479339;
     cMatAdd_ref(5, 5) = -0.004589594171729136;
 
-    multiplicative_split_defgrad_->evaluate_additional_cmat(&FM_, iCV_ref_, dSdiFin_ref_, cMatAdd);
+    // actual call that is tested
+    Core::LinAlg::Matrix<6, 6> cMatAdd =
+        multiplicative_split_defgrad_->evaluate_additional_cmat(&FM_, iCV_ref_, dSdiFin_ref_);
 
     FOUR_C_EXPECT_NEAR(cMatAdd, cMatAdd_ref, 1.0e-10);
   }
@@ -519,8 +520,6 @@ namespace
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluatedSdiFin)
   {
     Mat::MultiplicativeSplitDefgradElastHyper::KinematicQuantities kinemat_quant;
-    kinemat_quant.gamma = gamma_ref_;
-    kinemat_quant.delta = delta_ref_;
     kinemat_quant.iFinM = iFinM_;
     kinemat_quant.iCinCM = iCinCM_ref_;
     kinemat_quant.iCinV = iCinV_ref_;
@@ -532,9 +531,14 @@ namespace
     kinemat_quant.iFinCeM = iFinCeM_ref_;
     kinemat_quant.detFin = detFin_;
 
-    multiplicative_split_defgrad_->evaluated_sdi_fin(kinemat_quant);
+    Mat::MultiplicativeSplitDefgradElastHyper::StressFactors stress_fact;
+    stress_fact.gamma = gamma_ref_;
+    stress_fact.delta = delta_ref_;
 
-    FOUR_C_EXPECT_NEAR(kinemat_quant.dSdiFin, dSdiFin_ref_, 1.0e-10);
+    Core::LinAlg::Matrix<6, 9> dSdiFin =
+        multiplicative_split_defgrad_->evaluated_sdi_fin(kinemat_quant, stress_fact);
+
+    FOUR_C_EXPECT_NEAR(dSdiFin, dSdiFin_ref_, 1.0e-10);
   }
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateInvariantDerivatives)
@@ -679,13 +683,15 @@ namespace
     kinemat_quant.iCV = iCV_ref_;
     kinemat_quant.iCinV = iCinV_ref_;
     kinemat_quant.iCinCiCinV = iCinCiCinV_ref_;
-    kinemat_quant.gamma = gamma_ref_;
-    kinemat_quant.delta = delta_ref_;
     kinemat_quant.detFin = detFin_;
+    Mat::MultiplicativeSplitDefgradElastHyper::StressFactors stress_fact;
+    stress_fact.gamma = gamma_ref_;
+    stress_fact.delta = delta_ref_;
 
-    multiplicative_split_defgrad_->evaluate_stress_cmat_iso(kinemat_quant, S);
+    Core::LinAlg::Matrix<6, 6> cMatIso{true};
+    multiplicative_split_defgrad_->evaluate_stress_cmat_iso(kinemat_quant, stress_fact, S, cMatIso);
 
     FOUR_C_EXPECT_NEAR(S, S_ref, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(kinemat_quant.cmatiso, cMatIso_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(cMatIso, cMatIso_ref, 1.0e-10);
   }
 }  // namespace
