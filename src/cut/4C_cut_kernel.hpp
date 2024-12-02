@@ -14,7 +14,7 @@
 #include "4C_cut_tolerance.hpp"
 #include "4C_cut_utils.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_linalg_gauss_templates.hpp"
+#include "4C_linalg_gauss.templates.hpp"
 #include "4C_utils_cln_matrix_conversion.hpp"
 #include "4C_utils_clnwrapper.hpp"
 #include "4C_utils_mathoperations_cln.hpp"
