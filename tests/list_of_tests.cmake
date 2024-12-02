@@ -879,6 +879,7 @@ four_c_test(TEST_FILE mixture_prestress_spring_dashpot.dat mixture_prestress_spr
 four_c_test(TEST_FILE mixture_prestress_spring_dashpot.dat NP 2 RESTART_STEP 5)
 four_c_test(TEST_FILE mixture_solid_material.dat NP 2 RESTART_STEP 25)
 four_c_test(TEST_FILE mixture_solid_material_dynamic.dat NP 2 RESTART_STEP 25)
+four_c_test(TEST_FILE mixture_solid_material_viscoelasthyper.4C.yaml NP 2 RESTART_STEP 2)
 four_c_test(TEST_FILE new_solidporo_pressure_based_ele_poromultielast_3D_hex27.dat NP 2)
 four_c_test(TEST_FILE new_solidporo_pressure_based_ele_poromultielast_3D_hex8.dat NP 2)
 four_c_test(TEST_FILE new_solidporo_pressure_based_ele_poromultielast_3D_hex8_mono.dat NP 2 RESTART_STEP 4)

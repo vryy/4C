@@ -137,6 +137,8 @@ void Mixture::MixtureConstituentSolidMaterial::read_element(
   material_->setup(numgp, container);
 }
 
+void Mixture::MixtureConstituentSolidMaterial::update() { material_->update(); }
+
 void Mixture::MixtureConstituentSolidMaterial::update(Core::LinAlg::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
