@@ -501,10 +501,10 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   // get beam contact strategy
   const Teuchos::ParameterList& beamcontact = Global::Problem::instance()->beam_contact_params();
   auto strategy =
-      Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
+      Teuchos::getIntegralValue<Inpar::BeamContact::Strategy>(beamcontact, "BEAMS_STRATEGY");
 
   auto modelevaluator =
-      Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Modelevaluator>(beamcontact, "MODELEVALUATOR");
+      Teuchos::getIntegralValue<Inpar::BeamContact::Modelevaluator>(beamcontact, "MODELEVALUATOR");
 
   // conditions for potential-based beam interaction
   std::vector<Core::Conditions::Condition*> beampotconditions(0);
@@ -515,7 +515,7 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   actdis_->get_condition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
 
 
-  if (strategy != Inpar::BEAMCONTACT::bstr_none and modelevaluator == Inpar::BEAMCONTACT::bstr_old)
+  if (strategy != Inpar::BeamContact::bstr_none and modelevaluator == Inpar::BeamContact::bstr_old)
     modeltypes.insert(Inpar::Solid::model_beam_interaction_old);
 
   // ---------------------------------------------------------------------------
@@ -535,12 +535,12 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
           ->beam_interaction_params()
           .sublist("SPHERE BEAM LINK")
           .get<bool>("SPHEREBEAMLINKING") or
-      Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+      Teuchos::getIntegralValue<Inpar::BeamInteraction::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
-          "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
-      Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+          "STRATEGY") != Inpar::BeamInteraction::bstr_none or
+      Teuchos::getIntegralValue<Inpar::BeamInteraction::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
-          "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
+          "STRATEGY") != Inpar::BeamInteraction::bstr_none or
       Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
           Global::Problem::instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),

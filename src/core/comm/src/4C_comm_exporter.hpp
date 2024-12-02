@@ -32,7 +32,7 @@ namespace Core::Communication
 
   The discretization management module uses this class to do most of its
   communication. It is used to redistribute grids and to do point-to-point
-  communications. It is therefore the only place on DRT where explicit calls to MPI
+  communications. It is therefore the only place where explicit calls to MPI
   methods are done.<br>
   It has strong capabilities in gathering and scattering information in a collective AND
   an individual way. Whenever you need explicit communication, check this class first before

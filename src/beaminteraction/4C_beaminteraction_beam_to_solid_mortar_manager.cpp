@@ -30,9 +30,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
+BeamInteraction::BeamToSolidMortarManager::BeamToSolidMortarManager(
     const std::shared_ptr<const Core::FE::Discretization>& discret,
-    const std::shared_ptr<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
+    const std::shared_ptr<const BeamInteraction::BeamToSolidParamsBase>& params,
     int start_value_lambda_gid)
     : is_setup_(false),
       is_local_maps_build_(false),
@@ -65,10 +65,10 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
     auto mortar_shape_function_rotation = Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::none;
 
     const auto beam_to_volume_params =
-        std::dynamic_pointer_cast<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>(
+        std::dynamic_pointer_cast<const BeamInteraction::BeamToSolidVolumeMeshtyingParams>(
             beam_to_solid_params_);
     const auto beam_to_surface_params =
-        std::dynamic_pointer_cast<const BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>(
+        std::dynamic_pointer_cast<const BeamInteraction::BeamToSolidSurfaceMeshtyingParams>(
             beam_to_solid_params_);
 
     FOUR_C_ASSERT_ALWAYS(beam_to_volume_params || beam_to_surface_params,
@@ -98,14 +98,14 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::setup()
+void BeamInteraction::BeamToSolidMortarManager::setup()
 {
   // Get the global ids of all beam centerline nodes on this rank.
   std::vector<int> my_nodes_gid;
   for (int i_node = 0; i_node < discret_->node_row_map()->NumMyElements(); i_node++)
   {
     Core::Nodes::Node const& node = *(discret_->l_row_node(i_node));
-    if (BEAMINTERACTION::Utils::is_beam_centerline_node(node)) my_nodes_gid.push_back(node.id());
+    if (BeamInteraction::Utils::is_beam_centerline_node(node)) my_nodes_gid.push_back(node.id());
   }
 
   // Get the global ids of all beam elements on this rank.
@@ -113,7 +113,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::setup()
   for (int i_element = 0; i_element < discret_->element_row_map()->NumMyElements(); i_element++)
   {
     Core::Elements::Element const& element = *(discret_->l_row_element(i_element));
-    if (BEAMINTERACTION::Utils::is_beam_element(element)) my_elements_gid.push_back(element.id());
+    if (BeamInteraction::Utils::is_beam_element(element)) my_elements_gid.push_back(element.id());
   }
 
   // Calculate the local number of centerline nodes, beam elements and Lagrange multiplier DOF.
@@ -246,7 +246,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::setup()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::set_global_maps()
+void BeamInteraction::BeamToSolidMortarManager::set_global_maps()
 {
   // Loop over all nodes on this processor -> we assume all beam and solid DOFs are based on nodes.
   std::vector<int> beam_dofs(0);
@@ -254,7 +254,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::set_global_maps()
   for (int i_node = 0; i_node < discret_->node_row_map()->NumMyElements(); i_node++)
   {
     const Core::Nodes::Node* node = discret_->l_row_node(i_node);
-    if (BEAMINTERACTION::Utils::is_beam_node(*node))
+    if (BeamInteraction::Utils::is_beam_node(*node))
       discret_->dof(node, beam_dofs);
     else
       discret_->dof(node, solid_dofs);
@@ -278,8 +278,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::set_global_maps()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::set_local_maps(
-    const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
+void BeamInteraction::BeamToSolidMortarManager::set_local_maps(
+    const std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>& contact_pairs)
 {
   check_setup();
   check_global_maps();
@@ -296,7 +296,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::set_local_maps(
   // Loop over the pairs and get the global node and element indices needed on this rank.
   for (unsigned int i_pair = 0; i_pair < contact_pairs_.size(); i_pair++)
   {
-    const std::shared_ptr<BEAMINTERACTION::BeamContactPair>& pair = contact_pairs_[i_pair];
+    const std::shared_ptr<BeamInteraction::BeamContactPair>& pair = contact_pairs_[i_pair];
 
     // The first (beam) element should always be on the same processor as the pair.
     if (pair->element1()->owner() != Core::Communication::my_mpi_rank(discret_->get_comm()))
@@ -389,8 +389,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::set_local_maps(
  *
  */
 std::pair<std::vector<int>, std::vector<int>>
-BEAMINTERACTION::BeamToSolidMortarManager::location_vector(
-    const BEAMINTERACTION::BeamContactPair& contact_pair) const
+BeamInteraction::BeamToSolidMortarManager::location_vector(
+    const BeamInteraction::BeamContactPair& contact_pair) const
 {
   check_setup();
   check_local_maps();
@@ -405,7 +405,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::location_vector(
     for (int i_node = 0; i_node < contact_pair.element1()->num_node(); i_node++)
     {
       const Core::Nodes::Node& node = *(contact_pair.element1()->nodes()[i_node]);
-      if (BEAMINTERACTION::Utils::is_beam_centerline_node(node))
+      if (BeamInteraction::Utils::is_beam_centerline_node(node))
       {
         // Get the global id of the node.
         int node_id = node.id();
@@ -430,7 +430,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::location_vector(
   // Get the global DOFs ids of the element Lagrange multipliers.
   if (n_lambda_element_ > 0)
   {
-    if (BEAMINTERACTION::Utils::is_beam_element(*contact_pair.element1()))
+    if (BeamInteraction::Utils::is_beam_element(*contact_pair.element1()))
     {
       // Get the global id of the element.
       int element_id = contact_pair.element1()->id();
@@ -457,7 +457,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::location_vector(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_force_stiff_penalty_regularization(
+void BeamInteraction::BeamToSolidMortarManager::evaluate_force_stiff_penalty_regularization(
     const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
     std::shared_ptr<Core::LinAlg::SparseMatrix> stiff, std::shared_ptr<Epetra_FEVector> force)
 {
@@ -472,7 +472,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_force_stiff_penalty_reg
  *
  */
 std::shared_ptr<Core::LinAlg::Vector<double>>
-BEAMINTERACTION::BeamToSolidMortarManager::get_global_lambda() const
+BeamInteraction::BeamToSolidMortarManager::get_global_lambda() const
 {
   auto penalty_regularization = get_penalty_regularization(false);
   return std::get<0>(penalty_regularization);
@@ -482,7 +482,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::get_global_lambda() const
  *
  */
 std::shared_ptr<Core::LinAlg::Vector<double>>
-BEAMINTERACTION::BeamToSolidMortarManager::get_global_lambda_col() const
+BeamInteraction::BeamToSolidMortarManager::get_global_lambda_col() const
 {
   std::shared_ptr<Core::LinAlg::Vector<double>> lambda_col =
       std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_colmap_);
@@ -493,7 +493,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::get_global_lambda_col() const
 /**
  *
  */
-double BEAMINTERACTION::BeamToSolidMortarManager::get_energy() const
+double BeamInteraction::BeamToSolidMortarManager::get_energy() const
 {
   // Since this value is also computed for the reference configuration, where the global mortar
   // matrices are not build yet we return 0 in this case.
@@ -511,7 +511,7 @@ double BEAMINTERACTION::BeamToSolidMortarManager::get_energy() const
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_and_assemble_global_coupling_contributions(
+void BeamInteraction::BeamToSolidMortarManager::evaluate_and_assemble_global_coupling_contributions(
     const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   check_setup();
@@ -557,7 +557,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_and_assemble_global_cou
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penalty_contributions(
+void BeamInteraction::BeamToSolidMortarManager::add_global_force_stiffness_penalty_contributions(
     const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
     std::shared_ptr<Core::LinAlg::SparseMatrix> stiff, std::shared_ptr<Epetra_FEVector> force) const
 {
@@ -657,7 +657,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
  */
 std::tuple<std::shared_ptr<Core::LinAlg::Vector<double>>,
     std::shared_ptr<Core::LinAlg::Vector<double>>, std::shared_ptr<Core::LinAlg::Vector<double>>>
-BEAMINTERACTION::BeamToSolidMortarManager::get_penalty_regularization(
+BeamInteraction::BeamToSolidMortarManager::get_penalty_regularization(
     const bool compute_linearization) const
 {
   check_setup();
@@ -689,7 +689,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::get_penalty_regularization(
  *
  */
 std::shared_ptr<Core::LinAlg::Vector<double>>
-BEAMINTERACTION::BeamToSolidMortarManager::penalty_invert_kappa() const
+BeamInteraction::BeamToSolidMortarManager::penalty_invert_kappa() const
 {
   // Create the inverse vector.
   std::shared_ptr<Core::LinAlg::Vector<double>> kappa_inv =
@@ -699,10 +699,10 @@ BEAMINTERACTION::BeamToSolidMortarManager::penalty_invert_kappa() const
   const double penalty_translation = beam_to_solid_params_->get_penalty_parameter();
   double penalty_rotation = 0.0;
   auto beam_to_volume_params =
-      std::dynamic_pointer_cast<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>(
+      std::dynamic_pointer_cast<const BeamInteraction::BeamToSolidVolumeMeshtyingParams>(
           beam_to_solid_params_);
   auto beam_to_surface_params =
-      std::dynamic_pointer_cast<const BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>(
+      std::dynamic_pointer_cast<const BeamInteraction::BeamToSolidSurfaceMeshtyingParams>(
           beam_to_solid_params_);
   if (beam_to_volume_params != nullptr)
     penalty_rotation = beam_to_volume_params->get_rotational_coupling_penalty_parameter();

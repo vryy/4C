@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidSurfaceContactParams::BeamToSolidSurfaceContactParams()
+BeamInteraction::BeamToSolidSurfaceContactParams::BeamToSolidSurfaceContactParams()
     : BeamToSolidParamsBase(),
       contact_type_(Inpar::BeamToSolid::BeamToSolidSurfaceContact::none),
       penalty_law_(Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw::none),
@@ -35,7 +35,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactParams::BeamToSolidSurfaceContactParam
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceContactParams::init()
+void BeamInteraction::BeamToSolidSurfaceContactParams::init()
 {
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_solid_contact_params_list =
@@ -75,7 +75,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactParams::init()
 /**
  *
  */
-int BEAMINTERACTION::BeamToSolidSurfaceContactParams::get_fad_order() const
+int BeamInteraction::BeamToSolidSurfaceContactParams::get_fad_order() const
 
 {
   switch (get_contact_type())

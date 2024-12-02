@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BEAMINTERACTION::B3CNeighbor::B3CNeighbor(const Core::Elements::Element* left_neighbor,
+BeamInteraction::B3CNeighbor::B3CNeighbor(const Core::Elements::Element* left_neighbor,
     const Core::Elements::Element* right_neighbor, int connecting_node_left,
     int connecting_node_right)
     : left_neighbor_(left_neighbor),
@@ -28,8 +28,8 @@ BEAMINTERACTION::B3CNeighbor::B3CNeighbor(const Core::Elements::Element* left_ne
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::shared_ptr<BEAMINTERACTION::B3CNeighbor>
-BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(const Core::Elements::Element* element1)
+std::shared_ptr<BeamInteraction::B3CNeighbor>
+BeamInteraction::Beam3TangentSmoothing::determine_neigbors(const Core::Elements::Element* element1)
 {
   const Core::Elements::Element* left_neighbor = nullptr;
   const Core::Elements::Element* right_neighbor = nullptr;
@@ -117,14 +117,14 @@ BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(const Core::Elements:
     }
   }
 
-  return std::make_shared<BEAMINTERACTION::B3CNeighbor>(
+  return std::make_shared<BeamInteraction::B3CNeighbor>(
       left_neighbor, right_neighbor, connecting_node_left, connecting_node_right);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int BEAMINTERACTION::Beam3TangentSmoothing::get_boundary_node(const int nnode)
+int BeamInteraction::Beam3TangentSmoothing::get_boundary_node(const int nnode)
 {
   if (nnode == 2)
     return 1;
@@ -135,7 +135,7 @@ int BEAMINTERACTION::Beam3TangentSmoothing::get_boundary_node(const int nnode)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double BEAMINTERACTION::Beam3TangentSmoothing::get_ele_length(
+double BeamInteraction::Beam3TangentSmoothing::get_ele_length(
     const Core::LinAlg::SerialDenseMatrix& elepos, const int nright)
 {
   double length = 0.0;
@@ -148,7 +148,7 @@ double BEAMINTERACTION::Beam3TangentSmoothing::get_ele_length(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::SerialDenseMatrix BEAMINTERACTION::Beam3TangentSmoothing::get_nodal_derivatives(
+Core::LinAlg::SerialDenseMatrix BeamInteraction::Beam3TangentSmoothing::get_nodal_derivatives(
     const int node, const int nnode, const double length, const Core::FE::CellType distype)
 {
   Core::LinAlg::SerialDenseMatrix deriv1(1, nnode);

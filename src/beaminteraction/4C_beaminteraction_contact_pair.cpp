@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamContactPair::BeamContactPair()
+BeamInteraction::BeamContactPair::BeamContactPair()
     : isinit_(false),
       issetup_(false),
       geometry_pair_(nullptr),
@@ -41,8 +41,8 @@ BEAMINTERACTION::BeamContactPair::BeamContactPair()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactPair::init(
-    const std::shared_ptr<BEAMINTERACTION::BeamContactParams> params_ptr,
+void BeamInteraction::BeamContactPair::init(
+    const std::shared_ptr<BeamInteraction::BeamContactParams> params_ptr,
     std::vector<Core::Elements::Element const*> elements)
 {
   issetup_ = false;
@@ -57,7 +57,7 @@ void BEAMINTERACTION::BeamContactPair::init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactPair::setup()
+void BeamInteraction::BeamContactPair::setup()
 {
   check_init();
 
@@ -66,9 +66,9 @@ void BEAMINTERACTION::BeamContactPair::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::shared_ptr<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair::create(
+std::shared_ptr<BeamInteraction::BeamContactPair> BeamInteraction::BeamContactPair::create(
     std::vector<Core::Elements::Element const*> const& ele_ptrs,
-    BEAMINTERACTION::BeamInteractionConditions& beam_interaction_conditions_ptr)
+    BeamInteraction::BeamInteractionConditions& beam_interaction_conditions_ptr)
 {
   // Check the type of the second element.
   const bool other_is_beam =
@@ -105,19 +105,19 @@ std::shared_ptr<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPa
         {
           case 2:
           {
-            return std::make_shared<BEAMINTERACTION::BeamToSphereContactPair<2, 1>>();
+            return std::make_shared<BeamInteraction::BeamToSphereContactPair<2, 1>>();
           }
           case 3:
           {
-            return std::make_shared<BEAMINTERACTION::BeamToSphereContactPair<3, 1>>();
+            return std::make_shared<BeamInteraction::BeamToSphereContactPair<3, 1>>();
           }
           case 4:
           {
-            return std::make_shared<BEAMINTERACTION::BeamToSphereContactPair<4, 1>>();
+            return std::make_shared<BeamInteraction::BeamToSphereContactPair<4, 1>>();
           }
           case 5:
           {
-            return std::make_shared<BEAMINTERACTION::BeamToSphereContactPair<5, 1>>();
+            return std::make_shared<BeamInteraction::BeamToSphereContactPair<5, 1>>();
           }
           default:
           {
@@ -137,7 +137,7 @@ std::shared_ptr<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPa
         {
           case 2:
           {
-            return std::make_shared<BEAMINTERACTION::BeamToSphereContactPair<2, 2>>();
+            return std::make_shared<BeamInteraction::BeamToSphereContactPair<2, 2>>();
           }
           default:
           {
@@ -171,14 +171,14 @@ std::shared_ptr<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPa
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactPair::check_init() const
+void BeamInteraction::BeamContactPair::check_init() const
 {
   if (not is_init()) FOUR_C_THROW("Call init() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactPair::check_init_setup() const
+void BeamInteraction::BeamContactPair::check_init_setup() const
 {
   if (not is_init() or not is_setup()) FOUR_C_THROW("Call init() and setup() first!");
 }

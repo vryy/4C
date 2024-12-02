@@ -154,7 +154,7 @@ namespace GEOMETRYPAIR
 }  // namespace GEOMETRYPAIR
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   // Forward declarations
   class BeamToSolidMortarManager;
@@ -275,7 +275,7 @@ namespace BEAMINTERACTION
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
       const int n_fourier_modes);
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

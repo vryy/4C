@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
-BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
+BeamInteraction::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
     Solid>::BeamToSolidPairBase()
     : BeamContactPair(), line_to_3D_segments_()
 {
@@ -36,7 +36,7 @@ BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
  *
  */
 template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::setup()
+void BeamInteraction::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::setup()
 {
   check_init();
 
@@ -103,7 +103,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, 
  *
  */
 template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::reset_state(
+void BeamInteraction::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::reset_state(
     const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& solid_nodal_dofvec)
 {
@@ -118,7 +118,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, 
  *
  */
 template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::
+void BeamInteraction::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::
     set_restart_displacement(const std::vector<std::vector<double>>& centerline_restart_vec_)
 {
   // Call the parent method.
@@ -129,7 +129,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, 
  *
  */
 template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::print(
+void BeamInteraction::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::print(
     std::ostream& out) const
 {
   check_init_setup();
@@ -149,7 +149,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, 
  *
  */
 template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
+void BeamInteraction::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
     Solid>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   check_init_setup();
@@ -178,7 +178,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
  *
  */
 template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
+void BeamInteraction::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
     Solid>::evaluate_beam_position_double(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                               integration_point,
     Core::LinAlg::Matrix<3, 1, double>& r_beam, bool reference) const
@@ -194,7 +194,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -331,6 +331,6 @@ namespace BEAMINTERACTION
   template class BeamToSolidPairBase<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>,
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

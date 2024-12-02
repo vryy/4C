@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::CrosslinkerMat::CrosslinkerMat(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
       link_element_matnum_(matdata.parameters.get<double>("MATNUM")),
-      jointtype_(Inpar::BEAMINTERACTION::string_to_joint_type(
+      jointtype_(Inpar::BeamInteraction::string_to_joint_type(
           (matdata.parameters.get<std::string>("JOINTTYPE")))),
       linkinglength_(matdata.parameters.get<double>("LINKINGLENGTH")),
       linkinglengthtol_(matdata.parameters.get<double>("LINKINGLENGTHTOL")),
@@ -30,7 +30,7 @@ Mat::PAR::CrosslinkerMat::CrosslinkerMat(const Core::Mat::PAR::Parameter::Data& 
       k_off_(matdata.parameters.get<double>("K_OFF")),
       deltabelleq_(matdata.parameters.get<double>("DELTABELLEQ")),
       nobonddistsphere(matdata.parameters.get<double>("NOBONDDISTSPHERE")),
-      linkertype_(Inpar::BEAMINTERACTION::string_to_crosslinker_type(
+      linkertype_(Inpar::BeamInteraction::string_to_crosslinker_type(
           (matdata.parameters.get<std::string>("TYPE"))))
 {
   if (link_element_matnum_ < 0)

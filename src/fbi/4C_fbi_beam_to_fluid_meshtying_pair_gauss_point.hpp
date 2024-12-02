@@ -24,7 +24,7 @@ namespace FBI
 {
   class PairFactory;
 }
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for beam to fluid meshtying using Gauss point projection.
@@ -69,7 +69,7 @@ namespace BEAMINTERACTION
     //! Scalar type for FAD variables.
     using scalar_type = typename base_class::scalar_type;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

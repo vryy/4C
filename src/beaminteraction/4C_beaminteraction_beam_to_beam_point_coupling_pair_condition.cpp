@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-bool BEAMINTERACTION::BeamToBeamPointCouplingCondition::ids_in_condition(
+bool BeamInteraction::BeamToBeamPointCouplingCondition::ids_in_condition(
     const int id_line, const int id_other) const
 {
   if (line_ids_.find(id_line) != line_ids_.end() and line_ids_.find(id_other) != line_ids_.end())
@@ -31,13 +31,13 @@ bool BEAMINTERACTION::BeamToBeamPointCouplingCondition::ids_in_condition(
 /**
  *
  */
-void BEAMINTERACTION::BeamToBeamPointCouplingCondition::clear() {}
+void BeamInteraction::BeamToBeamPointCouplingCondition::clear() {}
 
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToBeamPointCouplingCondition::create_contact_pair(
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::BeamToBeamPointCouplingCondition::create_contact_pair(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   {
@@ -45,7 +45,7 @@ BEAMINTERACTION::BeamToBeamPointCouplingCondition::create_contact_pair(
     if (!ids_in_condition(ele_ptrs[0]->id(), ele_ptrs[1]->id())) return nullptr;
 
     // Create the beam contact pair.
-    std::shared_ptr<BEAMINTERACTION::BeamContactPair> contact_pair =
+    std::shared_ptr<BeamInteraction::BeamContactPair> contact_pair =
         std::make_shared<BeamToBeamPointCouplingPair<GEOMETRYPAIR::t_hermite>>(
             rotational_penalty_parameter_, positional_penalty_parameter_,
             local_parameter_coordinates_);
@@ -57,7 +57,7 @@ BEAMINTERACTION::BeamToBeamPointCouplingCondition::create_contact_pair(
 /**
  *
  */
-void BEAMINTERACTION::BeamToBeamPointCouplingCondition::build_id_sets(
+void BeamInteraction::BeamToBeamPointCouplingCondition::build_id_sets(
     const std::shared_ptr<const Core::FE::Discretization>& discretization)
 {
   // Set the IDs of the nodes to be coupled

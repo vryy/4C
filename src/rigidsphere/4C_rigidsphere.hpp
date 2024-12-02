@@ -25,7 +25,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamLinkPinJointed;
 }
@@ -342,7 +342,7 @@ namespace Discret
       void scale_radius(double scalefac) { radius_ *= scalefac; };
 
       /// return binding spot xi function dummy
-      double get_binding_spot_xi(Inpar::BEAMINTERACTION::CrosslinkerType dummy1, int dummy2) const
+      double get_binding_spot_xi(Inpar::BeamInteraction::CrosslinkerType dummy1, int dummy2) const
       {
         return 0.0;
       }
@@ -366,7 +366,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 06/17 */
-      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> get_bond(int bond_id)
+      std::shared_ptr<BeamInteraction::BeamLinkPinJointed> get_bond(int bond_id)
       {
         return mybondstobeams_[bond_id];
       }
@@ -375,7 +375,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 06/17 */
-      std::map<int, std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed>> const& get_bond_map()
+      std::map<int, std::shared_ptr<BeamInteraction::BeamLinkPinJointed>> const& get_bond_map()
           const
       {
         return mybondstobeams_;
@@ -385,7 +385,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 06/17 */
-      void add_bond(int id, std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> newbondpartner)
+      void add_bond(int id, std::shared_ptr<BeamInteraction::BeamLinkPinJointed> newbondpartner)
       {
         mybondstobeams_[id] = newbondpartner;
       };
@@ -445,7 +445,7 @@ namespace Discret
 
       /// holds unique id of beam element binding spot to which sphere is bonded to (size equals
       /// number of bonds)
-      std::map<int, std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed>> mybondstobeams_;
+      std::map<int, std::shared_ptr<BeamInteraction::BeamLinkPinJointed>> mybondstobeams_;
 
       //@}
 

@@ -22,29 +22,29 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-BEAMINTERACTION::BeamLinkPinJointedType BEAMINTERACTION::BeamLinkPinJointedType::instance_;
+BeamInteraction::BeamLinkPinJointedType BeamInteraction::BeamLinkPinJointedType::instance_;
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLinkPinJointed::BeamLinkPinJointed() : BeamLink() {}
+BeamInteraction::BeamLinkPinJointed::BeamLinkPinJointed() : BeamLink() {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLinkPinJointed::BeamLinkPinJointed(
-    const BEAMINTERACTION::BeamLinkPinJointed& old)
-    : BEAMINTERACTION::BeamLink(old)
+BeamInteraction::BeamLinkPinJointed::BeamLinkPinJointed(
+    const BeamInteraction::BeamLinkPinJointed& old)
+    : BeamInteraction::BeamLink(old)
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::init(int id,
+void BeamInteraction::BeamLinkPinJointed::init(int id,
     const std::vector<std::pair<int, int>>& eleids,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
-    Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
+    Inpar::BeamInteraction::CrosslinkerType linkertype, double timelinkwasset)
 {
   issetup_ = false;
 
@@ -55,7 +55,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::init(int id,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::setup(const int matnum)
+void BeamInteraction::BeamLinkPinJointed::setup(const int matnum)
 {
   check_init();
 
@@ -64,7 +64,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::pack(Core::Communication::PackBuffer& data) const
+void BeamInteraction::BeamLinkPinJointed::pack(Core::Communication::PackBuffer& data) const
 {
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
@@ -77,7 +77,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::pack(Core::Communication::PackBuffer& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::unpack(Core::Communication::UnpackBuffer& buffer)
+void BeamInteraction::BeamLinkPinJointed::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -91,7 +91,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::unpack(Core::Communication::UnpackBuff
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::reset_state(
+void BeamInteraction::BeamLinkPinJointed::reset_state(
     std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
     std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad)
 {
@@ -102,13 +102,13 @@ void BEAMINTERACTION::BeamLinkPinJointed::reset_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> BEAMINTERACTION::BeamLinkPinJointed::create(
-    Inpar::BEAMINTERACTION::JointType type)
+std::shared_ptr<BeamInteraction::BeamLinkPinJointed> BeamInteraction::BeamLinkPinJointed::create(
+    Inpar::BeamInteraction::JointType type)
 {
-  if (type == Inpar::BEAMINTERACTION::beam3r_line2_pin)
-    return std::make_shared<BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed>();
-  else if (type == Inpar::BEAMINTERACTION::truss)
-    return std::make_shared<BEAMINTERACTION::BeamLinkTruss>();
+  if (type == Inpar::BeamInteraction::beam3r_line2_pin)
+    return std::make_shared<BeamInteraction::BeamLinkBeam3rLine2PinJointed>();
+  else if (type == Inpar::BeamInteraction::truss)
+    return std::make_shared<BeamInteraction::BeamLinkTruss>();
   else
     FOUR_C_THROW(
         "instantiation of new BeamLinkPinJointed object failed due to "
@@ -119,7 +119,7 @@ std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> BEAMINTERACTION::BeamLinkPi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::print(std::ostream& out) const
+void BeamInteraction::BeamLinkPinJointed::print(std::ostream& out) const
 {
   check_init();
 

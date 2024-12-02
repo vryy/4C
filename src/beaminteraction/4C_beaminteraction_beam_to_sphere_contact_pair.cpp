@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::BeamToSphereContactPair()
+BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::BeamToSphereContactPair()
     : beam_element_(nullptr), sphere_element_(nullptr), contactflag_(false)
 {
   // empty constructor
@@ -36,7 +36,7 @@ BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::BeamToSphere
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::setup()
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::setup()
 {
   check_init();
 
@@ -67,7 +67,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::setup()
         " must be a beam element!");
 
   // get radius and stress-free reference length of beam element
-  radius1_ = BEAMINTERACTION::calc_ele_radius(beam_element_);
+  radius1_ = BeamInteraction::calc_ele_radius(beam_element_);
   beamele_reflength_ = beam_element_->ref_length();
 
   // cast second element to RigidSphere
@@ -96,7 +96,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::setup()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::pre_evaluate()
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::pre_evaluate()
 {
   // do nothing
   return;
@@ -107,7 +107,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::pre_eva
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluate(
+bool BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
@@ -308,7 +308,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::closest_point_projection()
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::closest_point_projection()
 {
   // local variable for beam element coordinate
   TYPE eta = 0.0;
@@ -420,7 +420,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::closest
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
+void BeamInteraction::BeamToSphereContactPair<numnodes,
     numnodalvalues>::evaluate_orthogonality_condition(TYPE& f,
     const Core::LinAlg::Matrix<3, 1, TYPE>& delta_x, const double norm_delta_x,
     const Core::LinAlg::Matrix<3, 1, TYPE>& dx1)
@@ -442,7 +442,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
+void BeamInteraction::BeamToSphereContactPair<numnodes,
     numnodalvalues>::evaluate_lin_orthogonality_condition(TYPE& df,
     Core::LinAlg::Matrix<3, 1, TYPE>& delta_x, const double norm_delta_x,
     const Core::LinAlg::Matrix<3, 1, TYPE>& dx1, const Core::LinAlg::Matrix<3, 1, TYPE>& ddx1)
@@ -464,7 +464,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
+void BeamInteraction::BeamToSphereContactPair<numnodes,
     numnodalvalues>::check_and_set_contact_status()
 {
   // check contact condition
@@ -474,7 +474,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluate_fc_contact(
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluate_fc_contact(
     Core::LinAlg::SerialDenseVector& forcevec1, Core::LinAlg::SerialDenseVector& forcevec2,
     const double& pp, const TYPE& gap, const Core::LinAlg::Matrix<3, 1, TYPE>& normal,
     const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i, const bool contactactive)
@@ -536,7 +536,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluate_stiffc_contact(
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluate_stiffc_contact(
     Core::LinAlg::SerialDenseMatrix& stiffmat11, Core::LinAlg::SerialDenseMatrix& stiffmat12,
     Core::LinAlg::SerialDenseMatrix& stiffmat21, Core::LinAlg::SerialDenseMatrix& stiffmat22,
     const double& pp, const TYPE& gap, const Core::LinAlg::Matrix<3, 1, TYPE>& normal,
@@ -803,7 +803,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_normal(
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_normal(
     Core::LinAlg::Matrix<3, 1, TYPE>& normal, TYPE& gap, TYPE& norm,
     const Core::LinAlg::Matrix<3, 1, TYPE>& x1, const Core::LinAlg::Matrix<3, 1, TYPE>& x2)
 {
@@ -830,7 +830,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_gap(
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_gap(
     TYPE& gap, const TYPE& norm)
 {
   // compute gap to be returned
@@ -843,7 +843,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_coords_and_derivs(
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_coords_and_derivs(
     Core::LinAlg::Matrix<3, 1, TYPE>& x1, Core::LinAlg::Matrix<3, 1, TYPE>& x2,
     Core::LinAlg::Matrix<3, 1, TYPE>& dx1, Core::LinAlg::Matrix<3, 1, TYPE>& ddx1,
     const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
@@ -893,7 +893,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::get_shape_functions(
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::get_shape_functions(
     Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
     Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
     Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, const TYPE& eta)
@@ -930,7 +930,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::get_sha
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_lin_xi(
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_lin_xi(
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
     const Core::LinAlg::Matrix<3, 1, TYPE>& x1, const Core::LinAlg::Matrix<3, 1, TYPE>& x2,
     const Core::LinAlg::Matrix<3, 1, TYPE>& dx1, const Core::LinAlg::Matrix<3, 1, TYPE>& ddx1,
@@ -978,7 +978,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_distance(
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_distance(
     Core::LinAlg::Matrix<3, 1, TYPE>& distance, TYPE& normdist,
     const Core::LinAlg::Matrix<3, 1, TYPE>& normal, const TYPE& norm)
 {
@@ -994,7 +994,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_lin_gap(
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_lin_gap(
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_gap,
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
     const Core::LinAlg::Matrix<3, 1, TYPE>& x1, const Core::LinAlg::Matrix<3, 1, TYPE>& x2,
@@ -1048,7 +1048,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_lin_normal(
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_lin_normal(
     Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE>& delta_normal,
     const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
     const Core::LinAlg::Matrix<3, 1, TYPE>& normal, const TYPE& norm_delta_x,
@@ -1108,7 +1108,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::reset_state(
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::reset_state(
     const std::vector<double>& centerline_dofvec_ele1,
     const std::vector<double>& centerline_dofvec_ele2)
 {
@@ -1129,7 +1129,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::reset_s
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::print(
+void BeamInteraction::BeamToSphereContactPair<numnodes, numnodalvalues>::print(
     std::ostream& out) const
 {
   // ToDo add further information here
@@ -1149,7 +1149,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::print(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
+void BeamInteraction::BeamToSphereContactPair<numnodes,
     numnodalvalues>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   check_init_setup();
@@ -1174,10 +1174,10 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
 }
 
 // explicit template instantiations
-template class BEAMINTERACTION::BeamToSphereContactPair<2, 1>;
-template class BEAMINTERACTION::BeamToSphereContactPair<3, 1>;
-template class BEAMINTERACTION::BeamToSphereContactPair<4, 1>;
-template class BEAMINTERACTION::BeamToSphereContactPair<5, 1>;
-template class BEAMINTERACTION::BeamToSphereContactPair<2, 2>;
+template class BeamInteraction::BeamToSphereContactPair<2, 1>;
+template class BeamInteraction::BeamToSphereContactPair<3, 1>;
+template class BeamInteraction::BeamToSphereContactPair<4, 1>;
+template class BeamInteraction::BeamToSphereContactPair<5, 1>;
+template class BeamInteraction::BeamToSphereContactPair<2, 2>;
 
 FOUR_C_NAMESPACE_CLOSE

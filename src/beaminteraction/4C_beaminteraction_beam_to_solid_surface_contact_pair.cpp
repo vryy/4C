@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam,
+BeamInteraction::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam,
     Surface>::BeamToSolidSurfaceContactPairGapVariation()
     : base_class()
 {
@@ -42,7 +42,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam,
+void BeamInteraction::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam,
     Surface>::evaluate_and_assemble(const std::shared_ptr<const Core::FE::Discretization>& discret,
     const std::shared_ptr<Epetra_FEVector>& force_vector,
     const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -158,7 +158,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
+BeamInteraction::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
     Surface>::BeamToSolidSurfaceContactPairPotential()
     : base_class()
 {
@@ -169,7 +169,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
+void BeamInteraction::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
     Surface>::evaluate_and_assemble(const std::shared_ptr<const Core::FE::Discretization>& discret,
     const std::shared_ptr<Epetra_FEVector>& force_vector,
     const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -250,7 +250,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -307,6 +307,6 @@ namespace BEAMINTERACTION
   template class BeamToSolidSurfaceContactPairPotential<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

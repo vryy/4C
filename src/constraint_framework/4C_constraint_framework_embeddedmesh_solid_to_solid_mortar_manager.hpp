@@ -26,10 +26,6 @@ namespace Core::LinAlg
 {
   class SparseMatrix;
 }  // namespace Core::LinAlg
-namespace DRT
-{
-  class Discretization;
-}  // namespace DRT
 namespace Core::IO
 {
   class VisualizationManager;

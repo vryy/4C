@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename Beam, typename Surface>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
+BeamInteraction::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
     Surface>::BeamToSolidSurfaceMeshtyingPairGaussPoint()
     : base_class()
 {
@@ -36,7 +36,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
  *
  */
 template <typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
+void BeamInteraction::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
     Surface>::evaluate_and_assemble(const std::shared_ptr<const Core::FE::Discretization>& discret,
     const std::shared_ptr<Epetra_FEVector>& force_vector,
     const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -134,7 +134,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -144,6 +144,6 @@ namespace BEAMINTERACTION
   template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad8>;
   template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad9>;
   template class BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_nurbs9>;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

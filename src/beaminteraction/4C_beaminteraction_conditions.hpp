@@ -33,7 +33,7 @@ namespace Core::Elements
   class Element;
 }
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamContactPair;
   class BeamContactParams;
@@ -41,7 +41,7 @@ namespace BEAMINTERACTION
   {
     class BeamContactAssemblyManager;
   }
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 namespace GEOMETRYPAIR
 {
   class GeometryEvaluationDataBase;
@@ -55,7 +55,7 @@ namespace Solid
 }  // namespace Solid
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief This abstract base class represents a single beam interaction condition.
@@ -82,7 +82,7 @@ namespace BEAMINTERACTION
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
      * @return Pointer to the created pair.
      */
-    virtual std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair(
+    virtual std::shared_ptr<BeamInteraction::BeamContactPair> create_contact_pair(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) = 0;
 
     /**
@@ -204,7 +204,7 @@ namespace BEAMINTERACTION
      *
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
      */
-    std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair(
+    std::shared_ptr<BeamInteraction::BeamContactPair> create_contact_pair(
         const std::vector<Core::Elements::Element const*>& ele_ptrs);
 
     /**
@@ -216,13 +216,13 @@ namespace BEAMINTERACTION
     void create_indirect_assembly_managers(
         const std::shared_ptr<const Core::FE::Discretization>& discret,
         std::vector<
-            std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
+            std::shared_ptr<BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
             assembly_managers);
 
     /**
      * \brief Return a const reference to the condition map.
      */
-    inline const std::map<Inpar::BEAMINTERACTION::BeamInteractionConditions,
+    inline const std::map<Inpar::BeamInteraction::BeamInteractionConditions,
         std::vector<std::shared_ptr<BeamInteractionConditionBase>>>&
     get_condition_map() const
     {
@@ -232,7 +232,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Return a mutable reference to the condition map.
      */
-    inline std::map<Inpar::BEAMINTERACTION::BeamInteractionConditions,
+    inline std::map<Inpar::BeamInteraction::BeamInteractionConditions,
         std::vector<std::shared_ptr<BeamInteractionConditionBase>>>&
     get_condition_map()
     {
@@ -265,7 +265,7 @@ namespace BEAMINTERACTION
     //! A map containing all types of beam interaction conditions. The map keys are the beam
     //! interaction type, the values are vectors with conditions (since we can have multiple
     //! conditions of the same interaction type).
-    std::map<Inpar::BEAMINTERACTION::BeamInteractionConditions,
+    std::map<Inpar::BeamInteraction::BeamInteractionConditions,
         std::vector<std::shared_ptr<BeamInteractionConditionBase>>>
         condition_map_;
   };
@@ -279,7 +279,7 @@ namespace BEAMINTERACTION
   void condition_to_element_ids(
       const Core::Conditions::Condition& condition, std::vector<int>& element_ids);
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::pre_evaluate()
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::pre_evaluate()
 {
   // Call pre_evaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
@@ -43,7 +43,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::pre_
  *
  */
 template <typename Beam, typename Solid>
-bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::evaluate(
+bool BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
@@ -196,7 +196,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::eval
  *
  */
 template <typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::get_triad_at_xi_double(
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::get_triad_at_xi_double(
     const double xi, Core::LinAlg::Matrix<3, 3, double>& triad, const bool reference) const
 {
   if (reference)
@@ -217,7 +217,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::get_
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -226,6 +226,6 @@ namespace BEAMINTERACTION
   template class BeamToSolidVolumeMeshtyingPair2D3DPlane<t_hermite, t_hex27>;
   template class BeamToSolidVolumeMeshtyingPair2D3DPlane<t_hermite, t_tet4>;
   template class BeamToSolidVolumeMeshtyingPair2D3DPlane<t_hermite, t_tet10>;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

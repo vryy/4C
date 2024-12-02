@@ -30,7 +30,7 @@ namespace Discret
   }
 }  // namespace Discret
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamLinkTrussType : public Core::Communication::ParObjectType
   {
@@ -76,7 +76,7 @@ namespace BEAMINTERACTION
     void init(int id, const std::vector<std::pair<int, int>>& eleids,
         const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
         const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
-        Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset) override;
+        Inpar::BeamInteraction::CrosslinkerType linkertype, double timelinkwasset) override;
 
     //! Setup [derived]
     void setup(const int matnum) override;
@@ -191,7 +191,7 @@ namespace BEAMINTERACTION
     //@}
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

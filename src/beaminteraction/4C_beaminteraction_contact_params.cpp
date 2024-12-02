@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamContactParams::BeamContactParams()
+BeamInteraction::BeamContactParams::BeamContactParams()
     : beam_to_beam_contact_params_(nullptr),
       beam_to_sphere_contact_params_(nullptr),
       beam_to_solid_volume_meshtying_params_(nullptr),
@@ -32,9 +32,9 @@ BEAMINTERACTION::BeamContactParams::BeamContactParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::build_beam_to_beam_contact_params()
+void BeamInteraction::BeamContactParams::build_beam_to_beam_contact_params()
 {
-  beam_to_beam_contact_params_ = std::make_shared<BEAMINTERACTION::BeamToBeamContactParams>();
+  beam_to_beam_contact_params_ = std::make_shared<BeamInteraction::BeamToBeamContactParams>();
   beam_to_beam_contact_params_->init();
   beam_to_beam_contact_params_->setup();
 }
@@ -42,11 +42,11 @@ void BEAMINTERACTION::BeamContactParams::build_beam_to_beam_contact_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::build_beam_contact_runtime_output_params(
+void BeamInteraction::BeamContactParams::build_beam_contact_runtime_output_params(
     const double restart_time)
 {
   beam_contact_runtime_output_params_ =
-      std::make_shared<BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams>(restart_time);
+      std::make_shared<BeamInteraction::BeamContactRuntimeVisualizationOutputParams>(restart_time);
   beam_contact_runtime_output_params_->init();
   beam_contact_runtime_output_params_->setup();
 }
@@ -54,9 +54,9 @@ void BEAMINTERACTION::BeamContactParams::build_beam_contact_runtime_output_param
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::build_beam_to_sphere_contact_params()
+void BeamInteraction::BeamContactParams::build_beam_to_sphere_contact_params()
 {
-  beam_to_sphere_contact_params_ = std::make_shared<BEAMINTERACTION::BeamToSphereContactParams>();
+  beam_to_sphere_contact_params_ = std::make_shared<BeamInteraction::BeamToSphereContactParams>();
   beam_to_sphere_contact_params_->init();
   beam_to_sphere_contact_params_->setup();
 }
@@ -64,30 +64,30 @@ void BEAMINTERACTION::BeamContactParams::build_beam_to_sphere_contact_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::build_beam_to_solid_volume_meshtying_params()
+void BeamInteraction::BeamContactParams::build_beam_to_solid_volume_meshtying_params()
 {
   beam_to_solid_volume_meshtying_params_ =
-      std::make_shared<BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>();
+      std::make_shared<BeamInteraction::BeamToSolidVolumeMeshtyingParams>();
   beam_to_solid_volume_meshtying_params_->init();
   beam_to_solid_volume_meshtying_params_->setup();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::build_beam_to_solid_surface_meshtying_params()
+void BeamInteraction::BeamContactParams::build_beam_to_solid_surface_meshtying_params()
 {
   beam_to_solid_surface_meshtying_params_ =
-      std::make_shared<BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>();
+      std::make_shared<BeamInteraction::BeamToSolidSurfaceMeshtyingParams>();
   beam_to_solid_surface_meshtying_params_->init();
   beam_to_solid_surface_meshtying_params_->setup();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::build_beam_to_solid_surface_contact_params()
+void BeamInteraction::BeamContactParams::build_beam_to_solid_surface_contact_params()
 {
   beam_to_solid_surface_contact_params_ =
-      std::make_shared<BEAMINTERACTION::BeamToSolidSurfaceContactParams>();
+      std::make_shared<BeamInteraction::BeamToSolidSurfaceContactParams>();
   beam_to_solid_surface_contact_params_->init();
   beam_to_solid_surface_contact_params_->setup();
 }

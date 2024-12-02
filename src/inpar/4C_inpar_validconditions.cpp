@@ -939,9 +939,9 @@ Input::valid_conditions()
   Inpar::PARTICLE::set_valid_conditions(condlist);
   Inpar::LevelSet::set_valid_conditions(condlist);
   Inpar::EleMag::set_valid_conditions(condlist);
-  Inpar::BEAMPOTENTIAL::set_valid_conditions(condlist);
+  Inpar::BeamPotential::set_valid_conditions(condlist);
   Inpar::RveMpc::set_valid_conditions(condlist);
-  Inpar::BEAMINTERACTION::set_valid_conditions(condlist);
+  Inpar::BeamInteraction::set_valid_conditions(condlist);
   Inpar::EHL::set_valid_conditions(condlist);
   Inpar::PoroMultiPhaseScaTra::set_valid_conditions(condlist);
 

@@ -30,7 +30,7 @@ namespace Core::FE
   class Discretization;
 }  // namespace Core::FE
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Object to write visualization for beam-to-solid interactions.
@@ -95,7 +95,7 @@ namespace BEAMINTERACTION
     std::shared_ptr<Epetra_Map> node_gid_map_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

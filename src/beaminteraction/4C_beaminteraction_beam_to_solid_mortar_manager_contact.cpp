@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidMortarManagerContact::BeamToSolidMortarManagerContact(
+BeamInteraction::BeamToSolidMortarManagerContact::BeamToSolidMortarManagerContact(
     const std::shared_ptr<const Core::FE::Discretization>& discret,
-    const std::shared_ptr<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
+    const std::shared_ptr<const BeamInteraction::BeamToSolidParamsBase>& params,
     int start_value_lambda_gid)
     : BeamToSolidMortarManager(discret, params, start_value_lambda_gid)
 {
@@ -35,12 +35,12 @@ BEAMINTERACTION::BeamToSolidMortarManagerContact::BeamToSolidMortarManagerContac
  */
 std::tuple<std::shared_ptr<Core::LinAlg::Vector<double>>,
     std::shared_ptr<Core::LinAlg::Vector<double>>, std::shared_ptr<Core::LinAlg::Vector<double>>>
-BEAMINTERACTION::BeamToSolidMortarManagerContact::get_penalty_regularization(
+BeamInteraction::BeamToSolidMortarManagerContact::get_penalty_regularization(
     const bool compute_linearization) const
 {
   using fad_type = fad_type_1st_order_2_variables;
   const auto beam_to_solid_conact_params =
-      std::dynamic_pointer_cast<const BEAMINTERACTION::BeamToSolidSurfaceContactParams>(
+      std::dynamic_pointer_cast<const BeamInteraction::BeamToSolidSurfaceContactParams>(
           beam_to_solid_params_);
 
   // Get the penalty regularized Lagrange multipliers and the derivative w.r.t. the constraint

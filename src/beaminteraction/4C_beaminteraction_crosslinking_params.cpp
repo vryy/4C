@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::CrosslinkingParams::CrosslinkingParams()
+BeamInteraction::CrosslinkingParams::CrosslinkingParams()
     : isinit_(false), issetup_(false), viscosity_(0.0), kt_(0.0), deltatime_(0.0), init_box_(true)
 {
   maxnum_init_crosslinker_pertype_.clear();
@@ -35,7 +35,7 @@ BEAMINTERACTION::CrosslinkingParams::CrosslinkingParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalState const& gstate)
+void BeamInteraction::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalState const& gstate)
 {
   issetup_ = false;
 
@@ -361,7 +361,7 @@ void BEAMINTERACTION::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::CrosslinkingParams::setup()
+void BeamInteraction::CrosslinkingParams::setup()
 {
   check_init();
 

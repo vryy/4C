@@ -18,7 +18,7 @@ namespace Inpar
 {
   namespace IORuntimeOutput
   {
-    namespace BEAMS
+    namespace Beam
     {
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
@@ -116,7 +116,7 @@ namespace Inpar
             "Number of subsegments along a single beam element for visualization",
             &sublist_IO_output_beams);
       }
-    }  // namespace BEAMS
+    }  // namespace Beam
   }    // namespace IORuntimeOutput
 }  // namespace Inpar
 

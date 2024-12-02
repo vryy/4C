@@ -21,17 +21,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType
-    BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::instance_;
+BeamInteraction::BeamLinkBeam3rLine2PinJointedType
+    BeamInteraction::BeamLinkBeam3rLine2PinJointedType::instance_;
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Communication::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::create(
+Core::Communication::ParObject* BeamInteraction::BeamLinkBeam3rLine2PinJointedType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed* my_beam3rline2 =
-      new BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed();
+  BeamInteraction::BeamLinkBeam3rLine2PinJointed* my_beam3rline2 =
+      new BeamInteraction::BeamLinkBeam3rLine2PinJointed();
   my_beam3rline2->unpack(buffer);
   return my_beam3rline2;
 }
@@ -39,7 +39,7 @@ Core::Communication::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedTy
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::BeamLinkBeam3rLine2PinJointed()
+BeamInteraction::BeamLinkBeam3rLine2PinJointed::BeamLinkBeam3rLine2PinJointed()
     : BeamLinkPinJointed(),
       triad_(true),
       linkele_(nullptr),
@@ -49,9 +49,9 @@ BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::BeamLinkBeam3rLine2PinJointed()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::BeamLinkBeam3rLine2PinJointed(
-    const BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed& old)
-    : BEAMINTERACTION::BeamLinkPinJointed(old),
+BeamInteraction::BeamLinkBeam3rLine2PinJointed::BeamLinkBeam3rLine2PinJointed(
+    const BeamInteraction::BeamLinkBeam3rLine2PinJointed& old)
+    : BeamInteraction::BeamLinkPinJointed(old),
       triad_(old.triad_),
       bspotforces_(2, Core::LinAlg::SerialDenseVector(true))
 {
@@ -64,21 +64,21 @@ BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::BeamLinkBeam3rLine2PinJointed(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::shared_ptr<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::clone()
+std::shared_ptr<BeamInteraction::BeamLink> BeamInteraction::BeamLinkBeam3rLine2PinJointed::clone()
     const
 {
-  std::shared_ptr<BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed> newlinker =
-      std::make_shared<BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed>(*this);
+  std::shared_ptr<BeamInteraction::BeamLinkBeam3rLine2PinJointed> newlinker =
+      std::make_shared<BeamInteraction::BeamLinkBeam3rLine2PinJointed>(*this);
   return newlinker;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::init(int id,
+void BeamInteraction::BeamLinkBeam3rLine2PinJointed::init(int id,
     const std::vector<std::pair<int, int>>& eleids,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
-    Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
+    Inpar::BeamInteraction::CrosslinkerType linkertype, double timelinkwasset)
 {
   issetup_ = false;
 
@@ -201,7 +201,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::init(int id,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::setup(const int matnum)
+void BeamInteraction::BeamLinkBeam3rLine2PinJointed::setup(const int matnum)
 {
   check_init();
 
@@ -258,7 +258,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::pack(
+void BeamInteraction::BeamLinkBeam3rLine2PinJointed::pack(
     Core::Communication::PackBuffer& data) const
 {
   check_init_setup();
@@ -279,7 +279,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::pack(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::unpack(
+void BeamInteraction::BeamLinkBeam3rLine2PinJointed::unpack(
     Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
@@ -308,7 +308,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::unpack(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::evaluate_force(
+bool BeamInteraction::BeamLinkBeam3rLine2PinJointed::evaluate_force(
     Core::LinAlg::SerialDenseVector& forcevec1, Core::LinAlg::SerialDenseVector& forcevec2)
 {
   check_init_setup();
@@ -336,7 +336,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::evaluate_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::evaluate_stiff(
+bool BeamInteraction::BeamLinkBeam3rLine2PinJointed::evaluate_stiff(
     Core::LinAlg::SerialDenseMatrix& stiffmat11, Core::LinAlg::SerialDenseMatrix& stiffmat12,
     Core::LinAlg::SerialDenseMatrix& stiffmat21, Core::LinAlg::SerialDenseMatrix& stiffmat22)
 {
@@ -378,7 +378,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::evaluate_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::evaluate_force_stiff(
+bool BeamInteraction::BeamLinkBeam3rLine2PinJointed::evaluate_force_stiff(
     Core::LinAlg::SerialDenseVector& forcevec1, Core::LinAlg::SerialDenseVector& forcevec2,
     Core::LinAlg::SerialDenseMatrix& stiffmat11, Core::LinAlg::SerialDenseMatrix& stiffmat12,
     Core::LinAlg::SerialDenseMatrix& stiffmat21, Core::LinAlg::SerialDenseMatrix& stiffmat22)
@@ -423,7 +423,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::evaluate_force_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::reset_state(
+void BeamInteraction::BeamLinkBeam3rLine2PinJointed::reset_state(
     std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
     std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad)
 {
@@ -570,7 +570,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::reset_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::fill_state_variables_for_element_evaluation(
+void BeamInteraction::BeamLinkBeam3rLine2PinJointed::fill_state_variables_for_element_evaluation(
     Core::LinAlg::Matrix<6, 1, double>& disp_totlag_centerline,
     std::vector<Core::LinAlg::Matrix<4, 1, double>>& Qnode) const
 {
@@ -586,7 +586,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::fill_state_variables_for_el
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::get_binding_spot_force(
+void BeamInteraction::BeamLinkBeam3rLine2PinJointed::get_binding_spot_force(
     int bspotid, Core::LinAlg::SerialDenseVector& bspotforce) const
 {
   bspotforce = bspotforces_[bspotid];
@@ -594,14 +594,14 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::get_binding_spot_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::get_internal_energy() const
+double BeamInteraction::BeamLinkBeam3rLine2PinJointed::get_internal_energy() const
 {
   return linkele_->get_internal_energy();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::get_kinetic_energy() const
+double BeamInteraction::BeamLinkBeam3rLine2PinJointed::get_kinetic_energy() const
 {
   return linkele_->get_kinetic_energy();
 }

@@ -24,7 +24,7 @@ namespace GEOMETRYPAIR
 }  // namespace GEOMETRYPAIR
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Base class for 2D-3D beam to solid volume mesh tying
@@ -98,7 +98,7 @@ namespace BEAMINTERACTION
     virtual void get_triad_at_xi_double(
         const double xi, Core::LinAlg::Matrix<3, 3, double>& triad, const bool reference) const = 0;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

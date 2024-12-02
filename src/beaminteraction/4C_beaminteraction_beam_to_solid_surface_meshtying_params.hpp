@@ -17,12 +17,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declaration.
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidSurfaceVisualizationOutputParams;
 }
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for beam to solid meshtying parameters.
@@ -127,7 +127,7 @@ namespace BEAMINTERACTION
     Inpar::BeamToSolid::BeamToSolidSurfaceRotationCoupling rotational_coupling_triad_construction_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

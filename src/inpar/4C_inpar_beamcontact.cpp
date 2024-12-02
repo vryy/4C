@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::BEAMCONTACT::set_valid_parameters(Teuchos::ParameterList& list)
+void Inpar::BeamContact::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -22,16 +22,16 @@ void Inpar::BEAMCONTACT::set_valid_parameters(Teuchos::ParameterList& list)
 
   Teuchos::ParameterList& beamcontact = list.sublist("BEAM CONTACT", false, "");
 
-  setStringToIntegralParameter<Inpar::BEAMCONTACT::Strategy>("BEAMS_STRATEGY", "None",
+  setStringToIntegralParameter<Inpar::BeamContact::Strategy>("BEAMS_STRATEGY", "None",
       "Type of employed solving strategy",
       tuple<std::string>("None", "none", "Penalty", "penalty", "Gmshonly", "gmshonly"),
-      tuple<Inpar::BEAMCONTACT::Strategy>(
+      tuple<Inpar::BeamContact::Strategy>(
           bstr_none, bstr_none, bstr_penalty, bstr_penalty, bstr_gmshonly, bstr_gmshonly),
       &beamcontact);
 
-  setStringToIntegralParameter<Inpar::BEAMCONTACT::Modelevaluator>("MODELEVALUATOR", "old",
+  setStringToIntegralParameter<Inpar::BeamContact::Modelevaluator>("MODELEVALUATOR", "old",
       "Type of model evaluator", tuple<std::string>("Old", "old", "Standard", "standard"),
-      tuple<Inpar::BEAMCONTACT::Modelevaluator>(bstr_old, bstr_old, bstr_standard, bstr_standard),
+      tuple<Inpar::BeamContact::Modelevaluator>(bstr_old, bstr_old, bstr_standard, bstr_standard),
       &beamcontact);
 
   Core::Utils::bool_parameter(
@@ -56,13 +56,13 @@ void Inpar::BEAMCONTACT::set_valid_parameters(Teuchos::ParameterList& list)
   Core::Utils::bool_parameter("BEAMS_ENDPOINTPENALTY", "No",
       "Additional consideration of endpoint-line and endpoint-endpoint contacts", &beamcontact);
 
-  setStringToIntegralParameter<Inpar::BEAMCONTACT::Smoothing>("BEAMS_SMOOTHING", "None",
+  setStringToIntegralParameter<Inpar::BeamContact::Smoothing>("BEAMS_SMOOTHING", "None",
       "Application of smoothed tangent field", tuple<std::string>("None", "none", "Cpp", "cpp"),
-      tuple<Inpar::BEAMCONTACT::Smoothing>(bsm_none, bsm_none, bsm_cpp, bsm_cpp), &beamcontact);
+      tuple<Inpar::BeamContact::Smoothing>(bsm_none, bsm_none, bsm_cpp, bsm_cpp), &beamcontact);
 
-  setStringToIntegralParameter<Inpar::BEAMCONTACT::Damping>("BEAMS_DAMPING", "No",
+  setStringToIntegralParameter<Inpar::BeamContact::Damping>("BEAMS_DAMPING", "No",
       "Application of a contact damping force", tuple<std::string>("No", "no", "Yes", "yes"),
-      tuple<Inpar::BEAMCONTACT::Damping>(bd_no, bd_no, bd_yes, bd_yes), &beamcontact);
+      tuple<Inpar::BeamContact::Damping>(bd_no, bd_no, bd_yes, bd_yes), &beamcontact);
 
   Core::Utils::double_parameter("BEAMS_BTBPENALTYPARAM", 0.0,
       "Penalty parameter for beam-to-beam point contact", &beamcontact);
@@ -98,11 +98,11 @@ void Inpar::BEAMCONTACT::set_valid_parameters(Teuchos::ParameterList& list)
   Core::Utils::int_parameter("BEAMS_NUMINTEGRATIONINTERVAL", 1,
       "Number of integration intervals per element", &beamcontact);
 
-  setStringToIntegralParameter<Inpar::BEAMCONTACT::PenaltyLaw>("BEAMS_PENALTYLAW", "LinPen",
+  setStringToIntegralParameter<Inpar::BeamContact::PenaltyLaw>("BEAMS_PENALTYLAW", "LinPen",
       "Applied Penalty Law",
       tuple<std::string>("LinPen", "QuadPen", "LinNegQuadPen", "LinPosQuadPen", "LinPosCubPen",
           "LinPosDoubleQuadPen", "LinPosExpPen"),
-      tuple<Inpar::BEAMCONTACT::PenaltyLaw>(
+      tuple<Inpar::BeamContact::PenaltyLaw>(
           pl_lp, pl_qp, pl_lnqp, pl_lpqp, pl_lpcp, pl_lpdqp, pl_lpep),
       &beamcontact);
 
@@ -125,11 +125,11 @@ void Inpar::BEAMCONTACT::set_valid_parameters(Teuchos::ParameterList& list)
 
   // enable octree search and determine type of bounding box (aabb = axis aligned, cobb =
   // cylindrical oriented)
-  setStringToIntegralParameter<Inpar::BEAMCONTACT::OctreeType>("BEAMS_OCTREE", "None",
+  setStringToIntegralParameter<Inpar::BeamContact::OctreeType>("BEAMS_OCTREE", "None",
       "octree and bounding box type for octree search routine",
       tuple<std::string>(
           "None", "none", "octree_axisaligned", "octree_cylorient", "octree_spherical"),
-      tuple<Inpar::BEAMCONTACT::OctreeType>(boct_none, boct_none, boct_aabb, boct_cobb, boct_spbb),
+      tuple<Inpar::BeamContact::OctreeType>(boct_none, boct_none, boct_aabb, boct_cobb, boct_spbb),
       &beamcontact);
 
   Core::Utils::bool_parameter("BEAMS_ADDITEXT", "Yes",
@@ -175,7 +175,7 @@ void Inpar::BEAMCONTACT::set_valid_parameters(Teuchos::ParameterList& list)
 /**
  *
  */
-void Inpar::BEAMCONTACT::set_valid_conditions(
+void Inpar::BeamContact::set_valid_conditions(
     std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;

@@ -527,7 +527,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Discret::Element
   // set element id
   eid_ = ele->id();
 
-  // call inner evaluate (does not know about DRT element or discretization object)
+  // call inner evaluate (does not know about element or discretization object)
   int result = evaluate(params, ebofoaf_, eprescpgaf_, ebofon_, eprescpgn_, elemat1, elemat2,
       elevec1, evelaf_, epreaf_, evelam_, epream_, eprenp_, evelnp_, escaaf_, emhist_, eaccam_,
       escadtam_, eveldtam_, epredtam_, escabofoaf_, escabofon_, eveln_, epren_, escaam_, edispnp_,

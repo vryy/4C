@@ -195,7 +195,7 @@ void FSI::DirichletNeumannVel::timeloop(
   constraint_manager_->setup(structure_field(), mb_fluid_field());
   if (get_kinematic_coupling()) constraint_manager_->prepare_fluid_solve();
   visualization_output_writer_ =
-      std::make_shared<BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter>(
+      std::make_shared<BeamInteraction::BeamToFluidMeshtyingVtkOutputWriter>(
           Core::IO::visualization_parameters_factory(
               Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
               *Global::Problem::instance()->output_control_file(), time()),

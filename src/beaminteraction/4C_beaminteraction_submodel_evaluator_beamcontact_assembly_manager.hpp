@@ -29,7 +29,7 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamContactPair;
 }
@@ -42,7 +42,7 @@ namespace Solid
 }  // namespace Solid
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   namespace SUBMODELEVALUATOR
   {
@@ -87,7 +87,7 @@ namespace BEAMINTERACTION
     };
 
   }  // namespace SUBMODELEVALUATOR
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

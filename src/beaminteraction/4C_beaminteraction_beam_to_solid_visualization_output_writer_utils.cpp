@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-void BEAMINTERACTION::add_beam_interaction_nodal_forces(
-    const std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
+void BeamInteraction::add_beam_interaction_nodal_forces(
+    const std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>& visualization,
     const std::shared_ptr<const Core::FE::Discretization>& discret_ptr,
     const std::shared_ptr<const Core::LinAlg::MultiVector<double>>& displacement,
     const Core::LinAlg::MultiVector<double>& force, const bool write_unique_ids)
@@ -40,7 +40,7 @@ void BEAMINTERACTION::add_beam_interaction_nodal_forces(
     gid_node.clear();
     Core::Nodes::Node* current_node = discret_ptr->l_row_node(i_lid);
     discret_ptr->dof(current_node, gid_node);
-    if (BEAMINTERACTION::Utils::is_beam_node(*current_node))
+    if (BeamInteraction::Utils::is_beam_node(*current_node))
       for (unsigned int dim = 0; dim < 3; ++dim) gid_beam_dof.push_back(gid_node[dim]);
     else
       for (unsigned int dim = 0; dim < 3; ++dim) gid_solid_dof.push_back(gid_node[dim]);
@@ -71,8 +71,8 @@ void BEAMINTERACTION::add_beam_interaction_nodal_forces(
 /**
  *
  */
-void BEAMINTERACTION::add_averaged_nodal_normals(
-    BEAMINTERACTION::BeamToSolidOutputWriterVisualization& output_writer_base_ptr,
+void BeamInteraction::add_averaged_nodal_normals(
+    BeamInteraction::BeamToSolidOutputWriterVisualization& output_writer_base_ptr,
     const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements,
     const int condition_coupling_id, const bool write_unique_ids)
 {
@@ -139,7 +139,7 @@ void BEAMINTERACTION::add_averaged_nodal_normals(
 /**
  *
  */
-void BEAMINTERACTION::get_global_coupling_force_resultants(const Core::FE::Discretization& discret,
+void BeamInteraction::get_global_coupling_force_resultants(const Core::FE::Discretization& discret,
     const Core::LinAlg::MultiVector<double>& force,
     const Core::LinAlg::MultiVector<double>& displacement,
     Core::LinAlg::Matrix<3, 2, double>& beam_resultant,
@@ -165,9 +165,9 @@ void BEAMINTERACTION::get_global_coupling_force_resultants(const Core::FE::Discr
     Core::FE::extract_my_values(displacement, local_position, gid_node);
     for (unsigned int dim = 0; dim < 3; ++dim) local_position[dim] += current_node->x()[dim];
 
-    if (BEAMINTERACTION::Utils::is_beam_node(*current_node))
+    if (BeamInteraction::Utils::is_beam_node(*current_node))
     {
-      if (BEAMINTERACTION::Utils::is_beam_centerline_node(*current_node))
+      if (BeamInteraction::Utils::is_beam_centerline_node(*current_node))
         get_node_coupling_force_resultants(local_force, local_position, beam_resultant);
       else
         // Do nothing for non-centerline nodes.
@@ -181,7 +181,7 @@ void BEAMINTERACTION::get_global_coupling_force_resultants(const Core::FE::Discr
 /**
  *
  */
-void BEAMINTERACTION::get_node_coupling_force_resultants(const std::vector<double>& local_force,
+void BeamInteraction::get_node_coupling_force_resultants(const std::vector<double>& local_force,
     const std::vector<double>& local_position, Core::LinAlg::Matrix<3, 2, double>& resultant)
 {
   Core::LinAlg::Matrix<3, 1, double> node_pos(true);

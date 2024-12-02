@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename Beam, typename Fluid>
-BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam,
+BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<Beam,
     Fluid>::BeamToFluidMeshtyingPairGaussPoint()
     : BeamToFluidMeshtyingPairBase<Beam, Fluid>()
 {
@@ -33,7 +33,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam,
 /*------------------------------------------------------------------------------------------------*/
 
 template <typename Beam, typename Fluid>
-bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
+bool BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
@@ -225,19 +225,19 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
  * Explicit template initialization of template class.
  */
 // Hermite beam element, hex8 solid element.
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex8>;
 // Hermite beam element, hex20 solid element.
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex20>;
 // Hermite beam element, hex27 solid element.
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex27>;
 // Hermite beam element, tet4 solid element.
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet4>;
 // Hermite beam element, tet10 solid element.
-template class BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+template class BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10>;
 
 FOUR_C_NAMESPACE_CLOSE

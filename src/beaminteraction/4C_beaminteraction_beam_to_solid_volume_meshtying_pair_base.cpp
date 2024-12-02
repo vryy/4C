@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename ScalarType, typename Beam, typename Solid>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
+BeamInteraction::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
     Solid>::BeamToSolidVolumeMeshtyingPairBase()
     : base_class(), meshtying_is_evaluated_(false)
 {
@@ -41,7 +41,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid>::setup()
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid>::setup()
 {
   // Call setup of base class first.
   base_class::setup();
@@ -65,7 +65,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid
  *
  */
 template <typename ScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
     Solid>::create_geometry_pair(const Core::Elements::Element* element1,
     const Core::Elements::Element* element2,
     const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
@@ -79,7 +79,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid>::pre_evaluate()
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid>::pre_evaluate()
 {
   // Call pre_evaluate on the geometry Pair.
   if (!meshtying_is_evaluated_)
@@ -96,7 +96,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid
  *
  */
 template <typename ScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid>::reset_state(
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid>::reset_state(
     const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& solid_nodal_dofvec)
 {
@@ -115,7 +115,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid
  *
  */
 template <typename ScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid>::
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid>::
     set_restart_displacement(const std::vector<std::vector<double>>& centerline_restart_vec_)
 {
   // Call the parent method.
@@ -138,7 +138,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid
  *
  */
 template <typename ScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
     Solid>::get_pair_visualization(std::shared_ptr<BeamToSolidVisualizationOutputWriterBase>
                                        visualization_writer,
     Teuchos::ParameterList& visualization_params) const
@@ -147,10 +147,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
   // Get the writers.
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>
       visualization_segmentation =
           visualization_writer->get_visualization_writer("btsv-segmentation");
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>
       visualization_integration_points =
           visualization_writer->get_visualization_writer("btsv-integration-points");
   if (!visualization_segmentation and visualization_integration_points == nullptr) return;
@@ -265,7 +265,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
     Solid>::evaluate_penalty_force_double(const Core::LinAlg::Matrix<3, 1, double>& r_beam,
     const Core::LinAlg::Matrix<3, 1, double>& r_solid,
     Core::LinAlg::Matrix<3, 1, double>& force) const
@@ -280,7 +280,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
     Solid>::get_coupling_reference_position(GEOMETRYPAIR::ElementData<Beam, double>&
                                                 beam_coupling_ref,
     GEOMETRYPAIR::ElementData<Solid, double>& solid_coupling_ref) const
@@ -296,7 +296,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -319,6 +319,6 @@ namespace BEAMINTERACTION
       t_hermite, t_tet10>;
   template class BeamToSolidVolumeMeshtyingPairBase<
       line_to_volume_scalar_type<t_hermite, t_nurbs27>, t_hermite, t_nurbs27>;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

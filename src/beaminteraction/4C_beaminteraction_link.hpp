@@ -43,7 +43,7 @@ namespace Core::LinAlg
   class SerialDenseMatrix;
 }  // namespace Core::LinAlg
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamLinkType : public Core::Communication::ParObjectType
   {
@@ -80,7 +80,7 @@ namespace BEAMINTERACTION
     virtual void init(const int id, const std::vector<std::pair<int, int>>& eleids,
         const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
         const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
-        Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset);
+        Inpar::BeamInteraction::CrosslinkerType linkertype, double timelinkwasset);
 
     //! Setup
     virtual void setup(const int matnum);
@@ -150,7 +150,7 @@ namespace BEAMINTERACTION
       return bspotpos2_;
     }
 
-    inline Inpar::BEAMINTERACTION::CrosslinkerType get_linker_type() const { return linkertype_; }
+    inline Inpar::BeamInteraction::CrosslinkerType get_linker_type() const { return linkertype_; }
 
     //! return time at which linker was set
     inline double get_time_link_was_set() const { return timelinkwasset_; }
@@ -250,7 +250,7 @@ namespace BEAMINTERACTION
     Core::LinAlg::Matrix<3, 1> bspotpos2_;
 
     //! type of filament element belongs to
-    Inpar::BEAMINTERACTION::CrosslinkerType linkertype_;
+    Inpar::BeamInteraction::CrosslinkerType linkertype_;
 
     //! stores the the time the link was set (can e.g. be used to calculate
     //  lifetime of a link or check if link is new in certain time step)
@@ -262,7 +262,7 @@ namespace BEAMINTERACTION
     //@}
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

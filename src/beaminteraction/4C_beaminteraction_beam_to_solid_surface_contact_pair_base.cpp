@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
+BeamInteraction::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
     Surface>::BeamToSolidSurfaceContactPairBase()
     : base_class()
 {
@@ -41,7 +41,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Solid>::reset_state(
+void BeamInteraction::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Solid>::reset_state(
     const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& solid_nodal_dofvec)
 {
@@ -59,7 +59,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Solid>
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::pre_evaluate()
+void BeamInteraction::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::pre_evaluate()
 {
   // Call pre_evaluate on the geometry Pair.
   cast_geometry_pair()->pre_evaluate(
@@ -70,7 +70,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surfac
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
+void BeamInteraction::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
     Surface>::get_pair_visualization(std::shared_ptr<BeamToSolidVisualizationOutputWriterBase>
                                          visualization_writer,
     Teuchos::ParameterList& visualization_params) const
@@ -79,7 +79,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
   // Add segmentation and integration point data.
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>
       visualization_segmentation =
           visualization_writer->get_visualization_writer("btss-contact-segmentation");
   if (visualization_segmentation != nullptr)
@@ -91,7 +91,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
     add_visualization_integration_points(*visualization_segmentation, points, visualization_params);
   }
 
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>
       visualization_integration_points =
           visualization_writer->get_visualization_writer("btss-contact-integration-points");
   if (visualization_integration_points != nullptr)
@@ -109,9 +109,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::
+void BeamInteraction::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::
     add_visualization_integration_points(
-        BEAMINTERACTION::BeamToSolidOutputWriterVisualization& visualization_writer,
+        BeamInteraction::BeamToSolidOutputWriterVisualization& visualization_writer,
         const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<ScalarType>>& points,
         const Teuchos::ParameterList& visualization_params) const
 {
@@ -176,7 +176,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surfac
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
+void BeamInteraction::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
     Surface>::create_geometry_pair(const Core::Elements::Element* element1,
     const Core::Elements::Element* element2,
     const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
@@ -190,7 +190,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
+void BeamInteraction::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
     Surface>::set_face_element(std::shared_ptr<GEOMETRYPAIR::FaceElement>& face_element)
 {
   face_element_ = std::dynamic_pointer_cast<GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>>(
@@ -210,7 +210,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
  */
 template <typename ScalarType, typename Beam, typename Surface>
 std::shared_ptr<GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Beam, Surface>>
-BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::cast_geometry_pair()
+BeamInteraction::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::cast_geometry_pair()
     const
 {
   return std::dynamic_pointer_cast<
@@ -223,7 +223,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::c
 template <typename ScalarType, typename Beam, typename Surface>
 std::tuple<Core::LinAlg::Matrix<3, 1, ScalarType>, Core::LinAlg::Matrix<3, 1, ScalarType>,
     Core::LinAlg::Matrix<3, 1, ScalarType>, ScalarType>
-BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::
+BeamInteraction::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::
     evaluate_contact_kinematics_at_projection_point(
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<ScalarType>& projection_point,
         const double beam_cross_section_radius) const
@@ -256,7 +256,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -314,6 +314,6 @@ namespace BEAMINTERACTION
   template class BeamToSolidSurfaceContactPairBase<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

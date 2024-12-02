@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   namespace SUBMODELEVALUATOR
   {
@@ -36,17 +36,17 @@ namespace BEAMINTERACTION
       virtual ~Factory() = default;
 
       std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> build_model_evaluators(
-          const std::set<enum Inpar::BEAMINTERACTION::SubModelType>& submodeltypes) const;
+          const std::set<enum Inpar::BeamInteraction::SubModelType>& submodeltypes) const;
 
      private:
     };
 
     //! non-member function, which relates to the Solid::ModelEvaluator::Factory
     std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> build_model_evaluators(
-        const std::set<enum Inpar::BEAMINTERACTION::SubModelType>& submodeltypes);
+        const std::set<enum Inpar::BeamInteraction::SubModelType>& submodeltypes);
 
   }  // namespace SUBMODELEVALUATOR
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

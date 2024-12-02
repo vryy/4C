@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for Gauss-point-to-segment beam to surface surface mesh tying.
@@ -48,7 +48,7 @@ namespace BEAMINTERACTION
         const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector) override;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

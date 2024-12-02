@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   //! Forward declarations
   class BeamToSolidSurfaceContactParams;
@@ -114,12 +114,12 @@ namespace BEAMINTERACTION
   /**
    * \brief Factory function for beam-to-solid contact mortar pairs.
    */
-  std::shared_ptr<BEAMINTERACTION::BeamContactPair>
+  std::shared_ptr<BeamInteraction::BeamContactPair>
   beam_to_solid_surface_contact_pair_mortar_factory(
       const BeamToSolidSurfaceContactParams& beam_to_surface_contact_params,
       const Core::FE::CellType& surface_type, const bool beam_is_hermite);
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

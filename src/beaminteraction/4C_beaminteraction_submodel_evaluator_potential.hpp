@@ -24,7 +24,7 @@ namespace Core::Elements
   class Element;
 }
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamPotentialParams;
   class BeamPotentialPair;
@@ -44,12 +44,12 @@ namespace BEAMINTERACTION
       void post_setup() override;
 
       //! Returns the type of the current submodel evaluator
-      Inpar::BEAMINTERACTION::SubModelType type() const override
+      Inpar::BeamInteraction::SubModelType type() const override
       {
-        return Inpar::BEAMINTERACTION::submodel_potential;
+        return Inpar::BeamInteraction::submodel_potential;
       }
 
-      //! @name Derived public BEAMINTERACTION::SUBMODELEVALUATOR::Generic methods
+      //! @name Derived public BeamInteraction::SUBMODELEVALUATOR::Generic methods
       //! @{
       //! \brief reset submodel specific variables
       //! derived
@@ -133,19 +133,19 @@ namespace BEAMINTERACTION
       //! @}
 
      private:
-      inline BEAMINTERACTION::BeamPotentialParams const& beam_potential_params() const
+      inline BeamInteraction::BeamPotentialParams const& beam_potential_params() const
       {
         check_init();
         return *beam_potential_params_ptr_;
       }
 
-      inline BEAMINTERACTION::BeamPotentialParams& beam_potential_params()
+      inline BeamInteraction::BeamPotentialParams& beam_potential_params()
       {
         check_init();
         return *beam_potential_params_ptr_;
       }
 
-      inline std::shared_ptr<BEAMINTERACTION::BeamPotentialParams> beam_potential_params_ptr() const
+      inline std::shared_ptr<BeamInteraction::BeamPotentialParams> beam_potential_params_ptr() const
       {
         check_init();
         return beam_potential_params_ptr_;
@@ -170,7 +170,7 @@ namespace BEAMINTERACTION
       void setup_potential_reduction_strategy();
 
       void get_beam_potential_conditions_applied_to_this_element_pair(
-          BEAMINTERACTION::BeamPotentialPair const& elementpair,
+          BeamInteraction::BeamPotentialPair const& elementpair,
           std::vector<Core::Conditions::Condition*>& conditions_element1,
           std::vector<Core::Conditions::Condition*>& conditions_element2) const;
 
@@ -200,13 +200,13 @@ namespace BEAMINTERACTION
 
      private:
       //! data container holding all beam contact related parameters
-      std::shared_ptr<BEAMINTERACTION::BeamPotentialParams> beam_potential_params_ptr_;
+      std::shared_ptr<BeamInteraction::BeamPotentialParams> beam_potential_params_ptr_;
 
       //! type of eles in bins  // Todo kept line for future improvement
       //    Core::Binstrategy::Utils::BinContentType bin_beamcontent_;
 
       //! interacting pairs of beam elements that might exert forces on each other
-      std::vector<std::shared_ptr<BEAMINTERACTION::BeamPotentialPair>>
+      std::vector<std::shared_ptr<BeamInteraction::BeamPotentialPair>>
           beam_potential_element_pairs_;
 
       //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
@@ -217,7 +217,7 @@ namespace BEAMINTERACTION
     };
 
   }  // namespace SUBMODELEVALUATOR
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -15,9 +15,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager::
+BeamInteraction::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager::
     PartitionedBeamInteractionAssemblyManager(
-        std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& assembly_contact_elepairs)
+        std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>& assembly_contact_elepairs)
     : assembly_contact_elepairs_(assembly_contact_elepairs)
 {
 }

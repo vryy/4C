@@ -61,8 +61,8 @@ namespace
         const Core::LinAlg::Matrix<FluidType::n_dof_, FluidType::n_dof_, double> results_kff)
     {
       // Create the mesh tying mortar pair.
-      BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<BeamType, FluidType> pair =
-          BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<BeamType, FluidType>();
+      BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<BeamType, FluidType> pair =
+          BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<BeamType, FluidType>();
 
       // Create the elements.
       const int dummy_node_ids[2] = {0, 1};

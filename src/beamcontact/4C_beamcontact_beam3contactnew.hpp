@@ -350,7 +350,7 @@ namespace CONTACT
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, double> ele2pos_lastiter_;
 
     //! variable to check which smoothing type should be applied
-    Inpar::BEAMCONTACT::Smoothing smoothing_;
+    Inpar::BeamContact::Smoothing smoothing_;
 
     //! sgn(normal*normal_old)
     double sgn_;
@@ -417,10 +417,10 @@ namespace CONTACT
     Core::LinAlg::Matrix<3, 1, TYPE> normal_old_;
 
     //! neighbor elements of element 1
-    std::shared_ptr<BEAMINTERACTION::B3CNeighbor> neighbors1_;
+    std::shared_ptr<BeamInteraction::B3CNeighbor> neighbors1_;
 
     //! neighbor elements of element 2
-    std::shared_ptr<BEAMINTERACTION::B3CNeighbor> neighbors2_;
+    std::shared_ptr<BeamInteraction::B3CNeighbor> neighbors2_;
 
     //! averaged nodal tangents, necessary for smoothed tangent fields of C^0 Reissner beams
     Core::LinAlg::Matrix<3 * numnodes, 1> nodaltangentssmooth1_;

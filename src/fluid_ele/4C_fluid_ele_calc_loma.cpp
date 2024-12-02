@@ -197,7 +197,7 @@ int Discret::Elements::FluidEleCalcLoma<distype>::evaluate_od(Discret::Elements:
 
   // set element id
   my::eid_ = ele->id();
-  // call inner evaluate (does not know about DRT element or discretization object)
+  // call inner evaluate (does not know about element or discretization object)
   int result = evaluate_od(params, ebofoaf, eprescpgaf, elemat1, evelaf, epreaf, epream, escaaf,
       emhist, eaccam, escadtam, escabofoaf, eveln, escaam, edispnp, egridv, mat, ele->is_ale(),
       CsDeltaSq, CiDeltaSq, intpoints);

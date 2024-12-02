@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for Gauss-point-to-segment beam to surface surface mesh tying.
@@ -51,7 +51,7 @@ namespace BEAMINTERACTION
      */
     ScalarType get_penalty_potential() const;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

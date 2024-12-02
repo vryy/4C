@@ -33,7 +33,7 @@ namespace Discret
   }
 }  // namespace Discret
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /*!
    \brief class for potential-based interaction between two 3D beam elements
@@ -658,7 +658,7 @@ namespace BEAMINTERACTION
     double interaction_potential_;
     //@}
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

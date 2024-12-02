@@ -14,7 +14,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 FBI::BeamToFluidMeshtyingVtkOutputParams::BeamToFluidMeshtyingVtkOutputParams()
-    : BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams(),
+    : BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputParams(),
       constraint_violation_(false)
 {
   // empty constructor

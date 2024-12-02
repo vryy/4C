@@ -17,13 +17,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declaration.
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidVolumeMeshtyingVisualizationOutputParams;
 }
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for beam to solid meshtying parameters.
@@ -119,7 +119,7 @@ namespace BEAMINTERACTION
     bool couple_restart_state_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

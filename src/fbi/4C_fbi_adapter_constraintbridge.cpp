@@ -23,7 +23,7 @@ Adapter::FBIConstraintBridge::FBIConstraintBridge()
     : beam_interaction_params_(nullptr),
       assemblystrategy_(nullptr),
       meshtying_pairs_(
-          std::make_shared<std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>>()),
+          std::make_shared<std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>>()),
       geometry_evaluation_data_(nullptr){};
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -62,7 +62,7 @@ void Adapter::FBIConstraintBridge::create_pair(
     const std::vector<double> beam_centerline_dofvec, const std::vector<double> fluid_nodal_dofvec)
 {
   // create a new beaminteratcion pair
-  std::shared_ptr<BEAMINTERACTION::BeamContactPair> newinteractionpair =
+  std::shared_ptr<BeamInteraction::BeamContactPair> newinteractionpair =
       FBI::PairFactory::create_pair(elements, *get_params());
 
   // create the underlying geometrypair doing the integration (segment or gauss point projection
@@ -81,7 +81,7 @@ void Adapter::FBIConstraintBridge::create_pair(
 /*----------------------------------------------------------------------*/
 void Adapter::FBIConstraintBridge::reset_pair(const std::vector<double> beam_centerline_dofvec,
     const std::vector<double> fluid_nodal_dofvec,
-    std::shared_ptr<BEAMINTERACTION::BeamContactPair> interactionpair)
+    std::shared_ptr<BeamInteraction::BeamContactPair> interactionpair)
 {
   // hand in the current position and velocities of the participating elements
   interactionpair->reset_state(beam_centerline_dofvec, fluid_nodal_dofvec);

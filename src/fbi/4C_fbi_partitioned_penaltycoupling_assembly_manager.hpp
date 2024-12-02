@@ -30,12 +30,12 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamContactPair;
 }
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   namespace SUBMODELEVALUATOR
   {
@@ -53,7 +53,7 @@ namespace BEAMINTERACTION
        * class.
        */
       PartitionedBeamInteractionAssemblyManager(
-          std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>&
+          std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>&
               assembly_contact_elepairs);
 
       /**
@@ -82,11 +82,11 @@ namespace BEAMINTERACTION
 
      protected:
       //! Vector of pairs to be evaluated by this class.
-      std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs_;
+      std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>> assembly_contact_elepairs_;
     };
 
   }  // namespace SUBMODELEVALUATOR
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

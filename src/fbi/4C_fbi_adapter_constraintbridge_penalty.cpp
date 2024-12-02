@@ -39,9 +39,9 @@ void Adapter::FBIConstraintBridgePenalty::evaluate(
     std::shared_ptr<const Core::LinAlg::Vector<double>> beam_vel)
 {
   // Create assembly manager..
-  std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
+  std::shared_ptr<BeamInteraction::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
       assembly_manager =
-          BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
+          BeamInteraction::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
               discretization1, discretization2, *(get_pairs()), get_params(), assemblystrategy_);
   // compute and assembly the coupling matrices and vectors
   assembly_manager->evaluate_force_stiff(

@@ -55,7 +55,7 @@ namespace Solid
     class BeamInteractionDataState;
   }
 }  // namespace Solid
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamCrosslinkerHandler;
 
@@ -72,7 +72,7 @@ namespace BEAMINTERACTION
      *
      *  This class summarizes the functionality which all submodel evaluators share
      *  and/or have to implement. Look in the derived classes for examples. A minimal
-     *  example can be found at \ref BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking.
+     *  example can be found at \ref BeamInteraction::SUBMODELEVALUATOR::Crosslinking.
      */
     class Generic
     {
@@ -89,10 +89,10 @@ namespace BEAMINTERACTION
           std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> const& gstate,
           std::shared_ptr<Solid::TimeInt::BaseDataIO> const& gio_ptr,
           std::shared_ptr<Solid::ModelEvaluator::BeamInteractionDataState> const& ia_gstate_ptr,
-          std::shared_ptr<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
+          std::shared_ptr<BeamInteraction::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
           std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy,
           std::shared_ptr<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
-          std::shared_ptr<BEAMINTERACTION::Utils::MapExtractor> const& eletypeextractor);
+          std::shared_ptr<BeamInteraction::Utils::MapExtractor> const& eletypeextractor);
 
       //! setup class variables
       virtual void setup() = 0;
@@ -111,7 +111,7 @@ namespace BEAMINTERACTION
 
      public:
       //! Returns the type of the current model evaluator
-      virtual Inpar::BEAMINTERACTION::SubModelType type() const = 0;
+      virtual Inpar::BeamInteraction::SubModelType type() const = 0;
 
       //! \brief reset model specific variables (without jacobian)
       virtual void reset() = 0;
@@ -222,9 +222,9 @@ namespace BEAMINTERACTION
       beam_interaction_data_state_ptr();
       Solid::ModelEvaluator::BeamInteractionDataState const& beam_interaction_data_state() const;
 
-      BEAMINTERACTION::BeamCrosslinkerHandler& beam_crosslinker_handler();
-      std::shared_ptr<BEAMINTERACTION::BeamCrosslinkerHandler>& beam_crosslinker_handler_ptr();
-      BEAMINTERACTION::BeamCrosslinkerHandler const& beam_crosslinker_handler() const;
+      BeamInteraction::BeamCrosslinkerHandler& beam_crosslinker_handler();
+      std::shared_ptr<BeamInteraction::BeamCrosslinkerHandler>& beam_crosslinker_handler_ptr();
+      BeamInteraction::BeamCrosslinkerHandler const& beam_crosslinker_handler() const;
 
       Core::Binstrategy::BinningStrategy& bin_strategy();
       std::shared_ptr<Core::Binstrategy::BinningStrategy>& bin_strategy_ptr();
@@ -234,9 +234,9 @@ namespace BEAMINTERACTION
       std::shared_ptr<Core::Geo::MeshFree::BoundingBox>& periodic_bounding_box_ptr();
       Core::Geo::MeshFree::BoundingBox const& periodic_bounding_box() const;
 
-      BEAMINTERACTION::Utils::MapExtractor& ele_type_map_extractor();
-      std::shared_ptr<BEAMINTERACTION::Utils::MapExtractor>& ele_type_map_extractor_ptr();
-      BEAMINTERACTION::Utils::MapExtractor const& ele_type_map_extractor() const;
+      BeamInteraction::Utils::MapExtractor& ele_type_map_extractor();
+      std::shared_ptr<BeamInteraction::Utils::MapExtractor>& ele_type_map_extractor_ptr();
+      BeamInteraction::Utils::MapExtractor const& ele_type_map_extractor() const;
 
       //! @}
      protected:
@@ -263,7 +263,7 @@ namespace BEAMINTERACTION
       std::shared_ptr<Solid::ModelEvaluator::BeamInteractionDataState> beaminteractiondatastate_;
 
       //! beam crosslinker handler
-      std::shared_ptr<BEAMINTERACTION::BeamCrosslinkerHandler> beam_crosslinker_handler_;
+      std::shared_ptr<BeamInteraction::BeamCrosslinkerHandler> beam_crosslinker_handler_;
 
       //! binning strategy
       std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy_;
@@ -272,12 +272,12 @@ namespace BEAMINTERACTION
       std::shared_ptr<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox_;
 
       /// map extractor for split of different element types
-      std::shared_ptr<BEAMINTERACTION::Utils::MapExtractor> eletypeextractor_;
+      std::shared_ptr<BeamInteraction::Utils::MapExtractor> eletypeextractor_;
 
     };  // class Generic
 
   }  // namespace SUBMODELEVALUATOR
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

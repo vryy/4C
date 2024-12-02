@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToBeamContactParams
   {
@@ -50,9 +50,9 @@ namespace BEAMINTERACTION
       if (!is_init()) FOUR_C_THROW("init() has not been called yet!");
     }
 
-    inline enum Inpar::BEAMCONTACT::Strategy strategy() const { return strategy_; }
+    inline enum Inpar::BeamContact::Strategy strategy() const { return strategy_; }
 
-    inline enum Inpar::BEAMCONTACT::PenaltyLaw penalty_law() const { return penalty_law_; }
+    inline enum Inpar::BeamContact::PenaltyLaw penalty_law() const { return penalty_law_; }
 
     inline double beam_to_beam_penalty_law_regularization_g0() const
     {
@@ -103,10 +103,10 @@ namespace BEAMINTERACTION
     bool issetup_;
 
     //! strategy
-    enum Inpar::BEAMCONTACT::Strategy strategy_;
+    enum Inpar::BeamContact::Strategy strategy_;
 
     //! penalty law
-    enum Inpar::BEAMCONTACT::PenaltyLaw penalty_law_;
+    enum Inpar::BeamContact::PenaltyLaw penalty_law_;
 
     //! regularization parameters for penalty law
     double btb_penalty_law_regularization_g0_;
@@ -146,7 +146,7 @@ namespace BEAMINTERACTION
     bool btb_endpoint_penalty_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

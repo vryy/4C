@@ -55,7 +55,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
+BeamInteraction::SUBMODELEVALUATOR::BeamContact::BeamContact()
 {
   // clear stl stuff
   nearby_elements_map_.clear();
@@ -64,12 +64,12 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::setup()
 {
   check_init();
 
   // build a new data container to manage beam interaction parameters
-  beam_interaction_params_ptr_ = std::make_shared<BEAMINTERACTION::BeamInteractionParams>();
+  beam_interaction_params_ptr_ = std::make_shared<BeamInteraction::BeamInteractionParams>();
   beam_interaction_params_ptr_->init();
   beam_interaction_params_ptr_->setup();
 
@@ -78,7 +78,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
       Global::Problem::instance()->geometric_search_params(),
       Global::Problem::instance()->io_params());
   if (beam_interaction_params_ptr_->get_search_strategy() ==
-          Inpar::BEAMINTERACTION::SearchStrategy::bounding_volume_hierarchy &&
+          Inpar::BeamInteraction::SearchStrategy::bounding_volume_hierarchy &&
       geometric_search_params_ptr_->get_write_visualization_flag())
   {
     geometric_search_visualization_ptr_ =
@@ -90,7 +90,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
   }
 
   // build a new data container to manage beam contact parameters
-  beam_contact_params_ptr_ = std::make_shared<BEAMINTERACTION::BeamContactParams>();
+  beam_contact_params_ptr_ = std::make_shared<BeamInteraction::BeamContactParams>();
 
   // build runtime visualization writer if desired
   if (Global::Problem::instance()
@@ -106,9 +106,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
 
   contactelementtypes_.clear();
 
-  if (Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+  if (Teuchos::getIntegralValue<Inpar::BeamInteraction::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
-          "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none)
+          "STRATEGY") != Inpar::BeamInteraction::bstr_none)
   {
     contactelementtypes_.push_back(Core::Binstrategy::Utils::BinContentType::Beam);
 
@@ -123,9 +123,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
     contactelementtypes_.push_back(Core::Binstrategy::Utils::BinContentType::Beam);
   }
 
-  if (Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+  if (Teuchos::getIntegralValue<Inpar::BeamInteraction::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
-          "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none)
+          "STRATEGY") != Inpar::BeamInteraction::bstr_none)
   {
     contactelementtypes_.push_back(Core::Binstrategy::Utils::BinContentType::RigidSphere);
 
@@ -150,7 +150,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
             ->get_output_flag())
     {
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ =
-          std::make_shared<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>(
+          std::make_shared<BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>(
 
               Core::IO::visualization_parameters_factory(
                   Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
@@ -178,7 +178,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
             ->get_output_flag())
     {
       beam_to_solid_surface_visualization_output_writer_ptr_ =
-          std::make_shared<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>(
+          std::make_shared<BeamInteraction::BeamToSolidSurfaceVisualizationOutputWriter>(
 
               Core::IO::visualization_parameters_factory(
                   Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
@@ -206,7 +206,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
             ->get_output_flag())
     {
       beam_to_solid_surface_visualization_output_writer_contact_ptr_ =
-          std::make_shared<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriterContact>(
+          std::make_shared<BeamInteraction::BeamToSolidSurfaceVisualizationOutputWriterContact>(
 
               Core::IO::visualization_parameters_factory(
                   Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
@@ -217,7 +217,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
   }
 
   // Build the container to manage beam-to-solid conditions and get all coupling conditions.
-  beam_interaction_conditions_ptr_ = std::make_shared<BEAMINTERACTION::BeamInteractionConditions>();
+  beam_interaction_conditions_ptr_ = std::make_shared<BeamInteraction::BeamInteractionConditions>();
   beam_interaction_conditions_ptr_->set_beam_interaction_conditions(
       *discret_ptr(), *beam_contact_params_ptr_);
 
@@ -227,7 +227,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::post_setup()
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::post_setup()
 {
   check_init_setup();
 
@@ -240,7 +240,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::post_setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_submodel_dependencies(
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::init_submodel_dependencies(
     std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
@@ -250,14 +250,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_submodel_dependencies
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::reset()
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::reset()
 {
   check_init_setup();
 
-  std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>::const_iterator iter;
+  std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>::const_iterator iter;
   for (iter = contact_elepairs_.begin(); iter != contact_elepairs_.end(); ++iter)
   {
-    std::shared_ptr<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
+    std::shared_ptr<BeamInteraction::BeamContactPair> elepairptr = *iter;
 
     std::vector<const Core::Elements::Element*> element_ptr(2);
 
@@ -270,7 +270,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::reset()
     for (unsigned int ielement = 0; ielement < 2; ++ielement)
     {
       // extract the Dof values of this element from displacement vector
-      BEAMINTERACTION::Utils::extract_pos_dof_vec_absolute_values(discret(), element_ptr[ielement],
+      BeamInteraction::Utils::extract_pos_dof_vec_absolute_values(discret(), element_ptr[ielement],
           *beam_interaction_data_state_ptr()->get_dis_col_np(),
           element_posdofvec_absolutevalues[ielement]);
     }
@@ -293,7 +293,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::reset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::evaluate_force()
+bool BeamInteraction::SUBMODELEVALUATOR::BeamContact::evaluate_force()
 {
   check_init_setup();
 
@@ -311,7 +311,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::evaluate_force()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::evaluate_stiff()
+bool BeamInteraction::SUBMODELEVALUATOR::BeamContact::evaluate_stiff()
 {
   check_init_setup();
 
@@ -329,7 +329,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::evaluate_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::evaluate_force_stiff()
+bool BeamInteraction::SUBMODELEVALUATOR::BeamContact::evaluate_force_stiff()
 {
   check_init_setup();
 
@@ -349,14 +349,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::evaluate_force_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_evaluate()
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::pre_evaluate()
 {
   for (auto& elepairptr : contact_elepairs_) elepairptr->pre_evaluate();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::update_step_state(const double& timefac_n)
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::update_step_state(const double& timefac_n)
 {
   check_init_setup();
 
@@ -365,7 +365,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::update_step_state(const do
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bool beam_redist)
+bool BeamInteraction::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bool beam_redist)
 {
   check_init_setup();
 
@@ -403,7 +403,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::update_step_element(bool repartition_was_done)
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::update_step_element(bool repartition_was_done)
 {
   check_init_setup();
 
@@ -414,7 +414,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::update_step_element(bool r
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::post_update_step_element()
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::post_update_step_element()
 {
   check_init_setup();
 
@@ -423,7 +423,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::post_update_step_element()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<Solid::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_energy()
+std::map<Solid::EnergyType, double> BeamInteraction::SUBMODELEVALUATOR::BeamContact::get_energy()
     const
 {
   check_init_setup();
@@ -446,18 +446,18 @@ std::map<Solid::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamCont
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::output_step_state(
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::runtime_output_step_state() const {}
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::runtime_output_step_state() const {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_output_runtime_beam_contact()
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::init_output_runtime_beam_contact()
 {
   check_init();
 
@@ -470,7 +470,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_output_runtime_beam_c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_time_step_output_runtime_beam_contact()
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::write_time_step_output_runtime_beam_contact()
     const
 {
   check_init_setup();
@@ -485,7 +485,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_time_step_output_run
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_iteration_output_runtime_beam_contact(
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::write_iteration_output_runtime_beam_contact(
     int iteration_number) const
 {
   check_init_setup();
@@ -500,7 +500,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_iteration_output_run
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_output_runtime_beam_contact(
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::write_output_runtime_beam_contact(
     int timestep_number, double time) const
 {
   check_init_setup();
@@ -511,7 +511,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_output_runtime_beam_
   unsigned int num_row_points = 0;
 
   // loop over contact pairs and retrieve number of all active contact point pairs
-  std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>::const_iterator pair_iter;
+  std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>::const_iterator pair_iter;
   for (pair_iter = contact_elepairs_.begin(); pair_iter != contact_elepairs_.end(); ++pair_iter)
   {
     num_row_points += 2 * (*pair_iter)->get_num_all_active_contact_point_pairs();
@@ -611,11 +611,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_output_runtime_beam_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::reset_step_state() { check_init_setup(); }
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::reset_step_state() { check_init_setup(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_restart(
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::write_restart(
     Core::IO::DiscretizationWriter& ia_writer, Core::IO::DiscretizationWriter& bin_writer) const
 {
   // empty
@@ -623,14 +623,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_read_restart()
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::pre_read_restart()
 {
   // empty
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::read_restart(
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::read_restart(
     Core::IO::DiscretizationReader& ia_reader, Core::IO::DiscretizationReader& bin_reader)
 {
   // empty
@@ -638,7 +638,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::read_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::post_read_restart()
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::post_read_restart()
 {
   check_init_setup();
   nearby_elements_map_.clear();
@@ -648,7 +648,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::post_read_restart()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::run_post_iterate(
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::run_post_iterate(
     const ::NOX::Solver::Generic& solver)
 {
   check_init_setup();
@@ -679,7 +679,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::run_post_iterate(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::add_bins_to_bin_col_map(
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::add_bins_to_bin_col_map(
     std::set<int>& colbins)
 {
   check_init_setup();
@@ -688,7 +688,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::add_bins_to_bin_col_map(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::
     add_bins_with_relevant_content_for_ia_discret_col_map(std::set<int>& colbins) const
 {
   check_init_setup();
@@ -697,7 +697,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_distance(
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::get_half_interaction_distance(
     double& half_interaction_distance)
 {
   check_init_setup();
@@ -788,7 +788,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::have_contact_type(
+bool BeamInteraction::SUBMODELEVALUATOR::BeamContact::have_contact_type(
     Core::Binstrategy::Utils::BinContentType const& contacttype) const
 {
   check_init();
@@ -798,11 +798,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::have_contact_type(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring_elements()
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring_elements()
 {
   // measure time for evaluating this function
   TEUCHOS_FUNC_TIME_MONITOR(
-      "BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring_elements");
+      "BeamInteraction::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring_elements");
 
   check_init();
 
@@ -810,7 +810,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
   beam_interaction_conditions_ptr_->build_id_sets(discret_ptr());
 
   if (beam_interaction_params_ptr_->get_search_strategy() ==
-      Inpar::BEAMINTERACTION::SearchStrategy::bruteforce_with_binning)
+      Inpar::BeamInteraction::SearchStrategy::bruteforce_with_binning)
   {
     // loop over all row beam elements
     // note: like this we ensure that first element of pair is always a beam element, also only
@@ -854,7 +854,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
     }
   }
   else if (beam_interaction_params_ptr_->get_search_strategy() ==
-           Inpar::BEAMINTERACTION::SearchStrategy::bounding_volume_hierarchy)
+           Inpar::BeamInteraction::SearchStrategy::bounding_volume_hierarchy)
   {
     // Get vector of all beam element bounding boxes.
     int const numroweles = ele_type_map_extractor_ptr()->beam_map()->NumMyElements();
@@ -879,7 +879,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
       // Check if the current element is relevant for beam-to-xxx contact.
       Core::Elements::Element* currele = discret().l_col_element(colele_i);
       const Core::Binstrategy::Utils::BinContentType contact_type =
-          BEAMINTERACTION::Utils::convert_element_to_bin_content_type(currele);
+          BeamInteraction::Utils::convert_element_to_bin_content_type(currele);
       if (std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contact_type) !=
           contactelementtypes_.end())
       {
@@ -927,7 +927,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::
     select_eles_to_be_considered_for_contact_evaluation(
         Core::Elements::Element* currele, std::set<Core::Elements::Element*>& neighbors) const
 {
@@ -969,7 +969,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_element_pairs()
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::create_beam_contact_element_pairs()
 {
   // Todo maybe keep existing pairs and reuse them ?
   contact_elepairs_.clear();
@@ -999,8 +999,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
       ele_ptrs[1] = *secondeleiter;
 
       // construct, init and setup contact pairs
-      std::shared_ptr<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
-          BEAMINTERACTION::BeamContactPair::create(ele_ptrs, *beam_interaction_conditions_ptr_);
+      std::shared_ptr<BeamInteraction::BeamContactPair> newbeaminteractionpair =
+          BeamInteraction::BeamContactPair::create(ele_ptrs, *beam_interaction_conditions_ptr_);
 
       if (newbeaminteractionpair != nullptr)
       {
@@ -1017,7 +1017,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
   beam_interaction_conditions_ptr_->setup(discret_ptr());
 
   // Get the pairs that can be assembled directly.
-  std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> assembly_pairs_direct;
+  std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>> assembly_pairs_direct;
   for (auto& elepairptr : contact_elepairs_)
     if (elepairptr->is_assembly_direct()) assembly_pairs_direct.push_back(elepairptr);
 
@@ -1031,7 +1031,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
   // Create the needed assembly manager.
   if (global_direct_pairs > 0)
     assembly_managers_.push_back(
-        std::make_shared<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(
+        std::make_shared<BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(
 
             assembly_pairs_direct));
 
@@ -1047,7 +1047,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::set_restart_displacement_in_pairs()
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::set_restart_displacement_in_pairs()
 {
   check_init_setup();
 
@@ -1061,7 +1061,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::set_restart_displacement_i
       for (unsigned int i_element = 0; i_element < 2; ++i_element)
       {
         // Extract the Dof values of this element from the restart vector
-        BEAMINTERACTION::Utils::extract_pos_dof_vec_values(discret(), pair->get_element(i_element),
+        BeamInteraction::Utils::extract_pos_dof_vec_values(discret(), pair->get_element(i_element),
             *beam_interaction_data_state_ptr()->get_dis_restart_col(),
             element_restart_dispalcement_[i_element]);
       }
@@ -1074,18 +1074,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::set_restart_displacement_i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::print_all_beam_contact_element_pairs(
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::print_all_beam_contact_element_pairs(
     std::ostream& out) const
 {
   out << "\n\nCurrent BeamContactElementPairs: ";
-  std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>::const_iterator iter;
+  std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>::const_iterator iter;
   for (iter = contact_elepairs_.begin(); iter != contact_elepairs_.end(); ++iter)
     (*iter)->print(out);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::print_active_beam_contact_set(
+void BeamInteraction::SUBMODELEVALUATOR::BeamContact::print_active_beam_contact_set(
     std::ostream& out) const
 {
   bool atleastoneactivepair = false;

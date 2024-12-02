@@ -34,18 +34,18 @@ namespace Solid
     class BaseDataGlobalState;
   }
 }  // namespace Solid
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamContactParams;
   class BeamContactPair;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 namespace Core::LinAlg
 {
   class SparseMatrix;
 }  // namespace Core::LinAlg
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Manage Lagrange mulitplier DOFs for BeamToFluid mortar coupling
@@ -130,7 +130,7 @@ namespace BEAMINTERACTION
      * @param contact_pairs All contact pairs on this processor.
      */
     void set_local_maps(
-        const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
+        const std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>& contact_pairs);
 
     /**
      * \brief Get the global IDs of all Lagrange multipliers for the contact pair.
@@ -139,14 +139,14 @@ namespace BEAMINTERACTION
      * this pair.
      */
     void location_vector(
-        const BEAMINTERACTION::BeamContactPair& contact_pair, std::vector<int>& lambda_row) const;
+        const BeamInteraction::BeamContactPair& contact_pair, std::vector<int>& lambda_row) const;
 
     /**
      * \brief Evaluate D and M on all pairs and assemble them into the global matrices.
      * @param[in] contact_pairs Vector with all beam contact pairs in the model evaluator.
      */
     void evaluate_global_dm(
-        const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
+        const std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>& contact_pairs);
 
     /**
      * \brief Add the mortar penalty contributions to the global force vector and stiffness matrix.
@@ -296,7 +296,7 @@ namespace BEAMINTERACTION
     //! that Lagrange multiplier.
     std::shared_ptr<Epetra_FEVector> global_active_lambda_;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

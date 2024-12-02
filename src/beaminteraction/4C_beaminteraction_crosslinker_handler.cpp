@@ -21,27 +21,27 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BEAMINTERACTION::BeamCrosslinkerHandler::BeamCrosslinkerHandler()
+BeamInteraction::BeamCrosslinkerHandler::BeamCrosslinkerHandler()
     : binstrategy_(nullptr), myrank_(-1), bincolmap_(nullptr)
 {
   // empty constructor
 }
 
-void BEAMINTERACTION::BeamCrosslinkerHandler::init(
+void BeamInteraction::BeamCrosslinkerHandler::init(
     int myrank, std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy)
 {
   binstrategy_ = binstrategy;
   myrank_ = myrank;
 }
 
-void BEAMINTERACTION::BeamCrosslinkerHandler::setup()
+void BeamInteraction::BeamCrosslinkerHandler::setup()
 {
   // so far nothing to do
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamCrosslinkerHandler::distribute_linker_to_bins(
+void BeamInteraction::BeamCrosslinkerHandler::distribute_linker_to_bins(
     std::shared_ptr<Epetra_Map> const& linkerrowmap)
 {
   std::list<std::shared_ptr<Core::Nodes::Node>> homelesslinker;
@@ -58,7 +58,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::distribute_linker_to_bins(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamCrosslinkerHandler::remove_all_linker()
+void BeamInteraction::BeamCrosslinkerHandler::remove_all_linker()
 {
   // 1st) loop over bins and remove initial linker info
   const int numrowbin = bin_strategy()->bin_discret()->num_my_col_elements();
@@ -75,7 +75,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::remove_all_linker()
 /*----------------------------------------------------------------------*
 | fill linker into their correct bin on according proc   ghamm 09/12 |
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
+void BeamInteraction::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
     std::list<std::shared_ptr<Core::Nodes::Node>>& homelesslinker)
 {
   const int numproc = Core::Communication::num_mpi_ranks(binstrategy_->bin_discret()->get_comm());
@@ -160,11 +160,11 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
 | fill linker into their correct bin on according proc   ghamm 03/16 |
  *----------------------------------------------------------------------*/
 std::shared_ptr<std::list<int>>
-BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
+BeamInteraction::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
     std::list<std::shared_ptr<Core::Nodes::Node>>& homelesslinker)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "BEAMINTERACTION::beam_crosslinker_handler::fill_linker_into_bins_remote_id_list");
+      "BeamInteraction::beam_crosslinker_handler::fill_linker_into_bins_remote_id_list");
   const int numproc = Core::Communication::num_mpi_ranks(binstrategy_->bin_discret()->get_comm());
   std::shared_ptr<std::list<int>> removedlinker = std::make_shared<std::list<int>>(0);
 
@@ -269,11 +269,11 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
 | fill linker into their correct bin on according proc using ghosting   eichinger 02/17 |
  *-----------------------------------------------------------------------------------------*/
 std::shared_ptr<std::list<int>>
-BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
+BeamInteraction::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
     std::list<std::shared_ptr<Core::Nodes::Node>>& homelesslinker)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "BEAMINTERACTION::beam_crosslinker_handler::fill_linker_into_bins_using_ghosting");
+      "BeamInteraction::beam_crosslinker_handler::fill_linker_into_bins_using_ghosting");
 
   const int numproc = Core::Communication::num_mpi_ranks(binstrategy_->bin_discret()->get_comm());
   std::shared_ptr<std::list<int>> removedlinker = std::make_shared<std::list<int>>(0);
@@ -380,7 +380,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamCrosslinkerHandler::receive_linker_and_fill_them_in_bins(int const numrec,
+void BeamInteraction::BeamCrosslinkerHandler::receive_linker_and_fill_them_in_bins(int const numrec,
     Core::Communication::Exporter& exporter,
     std::list<std::shared_ptr<Core::Nodes::Node>>& homelesslinker)
 {
@@ -423,7 +423,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::receive_linker_and_fill_them_in_bi
 /*----------------------------------------------------------------------*
 | node is placed into the correct row bin                   ghamm 09/12 |
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamCrosslinkerHandler::place_node_correctly(
+bool BeamInteraction::BeamCrosslinkerHandler::place_node_correctly(
     std::shared_ptr<Core::Nodes::Node> node, const double* currpos,
     std::list<std::shared_ptr<Core::Nodes::Node>>& homelesslinker)
 {
@@ -512,10 +512,10 @@ bool BEAMINTERACTION::BeamCrosslinkerHandler::place_node_correctly(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-std::shared_ptr<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::transfer_linker(
+std::shared_ptr<std::list<int>> BeamInteraction::BeamCrosslinkerHandler::transfer_linker(
     bool const fill_using_ghosting)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::beam_crosslinker_handler::TransferLinker");
+  TEUCHOS_FUNC_TIME_MONITOR("BeamInteraction::beam_crosslinker_handler::TransferLinker");
 
   // set of homeless linker
   std::list<std::shared_ptr<Core::Nodes::Node>> homelesslinker;
@@ -624,7 +624,7 @@ std::shared_ptr<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::transfe
 /*-----------------------------------------------------------------------------*
  | build reduced bin col map based on boundary row bins       eichinger 01/17  |
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamCrosslinkerHandler::
+void BeamInteraction::BeamCrosslinkerHandler::
     get_neighbouring_bins_of_linker_containing_boundary_row_bins(std::set<int>& colbins) const
 {
   colbins.clear();

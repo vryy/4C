@@ -15,14 +15,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for beam to fluid meshtying using mortar shape functions for the contact
    * tractions.
    * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @param fluid Type from GEOMETRYPAIR::ElementDiscretization... representing the fluid.
-   * @param mortar Type from BEAMINTERACTION::ElementDiscretization... representing the mortar shape
+   * @param mortar Type from BeamInteraction::ElementDiscretization... representing the mortar shape
    * functions.
    */
   template <typename Beam, typename Fluid, typename Mortar>
@@ -77,7 +77,7 @@ namespace BEAMINTERACTION
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
         Core::LinAlg::Matrix<3, 1, scalar_type> v_beam) const;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

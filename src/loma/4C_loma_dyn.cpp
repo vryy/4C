@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
-// entry point for LOMA in DRT
+// entry point for LOMA in discretization management module
 /*----------------------------------------------------------------------*/
 void loma_dyn(int restart)
 {

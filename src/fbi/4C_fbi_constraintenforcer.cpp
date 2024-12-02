@@ -286,12 +286,12 @@ void Adapter::FBIConstraintenforcer::extract_current_element_dofs(
   std::vector<double> vel_tmp;
 
   // extract the current position of the beam element from the displacement vector
-  BEAMINTERACTION::Utils::extract_pos_dof_vec_absolute_values(*(structure_->discretization()),
+  BeamInteraction::Utils::extract_pos_dof_vec_absolute_values(*(structure_->discretization()),
       elements[0], *column_structure_displacement_,
       beam_dofvec);  // todo get "interface" displacements only for beam
                      // elements
   // extract velocity of the beam element
-  BEAMINTERACTION::Utils::extract_pos_dof_vec_values(
+  BeamInteraction::Utils::extract_pos_dof_vec_values(
       *(structure_->discretization()), elements[0], *column_structure_velocity_, vel_tmp);
 
   for (double val : vel_tmp) beam_dofvec.push_back(val);
@@ -310,7 +310,7 @@ void Adapter::FBIConstraintenforcer::extract_current_element_dofs(
   }
 
   // extract current fluid velocities
-  BEAMINTERACTION::Utils::get_current_element_dis(
+  BeamInteraction::Utils::get_current_element_dis(
       *(fluid_->discretization()), elements[1], *column_fluid_velocity_, vel_tmp);
 
   // todo This is a very crude way to separate the pressure from the velocity dofs.. maybe just

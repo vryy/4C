@@ -32,7 +32,7 @@ namespace GEOMETRYPAIR
 }  // namespace GEOMETRYPAIR
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for beam to solid meshtying.
@@ -173,7 +173,7 @@ namespace BEAMINTERACTION
     Core::LinAlg::Matrix<Beam::n_dof_, 1, double> ele1posref_offset_;
     Core::LinAlg::Matrix<Solid::n_dof_, 1, double> ele2posref_offset_;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -122,7 +122,7 @@ Discret::Elements::Rigidsphere::Rigidsphere(const Discret::Elements::Rigidsphere
     {
       if (iter.second != nullptr)
         mybondstobeams_[iter.first] =
-            std::dynamic_pointer_cast<BEAMINTERACTION::BeamLinkPinJointed>(iter.second->clone());
+            std::dynamic_pointer_cast<BeamInteraction::BeamLinkPinJointed>(iter.second->clone());
       else
         FOUR_C_THROW("something went wrong, I am sorry. Please go debugging.");
     }
@@ -200,8 +200,8 @@ void Discret::Elements::Rigidsphere::unpack(Core::Communication::UnpackBuffer& b
   for (int unsigned i = 0; i < numbonds; ++i)
   {
     std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::factory(buffer));
-    std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> link =
-        std::dynamic_pointer_cast<BEAMINTERACTION::BeamLinkPinJointed>(object);
+    std::shared_ptr<BeamInteraction::BeamLinkPinJointed> link =
+        std::dynamic_pointer_cast<BeamInteraction::BeamLinkPinJointed>(object);
     if (link == nullptr) FOUR_C_THROW("Received object is not a beam to beam linkage");
     mybondstobeams_[link->id()] = link;
   }

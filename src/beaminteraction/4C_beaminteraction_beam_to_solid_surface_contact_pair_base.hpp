@@ -40,13 +40,13 @@ namespace GEOMETRYPAIR
   template <typename Surface, typename ScalarType>
   class FaceElementTemplate;
 }  // namespace GEOMETRYPAIR
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidOutputWriterVisualization;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Base class for beam to surface surface contact.
@@ -153,7 +153,7 @@ namespace BEAMINTERACTION
     //! averaged nodal normals.
     std::shared_ptr<GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>> face_element_;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

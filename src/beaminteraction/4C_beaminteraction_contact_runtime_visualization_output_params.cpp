@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::
+BeamInteraction::BeamContactRuntimeVisualizationOutputParams::
     BeamContactRuntimeVisualizationOutputParams(const double restart_time)
     : isinit_(false),
       issetup_(false),
@@ -31,7 +31,7 @@ BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::init()
+void BeamInteraction::BeamContactRuntimeVisualizationOutputParams::init()
 {
   issetup_ = false;
   // empty for now
@@ -41,7 +41,7 @@ void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::init()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::setup()
+void BeamInteraction::BeamContactRuntimeVisualizationOutputParams::setup()
 {
   throw_error_if_not_init();
 
@@ -70,7 +70,7 @@ void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::
+void BeamInteraction::BeamContactRuntimeVisualizationOutputParams::
     throw_error_if_not_init_and_setup() const
 {
   if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
@@ -78,7 +78,7 @@ void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::throw_error_if_not_init() const
+void BeamInteraction::BeamContactRuntimeVisualizationOutputParams::throw_error_if_not_init() const
 {
   if (!is_init()) FOUR_C_THROW("init() has not been called, yet!");
 }

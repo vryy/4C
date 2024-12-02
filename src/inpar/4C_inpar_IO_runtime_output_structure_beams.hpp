@@ -25,12 +25,12 @@ namespace Inpar
 {
   namespace IORuntimeOutput
   {
-    namespace BEAMS
+    namespace Beam
     {
       /// set the valid parameters related to writing of output at runtime
       void set_valid_parameters(Teuchos::ParameterList& list);
 
-    }  // namespace BEAMS
+    }  // namespace Beam
   }    // namespace IORuntimeOutput
 }  // namespace Inpar
 

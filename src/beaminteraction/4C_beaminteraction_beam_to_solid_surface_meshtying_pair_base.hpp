@@ -35,13 +35,13 @@ namespace GEOMETRYPAIR
   template <typename Surface, typename ScalarType>
   class FaceElementTemplate;
 }  // namespace GEOMETRYPAIR
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidOutputWriterVisualization;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for beam to surface surface mesh tying.
@@ -152,7 +152,7 @@ namespace BEAMINTERACTION
     //! averaged nodal normals.
     std::shared_ptr<GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>> face_element_;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace FBI
 {
   class BeamToFluidMeshtyingVtkOutputParams
-      : public BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams
+      : public BeamInteraction::BeamToSolidVolumeMeshtyingVisualizationOutputParams
   {
    public:
     /**

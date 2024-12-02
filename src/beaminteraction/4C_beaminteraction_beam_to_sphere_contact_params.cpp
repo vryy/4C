@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamToSphereContactParams::BeamToSphereContactParams()
+BeamInteraction::BeamToSphereContactParams::BeamToSphereContactParams()
     : isinit_(false), issetup_(false), penalty_parameter_(-1.0)
 {
 }
@@ -22,7 +22,7 @@ BEAMINTERACTION::BeamToSphereContactParams::BeamToSphereContactParams()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 
-void BEAMINTERACTION::BeamToSphereContactParams::init()
+void BeamInteraction::BeamToSphereContactParams::init()
 {
   issetup_ = false;
 
@@ -41,7 +41,7 @@ void BEAMINTERACTION::BeamToSphereContactParams::init()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToSphereContactParams::setup()
+void BeamInteraction::BeamToSphereContactParams::setup()
 {
   check_init();
 

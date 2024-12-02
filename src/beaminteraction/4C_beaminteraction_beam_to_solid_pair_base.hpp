@@ -18,7 +18,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Base class for beam to solid interactions.
@@ -185,7 +185,7 @@ namespace BEAMINTERACTION
     //! Reference nodal positions (and tangents) of the beam.
     GEOMETRYPAIR::ElementData<Beam, double> ele1posref_;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

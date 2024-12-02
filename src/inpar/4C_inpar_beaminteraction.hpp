@@ -23,7 +23,7 @@ namespace Core::Conditions
 }
 namespace Inpar
 {
-  namespace BEAMINTERACTION
+  namespace BeamInteraction
   {
     enum RepartitionStrategy
     {
@@ -180,7 +180,7 @@ namespace Inpar
      * \brief Get all available beam interaction conditions, excluding the default value.
      */
     void beam_interaction_conditions_get_all(
-        std::vector<Inpar::BEAMINTERACTION::BeamInteractionConditions>& interactions);
+        std::vector<Inpar::BeamInteraction::BeamInteractionConditions>& interactions);
 
     /// set the beam interaction parameters
     void set_valid_parameters(Teuchos::ParameterList& list);
@@ -189,7 +189,7 @@ namespace Inpar
     void set_valid_conditions(
         std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist);
 
-  }  // namespace BEAMINTERACTION
+  }  // namespace BeamInteraction
 
 }  // namespace Inpar
 

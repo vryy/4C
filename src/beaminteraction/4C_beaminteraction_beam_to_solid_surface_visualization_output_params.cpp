@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::
+BeamInteraction::BeamToSolidSurfaceVisualizationOutputParams::
     BeamToSolidSurfaceVisualizationOutputParams()
     : isinit_(false),
       issetup_(false),
@@ -38,7 +38,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::init()
+void BeamInteraction::BeamToSolidSurfaceVisualizationOutputParams::init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -47,7 +47,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::init()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::setup()
+void BeamInteraction::BeamToSolidSurfaceVisualizationOutputParams::setup()
 {
   check_init();
 

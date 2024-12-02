@@ -27,7 +27,7 @@ namespace Core::LinAlg
   class MultiMapExtractor;
 }  // namespace Core::LinAlg
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidVolumeMeshtyingVisualizationOutputParams;
 }

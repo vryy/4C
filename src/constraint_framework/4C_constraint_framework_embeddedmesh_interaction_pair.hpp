@@ -35,12 +35,6 @@ namespace Cut
   class CutWizard;
   class BoundaryCell;
 }  // namespace Cut
-
-namespace DRT
-{
-  class Discretization;
-  class Element;
-}  // namespace DRT
 namespace GEOMETRYPAIR
 {
   class GeometryPair;

@@ -50,7 +50,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
   extrusionvalue_ = std::make_shared<std::vector<double>>();
   extrusionvalue_->clear();
 
-  Inpar::BEAMCONTACT::OctreeType bboxtype_input = Inpar::BEAMCONTACT::boct_none;
+  Inpar::BeamContact::OctreeType bboxtype_input = Inpar::BeamContact::boct_none;
 
   // This OctTree may be used for contact search as well as search for potential-based interaction
   // it will thus be called with slightly different parameter sets
@@ -60,7 +60,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
   {
     // octree specs
     bboxtype_input =
-        Teuchos::getIntegralValue<Inpar::BEAMCONTACT::OctreeType>(params, "BEAMS_OCTREE");
+        Teuchos::getIntegralValue<Inpar::BeamContact::OctreeType>(params, "BEAMS_OCTREE");
 
     // additive or multiplicative extrusion of bounding boxes
     if (params.get<bool>("BEAMS_ADDITEXT"))
@@ -95,7 +95,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
   else if (params.name() == "DAT FILE->BEAM POTENTIAL")
   {
     bboxtype_input =
-        Teuchos::getIntegralValue<Inpar::BEAMCONTACT::OctreeType>(params, "BEAMPOT_OCTREE");
+        Teuchos::getIntegralValue<Inpar::BeamContact::OctreeType>(params, "BEAMPOT_OCTREE");
 
     additiveextrusion_ = true;
     extrusionvalue_->push_back(Teuchos::getDoubleParameter(params, "CUTOFFRADIUS"));
@@ -134,14 +134,14 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
   // determine bounding box type
   switch (bboxtype_input)
   {
-    case Inpar::BEAMCONTACT::boct_aabb:
+    case Inpar::BeamContact::boct_aabb:
     {
       if (!Core::Communication::my_mpi_rank(discret_.get_comm()))
         std::cout << "Search routine:\nOctree + Axis Aligned BBs" << std::endl;
       boundingbox_ = Beam3ContactOctTree::axisaligned;
     }
     break;
-    case Inpar::BEAMCONTACT::boct_cobb:
+    case Inpar::BeamContact::boct_cobb:
     {
       if (!Core::Communication::my_mpi_rank(discret_.get_comm()))
         std::cout << "Search routine:\nOctree + Cylindrical Oriented BBs" << std::endl;
@@ -152,7 +152,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
             "Only axis aligned or spherical bounding boxes possible for beam-to-solid contact!");
     }
     break;
-    case Inpar::BEAMCONTACT::boct_spbb:
+    case Inpar::BeamContact::boct_spbb:
     {
       if (!Core::Communication::my_mpi_rank(discret_.get_comm()))
         std::cout << "Search routine:\nOctree + Spherical BBs" << std::endl;
@@ -451,8 +451,8 @@ void Beam3ContactOctTree::initialize_octree_search()
           (*diameter_)[i] =
               2.0 * (dynamic_cast<Discret::Elements::Rigidsphere*>(element))->radius();
         // If we have a solid element, we don't need its diameter and can it set to zero:
-        else if (!BEAMINTERACTION::Utils::is_beam_element(*element) and
-                 !BEAMINTERACTION::Utils::is_rigid_sphere_element(*element))
+        else if (!BeamInteraction::Utils::is_beam_element(*element) and
+                 !BeamInteraction::Utils::is_rigid_sphere_element(*element))
           (*diameter_)[i] = 0.0;
         // feasibility check
         if ((*diameter_)[i] < 0.0) FOUR_C_THROW("ERROR: Did not receive feasible element radius.");
@@ -502,7 +502,7 @@ void Beam3ContactOctTree::create_bounding_boxes(
       // store nodal positions into matrix coords
       Core::LinAlg::SerialDenseMatrix coord(3, 2, true);
 
-      if (BEAMINTERACTION::Utils::is_beam_element(*element))
+      if (BeamInteraction::Utils::is_beam_element(*element))
       {
         for (int i = 0; i < 2; i++)
         {
@@ -511,7 +511,7 @@ void Beam3ContactOctTree::create_bounding_boxes(
           for (int j = 0; j < 3; j++) coord(j, i) = coord_aux(j);
         }
       }
-      else if (BEAMINTERACTION::Utils::is_rigid_sphere_element(*element))
+      else if (BeamInteraction::Utils::is_rigid_sphere_element(*element))
       {
         int gid = element->nodes()[0]->id();
         Core::LinAlg::Matrix<3, 1> coord_aux = currentpositions[gid];
@@ -835,7 +835,7 @@ void Beam3ContactOctTree::create_spbb(Core::LinAlg::SerialDenseMatrix& coord, co
   Core::Elements::Element* element = searchdis_.l_col_element(elecolid);
   double diameter = 0.0;
 
-  if (BEAMINTERACTION::Utils::is_beam_element(*element))
+  if (BeamInteraction::Utils::is_beam_element(*element))
   {
     if (coord.numRows() == 3 and coord.numCols() == 2)
     {
@@ -846,7 +846,7 @@ void Beam3ContactOctTree::create_spbb(Core::LinAlg::SerialDenseMatrix& coord, co
     else
       FOUR_C_THROW("coord matrix of nodal positions has wrong dimensions here!");
   }
-  else if (BEAMINTERACTION::Utils::is_rigid_sphere_element(*element))
+  else if (BeamInteraction::Utils::is_rigid_sphere_element(*element))
   {
     diameter = (*diameter_)[elecolid];
   }
@@ -1493,7 +1493,7 @@ void Beam3ContactOctTree::bounding_box_intersection(
           // should not get into contact. In contrary to a former criterion based on filament
           // numbers (which forbids self contact), this method works for arbitrary element types and
           // still allows for self contact!!!
-          if (BEAMINTERACTION::elements_share_node(*element1, *element2)) considerpair = false;
+          if (BeamInteraction::elements_share_node(*element1, *element2)) considerpair = false;
         }
         if (considerpair)
         {
@@ -1720,7 +1720,7 @@ bool Beam3ContactOctTree::intersection_cobb(
       //      double t_02 = Teuchos::Time::wallTime();
       t1 = Core::FADUtils::diff_vector(r1_b, r1_a);
       t2 = Core::FADUtils::diff_vector(r2_b, r2_a);
-      double angle = BEAMINTERACTION::calc_angle(t1, t2);
+      double angle = BeamInteraction::calc_angle(t1, t2);
       //      std::cout<<"(i,j) = "<<i<<", "<<j<<",  Angle Calc : "<<
       //      Teuchos::Time::wallTime()-t_02<<std::endl;
 
@@ -1730,7 +1730,7 @@ bool Beam3ContactOctTree::intersection_cobb(
       {
         std::pair<double, double> closestpoints(std::make_pair(0.0, 0.0));
         bool etaset = false;
-        intersection = BEAMINTERACTION::intersect_arbitrary_cylinders(
+        intersection = BeamInteraction::intersect_arbitrary_cylinders(
             r1_a, r1_b, r2_a, r2_b, distancelimit, closestpoints, etaset);
         //        std::cout<<"(i,j) = "<<i<<", "<<j<<",  Isec nonpar: "<<
         //        Teuchos::Time::wallTime()-t_03<<std::endl;
@@ -1738,7 +1738,7 @@ bool Beam3ContactOctTree::intersection_cobb(
       else  // parallel case
       {
         intersection =
-            BEAMINTERACTION::intersect_parallel_cylinders(r1_a, r1_b, r2_a, r2_b, distancelimit);
+            BeamInteraction::intersect_parallel_cylinders(r1_a, r1_b, r2_a, r2_b, distancelimit);
         //        std::cout<<"(i,j) = "<<i<<", "<<j<<",  Isec par   : "<<
         //        Teuchos::Time::wallTime()-t_03<<std::endl;
       }

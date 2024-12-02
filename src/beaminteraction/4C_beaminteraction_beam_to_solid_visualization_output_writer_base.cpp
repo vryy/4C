@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::BeamToSolidVisualizationOutputWriterBase(
+BeamInteraction::BeamToSolidVisualizationOutputWriterBase::BeamToSolidVisualizationOutputWriterBase(
     const std::string& base_output_name, Core::IO::VisualizationParameters visualization_params)
     : base_output_name_(base_output_name), visualization_params_(std::move(visualization_params))
 {
@@ -27,8 +27,8 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::BeamToSolidVisualizat
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
-BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_writer(
+std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>
+BeamInteraction::BeamToSolidVisualizationOutputWriterBase::add_visualization_writer(
     const std::string& writer_name, const std::string& writer_name_key)
 {
   const auto& it = visualization_writers_.find(writer_name_key);
@@ -39,7 +39,7 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_wri
   }
   else
   {
-    auto new_writer = std::make_shared<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>(
+    auto new_writer = std::make_shared<BeamInteraction::BeamToSolidOutputWriterVisualization>(
 
         base_output_name_ + "-" + writer_name, visualization_params_);
     visualization_writers_[writer_name_key] = new_writer;
@@ -50,8 +50,8 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_wri
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
-BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_writer(
+std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>
+BeamInteraction::BeamToSolidVisualizationOutputWriterBase::add_visualization_writer(
     const std::string& writer_name)
 {
   return add_visualization_writer(writer_name, writer_name);
@@ -60,8 +60,8 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_wri
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
-BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::get_visualization_writer(
+std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization>
+BeamInteraction::BeamToSolidVisualizationOutputWriterBase::get_visualization_writer(
     const std::string& writer_name)
 {
   const auto& it = visualization_writers_.find(writer_name);
@@ -74,7 +74,7 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::get_visualization_wri
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::write(
+void BeamInteraction::BeamToSolidVisualizationOutputWriterBase::write(
     const unsigned int timestep_number, const double time)
 {
   for (auto& it : visualization_writers_) it.second->write(timestep_number, time);

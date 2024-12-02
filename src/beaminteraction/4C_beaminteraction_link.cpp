@@ -17,19 +17,19 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-BEAMINTERACTION::BeamLinkType BEAMINTERACTION::BeamLinkType::instance_;
+BeamInteraction::BeamLinkType BeamInteraction::BeamLinkType::instance_;
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLink::BeamLink()
+BeamInteraction::BeamLink::BeamLink()
     : ParObject(),
       isinit_(false),
       issetup_(false),
       id_(-1),
       bspotpos1_(true),
       bspotpos2_(true),
-      linkertype_(Inpar::BEAMINTERACTION::linkertype_arbitrary),
+      linkertype_(Inpar::BeamInteraction::linkertype_arbitrary),
       timelinkwasset_(-1.0),
       reflength_(-1.0)
 {
@@ -38,7 +38,7 @@ BEAMINTERACTION::BeamLink::BeamLink()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLink::BeamLink(const BEAMINTERACTION::BeamLink& old)
+BeamInteraction::BeamLink::BeamLink(const BeamInteraction::BeamLink& old)
     : ParObject(old),
       isinit_(old.isinit_),
       issetup_(old.issetup_),
@@ -55,10 +55,10 @@ BEAMINTERACTION::BeamLink::BeamLink(const BEAMINTERACTION::BeamLink& old)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::init(const int id, const std::vector<std::pair<int, int>>& eleids,
+void BeamInteraction::BeamLink::init(const int id, const std::vector<std::pair<int, int>>& eleids,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
-    Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
+    Inpar::BeamInteraction::CrosslinkerType linkertype, double timelinkwasset)
 {
   issetup_ = false;
 
@@ -82,7 +82,7 @@ void BEAMINTERACTION::BeamLink::init(const int id, const std::vector<std::pair<i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::setup(const int matnum)
+void BeamInteraction::BeamLink::setup(const int matnum)
 {
   check_init();
 
@@ -91,7 +91,7 @@ void BEAMINTERACTION::BeamLink::setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::pack(Core::Communication::PackBuffer& data) const
+void BeamInteraction::BeamLink::pack(Core::Communication::PackBuffer& data) const
 {
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
@@ -119,7 +119,7 @@ void BEAMINTERACTION::BeamLink::pack(Core::Communication::PackBuffer& data) cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::unpack(Core::Communication::UnpackBuffer& buffer)
+void BeamInteraction::BeamLink::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -146,7 +146,7 @@ void BEAMINTERACTION::BeamLink::unpack(Core::Communication::UnpackBuffer& buffer
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::reset_state(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
+void BeamInteraction::BeamLink::reset_state(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
     std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad)
 {
   check_init_setup();
@@ -159,7 +159,7 @@ void BEAMINTERACTION::BeamLink::reset_state(std::vector<Core::LinAlg::Matrix<3, 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::print(std::ostream& out) const
+void BeamInteraction::BeamLink::print(std::ostream& out) const
 {
   check_init();
 

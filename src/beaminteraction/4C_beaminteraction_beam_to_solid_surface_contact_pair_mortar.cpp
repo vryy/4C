@@ -37,7 +37,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
+BeamInteraction::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
     Mortar>::BeamToSolidSurfaceContactPairMortar()
     : base_class()
 {
@@ -48,7 +48,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
+void BeamInteraction::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
     Mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
@@ -225,7 +225,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
+void BeamInteraction::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
     Mortar>::evaluate_and_assemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const std::shared_ptr<Epetra_FEVector>& force_vector,
@@ -258,7 +258,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
 
   // Assemble the terms to the global stiffness matrix
   Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-  BEAMINTERACTION::Utils::get_element_centerline_gid_indices(
+  BeamInteraction::Utils::get_element_centerline_gid_indices(
       discret, this->element1(), beam_centerline_gid);
   const std::vector<int>& patch_gid = this->face_element_->get_patch_gid();
 
@@ -295,7 +295,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
+void BeamInteraction::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
     Mortar>::get_pair_visualization(std::shared_ptr<BeamToSolidVisualizationOutputWriterBase>
                                         visualization_writer,
     Teuchos::ParameterList& visualization_params) const
@@ -303,7 +303,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   // Get visualization of base method.
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_continuous =
       visualization_writer->get_visualization_writer("btss-contact-mortar-continuous");
   if (visualization_continuous == nullptr) return;
 
@@ -326,8 +326,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
-    std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
-        visualization_params.get<std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+    std::shared_ptr<const BeamInteraction::BeamToSolidMortarManager> mortar_manager =
+        visualization_params.get<std::shared_ptr<const BeamInteraction::BeamToSolidMortarManager>>(
             "mortar_manager");
     std::shared_ptr<Core::LinAlg::Vector<double>> lambda =
         visualization_params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("lambda");
@@ -427,7 +427,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-ScalarType BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
+ScalarType BeamInteraction::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
     Mortar>::get_jacobian_for_configuration(const ScalarType& eta,
     const Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn mortar_configuration) const
 {
@@ -453,16 +453,16 @@ ScalarType BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam
  * @brief Factory function templated on the type of beam element and the surface shape
  */
 template <typename Beam, typename Surface, typename ScalarType>
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BeamInteraction::BeamContactPair>
 beam_to_solid_surface_contact_pair_mortar_factory_template_beam_surface(
-    const BEAMINTERACTION::BeamToSolidSurfaceContactParams& beam_to_surface_contact_params)
+    const BeamInteraction::BeamToSolidSurfaceContactParams& beam_to_surface_contact_params)
 {
   using namespace GEOMETRYPAIR;
 
   switch (beam_to_surface_contact_params.get_mortar_shape_function_type())
   {
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line2:
-      return std::make_shared<BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam,
+      return std::make_shared<BeamInteraction::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam,
           Surface, t_line2_scalar>>();
     default:
       FOUR_C_THROW("Got unexpected mortar shape function");
@@ -473,9 +473,9 @@ beam_to_solid_surface_contact_pair_mortar_factory_template_beam_surface(
  * @brief Factory function templated on the type of beam element
  */
 template <typename Beam>
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BeamInteraction::BeamContactPair>
 beam_to_solid_surface_contact_pair_mortar_factory_template_beam(
-    const BEAMINTERACTION::BeamToSolidSurfaceContactParams& beam_to_surface_contact_params,
+    const BeamInteraction::BeamToSolidSurfaceContactParams& beam_to_surface_contact_params,
     const Core::FE::CellType& surface_type)
 {
   using namespace GEOMETRYPAIR;
@@ -493,8 +493,8 @@ beam_to_solid_surface_contact_pair_mortar_factory_template_beam(
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::beam_to_solid_surface_contact_pair_mortar_factory(
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::beam_to_solid_surface_contact_pair_mortar_factory(
     const BeamToSolidSurfaceContactParams& beam_to_surface_contact_params,
     const Core::FE::CellType& surface_type, const bool beam_is_hermite)
 {

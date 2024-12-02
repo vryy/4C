@@ -158,7 +158,7 @@ namespace Discret
       /*!
           \brief evaluate function for Fluid element for porous flow
 
-          Specific evaluate function without any knowledge about DRT objects. This
+          Specific evaluate function without any knowledge about discretization objects. This
           way the element evaluation is independent of the specific mesh storage.
 
           \param params           (i) element parameter list
@@ -212,7 +212,7 @@ namespace Discret
       /*!
           \brief evaluate function for Fluid element for porous flow
 
-          Specific evaluate function without any knowledge about DRT objects. This
+          Specific evaluate function without any knowledge about discretization objects. This
           way the element evaluation is independent of the specific mesh storage.
 
               \param params           (i) element parameter list

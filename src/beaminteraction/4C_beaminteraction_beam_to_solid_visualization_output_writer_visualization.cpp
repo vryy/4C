@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVisualization(
+BeamInteraction::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVisualization(
     const std::string& writer_full_name, Core::IO::VisualizationParameters visualization_params)
     : Core::IO::VisualizationManager(std::move(visualization_params),
           *(Global::Problem::instance()->get_communicators()->global_comm()), writer_full_name),
@@ -32,7 +32,7 @@ BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVi
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
+void BeamInteraction::BeamToSolidOutputWriterVisualization::
     add_discretization_nodal_reference_position(
         const std::shared_ptr<const Core::FE::Discretization>& discret)
 {
@@ -89,7 +89,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
+void BeamInteraction::BeamToSolidOutputWriterVisualization::
     add_discretization_nodal_data_from_multivector(
         const std::string& data_name, const Core::LinAlg::MultiVector<double>& vector)
 {
@@ -108,7 +108,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
   for (int i_lid = 0; i_lid < num_my_gid; i_lid++) data_vector.push_back((vector_extract)[i_lid]);
 }
 
-void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::add_discretization_nodal_data(
+void BeamInteraction::BeamToSolidOutputWriterVisualization::add_discretization_nodal_data(
     const std::string& data_name, const Core::LinAlg::Vector<double>& vector)
 {
   add_discretization_nodal_data_from_multivector(data_name, vector);
@@ -117,7 +117,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::add_discretization_n
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::write(
+void BeamInteraction::BeamToSolidOutputWriterVisualization::write(
     const unsigned int timestep_number, const double time)
 {
   // Finalize everything and write all required vtk files to filesystem.

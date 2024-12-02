@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename ScalarType>
-ScalarType BEAMINTERACTION::penalty_force(
+ScalarType BeamInteraction::penalty_force(
     const ScalarType& gap, const BeamToSolidSurfaceContactParams& contact_params)
 {
   const Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw penalty_law =
@@ -78,7 +78,7 @@ ScalarType BEAMINTERACTION::penalty_force(
  *
  */
 template <typename ScalarType>
-ScalarType BEAMINTERACTION::penalty_potential(
+ScalarType BeamInteraction::penalty_potential(
     const ScalarType& gap, const BeamToSolidSurfaceContactParams& contact_params)
 {
   const Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw penalty_law =
@@ -126,7 +126,7 @@ ScalarType BEAMINTERACTION::penalty_potential(
  *
  */
 std::pair<unsigned int, unsigned int>
-BEAMINTERACTION::mortar_shape_functions_to_number_of_lagrange_values(
+BeamInteraction::mortar_shape_functions_to_number_of_lagrange_values(
     const std::shared_ptr<const BeamToSolidParamsBase>& beam_to_solid_params,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions shape_function,
     const unsigned int n_dim)
@@ -183,7 +183,7 @@ BEAMINTERACTION::mortar_shape_functions_to_number_of_lagrange_values(
 /**
  *
  */
-void BEAMINTERACTION::get_beam_triad_interpolation_scheme(const Core::FE::Discretization& discret,
+void BeamInteraction::get_beam_triad_interpolation_scheme(const Core::FE::Discretization& discret,
     const Core::LinAlg::Vector<double>& displacement_vector, const Core::Elements::Element* ele,
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
@@ -196,7 +196,7 @@ void BEAMINTERACTION::get_beam_triad_interpolation_scheme(const Core::FE::Discre
 
   // Get the rotations of the beam rotation nodes.
   std::vector<double> beam_displacement_vector_full_double;
-  BEAMINTERACTION::Utils::get_current_element_dis(
+  BeamInteraction::Utils::get_current_element_dis(
       discret, beam_ele, displacement_vector, beam_displacement_vector_full_double);
 
   // Create object for triad interpolation schemes.
@@ -216,7 +216,7 @@ void BEAMINTERACTION::get_beam_triad_interpolation_scheme(const Core::FE::Discre
  *
  */
 template <typename Solid, typename ScalarType>
-void BEAMINTERACTION::get_solid_rotation_vector(
+void BeamInteraction::get_solid_rotation_vector(
     const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
     const Core::LinAlg::Matrix<3, 1, double>& xi,
     const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
@@ -265,7 +265,7 @@ void BEAMINTERACTION::get_solid_rotation_vector(
  *
  */
 template <typename Solid, typename ScalarType>
-void BEAMINTERACTION::get_solid_rotation_vector_deformation_gradient_3d_general(
+void BeamInteraction::get_solid_rotation_vector_deformation_gradient_3d_general(
     const Core::LinAlg::Matrix<3, 1, double>& xi,
     const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
     const GEOMETRYPAIR::ElementData<Solid, ScalarType>& q_solid,
@@ -352,7 +352,7 @@ void BEAMINTERACTION::get_solid_rotation_vector_deformation_gradient_3d_general(
  *
  */
 template <typename Solid, typename ScalarType>
-void BEAMINTERACTION::
+void BeamInteraction::
     get_solid_rotation_vector_deformation_gradient_3d_general_in_cross_section_plane(
         const Core::LinAlg::Matrix<3, 1, double>& xi,
         const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
@@ -376,7 +376,7 @@ void BEAMINTERACTION::
  *
  */
 template <typename ScalarType>
-void BEAMINTERACTION::
+void BeamInteraction::
     get_solid_rotation_vector_deformation_gradient_3d_general_in_cross_section_plane(
         const Core::LinAlg::Matrix<3, 3, ScalarType>& F,
         const Core::LinAlg::Matrix<3, 3, double>& beam_ref_triad,
@@ -447,7 +447,7 @@ void BEAMINTERACTION::
  *
  */
 template <typename Solid, typename ScalarType>
-void BEAMINTERACTION::get_solid_rotation_vector_deformation_gradient_3d_base1(
+void BeamInteraction::get_solid_rotation_vector_deformation_gradient_3d_base1(
     const Core::LinAlg::Matrix<3, 1, double>& xi,
     const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
     const GEOMETRYPAIR::ElementData<Solid, ScalarType>& q_solid,
@@ -525,7 +525,7 @@ void BEAMINTERACTION::get_solid_rotation_vector_deformation_gradient_3d_base1(
  *
  */
 template <typename Solid, typename ScalarType>
-void BEAMINTERACTION::get_solid_rotation_vector_deformation_gradient3_d(
+void BeamInteraction::get_solid_rotation_vector_deformation_gradient3_d(
     const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
     const Core::LinAlg::Matrix<3, 1, double>& xi,
     const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
@@ -611,7 +611,7 @@ void BEAMINTERACTION::get_solid_rotation_vector_deformation_gradient3_d(
  *
  */
 template <typename Solid, typename ScalarType>
-void BEAMINTERACTION::get_solid_rotation_vector_polar_decomposition2_d(
+void BeamInteraction::get_solid_rotation_vector_polar_decomposition2_d(
     const Core::LinAlg::Matrix<3, 1, double>& xi,
     const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
     const GEOMETRYPAIR::ElementData<Solid, ScalarType>& q_solid,
@@ -687,7 +687,7 @@ void BEAMINTERACTION::get_solid_rotation_vector_polar_decomposition2_d(
  *
  */
 template <typename Solid, typename ScalarType>
-void BEAMINTERACTION::get_solid_rotation_vector_deformation_gradient2_d(
+void BeamInteraction::get_solid_rotation_vector_deformation_gradient2_d(
     const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
     const Core::LinAlg::Matrix<3, 1, double>& xi,
     const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
@@ -735,7 +735,7 @@ void BEAMINTERACTION::get_solid_rotation_vector_deformation_gradient2_d(
  *
  */
 template <typename ScalarType>
-void BEAMINTERACTION::check_plane_rotations(
+void BeamInteraction::check_plane_rotations(
     const Core::LinAlg::Matrix<3, 3, ScalarType> deformation_gradient,
     const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref)
 {
@@ -765,8 +765,8 @@ void BEAMINTERACTION::check_plane_rotations(
  *
  */
 template <typename Beam, typename Other, typename Mortar>
-void BEAMINTERACTION::assemble_local_mortar_contributions(
-    const BEAMINTERACTION::BeamContactPair* pair, const Core::FE::Discretization& discret,
+void BeamInteraction::assemble_local_mortar_contributions(
+    const BeamInteraction::BeamContactPair* pair, const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
     Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
@@ -828,7 +828,7 @@ void BEAMINTERACTION::assemble_local_mortar_contributions(
 /**
  * Explicit template initialization of template functions.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -913,7 +913,7 @@ namespace BEAMINTERACTION
 
 #define initialize_template_assemble_local_mortar_contributions(beam, other, mortar)             \
   template void assemble_local_mortar_contributions<beam, other, mortar>(                        \
-      const BEAMINTERACTION::BeamContactPair*, const Core::FE::Discretization&,                  \
+      const BeamInteraction::BeamContactPair*, const Core::FE::Discretization&,                  \
       const BeamToSolidMortarManager*, Core::LinAlg::SparseMatrix&, Core::LinAlg::SparseMatrix&, \
       Core::LinAlg::SparseMatrix&, Core::LinAlg::SparseMatrix&, Epetra_FEVector&,                \
       Epetra_FEVector&, Epetra_FEVector&,                                                        \
@@ -969,6 +969,6 @@ namespace BEAMINTERACTION
   initialize_template_assemble_local_mortar_contributions(t_hermite, t_nurbs9, t_line2);
   initialize_template_assemble_local_mortar_contributions(t_hermite, t_nurbs9, t_line3);
   initialize_template_assemble_local_mortar_contributions(t_hermite, t_nurbs9, t_line4);
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

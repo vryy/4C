@@ -17,14 +17,14 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declaration.
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidMortarManager;
   class BeamToSolidParamsBase;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   namespace SUBMODELEVALUATOR
   {
@@ -40,7 +40,7 @@ namespace BEAMINTERACTION
        * \brief Constructor.
        */
       BeamContactAssemblyManagerInDirect(
-          const std::shared_ptr<BEAMINTERACTION::BeamToSolidMortarManager>& mortar_manager)
+          const std::shared_ptr<BeamInteraction::BeamToSolidMortarManager>& mortar_manager)
           : BeamContactAssemblyManager(), mortar_manager_(mortar_manager){};
 
       /**
@@ -58,7 +58,7 @@ namespace BEAMINTERACTION
       /**
        * \brief Return a const pointer to the mortar manager.
        */
-      inline std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager> get_mortar_manager()
+      inline std::shared_ptr<const BeamInteraction::BeamToSolidMortarManager> get_mortar_manager()
           const
       {
         return mortar_manager_;
@@ -69,11 +69,11 @@ namespace BEAMINTERACTION
 
      private:
       //! Pointer to the mortar manager. This object stores the relevant mortar matrices.
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager_;
+      std::shared_ptr<BeamInteraction::BeamToSolidMortarManager> mortar_manager_;
     };
 
   }  // namespace SUBMODELEVALUATOR
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::BeamToSolidSurfaceMeshtyingParams()
+BeamInteraction::BeamToSolidSurfaceMeshtyingParams::BeamToSolidSurfaceMeshtyingParams()
     : BeamToSolidParamsBase(),
       coupling_type_(Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::none),
       output_params_ptr_(nullptr),
@@ -34,7 +34,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::BeamToSolidSurfaceMeshtyingP
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::init()
+void BeamInteraction::BeamToSolidSurfaceMeshtyingParams::init()
 {
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_solid_surface_meshtying_params_list =
@@ -90,8 +90,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::init()
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::get_visualization_output_params_ptr()
+std::shared_ptr<BeamInteraction::BeamToSolidSurfaceVisualizationOutputParams>
+BeamInteraction::BeamToSolidSurfaceMeshtyingParams::get_visualization_output_params_ptr()
 {
   return output_params_ptr_;
 };

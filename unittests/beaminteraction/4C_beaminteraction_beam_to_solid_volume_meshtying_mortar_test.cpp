@@ -46,7 +46,7 @@ namespace
      */
     template <typename BeamType, typename SolidType, typename LambdaType>
     void perform_mortar_pair_unit_test(
-        BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<BeamType, SolidType, LambdaType>&
+        BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<BeamType, SolidType, LambdaType>&
             contact_pair,
         const GEOMETRYPAIR::ElementData<BeamType, double>& q_beam,
         const Core::LinAlg::Matrix<9, 1, double>& q_beam_rot,
@@ -133,8 +133,8 @@ namespace
     typedef GEOMETRYPAIR::t_line2 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -301,8 +301,8 @@ namespace
     typedef GEOMETRYPAIR::t_line3 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -508,8 +508,8 @@ namespace
     typedef GEOMETRYPAIR::t_line4 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -754,8 +754,8 @@ namespace
     typedef GEOMETRYPAIR::t_line2 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -1030,8 +1030,8 @@ namespace
     typedef GEOMETRYPAIR::t_line3 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -1381,8 +1381,8 @@ namespace
     typedef GEOMETRYPAIR::t_line4 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -1807,8 +1807,8 @@ namespace
     typedef GEOMETRYPAIR::t_line2 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -2146,8 +2146,8 @@ namespace
     typedef GEOMETRYPAIR::t_line3 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -2581,8 +2581,8 @@ namespace
     typedef GEOMETRYPAIR::t_line4 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -3112,8 +3112,8 @@ namespace
     typedef GEOMETRYPAIR::t_line2 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -3244,8 +3244,8 @@ namespace
     typedef GEOMETRYPAIR::t_line3 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -3403,8 +3403,8 @@ namespace
     typedef GEOMETRYPAIR::t_line4 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -3589,8 +3589,8 @@ namespace
     typedef GEOMETRYPAIR::t_line2 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -3775,8 +3775,8 @@ namespace
     typedef GEOMETRYPAIR::t_line3 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.
@@ -4006,8 +4006,8 @@ namespace
     typedef GEOMETRYPAIR::t_line4 lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.

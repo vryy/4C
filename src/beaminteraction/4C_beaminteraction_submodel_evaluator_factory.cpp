@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::SUBMODELEVALUATOR::Factory::Factory()
+BeamInteraction::SUBMODELEVALUATOR::Factory::Factory()
 {
   // empty constructor
 }
@@ -27,33 +27,33 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Factory::Factory()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map>
-BEAMINTERACTION::SUBMODELEVALUATOR::Factory::build_model_evaluators(
-    const std::set<enum Inpar::BEAMINTERACTION::SubModelType>& submodeltypes) const
+BeamInteraction::SUBMODELEVALUATOR::Factory::build_model_evaluators(
+    const std::set<enum Inpar::BeamInteraction::SubModelType>& submodeltypes) const
 {
   // create a new standard map
   std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> model_map =
       std::make_shared<Solid::ModelEvaluator::BeamInteraction::Map>();
 
-  std::set<enum Inpar::BEAMINTERACTION::SubModelType>::const_iterator mt_iter;
+  std::set<enum Inpar::BeamInteraction::SubModelType>::const_iterator mt_iter;
   for (mt_iter = submodeltypes.begin(); mt_iter != submodeltypes.end(); ++mt_iter)
   {
     switch (*mt_iter)
     {
-      case Inpar::BEAMINTERACTION::submodel_beamcontact:
+      case Inpar::BeamInteraction::submodel_beamcontact:
         (*model_map)[*mt_iter] =
-            std::make_shared<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact>();
+            std::make_shared<BeamInteraction::SUBMODELEVALUATOR::BeamContact>();
         break;
-      case Inpar::BEAMINTERACTION::submodel_crosslinking:
+      case Inpar::BeamInteraction::submodel_crosslinking:
         (*model_map)[*mt_iter] =
-            std::make_shared<BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking>();
+            std::make_shared<BeamInteraction::SUBMODELEVALUATOR::Crosslinking>();
         break;
-      case Inpar::BEAMINTERACTION::submodel_spherebeamlink:
+      case Inpar::BeamInteraction::submodel_spherebeamlink:
         (*model_map)[*mt_iter] =
-            std::make_shared<BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking>();
+            std::make_shared<BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking>();
         break;
-      case Inpar::BEAMINTERACTION::submodel_potential:
+      case Inpar::BeamInteraction::submodel_potential:
         (*model_map)[*mt_iter] =
-            std::make_shared<BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential>();
+            std::make_shared<BeamInteraction::SUBMODELEVALUATOR::BeamPotential>();
         break;
       default:
         FOUR_C_THROW("Not yet implemented!");
@@ -67,8 +67,8 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Factory::build_model_evaluators(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map>
-BEAMINTERACTION::SUBMODELEVALUATOR::build_model_evaluators(
-    const std::set<enum Inpar::BEAMINTERACTION::SubModelType>& submodeltypes)
+BeamInteraction::SUBMODELEVALUATOR::build_model_evaluators(
+    const std::set<enum Inpar::BeamInteraction::SubModelType>& submodeltypes)
 {
   Factory factory;
   return factory.build_model_evaluators(submodeltypes);

@@ -22,7 +22,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief This base class represents a single beam-to-beam contact condition.
@@ -61,7 +61,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Create the beam to beam pairs needed for this condition (derived).
      */
-    std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair(
+    std::shared_ptr<BeamInteraction::BeamContactPair> create_contact_pair(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) override;
 
    protected:
@@ -83,7 +83,7 @@ namespace BEAMINTERACTION
     //! Set containing the other line element IDs.
     std::set<int> other_line_ids_;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

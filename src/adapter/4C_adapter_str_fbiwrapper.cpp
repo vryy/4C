@@ -30,8 +30,8 @@ Adapter::FBIStructureWrapper::FBIStructureWrapper(std::shared_ptr<Structure> str
   {
     FOUR_C_THROW("Prestressing for fluid-beam interaction not tested yet.");
   }
-  eletypeextractor_ = std::make_shared<BEAMINTERACTION::Utils::MapExtractor>();
-  BEAMINTERACTION::Utils::setup_ele_type_map_extractor(
+  eletypeextractor_ = std::make_shared<BeamInteraction::Utils::MapExtractor>();
+  BeamInteraction::Utils::setup_ele_type_map_extractor(
       structure_->discretization(), eletypeextractor_);
 }
 /*----------------------------------------------------------------------*/

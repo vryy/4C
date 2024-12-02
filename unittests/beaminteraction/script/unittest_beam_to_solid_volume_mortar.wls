@@ -205,8 +205,8 @@ functionStringPre="  /**
     typedef GEOMETRYPAIR::t_mathematica_mortar_type lambda_type;
 
     // Create the mesh tying mortar pair.
-    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
-        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+    BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
             lambda_type>();
 
     // Definition of variables for this test case.

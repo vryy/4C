@@ -31,15 +31,15 @@ namespace LargeRotations
 }  // namespace LargeRotations
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for beam to solid rotational meshtying.
    * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
-   * @param mortar Type from BEAMINTERACTION::ElementDiscretization... representing the mortar shape
+   * @param mortar Type from BeamInteraction::ElementDiscretization... representing the mortar shape
    * functions for displacement coupling.
-   * @param mortar_rot Type from BEAMINTERACTION::ElementDiscretization... representing the mortar
+   * @param mortar_rot Type from BeamInteraction::ElementDiscretization... representing the mortar
    * shape functions for rotational coupling.
    */
   template <typename Beam, typename Solid, typename Mortar, typename MortarRot>
@@ -128,7 +128,7 @@ namespace BEAMINTERACTION
         Core::LinAlg::Matrix<Solid::n_dof_, n_dof_rot_, double>& local_stiff_SB,
         Core::LinAlg::Matrix<Solid::n_dof_, Solid::n_dof_, double>& local_stiff_SS) const;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

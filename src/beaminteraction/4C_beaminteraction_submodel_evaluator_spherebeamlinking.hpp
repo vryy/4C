@@ -33,7 +33,7 @@ namespace Core::Elements
   class Element;
 }
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class SphereBeamLinkingParams;
   class BeamLinkPinJointed;
@@ -53,9 +53,9 @@ namespace BEAMINTERACTION
       void post_setup() override;
 
       //! Returns the type of the current model evaluator
-      Inpar::BEAMINTERACTION::SubModelType type() const override
+      Inpar::BeamInteraction::SubModelType type() const override
       {
-        return Inpar::BEAMINTERACTION::submodel_spherebeamlink;
+        return Inpar::BeamInteraction::submodel_spherebeamlink;
       }
 
       //! derived
@@ -159,16 +159,16 @@ namespace BEAMINTERACTION
 
       /// compute force dependent off rate for a catch-slip bond
       virtual void calc_force_dependent_catch_slip_bond_unbind_probability(
-          std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr, double& p_unbind);
+          std::shared_ptr<BeamInteraction::BeamLinkPinJointed> linkelepairptr, double& p_unbind);
 
       //! @}
 
      private:
       //! cell discretization
-      std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking> sm_crosslinkink_ptr_;
+      std::shared_ptr<BeamInteraction::SUBMODELEVALUATOR::Crosslinking> sm_crosslinkink_ptr_;
 
       //! data container holding all beam contact related parameters
-      std::shared_ptr<BEAMINTERACTION::SphereBeamLinkingParams> spherebeamlinking_params_ptr_;
+      std::shared_ptr<BeamInteraction::SphereBeamLinkingParams> spherebeamlinking_params_ptr_;
 
       //! runtime output for cell beam crosslinks (integrins)
       std::shared_ptr<Core::IO::VisualizationManager> visualization_manager_ptr_;
@@ -178,7 +178,7 @@ namespace BEAMINTERACTION
     };
 
   }  // namespace SUBMODELEVALUATOR
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

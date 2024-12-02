@@ -35,7 +35,7 @@ namespace GEOMETRYPAIR
 }  // namespace GEOMETRYPAIR
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class representing a pair of elements for beam to fluid meshtying
@@ -132,7 +132,7 @@ namespace BEAMINTERACTION
     GEOMETRYPAIR::ElementData<Beam, double> ele1poscur_;
     GEOMETRYPAIR::ElementData<Fluid, double> ele2poscur_;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

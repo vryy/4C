@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   namespace Geo
   {
@@ -183,7 +183,7 @@ namespace BEAMINTERACTION
         const Core::LinAlg::Matrix<3, 1, T>& b);
 
   }  // namespace Geo
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -26,16 +26,16 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect::
+BeamInteraction::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect::
     PartitionedBeamInteractionAssemblyManagerIndirect(
-        std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& assembly_contact_elepairs,
+        std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>& assembly_contact_elepairs,
         std::shared_ptr<const Core::FE::Discretization>& discretization1,
         std::shared_ptr<const Core::FE::Discretization>& discretization2,
         std::shared_ptr<FBI::BeamToFluidMeshtyingParams> beam_contact_params_ptr)
     : PartitionedBeamInteractionAssemblyManager(assembly_contact_elepairs)
 {
   // Create the mortar manager.
-  mortar_manager_ = std::make_shared<BEAMINTERACTION::BeamToFluidMortarManager>(discretization1,
+  mortar_manager_ = std::make_shared<BeamInteraction::BeamToFluidMortarManager>(discretization1,
       discretization2, beam_contact_params_ptr, discretization1->dof_row_map()->MaxAllGID());
 
   // Setup the mortar manager.
@@ -47,7 +47,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerInd
 /**
  *
  */
-void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect::
+void BeamInteraction::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect::
     evaluate_force_stiff(const Core::FE::Discretization& discretization1,
         const Core::FE::Discretization& discretization2, std::shared_ptr<Epetra_FEVector>& ff,
         std::shared_ptr<Epetra_FEVector>& fb, std::shared_ptr<Core::LinAlg::SparseOperator> cff,

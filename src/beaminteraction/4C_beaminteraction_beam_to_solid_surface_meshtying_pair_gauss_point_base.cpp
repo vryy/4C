@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<ScalarType, Beam,
+BeamInteraction::BeamToSolidSurfaceMeshtyingPairGaussPointBase<ScalarType, Beam,
     Surface>::BeamToSolidSurfaceMeshtyingPairGaussPointBase()
     : base_class()
 {
@@ -32,7 +32,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-double BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<ScalarType, Beam,
+double BeamInteraction::BeamToSolidSurfaceMeshtyingPairGaussPointBase<ScalarType, Beam,
     Surface>::get_energy() const
 {
   return Core::FADUtils::cast_to_double(get_penalty_potential());
@@ -42,7 +42,7 @@ double BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<ScalarType
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-ScalarType BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<ScalarType, Beam,
+ScalarType BeamInteraction::BeamToSolidSurfaceMeshtyingPairGaussPointBase<ScalarType, Beam,
     Surface>::get_penalty_potential() const
 {
   using namespace Inpar::BeamToSolid;
@@ -100,7 +100,7 @@ ScalarType BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<Scalar
 /**
  * Explicit template initialization of template class.
  */
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   using namespace GEOMETRYPAIR;
 
@@ -135,6 +135,6 @@ namespace BEAMINTERACTION
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8>;
   template class BeamToSolidSurfaceMeshtyingPairGaussPointBase<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9>;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

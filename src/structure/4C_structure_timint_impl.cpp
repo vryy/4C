@@ -3225,7 +3225,7 @@ int Solid::TimIntImpl::beam_contact_nonlinear_solve()
   // get some parameters
   //********************************************************************
   // strategy type
-  auto strategy = Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Strategy>(
+  auto strategy = Teuchos::getIntegralValue<Inpar::BeamContact::Strategy>(
       beamcman_->beam_contact_parameters(), "BEAMS_STRATEGY");
 
   // unknown types of nonlinear iteration schemes
@@ -3236,7 +3236,7 @@ int Solid::TimIntImpl::beam_contact_nonlinear_solve()
   // solving strategy using regularization with penalty method
   // (nonlinear solution approach: ordinary NEWTON)
   //**********************************************************************
-  if (strategy == Inpar::BEAMCONTACT::bstr_penalty)
+  if (strategy == Inpar::BeamContact::bstr_penalty)
   {
     // nonlinear iteration (Newton)
     int error = newton_full();
@@ -3251,7 +3251,7 @@ int Solid::TimIntImpl::beam_contact_nonlinear_solve()
   // misuse of beam contact module for GMSH output
   // (nonlinear solution approach: ordinary NEWTON)
   //**********************************************************************
-  else if (strategy == Inpar::BEAMCONTACT::bstr_gmshonly)
+  else if (strategy == Inpar::BeamContact::bstr_gmshonly)
   {
     // nonlinear iteration (Newton)
     int error = newton_full();

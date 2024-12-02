@@ -20,9 +20,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::
+BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::
     BeamContactAssemblyManagerDirect(
-        const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>&
+        const std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>&
             assembly_contact_elepairs)
     : BeamContactAssemblyManager(), assembly_contact_elepairs_(assembly_contact_elepairs)
 {
@@ -32,7 +32,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::
 /**
  *
  */
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::evaluate_force_stiff(
+void BeamInteraction::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::evaluate_force_stiff(
     std::shared_ptr<Core::FE::Discretization> discret,
     const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
     std::shared_ptr<Epetra_FEVector> fe_sysvec,
@@ -74,7 +74,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::evalu
 
       // assemble force vector and stiffness matrix affecting the centerline DoFs only
       // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-      BEAMINTERACTION::Utils::assemble_centerline_dof_force_stiff_into_element_force_stiff(*discret,
+      BeamInteraction::Utils::assemble_centerline_dof_force_stiff_into_element_force_stiff(*discret,
           elegids, eleforce_centerlineDOFs, elestiff_centerlineDOFs, &eleforce, &elestiff);
 
 
@@ -84,7 +84,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::evalu
 
       // assemble the contributions into force vector class variable
       // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-      BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(
+      BeamInteraction::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(
           *discret, elegids, eleforce, elestiff, fe_sysvec, fe_sysmat);
     }
 

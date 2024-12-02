@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for beam to surface surface contact based on manual variation of the gap function.
@@ -82,7 +82,7 @@ namespace BEAMINTERACTION
         const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector) override;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

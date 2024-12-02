@@ -44,7 +44,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename Beam, typename Solid, typename Mortar>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid, Mortar>::pre_evaluate()
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid, Mortar>::pre_evaluate()
 {
   // Call pre_evaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
@@ -58,9 +58,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid, Mort
  *
  */
 template <typename Beam, typename Solid, typename Mortar>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
     Mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
-    const BEAMINTERACTION::BeamToSolidMortarManager* mortar_manager,
+    const BeamInteraction::BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
     Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
     Core::LinAlg::SparseMatrix& global_force_beam_lin_lambda,
@@ -332,7 +332,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
  *
  */
 template <typename Beam, typename Solid, typename Mortar>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
     Mortar>::evaluate_and_assemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const std::shared_ptr<Epetra_FEVector>& force_vector,
@@ -382,7 +382,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
  *
  */
 template <typename Beam, typename Solid, typename Mortar>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
     Mortar>::reset_rotation_state(const Core::FE::Discretization& discret,
     const std::shared_ptr<const Core::LinAlg::Vector<double>>& ia_discolnp)
 {
@@ -394,7 +394,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
  *
  */
 template <typename Beam, typename Solid, typename Mortar>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
     Mortar>::get_pair_visualization(std::shared_ptr<BeamToSolidVisualizationOutputWriterBase>
                                         visualization_writer,
     Teuchos::ParameterList& visualization_params) const
@@ -402,7 +402,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
   // Get visualization of base method.
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_continuous =
       visualization_writer->get_visualization_writer("btsv-mortar-continuous");
 
   const std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>&
@@ -448,9 +448,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
 
       // Get the mortar manager and the global lambda vector, those objects will be used to get the
       // discrete Lagrange multiplier values for this pair.
-      std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
+      std::shared_ptr<const BeamInteraction::BeamToSolidMortarManager> mortar_manager =
           visualization_params
-              .get<std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+              .get<std::shared_ptr<const BeamInteraction::BeamToSolidMortarManager>>(
                   "mortar_manager");
       std::shared_ptr<Core::LinAlg::Vector<double>> lambda =
           visualization_params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("lambda");
@@ -570,7 +570,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
  *
  */
 template <typename Beam, typename Solid, typename Mortar>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
+void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
     Mortar>::get_triad_at_xi_double(const double xi, Core::LinAlg::Matrix<3, 3, double>& triad,
     const bool reference) const
 {
@@ -587,8 +587,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
 /**
  *
  */
-std::shared_ptr<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::create_beam_to_solid_volume_pair_mortar_cross_section(
+std::shared_ptr<BeamInteraction::BeamContactPair>
+BeamInteraction::create_beam_to_solid_volume_pair_mortar_cross_section(
     const Core::FE::CellType shape,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
     const int n_fourier_modes)

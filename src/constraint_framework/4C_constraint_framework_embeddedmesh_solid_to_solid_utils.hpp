@@ -39,13 +39,6 @@ namespace Core::LinAlg
   class Matrix;
 }  // namespace Core::LinAlg
 
-namespace DRT
-{
-  class Node;
-  class Element;
-  class Discretization;
-}  // namespace DRT
-
 namespace Core::LinAlg
 {
   class SparseMatrix;

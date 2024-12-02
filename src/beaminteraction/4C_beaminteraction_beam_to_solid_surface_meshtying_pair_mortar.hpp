@@ -28,13 +28,13 @@ namespace Inpar
 }  // namespace Inpar
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for Mortar beam to surface surface mesh tying.
    * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @tparam surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
-   * @tparam mortar Type from BEAMINTERACTION::ElementDiscretization... representing the mortar
+   * @tparam mortar Type from BeamInteraction::ElementDiscretization... representing the mortar
    * shape functions.
    */
   template <typename Beam, typename Surface, typename Mortar>
@@ -87,10 +87,10 @@ namespace BEAMINTERACTION
    * @param mortar_shapefunction (in) Type of mortar shape function.
    * @return Pointer to the created pair.
    */
-  std::shared_ptr<BEAMINTERACTION::BeamContactPair>
+  std::shared_ptr<BeamInteraction::BeamContactPair>
   beam_to_solid_surface_meshtying_pair_mortar_factory(const Core::FE::CellType surface_shape,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction);
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

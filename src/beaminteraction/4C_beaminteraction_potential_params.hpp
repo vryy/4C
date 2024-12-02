@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToBeamPotentialRuntimeOutputParams;
 
@@ -62,13 +62,13 @@ namespace BEAMINTERACTION
       return *pot_law_prefactors_;
     }
 
-    inline enum Inpar::BEAMPOTENTIAL::BeamPotentialType potential_type() const
+    inline enum Inpar::BeamPotential::BeamPotentialType potential_type() const
     {
       throw_error_if_not_init_and_setup();
       return potential_type_;
     }
 
-    inline enum Inpar::BEAMPOTENTIAL::BeamPotentialStrategy strategy() const
+    inline enum Inpar::BeamPotential::BeamPotentialStrategy strategy() const
     {
       throw_error_if_not_init_and_setup();
       return strategy_;
@@ -80,7 +80,7 @@ namespace BEAMINTERACTION
       return cutoff_radius_;
     }
 
-    inline enum Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type() const
+    inline enum Inpar::BeamPotential::BeamPotentialRegularizationType regularization_type() const
     {
       throw_error_if_not_init_and_setup();
       return regularization_type_;
@@ -110,7 +110,7 @@ namespace BEAMINTERACTION
       return use_fad_;
     }
 
-    inline enum Inpar::BEAMPOTENTIAL::MasterSlaveChoice choice_master_slave() const
+    inline enum Inpar::BeamPotential::MasterSlaveChoice choice_master_slave() const
     {
       throw_error_if_not_init_and_setup();
       return choice_master_slave_;
@@ -124,7 +124,7 @@ namespace BEAMINTERACTION
     }
 
     //! get the data container for parameters regarding visualization output
-    inline std::shared_ptr<const BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
+    inline std::shared_ptr<const BeamInteraction::BeamToBeamPotentialRuntimeOutputParams>
     get_beam_potential_visualization_output_params() const
     {
       throw_error_if_not_init_and_setup();
@@ -154,16 +154,16 @@ namespace BEAMINTERACTION
     std::shared_ptr<std::vector<double>> pot_law_prefactors_;
 
     //! type of applied potential (volume, surface)
-    enum Inpar::BEAMPOTENTIAL::BeamPotentialType potential_type_;
+    enum Inpar::BeamPotential::BeamPotentialType potential_type_;
 
     //! strategy to evaluate interaction potential
-    enum Inpar::BEAMPOTENTIAL::BeamPotentialStrategy strategy_;
+    enum Inpar::BeamPotential::BeamPotentialStrategy strategy_;
 
     //! neglect all contributions at separation larger than this cutoff radius
     double cutoff_radius_;
 
     //! type of regularization to use for force law at separations below specified separation
-    enum Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type_;
+    enum Inpar::BeamPotential::BeamPotentialRegularizationType regularization_type_;
 
     //! use specified regularization type for separations smaller than this value
     double regularization_separation_;
@@ -178,14 +178,14 @@ namespace BEAMINTERACTION
     bool use_fad_;
 
     //! rule how to assign the role of master and slave to beam elements (if applicable)
-    enum Inpar::BEAMPOTENTIAL::MasterSlaveChoice choice_master_slave_;
+    enum Inpar::BeamPotential::MasterSlaveChoice choice_master_slave_;
 
     //! whether to write visualization output at runtime
     bool visualization_output_;
 
     //! data container for input parameters related to visualization output of beam contact at
     //! runtime
-    std::shared_ptr<BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
+    std::shared_ptr<BeamInteraction::BeamToBeamPotentialRuntimeOutputParams>
         params_runtime_visualization_output_btb_potential_;
 
     //! within this length starting from the master beam end point the potential is smoothly
@@ -194,7 +194,7 @@ namespace BEAMINTERACTION
     double potential_reduction_length_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

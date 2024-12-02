@@ -18,7 +18,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Base class for beam to solid parameters.
@@ -157,7 +157,7 @@ namespace BEAMINTERACTION
     bool rotational_coupling_;
   };
 
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

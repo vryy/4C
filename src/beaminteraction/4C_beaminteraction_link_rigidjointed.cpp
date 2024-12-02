@@ -19,20 +19,20 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-BEAMINTERACTION::BeamLinkRigidJointedType BEAMINTERACTION::BeamLinkRigidJointedType::instance_;
+BeamInteraction::BeamLinkRigidJointedType BeamInteraction::BeamLinkRigidJointedType::instance_;
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLinkRigidJointed::BeamLinkRigidJointed()
+BeamInteraction::BeamLinkRigidJointed::BeamLinkRigidJointed()
     : BeamLink(), bspottriad1_(true), bspottriad2_(true), lambdarel1_(true), lambdarel2_(true)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BEAMINTERACTION::BeamLinkRigidJointed::BeamLinkRigidJointed(
-    const BEAMINTERACTION::BeamLinkRigidJointed& old)
+BeamInteraction::BeamLinkRigidJointed::BeamLinkRigidJointed(
+    const BeamInteraction::BeamLinkRigidJointed& old)
     : BeamLink(old),
       bspottriad1_(old.bspottriad1_),
       bspottriad2_(old.bspottriad2_),
@@ -44,11 +44,11 @@ BEAMINTERACTION::BeamLinkRigidJointed::BeamLinkRigidJointed(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::init(const int id,
+void BeamInteraction::BeamLinkRigidJointed::init(const int id,
     const std::vector<std::pair<int, int>>& eleids,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
-    Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
+    Inpar::BeamInteraction::CrosslinkerType linkertype, double timelinkwasset)
 {
   issetup_ = false;
 
@@ -194,7 +194,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::init(const int id,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::setup(const int matnum)
+void BeamInteraction::BeamLinkRigidJointed::setup(const int matnum)
 {
   check_init();
 
@@ -203,7 +203,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::pack(Core::Communication::PackBuffer& data) const
+void BeamInteraction::BeamLinkRigidJointed::pack(Core::Communication::PackBuffer& data) const
 {
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
@@ -225,7 +225,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::pack(Core::Communication::PackBuffer
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::unpack(Core::Communication::UnpackBuffer& buffer)
+void BeamInteraction::BeamLinkRigidJointed::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -248,7 +248,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::unpack(Core::Communication::UnpackBu
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::reset_state(
+void BeamInteraction::BeamLinkRigidJointed::reset_state(
     std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
     std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad)
 {
@@ -272,16 +272,16 @@ void BEAMINTERACTION::BeamLinkRigidJointed::reset_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::shared_ptr<BEAMINTERACTION::BeamLinkRigidJointed>
-BEAMINTERACTION::BeamLinkRigidJointed::create()
+std::shared_ptr<BeamInteraction::BeamLinkRigidJointed>
+BeamInteraction::BeamLinkRigidJointed::create()
 {
   // for now, we always use a 2-noded linear Reissner element
-  return std::make_shared<BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed>();
+  return std::make_shared<BeamInteraction::BeamLinkBeam3rLine2RigidJointed>();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::print(std::ostream& out) const
+void BeamInteraction::BeamLinkRigidJointed::print(std::ostream& out) const
 {
   check_init();
 

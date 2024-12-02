@@ -72,7 +72,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-// entry point for Fluid on Ale in DRT
+// entry point for Fluid on Ale in discretization management
 /*----------------------------------------------------------------------*/
 void fluid_ale_drt()
 {
@@ -135,7 +135,7 @@ void fluid_ale_drt()
 }
 
 /*----------------------------------------------------------------------*/
-// entry point for Fluid on XFEM in DRT
+// entry point for Fluid on XFEM in discretization management
 /*----------------------------------------------------------------------*/
 void fluid_xfem_drt()
 {
@@ -354,7 +354,7 @@ void fsi_immersed_drt()
   Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
 }
 /*----------------------------------------------------------------------*/
-// entry point for FSI using ALE in DRT
+// entry point for FSI using ALE in discretization management
 /*----------------------------------------------------------------------*/
 void fsi_ale_drt()
 {
@@ -664,7 +664,7 @@ void fsi_ale_drt()
 }
 
 /*----------------------------------------------------------------------*/
-// entry point for FSI using XFEM in DRT (also for ale case)
+// entry point for FSI using XFEM in discretization management (also for ale case)
 /*----------------------------------------------------------------------*/
 void xfsi_drt()
 {
@@ -814,7 +814,7 @@ void xfsi_drt()
 }
 
 /*----------------------------------------------------------------------*/
-// entry point for FPSI using XFEM in DRT
+// entry point for FPSI using XFEM in discretization management
 /*----------------------------------------------------------------------*/
 void xfpsi_drt()
 {

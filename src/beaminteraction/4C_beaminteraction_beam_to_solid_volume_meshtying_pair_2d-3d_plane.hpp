@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for 2D-3D beam-to-solid volume mesh tying based on a plane beam element. This
@@ -72,7 +72,7 @@ namespace BEAMINTERACTION
     void get_triad_at_xi_double(const double xi, Core::LinAlg::Matrix<3, 3, double>& triad,
         const bool reference) const override;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

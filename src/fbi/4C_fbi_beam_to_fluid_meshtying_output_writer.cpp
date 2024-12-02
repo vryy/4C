@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOutputWriter(
+BeamInteraction::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOutputWriter(
     const Core::IO::VisualizationParameters& visualization_params,
     std::shared_ptr<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr)
     : output_params_ptr_(output_params_ptr),
@@ -37,7 +37,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOut
 {
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ =
-      std::make_shared<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
+      std::make_shared<BeamInteraction::BeamToSolidVisualizationOutputWriterBase>(
 
           "beam-to-fluid", visualization_params);
 
@@ -47,7 +47,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOut
   {
     if (output_params_ptr_->get_nodal_force_output_flag())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("nodal-forces");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("velocity", 3);
@@ -67,7 +67,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOut
 
     if (output_params_ptr_->get_integration_points_output_flag())
     {
-      std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
+      std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("integration-points");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
@@ -78,7 +78,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOut
 /**
  *
  */
-void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_runtime(
+void BeamInteraction::BeamToFluidMeshtyingVtkOutputWriter::write_output_runtime(
     Adapter::FBIConstraintenforcer& couplingenforcer, int i_step, double time) const
 {
   auto [output_time, output_step] =
@@ -89,7 +89,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_runtime(
 /**
  *
  */
-void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_fluid_mesh_tying(
+void BeamInteraction::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_fluid_mesh_tying(
     Adapter::FBIConstraintenforcer& couplingenforcer, int i_step, double time) const
 {
   // Parameter list that will be passed to all contact pairs when they create their visualization.
@@ -101,7 +101,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
 
   // Add the nodal forces resulting from beam contact. The forces are split up into beam and solid
   // nodes.
-  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
+  std::shared_ptr<BeamInteraction::BeamToSolidOutputWriterVisualization> visualization =
       output_writer_base_ptr_->get_visualization_writer("nodal-forces");
   if (visualization != nullptr)
   {
@@ -124,7 +124,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
       Core::Nodes::Node* current_node =
           couplingenforcer.get_structure()->get_discretization()->l_row_node(i_lid);
       couplingenforcer.get_structure()->get_discretization()->dof(current_node, gid_node);
-      if (BEAMINTERACTION::Utils::is_beam_node(*current_node))
+      if (BeamInteraction::Utils::is_beam_node(*current_node))
         for (unsigned int dim = 0; dim < 3; ++dim) gid_beam_dof.push_back(gid_node[dim]);
     }
     Epetra_Map beam_dof_map(-1, gid_beam_dof.size(), gid_beam_dof.data(), 0,

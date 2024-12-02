@@ -35,7 +35,7 @@ namespace Mat
       int const link_element_matnum_;
 
       /// type of joint
-      Inpar::BEAMINTERACTION::JointType jointtype_;
+      Inpar::BeamInteraction::JointType jointtype_;
 
       /// distance between the two binding domains of a linker
       double const linkinglength_;
@@ -62,7 +62,7 @@ namespace Mat
       double const nobonddistsphere;
 
       /// type of crosslinker
-      Inpar::BEAMINTERACTION::CrosslinkerType linkertype_;
+      Inpar::BeamInteraction::CrosslinkerType linkertype_;
 
 
       //@}
@@ -157,7 +157,7 @@ namespace Mat
     virtual double beam_elast_hyper_mat_num() const { return params_->link_element_matnum_; }
 
     /// force depedent off rate according to bells equation
-    virtual Inpar::BEAMINTERACTION::JointType joint_type() const { return params_->jointtype_; };
+    virtual Inpar::BeamInteraction::JointType joint_type() const { return params_->jointtype_; };
 
     /// distance between the two binding domains of a linker
     virtual double linking_length() const { return params_->linkinglength_; }
@@ -184,7 +184,7 @@ namespace Mat
     virtual double no_bond_dist_sphere() const { return params_->nobonddistsphere; };
 
     /// force depedent off rate according to bells equation
-    virtual Inpar::BEAMINTERACTION::CrosslinkerType linker_type() const
+    virtual Inpar::BeamInteraction::CrosslinkerType linker_type() const
     {
       return params_->linkertype_;
     };

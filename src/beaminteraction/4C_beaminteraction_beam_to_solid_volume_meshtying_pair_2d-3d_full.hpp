@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief Class for full 2D-3D beam-to-solid volume mesh tying based on a Simo-Reissner beam
@@ -96,7 +96,7 @@ namespace BEAMINTERACTION
     //! Current triad interpolation in the beam element
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme_;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 

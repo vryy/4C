@@ -26,7 +26,7 @@ namespace Adapter
 
 }  // namespace Adapter
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToFluidMeshtyingVtkOutputWriter;
 }
@@ -79,7 +79,7 @@ namespace Adapter
   class FBIConstraintenforcer
   {
     friend ConstraintEnforcerFactory;
-    friend class BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter;
+    friend class BeamInteraction::BeamToFluidMeshtyingVtkOutputWriter;
 
    public:
     /// empty destructor
