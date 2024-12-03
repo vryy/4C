@@ -66,7 +66,7 @@ Look into the CMake presets in `presets/` or ask your colleagues for further inf
 Some helper scripts to install these TPLs can be found in `dependencies/`.
 
 Additional information can be found in
-the [user documentation](https://baci.pages.gitlab.lrz.de/baci/readthedocs/4Csetup.html#external-dependencies).
+the [user documentation](https://4c-multiphysics.github.io/4C/readthedocs/4Csetup.html#external-dependencies).
 
 ## Getting up and running
 
@@ -135,10 +135,10 @@ file(s).
 A collection of working `.dat` files is located under `tests/input_files/` in the source code repository.
 
 Input files (`*.dat`) can be generated through various mechanisms.
-Please consult our [user guide](https://baci.pages.gitlab.lrz.de/baci/readthedocs/index.html) for further information and detailed instructions.
+Please consult our [user guide](https://4c-multiphysics.github.io/4C/readthedocs/index.html) for further information and detailed instructions.
 
 4C can write its simulation output in different formats.
-The [user guide](https://baci.pages.gitlab.lrz.de/baci/readthedocs/index.html) outlines the different output format and their necessary steps to actually view the results.
+The [user guide](https://4c-multiphysics.github.io/4C/readthedocs/index.html) outlines the different output format and their necessary steps to actually view the results.
 
 ## Where to Ask Questions
 
