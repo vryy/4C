@@ -403,7 +403,7 @@ void FLD::TransferTurbulentInflowCondition::receive_block(
   exporter.wait(request);
 
   // for safety
-  exporter.get_comm().Barrier();
+  Core::Communication::barrier(exporter.get_comm());
 
   return;
 }  // TransferTurbulentInflowCondition::receive_block
@@ -435,7 +435,7 @@ void FLD::TransferTurbulentInflowCondition::send_block(
 
 
   // for safety
-  exporter.get_comm().Barrier();
+  Core::Communication::barrier(exporter.get_comm());
 
   return;
 }  // TransferTurbulentInflowCondition::send_block

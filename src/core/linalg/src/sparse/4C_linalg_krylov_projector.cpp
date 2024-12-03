@@ -511,7 +511,7 @@ Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
     if (prod[i] != 0.0) numnonzero++;
 
   int glob_numnonzero = 0;
-  prod.Comm().SumAll(&numnonzero, &glob_numnonzero, 1);
+  Core::Communication::sum_all(&numnonzero, &glob_numnonzero, 1, prod.Comm());
 
   // do stupid conversion into Epetra map
   Epetra_Map mv1map(mv1->Map().NumGlobalElements(), mv1->Map().NumMyElements(),

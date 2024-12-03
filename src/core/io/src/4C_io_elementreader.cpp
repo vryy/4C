@@ -141,10 +141,10 @@ std::pair<int, std::vector<int>> Core::IO::ElementReader::get_element_size_and_i
   }
 
   // Simply allreduce the element ids
-  comm_.Broadcast(&numele, 1, 0);
+  Core::Communication::broadcast(&numele, 1, 0, comm_);
 
   eids.resize(numele);
-  comm_.Broadcast(&eids[0], numele, 0);
+  Core::Communication::broadcast(&eids[0], numele, 0, comm_);
 
   return {numele, eids};
 }

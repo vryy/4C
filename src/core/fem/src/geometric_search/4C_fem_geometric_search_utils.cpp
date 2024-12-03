@@ -31,9 +31,10 @@ namespace Core::GeometricSearch
     my_predicate_size[myrank] = info.predicate_size;
     my_coupling_pair_size[myrank] = info.coupling_pair_size;
 
-    comm.SumAll(my_primitive_size.data(), primitive_size.data(), numproc);
-    comm.SumAll(my_predicate_size.data(), predicate_size.data(), numproc);
-    comm.SumAll(my_coupling_pair_size.data(), coupling_pair_size.data(), numproc);
+    Core::Communication::sum_all(my_primitive_size.data(), primitive_size.data(), numproc, comm);
+    Core::Communication::sum_all(my_predicate_size.data(), predicate_size.data(), numproc, comm);
+    Core::Communication::sum_all(
+        my_coupling_pair_size.data(), coupling_pair_size.data(), numproc, comm);
 
     if (myrank == 0)
     {

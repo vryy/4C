@@ -237,7 +237,7 @@ void Core::FE::DiscretizationCreatorBase::finalize(
   // source discretization.
   int sumeleskips = 0;
   int lnumeleskips = numeleskips_;
-  sourcedis.get_comm().SumAll(&lnumeleskips, &sumeleskips, 1);
+  Core::Communication::sum_all(&lnumeleskips, &sumeleskips, 1, sourcedis.get_comm());
 
   if (sumeleskips == 0)
   {

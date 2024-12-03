@@ -213,11 +213,11 @@ void Core::Communication::Exporter::construct_exporter()
     int recvsizes[2];
     recvsizes[0] = sizes[0];
     recvsizes[1] = sizes[1];
-    get_comm().Broadcast(recvsizes, 2, proc);
+    Core::Communication::broadcast(recvsizes, 2, proc, get_comm());
     const int recvsize = recvsizes[0] + recvsizes[1];
     std::vector<int> recvbuff(recvsize);
     if (proc == my_pid()) std::copy(sendbuff.begin(), sendbuff.end(), recvbuff.data());
-    get_comm().Broadcast(recvbuff.data(), recvsize, proc);
+    Core::Communication::broadcast(recvbuff.data(), recvsize, proc, get_comm());
     // const int* have = recvbuff.data();            // this is what proc has
     const int* want = &recvbuff[recvsizes[0]];  // this is what proc needs
 
@@ -234,7 +234,7 @@ void Core::Communication::Exporter::construct_exporter()
         }
       }
     }
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
   }
 }
 
@@ -322,7 +322,7 @@ void Core::Communication::Exporter::generic_export(ExporterHelper& helper)
     wait(sendgidrequest);
 
     // make sure we do not get mixed up messages as we use wild card receives here
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
   }
 
   helper.post_export_cleanup(this);

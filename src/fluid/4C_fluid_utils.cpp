@@ -709,8 +709,10 @@ void FLD::Utils::lift_drag(const std::shared_ptr<const Core::FE::Discretization>
       }  // end: loop over nodes
 
       // care for the fact that we are (most likely) parallel
-      trueresidual.Comm().SumAll(myforces.data(), ((*liftdragvals)[label]).data(), 3);
-      trueresidual.Comm().SumAll(mymoments.data(), ((*liftdragvals)[label]).data() + 3, 3);
+      Core::Communication::sum_all(
+          myforces.data(), ((*liftdragvals)[label]).data(), 3, trueresidual.Comm());
+      Core::Communication::sum_all(
+          mymoments.data(), ((*liftdragvals)[label]).data() + 3, 3, trueresidual.Comm());
 
       // do the output
       if (myrank == 0)
@@ -856,7 +858,7 @@ std::map<int, double> FLD::Utils::compute_flow_rates(Core::FE::Discretization& d
     }
 
     double flowrate = 0.0;
-    dofrowmap->Comm().SumAll(&local_flowrate, &flowrate, 1);
+    Core::Communication::sum_all(&local_flowrate, &flowrate, 1, dofrowmap->Comm());
 
     // if(dofrowmap->Comm().MyPID()==0)
     // std::cout << "gobal flow rate = " << flowrate << "\t condition ID = " << condID << std::endl;

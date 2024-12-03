@@ -320,12 +320,12 @@ void Cardiovascular0D::ProperOrthogonalDecomposition::read_pod_basis_vectors_fro
   std::vector<int> localnumbers(numproc, 0);
   std::vector<int> globalnumbers(numproc, 0);
   localnumbers[mypid] = mymap->NumMyElements();
-  comm.SumAll(localnumbers.data(), globalnumbers.data(), numproc);
+  Core::Communication::sum_all(localnumbers.data(), globalnumbers.data(), numproc, comm);
 
   int factor(0);
   for (int i = 0; i < mypid; i++) factor += globalnumbers[i];
 
-  comm.Barrier();
+  Core::Communication::barrier(comm);
 
   // 64 bit number necessary, as integer can overflow for large matrices
   long long start =
@@ -359,7 +359,7 @@ void Cardiovascular0D::ProperOrthogonalDecomposition::read_pod_basis_vectors_fro
   delete[] memblock;
 
   // all procs wait until proc number 0 did finish the stuff before
-  comm.Barrier();
+  Core::Communication::barrier(comm);
 
   // Inform user
   if (Core::Communication::my_mpi_rank(comm) == 0) std::cout << " --> Successful\n" << std::endl;

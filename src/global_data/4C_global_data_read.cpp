@@ -2334,7 +2334,7 @@ void Global::read_conditions(Global::Problem& problem, Core::IO::InputFile& inpu
           if (foundit) break;
         }
         int found = 0;
-        dis->get_comm().SumAll(&foundit, &found, 1);
+        Core::Communication::sum_all(&foundit, &found, 1, dis->get_comm());
         if (found)
         {
           // Insert a copy since we might insert the same condition in many discretizations.

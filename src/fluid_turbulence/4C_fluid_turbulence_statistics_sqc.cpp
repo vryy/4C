@@ -152,11 +152,11 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
   // communicate x3mins and x3maxs
   double min;
-  discret_->get_comm().MinAll(&x3min_, &min, 1);
+  Core::Communication::min_all(&x3min_, &min, 1, discret_->get_comm());
   x3min_ = min;
 
   double max;
-  discret_->get_comm().MaxAll(&x3max_, &max, 1);
+  Core::Communication::max_all(&x3max_, &max, 1, discret_->get_comm());
   x3max_ = max;
 
   //--------------------------------------------------------------------
@@ -211,7 +211,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
 
       //--------------------------------------------------
@@ -268,7 +268,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
 
       //--------------------------------------------------
@@ -325,7 +325,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
 
       //--------------------------------------------------
@@ -382,7 +382,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
 
       //--------------------------------------------------
@@ -439,7 +439,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
 
       //--------------------------------------------------
@@ -502,7 +502,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
           {
             // for safety
-            exporter.get_comm().Barrier();
+            Core::Communication::barrier(exporter.get_comm());
           }
 
           //--------------------------------------------------
@@ -559,7 +559,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
           {
             // for safety
-            exporter.get_comm().Barrier();
+            Core::Communication::barrier(exporter.get_comm());
           }
 
           //--------------------------------------------------
@@ -957,7 +957,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (homdir_ == "z")
     {
@@ -998,17 +998,17 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
       {
         locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuv, &uv, 1);
+      Core::Communication::sum_all(&locuv, &uv, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuw, &uw, 1);
+      Core::Communication::sum_all(&locuw, &uw, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locvw, &vw, 1);
+      Core::Communication::sum_all(&locvw, &vw, 1, discret_->get_comm());
 
       //----------------------------------------------------------------------
       // calculate spatial means on this line
@@ -1073,7 +1073,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (homdir_ == "z")
     {
@@ -1114,17 +1114,17 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
       {
         locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuv, &uv, 1);
+      Core::Communication::sum_all(&locuv, &uv, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuw, &uw, 1);
+      Core::Communication::sum_all(&locuw, &uw, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locvw, &vw, 1);
+      Core::Communication::sum_all(&locvw, &vw, 1, discret_->get_comm());
 
       //----------------------------------------------------------------------
       // calculate spatial means on this line
@@ -1190,7 +1190,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (homdir_ == "z")
     {
@@ -1231,17 +1231,17 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
       {
         locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuv, &uv, 1);
+      Core::Communication::sum_all(&locuv, &uv, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuw, &uw, 1);
+      Core::Communication::sum_all(&locuw, &uw, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locvw, &vw, 1);
+      Core::Communication::sum_all(&locvw, &vw, 1, discret_->get_comm());
 
       //----------------------------------------------------------------------
       // calculate spatial means on this line
@@ -1307,7 +1307,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (homdir_ == "z")
     {
@@ -1348,17 +1348,17 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
       {
         locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuv, &uv, 1);
+      Core::Communication::sum_all(&locuv, &uv, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuw, &uw, 1);
+      Core::Communication::sum_all(&locuw, &uw, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locvw, &vw, 1);
+      Core::Communication::sum_all(&locvw, &vw, 1, discret_->get_comm());
 
       //----------------------------------------------------------------------
       // calculate spatial means on this line
@@ -1423,7 +1423,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (homdir_ == "z")
     {
@@ -1464,17 +1464,17 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
       {
         locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuv, &uv, 1);
+      Core::Communication::sum_all(&locuv, &uv, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuw, &uw, 1);
+      Core::Communication::sum_all(&locuw, &uw, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locvw, &vw, 1);
+      Core::Communication::sum_all(&locvw, &vw, 1, discret_->get_comm());
 
       //----------------------------------------------------------------------
       // calculate spatial means on this line
@@ -1539,7 +1539,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (homdir_ == "z")
     {
@@ -1580,17 +1580,17 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
       {
         locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuv, &uv, 1);
+      Core::Communication::sum_all(&locuv, &uv, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuw, &uw, 1);
+      Core::Communication::sum_all(&locuw, &uw, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locvw, &vw, 1);
+      Core::Communication::sum_all(&locvw, &vw, 1, discret_->get_comm());
 
       //----------------------------------------------------------------------
       // calculate spatial means on this line
@@ -1655,7 +1655,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (homdir_ == "z")
     {
@@ -1696,17 +1696,17 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
       {
         locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuv, &uv, 1);
+      Core::Communication::sum_all(&locuv, &uv, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuw, &uw, 1);
+      Core::Communication::sum_all(&locuw, &uw, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locvw, &vw, 1);
+      Core::Communication::sum_all(&locvw, &vw, 1, discret_->get_comm());
 
       //----------------------------------------------------------------------
       // calculate spatial means on this line
@@ -1771,7 +1771,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
 
     int countnodesonallprocs = 0;
 
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
     if (homdir_ == "z")
     {
@@ -1812,17 +1812,17 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
       {
         locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuv, &uv, 1);
+      Core::Communication::sum_all(&locuv, &uv, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locuw, &uw, 1);
+      Core::Communication::sum_all(&locuw, &uw, 1, discret_->get_comm());
       for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
         locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
-      discret_->get_comm().SumAll(&locvw, &vw, 1);
+      Core::Communication::sum_all(&locvw, &vw, 1, discret_->get_comm());
 
       //----------------------------------------------------------------------
       // calculate spatial means on this line

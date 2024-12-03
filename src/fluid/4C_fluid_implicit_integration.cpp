@@ -1456,7 +1456,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
 
       // sum up global flow rate over all processors and set to global value
       double flowrate = 0.0;
-      dofrowmap->Comm().SumAll(&local_flowrate, &flowrate, 1);
+      Core::Communication::sum_all(&local_flowrate, &flowrate, 1, dofrowmap->Comm());
 
       // set current flow rate
       flowratenp_[fdpcondid] = flowrate;
@@ -1504,7 +1504,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
 
       // sum up global surface area over all processors
       double area = 0.0;
-      discret_->get_comm().SumAll(&localarea, &area, 1);
+      Core::Communication::sum_all(&localarea, &area, 1, discret_->get_comm());
 
       // clear state
       discret_->clear_state();
@@ -1529,7 +1529,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
 
       // sum up global pressure integral over all processors
       double pressint = 0.0;
-      discret_->get_comm().SumAll(&localpressint, &pressint, 1);
+      Core::Communication::sum_all(&localpressint, &pressint, 1, discret_->get_comm());
 
       // clear state
       discret_->clear_state();
@@ -2770,10 +2770,12 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
 
         // Sum variables over all processors to obtain global value
         double globalSumVelnpDotNodeTangent = 0.0;
-        dofrowmap->Comm().SumAll(&localSumVelnpDotNodeTangent, &globalSumVelnpDotNodeTangent, 1);
+        Core::Communication::sum_all(
+            &localSumVelnpDotNodeTangent, &globalSumVelnpDotNodeTangent, 1, dofrowmap->Comm());
 
         int globalNumOfCondNodes = 0;
-        dofrowmap->Comm().SumAll(&localNumOfCondNodes, &globalNumOfCondNodes, 1);
+        Core::Communication::sum_all(
+            &localNumOfCondNodes, &globalNumOfCondNodes, 1, dofrowmap->Comm());
 
         // Finalize calculation of mean tangent velocity
         double lambda = 0.0;
@@ -4216,7 +4218,7 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
       // the noise is proportional to the bulk mean velocity of the
       // undisturbed initial field (=2/3*maximum velocity)
       mybmvel = (2.0 / 3.0) * mybmvel;
-      discret_->get_comm().MaxAll(&mybmvel, &bmvel, 1);
+      Core::Communication::max_all(&mybmvel, &bmvel, 1, discret_->get_comm());
 
       // loop all nodes on the processor
       for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); ++lnodeid)
@@ -6052,8 +6054,8 @@ void FLD::FluidImplicitTimeInt::recompute_mean_csgs_b()
     discret_->clear_state();
 
     // gather contributions of all procs
-    discret_->get_comm().SumAll(&local_sumCai, &global_sumCai, 1);
-    discret_->get_comm().SumAll(&local_sumVol, &global_sumVol, 1);
+    Core::Communication::sum_all(&local_sumCai, &global_sumCai, 1, discret_->get_comm());
+    Core::Communication::sum_all(&local_sumVol, &global_sumVol, 1, discret_->get_comm());
 
     // calculate mean Cai
     meanCai = global_sumCai / global_sumVol;

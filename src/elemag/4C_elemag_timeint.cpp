@@ -427,7 +427,8 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
     elemagele->evaluate(
         initParams, *discret_, la[0].lm_, elemat, elemat, elevec1, elevec2, elevec1);
   }
-  discret_->get_comm().Barrier();  // other procs please wait for the one, who did all the work
+  Core::Communication::barrier(
+      discret_->get_comm());  // other procs please wait for the one, who did all the work
 
   output();
 

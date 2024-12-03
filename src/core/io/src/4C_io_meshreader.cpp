@@ -88,7 +88,7 @@ void Core::IO::MeshReader::read_and_partition()
   // last check if there are enough nodes
   {
     int local_max_node_id = max_node_id;
-    comm_.MaxAll(&local_max_node_id, &max_node_id, 1);
+    Core::Communication::max_all(&local_max_node_id, &max_node_id, 1, comm_);
 
     if (max_node_id > 0 && max_node_id < Core::Communication::num_mpi_ranks(comm_))
       FOUR_C_THROW("Bad idea: Simulation with %d procs for problem with %d nodes",
@@ -120,7 +120,7 @@ void Core::IO::MeshReader::rebalance()
   {
     // global node ids --- this will be a fully redundant vector!
     int numnodes = static_cast<int>(element_readers_[i].get_unique_nodes().size());
-    comm_.Broadcast(&numnodes, 1, 0);
+    Core::Communication::broadcast(&numnodes, 1, 0, comm_);
 
     const auto discret = element_readers_[i].get_dis();
 
@@ -234,7 +234,7 @@ void Core::IO::MeshReader::create_inline_mesh(int& max_node_id)
   {
     // communicate node offset to all procs
     int local_max_node_id = max_node_id;
-    comm_.MaxAll(&local_max_node_id, &max_node_id, 1);
+    Core::Communication::max_all(&local_max_node_id, &max_node_id, 1, comm_);
 
     domain_reader.create_partitioned_mesh(max_node_id);
     domain_reader.complete();

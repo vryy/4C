@@ -336,7 +336,7 @@ void FLD::XWall::init_x_wall_maps()
     }
 
     int gcount;
-    (discret_->get_comm()).SumAll(&count, &gcount, 1);
+    Core::Communication::sum_all(&count, &gcount, 1, (discret_->get_comm()));
     dircolnodemap_ =
         std::make_shared<Epetra_Map>(gcount, count, testcollect.data(), 0, discret_->get_comm());
   }  // end loop this conditions
@@ -419,7 +419,7 @@ void FLD::XWall::init_wall_dist()
       if (xwallele) enriched = 1;
     }
     int genriched = 0;
-    (commondis->get_comm()).SumAll(&enriched, &genriched, 1);
+    Core::Communication::sum_all(&enriched, &genriched, 1, (commondis->get_comm()));
     if (genriched > 0) colvec.push_back(gid);
   }
   int count = (int)colvec.size();
@@ -461,7 +461,7 @@ void FLD::XWall::init_wall_dist()
       }
     }
 
-    discret_->get_comm().MinAll(&mydist, &gdist, 1);
+    Core::Communication::min_all(&mydist, &gdist, 1, discret_->get_comm());
 
     // now write this value in the node based vector
     if (xwallrownodemap_->MyGID(xwallgid))
@@ -554,7 +554,7 @@ void FLD::XWall::init_toggle_vector()
   Core::LinAlg::export_to(*xtoggleloc_, *xwalltogglexwdis_);
 
   int gcount;
-  (discret_->get_comm()).SumAll(&count, &gcount, 1);
+  Core::Communication::sum_all(&count, &gcount, 1, (discret_->get_comm()));
   if (myrank_ == 0) std::cout << gcount << " blending nodes identified... ";
 
   if (myrank_ == 0) std::cout << "done!  " << std::endl;

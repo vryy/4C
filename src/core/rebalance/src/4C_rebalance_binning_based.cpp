@@ -361,7 +361,7 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
 
     if (print)
     {
-      dis_to_rebalance.get_comm().Barrier();
+      Core::Communication::barrier(dis_to_rebalance.get_comm());
       for (const auto& it : matched_ele_map)
       {
         std::cout << "ELEMENT : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]
@@ -468,7 +468,7 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
     }
     if (print)
     {
-      dis_to_rebalance.get_comm().Barrier();
+      Core::Communication::barrier(dis_to_rebalance.get_comm());
       for (const auto& it : matched_node_map)
       {
         std::cout << "NODE : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]

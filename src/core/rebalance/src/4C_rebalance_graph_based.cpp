@@ -183,9 +183,9 @@ std::shared_ptr<const Epetra_CrsGraph> Core::Rebalance::build_graph(
       for (fool = mynodes.begin(); fool != mynodes.end(); ++fool) recvnodes.push_back(*fool);
       size = (int)recvnodes.size();
     }
-    dis.get_comm().Broadcast(&size, 1, proc);
+    Core::Communication::broadcast(&size, 1, proc, dis.get_comm());
     if (proc != myrank) recvnodes.resize(size);
-    dis.get_comm().Broadcast(&recvnodes[0], size, proc);
+    Core::Communication::broadcast(&recvnodes[0], size, proc, dis.get_comm());
     if (proc != myrank)
     {
       for (int i = 0; i < size; ++i)
@@ -197,7 +197,7 @@ std::shared_ptr<const Epetra_CrsGraph> Core::Rebalance::build_graph(
           mynodes.erase(fool);
       }
     }
-    dis.get_comm().Barrier();
+    Core::Communication::barrier(dis.get_comm());
   }
 
   std::shared_ptr<Epetra_Map> rownodes = nullptr;
@@ -252,12 +252,12 @@ std::shared_ptr<const Epetra_CrsGraph> Core::Rebalance::build_graph(
       if (smaxband < (int)fool->second.size()) smaxband = (int)fool->second.size();
     for (fool = remotes.begin(); fool != remotes.end(); ++fool)
       if (smaxband < (int)fool->second.size()) smaxband = (int)fool->second.size();
-    dis.get_comm().MaxAll(&smaxband, &maxband, 1);
+    Core::Communication::max_all(&smaxband, &maxband, 1, dis.get_comm());
   }
 
   std::shared_ptr<Epetra_CrsGraph> graph =
       std::make_shared<Epetra_CrsGraph>(Copy, *rownodes, maxband, false);
-  dis.get_comm().Barrier();
+  Core::Communication::barrier(dis.get_comm());
 
   // fill all local entries into the graph
   {
@@ -276,7 +276,7 @@ std::shared_ptr<const Epetra_CrsGraph> Core::Rebalance::build_graph(
     locals.clear();
   }
 
-  dis.get_comm().Barrier();
+  Core::Communication::barrier(dis.get_comm());
 
   // now we need to communicate and add the remote entries
   for (int proc = numproc - 1; proc >= 0; --proc)
@@ -297,9 +297,9 @@ std::shared_ptr<const Epetra_CrsGraph> Core::Rebalance::build_graph(
       }
       size = (int)recvnodes.size();
     }
-    dis.get_comm().Broadcast(&size, 1, proc);
+    Core::Communication::broadcast(&size, 1, proc, dis.get_comm());
     if (proc != myrank) recvnodes.resize(size);
-    dis.get_comm().Broadcast(&recvnodes[0], size, proc);
+    Core::Communication::broadcast(&recvnodes[0], size, proc, dis.get_comm());
     if (proc != myrank && size)
     {
       int* ptr = &recvnodes[0];
@@ -318,17 +318,17 @@ std::shared_ptr<const Epetra_CrsGraph> Core::Rebalance::build_graph(
           ptr += (num + 1);
       }
     }
-    dis.get_comm().Barrier();
+    Core::Communication::barrier(dis.get_comm());
   }
   remotes.clear();
 
-  dis.get_comm().Barrier();
+  Core::Communication::barrier(dis.get_comm());
 
   // finish graph
   graph->FillComplete();
   graph->OptimizeStorage();
 
-  dis.get_comm().Barrier();
+  Core::Communication::barrier(dis.get_comm());
 
   return graph;
 }

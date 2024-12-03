@@ -13,4 +13,6 @@ int Core::Communication::my_mpi_rank(const Epetra_Comm &comm) { return comm.MyPI
 
 int Core::Communication::num_mpi_ranks(const Epetra_Comm &comm) { return comm.NumProc(); }
 
+void Core::Communication::barrier(const Epetra_Comm &comm) { comm.Barrier(); }
+
 FOUR_C_NAMESPACE_CLOSE

@@ -499,7 +499,7 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
     larea[AreaType::curr] += Core::Geo::element_area(fele->shape(), xyze_curr);
   }
 
-  discret.get_comm().SumAll(larea.data(), area, 2);
+  Core::Communication::sum_all(larea.data(), area, 2, discret.get_comm());
 }
 
 /*----------------------------------------------------------------------------*
@@ -521,7 +521,8 @@ double Solid::MonitorDbc::get_reaction_force(
     for (int i = 0; i < react_maps[d]->NumMyElements(); ++i) lrforce_comp += vals[i];
   }
 
-  discret_ptr_->get_comm().SumAll(lrforce_xyz.data(), rforce_xyz.data(), DIM);
+  Core::Communication::sum_all(
+      lrforce_xyz.data(), rforce_xyz.data(), DIM, discret_ptr_->get_comm());
   return rforce_xyz.norm2();
 }
 
@@ -583,7 +584,8 @@ double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmom
     lrmoment_xyz += node_reaction_moment;
   }
 
-  discret_ptr_->get_comm().SumAll(lrmoment_xyz.data(), rmoment_xyz.data(), DIM);
+  Core::Communication::sum_all(
+      lrmoment_xyz.data(), rmoment_xyz.data(), DIM, discret_ptr_->get_comm());
   return rmoment_xyz.norm2();
 }
 

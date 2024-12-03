@@ -218,7 +218,7 @@ void FLD::TimIntStationaryHDG::set_initial_flow_field(
     }
   }
   double globerror = 0;
-  discret_->get_comm().SumAll(&error, &globerror, 1);
+  Core::Communication::sum_all(&error, &globerror, 1, discret_->get_comm());
   if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     std::cout << "Error project when setting face twice: " << globerror << std::endl;
 }

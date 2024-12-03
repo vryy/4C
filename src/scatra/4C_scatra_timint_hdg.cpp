@@ -575,7 +575,7 @@ void ScaTra::TimIntHDG::set_initial_field(
       }
 
       double globerror = 0;
-      discret_->get_comm().SumAll(&error, &globerror, 1);
+      Core::Communication::sum_all(&error, &globerror, 1, discret_->get_comm());
       if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
         std::cout << "Error project when setting face twice: " << globerror << std::endl;
 
@@ -773,7 +773,7 @@ void ScaTra::TimIntHDG::fd_check()
       // check whether current column index is a valid global column index and continue loop if not
       int collid(sysmatcopy->ColMap().LID(colgid));
       int maxcollid(-1);
-      discret_->get_comm().MaxAll(&collid, &maxcollid, 1);
+      Core::Communication::max_all(&collid, &maxcollid, 1, discret_->get_comm());
       if (maxcollid < 0) continue;
 
       strategy.zero();
@@ -1156,7 +1156,7 @@ void ScaTra::TimIntHDG::adapt_degree()
   }
 
   int degchangeall;
-  discret_->get_comm().SumAll(&degchange, &degchangeall, 1);
+  Core::Communication::sum_all(&degchange, &degchangeall, 1, discret_->get_comm());
 
   if (!degchangeall) return;
 

@@ -161,7 +161,7 @@ namespace ScaTra
 
         {
           // for safety
-          exporter.get_comm().Barrier();
+          Core::Communication::barrier(exporter.get_comm());
         }
 
         // unpack received block into set of all coordinates
@@ -337,7 +337,8 @@ namespace ScaTra
     // get values from all processors
     // number of nodes without slave nodes
     const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-    discret_->get_comm().SumAll(local_phi.data(), global_phi.data(), countallnodes);
+    Core::Communication::sum_all(
+        local_phi.data(), global_phi.data(), countallnodes, discret_->get_comm());
 
     //----------------------------------------
     // fast Fourier transformation using FFTW
@@ -679,7 +680,8 @@ namespace ScaTra
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->get_comm().SumAll(local_phi.data(), global_phi.data(), countallnodes);
+      Core::Communication::sum_all(
+          local_phi.data(), global_phi.data(), countallnodes, discret_->get_comm());
 
       //----------------------------------------
       // fast Fourier transformation using FFTW

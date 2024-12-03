@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 void Cut::ParentIntersection::create_nodal_dof_set(
     bool include_inner, const Core::FE::Discretization& dis)
 {
-  dis.get_comm().Barrier();
+  Core::Communication::barrier(dis.get_comm());
 
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 5/6 --- cut_positions_dofsets --- CreateNodalDofSet");
 

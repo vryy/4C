@@ -60,7 +60,7 @@ void Core::DOFSets::DofSet::print(std::ostream& os) const
       }
       os << std::endl;
     }
-    numdfcolelements_->Comm().Barrier();
+    Core::Communication::barrier(numdfcolelements_->Comm());
   }
   for (int proc = 0; proc < Core::Communication::num_mpi_ranks(numdfcolnodes_->Comm()); ++proc)
   {
@@ -77,7 +77,7 @@ void Core::DOFSets::DofSet::print(std::ostream& os) const
       }
       os << std::endl;
     }
-    numdfcolnodes_->Comm().Barrier();
+    Core::Communication::barrier(numdfcolnodes_->Comm());
   }
   for (int proc = 0; proc < Core::Communication::num_mpi_ranks(numdfcolfaces_->Comm()); ++proc)
   {
@@ -94,7 +94,7 @@ void Core::DOFSets::DofSet::print(std::ostream& os) const
       }
       os << std::endl;
     }
-    numdfcolfaces_->Comm().Barrier();
+    Core::Communication::barrier(numdfcolfaces_->Comm());
   }
 }
 

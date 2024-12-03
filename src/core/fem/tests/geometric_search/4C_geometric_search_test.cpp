@@ -12,13 +12,14 @@
 #include "4C_fem_geometric_search_bounding_volume.hpp"
 #include "4C_fem_geometric_search_utils.hpp"
 
+#include <Epetra_MpiComm.h>
+
 #ifdef FOUR_C_WITH_ARBORX
 
 #include "4C_fem_geometric_search_bvh.hpp"
 #include "4C_fem_geometric_search_utils.hpp"
 #include "4C_geometric_search_create_bounding_volumes_test.hpp"
 
-#include <Epetra_SerialComm.h>
 
 namespace
 {
@@ -31,15 +32,11 @@ namespace
 
     static void TearDownTestSuite() { Kokkos::finalize(); }
 
-    GeometricSearch()
-    {
-      comm_ = Epetra_SerialComm();
-      verbosity_ = Core::IO::minimal;
-    }
+    GeometricSearch() { verbosity_ = Core::IO::minimal; }
 
    protected:
     std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives_, predicates_;
-    Epetra_SerialComm comm_;
+    Epetra_MpiComm comm_{MPI_COMM_WORLD};
     Core::IO::Verbositylevel verbosity_;
   };
 

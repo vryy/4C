@@ -126,7 +126,7 @@ bool Coupling::Adapter::MatrixLogicalSplitAndTransform::operator()(
       }
 
     int gsubset = 0;
-    logical_range_map.Comm().MinAll(&subset, &gsubset, 1);
+    Core::Communication::min_all(&subset, &gsubset, 1, logical_range_map.Comm());
 
     // need communication -> call import on permuted map
     if (!gsubset)

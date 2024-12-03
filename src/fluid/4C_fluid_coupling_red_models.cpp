@@ -503,7 +503,7 @@ void FLD::Utils::FluidCouplingWrapperBase::apply_boundary_conditions(
 
     // update the variable on all of the processors
     double par_var = 0.0;
-    discret_3d_->get_comm().SumAll(&var, &par_var, 1);
+    Core::Communication::sum_all(&var, &par_var, 1, discret_3d_->get_comm());
     (*map_red_dnp_)[VariableWithId.str()] = par_var;
 
     // Apply the boundary condition to the outlets
@@ -875,7 +875,7 @@ double FLD::Utils::FluidCouplingBc::area(double& density, double& viscosity, int
   int theproc = -1;  // the lowest proc that has the desired information
   std::vector<double> alldens(numproc);
 
-  discret_3d_->get_comm().GatherAll(&density, alldens.data(), 1);
+  Core::Communication::gather_all(&density, alldens.data(), 1, discret_3d_->get_comm());
   for (int i = 0; i < numproc; i++)
     if (alldens[i] > 0.0)
     {
@@ -885,13 +885,13 @@ double FLD::Utils::FluidCouplingBc::area(double& density, double& viscosity, int
   if (theproc < 0) FOUR_C_THROW("Something parallel went terribly wrong!");
 
   // do the actual communication of density ...
-  discret_3d_->get_comm().Broadcast(&density, 1, theproc);
+  Core::Communication::broadcast(&density, 1, theproc, discret_3d_->get_comm());
   // ... and viscosity
-  discret_3d_->get_comm().Broadcast(&viscosity, 1, theproc);
+  Core::Communication::broadcast(&viscosity, 1, theproc, discret_3d_->get_comm());
 
   // get total area in parallel case
   double pararea = 0.0;
-  discret_3d_->get_comm().SumAll(&actarea, &pararea, 1);
+  Core::Communication::sum_all(&actarea, &pararea, 1, discret_3d_->get_comm());
 
   if (myrank_ == 0)
   {
@@ -953,7 +953,7 @@ double FLD::Utils::FluidCouplingBc::flow_rate_calculation(double time, double dt
   }
 
   double flowrate = 0.0;
-  dofrowmap->Comm().SumAll(&local_flowrate, &flowrate, 1);
+  Core::Communication::sum_all(&local_flowrate, &flowrate, 1, dofrowmap->Comm());
 
   return flowrate;
 }  // FluidImplicitTimeInt::flow_rate_calculation
@@ -1007,7 +1007,7 @@ double FLD::Utils::FluidCouplingBc::pressure_calculation(double time, double dta
 
   // get total flowrate in parallel case
   double parpressure = 0.0;
-  discret_3d_->get_comm().SumAll(&actpressure, &parpressure, 1);
+  Core::Communication::sum_all(&actpressure, &parpressure, 1, discret_3d_->get_comm());
 
   return parpressure;
 }  // FluidImplicitTimeInt::pressure_calculation

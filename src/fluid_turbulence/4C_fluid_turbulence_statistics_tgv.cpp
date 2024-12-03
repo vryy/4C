@@ -538,59 +538,85 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
   // global sums
 
   // compute global sum, volume
-  discret_->get_comm().SumAll(local_vol->data(), global_vol->data(), presize);
+  Core::Communication::sum_all(
+      local_vol->data(), global_vol->data(), presize, discret_->get_comm());
 
   // compute global sum, element sizes
-  discret_->get_comm().SumAll(local_incrhk->data(), global_incrhk->data(), presize);
+  Core::Communication::sum_all(
+      local_incrhk->data(), global_incrhk->data(), presize, discret_->get_comm());
 
   // compute global sum, element sizes in viscous regime, Bazilevs parameter
-  discret_->get_comm().SumAll(local_incrhbazilevs->data(), global_incrhbazilevs->data(), presize);
+  Core::Communication::sum_all(
+      local_incrhbazilevs->data(), global_incrhbazilevs->data(), presize, discret_->get_comm());
 
   // compute global sum, element sizes
-  discret_->get_comm().SumAll(local_incrstrle->data(), global_incrstrle->data(), presize);
+  Core::Communication::sum_all(
+      local_incrstrle->data(), global_incrstrle->data(), presize, discret_->get_comm());
 
   // compute global sum, gradient based element sizes
-  discret_->get_comm().SumAll(local_incrgradle->data(), global_incrgradle->data(), presize);
+  Core::Communication::sum_all(
+      local_incrgradle->data(), global_incrgradle->data(), presize, discret_->get_comm());
 
   // compute global sums, stabilisation parameters
-  discret_->get_comm().SumAll(local_incrtauM->data(), global_incrtauM->data(), presize);
-  discret_->get_comm().SumAll(local_incrtauC->data(), global_incrtauC->data(), presize);
+  Core::Communication::sum_all(
+      local_incrtauM->data(), global_incrtauM->data(), presize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incrtauC->data(), global_incrtauC->data(), presize, discret_->get_comm());
 
   // compute global sum, mk
-  discret_->get_comm().SumAll(local_incrmk->data(), global_incrmk->data(), presize);
+  Core::Communication::sum_all(
+      local_incrmk->data(), global_incrmk->data(), presize, discret_->get_comm());
 
   // compute global sums, momentum equation residuals
-  discret_->get_comm().SumAll(local_incrres->data(), global_incrres->data(), velsize);
-  discret_->get_comm().SumAll(local_incrres_sq->data(), global_incrres_sq->data(), velsize);
-  discret_->get_comm().SumAll(local_incrtauinvsvel->data(), global_incrtauinvsvel->data(), velsize);
-  discret_->get_comm().SumAll(local_incrabsres->data(), global_incrabsres->data(), presize);
+  Core::Communication::sum_all(
+      local_incrres->data(), global_incrres->data(), velsize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incrres_sq->data(), global_incrres_sq->data(), velsize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incrtauinvsvel->data(), global_incrtauinvsvel->data(), velsize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incrabsres->data(), global_incrabsres->data(), presize, discret_->get_comm());
 
-  discret_->get_comm().SumAll(local_incrsvelaf->data(), global_incrsvelaf->data(), velsize);
-  discret_->get_comm().SumAll(local_incrsvelaf_sq->data(), global_incrsvelaf_sq->data(), velsize);
-  discret_->get_comm().SumAll(local_incrabssvelaf->data(), global_incrabssvelaf->data(), presize);
+  Core::Communication::sum_all(
+      local_incrsvelaf->data(), global_incrsvelaf->data(), velsize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incrsvelaf_sq->data(), global_incrsvelaf_sq->data(), velsize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incrabssvelaf->data(), global_incrabssvelaf->data(), presize, discret_->get_comm());
 
   // compute global sums, incompressibility residuals
-  discret_->get_comm().SumAll(local_incrresC->data(), global_incrresC->data(), presize);
-  discret_->get_comm().SumAll(local_incrresC_sq->data(), global_incrresC_sq->data(), presize);
+  Core::Communication::sum_all(
+      local_incrresC->data(), global_incrresC->data(), presize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incrresC_sq->data(), global_incrresC_sq->data(), presize, discret_->get_comm());
 
-  discret_->get_comm().SumAll(local_incrspressnp->data(), global_incrspressnp->data(), presize);
+  Core::Communication::sum_all(
+      local_incrspressnp->data(), global_incrspressnp->data(), presize, discret_->get_comm());
   discret_->get_comm().SumAll(
       local_incrspressnp_sq->data(), global_incrspressnp_sq->data(), presize);
 
   // compute global sums, dissipation rates
 
-  discret_->get_comm().SumAll(local_incr_eps_pspg->data(), global_incr_eps_pspg->data(), presize);
-  discret_->get_comm().SumAll(local_incr_eps_supg->data(), global_incr_eps_supg->data(), presize);
-  discret_->get_comm().SumAll(local_incr_eps_cross->data(), global_incr_eps_cross->data(), presize);
-  discret_->get_comm().SumAll(local_incr_eps_rey->data(), global_incr_eps_rey->data(), presize);
+  Core::Communication::sum_all(
+      local_incr_eps_pspg->data(), global_incr_eps_pspg->data(), presize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incr_eps_supg->data(), global_incr_eps_supg->data(), presize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incr_eps_cross->data(), global_incr_eps_cross->data(), presize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incr_eps_rey->data(), global_incr_eps_rey->data(), presize, discret_->get_comm());
   discret_->get_comm().SumAll(
       local_incr_eps_graddiv->data(), global_incr_eps_graddiv->data(), presize);
   discret_->get_comm().SumAll(
       local_incr_eps_eddyvisc->data(), global_incr_eps_eddyvisc->data(), presize);
-  discret_->get_comm().SumAll(local_incr_eps_visc->data(), global_incr_eps_visc->data(), presize);
-  discret_->get_comm().SumAll(local_incr_eps_conv->data(), global_incr_eps_conv->data(), presize);
-  discret_->get_comm().SumAll(local_incr_eps_avm3->data(), global_incr_eps_avm3->data(), presize);
-  discret_->get_comm().SumAll(local_incr_eps_mfs->data(), global_incr_eps_mfs->data(), presize);
+  Core::Communication::sum_all(
+      local_incr_eps_visc->data(), global_incr_eps_visc->data(), presize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incr_eps_conv->data(), global_incr_eps_conv->data(), presize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incr_eps_avm3->data(), global_incr_eps_avm3->data(), presize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incr_eps_mfs->data(), global_incr_eps_mfs->data(), presize, discret_->get_comm());
   discret_->get_comm().SumAll(
       local_incr_eps_mfscross->data(), global_incr_eps_mfscross->data(), presize);
   discret_->get_comm().SumAll(

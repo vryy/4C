@@ -108,7 +108,8 @@ void Solid::ModelEvaluator::Structure::setup()
       int number_global_beam_elements = 0;
       discretization->get_comm().MaxAll(
           &number_my_solid_elements, &number_global_solid_elements, 1);
-      discretization->get_comm().MaxAll(&number_my_beam_elements, &number_global_beam_elements, 1);
+      Core::Communication::max_all(
+          &number_my_beam_elements, &number_global_beam_elements, 1, discretization->get_comm());
 
       if (global_in_output().get_runtime_output_params()->output_structure() &&
           number_global_solid_elements > 0)
@@ -1578,7 +1579,7 @@ void Solid::ModelEvaluator::Structure::determine_strain_energy(
   {
     double my_int_energy = eval_data().get_energy_data(Solid::internal_energy);
     double gsum = 0.0;
-    discret().get_comm().SumAll(&my_int_energy, &gsum, 1);
+    Core::Communication::sum_all(&my_int_energy, &gsum, 1, discret().get_comm());
 
     eval_data().set_value_for_energy_type(gsum, Solid::internal_energy);
   }

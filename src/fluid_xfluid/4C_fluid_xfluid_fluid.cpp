@@ -589,7 +589,7 @@ bool FLD::XFluidFluid::x_timint_project_from_embedded_discretization(
 
   int numfailed = 0;
   int my_numfailed = projection_nodeToDof.size();
-  discret_->get_comm().SumAll(&my_numfailed, &numfailed, 1);
+  Core::Communication::sum_all(&my_numfailed, &numfailed, 1, discret_->get_comm());
 
   return numfailed == 0;
 

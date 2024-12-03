@@ -461,7 +461,7 @@ void Solid::TimeInt::Base::prepare_output(bool force_prepare_timestep)
     {
       energy_local = energy_data.second;
 
-      dataglobalstate_->get_comm().SumAll(&energy_local, &energy_global, 1);
+      Core::Communication::sum_all(&energy_local, &energy_global, 1, dataglobalstate_->get_comm());
 
       evaldata.set_value_for_energy_type(energy_global, energy_data.first);
     }

@@ -309,7 +309,8 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
     std::vector<int> lnodeshells_numnodes(nodeshells_numnodes);
     std::vector<int> lshellcoordinates_numnodes(shellcoordinates_numnodes);
 
-    discret_->get_comm().SumAll(lnodeplanes.data(), nodeshells_->data(), nodeshells_->size());
+    Core::Communication::sum_all(
+        lnodeplanes.data(), nodeshells_->data(), nodeshells_->size(), discret_->get_comm());
     discret_->get_comm().SumAll(
         lplanecoordinates.data(), shellcoordinates_->data(), shellcoordinates_->size());
 
@@ -1083,7 +1084,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   {
     lpointcount.push_back(shell->second);
   }
-  discret_->get_comm().SumAll(lpointcount.data(), pointcount.data(), size);
+  Core::Communication::sum_all(lpointcount.data(), pointcount.data(), size, discret_->get_comm());
 
   // collect number of samples
   std::vector<double> lmeanu;
@@ -1138,7 +1139,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanu.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->get_comm().SumAll(lmeanu.data(), gmeanu.data(), size);
+  Core::Communication::sum_all(lmeanu.data(), gmeanu.data(), size, discret_->get_comm());
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanv.begin();
@@ -1147,7 +1148,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanv.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->get_comm().SumAll(lmeanv.data(), gmeanv.data(), size);
+  Core::Communication::sum_all(lmeanv.data(), gmeanv.data(), size, discret_->get_comm());
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanw.begin();
@@ -1156,7 +1157,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanw.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->get_comm().SumAll(lmeanw.data(), gmeanw.data(), size);
+  Core::Communication::sum_all(lmeanw.data(), gmeanw.data(), size, discret_->get_comm());
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanp.begin();
@@ -1165,7 +1166,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanp.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->get_comm().SumAll(lmeanp.data(), gmeanp.data(), size);
+  Core::Communication::sum_all(lmeanp.data(), gmeanp.data(), size, discret_->get_comm());
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanuu.begin();
@@ -1174,7 +1175,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanuu.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->get_comm().SumAll(lmeanuu.data(), gmeanuu.data(), size);
+  Core::Communication::sum_all(lmeanuu.data(), gmeanuu.data(), size, discret_->get_comm());
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanvv.begin();
@@ -1183,7 +1184,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanvv.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->get_comm().SumAll(lmeanvv.data(), gmeanvv.data(), size);
+  Core::Communication::sum_all(lmeanvv.data(), gmeanvv.data(), size, discret_->get_comm());
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanww.begin();
@@ -1192,7 +1193,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanww.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->get_comm().SumAll(lmeanww.data(), gmeanww.data(), size);
+  Core::Communication::sum_all(lmeanww.data(), gmeanww.data(), size, discret_->get_comm());
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanpp.begin();
@@ -1201,7 +1202,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanpp.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->get_comm().SumAll(lmeanpp.data(), gmeanpp.data(), size);
+  Core::Communication::sum_all(lmeanpp.data(), gmeanpp.data(), size, discret_->get_comm());
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanuv.begin();
@@ -1210,7 +1211,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanuv.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->get_comm().SumAll(lmeanuv.data(), gmeanuv.data(), size);
+  Core::Communication::sum_all(lmeanuv.data(), gmeanuv.data(), size, discret_->get_comm());
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanuw.begin();
@@ -1219,7 +1220,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanuw.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->get_comm().SumAll(lmeanuw.data(), gmeanuw.data(), size);
+  Core::Communication::sum_all(lmeanuw.data(), gmeanuw.data(), size, discret_->get_comm());
 
 
   rr = 0;
@@ -1229,7 +1230,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanvw.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->get_comm().SumAll(lmeanvw.data(), gmeanvw.data(), size);
+  Core::Communication::sum_all(lmeanvw.data(), gmeanvw.data(), size, discret_->get_comm());
 
   for (int mm = 0; mm < size; ++mm)
   {
@@ -1257,7 +1258,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
       lmeanc.push_back(shell->second / pointcount[rr]);
       ++rr;
     }
-    discret_->get_comm().SumAll(lmeanc.data(), gmeanc.data(), size);
+    Core::Communication::sum_all(lmeanc.data(), gmeanc.data(), size, discret_->get_comm());
 
     rr = 0;
     for (std::map<double, double, PlaneSortCriterion>::iterator shell = meancc.begin();
@@ -1266,7 +1267,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
       lmeancc.push_back(shell->second / pointcount[rr]);
       ++rr;
     }
-    discret_->get_comm().SumAll(lmeancc.data(), gmeancc.data(), size);
+    Core::Communication::sum_all(lmeancc.data(), gmeancc.data(), size, discret_->get_comm());
 
     for (int mm = 0; mm < size; ++mm)
     {
@@ -1297,7 +1298,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
         gmeanphi[rr] = 0.0;  // initialize due to sequential reuse of this vector
         ++rr;
       }
-      discret_->get_comm().SumAll(lmeanphi.data(), gmeanphi.data(), size);
+      Core::Communication::sum_all(lmeanphi.data(), gmeanphi.data(), size, discret_->get_comm());
 
       rr = 0;
       for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanphiphi[k].begin();
@@ -1307,7 +1308,8 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
         gmeanphiphi[rr] = 0.0;  // initialize due to sequential reuse of this vector
         ++rr;
       }
-      discret_->get_comm().SumAll(lmeanphiphi.data(), gmeanphiphi.data(), size);
+      Core::Communication::sum_all(
+          lmeanphiphi.data(), gmeanphiphi.data(), size, discret_->get_comm());
 
       // insert values for scalar field k
       for (int mm = 0; mm < size; ++mm)

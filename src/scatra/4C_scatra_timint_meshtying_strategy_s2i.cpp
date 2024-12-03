@@ -2650,7 +2650,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
                 localnumlmdof[mypid] = interfacemaps_->Map(1)->NumMyElements();
               else
                 localnumlmdof[mypid] = interfacemaps_->Map(2)->NumMyElements();
-              comm.SumAll(localnumlmdof.data(), globalnumlmdof.data(), numproc);
+              Core::Communication::sum_all(
+                  localnumlmdof.data(), globalnumlmdof.data(), numproc, comm);
 
               // for each processor, determine offset of minimum Lagrange multiplier dof GID w.r.t.
               // maximum standard dof GID
@@ -3986,7 +3987,8 @@ void ScaTra::MeshtyingStrategyS2I::fd_check(
     // check whether current column index is a valid global column index and continue loop if not
     int collid(sysmat_original.ColMap().LID(colgid));
     int maxcollid(-1);
-    scatratimint_->discretization()->get_comm().MaxAll(&collid, &maxcollid, 1);
+    Core::Communication::max_all(
+        &collid, &maxcollid, 1, scatratimint_->discretization()->get_comm());
     if (maxcollid < 0) continue;
 
     // fill global state vector with original state variables
@@ -4104,11 +4106,14 @@ void ScaTra::MeshtyingStrategyS2I::fd_check(
 
   // communicate tracking variables
   int counterglobal(0);
-  scatratimint_->discretization()->get_comm().SumAll(&counter, &counterglobal, 1);
+  Core::Communication::sum_all(
+      &counter, &counterglobal, 1, scatratimint_->discretization()->get_comm());
   double maxabserrglobal(0.);
-  scatratimint_->discretization()->get_comm().MaxAll(&maxabserr, &maxabserrglobal, 1);
+  Core::Communication::max_all(
+      &maxabserr, &maxabserrglobal, 1, scatratimint_->discretization()->get_comm());
   double maxrelerrglobal(0.);
-  scatratimint_->discretization()->get_comm().MaxAll(&maxrelerr, &maxrelerrglobal, 1);
+  Core::Communication::max_all(
+      &maxrelerr, &maxrelerrglobal, 1, scatratimint_->discretization()->get_comm());
 
   // final screen output
   if (Core::Communication::my_mpi_rank(scatratimint_->discretization()->get_comm()) == 0)

@@ -539,7 +539,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
       // note that elements in ele1/ele2 already are in column (overlapping) map
       int lsize = (int)currele.size();
       int gsize = 0;
-      get_comm().SumAll(&lsize, &gsize, 1);
+      Core::Communication::sum_all(&lsize, &gsize, 1, get_comm());
 
 
       std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator fool;

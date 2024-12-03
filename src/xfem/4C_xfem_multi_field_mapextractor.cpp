@@ -544,7 +544,8 @@ void XFEM::MultiFieldMapExtractor::build_interface_coupling_dof_set()
 
     // communicate the number of standard DoF's
     // Supposed to be the same value on all discretizations and all nodes.
-    if (g_num_std_dof == -1) get_comm().MaxAll(&my_num_std_dof, &g_num_std_dof, 1);
+    if (g_num_std_dof == -1)
+      Core::Communication::max_all(&my_num_std_dof, &g_num_std_dof, 1, get_comm());
 
     if (my_num_std_dof != -1 and g_num_std_dof != my_num_std_dof)
       FOUR_C_THROW(
@@ -959,7 +960,7 @@ int XFEM::MultiFieldMapExtractor::slave_id(enum FieldName field) const
  *----------------------------------------------------------------------------*/
 void XFEM::MultiFieldMapExtractor::build_global_interface_node_gid_set()
 {
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   std::set<int> g_unique_row_node_gid_set;
   g_interface_node_gid_set_.clear();
 
@@ -1004,23 +1005,25 @@ void XFEM::MultiFieldMapExtractor::build_global_interface_node_gid_set()
           my_interface_row_node_gid_vec.begin());
     }
     // wait since only one proc did all the work
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
     // ------------------------------------------------------------------------
     // send the unique row node GID vector from processor p to all proc's
     // ------------------------------------------------------------------------
-    get_comm().Broadcast(&num_my_unique_row_nodes, 1, p);
+    Core::Communication::broadcast(&num_my_unique_row_nodes, 1, p, get_comm());
     if (num_my_unique_row_nodes == 0) continue;
     my_unique_row_node_gid_vec.resize(num_my_unique_row_nodes, -1);
-    get_comm().Broadcast(my_unique_row_node_gid_vec.data(), num_my_unique_row_nodes, p);
+    Core::Communication::broadcast(
+        my_unique_row_node_gid_vec.data(), num_my_unique_row_nodes, p, get_comm());
 
     // ------------------------------------------------------------------------
     // send the interface row node GID vector from processor p to all proc's
     // ------------------------------------------------------------------------
-    get_comm().Broadcast(&num_my_interface_row_nodes, 1, p);
+    Core::Communication::broadcast(&num_my_interface_row_nodes, 1, p, get_comm());
     if (num_my_interface_row_nodes > 0)
     {
       my_interface_row_node_gid_vec.resize(num_my_interface_row_nodes, -1);
-      get_comm().Broadcast(my_interface_row_node_gid_vec.data(), num_my_interface_row_nodes, p);
+      Core::Communication::broadcast(
+          my_interface_row_node_gid_vec.data(), num_my_interface_row_nodes, p, get_comm());
       // create/extend the global interface row node gid set
       g_interface_node_gid_set_.insert(
           my_interface_row_node_gid_vec.begin(), my_interface_row_node_gid_vec.end());

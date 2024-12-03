@@ -7,7 +7,8 @@
 
 #include "4C_mortar_manager_base.hpp"
 
-#include <Epetra_SerialComm.h>
+#include <Epetra_MpiComm.h>
+
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -34,10 +35,7 @@ Mortar::ManagerBase::ManagerBase()
   // CONTACT::MeshtyingManager class!
   //**********************************************************************
 
-  // create a simple serial communicator
-  comm_ = std::make_shared<Epetra_SerialComm>();
-
-  return;
+  comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_SELF);
 }
 
 FOUR_C_NAMESPACE_CLOSE

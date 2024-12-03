@@ -127,7 +127,7 @@ void Adapter::StructureRedAirway::calc_vol(std::map<int, double>& V)
       tmp += elevector3[0];
     }
     double vol = 0.;
-    discretization()->get_comm().SumAll(&tmp, &vol, 1);
+    Core::Communication::sum_all(&tmp, &vol, 1, discretization()->get_comm());
     if (vol < 0.0) vol *= -1.0;
     V[condID] = vol;
   }

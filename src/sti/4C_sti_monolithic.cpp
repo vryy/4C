@@ -369,7 +369,7 @@ void STI::Monolithic::fd_check()
     // check whether current column index is a valid global column index and continue loop if not
     int collid(sysmat_original->ColMap().LID(colgid));
     int maxcollid(-1);
-    get_comm().MaxAll(&collid, &maxcollid, 1);
+    Core::Communication::max_all(&collid, &maxcollid, 1, get_comm());
     if (maxcollid < 0) continue;
 
     // fill global state vector with original state variables
@@ -493,11 +493,11 @@ void STI::Monolithic::fd_check()
 
   // communicate tracking variables
   int counterglobal(0);
-  get_comm().SumAll(&counter, &counterglobal, 1);
+  Core::Communication::sum_all(&counter, &counterglobal, 1, get_comm());
   double maxabserrglobal(0.);
-  get_comm().MaxAll(&maxabserr, &maxabserrglobal, 1);
+  Core::Communication::max_all(&maxabserr, &maxabserrglobal, 1, get_comm());
   double maxrelerrglobal(0.);
-  get_comm().MaxAll(&maxrelerr, &maxrelerrglobal, 1);
+  Core::Communication::max_all(&maxrelerr, &maxrelerrglobal, 1, get_comm());
 
   // final screen output
   if (Core::Communication::my_mpi_rank(get_comm()) == 0)
@@ -639,7 +639,7 @@ void STI::Monolithic::output_matrix_to_file(
   }
 
   // wait until output is complete
-  comm.Barrier();
+  Core::Communication::barrier(comm);
 
   // throw error to abort simulation for debugging
   FOUR_C_THROW("Matrix was output to *.csv file!");
@@ -726,7 +726,7 @@ void STI::Monolithic::output_vector_to_file(
   }
 
   // wait until output is complete
-  comm.Barrier();
+  Core::Communication::barrier(comm);
 
   // throw error to abort simulation for debugging
   FOUR_C_THROW("Vector was output to *.csv file!");
@@ -1530,7 +1530,7 @@ void STI::Monolithic::solve()
     // determine time needed for evaluating elements and assembling global system of equations,
     // and take maximum over all processors via communication
     double mydtele = timer_->wallTime() - time;
-    get_comm().MaxAll(&mydtele, &dtele_, 1);
+    Core::Communication::max_all(&mydtele, &dtele_, 1, get_comm());
 
     // safety check
     if (!systemmatrix_->filled())
@@ -1563,7 +1563,7 @@ void STI::Monolithic::solve()
     // determine time needed for solving global system of equations,
     // and take maximum over all processors via communication
     double mydtsolve = timer_->wallTime() - time;
-    get_comm().MaxAll(&mydtsolve, &dtsolve_, 1);
+    Core::Communication::max_all(&mydtsolve, &dtsolve_, 1, get_comm());
 
     // output performance statistics associated with linear solver into text file if applicable
     if (fieldparameters_->get<bool>("OUTPUTLINSOLVERSTATS"))

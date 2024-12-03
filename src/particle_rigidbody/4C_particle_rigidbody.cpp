@@ -211,7 +211,7 @@ void ParticleRigidBody::RigidBodyHandler::set_unique_global_ids_for_all_rigid_bo
 
   // get maximum global id of rigid bodies on all processors
   int allprocmaxglobalid = -1;
-  comm_.MaxAll(&maxglobalid, &allprocmaxglobalid, 1);
+  Core::Communication::max_all(&maxglobalid, &allprocmaxglobalid, 1, comm_);
 
   // number of global ids on all processors
   const int numglobalids = allprocmaxglobalid + 1;
@@ -415,7 +415,7 @@ bool ParticleRigidBody::RigidBodyHandler::have_rigid_body_phase_change(
 
   // check among all processors
   int globalhavephasechange = 0;
-  comm_.MaxAll(&localhavephasechange, &globalhavephasechange, 1);
+  Core::Communication::max_all(&localhavephasechange, &globalhavephasechange, 1, comm_);
 
   return globalhavephasechange;
 }

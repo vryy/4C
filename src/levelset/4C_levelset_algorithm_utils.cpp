@@ -556,8 +556,8 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       }
       globalmins.resize(planenormal.size());
       globalmaxs.resize(planenormal.size());
-      discret_->get_comm().MinAll(&min, &(globalmins.back()), 1);
-      discret_->get_comm().MaxAll(&max, &(globalmaxs.back()), 1);
+      Core::Communication::min_all(&min, &(globalmins.back()), 1, discret_->get_comm());
+      Core::Communication::max_all(&max, &(globalmaxs.back()), 1, discret_->get_comm());
     }
   }  // end loop over all surfacepbcs
 

@@ -1157,8 +1157,8 @@ namespace Core::IO
       int num_lines = lines_.size();
       /* Now that we use a variable number of bytes per line we have to
        * communicate the buffer size as well. */
-      comm_.Broadcast(&arraysize, 1, 0);
-      comm_.Broadcast(&num_lines, 1, 0);
+      Core::Communication::broadcast(&arraysize, 1, 0, comm_);
+      Core::Communication::broadcast(&num_lines, 1, 0, comm_);
 
       if (Core::Communication::my_mpi_rank(comm_) > 0)
       {
@@ -1168,7 +1168,7 @@ namespace Core::IO
       }
 
       // There are no char based functions available! Do it by hand!
-      // comm_.Broadcast(inputfile_.data(),arraysize,0);
+      // Core::Communication::broadcast(inputfile_.data(),arraysize,0, comm_);
 
       const auto& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm_);
 

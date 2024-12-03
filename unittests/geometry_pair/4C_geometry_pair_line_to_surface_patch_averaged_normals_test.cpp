@@ -15,7 +15,6 @@
 #include "4C_geometry_pair_scalar_types.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Epetra_SerialComm.h>
 
 
 namespace
@@ -33,7 +32,7 @@ namespace
      */
     GeometryPairLineToSurfacePatchTest()
     {
-      std::shared_ptr<Epetra_SerialComm> comm = std::make_shared<Epetra_SerialComm>();
+      auto comm = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
       discret_ = std::make_shared<Core::FE::Discretization>("unit_test", comm, 3);
     }
 

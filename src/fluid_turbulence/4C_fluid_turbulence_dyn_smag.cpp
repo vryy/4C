@@ -617,9 +617,12 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
 
     for (int rr = 0; rr < numlayers; ++rr)
     {
-      discret_->get_comm().SumAll(&(local_count_for_average[rr]), &(count_for_average[rr]), 1);
-      discret_->get_comm().SumAll(&(local_ele_sum_LijMij[rr]), &((*averaged_LijMij)[rr]), 1);
-      discret_->get_comm().SumAll(&(local_ele_sum_MijMij[rr]), &((*averaged_MijMij)[rr]), 1);
+      Core::Communication::sum_all(
+          &(local_count_for_average[rr]), &(count_for_average[rr]), 1, discret_->get_comm());
+      Core::Communication::sum_all(
+          &(local_ele_sum_LijMij[rr]), &((*averaged_LijMij)[rr]), 1, discret_->get_comm());
+      Core::Communication::sum_all(
+          &(local_ele_sum_MijMij[rr]), &((*averaged_MijMij)[rr]), 1, discret_->get_comm());
       if (physicaltype_ == Inpar::FLUID::loma)
       {
         discret_->get_comm().SumAll(
@@ -977,8 +980,10 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
     {
       scatradiscret_->get_comm().SumAll(
           &(local_count_for_average[rr]), &(count_for_average[rr]), 1);
-      scatradiscret_->get_comm().SumAll(&(local_ele_sum_LkMk[rr]), &((*averaged_LkMk)[rr]), 1);
-      scatradiscret_->get_comm().SumAll(&(local_ele_sum_MkMk[rr]), &((*averaged_MkMk)[rr]), 1);
+      Core::Communication::sum_all(
+          &(local_ele_sum_LkMk[rr]), &((*averaged_LkMk)[rr]), 1, scatradiscret_->get_comm());
+      Core::Communication::sum_all(
+          &(local_ele_sum_MkMk[rr]), &((*averaged_MkMk)[rr]), 1, scatradiscret_->get_comm());
     }
 
     // do averaging

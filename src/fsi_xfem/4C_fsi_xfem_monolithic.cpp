@@ -1486,7 +1486,7 @@ bool FSI::MonolithicXFEM::evaluate()
   // structure field
   //-------------------
   {
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
 
     // ------------------------------------------------------------------
     // ------------------------------------------------------------------
@@ -1571,7 +1571,7 @@ bool FSI::MonolithicXFEM::evaluate()
   // * call evaluate routine to assemble fluid rhs and systemmatrix
   //
   {
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
 
     // Teuchos::TimeMonitor::zeroOutTimers();
 

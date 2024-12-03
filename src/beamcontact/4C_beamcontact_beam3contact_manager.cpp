@@ -553,7 +553,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
     Core::IO::cout(Core::IO::debug)
         << "      Evaluate Contact Pairs: " << t_end << " seconds. " << Core::IO::endl;
   double sumproc_evaluationtime = 0.0;
-  get_comm().SumAll(&t_end, &sumproc_evaluationtime, 1);
+  Core::Communication::sum_all(&t_end, &sumproc_evaluationtime, 1, get_comm());
   contactevaluationtime_ += sumproc_evaluationtime;
   t_start = Teuchos::Time::wallTime();
 
@@ -764,7 +764,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
     // note that elements in ele1/ele2 already are in column (overlapping) map
     int lsize = (int)currele.size();
     int gsize = 0;
-    get_comm().SumAll(&lsize, &gsize, 1);
+    Core::Communication::sum_all(&lsize, &gsize, 1, get_comm());
 
     std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator fool;
     for (fool = currele.begin(); fool != currele.end(); ++fool)
@@ -842,7 +842,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
     // note that elements in ele1/ele2 already are in column (overlapping) map
     int lsize = (int)currele.size();
     int gsize = 0;
-    get_comm().SumAll(&lsize, &gsize, 1);
+    Core::Communication::sum_all(&lsize, &gsize, 1, get_comm());
 
     std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator fool;
     for (fool = currele.begin(); fool != currele.end(); ++fool)
@@ -1258,7 +1258,7 @@ void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintpa
     }
   }
 
-  get_comm().MaxAll(&kappa_max, &global_kappa_max_, 1);
+  Core::Communication::max_all(&kappa_max, &global_kappa_max_, 1, get_comm());
   //  std::cout << "global_kappa_max_: " << global_kappa_max_ << std::endl;
   timeintparams.set("kappa_max", global_kappa_max_);
   // End: Determine maximal curvature occuring in complete beam discretization
@@ -1475,7 +1475,7 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
   int numpairs = 0;
   int numpairsthisproc = pairs_.size();
 
-  pdiscret_.get_comm().SumAll(&numpairsthisproc, &numpairs, 1);
+  Core::Communication::sum_all(&numpairsthisproc, &numpairs, 1, pdiscret_.get_comm());
 
   if (Core::Communication::my_mpi_rank(pdiscret_.get_comm()) == 0)
     Core::IO::cout(Core::IO::standard)
@@ -1486,7 +1486,7 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
     numpairs = 0;
     numpairsthisproc = btsolpairs_.size();
 
-    pdiscret_.get_comm().SumAll(&numpairsthisproc, &numpairs, 1);
+    Core::Communication::sum_all(&numpairsthisproc, &numpairs, 1, pdiscret_.get_comm());
 
     if (Core::Communication::my_mpi_rank(pdiscret_.get_comm()) == 0)
       Core::IO::cout(Core::IO::standard)
@@ -1878,7 +1878,7 @@ void CONTACT::Beam3cmanager::compute_search_radius()
     charactlength = maxelelength;
 
   // communicate among all procs to find the global maximum
-  get_comm().MaxAll(&charactlength, &globalcharactlength, 1);
+  Core::Communication::max_all(&charactlength, &globalcharactlength, 1, get_comm());
 
   // Compute the search radius. This one is only applied to determine
   // close pairs considering the node-to-node distances.
@@ -2949,10 +2949,10 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
       fprintf(fp, "%s", gmshfilecontent.str().c_str());
       fclose(fp);
     }
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
   }
 
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   // Add a white and a black point -> this is necessary in order to get the full color range
   if (Core::Communication::my_mpi_rank(btsoldiscret_->get_comm()) == 0)
   {
@@ -2968,7 +2968,7 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
     fprintf(fp, "%s", gmshfilecontent.str().c_str());
     fclose(fp);
   }
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
 
 //*************************begin: gmsh output of contact forces for
 // solids************************************
@@ -3262,18 +3262,18 @@ void CONTACT::Beam3cmanager::update_constr_norm()
   // As long as the beam contact discretization is full overlapping, all pairs are stored in all
   // procs and don't need this procedure. However, for future applications (i.e. when abstain from a
   // fully overlapping discretization) it might be useful.
-  get_comm().MaxAll(&maxgap, &maxallgap, 1);
-  get_comm().MaxAll(&maxgap_cp, &maxallgap_cp, 1);
-  get_comm().MaxAll(&maxgap_gp, &maxallgap_gp, 1);
-  get_comm().MaxAll(&maxgap_ep, &maxallgap_ep, 1);
-  get_comm().MinAll(&mingap, &minallgap, 1);
-  get_comm().MinAll(&mingap_cp, &minallgap_cp, 1);
-  get_comm().MinAll(&mingap_gp, &minallgap_gp, 1);
-  get_comm().MinAll(&mingap_ep, &minallgap_ep, 1);
-  get_comm().MaxAll(&maxrelgap, &maxallrelgap, 1);
-  get_comm().MinAll(&minrelgap, &minallrelgap, 1);
+  Core::Communication::max_all(&maxgap, &maxallgap, 1, get_comm());
+  Core::Communication::max_all(&maxgap_cp, &maxallgap_cp, 1, get_comm());
+  Core::Communication::max_all(&maxgap_gp, &maxallgap_gp, 1, get_comm());
+  Core::Communication::max_all(&maxgap_ep, &maxallgap_ep, 1, get_comm());
+  Core::Communication::min_all(&mingap, &minallgap, 1, get_comm());
+  Core::Communication::min_all(&mingap_cp, &minallgap_cp, 1, get_comm());
+  Core::Communication::min_all(&mingap_gp, &minallgap_gp, 1, get_comm());
+  Core::Communication::min_all(&mingap_ep, &minallgap_ep, 1, get_comm());
+  Core::Communication::max_all(&maxrelgap, &maxallrelgap, 1, get_comm());
+  Core::Communication::min_all(&minrelgap, &minallrelgap, 1, get_comm());
 
-  get_comm().SumAll(&proclocal_penaltyenergy, &totpenaltyenergy_, 1);
+  Core::Communication::sum_all(&proclocal_penaltyenergy, &totpenaltyenergy_, 1, get_comm());
 
   // So far, we have determined the extrema of the current time step. Now, we want to determine the
   // extrema of the total simulation:
@@ -3371,7 +3371,7 @@ void CONTACT::Beam3cmanager::console_output()
       Core::IO::cout(Core::IO::verbose)
           << "    ID1            ID2              T xi       eta      angle    gap         force\n";
     }
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
 
     double maxangle = 0.0;
     double minangle = 90.0;
@@ -3509,7 +3509,7 @@ void CONTACT::Beam3cmanager::console_output()
       }
     }
 
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
 
 #ifdef PRINTGAPSOVERLENGTHFILE
     // write content into file and close it
@@ -3531,18 +3531,19 @@ void CONTACT::Beam3cmanager::console_output()
     int sumpro_numepc = 0;
     int sumpro_numperpc_transitions = 0;
 
-    get_comm().MaxAll(&maxangle, &sumpro_maxangle, 1);
-    get_comm().MinAll(&minangle, &sumpro_minangle, 1);
-    get_comm().MinAll(&mincpgap, &sumpro_mincpgap, 1);
-    get_comm().MinAll(&mingpgap, &sumpro_mingpgap, 1);
-    get_comm().MinAll(&minepgap, &sumpro_minepgap, 1);
-    get_comm().MaxAll(&maxcpgap, &sumpro_maxcpgap, 1);
-    get_comm().MaxAll(&maxgpgap, &sumpro_maxgpgap, 1);
-    get_comm().MaxAll(&maxepgap, &sumpro_maxepgap, 1);
-    get_comm().SumAll(&numperpc, &sumpro_numperpc, 1);
-    get_comm().SumAll(&numparc, &sumpro_numparc, 1);
-    get_comm().SumAll(&numepc, &sumpro_numepc, 1);
-    get_comm().SumAll(&numperpc_transitions, &sumpro_numperpc_transitions, 1);
+    Core::Communication::max_all(&maxangle, &sumpro_maxangle, 1, get_comm());
+    Core::Communication::min_all(&minangle, &sumpro_minangle, 1, get_comm());
+    Core::Communication::min_all(&mincpgap, &sumpro_mincpgap, 1, get_comm());
+    Core::Communication::min_all(&mingpgap, &sumpro_mingpgap, 1, get_comm());
+    Core::Communication::min_all(&minepgap, &sumpro_minepgap, 1, get_comm());
+    Core::Communication::max_all(&maxcpgap, &sumpro_maxcpgap, 1, get_comm());
+    Core::Communication::max_all(&maxgpgap, &sumpro_maxgpgap, 1, get_comm());
+    Core::Communication::max_all(&maxepgap, &sumpro_maxepgap, 1, get_comm());
+    Core::Communication::sum_all(&numperpc, &sumpro_numperpc, 1, get_comm());
+    Core::Communication::sum_all(&numparc, &sumpro_numparc, 1, get_comm());
+    Core::Communication::sum_all(&numepc, &sumpro_numepc, 1, get_comm());
+    Core::Communication::sum_all(
+        &numperpc_transitions, &sumpro_numperpc_transitions, 1, get_comm());
 
 #ifdef PRINTNUMCONTACTSFILE
     if (Core::Communication::my_mpi_rank(Comm()) == 0)
@@ -3672,7 +3673,7 @@ void CONTACT::Beam3cmanager::console_output()
     }
 
     // end output
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
     if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       Core::IO::cout(Core::IO::standard) << Core::IO::endl;
   }

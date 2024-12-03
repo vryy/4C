@@ -1062,7 +1062,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
         if (fool->second->owner() == Core::Communication::my_mpi_rank(get_comm())) ++lsize;
 
       int gsize = 0;
-      get_comm().SumAll(&lsize, &gsize, 1);
+      Core::Communication::sum_all(&lsize, &gsize, 1, get_comm());
 
       bool nurbs = false;
       if (currele.size() > 0) nurbs = Core::FE::is_nurbs_celltype(currele.begin()->second->shape());
@@ -1252,7 +1252,7 @@ int CONTACT::STRATEGY::Factory::identify_full_subset(
   int lfullsubmap = static_cast<int>(is_fullsubmap);
   int gfullsubmap = 0;
 
-  get_comm().SumAll(&lfullsubmap, &gfullsubmap, 1);
+  Core::Communication::sum_all(&lfullsubmap, &gfullsubmap, 1, get_comm());
 
   return (gfullsubmap == Core::Communication::num_mpi_ranks(get_comm()) ? sub_id : -1);
 }
@@ -1413,7 +1413,7 @@ void CONTACT::STRATEGY::Factory::find_poro_interface_types(bool& poromaster, boo
   // constellations
   // s-s, p-s, s-p, p-p
   // wait for all processors to determine if they have poro or structural master or slave elements
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   /* FixMe Should become possible for scoped enumeration with C++11,
    * till then we use the shown workaround.
    *  enum Mortar::Element::PhysicalType slaveTypeList[Comm().NumProc()];
@@ -1425,9 +1425,9 @@ void CONTACT::STRATEGY::Factory::find_poro_interface_types(bool& poromaster, boo
   std::vector<int> masterTypeList(Core::Communication::num_mpi_ranks(get_comm()));
   int int_slavetype = static_cast<int>(slavetype);
   int int_mastertype = static_cast<int>(mastertype);
-  get_comm().GatherAll(&int_slavetype, slaveTypeList.data(), 1);
-  get_comm().GatherAll(&int_mastertype, masterTypeList.data(), 1);
-  get_comm().Barrier();
+  Core::Communication::gather_all(&int_slavetype, slaveTypeList.data(), 1, get_comm());
+  Core::Communication::gather_all(&int_mastertype, masterTypeList.data(), 1, get_comm());
+  Core::Communication::barrier(get_comm());
 
   for (int i = 0; i < Core::Communication::num_mpi_ranks(get_comm()); ++i)
   {

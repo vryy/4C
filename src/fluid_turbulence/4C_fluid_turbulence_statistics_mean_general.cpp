@@ -246,7 +246,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
     }
 
     // do communication for global mins
-    avgcomm.MinAll(&lminxdim, &minxdim, 1);
+    Core::Communication::min_all(&lminxdim, &minxdim, 1, avgcomm);
   }
 
 
@@ -345,7 +345,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
   {
     int lnumlines = x.size();
 
-    avgcomm.SumAll(&lnumlines, &numlines, 1);
+    Core::Communication::sum_all(&lnumlines, &numlines, 1, avgcomm);
   }
 
   // Remark:
@@ -438,7 +438,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
       exporter.wait(request);
 
       // for safety
-      exporter.get_comm().Barrier();
+      Core::Communication::barrier(exporter.get_comm());
 
       //--------------------------------------------------
       // Unpack received block
@@ -730,7 +730,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
       exporter.wait(request);
 
       // for safety
-      exporter.get_comm().Barrier();
+      Core::Communication::barrier(exporter.get_comm());
 
       //--------------------------------------------------
       // Unpack received block

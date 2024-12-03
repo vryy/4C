@@ -38,7 +38,8 @@ void ScaTra::ScaTraResultTest::test_node(
 
   int havenode(scatratimint_->discretization()->have_global_node(node));
   int isnodeofanybody(0);
-  scatratimint_->discretization()->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
+  Core::Communication::sum_all(
+      &havenode, &isnodeofanybody, 1, scatratimint_->discretization()->get_comm());
 
   if (isnodeofanybody == 0)
   {
@@ -409,7 +410,8 @@ double ScaTra::ScaTraResultTest::result_special(
     // extract number of degrees of freedom owned by specified processor at specified
     // scatra-scatra coupling interface
     result = strategy->mortar_discretization(interface_num).dof_row_map()->NumMyElements();
-    scatratimint_->discretization()->get_comm().Broadcast(&result, 1, proc_num);
+    Core::Communication::broadcast(
+        &result, 1, proc_num, scatratimint_->discretization()->get_comm());
   }
 
   // test relaxation parameters for partitioned simulations

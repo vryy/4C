@@ -3398,8 +3398,8 @@ bool Wear::WearInterface::build_active_set(bool init)
 
       // TODO: not nice... alternative to sumall?
       int invglobal = 0;
-      get_comm().SumAll(&inv, &invglobal, 1);
-      get_comm().Barrier();
+      Core::Communication::sum_all(&inv, &invglobal, 1, get_comm());
+      Core::Communication::barrier(get_comm());
 
       if (cnode->owner() == Core::Communication::my_mpi_rank(get_comm()) && invglobal > 0)
       {
@@ -4071,7 +4071,7 @@ void Wear::WearInterface::split_slave_dofs()
 
   // communicate countN and countT among procs
   int gcountN;
-  get_comm().SumAll(&countN, &gcountN, 1);
+  Core::Communication::sum_all(&countN, &gcountN, 1, get_comm());
 
   // check global dimensions
   if ((gcountN) != snoderowmap_->NumGlobalElements())
@@ -4128,7 +4128,7 @@ void Wear::WearInterface::split_master_dofs()
 
   // communicate countN and countT among procs
   int gcountN;
-  get_comm().SumAll(&countN, &gcountN, 1);
+  Core::Communication::sum_all(&countN, &gcountN, 1, get_comm());
 
   // check global dimensions
   if ((gcountN) != mnoderowmap_->NumGlobalElements())

@@ -153,7 +153,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
 
     {
       // for safety
-      exporter.get_comm().Barrier();
+      Core::Communication::barrier(exporter.get_comm());
     }
 
     //--------------------------------------------------
@@ -267,7 +267,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
 
 
     int countActRadNodeOnAllProcs = 0;
-    discret_->get_comm().SumAll(&actRadNode, &countActRadNodeOnAllProcs, 1);
+    Core::Communication::sum_all(&actRadNode, &countActRadNodeOnAllProcs, 1, discret_->get_comm());
 
     int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());
     int numprocs = Core::Communication::num_mpi_ranks(discret_->get_comm());
@@ -315,7 +315,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
 
       //--------------------------------------------------
@@ -481,7 +481,7 @@ void FLD::TurbulenceStatisticsBfda::do_time_sample(Core::LinAlg::Vector<double>&
 
     // Count nodes on all procs (should be 1)
     int countnodesonallprocs = 1;
-    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
@@ -568,7 +568,7 @@ void FLD::TurbulenceStatisticsBfda::do_time_sample(Core::LinAlg::Vector<double>&
       // Sum nodes on all procs (should be 4 nodes at a specific radius per evaluation plane except
       // of r=0 where it is 1)
       int countnodesonallprocs = 4;
-      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      Core::Communication::sum_all(&countnodes, &countnodesonallprocs, 1, discret_->get_comm());
 
       // At r=0 the loop above wrote 4 times a 1.0 at the same position of the toggle vector so this
       // is a special case

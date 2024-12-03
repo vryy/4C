@@ -736,7 +736,7 @@ void Cut::CutWizard::run_cut(
 )
 {
   // just for time measurement
-  comm_.Barrier();
+  Core::Communication::barrier(comm_);
 
   if (do_mesh_intersection_)
   {
@@ -749,7 +749,7 @@ void Cut::CutWizard::run_cut(
       intersection_->cut_self_cut(include_inner, screenoutput_);
 
       // just for time measurement
-      comm_.Barrier();
+      Core::Communication::barrier(comm_);
 
       const double t_diff = Teuchos::Time::wallTime() - t_start;
       if (myrank_ == 0 and screenoutput_)
@@ -764,7 +764,7 @@ void Cut::CutWizard::run_cut(
       intersection_->cut_collision_detection(include_inner, screenoutput_);
 
       // just for time measurement
-      comm_.Barrier();
+      Core::Communication::barrier(comm_);
 
       const double t_diff = Teuchos::Time::wallTime() - t_start;
       if (myrank_ == 0 and screenoutput_)
@@ -780,7 +780,7 @@ void Cut::CutWizard::run_cut(
     intersection_->cut(screenoutput_);
 
     // just for time measurement
-    comm_.Barrier();
+    Core::Communication::barrier(comm_);
 
     const double t_diff = Teuchos::Time::wallTime() - t_start;
     if (myrank_ == 0 and screenoutput_)
@@ -795,7 +795,7 @@ void Cut::CutWizard::run_cut(
     find_position_dof_sets(include_inner);
 
     // just for time measurement
-    comm_.Barrier();
+    Core::Communication::barrier(comm_);
 
     const double t_diff = Teuchos::Time::wallTime() - t_start;
     if (myrank_ == 0 and screenoutput_)
@@ -812,7 +812,7 @@ void Cut::CutWizard::run_cut(
         include_inner, v_cellgausstype_, b_cellgausstype_, tetcellsonly_, screenoutput_);
 
     // just for time measurement
-    comm_.Barrier();
+    Core::Communication::barrier(comm_);
 
     const double t_diff = Teuchos::Time::wallTime() - t_start;
     if (myrank_ == 0 and screenoutput_)
@@ -828,7 +828,7 @@ void Cut::CutWizard::run_cut(
  *------------------------------------------------------------------------------------------------*/
 void Cut::CutWizard::find_position_dof_sets(bool include_inner)
 {
-  comm_.Barrier();
+  Core::Communication::barrier(comm_);
 
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 5/6 --- cut_positions_dofsets (parallel)");
 
@@ -879,7 +879,7 @@ void Cut::CutWizard::find_position_dof_sets(bool include_inner)
     }
 
     //--------------------------------------------
-    comm_.Barrier();
+    Core::Communication::barrier(comm_);
 
     // find number and connection of dofsets at nodes from cut volumes
     intersection_->create_nodal_dof_set(include_inner, back_mesh_->get());

@@ -9,7 +9,6 @@
 
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 
-#include <Epetra_SerialComm.h>
 #include <exodusII.h>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -498,7 +497,6 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(const SideSet si
   std::cout << "Creating SideSet Connectivity... " << std::endl;
   fflush(stdout);
 
-  Epetra_SerialComm Comm;
   Teuchos::Time time("", true);
   auto timetot = Teuchos::TimeMonitor::getNewTimer("Side Set Connect total");
   auto time1 = Teuchos::TimeMonitor::getNewTimer("One Side Set");
@@ -638,7 +636,6 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(
   std::cout << "Creating SideSet Connectivity with outside-check... " << std::endl;
   fflush(stdout);
 
-  Epetra_SerialComm Comm;
   Teuchos::Time time("", true);
   auto timetot = Teuchos::TimeMonitor::getNewTimer("Side Set Connect total");
   auto time1 = Teuchos::TimeMonitor::getNewTimer("One Side Set");

@@ -460,7 +460,7 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(Core::FE::Discreti
         else
           mygeometrysize = geom.size();
         int maxgeometrysize = -1234;
-        evaldis.get_comm().MaxAll(&mygeometrysize, &maxgeometrysize, 1);
+        Core::Communication::max_all(&mygeometrysize, &maxgeometrysize, 1, evaldis.get_comm());
         curr = geom.begin();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -620,10 +620,10 @@ std::vector<double> Immersed::ImmersedBase::calc_global_resultantfrom_epetra_vec
     summyrowentriesz += vec_epetra.Values()[i * 3 + 2];
   }
 
-  comm.Barrier();
-  comm.SumAll(&summyrowentriesx, &result_globalx, 1);
-  comm.SumAll(&summyrowentriesy, &result_globaly, 1);
-  comm.SumAll(&summyrowentriesz, &result_globalz, 1);
+  Core::Communication::barrier(comm);
+  Core::Communication::sum_all(&summyrowentriesx, &result_globalx, 1, comm);
+  Core::Communication::sum_all(&summyrowentriesy, &result_globaly, 1, comm);
+  Core::Communication::sum_all(&summyrowentriesz, &result_globalz, 1, comm);
 
   result_L2norm = sqrt(pow(result_globalx, 2) + pow(result_globaly, 2) + pow(result_globalz, 2));
 

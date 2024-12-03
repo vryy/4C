@@ -640,7 +640,7 @@ bool PARTICLEENGINE::ParticleEngine::have_valid_particle_connectivity() const
 
   // check among all processors
   int globalcheck = 0;
-  comm_.MinAll(&localcheck, &globalcheck, 1);
+  Core::Communication::min_all(&localcheck, &globalcheck, 1, comm_);
 
   return globalcheck;
 }
@@ -651,7 +651,7 @@ bool PARTICLEENGINE::ParticleEngine::have_valid_particle_neighbors() const
 
   // check among all processors
   int globalcheck = 0;
-  comm_.MinAll(&localcheck, &globalcheck, 1);
+  Core::Communication::min_all(&localcheck, &globalcheck, 1, comm_);
 
   return globalcheck;
 }
@@ -725,7 +725,7 @@ void PARTICLEENGINE::ParticleEngine::relate_all_particles_to_all_procs(
 
   // get maximum global id on all processors
   int allprocmaxglobalid(0);
-  comm_.MaxAll(&thisprocmaxglobalid, &allprocmaxglobalid, 1);
+  Core::Communication::max_all(&thisprocmaxglobalid, &allprocmaxglobalid, 1, comm_);
 
   // resize to hold all particles
   const int vecsize = allprocmaxglobalid + 1;

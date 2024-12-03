@@ -549,7 +549,7 @@ void XFEM::MeshProjector::receive_block(
   exporter.wait(request);
 
   // for safety
-  exporter.get_comm().Barrier();
+  Core::Communication::barrier(exporter.get_comm());
 
   return;
 }
@@ -575,7 +575,7 @@ void XFEM::MeshProjector::send_block(
   exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
   // for safety
-  exporter.get_comm().Barrier();
+  Core::Communication::barrier(exporter.get_comm());
 
   return;
 }

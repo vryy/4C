@@ -378,7 +378,7 @@ void PoroFluidMultiPhaseFilter::write_all_results(PostField* field)
     if (numdof > mynumdofpernode) mynumdofpernode = numdof;
   }
   int numdofpernode(-1);
-  discret.get_comm().MaxAll(&mynumdofpernode, &numdofpernode, 1);
+  Core::Communication::max_all(&mynumdofpernode, &numdofpernode, 1, discret.get_comm());
 
   // write results for each transported scalar
   for (int k = 1; k <= numdofpernode; k++)
@@ -427,7 +427,7 @@ void ScaTraFilter::write_all_results(PostField* field)
     if (numdof > mynumdofpernode) mynumdofpernode = numdof;
   }
   int numdofpernode(-1);
-  discret.get_comm().MaxAll(&mynumdofpernode, &numdofpernode, 1);
+  Core::Communication::max_all(&mynumdofpernode, &numdofpernode, 1, discret.get_comm());
 
   // write results for each transported scalar
   for (int k = 1; k <= numdofpernode; k++)
@@ -511,7 +511,7 @@ void ElchFilter::write_all_results(PostField* field)
   for (int inode = 0; inode < discret.num_my_row_nodes(); ++inode)
     mynumdofpernodeset.insert(discret.num_dof(discret.l_row_node(inode)));
   int mysize(mynumdofpernodeset.size()), maxsize(-1);
-  discret.get_comm().MaxAll(&mysize, &maxsize, 1);
+  Core::Communication::max_all(&mysize, &maxsize, 1, discret.get_comm());
   std::vector<int> mynumdofpernodevec(mynumdofpernodeset.begin(), mynumdofpernodeset.end());
   mynumdofpernodevec.resize(maxsize, -1);
   std::vector<int> numdofpernodevec(

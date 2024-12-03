@@ -311,7 +311,7 @@ void SSI::SSIBase::init_discretizations(const Epetra_Comm& comm, const std::stri
           my_node_ids[lid] = scatra_manifold_dis->node_row_map()->GID(lid);
 
         int max_num_nodes = 0;
-        get_comm().MaxAll(&num_my_nodes, &max_num_nodes, 1);
+        Core::Communication::max_all(&num_my_nodes, &max_num_nodes, 1, get_comm());
 
         // resize vector and fill with place holders (-1)
         my_node_ids.resize(max_num_nodes, -1);

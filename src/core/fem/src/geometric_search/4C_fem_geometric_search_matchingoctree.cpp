@@ -240,7 +240,7 @@ void Core::GeometricSearch::MatchingOctree::create_global_entity_matching(
 
       {
         // for safety
-        exporter.get_comm().Barrier();
+        Core::Communication::barrier(exporter.get_comm());
       }
     }
     else
@@ -391,7 +391,7 @@ void Core::GeometricSearch::MatchingOctree::create_global_entity_matching(
 
     {
       // for safety
-      exporter.get_comm().Barrier();
+      Core::Communication::barrier(exporter.get_comm());
     }
   }  // end loop np
 }  // MatchingOctree::CreateGlobalNodeMatching

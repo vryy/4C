@@ -34,10 +34,10 @@ void Core::Rebalance::Utils::print_parallel_distribution(const Core::FE::Discret
     my_n_elements[myrank] = dis.num_my_row_elements();
     my_n_ghostele[myrank] = dis.num_my_col_elements() - my_n_elements[myrank];
 
-    dis.get_comm().SumAll(&my_n_nodes[0], &n_nodes[0], numproc);
-    dis.get_comm().SumAll(&my_n_ghostnodes[0], &n_ghostnodes[0], numproc);
-    dis.get_comm().SumAll(&my_n_elements[0], &n_elements[0], numproc);
-    dis.get_comm().SumAll(&my_n_ghostele[0], &n_ghostele[0], numproc);
+    Core::Communication::sum_all(&my_n_nodes[0], &n_nodes[0], numproc, dis.get_comm());
+    Core::Communication::sum_all(&my_n_ghostnodes[0], &n_ghostnodes[0], numproc, dis.get_comm());
+    Core::Communication::sum_all(&my_n_elements[0], &n_elements[0], numproc, dis.get_comm());
+    Core::Communication::sum_all(&my_n_ghostele[0], &n_ghostele[0], numproc, dis.get_comm());
 
     if (myrank == 0)
     {

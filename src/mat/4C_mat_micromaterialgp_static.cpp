@@ -52,7 +52,7 @@ Mat::MicroMaterialGP::MicroMaterialGP(
   const Teuchos::ParameterList& sdyn_micro = microproblem->structural_dynamic_params();
 
   dt_ = sdyn_macro.get<double>("TIMESTEP");
-  microdis->get_comm().Broadcast(&dt_, 1, 0);
+  Core::Communication::broadcast(&dt_, 1, 0, microdis->get_comm());
   step_ = 0;
   stepn_ = step_ + 1;
   time_ = 0.;
@@ -148,11 +148,9 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
       // broadcast restartname_ for micro scale
       int length = restartname_.length();
       std::vector<int> name(restartname_.begin(), restartname_.end());
-      int err = microdis->get_comm().Broadcast(&length, 1, 0);
-      if (err) FOUR_C_THROW("communication error");
+      Core::Communication::broadcast(&length, 1, 0, microdis->get_comm());
       name.resize(length);
-      err = microdis->get_comm().Broadcast(name.data(), length, 0);
-      if (err) FOUR_C_THROW("communication error");
+      Core::Communication::broadcast(name.data(), length, 0, microdis->get_comm());
       restartname_.assign(name.begin(), name.end());
     }
 
@@ -160,11 +158,9 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
       // broadcast newfilename for micro scale
       int length = newfilename.length();
       std::vector<int> name(newfilename.begin(), newfilename.end());
-      int err = microdis->get_comm().Broadcast(&length, 1, 0);
-      if (err) FOUR_C_THROW("communication error");
+      Core::Communication::broadcast(&length, 1, 0, microdis->get_comm());
       name.resize(length);
-      err = microdis->get_comm().Broadcast(name.data(), length, 0);
-      if (err) FOUR_C_THROW("communication error");
+      Core::Communication::broadcast(name.data(), length, 0, microdis->get_comm());
       newfilename.assign(name.begin(), name.end());
     }
   }
@@ -279,8 +275,8 @@ void Mat::MicroMaterialGP::post_setup()
     }
   }
 
-  microdis->get_comm().Broadcast(&step_, 1, 0);
-  microdis->get_comm().Broadcast(&time_, 1, 0);
+  Core::Communication::broadcast(&step_, 1, 0, microdis->get_comm());
+  Core::Communication::broadcast(&time_, 1, 0, microdis->get_comm());
 
   stepn_ = step_ + 1;
   timen_ = time_ + dt_;

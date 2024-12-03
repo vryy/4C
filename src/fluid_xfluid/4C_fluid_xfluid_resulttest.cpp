@@ -68,7 +68,7 @@ void FLD::XFluidResultTest::test_node(const Core::IO::InputParameterContainer& c
 {
   int havenode(discret.have_global_node(node));
   int isnodeofanybody(0);
-  discret.get_comm().SumAll(&havenode, &isnodeofanybody, 1);
+  Core::Communication::sum_all(&havenode, &isnodeofanybody, 1, discret.get_comm());
 
   if (isnodeofanybody == 0)
   {

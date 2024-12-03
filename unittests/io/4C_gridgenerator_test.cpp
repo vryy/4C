@@ -18,7 +18,6 @@
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
-#include <Epetra_SerialComm.h>
 
 namespace
 {
@@ -50,7 +49,7 @@ namespace
     void SetUp() override
     {
       create_material_in_global_problem();
-      comm_ = std::make_shared<Epetra_SerialComm>();
+      comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
       testdis_ = std::make_shared<Core::FE::Discretization>("dummy", comm_, 3);
     }

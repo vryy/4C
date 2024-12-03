@@ -1122,10 +1122,10 @@ ScaTra::ScaTraTimIntElch::evaluate_single_electrode_info_point(
 
   // communicate number of processor owning conditioned node
   int ownerid(-1);
-  discret_->get_comm().MaxAll(&procid, &ownerid, 1);
+  Core::Communication::max_all(&procid, &ownerid, 1, discret_->get_comm());
 
   // broadcast results from processor owning conditioned node to all other processors
-  discret_->get_comm().Broadcast(scalars->values(), numscalars, ownerid);
+  Core::Communication::broadcast(scalars->values(), numscalars, ownerid, discret_->get_comm());
 
   return scalars;
 }
@@ -1538,7 +1538,8 @@ void ScaTra::ScaTraTimIntElch::evaluate_cell_voltage()
         }
 
         // communicate electrode potential
-        discret_->get_comm().SumAll(&potential, &electrodevoltage_[condid], 1);
+        Core::Communication::sum_all(
+            &potential, &electrodevoltage_[condid], 1, discret_->get_comm());
       }
 
     }  // loop over conditions

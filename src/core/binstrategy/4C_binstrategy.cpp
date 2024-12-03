@@ -1495,11 +1495,11 @@ void Core::Binstrategy::BinningStrategy::
     }
 
     // first: proc i tells all procs how many bins it has
-    rowbins.Comm().Broadcast(&numbin, 1, iproc);
+    Core::Communication::broadcast(&numbin, 1, iproc, rowbins.Comm());
     binids.resize(numbin);
     // second: proc i tells all procs which bins it has, now each proc contains
     // rowbingids of iproc in vector binids
-    rowbins.Comm().Broadcast(binids.data(), numbin, iproc);
+    Core::Communication::broadcast(binids.data(), numbin, iproc, rowbins.Comm());
 
     // loop over all own bins and find requested ones, fill in master elements in these bins
     // (map key is bin gid owned by iproc, vector contains all node gids of all procs in this bin)
@@ -1730,8 +1730,8 @@ void Core::Binstrategy::BinningStrategy::
   double globmin[3];
   double globmax[3];
   // do the necessary communication
-  discret.get_comm().MinAll(locmin, globmin, 3);
-  discret.get_comm().MaxAll(locmax, globmax, 3);
+  Core::Communication::min_all(locmin, globmin, 3, discret.get_comm());
+  Core::Communication::max_all(locmax, globmax, 3, discret.get_comm());
 
   // set global XAABB for discret
   for (int dim = 0; dim < 3; ++dim)

@@ -79,7 +79,7 @@ void CONTACT::MtAbstractStrategy::redistribute_meshtying()
   if (par_redist() && Core::Communication::num_mpi_ranks(get_comm()) > 1)
   {
     // time measurement
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
     const double t_start = Teuchos::Time::wallTime();
 
     // do some more stuff with interfaces
@@ -109,7 +109,7 @@ void CONTACT::MtAbstractStrategy::redistribute_meshtying()
     setup(true);
 
     // time measurement
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
     const double t_sum = Teuchos::Time::wallTime() - t_start;
     if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       std::cout << "\nTime for parallel redistribution..............." << std::scientific
@@ -369,7 +369,7 @@ void CONTACT::MtAbstractStrategy::restrict_meshtying_zone()
   int globalfounduntied = 0;
   for (int i = 0; i < (int)interface_.size(); ++i)
     interface_[i]->detect_tied_slave_nodes(localfounduntied);
-  get_comm().SumAll(&localfounduntied, &globalfounduntied, 1);
+  Core::Communication::sum_all(&localfounduntied, &globalfounduntied, 1, get_comm());
 
   // get out of here if the whole slave surface is tied
   if (globalfounduntied == 0) return;
@@ -987,12 +987,12 @@ void CONTACT::MtAbstractStrategy::interface_forces(bool output)
   // summing up over all processors
   for (int i = 0; i < 3; ++i)
   {
-    get_comm().SumAll(&gfcs[i], &ggfcs[i], 1);
-    get_comm().SumAll(&gfcm[i], &ggfcm[i], 1);
-    get_comm().SumAll(&gmcs[i], &ggmcs[i], 1);
-    get_comm().SumAll(&gmcm[i], &ggmcm[i], 1);
-    get_comm().SumAll(&gmcsnew[i], &ggmcsnew[i], 1);
-    get_comm().SumAll(&gmcmnew[i], &ggmcmnew[i], 1);
+    Core::Communication::sum_all(&gfcs[i], &ggfcs[i], 1, get_comm());
+    Core::Communication::sum_all(&gfcm[i], &ggfcm[i], 1, get_comm());
+    Core::Communication::sum_all(&gmcs[i], &ggmcs[i], 1, get_comm());
+    Core::Communication::sum_all(&gmcm[i], &ggmcm[i], 1, get_comm());
+    Core::Communication::sum_all(&gmcsnew[i], &ggmcsnew[i], 1, get_comm());
+    Core::Communication::sum_all(&gmcmnew[i], &ggmcmnew[i], 1, get_comm());
   }
 
   // print interface results to file
@@ -1056,12 +1056,12 @@ void CONTACT::MtAbstractStrategy::print(std::ostream& os) const
        << "Meshtying interfaces: " << (int)interface_.size() << std::endl
        << "-------------------------------------------------------------\n";
   }
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     std::cout << *(interface_[i]);
   }
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
 
   return;
 }

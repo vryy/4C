@@ -146,7 +146,7 @@ namespace FLD
 
         {
           // for safety
-          exporter.get_comm().Barrier();
+          Core::Communication::barrier(exporter.get_comm());
         }
 
         // unpack received block into set of all coordinates
@@ -289,9 +289,9 @@ namespace FLD
                 random_theta2 = 0.5 * random->uni() + 0.5;
                 random_phi = 0.5 * random->uni() + 0.5;
               }
-              discret_->get_comm().Broadcast(&random_theta1, 1, 0);
-              discret_->get_comm().Broadcast(&random_theta2, 1, 0);
-              discret_->get_comm().Broadcast(&random_phi, 1, 0);
+              Core::Communication::broadcast(&random_theta1, 1, 0, discret_->get_comm());
+              Core::Communication::broadcast(&random_theta2, 1, 0, discret_->get_comm());
+              Core::Communication::broadcast(&random_phi, 1, 0, discret_->get_comm());
 
               // estimate energy at wave number from energy spectrum
               double energy = 0.0;
@@ -967,9 +967,9 @@ namespace FLD
                 random_theta2 = 0.5 * random->uni() + 0.5;
                 random_phi = 0.5 * random->uni() + 0.5;
               }
-              discret_->get_comm().Broadcast(&random_theta1, 1, 0);
-              discret_->get_comm().Broadcast(&random_theta2, 1, 0);
-              discret_->get_comm().Broadcast(&random_phi, 1, 0);
+              Core::Communication::broadcast(&random_theta1, 1, 0, discret_->get_comm());
+              Core::Communication::broadcast(&random_theta2, 1, 0, discret_->get_comm());
+              Core::Communication::broadcast(&random_phi, 1, 0, discret_->get_comm());
 
               // estimate energy at wave number from energy spectrum
               double energy = 0.0;

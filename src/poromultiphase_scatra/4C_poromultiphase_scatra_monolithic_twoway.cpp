@@ -411,7 +411,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::evaluate(
 
   // *********** time measurement ***********
   double mydtele = timernewton_.wallTime() - dtcpu;
-  get_comm().MaxAll(&mydtele, &dtele_, 1);
+  Core::Communication::max_all(&mydtele, &dtele_, 1, get_comm());
   // *********** time measurement ***********
 }
 
@@ -796,7 +796,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::linear_solve()
 
   // *********** time measurement ***********
   double mydtsolve = timernewton_.wallTime() - dtcpu;
-  get_comm().MaxAll(&mydtsolve, &dtsolve_, 1);
+  Core::Communication::max_all(&mydtsolve, &dtsolve_, 1, get_comm());
   // *********** time measurement ***********
 }
 

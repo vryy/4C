@@ -47,7 +47,7 @@ void StruResultTest::test_node(
 
   int havenode(strudisc_->have_global_node(node));
   int isnodeofanybody(0);
-  strudisc_->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
+  Core::Communication::sum_all(&havenode, &isnodeofanybody, 1, strudisc_->get_comm());
 
   if (isnodeofanybody == 0)
   {

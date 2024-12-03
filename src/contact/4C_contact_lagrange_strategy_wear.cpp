@@ -25,7 +25,6 @@
 #include "4C_mortar_utils.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Epetra_SerialComm.h>
 #include <Teuchos_Time.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -4692,7 +4691,7 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
   if (!doredist) return false;
 
   // time measurement
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   const double t_start = Teuchos::Time::wallTime();
 
   // set old and current displacement state
@@ -4727,7 +4726,7 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
   setup_wear(true, false);
 
   // time measurement
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   double t_end = Teuchos::Time::wallTime() - t_start;
   if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\nTime for parallel redistribution..............." << std::scientific

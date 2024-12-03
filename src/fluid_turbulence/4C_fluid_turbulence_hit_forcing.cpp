@@ -173,7 +173,7 @@ namespace FLD
 
         {
           // for safety
-          exporter.get_comm().Barrier();
+          Core::Communication::barrier(exporter.get_comm());
         }
 
         // unpack received block into set of all coordinates
@@ -501,11 +501,14 @@ namespace FLD
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->get_comm().SumAll(local_u1.data(), global_u1.data(), countallnodes);
+      Core::Communication::sum_all(
+          local_u1.data(), global_u1.data(), countallnodes, discret_->get_comm());
 
-      discret_->get_comm().SumAll(local_u2.data(), global_u2.data(), countallnodes);
+      Core::Communication::sum_all(
+          local_u2.data(), global_u2.data(), countallnodes, discret_->get_comm());
 
-      discret_->get_comm().SumAll(local_u3.data(), global_u3.data(), countallnodes);
+      Core::Communication::sum_all(
+          local_u3.data(), global_u3.data(), countallnodes, discret_->get_comm());
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -926,11 +929,14 @@ namespace FLD
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->get_comm().SumAll(local_u1.data(), global_u1.data(), countallnodes);
+      Core::Communication::sum_all(
+          local_u1.data(), global_u1.data(), countallnodes, discret_->get_comm());
 
-      discret_->get_comm().SumAll(local_u2.data(), global_u2.data(), countallnodes);
+      Core::Communication::sum_all(
+          local_u2.data(), global_u2.data(), countallnodes, discret_->get_comm());
 
-      discret_->get_comm().SumAll(local_u3.data(), global_u3.data(), countallnodes);
+      Core::Communication::sum_all(
+          local_u3.data(), global_u3.data(), countallnodes, discret_->get_comm());
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -1319,11 +1325,14 @@ namespace FLD
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->get_comm().SumAll(local_u1.data(), global_u1.data(), countallnodes);
+      Core::Communication::sum_all(
+          local_u1.data(), global_u1.data(), countallnodes, discret_->get_comm());
 
-      discret_->get_comm().SumAll(local_u2.data(), global_u2.data(), countallnodes);
+      Core::Communication::sum_all(
+          local_u2.data(), global_u2.data(), countallnodes, discret_->get_comm());
 
-      discret_->get_comm().SumAll(local_u3.data(), global_u3.data(), countallnodes);
+      Core::Communication::sum_all(
+          local_u3.data(), global_u3.data(), countallnodes, discret_->get_comm());
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -1753,11 +1762,14 @@ namespace FLD
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->get_comm().SumAll(local_u1.data(), global_u1.data(), countallnodes);
+      Core::Communication::sum_all(
+          local_u1.data(), global_u1.data(), countallnodes, discret_->get_comm());
 
-      discret_->get_comm().SumAll(local_u2.data(), global_u2.data(), countallnodes);
+      Core::Communication::sum_all(
+          local_u2.data(), global_u2.data(), countallnodes, discret_->get_comm());
 
-      discret_->get_comm().SumAll(local_u3.data(), global_u3.data(), countallnodes);
+      Core::Communication::sum_all(
+          local_u3.data(), global_u3.data(), countallnodes, discret_->get_comm());
 
       //----------------------------------------
       // fast Fourier transformation using FFTW

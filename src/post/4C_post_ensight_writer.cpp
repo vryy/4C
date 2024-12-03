@@ -640,7 +640,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
     }
 
     // for safety
-    exporter.get_comm().Barrier();
+    Core::Communication::barrier(exporter.get_comm());
 
     //--------------------------------------------------
     // Unpack received block and write the data
@@ -664,7 +664,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
     }  // end unpack
 
     // for safety
-    exporter.get_comm().Barrier();
+    Core::Communication::barrier(exporter.get_comm());
 
   }  // for pid
 
@@ -709,11 +709,12 @@ EnsightWriter::NumElePerDisType EnsightWriter::get_num_ele_per_dis_type(
   }
 
   // wait for all procs before communication is started
-  (dis.get_comm()).Barrier();
+  Core::Communication::barrier((dis.get_comm()));
 
   // form the global sum
   std::vector<int> globalnumeleperdistype(numeledistypes);
-  (dis.get_comm()).SumAll(myNumElePerDisType.data(), globalnumeleperdistype.data(), numeledistypes);
+  Core::Communication::sum_all(
+      myNumElePerDisType.data(), globalnumeleperdistype.data(), numeledistypes, (dis.get_comm()));
 
   // create return argument containing the global element numbers per distype
   NumElePerDisType globalNumElePerDisType;
@@ -801,7 +802,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
   for (iterator = numElePerDisType_.begin(); iterator != numElePerDisType_.end(); ++iterator)
   {
     // wait for all procs before communication is started
-    (dis.get_comm()).Barrier();
+    Core::Communication::barrier((dis.get_comm()));
 
     // no we have to communicate everything from proc 1...proc n to proc 0
     std::vector<char> sblock;  // sending block
@@ -848,7 +849,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
       }
 
       // for safety
-      exporter.get_comm().Barrier();
+      Core::Communication::barrier(exporter.get_comm());
 
       //--------------------------------------------------
       // Unpack received block and write the data
@@ -1534,8 +1535,9 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
   int min_gid_glob_epetradatamap = std::numeric_limits<int>::max();
   int min_gid_glob_dofrowmap = std::numeric_limits<int>::max();
 
-  dis->get_comm().MinAll(&min_gid_my_epetradatamap, &min_gid_glob_epetradatamap, 1);
-  dis->get_comm().MinAll(&min_gid_my_dofrowmap, &min_gid_glob_dofrowmap, 1);
+  Core::Communication::min_all(
+      &min_gid_my_epetradatamap, &min_gid_glob_epetradatamap, 1, dis->get_comm());
+  Core::Communication::min_all(&min_gid_my_dofrowmap, &min_gid_glob_dofrowmap, 1, dis->get_comm());
 
   // get offset in dofs
   const int offset = min_gid_glob_epetradatamap - min_gid_glob_dofrowmap;

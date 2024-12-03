@@ -11,8 +11,6 @@
 
 #include "4C_fem_general_element.hpp"
 
-#include <Epetra_SerialComm.h>
-
 #include <array>
 
 const double testTolerance = 1e-14;
@@ -27,7 +25,7 @@ namespace
     Beam3k()
     {
       testdis_ = std::make_shared<Core::FE::Discretization>(
-          "Beam3k", std::make_shared<Epetra_SerialComm>(), 3);
+          "Beam3k", std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD), 3);
 
       std::vector<std::vector<double>> xrefe{{-0.05, 0.05, 0.3}, {0.45, -0.05, 0.1}};
 

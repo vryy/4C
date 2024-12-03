@@ -189,7 +189,7 @@ void Solid::ResultTest::test_node(
 
   int havenode(strudisc_->have_global_node(node));
   int isnodeofanybody(0);
-  strudisc_->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
+  Core::Communication::sum_all(&havenode, &isnodeofanybody, 1, strudisc_->get_comm());
 
   if (isnodeofanybody == 0)
   {
@@ -477,13 +477,13 @@ void Solid::ResultTest::test_node_on_geometry(const Core::IO::InputParameterCont
     switch (op)
     {
       case TestOp::sum:
-        disc.get_comm().SumAll(&tmp_result, &result, 1);
+        Core::Communication::sum_all(&tmp_result, &result, 1, disc.get_comm());
         break;
       case TestOp::max:
-        disc.get_comm().MaxAll(&tmp_result, &result, 1);
+        Core::Communication::max_all(&tmp_result, &result, 1, disc.get_comm());
         break;
       case TestOp::min:
-        disc.get_comm().MinAll(&tmp_result, &result, 1);
+        Core::Communication::min_all(&tmp_result, &result, 1, disc.get_comm());
         break;
       default:
         break;

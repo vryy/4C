@@ -55,7 +55,7 @@ void Core::FE::Discretization::check_filled_globally()
   /*the global filled flag is set to the minimal value of any local filled flag
    * i.e. if on any processor filled_ == false, the flag globalfilled is set to
    * zero*/
-  get_comm().MinAll(&localfilled, &globalfilled, 1);
+  Core::Communication::min_all(&localfilled, &globalfilled, 1, get_comm());
 
   // if not Filled() == true on all the processors call reset()
   if (!globalfilled) reset();
@@ -301,8 +301,8 @@ void Core::FE::Discretization::print(std::ostream& os) const
     for (ecurr = element_.begin(); ecurr != element_.end(); ++ecurr)
       if (ecurr->second->owner() == Core::Communication::my_mpi_rank(get_comm())) nummyele++;
 
-    get_comm().SumAll(&nummynodes, &numglobalnodes, 1);
-    get_comm().SumAll(&nummyele, &numglobalelements, 1);
+    Core::Communication::sum_all(&nummynodes, &numglobalnodes, 1, get_comm());
+    Core::Communication::sum_all(&nummyele, &numglobalelements, 1, get_comm());
   }
 
   // print head
@@ -319,7 +319,7 @@ void Core::FE::Discretization::print(std::ostream& os) const
       os << "Filled() = false\n";
     os << "--------------------------------------------------\n";
   }
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   for (int proc = 0; proc < Core::Communication::num_mpi_ranks(get_comm()); ++proc)
   {
     if (proc == Core::Communication::my_mpi_rank(get_comm()))
@@ -386,7 +386,7 @@ void Core::FE::Discretization::print(std::ostream& os) const
         os << std::endl;
       }
     }
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
   }
 }
 
@@ -771,7 +771,7 @@ void Core::FE::Discretization::compute_null_space_if_necessary(
   // communicate data to procs without row element
   std::array<int, 4> ldata = {numdf, dimns, nv, np};
   std::array<int, 4> gdata = {0, 0, 0, 0};
-  get_comm().MaxAll(ldata.data(), gdata.data(), 4);
+  Core::Communication::max_all(ldata.data(), gdata.data(), 4, get_comm());
   numdf = gdata[0];
   dimns = gdata[1];
   nv = gdata[2];

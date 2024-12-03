@@ -6678,7 +6678,7 @@ void CONTACT::Interface::evaluate_distances(
 
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
 
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
@@ -6929,7 +6929,7 @@ void CONTACT::Interface::evaluate_distances(
     }
   }
 
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
 }
 
 /*----------------------------------------------------------------------*
@@ -7026,7 +7026,7 @@ void CONTACT::Interface::evaluate_tangent_norm(double& cnormtan)
 
   // get cnorm from all procs
   double sumcnormtanallprocs = 0.0;
-  get_comm().SumAll(&cnormtan, &sumcnormtanallprocs, 1);
+  Core::Communication::sum_all(&cnormtan, &sumcnormtanallprocs, 1, get_comm());
   cnormtan = sumcnormtanallprocs;
 }
 
@@ -7250,7 +7250,7 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
 
   // broadcast convergence status among processors
   int convcheck = 0;
-  get_comm().MinAll(&localcheck, &convcheck, 1);
+  Core::Communication::min_all(&localcheck, &convcheck, 1, get_comm());
 
   return convcheck;
 }
@@ -7439,8 +7439,8 @@ bool CONTACT::Interface::split_active_dofs()
 
   // communicate countN and countT among procs
   int gcountN, gcountT;
-  get_comm().SumAll(&countN, &gcountN, 1);
-  get_comm().SumAll(&countT, &gcountT, 1);
+  Core::Communication::sum_all(&countN, &gcountN, 1, get_comm());
+  Core::Communication::sum_all(&countT, &gcountT, 1, get_comm());
 
   // check global dimensions
   if ((gcountN + gcountT) != activedofs_->NumGlobalElements())
@@ -7503,7 +7503,7 @@ bool CONTACT::Interface::split_active_dofs()
 
   // communicate countslipT among procs
   int gcountslipT;
-  get_comm().SumAll(&countslipT, &gcountslipT, 1);
+  Core::Communication::sum_all(&countslipT, &gcountslipT, 1, get_comm());
 
   // create Tslipmap objects
   slipt_ = std::make_shared<Epetra_Map>(gcountslipT, countslipT, myslipTgids.data(), 0, get_comm());

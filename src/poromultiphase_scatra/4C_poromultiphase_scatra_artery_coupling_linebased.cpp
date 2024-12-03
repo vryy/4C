@@ -281,7 +281,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::pre_evaluate_c
   // output
   int total_numactive_pairs = 0;
   int numactive_pairs = static_cast<int>(coupl_elepairs_.size());
-  get_comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
+  Core::Communication::sum_all(&numactive_pairs, &total_numactive_pairs, 1, get_comm());
   if (myrank_ == 0)
   {
     std::cout << "Only " << total_numactive_pairs
@@ -484,7 +484,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::
 
   // user output
   double vol_sumall = 0.0;
-  get_comm().SumAll(&totalvolblood, &vol_sumall, 1);
+  Core::Communication::sum_all(&totalvolblood, &vol_sumall, 1, get_comm());
   if (myrank_ == 0)
   {
     std::cout << "\n<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -1063,7 +1063,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::output_summary
     std::cout << "\nSummary of coupling pairs (segments):" << std::endl;
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
   }
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
   {
     std::cout << "Proc " << std::right << std::setw(2) << myrank_ << ": Artery-ele " << std::right
@@ -1072,7 +1072,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::output_summary
               << std::setw(11) << coupl_elepairs_[i]->eta_b() << "] <---> continuous-ele "
               << std::right << std::setw(7) << coupl_elepairs_[i]->ele2_gid() << std::endl;
   }
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   if (myrank_ == 0) std::cout << "\n";
 }
 

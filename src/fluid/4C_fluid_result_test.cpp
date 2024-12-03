@@ -50,7 +50,7 @@ void FLD::FluidResultTest::test_node(
 
   int havenode(fluiddis_->have_global_node(node));
   int isnodeofanybody(0);
-  fluiddis_->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
+  Core::Communication::sum_all(&havenode, &isnodeofanybody, 1, fluiddis_->get_comm());
 
   if (isnodeofanybody == 0)
   {

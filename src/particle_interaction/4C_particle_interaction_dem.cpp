@@ -7,6 +7,7 @@
 
 #include "4C_particle_interaction_dem.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_runtime_csv_writer.hpp"
 #include "4C_particle_engine_container.hpp"
@@ -546,7 +547,7 @@ void ParticleInteraction::ParticleInteractionDEM::evaluate_particle_energy() con
   {
     std::vector<double> localkinenergy(1, 0.0);
     evaluate_particle_kinetic_energy(localkinenergy[0]);
-    comm_.SumAll(localkinenergy.data(), kinenergy.data(), 1);
+    Core::Communication::sum_all(localkinenergy.data(), kinenergy.data(), 1, comm_);
   }
 
   // evaluate particle gravitational potential energy contribution
@@ -554,7 +555,7 @@ void ParticleInteraction::ParticleInteractionDEM::evaluate_particle_energy() con
   {
     std::vector<double> localgravpotenergy(1, 0.0);
     evaluate_particle_gravitational_potential_energy(localgravpotenergy[0]);
-    comm_.SumAll(localgravpotenergy.data(), gravpotenergy.data(), 1);
+    Core::Communication::sum_all(localgravpotenergy.data(), gravpotenergy.data(), 1, comm_);
   }
 
   // evaluate elastic potential energy contribution
@@ -562,7 +563,7 @@ void ParticleInteraction::ParticleInteractionDEM::evaluate_particle_energy() con
   {
     std::vector<double> localelastpotenergy(1, 0.0);
     contact_->evaluate_elastic_potential_energy(localelastpotenergy[0]);
-    comm_.SumAll(localelastpotenergy.data(), elastpotenergy.data(), 1);
+    Core::Communication::sum_all(localelastpotenergy.data(), elastpotenergy.data(), 1, comm_);
   }
 
   // get specific runtime csv writer

@@ -287,7 +287,7 @@ double Core::LinAlg::MultiMapExtractor::norm2(
   }
 
   double global_norm = 0;
-  fm.Comm().SumAll(&local_norm, &global_norm, 1);
+  Core::Communication::sum_all(&local_norm, &global_norm, 1, fm.Comm());
   return std::sqrt(global_norm);
 }
 

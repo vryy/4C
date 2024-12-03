@@ -574,7 +574,7 @@ void FLD::XFluid::create_initial_state()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::create_state()
 {
-  discret_->get_comm().Barrier();
+  Core::Communication::barrier(discret_->get_comm());
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::CreateState");
 
   // ---------------------------------------------------------------------
@@ -721,7 +721,7 @@ void FLD::XFluid::extract_node_vectors(XFEM::DiscretizationXFEM& dis,
  *----------------------------------------------------------------------*/
 void FLD::XFluid::assemble_mat_and_rhs(int itnum)
 {
-  discret_->get_comm().Barrier();
+  Core::Communication::barrier(discret_->get_comm());
 
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate");
 
@@ -2078,7 +2078,8 @@ void FLD::XFluid::compute_error_norms(Core::LinAlg::SerialDenseVector& glob_dom_
   //--------------------------------------------------------
   // reduce and sum over all procs
   for (int i = 0; i < num_dom_norms; ++i) (glob_dom_norms)(i) = 0.0;
-  discret_->get_comm().SumAll(cpu_dom_norms.values(), glob_dom_norms.values(), num_dom_norms);
+  Core::Communication::sum_all(
+      cpu_dom_norms.values(), glob_dom_norms.values(), num_dom_norms, discret_->get_comm());
 
   for (int i = 0; i < num_interf_norms; ++i) (glob_interf_norms)(i) = 0.0;
   discret_->get_comm().SumAll(
@@ -3413,7 +3414,7 @@ bool FLD::XFluid::x_timint_check_for_monolithic_newton_restart(
     const bool screen_out               ///< screen output?
 )
 {
-  discret_->get_comm().Barrier();
+  Core::Communication::barrier(discret_->get_comm());
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::x_timint_check_for_monolithic_newton_restart");
 
   // is a Newton restart necessary? initialize
@@ -3489,7 +3490,8 @@ bool FLD::XFluid::x_timint_changed_dofsets(Core::FE::Discretization& dis,  ///< 
   int changed_dofsets_glob_max = 0;
 
   // check if at least one proc has changed dofsets? (maximum or sum of counts > 0)
-  dis.get_comm().MaxAll(&changed_dofsets_proc_count, &changed_dofsets_glob_max, 1);
+  Core::Communication::max_all(
+      &changed_dofsets_proc_count, &changed_dofsets_glob_max, 1, dis.get_comm());
   const bool changed_dofsets_glob = (changed_dofsets_glob_max > 0);
 
   return changed_dofsets_glob;
@@ -4027,8 +4029,10 @@ void FLD::XFluid::x_timint_get_reconstruct_status(
   int glob_timint_ghost_penalty = 0;
   int glob_timint_semi_lagrangean = 0;
 
-  discret_->get_comm().SumAll(&proc_timint_ghost_penalty, &glob_timint_ghost_penalty, 1);
-  discret_->get_comm().SumAll(&proc_timint_semi_lagrangean, &glob_timint_semi_lagrangean, 1);
+  Core::Communication::sum_all(
+      &proc_timint_ghost_penalty, &glob_timint_ghost_penalty, 1, discret_->get_comm());
+  Core::Communication::sum_all(
+      &proc_timint_semi_lagrangean, &glob_timint_semi_lagrangean, 1, discret_->get_comm());
 
 
   //------------------------------------------------------------------------------------
@@ -4119,7 +4123,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
     const bool screen_out      ///< screen output?
 )
 {
-  discret_->get_comm().Barrier();
+  Core::Communication::barrier(discret_->get_comm());
 
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::x_timint_reconstruct_ghost_values");
 
@@ -4193,7 +4197,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
 
   // do only one solve (as the system is linear!)
   {
-    discret_->get_comm().Barrier();
+    Core::Communication::barrier(discret_->get_comm());
 
     // get cpu time
     const double tcpu = Teuchos::Time::wallTime();
@@ -4213,7 +4217,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
   // to avoid that.
 
   {
-    discret_->get_comm().Barrier();
+    Core::Communication::barrier(discret_->get_comm());
 
     TEUCHOS_FUNC_TIME_MONITOR(
         "FLD::XFluid::x_timint_reconstruct_ghost_values::ghost_penaly_dbcmaps->insert_cond_vector");
@@ -4228,7 +4232,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
   incvel_gp->PutScalar(0.0);
 
   {
-    discret_->get_comm().Barrier();
+    Core::Communication::barrier(discret_->get_comm());
     TEUCHOS_FUNC_TIME_MONITOR(
         "FLD::XFluid::x_timint_reconstruct_ghost_values::apply_dirichlet_to_system");
 
@@ -4238,7 +4242,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
 
   //-------solve for residual displacements to correct incremental displacements
   {
-    discret_->get_comm().Barrier();
+    Core::Communication::barrier(discret_->get_comm());
 
     TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::x_timint_reconstruct_ghost_values::Solve");
 
