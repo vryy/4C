@@ -169,40 +169,6 @@ class PoroFluidMultiPhaseFilter : public PostFilterBase
 };
 
 /*!
- \brief Writer for scalar transport problems
-
- \author gjb
- \date 12/07
-*/
-class ScaTraFilter : public PostFilterBase
-{
- public:
-  /// constructor
-  ScaTraFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
-
- protected:
-  void write_all_results(PostField* field) override;
-};
-
-
-/*!
- \brief Writer for electrochemistry problems
-
- \author gjb
- \date 09/08
-*/
-class ElchFilter : public PostFilterBase
-{
- public:
-  /// constructor
-  ElchFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
-
- protected:
-  void write_all_results(PostField* field) override;
-};
-
-
-/*!
  \brief Writer for (in)stationary heat conduction
 
  \author bborn

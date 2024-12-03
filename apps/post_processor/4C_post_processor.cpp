@@ -70,15 +70,6 @@ namespace
         FluidFilter fluidwriter(fluidfield, basename);
         fluidwriter.write_files();
 
-        int numdisc = problem.num_discr();
-
-        for (int i = 0; i < numdisc - 3; ++i)
-        {
-          PostField* scatrafield = problem.get_discretization(3 + i);
-          ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.write_files();
-        }
-
         break;
       }
       case Core::ProblemType::biofilm_fsi:
@@ -92,15 +83,6 @@ namespace
         PostField* fluidfield = problem.get_discretization(1);
         FluidFilter fluidwriter(fluidfield, basename);
         fluidwriter.write_files();
-
-        int numdisc = problem.num_discr();
-
-        for (int i = 0; i < numdisc - 4; ++i)
-        {
-          PostField* scatrafield = problem.get_discretization(3 + i);
-          ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.write_files();
-        }
 
         break;
       }
@@ -245,16 +227,6 @@ namespace
         }
         break;
       }
-      case Core::ProblemType::level_set:
-      {
-        std::string basename = problem.outname();
-
-        PostField* scatrafield = problem.get_discretization(0);
-        ScaTraFilter scatrawriter(scatrafield, basename);
-        scatrawriter.write_files();
-
-        break;
-      }
       case Core::ProblemType::redairways_tissue:
       {
         PostField* structfield = problem.get_discretization(0);
@@ -338,9 +310,7 @@ namespace
         // no artery discretization
         if (problem.num_discr() == 3)
         {
-          PostField* scatrafield = problem.get_discretization(2);
-          ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.write_files();
+          // runtime output is used for scatra
         }
         else if (problem.num_discr() == 4)
         {
@@ -349,11 +319,6 @@ namespace
           // AnyFilter writer(field, problem.outname());
           StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
           writer.write_files();
-
-          // scatra
-          PostField* scatrafield = problem.get_discretization(3);
-          ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.write_files();
         }
         else if (problem.num_discr() == 5)
         {
@@ -362,16 +327,6 @@ namespace
           // AnyFilter writer(field, problem.outname());
           StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
           writer.write_files();
-
-          // artery scatra
-          PostField* artscatrafield = problem.get_discretization(3);
-          ScaTraFilter artscatrawriter(artscatrafield, basename);
-          artscatrawriter.write_files();
-
-          // scatra
-          PostField* scatrafield = problem.get_discretization(4);
-          ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.write_files();
         }
         else
           FOUR_C_THROW("wrong number of discretizations");
@@ -388,54 +343,13 @@ namespace
           PostField* fluidfield = problem.get_discretization(0);
           FluidFilter fluidwriter(fluidfield, basename);
           fluidwriter.write_files();
-
-          PostField* scatrafield = problem.get_discretization(1);
-          ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.write_files();
         }
         else if (numfields == 1)
         {
-          PostField* scatrafield = problem.get_discretization(0);
-          ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.write_files();
+          // runtime output is used for scatra
         }
         else
           FOUR_C_THROW("number of fields does not match: got %d", numfields);
-
-        break;
-      }
-      case Core::ProblemType::sti:
-      {
-        // extract label for output files
-        std::string basename = problem.outname();
-
-        // safety check
-        if (problem.num_discr() != 2)
-          FOUR_C_THROW(
-              "Must have exactly two discretizations for scatra-thermo interaction problems!");
-
-        Discret::Elements::Transport* transport_element =
-            dynamic_cast<Discret::Elements::Transport*>(
-                problem.get_discretization(0)->discretization()->l_row_element(0));
-        if (transport_element == nullptr)
-          FOUR_C_THROW("Elements of unknown type on scalar transport discretization!");
-
-        if (transport_element->impl_type() == Inpar::ScaTra::impltype_elch_electrode_thermo or
-            transport_element->impl_type() == Inpar::ScaTra::impltype_elch_diffcond_thermo)
-        {
-          ElchFilter elchwriter(problem.get_discretization(0), basename);
-          elchwriter.write_files();
-        }
-        else
-        {
-          FOUR_C_THROW(
-              "Scatra-thermo interaction not yet implemented for standard scalar transport!");
-          ScaTraFilter scatrawriter(problem.get_discretization(0), basename);
-          scatrawriter.write_files();
-        }
-
-        ScaTraFilter thermowriter(problem.get_discretization(1), basename);
-        thermowriter.write_files();
 
         break;
       }
@@ -478,9 +392,7 @@ namespace
           }
           else if (disname == "scatra")
           {
-            std::cout << "|==    Scatra Field ( " << disname << " )" << std::endl;
-            ScaTraFilter scatrawriter(field, basename);
-            scatrawriter.write_files();
+            // runtime output is used for scatra
           }
           else if (disname == "ale")
           {
@@ -558,9 +470,6 @@ namespace
         FluidFilter fluidwriter(fluidfield, basename);
         fluidwriter.write_files();
 
-        PostField* scatrafield = problem.get_discretization(1);
-        ScaTraFilter scatrawriter(scatrafield, basename);
-        scatrawriter.write_files();
         break;
       }
       case Core::ProblemType::elch:
@@ -575,10 +484,6 @@ namespace
           FluidFilter fluidwriter(fluidfield, basename);
           fluidwriter.write_files();
 
-          PostField* scatrafield = problem.get_discretization(1);
-          ElchFilter elchwriter(scatrafield, basename);
-          elchwriter.write_files();
-
           PostField* alefield = problem.get_discretization(2);
           AleFilter alewriter(alefield, basename);
           alewriter.write_files();
@@ -590,13 +495,7 @@ namespace
 
           if (dis0->name() == "scatra" and dis1->name() == "scatra_micro")
           {
-            PostField* scatrafield = dis0;
-            ElchFilter elchwriter(scatrafield, basename);
-            elchwriter.write_files();
-
-            PostField* scatrafield_micro = dis1;
-            ElchFilter elchwriter_micro(scatrafield_micro, basename);
-            elchwriter_micro.write_files();
+            // runtime output is used for scatra
           }
           else
           {
@@ -604,19 +503,12 @@ namespace
             PostField* fluidfield = dis0;
             FluidFilter fluidwriter(fluidfield, basename);
             fluidwriter.write_files();
-
-            PostField* scatrafield = dis1;
-            ElchFilter elchwriter(scatrafield, basename);
-            elchwriter.write_files();
           }
           break;
         }
         else if (numfield == 1)
         {
-          // only a ScaTra field is present
-          PostField* scatrafield = problem.get_discretization(0);
-          ElchFilter elchwriter(scatrafield, basename);
-          elchwriter.write_files();
+          // runtime output is used for scatra
         }
         else
           FOUR_C_THROW("number of fields does not match: got %d", numfield);
@@ -629,14 +521,6 @@ namespace
         // AnyFilter writer(field, problem.outname());
         StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
         writer.write_files();
-
-        // write output for scatra
-        if (problem.num_discr() == 2)
-        {
-          PostField* scatrafield = problem.get_discretization(1);
-          ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.write_files();
-        }
 
         break;
       }
@@ -703,10 +587,6 @@ namespace
         FluidFilter fluidwriter(fluidfield, basename);
         fluidwriter.write_files();
 
-        PostField* scatrafield = problem.get_discretization(2);
-        ScaTraFilter scatrawriter(scatrafield, basename);
-        scatrawriter.write_files();
-
         break;
       }
       case Core::ProblemType::fpsi:
@@ -761,17 +641,6 @@ namespace
         FluidFilter fluidwriter(fluidfield, basename);
         fluidwriter.write_files();
 
-        /////////////
-
-        int numdisc = problem.num_discr();
-
-        for (int i = 0; i < numdisc - 4; ++i)
-        {
-          PostField* scatrafield = problem.get_discretization(4 + i);
-          ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.write_files();
-        }
-
         break;
       }
       case Core::ProblemType::ehl:
@@ -786,68 +655,6 @@ namespace
         PostField* lubricationfield = problem.get_discretization(1);
         LubricationFilter lubricationwriter(lubricationfield, basename);
         lubricationwriter.write_files();
-
-        break;
-      }
-      case Core::ProblemType::ssi:
-      {
-        std::string basename = problem.outname();
-
-        const int numfields = problem.num_discr();
-
-        // remark: scalar transport discretization number is one for old structural time
-        // integration!
-        PostField* scatrafield = problem.get_discretization(0);
-        ScaTraFilter scatrawriter(scatrafield, basename);
-        scatrawriter.write_files();
-
-        if (numfields == 2)
-        {
-          // remark: structure discretization number is zero for old structural time integration!
-          PostField* structfield = problem.get_discretization(1);
-          StructureFilter structwriter(
-              structfield, basename, problem.stresstype(), problem.straintype());
-          structwriter.write_files();
-        }
-        else if (numfields == 3)
-        {
-          // remark: structure discretization number is zero for old structural time integration!
-          PostField* structfield = problem.get_discretization(2);
-          StructureFilter structwriter(
-              structfield, basename, problem.stresstype(), problem.straintype());
-          structwriter.write_files();
-
-          PostField* scatra_manifoldfield = problem.get_discretization(1);
-          ScaTraFilter scatra_manifoldfieldwriter(scatra_manifoldfield, basename);
-          scatra_manifoldfieldwriter.write_files();
-        }
-        else
-          FOUR_C_THROW("Unknwon number of solution fields");
-
-        break;
-      }
-
-      case Core::ProblemType::ssti:
-      {
-        std::string basename = problem.outname();
-
-        // remark: scalar transport discretization number is one for old structural time
-        // integration!
-        PostField* scatrafield = problem.get_discretization(0);
-
-        ScaTraFilter scatrawriter(scatrafield, basename);
-        scatrawriter.write_files();
-
-        // remark: structure discretization number is zero for old structural time integration!
-        PostField* structfield = problem.get_discretization(2);
-
-        StructureFilter structwriter(
-            structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.write_files();
-
-        PostField* thermofield = problem.get_discretization(1);
-        ScaTraFilter thermowriter(thermofield, basename);
-        thermowriter.write_files();
 
         break;
       }
