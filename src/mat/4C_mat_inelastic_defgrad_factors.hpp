@@ -1525,12 +1525,12 @@ namespace Mat
       double curr_dt;
       //! number of times the problem time step \f$ \Delta t \f$ has been halved
       unsigned int time_step_halving_counter;
-      //!  current maximum number of substeps to be evaluated within the time step \f$ \Delta t
+      //!  current total number of substeps to be evaluated within the time step \f$ \Delta t
       //! \f$; this is not always given by time_step_halving_counter, since the
       //! halving does not have to be uniform (e.g. we could halve the time step twice and still
       //! have 3 substeps to evaluate instead of 4, i.e. if the first substep was evaluable
       //! numerically, but the second substep not, leading to another halving of the substep length)
-      unsigned int max_num_of_substeps;
+      unsigned int total_num_of_substeps;
       //! iteration counter of the Local Newton Loop used to evaluate each substep
       unsigned int iter;
     };
@@ -1550,7 +1550,8 @@ namespace Mat
         Core::LinAlg::Matrix<3, 1> &gamma, Core::LinAlg::Matrix<8, 1> &delta);
 
     /*!
-     * @brief Check the elastic predictor: is the predictor the solution of the current time step?
+     * @brief Check if the elastic predictor provides the solution for the current time step, i.e.,
+     * the deformation in the current time step is purely elastic with no viscoplastic contribution.
      *
      * @param[in] CM right Cauchy_Green deformation tensor \f$ \boldsymbol{C} \f$ in matrix form
      * @param[in] iFinM_pred predictor of the inverse inelastic deformation gradient \f$
@@ -1637,11 +1638,11 @@ namespace Mat
      * @param[out] curr_CM current right Cauchy-Green deformation tensor, interpolated using
      * the reference matrices of the time step (interpolated again within this method with the
      * updated new substep length)
-     * @return error status for the new substep (0: no errors, 1: we have halved the time step too
-     * many times)
+     * @return error status for the new substep (true: no errors, false: we have halved the time
+     * step too many times)
      *
      */
-    int prepare_new_substep(SubstepParams &substep_params, Core::LinAlg::Matrix<10, 1> &sol,
+    bool prepare_new_substep(SubstepParams &substep_params, Core::LinAlg::Matrix<10, 1> &sol,
         Core::LinAlg::Matrix<3, 3> &curr_CM);
 
     /*!
@@ -1657,7 +1658,7 @@ namespace Mat
      * \boldsymbol{F} \boldsymbol{F_{\text{in,other}}^{-1}} \f$ accounting for all the already
      * computed inelastic defgrad factors
      * @param[out] cmatadd Additional elasticity stiffness
-     * @param[out] iFin_other Already computed inverse inelastic deformation gradient
+     * @param[in] iFin_other Already computed inverse inelastic deformation gradient
      *              (from already computed inelastic factors in the multiplicative split material)
      * @param[in] dSdiFinj Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
      *                     deformation gradient of current inelastic contribution

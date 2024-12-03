@@ -1871,11 +1871,11 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
           plastic_strain, check_dt, parameter()->bool_log_substepping(), err_status,
           update_hist_var_);
 
-  // return if we get an error
+  // return if we get an error, all other calculations are useless since substepping is triggered
   if (err_status > 0)
   {
     // return with error
-    return state_quantities;
+    return StateQuantities{};
   }
 
   // calculate plastic flow direction
@@ -2852,13 +2852,16 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
 
   // initialize substep parameters
   SubstepParams substep_params = {
-      0,  // t = 0 (time parameter)
-      1,  // substep_counter = 1 (evaluation of first substep)
-      time_step_settings_
-          .dt_,  // curr_dt = time_step_settings_.dt_ (first substep length = full time step)
-      0,         // time_step_halving_counter = 0 (full time step, therefore no substep halving yet)
-      1,         // max_num_of_substeps = 1 (1 substep to evaluate: full time step)
-      0,         // iter = 0 (0 LNL iterations for the current substep)
+      .t = 0,                // t = 0 (time parameter)
+      .substep_counter = 1,  // substep_counter = 1 (evaluation of first substep)
+      .curr_dt =
+          time_step_settings_
+              .dt_,  // curr_dt = time_step_settings_.dt_ (first substep length = full time step)
+      .time_step_halving_counter =
+          0,  // time_step_halving_counter = 0 (full time step, therefore no substep halving yet)
+      .total_num_of_substeps =
+          1,      // total_num_of_substeps = 1 (1 substep to evaluate: full time step)
+      .iter = 0,  // iter = 0 (0 LNL iterations for the current substep)
   };
 
   // declare minimum substep length, used to check for overflow errors in the evaluation of the
@@ -2869,11 +2872,11 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
   ref_matrices_ = {time_step_quantities_.last_rightCG_[gp_], CM};
 
   // declare error status for the new substep, to check whether we have halved the time step too
-  // many times (1) or if a new substep is possible (0)
-  int new_substep_status = 0;
+  // many times (false) or if a new substep is possible (true)
+  bool new_substep_status = true;
 
   // substepping procedure
-  while (substep_params.substep_counter <= substep_params.max_num_of_substeps)
+  while (substep_params.substep_counter <= substep_params.total_num_of_substeps)
   {
     // reset iteration counter
     substep_params.iter = 0;
@@ -2899,7 +2902,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
       {
         err_status = static_cast<int>(ErrorType::NoPlasticIncompressibility);
         new_substep_status = prepare_new_substep(substep_params, sol, curr_CM);
-        if (new_substep_status) return sol;  // return with error
+        if (!new_substep_status) return sol;  // return with error
         continue;
       }
 
@@ -2911,7 +2914,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
       if (err_status > 0)
       {
         new_substep_status = prepare_new_substep(substep_params, sol, curr_CM);
-        if (new_substep_status) return sol;  // return with error
+        if (!new_substep_status) return sol;  // return with error
         continue;
       }
 
@@ -2931,7 +2934,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
 
         // update the values of history variables at the last converged state (if we have not
         // reached the last step yet)
-        if (substep_params.substep_counter <= substep_params.max_num_of_substeps)
+        if (substep_params.substep_counter <= substep_params.total_num_of_substeps)
         {
           time_step_quantities_.last_substep_plastic_defgrd_inverse_[gp_] =
               extract_inverse_inelastic_defgrad(sol);
@@ -2951,7 +2954,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
       {
         new_substep_status = prepare_new_substep(substep_params, sol, curr_CM);
         // if the halving number was exceeded --> return with error
-        if (new_substep_status)
+        if (!new_substep_status)
         {
           err_status = static_cast<int>(ErrorType::NoConvergenceLNL);
           return sol;  // return with error
@@ -2967,7 +2970,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
       if (err_status > 0)
       {
         new_substep_status = prepare_new_substep(substep_params, sol, curr_CM);
-        if (new_substep_status) return sol;  // return with error
+        if (!new_substep_status) return sol;  // return with error
         continue;
       }
 
@@ -2985,7 +2988,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
       {
         err_status = static_cast<int>(ErrorType::FailedSolLinSystLNL);
         new_substep_status = prepare_new_substep(substep_params, sol, curr_CM);
-        if (new_substep_status) return sol;  // return with error
+        if (!new_substep_status) return sol;  // return with error
         continue;
       }
 
@@ -3043,7 +3046,7 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::check_predictor(
   return (state_quantities_.curr_equiv_plastic_strain_rate_ < 1.0e-15);
 }
 
-int Mat::InelasticDefgradTransvIsotropElastViscoplast::prepare_new_substep(
+bool Mat::InelasticDefgradTransvIsotropElastViscoplast::prepare_new_substep(
     SubstepParams &substep_params, Core::LinAlg::Matrix<10, 1> &sol,
     Core::LinAlg::Matrix<3, 3> &curr_CM)
 {
@@ -3052,7 +3055,7 @@ int Mat::InelasticDefgradTransvIsotropElastViscoplast::prepare_new_substep(
   const unsigned int &substep_counter = substep_params.substep_counter;
   double &curr_dt = substep_params.curr_dt;
   unsigned int &time_step_halving_counter = substep_params.time_step_halving_counter;
-  unsigned int &max_num_of_substeps = substep_params.max_num_of_substeps;
+  unsigned int &total_num_of_substeps = substep_params.total_num_of_substeps;
   unsigned int &iter = substep_params.iter;
 
   // the current iteration vector has reached a numerically inevaluable state -> we halve
@@ -3061,12 +3064,12 @@ int Mat::InelasticDefgradTransvIsotropElastViscoplast::prepare_new_substep(
   // halve the current time step
   curr_dt *= 1.0 / 2.0;
   time_step_halving_counter += 1;
-  max_num_of_substeps += (max_num_of_substeps - substep_counter + 1);
+  total_num_of_substeps += (total_num_of_substeps - substep_counter + 1);
 
   // check if we have halved the time step too many times
   if (time_step_halving_counter > parameter()->max_halve_number())
   {
-    return 1;
+    return false;
   }
 
   // reset the predictor to the last converged state
@@ -3082,7 +3085,7 @@ int Mat::InelasticDefgradTransvIsotropElastViscoplast::prepare_new_substep(
   // reset iteration counter to 0, as we restart the Newton-Raphson Loop
   iter = 0;
 
-  return 0;  // no error
+  return true;  // no error
 }
 
 void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat_perturb_based(

@@ -19,6 +19,7 @@
 
 #include <Teuchos_RCP.hpp>
 
+#include <cmath>
 #include <memory>
 
 
@@ -122,6 +123,51 @@ namespace Mat
       void pack_viscoplastic_law(Core::Communication::PackBuffer& data) const override{};
 
       void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) override{};
+
+     private:
+      /// struct containing constant parameters to be evaluated only once
+      struct ConstPars
+      {
+        /// prefactor \f$ P \f$ of the plastic strain rate
+        const double p;
+
+        /// prefactor logarithm \f$ \log(P) \f$
+        const double log_p;
+
+        /// exponent \f$ E \f$ of the plastic strain rate
+        const double e;
+
+        /// \f$ \log(P*E) \f$
+        const double log_p_e;
+
+        /// hardening prefactor \f$ B \f$
+        const double B;
+
+        /// hardening exponent \f$ N \f$
+        const double N;
+
+        /// logarithm \f$ \log(B N) \f$
+        const double log_B_N;
+
+        /// initial yield strength
+        const double sigma_Y0;
+
+
+        /// constructor
+        ConstPars(const double prefac, const double expon, const double harden_prefac,
+            const double harden_expon, const double initial_yield_strength)
+            : p(prefac),
+              log_p(std::log(p)),
+              e(expon),
+              log_p_e(std::log(prefac * expon)),
+              B(harden_prefac),
+              N(harden_expon),
+              log_B_N(std::log(harden_prefac * harden_expon)),
+              sigma_Y0(initial_yield_strength){};
+      };
+
+      /// instance of ConstPars struct
+      const ConstPars const_pars_;
     };
 
   }  // namespace Viscoplastic
