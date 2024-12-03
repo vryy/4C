@@ -25,12 +25,12 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
   using namespace FourC;
 
   Global::Problem* problem = Global::Problem::instance();
-  std::shared_ptr<Epetra_Comm> lcomm = problem->get_communicators()->local_comm();
+  MPI_Comm lcomm = problem->get_communicators()->local_comm();
   int group = problem->get_communicators()->group_id();
   int ngroups = problem->get_communicators()->num_groups();
   Core::Communication::NestedParallelismType npType = problem->get_communicators()->np_type();
   int restartgroup = 0;
-  int myrank = Core::Communication::my_mpi_rank(*lcomm);
+  int myrank = Core::Communication::my_mpi_rank(lcomm);
 
 
   if (argc <= 1)

@@ -170,11 +170,11 @@ int main(int argc, char** argv)
   std::shared_ptr<Core::Communication::Communicators> communicators =
       Core::Communication::create_comm({});
   Global::Problem::instance()->set_communicators(communicators);
-  std::shared_ptr<Epetra_Comm> comm = communicators->global_comm();
+  MPI_Comm comm = communicators->global_comm();
 
   try
   {
-    if ((Core::Communication::num_mpi_ranks(*comm) > 1))
+    if ((Core::Communication::num_mpi_ranks(comm) > 1))
       FOUR_C_THROW("Using more than one processor is not supported.");
 
     std::string exofile;

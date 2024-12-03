@@ -206,7 +206,7 @@ namespace Core::DOFSets
     void print(std::ostream& os) const override { sourcedofset_->print(os); };
 
     /// Print the dofsets in the static_dofsets_ list
-    void print_all_dofsets(const Epetra_Comm& comm) const override
+    void print_all_dofsets(MPI_Comm comm) const override
     {
       sourcedofset_->print_all_dofsets(comm);
     };
@@ -248,7 +248,7 @@ namespace Core::DOFSets
 
     /// Get Max of all GID assigned in the DofSets in front of current one in the list
     /// #static_dofsets_
-    int max_gi_din_list(const Epetra_Comm& comm) const override
+    int max_gi_din_list(MPI_Comm comm) const override
     {
       check_is_assigned();
       return sourcedofset_->max_gi_din_list(comm);

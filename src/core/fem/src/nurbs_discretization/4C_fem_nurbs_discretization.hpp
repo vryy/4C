@@ -49,8 +49,7 @@ namespace Core::FE
       \param comm: An epetra comm object associated with this discretization
       \param n_dim: number of space dimensions of this discretization
       */
-      NurbsDiscretization(
-          const std::string name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim);
+      NurbsDiscretization(const std::string name, MPI_Comm comm, unsigned int n_dim);
 
       /*!
       \brief Set a knot vector

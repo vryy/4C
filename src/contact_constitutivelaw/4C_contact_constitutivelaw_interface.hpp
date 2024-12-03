@@ -45,9 +45,8 @@ namespace CONTACT
     \param selfcontact (in): Flag for self contact status
     */
     ConstitutivelawInterface(const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData,
-        const int id, const Epetra_Comm& comm, const int dim,
-        const Teuchos::ParameterList& icontact, bool selfcontact,
-        const int contactconstitutivelawid);
+        const int id, MPI_Comm comm, const int dim, const Teuchos::ParameterList& icontact,
+        bool selfcontact, const int contactconstitutivelawid);
 
     /**
      * \brief Assemble gap-computed lagrange multipliers and nodal linlambda derivatives into nodal

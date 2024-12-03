@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
+NOX::Nln::GlobalData::GlobalData(MPI_Comm comm, Teuchos::ParameterList& noxParams,
     const NOX::Nln::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
@@ -40,7 +40,7 @@ NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
     const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
     const Teuchos::RCP<::NOX::Epetra::Scaling>& iScale)
-    : comm_(Teuchos::rcpFromRef(comm)),
+    : comm_(comm),
       nlnparams_(Teuchos::rcpFromRef(noxParams)),
       opt_type_(type),
       lin_solvers_(linSolvers),
@@ -61,12 +61,12 @@ NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
+NOX::Nln::GlobalData::GlobalData(MPI_Comm comm, Teuchos::ParameterList& noxParams,
     const NOX::Nln::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const OptimizationProblemType& type, const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iConstr)
-    : comm_(Teuchos::rcpFromRef(comm)),
+    : comm_(comm),
       nlnparams_(Teuchos::rcpFromRef(noxParams)),
       opt_type_(type),
       lin_solvers_(linSolvers),
@@ -85,12 +85,12 @@ NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
+NOX::Nln::GlobalData::GlobalData(MPI_Comm comm, Teuchos::ParameterList& noxParams,
     const NOX::Nln::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec)
-    : comm_(Teuchos::rcpFromRef(comm)),
+    : comm_(comm),
       nlnparams_(Teuchos::rcpFromRef(noxParams)),
       opt_type_(opt_unconstrained),
       lin_solvers_(linSolvers),
@@ -108,11 +108,11 @@ NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
+NOX::Nln::GlobalData::GlobalData(MPI_Comm comm, Teuchos::ParameterList& noxParams,
     const NOX::Nln::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac)
-    : comm_(Teuchos::rcpFromRef(comm)),
+    : comm_(comm),
       nlnparams_(Teuchos::rcpFromRef(noxParams)),
       opt_type_(opt_unconstrained),
       lin_solvers_(linSolvers),
@@ -147,7 +147,7 @@ void NOX::Nln::GlobalData::check_input() const
       msg << std::setw(109) << std::setfill('!') << "\n" << std::setfill(' ');
       msg << "!!! " << std::left << std::setw(100) << act_msg << " !!!";
       msg << std::setw(109) << std::setfill('!') << "\n" << std::setfill(' ') << std::right;
-      if (Core::Communication::my_mpi_rank(*comm_) == 0) std::cout << msg.str() << std::endl;
+      if (Core::Communication::my_mpi_rank(comm_) == 0) std::cout << msg.str() << std::endl;
     }
   return;
 }
@@ -178,7 +178,7 @@ void NOX::Nln::GlobalData::setup()
  *----------------------------------------------------------------------------*/
 void NOX::Nln::GlobalData::set_printing_parameters()
 {
-  NOX::Nln::Aux::set_printing_parameters(*nlnparams_, *comm_);
+  NOX::Nln::Aux::set_printing_parameters(*nlnparams_, comm_);
 
   return;
 }
@@ -367,12 +367,7 @@ const Teuchos::RCP<Teuchos::ParameterList>& NOX::Nln::GlobalData::get_nln_parame
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Comm& NOX::Nln::GlobalData::get_comm() const
-{
-  if (comm_.is_null()) FOUR_C_THROW("comm_ was not initialized!");
-
-  return *comm_;
-}
+MPI_Comm NOX::Nln::GlobalData::get_comm() const { return comm_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

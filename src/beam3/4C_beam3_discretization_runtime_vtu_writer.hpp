@@ -18,7 +18,6 @@
 
 #include <memory>
 
-class Epetra_Comm;
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -68,7 +67,7 @@ class BeamDiscretizationRuntimeOutputWriter
  public:
   /// Constructor
   BeamDiscretizationRuntimeOutputWriter(
-      Core::IO::VisualizationParameters parameters, const Epetra_Comm& comm);
+      Core::IO::VisualizationParameters parameters, MPI_Comm comm);
 
   /// Destructor
   virtual ~BeamDiscretizationRuntimeOutputWriter() = default;

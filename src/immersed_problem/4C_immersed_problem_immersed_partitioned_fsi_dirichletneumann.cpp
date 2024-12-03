@@ -24,7 +24,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 Immersed::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichletNeumann(
-    const Epetra_Comm& comm)
+    MPI_Comm comm)
     : ImmersedBase(),
       FSI::PartitionedImmersed(comm),
       struct_bdry_traction_(nullptr),
@@ -494,8 +494,8 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::build_immersed_dirich_map
   }
 
   int nummydirichvals = mydirichdofs.size();
-  dirichmap =
-      std::make_shared<Epetra_Map>(-1, nummydirichvals, mydirichdofs.data(), 0, dis->get_comm());
+  dirichmap = std::make_shared<Epetra_Map>(-1, nummydirichvals, mydirichdofs.data(), 0,
+      Core::Communication::as_epetra_comm(dis->get_comm()));
 
   return;
 }

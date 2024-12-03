@@ -23,10 +23,10 @@ namespace
   {
    public:
     //! Testing parameters
-    std::shared_ptr<Epetra_Comm> comm_;
+    MPI_Comm comm_;
 
    protected:
-    SparseAlgebraMathTest() { comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD); }
+    SparseAlgebraMathTest() { comm_ = MPI_COMM_WORLD; }
   };
 
   /** The test setup is based on a simple 1d poisson problem with the given matrix "poisson1d.mm"
@@ -40,7 +40,8 @@ namespace
     Epetra_CrsMatrix* A;
 
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
-        TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(), *comm_, A);
+        TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(),
+        Core::Communication::as_epetra_comm(comm_), A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
     std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
@@ -78,7 +79,8 @@ namespace
     Epetra_CrsMatrix* A;
 
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
-        TESTING::get_support_file_path("test_matrices/nonsym.mm").c_str(), *comm_, A);
+        TESTING::get_support_file_path("test_matrices/nonsym.mm").c_str(),
+        Core::Communication::as_epetra_comm(comm_), A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
     std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
@@ -95,7 +97,7 @@ namespace
     EXPECT_NEAR(A_inverse->norm_frobenius(), 0.1235706050986417, 1e-12);
 
     // Check fist matrix row of inverse
-    if (Core::Communication::my_mpi_rank(*comm_) == 0)
+    if (Core::Communication::my_mpi_rank(comm_) == 0)
     {
       double* values;
       int length;
@@ -128,7 +130,8 @@ namespace
     Epetra_CrsMatrix* A;
 
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
-        TESTING::get_support_file_path("test_matrices/beam.mm").c_str(), *comm_, A);
+        TESTING::get_support_file_path("test_matrices/beam.mm").c_str(),
+        Core::Communication::as_epetra_comm(comm_), A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
     std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);

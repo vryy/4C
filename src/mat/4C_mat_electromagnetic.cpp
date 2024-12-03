@@ -21,7 +21,9 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::ElectromagneticMat::ElectromagneticMat(const Core::Mat::PAR::Parameter::Data &matdata)
     : Parameter(matdata)
 {
-  Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::instance()->get_communicators()->local_comm()));
+  Epetra_Map dummy_map(1, 1, 0,
+      Core::Communication::as_epetra_comm(
+          (Global::Problem::instance()->get_communicators()->local_comm())));
   for (int i = first; i <= last; i++)
   {
     matparams_.push_back(std::make_shared<Core::LinAlg::Vector<double>>(dummy_map, true));

@@ -43,8 +43,8 @@ namespace POROFLUIDMULTIPHASE
   namespace Utils
   {
     /// setup second materials for porosity evaluation within solid phase
-    void setup_material(const Epetra_Comm& comm, const std::string& struct_disname,
-        const std::string& fluid_disname);
+    void setup_material(
+        MPI_Comm comm, const std::string& struct_disname, const std::string& fluid_disname);
 
 
     /// convert a dof based vector to a node based multi vector

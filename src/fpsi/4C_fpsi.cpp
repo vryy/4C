@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-FPSI::FpsiBase::FpsiBase(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams)
+FPSI::FpsiBase::FpsiBase(MPI_Comm comm, const Teuchos::ParameterList& fpsidynparams)
     : AlgorithmBase(comm, fpsidynparams)
 {
   // nothing to do ... so far
@@ -28,7 +28,7 @@ FPSI::FpsiBase::FpsiBase(const Epetra_Comm& comm, const Teuchos::ParameterList& 
 void FPSI::FpsiBase::redistribute_interface()
 {
   Global::Problem* problem = Global::Problem::instance();
-  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
+  MPI_Comm comm = problem->get_dis("structure")->get_comm();
   FPSI::InterfaceUtils* FPSI_UTILS = FPSI::InterfaceUtils::instance();
 
   if (Core::Communication::num_mpi_ranks(comm) >

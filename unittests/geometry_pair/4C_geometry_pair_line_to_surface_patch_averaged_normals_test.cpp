@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"
 #include "4C_geometry_pair_element_faces.hpp"
@@ -32,7 +33,7 @@ namespace
      */
     GeometryPairLineToSurfacePatchTest()
     {
-      auto comm = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
+      auto comm = MPI_COMM_WORLD;
       discret_ = std::make_shared<Core::FE::Discretization>("unit_test", comm, 3);
     }
 
@@ -146,7 +147,7 @@ namespace
 
     // Set the state in the face element, here also the FAD variables for each patch are set.
     Epetra_Map gid_map(discret_->num_global_nodes() * 3, discret_->num_global_nodes() * 3, 0,
-        discret_->get_comm());
+        Core::Communication::as_epetra_comm(discret_->get_comm()));
     auto displacement_vector = std::make_shared<Core::LinAlg::Vector<double>>(gid_map);
     for (int i = 0; i < displacement_vector->GlobalLength(); i++)
       (*displacement_vector)[i] = i * 0.01;

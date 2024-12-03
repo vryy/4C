@@ -22,7 +22,6 @@
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Epetra_Comm.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <memory>
@@ -100,7 +99,7 @@ namespace CONTACT
     \brief Get communicator
 
     */
-    virtual const Epetra_Comm& get_comm() const { return pdiscomm_; }
+    virtual MPI_Comm get_comm() const { return pdiscomm_; }
 
     /*!
     \brief Get different node or element maps
@@ -273,7 +272,7 @@ namespace CONTACT
     std::shared_ptr<Core::FE::Discretization> btsoldiscret_;
 
     //! the Comm interface of the problem discretization
-    const Epetra_Comm& pdiscomm_;
+    MPI_Comm pdiscomm_;
 
     //! general map that describes arbitrary dof offset between pdicsret and cdiscret
     std::map<int, int> dofoffsetmap_;

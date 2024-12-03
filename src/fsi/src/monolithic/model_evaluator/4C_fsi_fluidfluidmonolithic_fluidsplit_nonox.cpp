@@ -32,7 +32,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 FSI::FluidFluidMonolithicFluidSplitNoNOX::FluidFluidMonolithicFluidSplitNoNOX(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& timeparams)
     : MonolithicNoNOX(comm, timeparams)
 {
   // Determine fluid (=slave) DOF on the FSI interface, for which a Dirichlet boundary

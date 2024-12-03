@@ -24,7 +24,7 @@ namespace Core::IO
      * @brief Default constructor
      */
     VisualizationWriterVtuPerRank(const Core::IO::VisualizationParameters& parameters,
-        const Epetra_Comm& comm, std::string visualization_data_name);
+        MPI_Comm comm, std::string visualization_data_name);
 
     /**
      * @brief Default destructor

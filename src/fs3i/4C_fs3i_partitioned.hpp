@@ -55,7 +55,7 @@ namespace FS3I
   {
    public:
     //! constructor of base class for partitioned FS3I
-    PartFS3I(const Epetra_Comm& comm);
+    PartFS3I(MPI_Comm comm);
 
     //! initialize this class
     void init() override;
@@ -88,7 +88,7 @@ namespace FS3I
     void setup_system() override;
 
     //! test results for individual fields
-    void test_results(const Epetra_Comm& comm) override;
+    void test_results(MPI_Comm comm) override;
 
     //! information transfer FSI -> ScaTra
     void set_fsi_solution();
@@ -101,7 +101,7 @@ namespace FS3I
     virtual bool scatra_convergence_check(int itnum) = 0;
 
     //! return communicator
-    const Epetra_Comm& get_comm() const { return comm_; }
+    MPI_Comm get_comm() const { return comm_; }
 
     /// extract fluid convective and structure convective velocities
     void extract_vel(std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>& vel,
@@ -163,7 +163,7 @@ namespace FS3I
     std::vector<std::shared_ptr<Coupling::Adapter::MortarVolCoupl>> volume_coupling_objects_;
 
     /// communication (mainly for screen output)
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     std::shared_ptr<Adapter::ScaTraBaseAlgorithm> fluidscatra_;
 

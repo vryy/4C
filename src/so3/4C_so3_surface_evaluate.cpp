@@ -683,7 +683,7 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
   }
 
   // create communicator
-  const Epetra_Comm& Comm = discretization.get_comm();
+  MPI_Comm Comm = discretization.get_comm();
   // what the element has to do
   switch (act)
   {

@@ -19,10 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                              wirtz 12/15 |
  *----------------------------------------------------------------------*/
-EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& lubricationparams,
-    const Teuchos::ParameterList& structparams, const std::string struct_disname,
-    const std::string lubrication_disname)
+EHL::Partitioned::Partitioned(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& lubricationparams, const Teuchos::ParameterList& structparams,
+    const std::string struct_disname, const std::string lubrication_disname)
     : Base(comm, globaltimeparams, lubricationparams, structparams, struct_disname,
           lubrication_disname),
       preincnp_(Core::LinAlg::create_vector(

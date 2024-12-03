@@ -34,7 +34,7 @@ void MultiScale::np_support_drt()
   // that contains one master proc and several supporting procs. The master
   // proc has always MyPID() = 0 in the subcomm. That's why all broadcast commands
   // send from proc 0 in subcomm.
-  // Supporting procs always wait in front of "subcomm->Broadcast(task, 2, 0);"
+  // Supporting procs always wait in front of Core::Communication::broadcast(task, 2, 0, "subcomm);"
   // until a master proc reaches the same broadcast command. Then all procs
   // in this subcomm go into the same routine. We need one dummy material that
   // is specified in the input file of the supporting procs. It is only used to
@@ -48,20 +48,19 @@ void MultiScale::np_support_drt()
   // this call is needed in order to increment the unique ids that are distributed
   // by HDF5; the macro procs call output->write_mesh(0, 0.0) in Adapter::Structure
   const int someUniqueNumber = Core::Communication::my_mpi_rank(
-      *Global::Problem::instance(0)->get_communicators()->global_comm());
+      Global::Problem::instance(0)->get_communicators()->global_comm());
   std::string uniqueDummyName = &"dummyHDF5file_p"[someUniqueNumber];
   H5Fcreate(uniqueDummyName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
   // get sub communicator including the master proc
-  std::shared_ptr<Epetra_Comm> subcomm =
-      Global::Problem::instance(0)->get_communicators()->sub_comm();
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
 
   // start std::endless loop
   while (true)
   {
     // receive what to do and which element is intended to work
     std::array<int, 2> task = {-1, -1};
-    subcomm->Broadcast(task.data(), 2, 0);
+    Core::Communication::broadcast(task.data(), 2, 0, subcomm);
     MultiScale::MicromaterialNestedParallelismAction whattodo =
         static_cast<MicromaterialNestedParallelismAction>(task[0]);
     int eleID = task[1];
@@ -77,10 +76,10 @@ void MultiScale::np_support_drt()
       {
         // receive data from the master proc
         int tag = 0;
-        Epetra_Map oldmap(1, 0, &tag, 0, *subcomm);
-        Epetra_Map newmap(1, 1, &tag, 0, *subcomm);
+        Epetra_Map oldmap(1, 0, &tag, 0, Core::Communication::as_epetra_comm(subcomm));
+        Epetra_Map newmap(1, 1, &tag, 0, Core::Communication::as_epetra_comm(subcomm));
         // create an exporter object that will figure out the communication pattern
-        Core::Communication::Exporter exporter(oldmap, newmap, *subcomm);
+        Core::Communication::Exporter exporter(oldmap, newmap, subcomm);
         std::map<int, std::shared_ptr<MultiScale::MicroStaticParObject>> condnamemap;
         exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
 
@@ -133,10 +132,10 @@ void MultiScale::np_support_drt()
       {
         // receive data from the master proc for restart
         int tag = 0;
-        Epetra_Map oldmap(1, 0, &tag, 0, *subcomm);
-        Epetra_Map newmap(1, 1, &tag, 0, *subcomm);
+        Epetra_Map oldmap(1, 0, &tag, 0, Core::Communication::as_epetra_comm(subcomm));
+        Epetra_Map newmap(1, 1, &tag, 0, Core::Communication::as_epetra_comm(subcomm));
         // create an exporter object that will figure out the communication pattern
-        Core::Communication::Exporter exporter(oldmap, newmap, *subcomm);
+        Core::Communication::Exporter exporter(oldmap, newmap, subcomm);
         std::map<int, std::shared_ptr<MultiScale::MicroStaticParObject>> condnamemap;
         exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
         const auto* micro_data = condnamemap[0]->get_micro_static_data_ptr();

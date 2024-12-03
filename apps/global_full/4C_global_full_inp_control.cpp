@@ -17,8 +17,7 @@
 
 #include <utility>
 
-void setup_parallel_output(
-    std::string& outputfile_kenner, std::shared_ptr<Epetra_Comm> lcomm, int group);
+void setup_parallel_output(std::string& outputfile_kenner, MPI_Comm lcomm, int group);
 
 /*----------------------------------------------------------------------*
   | general input of the problem to be solved              m.gee 10/06  |
@@ -29,20 +28,19 @@ void ntainp_ccadiscret(
   using namespace FourC;
 
   Global::Problem* problem = Global::Problem::instance();
-  std::shared_ptr<Epetra_Comm> lcomm = problem->get_communicators()->local_comm();
-  std::shared_ptr<Epetra_Comm> gcomm = problem->get_communicators()->global_comm();
+  MPI_Comm lcomm = problem->get_communicators()->local_comm();
   int group = problem->get_communicators()->group_id();
   Core::Communication::NestedParallelismType npType = problem->get_communicators()->np_type();
 
   // and now the actual reading
-  Core::IO::InputFile reader(inputfile_name, *lcomm);
+  Core::IO::InputFile reader(inputfile_name, lcomm);
 
   Global::read_parameter(*problem, reader);
 
   setup_parallel_output(outputfile_kenner, lcomm, group);
 
   // create control file for output and read restart data if required
-  problem->open_control_file(*lcomm, inputfile_name, outputfile_kenner, restartfile_kenner);
+  problem->open_control_file(lcomm, inputfile_name, outputfile_kenner, restartfile_kenner);
 
   // input of materials
   Global::read_materials(*problem, reader);
@@ -88,7 +86,7 @@ void ntainp_ccadiscret(
   }
 
   // all reading is done at this point!
-  if (Core::Communication::my_mpi_rank(*lcomm) == 0) problem->write_input_parameters();
+  if (Core::Communication::my_mpi_rank(lcomm) == 0) problem->write_input_parameters();
 
   // before we destroy the reader we want to know about unused sections
   const bool all_ok = !reader.print_unknown_sections(std::cout);
@@ -96,7 +94,7 @@ void ntainp_ccadiscret(
   // we wait till all procs are here. Otherwise a hang up might occur where
   // one proc ended with FOUR_C_THROW but other procs were not finished and waited...
   // we also want to have the printing above being finished.
-  lcomm->Barrier();
+  Core::Communication::barrier(lcomm);
   FOUR_C_ASSERT_ALWAYS(all_ok,
       "Unknown sections detected. Correct this! Find hints on these unknown sections above.");
 }
@@ -105,8 +103,7 @@ void ntainp_ccadiscret(
 /*----------------------------------------------------------------------*
   | setup parallel output                                  ghamm 11/12  |
  *----------------------------------------------------------------------*/
-void setup_parallel_output(
-    std::string& outputfile_kenner, std::shared_ptr<Epetra_Comm> lcomm, int group)
+void setup_parallel_output(std::string& outputfile_kenner, MPI_Comm lcomm, int group)
 {
   using namespace FourC;
 

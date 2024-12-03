@@ -112,7 +112,7 @@ namespace Core::Conditions
      * \brief Get Epetra communicator
      *
      */
-    inline const Epetra_Comm& get_comm() const;
+    inline MPI_Comm get_comm() const;
 
     //! @name Access methods
 

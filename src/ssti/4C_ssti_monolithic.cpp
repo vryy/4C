@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+SSTI::SSTIMono::SSTIMono(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : SSTIAlgorithm(comm, globaltimeparams),
       increment_(nullptr),
       residual_(nullptr),
@@ -196,7 +196,7 @@ void SSTI::SSTIMono::build_null_spaces()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSTI::SSTIMono::init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
+void SSTI::SSTIMono::init(MPI_Comm comm, const Teuchos::ParameterList& sstitimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams,
     const Teuchos::ParameterList& structparams)
 {

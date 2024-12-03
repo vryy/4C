@@ -289,7 +289,8 @@ bool Core::LinAlg::SparseMatrixBase::is_dbc_applied(
 
   int lisdbc = static_cast<int>(isdbc);
   int gisdbc = 0;
-  Core::Communication::min_all(&lisdbc, &gisdbc, 1, Comm());
+  Core::Communication::min_all(
+      &lisdbc, &gisdbc, 1, Core::Communication::unpack_epetra_comm(Comm()));
 
   return (gisdbc == 1);
 }

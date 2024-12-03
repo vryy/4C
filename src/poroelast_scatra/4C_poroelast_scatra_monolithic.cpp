@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 PoroElastScaTra::PoroScatraMono::PoroScatraMono(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraBase(comm, timeparams),
       printscreen_(true),  // ADD INPUT PARAMETER
       printiter_(true),    // ADD INPUT PARAMETER

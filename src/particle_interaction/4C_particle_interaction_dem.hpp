@@ -44,7 +44,7 @@ namespace ParticleInteraction
   {
    public:
     //! constructor
-    explicit ParticleInteractionDEM(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit ParticleInteractionDEM(MPI_Comm comm, const Teuchos::ParameterList& params);
 
     /*!
      * \brief destructor

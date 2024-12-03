@@ -42,7 +42,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm) : FS3IBase(), comm_(comm)
+FS3I::PartFS3I::PartFS3I(MPI_Comm comm) : FS3IBase(), comm_(comm)
 {
   // Keep constructor empty!
   return;
@@ -633,7 +633,7 @@ void FS3I::PartFS3I::setup_system()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::test_results(const Epetra_Comm& comm)
+void FS3I::PartFS3I::test_results(MPI_Comm comm)
 {
   Global::Problem::instance()->add_field_test(fsi_->fluid_field()->create_field_test());
   Global::Problem::instance()->add_field_test(fsi_->ale_field()->create_field_test());

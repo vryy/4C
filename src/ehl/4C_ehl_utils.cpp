@@ -45,7 +45,7 @@ int EHL::Utils::check_time_stepping(double dt1, double dt2)
 /*                                                        AN,JH 10/2014 */
 // Modification of time parameter list for problem with different time step size
 
-void EHL::Utils::change_time_parameter(const Epetra_Comm& comm, Teuchos::ParameterList& ehlparams,
+void EHL::Utils::change_time_parameter(MPI_Comm comm, Teuchos::ParameterList& ehlparams,
     Teuchos::ParameterList& lubricationdyn, Teuchos::ParameterList& sdyn)
 {
   const bool difftimestep = ehlparams.get<bool>("DIFFTIMESTEPSIZE");

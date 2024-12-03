@@ -51,8 +51,7 @@ namespace PoroElast
   class PoroBase : public Adapter::AlgorithmBase, public Adapter::Field
   {
    public:
-    //! create using a Epetra_Comm
-    explicit PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+    explicit PoroBase(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
         std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! read restart data
@@ -65,7 +64,7 @@ namespace PoroElast
     virtual void setup_system() = 0;
 
     //! perform result tests
-    virtual void test_results(const Epetra_Comm& comm);
+    virtual void test_results(MPI_Comm comm);
 
     //! build combined dirichlet map for the monolithic problem
     virtual void build_combined_dbc_map()
@@ -298,7 +297,6 @@ namespace PoroElast
   class NoPenetrationConditionHandle
   {
    public:
-    //! create using a Epetra_Comm
     explicit NoPenetrationConditionHandle(std::vector<Core::Conditions::Condition*> nopencond)
         : cond_ids_(nullptr),
           cond_dofs_(nullptr),
@@ -318,8 +316,7 @@ namespace PoroElast
     }
 
     //! build map containing dofs with no penetration condition (fluid)
-    void buid_no_penetration_map(
-        const Epetra_Comm& comm, std::shared_ptr<const Epetra_Map> dofRowMap);
+    void buid_no_penetration_map(MPI_Comm comm, std::shared_ptr<const Epetra_Map> dofRowMap);
 
     //! apply rhs terms of no penetration condition to global rhs vector
     void apply_cond_rhs(Core::LinAlg::Vector<double>& iterinc, Core::LinAlg::Vector<double>& rhs);

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& stidyn,
+STI::Algorithm::Algorithm(MPI_Comm comm, const Teuchos::ParameterList& stidyn,
     const Teuchos::ParameterList& scatradyn, const Teuchos::ParameterList& solverparams_scatra,
     const Teuchos::ParameterList& solverparams_thermo)
     :  // instantiate base class

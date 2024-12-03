@@ -37,7 +37,7 @@ namespace FSI
    public:
     /// constructor
     explicit FluidFluidMonolithicStructureSplit(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+        MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
     /// update subsequent fields, recover the Lagrange multiplier and relax the ALE-mesh
     void update() override;

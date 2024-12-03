@@ -15,7 +15,6 @@
 #include "4C_solver_nonlin_nox_enum_lists.hpp"
 #include "4C_solver_nonlin_nox_forward_decl.hpp"
 
-#include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -45,7 +44,7 @@ namespace NOX
        *  inclusive the constraint interfaces map
        *  inclusive the pre-conditioner interfaces
        *  inclusive scaling object */
-      GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
+      GlobalData(MPI_Comm comm, Teuchos::ParameterList& noxParams,
           const std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>&
               linSolvers,
           const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
@@ -58,7 +57,7 @@ namespace NOX
       /*! CONSTRAINED OPTIMIZATION
        * inclusive the constraint interfaces map
        * without any pre-conditioner interfaces */
-      GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
+      GlobalData(MPI_Comm comm, Teuchos::ParameterList& noxParams,
           const std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>&
               linSolvers,
           const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
@@ -69,7 +68,7 @@ namespace NOX
       /*! UNCONSTRAINED OPTIMIZATION
        *  constructor without the constraint interface map (pure unconstrained optimization)
        *  inclusive the pre-conditioner interface */
-      GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
+      GlobalData(MPI_Comm comm, Teuchos::ParameterList& noxParams,
           const std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>&
               linSolvers,
           const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
@@ -79,7 +78,7 @@ namespace NOX
       /*! UNCONSTRAINED OPTIMIZATION
        *  constructor without the constraint interface map (pure unconstrained optimization)
        *  without a pre-conditioner interface */
-      GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
+      GlobalData(MPI_Comm comm, Teuchos::ParameterList& noxParams,
           const std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>&
               linSolvers,
           const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
@@ -101,8 +100,8 @@ namespace NOX
       //! return the pointer to the parameter list
       const Teuchos::RCP<Teuchos::ParameterList>& get_nln_parameter_list_ptr();
 
-      //! return underlying discretization Epetra_Comm
-      const Epetra_Comm& get_comm() const;
+      //! return underlying discretization MPI_Comm
+      MPI_Comm get_comm() const;
 
       //! return the isConstrained boolean
       //! true if in/equality constrained optimization problem
@@ -151,7 +150,7 @@ namespace NOX
 
      private:
       /// communicator
-      Teuchos::RCP<const Epetra_Comm> comm_;
+      MPI_Comm comm_;
 
       /// complete NOX::NLN parameter list
       Teuchos::RCP<Teuchos::ParameterList> nlnparams_;

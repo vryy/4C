@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
+Core::IO::OutputControl::OutputControl(MPI_Comm comm, std::string problemtype,
     const Core::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
     const std::string& outputname, const int ndim, const int restart_step, const int filesteps,
     const bool write_binary_output)
@@ -92,7 +92,7 @@ Core::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string prob
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
+Core::IO::OutputControl::OutputControl(MPI_Comm comm, std::string problemtype,
     const Core::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
     const std::string& restartname, std::string outputname, const int ndim, const int restart_step,
     const int filesteps, const bool write_binary_output, const bool adaptname)
@@ -363,21 +363,13 @@ Core::IO::InputControl::InputControl(const std::string& filename, const bool ser
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::IO::InputControl::InputControl(const std::string& filename, const Epetra_Comm& comm)
+Core::IO::InputControl::InputControl(const std::string& filename, MPI_Comm comm)
     : filename_(filename)
 {
   std::stringstream name;
   name << filename << ".control";
 
-  // works for parallel, as well as serial applications because we only have an Epetra_MpiComm
-  const auto* epetrampicomm = dynamic_cast<const Epetra_MpiComm*>(&comm);
-  if (!epetrampicomm)
-    FOUR_C_THROW("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
-  else
-  {
-    const MPI_Comm lcomm = epetrampicomm->GetMpiComm();
-    parse_control_file(&table_, name.str().c_str(), lcomm);
-  }
+  parse_control_file(&table_, name.str().c_str(), comm);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

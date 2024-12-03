@@ -7,6 +7,7 @@
 
 #include "4C_linalg_multi_vector.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -122,6 +123,12 @@ int Core::LinAlg::MultiVector<T>::ReplaceMap(const Epetra_BlockMap& map)
 {
   for (auto& view : column_vector_view_) view->ReplaceMap(map);
   return vector_->ReplaceMap(map);
+}
+
+template <typename T>
+MPI_Comm Core::LinAlg::MultiVector<T>::Comm() const
+{
+  return Core::Communication::unpack_epetra_comm(vector_->Comm());
 }
 
 template <typename T>

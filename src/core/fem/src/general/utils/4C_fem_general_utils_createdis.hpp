@@ -131,8 +131,8 @@ namespace Core::FE
                                                             ///< copied to the new discretization
     )
     {
-      std::shared_ptr<Epetra_Comm> com(sourcedis.get_comm().Clone());
-      const int myrank = Core::Communication::my_mpi_rank(*com);
+      MPI_Comm com = sourcedis.get_comm();
+      const int myrank = Core::Communication::my_mpi_rank(com);
       const Epetra_Map* sourcenoderowmap = sourcedis.node_row_map();
 
       std::shared_ptr<Core::FE::Discretization> targetdis;
@@ -844,7 +844,7 @@ namespace Core::FE
       const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
   {
     // access the communicator for time measurement
-    const Epetra_Comm& comm = sourcedis.get_comm();
+    MPI_Comm comm = sourcedis.get_comm();
     Teuchos::Time time("", true);
 
     // create target discretization using a given clone strategy
@@ -881,7 +881,7 @@ namespace Core::FE
     if (targetdis_ptr == nullptr) FOUR_C_THROW("Cast of the target discretization failed!");
 
     // access the communicator for time measurement
-    const Epetra_Comm& comm = sourcedis_ptr->get_comm();
+    MPI_Comm comm = sourcedis_ptr->get_comm();
     Teuchos::Time time("", true);
 
     // create target discretization using a given clone strategy
@@ -916,7 +916,7 @@ namespace Core::FE
       const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
   {
     // access the communicator for time measurement
-    const Epetra_Comm& comm = sourcedis.get_comm();
+    MPI_Comm comm = sourcedis.get_comm();
     Teuchos::Time time("", true);
 
     // create target discretization using a given clone strategy

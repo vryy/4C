@@ -18,7 +18,6 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
 #include <memory>

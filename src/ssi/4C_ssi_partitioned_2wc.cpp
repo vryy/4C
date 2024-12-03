@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
-SSI::SSIPart2WC::SSIPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+SSI::SSIPart2WC::SSIPart2WC(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIPart(comm, globaltimeparams)
 {
   // Keep this constructor empty!
@@ -36,7 +36,7 @@ SSI::SSIPart2WC::SSIPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIPart2WC::init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
@@ -450,7 +450,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> SSI::SSIPart2WC::calc_velocity(
  | Constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
 SSI::SSIPart2WCSolidToScatraRelax::SSIPart2WCSolidToScatraRelax(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIPart2WC(comm, globaltimeparams), omega_(-1.0)
 {
   // Keep this constructor empty!
@@ -463,7 +463,7 @@ SSI::SSIPart2WCSolidToScatraRelax::SSIPart2WCSolidToScatraRelax(
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WCSolidToScatraRelax::init(const Epetra_Comm& comm,
+void SSI::SSIPart2WCSolidToScatraRelax::init(MPI_Comm comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams, const std::string& struct_disname,
     const std::string& scatra_disname, bool isAle)
@@ -575,7 +575,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::calc_omega(double& omega, const int itnu
  | Constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
 SSI::SSIPart2WCSolidToScatraRelaxAitken::SSIPart2WCSolidToScatraRelaxAitken(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIPart2WCSolidToScatraRelax(comm, globaltimeparams)
 {
   // Keep this constructor empty!
@@ -676,7 +676,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const in
  | Constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
 SSI::SSIPart2WCScatraToSolidRelax::SSIPart2WCScatraToSolidRelax(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIPart2WC(comm, globaltimeparams), omega_(-1.0)
 {
   // Keep this constructor empty!
@@ -689,7 +689,7 @@ SSI::SSIPart2WCScatraToSolidRelax::SSIPart2WCScatraToSolidRelax(
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WCScatraToSolidRelax::init(const Epetra_Comm& comm,
+void SSI::SSIPart2WCScatraToSolidRelax::init(MPI_Comm comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams, const std::string& struct_disname,
     const std::string& scatra_disname, bool isAle)
@@ -793,7 +793,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::calc_omega(double& omega, const int itnu
  | Constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
 SSI::SSIPart2WCScatraToSolidRelaxAitken::SSIPart2WCScatraToSolidRelaxAitken(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIPart2WCScatraToSolidRelax(comm, globaltimeparams)
 {
   // Keep this constructor empty!

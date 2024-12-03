@@ -25,8 +25,7 @@ namespace
     UtilsRefConfigTest()
     {
       // create a discretization, to store the created elements and nodes
-      testdis_ = std::make_shared<Core::FE::Discretization>(
-          "dummy", std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD), 3);
+      testdis_ = std::make_shared<Core::FE::Discretization>("dummy", MPI_COMM_WORLD, 3);
 
       // create hex8 element and store it in the test discretization
       const std::array<int, 8> nodeidshex8 = {0, 1, 2, 3, 4, 5, 6, 7};

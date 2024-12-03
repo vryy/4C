@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
  | setup discretizations and dofsets                         vuong 08/16 |
  *----------------------------------------------------------------------*/
 std::map<int, std::set<int>> POROMULTIPHASE::Utils::setup_discretizations_and_field_coupling(
-    const Epetra_Comm& comm, const std::string& struct_disname, const std::string& fluid_disname,
+    MPI_Comm comm, const std::string& struct_disname, const std::string& fluid_disname,
     int& nds_disp, int& nds_vel, int& nds_solidpressure)
 {
   // Scheme   : the structure discretization is received from the input.
@@ -155,7 +155,7 @@ void POROMULTIPHASE::Utils::assign_material_pointers(
 std::shared_ptr<POROMULTIPHASE::PoroMultiPhase>
 POROMULTIPHASE::Utils::create_poro_multi_phase_algorithm(
     Inpar::POROMULTIPHASE::SolutionSchemeOverFields solscheme,
-    const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
+    const Teuchos::ParameterList& timeparams, MPI_Comm comm)
 {
   // Creation of Coupled Problem algorithm.
   std::shared_ptr<POROMULTIPHASE::PoroMultiPhase> algo = nullptr;

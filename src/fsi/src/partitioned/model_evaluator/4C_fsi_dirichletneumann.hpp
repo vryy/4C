@@ -53,7 +53,7 @@ namespace FSI
      *
      * @param[in] comm Communicator
      */
-    explicit DirichletNeumann(const Epetra_Comm &comm);
+    explicit DirichletNeumann(MPI_Comm comm);
 
     /// Creates the appropriate DirichletNeumann algortihm
     //    std::shared_ptr<DirichletNeumann> FSI::DirichletNeumann::Factory(_PROBLEM_TYPE type);

@@ -124,7 +124,7 @@ void Core::FE::Discretization::boundary_conditions_geometry()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::assign_global_i_ds(const Epetra_Comm& comm,
+void Core::FE::Discretization::assign_global_i_ds(MPI_Comm comm,
     const std::map<std::vector<int>, std::shared_ptr<Core::Elements::Element>>& elementmap,
     std::map<int, std::shared_ptr<Core::Elements::Element>>& finalgeometry)
 {

@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor (public)                                    schott 08/14 |
  *----------------------------------------------------------------------*/
-FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+FSI::AlgorithmXFEM::AlgorithmXFEM(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
     const Adapter::FieldWrapper::Fieldtype type)
     : AlgorithmBase(comm, timeparams),
       num_fields_(0),

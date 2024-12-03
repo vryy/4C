@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-ParticleInteraction::DEMHistoryPairs::DEMHistoryPairs(const Epetra_Comm& comm) : comm_(comm)
+ParticleInteraction::DEMHistoryPairs::DEMHistoryPairs(MPI_Comm comm) : comm_(comm)
 {
   // empty constructor
 }

@@ -16,8 +16,6 @@
 #include "4C_utils_std_cxx20_ranges.hpp"
 #include "4C_utils_string.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
@@ -203,7 +201,7 @@ namespace Core::IO
     };
 
     /// construct a reader for a given file
-    InputFile(std::string filename, const Epetra_Comm& comm, int outflag = 0);
+    InputFile(std::string filename, MPI_Comm comm, int outflag = 0);
 
     /// return my inputfile name
     [[nodiscard]] std::string my_inputfile_name() const;
@@ -239,7 +237,7 @@ namespace Core::IO
     /**
      * Access MPI communicator associated with this object.
      */
-    [[nodiscard]] const Epetra_Comm& get_comm() const { return comm_; }
+    [[nodiscard]] MPI_Comm get_comm() const { return comm_; }
 
     /**
      * Print a list of all sections that are contained in the input file but never
@@ -272,7 +270,7 @@ namespace Core::IO
     std::filesystem::path top_level_file_;
 
     /// The communicator associated with this object.
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     /// Flag for output (default: output should be written)
     int outflag_{};

@@ -234,13 +234,11 @@ namespace Core::Communication
     }
 
     // do the splitting of the communicator
-    MPI_Comm mpi_local_comm;
-    MPI_Comm_split(MPI_COMM_WORLD, color, myrank, &mpi_local_comm);
-
-    std::shared_ptr<Epetra_Comm> lcomm = std::make_shared<Epetra_MpiComm>(mpi_local_comm);
+    MPI_Comm lcomm;
+    MPI_Comm_split(MPI_COMM_WORLD, color, myrank, &lcomm);
 
     // the global communicator is created
-    std::shared_ptr<Epetra_Comm> gcomm;
+    MPI_Comm gcomm;
 
     if (ngroup == 1)
     {
@@ -257,16 +255,16 @@ namespace Core::Communication
       MPI_Comm_create(MPI_COMM_WORLD, world_group, &mpi_global_comm);
       MPI_Group_free(&world_group);
 
-      gcomm = std::make_shared<Epetra_MpiComm>(mpi_global_comm);
+      gcomm = mpi_global_comm;
     }
 
     // mapping of local proc ids to global proc ids
     std::map<int, int> lpidgpid;
-    int localsize = Core::Communication::num_mpi_ranks(*lcomm);
+    int localsize = Core::Communication::num_mpi_ranks(lcomm);
     for (int lpid = 0; lpid < localsize; lpid++)
     {
-      lpidgpid[lpid] = Core::Communication::my_mpi_rank(*gcomm) -
-                       Core::Communication::my_mpi_rank(*lcomm) + lpid;
+      lpidgpid[lpid] =
+          Core::Communication::my_mpi_rank(gcomm) - Core::Communication::my_mpi_rank(lcomm) + lpid;
     }
 
     // nested parallelism group is created
@@ -274,14 +272,14 @@ namespace Core::Communication
         std::make_shared<Communicators>(color, ngroup, lpidgpid, lcomm, gcomm, npType);
 
     // info for the nested parallelism user
-    if (Core::Communication::my_mpi_rank(*lcomm) == 0 && ngroup > 1)
+    if (Core::Communication::my_mpi_rank(lcomm) == 0 && ngroup > 1)
       printf("Nested parallelism layout: Group %d has %d processors.\n ", color,
-          Core::Communication::num_mpi_ranks(*lcomm));
+          Core::Communication::num_mpi_ranks(lcomm));
     fflush(stdout);
 
     // for sync of output
-    gcomm->Barrier();
-    gcomm->Barrier();
+    Core::Communication::barrier(gcomm);
+    Core::Communication::barrier(gcomm);
 
     return communicators;
   }
@@ -289,9 +287,8 @@ namespace Core::Communication
   /*----------------------------------------------------------------------*
    | constructor communicators                                ghamm 03/12 |
    *----------------------------------------------------------------------*/
-  Communicators::Communicators(int groupId, int ngroup, std::map<int, int> lpidgpid,
-      std::shared_ptr<Epetra_Comm> lcomm, std::shared_ptr<Epetra_Comm> gcomm,
-      NestedParallelismType npType)
+  Communicators::Communicators(int groupId, int ngroup, std::map<int, int> lpidgpid, MPI_Comm lcomm,
+      MPI_Comm gcomm, NestedParallelismType npType)
       : group_id_(groupId),
         ngroup_(ngroup),
         lpidgpid_(lpidgpid),
@@ -316,7 +313,7 @@ namespace Core::Communication
     }
     // if GPID is not part of the current group
     printf("\n\n\nERROR: GPID (%d) is not in this group (%d) \n\n\n\n", GPID, group_id_);
-    MPI_Abort(std::dynamic_pointer_cast<Epetra_MpiComm>(gcomm_)->GetMpiComm(), EXIT_FAILURE);
+    MPI_Abort(gcomm_, EXIT_FAILURE);
     exit(1);
 
     return -1;
@@ -325,7 +322,7 @@ namespace Core::Communication
   /*----------------------------------------------------------------------*
    | set sub communicator                                     ghamm 04/12 |
    *----------------------------------------------------------------------*/
-  void Communicators::set_sub_comm(std::shared_ptr<Epetra_Comm> subcomm)
+  void Communicators::set_sub_comm(MPI_Comm subcomm)
   {
     subcomm_ = subcomm;
     return;
@@ -337,13 +334,11 @@ namespace Core::Communication
       const Core::LinAlg::MultiVector<double>& vec, const char* name, double tol /*= 1.0e-14*/
   )
   {
-    std::shared_ptr<Epetra_Comm> lcomm = communicators.local_comm();
-    std::shared_ptr<Epetra_Comm> gcomm = communicators.global_comm();
-    MPI_Comm mpi_lcomm = std::dynamic_pointer_cast<Epetra_MpiComm>(lcomm)->GetMpiComm();
-    MPI_Comm mpi_gcomm = std::dynamic_pointer_cast<Epetra_MpiComm>(gcomm)->GetMpiComm();
+    MPI_Comm lcomm = communicators.local_comm();
+    MPI_Comm gcomm = communicators.global_comm();
 
     int result = -1;
-    MPI_Comm_compare(mpi_gcomm, mpi_lcomm, &result);
+    MPI_Comm_compare(gcomm, lcomm, &result);
     if (result == 0)
     {
       Core::IO::cout << "WARNING:: Vectors " << name
@@ -354,21 +349,21 @@ namespace Core::Communication
     // do stupid conversion from Epetra_BlockMap to Epetra_Map
     const Epetra_BlockMap& vecblockmap = vec.Map();
     Epetra_Map vecmap(vecblockmap.NumGlobalElements(), vecblockmap.NumMyElements(),
-        vecblockmap.MyGlobalElements(), 0, vec.Comm());
+        vecblockmap.MyGlobalElements(), 0, Core::Communication::as_epetra_comm(vec.Comm()));
 
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
     std::shared_ptr<Epetra_Map> proc0map;
-    if (Core::Communication::my_mpi_rank(*lcomm) == Core::Communication::my_mpi_rank(*gcomm))
+    if (Core::Communication::my_mpi_rank(lcomm) == Core::Communication::my_mpi_rank(gcomm))
       proc0map = Core::LinAlg::allreduce_overlapping_e_map(vecmap, 0);
     else
       proc0map = Core::LinAlg::allreduce_overlapping_e_map(
-          vecmap, Core::Communication::num_mpi_ranks(*lcomm) - 1);
+          vecmap, Core::Communication::num_mpi_ranks(lcomm) - 1);
 
     // export full vectors to the two desired processors
     Core::LinAlg::MultiVector<double> fullvec(*proc0map, vec.NumVectors(), true);
     Core::LinAlg::export_to(vec, fullvec);
 
-    const int myglobalrank = Core::Communication::my_mpi_rank(*gcomm);
+    const int myglobalrank = Core::Communication::my_mpi_rank(gcomm);
     double maxdiff = 0.0;
     // last proc in gcomm sends its data to proc 0 which does the comparison
     if (myglobalrank == 0)
@@ -379,15 +374,15 @@ namespace Core::Communication
       MPI_Status status;
       // first: receive length of name
       int tag = 1336;
-      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(*gcomm) - 1, tag,
-          mpi_gcomm, &status);
+      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(gcomm) - 1, tag, gcomm,
+          &status);
       if (lengthRecv == 0) FOUR_C_THROW("Length of name received from second run is zero.");
 
       // second: receive name
       tag = 2672;
       receivename.resize(lengthRecv);
       MPI_Recv(receivename.data(), lengthRecv, MPI_CHAR,
-          Core::Communication::num_mpi_ranks(*gcomm) - 1, tag, mpi_gcomm, &status);
+          Core::Communication::num_mpi_ranks(gcomm) - 1, tag, gcomm, &status);
 
       // do comparison of names
       if (std::strcmp(name, receivename.data()))
@@ -400,8 +395,8 @@ namespace Core::Communication
       std::vector<double> receivebuf;
       // first: receive length of data
       tag = 1337;
-      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(*gcomm) - 1, tag,
-          mpi_gcomm, &status);
+      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(gcomm) - 1, tag, gcomm,
+          &status);
       // also enable comparison of empty vectors
       if (lengthRecv == 0 && fullvec.MyLength() != lengthRecv)
         FOUR_C_THROW("Length of data received from second run is incorrect.");
@@ -410,7 +405,7 @@ namespace Core::Communication
       tag = 2674;
       receivebuf.resize(lengthRecv);
       MPI_Recv(receivebuf.data(), lengthRecv, MPI_DOUBLE,
-          Core::Communication::num_mpi_ranks(*gcomm) - 1, tag, mpi_gcomm, &status);
+          Core::Communication::num_mpi_ranks(gcomm) - 1, tag, gcomm, &status);
 
       // start comparison
       int mylength = fullvec.MyLength() * vec.NumVectors();
@@ -438,32 +433,32 @@ namespace Core::Communication
         result = 1;
       }
     }
-    else if (myglobalrank == Core::Communication::num_mpi_ranks(*gcomm) - 1)
+    else if (myglobalrank == Core::Communication::num_mpi_ranks(gcomm) - 1)
     {
       // compare names
       // include terminating \0 of char array
       int lengthSend = std::strlen(name) + 1;
       // first: send length of name
       int tag = 1336;
-      MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, mpi_gcomm);
+      MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, gcomm);
 
       // second: send name
       tag = 2672;
-      MPI_Send(const_cast<char*>(name), lengthSend, MPI_CHAR, 0, tag, mpi_gcomm);
+      MPI_Send(const_cast<char*>(name), lengthSend, MPI_CHAR, 0, tag, gcomm);
 
       // compare data
       lengthSend = fullvec.MyLength() * vec.NumVectors();
       // first: send length of data
       tag = 1337;
-      MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, mpi_gcomm);
+      MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, gcomm);
 
       // second: send data
       tag = 2674;
-      MPI_Send(fullvec.Values(), lengthSend, MPI_DOUBLE, 0, tag, mpi_gcomm);
+      MPI_Send(fullvec.Values(), lengthSend, MPI_DOUBLE, 0, tag, gcomm);
     }
 
     // force all procs to stay here until proc 0 has checked the vectors
-    gcomm->Broadcast(&maxdiff, 1, 0);
+    Core::Communication::broadcast(&maxdiff, 1, 0, gcomm);
     if (maxdiff > tol)
     {
       std::stringstream diff;
@@ -481,14 +476,12 @@ namespace Core::Communication
       Epetra_CrsMatrix& matrix, const char* name, double tol /*= 1.0e-14*/
   )
   {
-    std::shared_ptr<Epetra_Comm> lcomm = communicators.local_comm();
-    std::shared_ptr<Epetra_Comm> gcomm = communicators.global_comm();
-    MPI_Comm mpi_lcomm = std::dynamic_pointer_cast<Epetra_MpiComm>(lcomm)->GetMpiComm();
-    MPI_Comm mpi_gcomm = std::dynamic_pointer_cast<Epetra_MpiComm>(gcomm)->GetMpiComm();
-    const int myglobalrank = Core::Communication::my_mpi_rank(*gcomm);
+    MPI_Comm lcomm = communicators.local_comm();
+    MPI_Comm gcomm = communicators.global_comm();
+    const int myglobalrank = Core::Communication::my_mpi_rank(gcomm);
 
     int result = -1;
-    MPI_Comm_compare(mpi_gcomm, mpi_lcomm, &result);
+    MPI_Comm_compare(gcomm, lcomm, &result);
     if (result == 0)
     {
       Core::IO::cout << "WARNING:: Matrices " << name
@@ -501,18 +494,18 @@ namespace Core::Communication
 
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
     std::shared_ptr<Epetra_Map> serialrowmap;
-    if (Core::Communication::my_mpi_rank(*lcomm) == Core::Communication::my_mpi_rank(*gcomm))
+    if (Core::Communication::my_mpi_rank(lcomm) == Core::Communication::my_mpi_rank(gcomm))
       serialrowmap = Core::LinAlg::allreduce_overlapping_e_map(rowmap, 0);
     else
       serialrowmap = Core::LinAlg::allreduce_overlapping_e_map(
-          rowmap, Core::Communication::num_mpi_ranks(*lcomm) - 1);
+          rowmap, Core::Communication::num_mpi_ranks(lcomm) - 1);
 
     std::shared_ptr<Epetra_Map> serialdomainmap;
-    if (Core::Communication::my_mpi_rank(*lcomm) == Core::Communication::my_mpi_rank(*gcomm))
+    if (Core::Communication::my_mpi_rank(lcomm) == Core::Communication::my_mpi_rank(gcomm))
       serialdomainmap = Core::LinAlg::allreduce_overlapping_e_map(domainmap, 0);
     else
       serialdomainmap = Core::LinAlg::allreduce_overlapping_e_map(
-          domainmap, Core::Communication::num_mpi_ranks(*lcomm) - 1);
+          domainmap, Core::Communication::num_mpi_ranks(lcomm) - 1);
 
     // export full matrices to the two desired processors
     Epetra_Import serialimporter(*serialrowmap, rowmap);
@@ -525,7 +518,7 @@ namespace Core::Communication
     data_indices.reserve(serialCrsMatrix.NumMyNonzeros() * 2);
     std::vector<double> data_values;
     data_values.reserve(serialCrsMatrix.NumMyNonzeros());
-    if (myglobalrank == 0 || myglobalrank == Core::Communication::num_mpi_ranks(*gcomm) - 1)
+    if (myglobalrank == 0 || myglobalrank == Core::Communication::num_mpi_ranks(gcomm) - 1)
     {
       for (int i = 0; i < serialrowmap->NumMyElements(); ++i)
       {
@@ -557,15 +550,15 @@ namespace Core::Communication
       MPI_Status status;
       // first: receive length of name
       int tag = 1336;
-      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(*gcomm) - 1, tag,
-          mpi_gcomm, &status);
+      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(gcomm) - 1, tag, gcomm,
+          &status);
       if (lengthRecv == 0) FOUR_C_THROW("Length of name received from second run is zero.");
 
       // second: receive name
       tag = 2672;
       receivename.resize(lengthRecv);
       MPI_Recv(receivename.data(), lengthRecv, MPI_CHAR,
-          Core::Communication::num_mpi_ranks(*gcomm) - 1, tag, mpi_gcomm, &status);
+          Core::Communication::num_mpi_ranks(gcomm) - 1, tag, gcomm, &status);
 
       // do comparison of names
       if (std::strcmp(name, receivename.data()))
@@ -578,8 +571,8 @@ namespace Core::Communication
       std::vector<int> receivebuf_indices;
       // first: receive length of data
       tag = 1337;
-      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(*gcomm) - 1, tag,
-          mpi_gcomm, &status);
+      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(gcomm) - 1, tag, gcomm,
+          &status);
       // also enable comparison of empty matrices
       if (lengthRecv == 0 && (int)data_indices.size() != lengthRecv)
         FOUR_C_THROW("Length of data received from second run is incorrect.");
@@ -588,7 +581,7 @@ namespace Core::Communication
       tag = 2674;
       receivebuf_indices.resize(lengthRecv);
       MPI_Recv(receivebuf_indices.data(), lengthRecv, MPI_INT,
-          Core::Communication::num_mpi_ranks(*gcomm) - 1, tag, mpi_gcomm, &status);
+          Core::Communication::num_mpi_ranks(gcomm) - 1, tag, gcomm, &status);
 
       // start comparison
       int mylength = data_indices.size();
@@ -614,8 +607,8 @@ namespace Core::Communication
       std::vector<double> receivebuf_values;
       // first: receive length of data
       tag = 1338;
-      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(*gcomm) - 1, tag,
-          mpi_gcomm, &status);
+      MPI_Recv(&lengthRecv, 1, MPI_INT, Core::Communication::num_mpi_ranks(gcomm) - 1, tag, gcomm,
+          &status);
       // also enable comparison of empty matrices
       if (lengthRecv == 0 && (int)data_values.size() != lengthRecv)
         FOUR_C_THROW("Length of data received from second run is incorrect.");
@@ -624,7 +617,7 @@ namespace Core::Communication
       tag = 2676;
       receivebuf_values.resize(lengthRecv);
       MPI_Recv(receivebuf_values.data(), lengthRecv, MPI_DOUBLE,
-          Core::Communication::num_mpi_ranks(*gcomm) - 1, tag, mpi_gcomm, &status);
+          Core::Communication::num_mpi_ranks(gcomm) - 1, tag, gcomm, &status);
 
       // start comparison
       mylength = data_values.size();
@@ -651,42 +644,42 @@ namespace Core::Communication
                        << " are identical." << Core::IO::endl;
       }
     }
-    else if (myglobalrank == Core::Communication::num_mpi_ranks(*gcomm) - 1)
+    else if (myglobalrank == Core::Communication::num_mpi_ranks(gcomm) - 1)
     {
       // compare names
       // include terminating \0 of char array
       int lengthSend = std::strlen(name) + 1;
       // first: send length of name
       int tag = 1336;
-      MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, mpi_gcomm);
+      MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, gcomm);
 
       // second: send name
       tag = 2672;
-      MPI_Send(const_cast<char*>(name), lengthSend, MPI_CHAR, 0, tag, mpi_gcomm);
+      MPI_Send(const_cast<char*>(name), lengthSend, MPI_CHAR, 0, tag, gcomm);
 
       // compare data: indices
       lengthSend = data_indices.size();
       // first: send length of data
       tag = 1337;
-      MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, mpi_gcomm);
+      MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, gcomm);
 
       // second: send data
       tag = 2674;
-      MPI_Send(data_indices.data(), lengthSend, MPI_INT, 0, tag, mpi_gcomm);
+      MPI_Send(data_indices.data(), lengthSend, MPI_INT, 0, tag, gcomm);
 
       // compare data: values
       lengthSend = data_values.size();
       // first: send length of data
       tag = 1338;
-      MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, mpi_gcomm);
+      MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, gcomm);
 
       // second: send data
       tag = 2676;
-      MPI_Send(data_values.data(), lengthSend, MPI_DOUBLE, 0, tag, mpi_gcomm);
+      MPI_Send(data_values.data(), lengthSend, MPI_DOUBLE, 0, tag, gcomm);
     }
 
     // force all procs to stay here until proc 0 has checked the matrices
-    gcomm->Broadcast(&maxdiff, 1, 0);
+    Core::Communication::broadcast(&maxdiff, 1, 0, gcomm);
     if (maxdiff > tol)
     {
       std::stringstream diff;

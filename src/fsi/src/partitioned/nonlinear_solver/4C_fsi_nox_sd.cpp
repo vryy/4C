@@ -12,7 +12,6 @@
 #include "4C_io_control.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Epetra_Comm.h>
 #include <NOX_Abstract_Group.H>
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Common.H>
@@ -85,8 +84,8 @@ bool NOX::FSI::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& ste
 
   // write omega
   double fnorm = oldgrp.getF().norm();
-  if (Core::Communication::my_mpi_rank(
-          dynamic_cast<const ::NOX::Epetra::Vector&>(oldgrp.getF()).getEpetraVector().Comm()) == 0)
+  if (Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(
+          dynamic_cast<const ::NOX::Epetra::Vector&>(oldgrp.getF()).getEpetraVector().Comm())) == 0)
   {
     static int count;
     static std::ofstream* out;

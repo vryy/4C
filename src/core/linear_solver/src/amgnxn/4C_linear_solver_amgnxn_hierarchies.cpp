@@ -404,7 +404,8 @@ Core::LinearSolver::AMGNxN::Hierarchies::build_mue_lu_hierarchy(
       Teuchos::ParameterList& AllList = paramListFromXml.sublist("Hierarchy").sublist("All");
       AllList.set("CoarseMap", "myCoarseMapFactory123");
 
-      if (Core::Communication::my_mpi_rank(A_eop->Comm()) == 0)
+      if (Core::Communication::my_mpi_rank(
+              Core::Communication::unpack_epetra_comm(A_eop->Comm())) == 0)
         std::cout << "offsets_str " << offsets_str << std::endl;
     }
 
@@ -413,7 +414,8 @@ Core::LinearSolver::AMGNxN::Hierarchies::build_mue_lu_hierarchy(
     MatrixList.set<int>("DOF offset", offsetFineLevel);
     MatrixList.set<int>("number of equations", numdf);
 
-    if (verbosity_ == "on" and Core::Communication::my_mpi_rank(A_eop->Comm()) == 0)
+    if (verbosity_ == "on" and Core::Communication::my_mpi_rank(
+                                   Core::Communication::unpack_epetra_comm(A_eop->Comm())) == 0)
     {
       std::cout << "offsetFineLevel " << offsetFineLevel << std::endl;
     }
@@ -465,7 +467,8 @@ Core::LinearSolver::AMGNxN::Hierarchies::build_mue_lu_hierarchy(
   }
 
   double elaptime = timer.totalElapsedTime(true);
-  if (verbosity_ == "on" and Core::Communication::my_mpi_rank(A_eop->Comm()) == 0)
+  if (verbosity_ == "on" and
+      Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(A_eop->Comm())) == 0)
     std::cout
         << "       Calling Core::LinAlg::SOLVER::AMGNxN::Hierarchies::build_mue_lu_hierarchy takes "
         << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;
@@ -634,7 +637,8 @@ void Core::LinearSolver::AMGNxN::MonolithicHierarchy::setup()
   // ====================================================
   std::string verbosity = params_.get<std::string>("verbosity", "off");
 
-  if (Core::Communication::my_mpi_rank(h_->get_block_matrix()->get_matrix(0, 0)->Comm()) != 0)
+  if (Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(
+          h_->get_block_matrix()->get_matrix(0, 0)->Comm())) != 0)
     verbosity = "off";
 
   if (verbosity == "on")
@@ -785,7 +789,9 @@ Core::LinearSolver::AMGNxN::MonolithicHierarchy::build_smoother(int level)
 
   std::string verbosity = params_.get<std::string>("verbosity", "off");
 
-  if (Core::Communication::my_mpi_rank(get_a(0)->get_matrix(0, 0)->Comm()) != 0) verbosity = "off";
+  if (Core::Communication::my_mpi_rank(
+          Core::Communication::unpack_epetra_comm(get_a(0)->get_matrix(0, 0)->Comm())) != 0)
+    verbosity = "off";
 
   std::vector<int> blocks(h_->get_num_blocks(), 0);
   for (int i = 0; i < h_->get_num_blocks(); i++) blocks[i] = i;

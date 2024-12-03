@@ -37,8 +37,8 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::LagrangeStrategy::LagrangeStrategy(
     const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<std::shared_ptr<CONTACT::Interface>> interface, const int spatialDim,
-    std::shared_ptr<const Epetra_Comm> comm, const double alphaf, const int maxdof)
+    std::vector<std::shared_ptr<CONTACT::Interface>> interface, const int spatialDim, MPI_Comm comm,
+    const double alphaf, const int maxdof)
     : AbstractStrategy(data_ptr, dof_row_map, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       evalForceCalled_(false),
@@ -4974,8 +4974,11 @@ void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstSt
   }
   else
   {
-    gOldActiveSlaveNodes_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
-    if (friction_) gOldslipnodes_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
+    gOldActiveSlaveNodes_ =
+        std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
+    if (friction_)
+      gOldslipnodes_ =
+          std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
   }
 
   // also update special flag for semi-smooth Newton convergence

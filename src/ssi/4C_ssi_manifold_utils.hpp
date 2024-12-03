@@ -452,8 +452,7 @@ namespace SSI
     //! tuple.
     std::tuple<std::shared_ptr<const Epetra_Map>, std::shared_ptr<const Epetra_Map>>
     intersect_coupling_maps_block_map(const Epetra_Map& block_map,
-        const Epetra_Map& intersecting_map, const Epetra_Map& permuted_map,
-        const Epetra_Comm& comm);
+        const Epetra_Map& intersecting_map, const Epetra_Map& permuted_map, MPI_Comm comm);
 
     //! all interior and master dofs split into blocks
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> condensed_block_dof_map_;

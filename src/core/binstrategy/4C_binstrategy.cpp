@@ -85,8 +85,7 @@ std::vector<std::array<double, 3>> Core::Binstrategy::DefaultRelevantPoints::ope
 }
 
 Core::Binstrategy::BinningStrategy::BinningStrategy(const Teuchos::ParameterList& binning_params,
-    std::shared_ptr<Core::IO::OutputControl> output_control, const Epetra_Comm& comm,
-    const int my_rank,
+    std::shared_ptr<Core::IO::OutputControl> output_control, MPI_Comm comm, const int my_rank,
     std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node,
     std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
         const Core::Elements::Element&, std::shared_ptr<const Core::LinAlg::Vector<double>> disnp)>
@@ -97,7 +96,7 @@ Core::Binstrategy::BinningStrategy::BinningStrategy(const Teuchos::ParameterList
       deforming_simulation_domain_handler_(nullptr),
       writebinstype_(Teuchos::getIntegralValue<WriteBins>(binning_params, ("WRITEBINS"))),
       myrank_(my_rank),
-      comm_(comm.Clone()),
+      comm_(comm),
       determine_relevant_points_(
           determine_relevant_points ? std::move(determine_relevant_points)
                                     : decltype(determine_relevant_points){DefaultRelevantPoints{}}),
@@ -641,7 +640,7 @@ void Core::Binstrategy::BinningStrategy::determine_boundary_col_bins()
 }
 
 std::shared_ptr<Epetra_Map> Core::Binstrategy::BinningStrategy::create_linear_map_for_numbin(
-    const Epetra_Comm& comm) const
+    MPI_Comm comm) const
 {
   // initial dummy distribution using a linear map
   const int numproc = Core::Communication::num_mpi_ranks(comm);
@@ -670,7 +669,8 @@ std::shared_ptr<Epetra_Map> Core::Binstrategy::BinningStrategy::create_linear_ma
     }
   }
 
-  return std::make_shared<Epetra_Map>(numbin, linearmap.size(), linearmap.data(), 0, comm);
+  return std::make_shared<Epetra_Map>(
+      numbin, linearmap.size(), linearmap.data(), 0, Core::Communication::as_epetra_comm(comm));
 }
 
 void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double const time)
@@ -689,7 +689,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
   // -------------------------------------------------------------------------
   // create new discretization containing the bins as elements
   // -------------------------------------------------------------------------
-  std::shared_ptr<Epetra_Comm> com(bindis_->get_comm().Clone());
+  MPI_Comm com(bindis_->get_comm());
 
   // store gids of ghosted elements
   std::map<int, std::vector<Core::LinAlg::Matrix<3, 1>>> ghostcorners;
@@ -740,10 +740,10 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
     int nummycol;
     nummycol = static_cast<int>(ghostcorners.size());
     // initialize std::vector for communication
-    std::vector<int> numcol(Core::Communication::num_mpi_ranks(*com), 0);
+    std::vector<int> numcol(Core::Communication::num_mpi_ranks(com), 0);
     // communicate
-    com->GatherAll(&nummycol, numcol.data(), 1);
-    com->Barrier();
+    Core::Communication::gather_all(&nummycol, numcol.data(), 1, com);
+    Core::Communication::barrier(com);
 
     // calculate starting index on myrank
     int startnewgid = 0;
@@ -834,7 +834,8 @@ void Core::Binstrategy::BinningStrategy::distribute_bins_recurs_coord_bisection(
 
   // create bin row map
   binrowmap = std::make_shared<Epetra_Map>(-1, bincenters->Map().NumMyElements(),
-      bincenters->Map().MyGlobalElements(), 0, bin_discret()->get_comm());
+      bincenters->Map().MyGlobalElements(), 0,
+      Core::Communication::as_epetra_comm(bin_discret()->get_comm()));
 }
 
 void Core::Binstrategy::BinningStrategy::fill_bins_into_bin_discretization(Epetra_Map& rowbins)
@@ -1095,7 +1096,8 @@ std::shared_ptr<Epetra_Map> Core::Binstrategy::BinningStrategy::
     }
 
     std::vector<int> colnodes(nodes.begin(), nodes.end());
-    Epetra_Map nodecolmap(-1, (int)colnodes.size(), colnodes.data(), 0, discret[i]->get_comm());
+    Epetra_Map nodecolmap(-1, (int)colnodes.size(), colnodes.data(), 0,
+        Core::Communication::as_epetra_comm(discret[i]->get_comm()));
 
     // now ghost the nodes
     discret[i]->export_column_nodes(nodecolmap);
@@ -1247,8 +1249,9 @@ Core::Binstrategy::BinningStrategy::weighted_distribution_of_bins_to_procs(
 
   // extract repartitioned bin row map
   const Epetra_BlockMap& rbinstmp = balanced_bingraph->RowMap();
-  std::shared_ptr<Epetra_Map> newrowbins = std::make_shared<Epetra_Map>(
-      -1, rbinstmp.NumMyElements(), rbinstmp.MyGlobalElements(), 0, discret[0]->get_comm());
+  std::shared_ptr<Epetra_Map> newrowbins =
+      std::make_shared<Epetra_Map>(-1, rbinstmp.NumMyElements(), rbinstmp.MyGlobalElements(), 0,
+          Core::Communication::as_epetra_comm(discret[0]->get_comm()));
 
   return newrowbins;
 }
@@ -1261,7 +1264,7 @@ std::shared_ptr<Epetra_Map> Core::Binstrategy::BinningStrategy::extend_element_c
     const Epetra_Map* ele_colmap_from_standardghosting) const
 {
   // do communication to gather all elements for extended ghosting
-  const int numproc = Core::Communication::num_mpi_ranks(*comm_);
+  const int numproc = Core::Communication::num_mpi_ranks(comm_);
   for (int iproc = 0; iproc < numproc; ++iproc)
   {
     // gather set of column bins for each proc
@@ -1299,11 +1302,11 @@ std::shared_ptr<Epetra_Map> Core::Binstrategy::BinningStrategy::extend_element_c
 
     // first: proc i tells all procs how many bins it has
     int numbin = binids.size();
-    comm_->Broadcast(&numbin, 1, iproc);
+    Core::Communication::broadcast(&numbin, 1, iproc, comm_);
     // second: proc i tells all procs which bins it has
     binids.resize(numbin);
 
-    comm_->Broadcast(binids.data(), numbin, iproc);
+    Core::Communication::broadcast(binids.data(), numbin, iproc, comm_);
 
     // loop over all own bins and find requested ones, fill in elements in these bins
     std::map<int, std::set<int>> sdata;
@@ -1317,7 +1320,7 @@ std::shared_ptr<Epetra_Map> Core::Binstrategy::BinningStrategy::extend_element_c
             bin_to_row_ele_map_to_lookup_requests[binids[i]].end());
     }
 
-    Core::LinAlg::gather<int>(sdata, rdata, 1, &iproc, *comm_);
+    Core::LinAlg::gather<int>(sdata, rdata, 1, &iproc, comm_);
 
     // proc i has to store the received data
     if (iproc == myrank_)
@@ -1340,7 +1343,8 @@ std::shared_ptr<Epetra_Map> Core::Binstrategy::BinningStrategy::extend_element_c
   std::vector<int> colgids(coleleset.begin(), coleleset.end());
 
   // return extended elecolmap
-  return std::make_shared<Epetra_Map>(-1, (int)colgids.size(), colgids.data(), 0, *comm_);
+  return std::make_shared<Epetra_Map>(
+      -1, (int)colgids.size(), colgids.data(), 0, Core::Communication::as_epetra_comm(comm_));
 }
 
 void Core::Binstrategy::BinningStrategy::extend_ghosting_of_binning_discretization(
@@ -1353,8 +1357,8 @@ void Core::Binstrategy::BinningStrategy::extend_ghosting_of_binning_discretizati
   for (int i = 0; i < rowbins.NumMyElements(); ++i) bins.insert(rowbins.GID(i));
 
   std::vector<int> bincolmapvec(bins.begin(), bins.end());
-  Epetra_Map bincolmap(
-      -1, static_cast<int>(bincolmapvec.size()), bincolmapvec.data(), 0, bindis_->get_comm());
+  Epetra_Map bincolmap(-1, static_cast<int>(bincolmapvec.size()), bincolmapvec.data(), 0,
+      Core::Communication::as_epetra_comm(bindis_->get_comm()));
 
   if (bincolmap.NumGlobalElements() == 1 &&
       Core::Communication::num_mpi_ranks(bindis_->get_comm()) > 1)
@@ -1427,8 +1431,8 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
   }
   nodesinmybins.clear();
 
-  std::shared_ptr<Epetra_Map> newnoderowmap = std::make_shared<Epetra_Map>(
-      -1, mynewrownodes.size(), mynewrownodes.data(), 0, discret->get_comm());
+  std::shared_ptr<Epetra_Map> newnoderowmap = std::make_shared<Epetra_Map>(-1, mynewrownodes.size(),
+      mynewrownodes.data(), 0, Core::Communication::as_epetra_comm(discret->get_comm()));
 
   // create the new graph and export to it
   std::shared_ptr<Epetra_CrsGraph> newnodegraph;
@@ -1442,8 +1446,8 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
 
   // the column map will become the new ghosted distribution of nodes (standard ghosting)
   const Epetra_BlockMap cntmp = newnodegraph->ColMap();
-  stdnodecolmap = std::make_shared<Epetra_Map>(
-      -1, cntmp.NumMyElements(), cntmp.MyGlobalElements(), 0, discret->get_comm());
+  stdnodecolmap = std::make_shared<Epetra_Map>(-1, cntmp.NumMyElements(), cntmp.MyGlobalElements(),
+      0, Core::Communication::as_epetra_comm(discret->get_comm()));
 
   // rebuild of the discretizations with new maps for standard ghosting
   std::shared_ptr<Epetra_Map> roweles;
@@ -1481,7 +1485,8 @@ void Core::Binstrategy::BinningStrategy::
         std::map<int, std::vector<int>>& allnodesinmybins) const
 {
   // do communication to gather all nodes
-  const int numproc = Core::Communication::num_mpi_ranks(rowbins.Comm());
+  const int numproc =
+      Core::Communication::num_mpi_ranks(Core::Communication::unpack_epetra_comm(rowbins.Comm()));
   for (int iproc = 0; iproc < numproc; ++iproc)
   {
     // vector with row bins on this proc
@@ -1495,11 +1500,13 @@ void Core::Binstrategy::BinningStrategy::
     }
 
     // first: proc i tells all procs how many bins it has
-    Core::Communication::broadcast(&numbin, 1, iproc, rowbins.Comm());
+    Core::Communication::broadcast(
+        &numbin, 1, iproc, Core::Communication::unpack_epetra_comm(rowbins.Comm()));
     binids.resize(numbin);
     // second: proc i tells all procs which bins it has, now each proc contains
     // rowbingids of iproc in vector binids
-    Core::Communication::broadcast(binids.data(), numbin, iproc, rowbins.Comm());
+    Core::Communication::broadcast(
+        binids.data(), numbin, iproc, Core::Communication::unpack_epetra_comm(rowbins.Comm()));
 
     // loop over all own bins and find requested ones, fill in master elements in these bins
     // (map key is bin gid owned by iproc, vector contains all node gids of all procs in this bin)
@@ -1518,7 +1525,8 @@ void Core::Binstrategy::BinningStrategy::
     }
 
     // iprocs gathers all this information from other procs
-    Core::LinAlg::gather<int>(sdata, rdata, 1, &iproc, rowbins.Comm());
+    Core::LinAlg::gather<int>(
+        sdata, rdata, 1, &iproc, Core::Communication::unpack_epetra_comm(rowbins.Comm()));
 
     // iproc has to store the received data
     if (iproc == myrank_)
@@ -1627,8 +1635,8 @@ double Core::Binstrategy::BinningStrategy::
     }
 
     double globmax_bin_size_lower_bound = 0.0;
-    discret[ndis]->get_comm().MaxAll(
-        &loc_max_bin_size_lower_bound, &globmax_bin_size_lower_bound, 1);
+    Core::Communication::max_all(
+        &loc_max_bin_size_lower_bound, &globmax_bin_size_lower_bound, 1, discret[ndis]->get_comm());
     // this is necessary if more than one discret is relevant
     bin_size_lower_bound = std::max(globmax_bin_size_lower_bound, bin_size_lower_bound);
   }
@@ -1744,8 +1752,8 @@ void Core::Binstrategy::BinningStrategy::
   if (set_bin_size_lower_bound_)
   {
     double globmax_set_bin_size_lower_bound = 0.0;
-    discret.get_comm().MaxAll(
-        &locmax_set_bin_size_lower_bound, &globmax_set_bin_size_lower_bound, 1);
+    Core::Communication::max_all(
+        &locmax_set_bin_size_lower_bound, &globmax_set_bin_size_lower_bound, 1, discret.get_comm());
     // this is necessary if more than one discret is relevant
     bin_size_lower_bound_ = std::max(globmax_set_bin_size_lower_bound, bin_size_lower_bound_);
   }

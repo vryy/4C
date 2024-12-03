@@ -42,7 +42,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 12/09 |
  *----------------------------------------------------------------------*/
-TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
+TSI::Algorithm::Algorithm(MPI_Comm comm)
     : AlgorithmBase(comm, Global::Problem::instance()->tsi_dynamic_params()),
       dispnp_(nullptr),
       tempnp_(nullptr),

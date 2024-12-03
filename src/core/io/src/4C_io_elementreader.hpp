@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include <Epetra_Map.h>
+#include <mpi.h>
 
 #include <memory>
 #include <set>
@@ -157,7 +158,7 @@ namespace Core::IO
     Core::IO::InputFile& input_;
 
     /// my comm
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     /// my section to read
     std::string sectionname_;

@@ -14,7 +14,6 @@
 #include "4C_mortar_coupling3d_classes.hpp"
 #include "4C_utils_pairedvector.hpp"
 
-#include <Epetra_Comm.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <vector>
@@ -77,7 +76,7 @@ namespace Mortar
      \brief Get communicator
 
      */
-    virtual const Epetra_Comm& get_comm() const;
+    virtual MPI_Comm get_comm() const;
 
     /*!
      \brief Get problem dimension (here: 3D)
@@ -602,7 +601,7 @@ namespace Mortar
      \brief Get communicator
 
      */
-    virtual const Epetra_Comm& get_comm() const;
+    virtual MPI_Comm get_comm() const;
 
     /*!
      \brief Evaluate coupling pairs

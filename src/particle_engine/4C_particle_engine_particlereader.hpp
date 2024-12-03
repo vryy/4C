@@ -12,8 +12,6 @@
 
 #include "4C_particle_engine_typedefs.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN

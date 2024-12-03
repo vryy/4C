@@ -45,7 +45,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
   Global::Problem* problem = Global::Problem::instance();
 
   // access the communicator
-  const Epetra_Comm& comm = problem->get_dis("fluid")->get_comm();
+  MPI_Comm comm = problem->get_dis("fluid")->get_comm();
 
   //  // print problem type
   if (Core::Communication::my_mpi_rank(comm) == 0)

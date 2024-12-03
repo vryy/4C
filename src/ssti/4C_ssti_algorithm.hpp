@@ -57,14 +57,13 @@ namespace SSTI
   class SSTIAlgorithm : public Adapter::AlgorithmBase
   {
    public:
-    /// create using a Epetra_Comm
-    explicit SSTIAlgorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    explicit SSTIAlgorithm(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
     //! Setup of algorithm
     //! Clone Discretizations, init and setup subproblems, setup coupling adapters at interfaces,
     //! setup submatrices for coupling between fields
     //@{
-    virtual void init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
+    virtual void init(MPI_Comm comm, const Teuchos::ParameterList& sstitimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams,
         const Teuchos::ParameterList& structparams) = 0;
     virtual void setup();
@@ -115,11 +114,11 @@ namespace SSTI
     virtual void timeloop() = 0;
 
     //! test results (if necessary)
-    virtual void test_results(const Epetra_Comm& comm) const;
+    virtual void test_results(MPI_Comm comm) const;
 
    protected:
     //! clone scatra from structure and then thermo from scatra
-    virtual void clone_discretizations(const Epetra_Comm& comm);
+    virtual void clone_discretizations(MPI_Comm comm);
 
     //! copies modified time step from scatra to structure and to this SSI algorithm
     void distribute_dt_from_scatra();
@@ -172,7 +171,7 @@ namespace SSTI
 
   //! Construct specific SSTI algorithm
   std::shared_ptr<SSTI::SSTIAlgorithm> build_ssti(Inpar::SSTI::SolutionScheme coupling,
-      const Epetra_Comm& comm, const Teuchos::ParameterList& sstiparams);
+      MPI_Comm comm, const Teuchos::ParameterList& sstiparams);
 }  // namespace SSTI
 FOUR_C_NAMESPACE_CLOSE
 

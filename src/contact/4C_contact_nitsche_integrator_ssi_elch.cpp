@@ -33,7 +33,7 @@ struct CONTACT::IntegratorNitscheSsiElch::ElementDataBundle
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::IntegratorNitscheSsiElch::IntegratorNitscheSsiElch(
-    Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm)
+    Teuchos::ParameterList& params, Core::FE::CellType eletype, MPI_Comm comm)
     : IntegratorNitscheSsi(params, eletype, comm)
 {
   if (std::abs(theta_) > 1.0e-16)

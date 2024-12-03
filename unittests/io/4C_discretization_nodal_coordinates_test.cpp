@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_gridgenerator.hpp"
@@ -40,7 +41,7 @@ namespace
     {
       create_material_in_global_problem();
 
-      comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
+      comm_ = MPI_COMM_WORLD;
       test_discretization_ = std::make_shared<Core::FE::Discretization>("dummy", comm_, 3);
 
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
@@ -66,7 +67,7 @@ namespace
    protected:
     Core::IO::GridGenerator::RectangularCuboidInputs inputData_{};
     std::shared_ptr<Core::FE::Discretization> test_discretization_;
-    std::shared_ptr<Epetra_Comm> comm_;
+    MPI_Comm comm_;
 
     Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };
@@ -99,8 +100,8 @@ namespace
     // build node coordinates based on the node row map of first partial discretization
     {
       std::array<int, 4> nodeList{0, 2, 4, 10};  // GID list of first 4 elements
-      std::shared_ptr<Epetra_Map> node_row_map =
-          std::make_shared<Epetra_Map>(-1, nodeList.size(), nodeList.data(), 0, *comm_);
+      std::shared_ptr<Epetra_Map> node_row_map = std::make_shared<Epetra_Map>(
+          -1, nodeList.size(), nodeList.data(), 0, Core::Communication::as_epetra_comm(comm_));
       std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
           test_discretization_->build_node_coordinates(node_row_map);
 
@@ -124,8 +125,8 @@ namespace
     // build node coordinates based on the node row map of second partial discretization
     {
       std::array<int, 3> nodeList{50, 62, 114};  // random GIDs
-      std::shared_ptr<Epetra_Map> node_row_map =
-          std::make_shared<Epetra_Map>(-1, nodeList.size(), nodeList.data(), 0, *comm_);
+      std::shared_ptr<Epetra_Map> node_row_map = std::make_shared<Epetra_Map>(
+          -1, nodeList.size(), nodeList.data(), 0, Core::Communication::as_epetra_comm(comm_));
       std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
           test_discretization_->build_node_coordinates(node_row_map);
 

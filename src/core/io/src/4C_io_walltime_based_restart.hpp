@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
 #include <signal.h>
 #include <stdio.h>
 
@@ -44,7 +44,7 @@ namespace Core::IO
     /// return whether it is time for a restart
     /// \param step [in] : current time step for multi-field syncronisation
     /// \param comm [in] : get access to involved procs
-    bool restart(const int step, const Epetra_Comm& comm);
+    bool restart(const int step, MPI_Comm comm);
 
     /// the signal handler that gets passed to the kernel and listens for SIGUSR1 and SIGUSR2
     static void restart_signal_handler(

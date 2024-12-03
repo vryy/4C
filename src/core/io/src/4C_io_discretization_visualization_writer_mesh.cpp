@@ -477,7 +477,8 @@ namespace Core::IO
       const std::function<bool(const Core::Elements::Element* ele)>& element_predicate)
   {
     // Set up a multivector which will be populated with all ghosting informations.
-    const Epetra_Comm& comm = discretization.element_col_map()->Comm();
+    MPI_Comm comm =
+        Core::Communication::unpack_epetra_comm(discretization.element_col_map()->Comm());
     const int n_proc = Core::Communication::num_mpi_ranks(comm);
     const int my_proc = Core::Communication::my_mpi_rank(comm);
 

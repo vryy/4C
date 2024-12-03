@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  | constructor                                              vuong 08/16  |
  *----------------------------------------------------------------------*/
 POROMULTIPHASE::PoroMultiPhaseBase::PoroMultiPhaseBase(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
       structure_(nullptr),
       fluid_(nullptr),

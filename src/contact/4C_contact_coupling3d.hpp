@@ -329,7 +329,7 @@ namespace CONTACT
      \brief Get communicator
 
      */
-    virtual const Epetra_Comm& get_comm() const;
+    virtual MPI_Comm get_comm() const;
 
     /*!
      \brief Evaluate coupling pairs

@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Cut::LevelSetIntersection::LevelSetIntersection(const Epetra_Comm& comm, bool create_side)
-    : ParentIntersection(Core::Communication::my_mpi_rank(comm)), side_(nullptr), comm_(&comm)
+Cut::LevelSetIntersection::LevelSetIntersection(MPI_Comm comm, bool create_side)
+    : ParentIntersection(Core::Communication::my_mpi_rank(comm)), side_(nullptr), comm_(comm)
 {
   if (create_side) add_cut_side(1);
 }
@@ -101,7 +101,7 @@ void Cut::LevelSetIntersection::cut_mesh(bool screenoutput)
 
     if (myrank_ == 0 and screenoutput)
     {
-      if (comm_) comm_->Barrier();
+      if (comm_) Core::Communication::barrier(comm_);
       t_diff = Teuchos::Time::wallTime() - t_start;
 
       printf("success! ( %10.4e secs )", t_diff);
@@ -117,7 +117,7 @@ void Cut::LevelSetIntersection::cut_mesh(bool screenoutput)
 
     if (myrank_ == 0 and screenoutput)
     {
-      if (comm_) comm_->Barrier();
+      if (comm_) Core::Communication::barrier(comm_);
       t_diff = Teuchos::Time::wallTime() - t_start;
 
       printf("success! ( %10.4e secs )", t_diff);
@@ -133,7 +133,7 @@ void Cut::LevelSetIntersection::cut_mesh(bool screenoutput)
 
     if (myrank_ == 0 and screenoutput)
     {
-      if (comm_) comm_->Barrier();
+      if (comm_) Core::Communication::barrier(comm_);
       t_diff = Teuchos::Time::wallTime() - t_start;
 
       printf("success! ( %10.4e secs )", t_diff);
@@ -149,7 +149,7 @@ void Cut::LevelSetIntersection::cut_mesh(bool screenoutput)
 
     if (myrank_ == 0 and screenoutput)
     {
-      if (comm_) comm_->Barrier();
+      if (comm_) Core::Communication::barrier(comm_);
       t_diff = Teuchos::Time::wallTime() - t_start;
 
       printf("success! ( %10.4e secs )", t_diff);
@@ -199,7 +199,7 @@ void Cut::LevelSetIntersection::cut(bool include_inner, bool screenoutput, VCell
 
     if (myrank_ == 0 and screenoutput)
     {
-      if (comm_) comm_->Barrier();
+      if (comm_) Core::Communication::barrier(comm_);
       t_diff = Teuchos::Time::wallTime() - t_start;
 
       printf("success! ( %10.4e secs )", t_diff);
@@ -215,7 +215,7 @@ void Cut::LevelSetIntersection::cut(bool include_inner, bool screenoutput, VCell
 
     if (myrank_ == 0 and screenoutput)
     {
-      if (comm_) comm_->Barrier();
+      if (comm_) Core::Communication::barrier(comm_);
       t_diff = Teuchos::Time::wallTime() - t_start;
 
       printf("success! ( %10.4e secs )\n\n", t_diff);

@@ -26,7 +26,7 @@ void ssti_drt()
 {
   Global::Problem* problem = Global::Problem::instance();
 
-  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
+  MPI_Comm comm = problem->get_dis("structure")->get_comm();
 
   auto ssti = SSTI::build_ssti(Teuchos::getIntegralValue<Inpar::SSTI::SolutionScheme>(
                                    problem->ssti_control_params(), "COUPALGO"),

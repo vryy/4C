@@ -21,7 +21,7 @@ namespace EHL
   {
    public:
     /// setup EHL algorithm
-    explicit Partitioned(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    explicit Partitioned(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& lubricationparams, const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
         const std::string lubrication_disname);  // Problem builder

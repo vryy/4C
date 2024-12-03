@@ -45,9 +45,7 @@ namespace POROMULTIPHASE
   class PoroMultiPhaseMonolithicTwoWay : public PoroMultiPhaseMonolithic
   {
    public:
-    /// create using a Epetra_Comm
-    PoroMultiPhaseMonolithicTwoWay(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    PoroMultiPhaseMonolithicTwoWay(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// initialization
     void init(const Teuchos::ParameterList& globaltimeparams,
@@ -294,9 +292,8 @@ namespace POROMULTIPHASE
   class PoroMultiPhaseMonolithicTwoWayArteryCoupling : public PoroMultiPhaseMonolithicTwoWay
   {
    public:
-    /// create using a Epetra_Comm
     PoroMultiPhaseMonolithicTwoWayArteryCoupling(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+        MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
     //! extract the field vectors from a given composed vector.
     /*!

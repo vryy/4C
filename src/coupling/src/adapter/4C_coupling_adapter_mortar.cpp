@@ -45,7 +45,7 @@ void Coupling::Adapter::CouplingMortar::setup(
     const std::shared_ptr<Core::FE::Discretization>& masterdis,
     const std::shared_ptr<Core::FE::Discretization>& slavedis,
     const std::shared_ptr<Core::FE::Discretization>& aledis, const std::vector<int>& coupleddof,
-    const std::string& couplingcond, const Epetra_Comm& comm,
+    const std::string& couplingcond, MPI_Comm comm,
     const Core::Utils::FunctionManager& function_manager,
     const Teuchos::ParameterList& binning_params,
     const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
@@ -199,7 +199,7 @@ void Coupling::Adapter::CouplingMortar::setup(
  | check for overlap of slave and Dirichlet boundaries      farah 02/16 |
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
-    const std::shared_ptr<Core::FE::Discretization>& slavedis, const Epetra_Comm& comm,
+    const std::shared_ptr<Core::FE::Discretization>& slavedis, MPI_Comm comm,
     const Core::Utils::FunctionManager& function_manager)
 {
   // safety check
@@ -262,8 +262,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
     const std::map<int, Core::Nodes::Node*>& mastergnodes,
     const std::map<int, Core::Nodes::Node*>& slavegnodes,
     const std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
-    const std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements,
-    const Epetra_Comm& comm, const Teuchos::ParameterList& binning_params,
+    const std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements, MPI_Comm comm,
+    const Teuchos::ParameterList& binning_params,
     const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
     std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type, const bool slavewithale,
@@ -510,8 +510,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
     std::shared_ptr<Core::FE::Discretization> aledis,
     std::shared_ptr<const Epetra_Map> masterdofrowmap,
     std::shared_ptr<const Epetra_Map> slavedofrowmap,
-    std::shared_ptr<Core::LinAlg::Vector<double>>& idisp, const Epetra_Comm& comm,
-    bool slavewithale)
+    std::shared_ptr<Core::LinAlg::Vector<double>>& idisp, MPI_Comm comm, bool slavewithale)
 {
   // safety check
   check_setup();
@@ -1213,8 +1212,7 @@ void Coupling::Adapter::CouplingMortar::matrix_row_col_transform()
 void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
     std::shared_ptr<Core::FE::Discretization> slavedis,
     std::shared_ptr<Core::FE::Discretization> aledis,
-    std::shared_ptr<Core::LinAlg::Vector<double>>& idisp, const Epetra_Comm& comm,
-    bool slavewithale)
+    std::shared_ptr<Core::LinAlg::Vector<double>>& idisp, MPI_Comm comm, bool slavewithale)
 {
   // safety check
   check_setup();

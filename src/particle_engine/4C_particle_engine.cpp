@@ -32,8 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEENGINE::ParticleEngine::ParticleEngine(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+PARTICLEENGINE::ParticleEngine::ParticleEngine(MPI_Comm comm, const Teuchos::ParameterList& params)
     : comm_(comm),
       myrank_(Core::Communication::my_mpi_rank(comm)),
       params_(params),
@@ -168,18 +167,14 @@ void PARTICLEENGINE::ParticleEngine::get_unique_global_ids_for_all_particles(
 
 void PARTICLEENGINE::ParticleEngine::check_number_of_unique_global_ids()
 {
-  // mpi communicator
-  const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
-  if (!mpicomm) FOUR_C_THROW("dynamic cast to Epetra_MpiComm failed!");
-
   // get number of particles on all processors
   int numberofparticles = get_number_of_particles();
-  MPI_Allreduce(MPI_IN_PLACE, &numberofparticles, 1, MPI_INT, MPI_SUM, mpicomm->Comm());
+  MPI_Allreduce(MPI_IN_PLACE, &numberofparticles, 1, MPI_INT, MPI_SUM, comm_);
 
   // get number of reusable global ids on all processors
   int numberofreusableglobalids =
       particleuniqueglobalidhandler_->get_number_of_reusable_global_ids();
-  MPI_Allreduce(MPI_IN_PLACE, &numberofreusableglobalids, 1, MPI_INT, MPI_SUM, mpicomm->Comm());
+  MPI_Allreduce(MPI_IN_PLACE, &numberofreusableglobalids, 1, MPI_INT, MPI_SUM, comm_);
 
   // maximum global id
   const int maxglobalid = particleuniqueglobalidhandler_->get_max_global_id();
@@ -734,12 +729,8 @@ void PARTICLEENGINE::ParticleEngine::relate_all_particles_to_all_procs(
   // relate this processor id to its global ids
   for (int globalid : thisprocglobalids) particlestoproc[globalid] = myrank_;
 
-  // mpi communicator
-  const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
-  if (!mpicomm) FOUR_C_THROW("dynamic cast to Epetra_MpiComm failed!");
-
   // communicate global ids between all processors
-  MPI_Allreduce(MPI_IN_PLACE, particlestoproc.data(), vecsize, MPI_INT, MPI_MAX, mpicomm->Comm());
+  MPI_Allreduce(MPI_IN_PLACE, particlestoproc.data(), vecsize, MPI_INT, MPI_MAX, comm_);
 }
 
 void PARTICLEENGINE::ParticleEngine::get_particles_within_radius(const double* position,
@@ -1006,8 +997,8 @@ void PARTICLEENGINE::ParticleEngine::setup_bin_ghosting()
 
   // copy bin gids to a vector and create bincolmap
   std::vector<int> bincolmapvec(bins.begin(), bins.end());
-  bincolmap_ = std::make_shared<Epetra_Map>(
-      -1, static_cast<int>(bincolmapvec.size()), bincolmapvec.data(), 0, comm_);
+  bincolmap_ = std::make_shared<Epetra_Map>(-1, static_cast<int>(bincolmapvec.size()),
+      bincolmapvec.data(), 0, Core::Communication::as_epetra_comm(comm_));
 
   if (bincolmap_->NumGlobalElements() == 1 && Core::Communication::num_mpi_ranks(comm_) > 1)
     FOUR_C_THROW("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");

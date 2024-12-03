@@ -552,7 +552,7 @@ void Core::LinAlg::DefaultBlockMatrixStrategy::complete(bool enforce_complete)
       cgidlist.size(), cgidlist.data(), cpidlist.data(), nullptr);
   if (err != 0) FOUR_C_THROW("RemoteIDList failed");
 
-  const Epetra_Comm& comm = mat_.full_range_map().Comm();
+  MPI_Comm comm = Core::Communication::unpack_epetra_comm(mat_.full_range_map().Comm());
   const int numproc = Core::Communication::num_mpi_ranks(comm);
 
   // Send the ghost gids to their respective processor to ask for the domain

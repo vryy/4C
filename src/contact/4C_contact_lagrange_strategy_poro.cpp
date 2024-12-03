@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::LagrangeStrategyPoro::LagrangeStrategyPoro(
     const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
-    std::shared_ptr<Epetra_Comm> comm, double alphaf, int maxdof, bool poroslave, bool poromaster)
+    std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, MPI_Comm comm,
+    double alphaf, int maxdof, bool poroslave, bool poromaster)
     : MonoCoupledLagrangeStrategy(
           data_ptr, dof_row_map, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
       no_penetration_(params.get<bool>("CONTACTNOPEN")),

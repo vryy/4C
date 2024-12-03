@@ -15,8 +15,8 @@ FOUR_C_NAMESPACE_OPEN
 PostWriterBase::PostWriterBase(PostField* field, const std::string& filename)
     : field_(field),
       filename_(filename),
-      myrank_(Core::Communication::my_mpi_rank(*field->problem()->get_comm())),
-      numproc_(Core::Communication::num_mpi_ranks(*field->problem()->get_comm()))
+      myrank_(Core::Communication::my_mpi_rank(field->problem()->get_comm())),
+      numproc_(Core::Communication::num_mpi_ranks(field->problem()->get_comm()))
 {
 }
 

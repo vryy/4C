@@ -1393,8 +1393,8 @@ void XFEM::XFluidContactComm::fill_complete_sele_map()
     }
   }
   std::vector<int> my_sele_ids(my_sele_ids_.begin(), my_sele_ids_.end());
-  contact_ele_rowmap_fluidownerbased_ = std::make_shared<Epetra_Map>(
-      -1, my_sele_ids.size(), my_sele_ids.data(), 0, fluiddis_->get_comm());
+  contact_ele_rowmap_fluidownerbased_ = std::make_shared<Epetra_Map>(-1, my_sele_ids.size(),
+      my_sele_ids.data(), 0, Core::Communication::as_epetra_comm(fluiddis_->get_comm()));
 }
 
 void XFEM::XFluidContactComm::prepare_time_step()

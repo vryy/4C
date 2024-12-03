@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::SlidingMonolithicStructureSplit::SlidingMonolithicStructureSplit(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& timeparams)
     : BlockMonolithic(comm, timeparams),
       comm_(comm),
       lambda_(nullptr),

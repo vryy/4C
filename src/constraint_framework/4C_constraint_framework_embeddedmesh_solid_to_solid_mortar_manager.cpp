@@ -138,13 +138,14 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::setup(
   }
 
   // Rowmap for the additional GIDs used by the mortar contact discretization.
-  lambda_dof_rowmap_ = std::make_shared<Epetra_Map>(
-      -1, my_lambda_gid.size(), my_lambda_gid.data(), 0, discret_->get_comm());
+  lambda_dof_rowmap_ = std::make_shared<Epetra_Map>(-1, my_lambda_gid.size(), my_lambda_gid.data(),
+      0, Core::Communication::as_epetra_comm(discret_->get_comm()));
 
   // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id
   // of a node. To do so, we 'abuse' the Core::LinAlg::MultiVector<double> as map between the
   // global node ids and the global Lagrange multiplier DOF ids.
-  Epetra_Map node_gid_rowmap(-1, n_nodes, &my_nodes_gid[0], 0, discret_->get_comm());
+  Epetra_Map node_gid_rowmap(
+      -1, n_nodes, &my_nodes_gid[0], 0, Core::Communication::as_epetra_comm(discret_->get_comm()));
 
   // Map from global node ids to global lagrange multiplier ids. Only create the
   // multivector if it has one or more columns.
@@ -209,11 +210,11 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_global_maps()
   }
 
   // Create the beam and solid maps.
-  boundary_layer_interface_dof_rowmap_ =
-      std::make_shared<Epetra_Map>(-1, boundary_layer_interface_dofs.size(),
-          &boundary_layer_interface_dofs[0], 0, discret_->get_comm());
-  background_dof_rowmap_ = std::make_shared<Epetra_Map>(
-      -1, background_dofs.size(), &background_dofs[0], 0, discret_->get_comm());
+  boundary_layer_interface_dof_rowmap_ = std::make_shared<Epetra_Map>(-1,
+      boundary_layer_interface_dofs.size(), &boundary_layer_interface_dofs[0], 0,
+      Core::Communication::as_epetra_comm(discret_->get_comm()));
+  background_dof_rowmap_ = std::make_shared<Epetra_Map>(-1, background_dofs.size(),
+      &background_dofs[0], 0, Core::Communication::as_epetra_comm(discret_->get_comm()));
 
   // Reset the local maps.
   node_gid_to_lambda_gid_map_.clear();
@@ -251,7 +252,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_local_maps(
           "a interface coupling pair to be on on the same "
           "processor as the pair! The background element id"
           " is %i trying to be processed in proc %i",
-          pair->element_2().id(), discret_->get_comm().MyPID());
+          pair->element_2().id(), Core::Communication::my_mpi_rank(discret_->get_comm()));
 
     // Get the global id of the nodes that the pairs on this rank need.
     if (n_lambda_node_ > 0)
@@ -266,8 +267,8 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_local_maps(
   node_gid_needed.resize(std::distance(node_gid_needed.begin(), it));
 
   // Create the maps for the extraction of the values.
-  Epetra_Map node_gid_needed_rowmap(
-      -1, node_gid_needed.size(), &node_gid_needed[0], 0, discret_->get_comm());
+  Epetra_Map node_gid_needed_rowmap(-1, node_gid_needed.size(), &node_gid_needed[0], 0,
+      Core::Communication::as_epetra_comm(discret_->get_comm()));
 
   // Create the Multivectors that will be filled with all values needed on this rank.
   std::shared_ptr<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_copy = nullptr;
@@ -297,8 +298,8 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_local_maps(
   }
 
   // Create the global lambda col map.
-  lambda_dof_colmap_ = std::make_shared<Epetra_Map>(
-      -1, lambda_gid_for_col_map.size(), &lambda_gid_for_col_map[0], 0, discret_->get_comm());
+  lambda_dof_colmap_ = std::make_shared<Epetra_Map>(-1, lambda_gid_for_col_map.size(),
+      &lambda_gid_for_col_map[0], 0, Core::Communication::as_epetra_comm(discret_->get_comm()));
 
   // Set flags for local maps.
   is_local_maps_build_ = true;

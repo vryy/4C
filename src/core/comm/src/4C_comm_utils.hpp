@@ -11,6 +11,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_linalg_multi_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -86,36 +87,19 @@ namespace Core::Communication
   bool are_distributed_sparse_matrices_identical(const Communicators& communicators,
       Epetra_CrsMatrix& matrix, const char* name, double tol = 1.0e-14);
 
-  //! transform Epetra_Comm to Teuchos::Comm, std::shared_ptr version
+  //! transform MPI_Comm to Teuchos::Comm, std::shared_ptr version
   template <class Datatype>
-  std::shared_ptr<const Teuchos::Comm<Datatype>> to_teuchos_comm(const Epetra_Comm& comm)
+  std::shared_ptr<const Teuchos::Comm<Datatype>> to_teuchos_comm(MPI_Comm comm)
   {
-    try
-    {
-      const Epetra_MpiComm& mpiComm = dynamic_cast<const Epetra_MpiComm&>(comm);
-      std::shared_ptr<Teuchos::MpiComm<Datatype>> mpicomm =
-          std::make_shared<Teuchos::MpiComm<Datatype>>(Teuchos::opaqueWrapper(mpiComm.Comm()));
-      return std::dynamic_pointer_cast<const Teuchos::Comm<Datatype>>(mpicomm);
-    }
-    catch (std::bad_cast& b)
-    {
-      FOUR_C_THROW(
-          "Cannot convert an Epetra_Comm to a Teuchos::Comm: The exact type of the Epetra_Comm "
-          "object is unknown");
-    }
-    FOUR_C_THROW(
-        "Something went wrong with converting an Epetra_Comm to a Teuchos communicator! You should "
-        "not be here!");
-    return nullptr;
+    return std::make_shared<Teuchos::MpiComm<Datatype>>(comm);
   }
 
 
   class Communicators
   {
    public:
-    Communicators(int groupId, int ngroup, std::map<int, int> lpidgpid,
-        std::shared_ptr<Epetra_Comm> lcomm, std::shared_ptr<Epetra_Comm> gcomm,
-        NestedParallelismType npType);
+    Communicators(int groupId, int ngroup, std::map<int, int> lpidgpid, MPI_Comm lcomm,
+        MPI_Comm gcomm, NestedParallelismType npType);
 
     /// return group id
     int group_id() const { return group_id_; }
@@ -124,7 +108,7 @@ namespace Core::Communication
     int num_groups() const { return ngroup_; }
 
     /// return group size
-    int group_size() const { return lcomm_->NumProc(); }
+    int group_size() const { return Core::Communication::num_mpi_ranks(lcomm_); }
 
     /// return global processor id of local processor id
     int gpid(int LPID) { return lpidgpid_[LPID]; }
@@ -133,16 +117,16 @@ namespace Core::Communication
     int lpid(int GPID);
 
     /// return local communicator
-    std::shared_ptr<Epetra_Comm> local_comm() const { return lcomm_; }
+    MPI_Comm local_comm() const { return lcomm_; }
 
     /// return local communicator
-    std::shared_ptr<Epetra_Comm> global_comm() const { return gcomm_; }
+    MPI_Comm global_comm() const { return gcomm_; }
 
     /// set a sub group communicator
-    void set_sub_comm(std::shared_ptr<Epetra_Comm> subcomm);
+    void set_sub_comm(MPI_Comm subcomm);
 
     /// return sub group communicator
-    std::shared_ptr<Epetra_Comm> sub_comm() const { return subcomm_; }
+    MPI_Comm sub_comm() const { return subcomm_; }
 
     /// return nested parallelism type
     NestedParallelismType np_type() const { return np_type_; }
@@ -158,13 +142,13 @@ namespace Core::Communication
     std::map<int, int> lpidgpid_;
 
     /// local communicator
-    std::shared_ptr<Epetra_Comm> lcomm_;
+    MPI_Comm lcomm_;
 
     /// global communicator
-    std::shared_ptr<Epetra_Comm> gcomm_;
+    MPI_Comm gcomm_;
 
     /// sub communicator
-    std::shared_ptr<Epetra_Comm> subcomm_;
+    MPI_Comm subcomm_;
 
     /// nested parallelism type
     NestedParallelismType np_type_;

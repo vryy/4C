@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<std::shared_ptr<Mortar::Interface>> interface, const int spatialDim,
-    const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    const MPI_Comm& comm, const double alphaf, const int maxdof)
     : Mortar::StrategyBase(std::make_shared<Mortar::StratDataContainer>(), dof_row_map, NodeRowMap,
           params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
@@ -439,8 +439,8 @@ void CONTACT::MtAbstractStrategy::restrict_meshtying_zone()
     }
 
     // re-setup old slave dof row map (with restriction now)
-    non_redist_gsdofrowmap_ =
-        std::make_shared<Epetra_Map>(-1, (int)data.size(), data.data(), 0, get_comm());
+    non_redist_gsdofrowmap_ = std::make_shared<Epetra_Map>(
+        -1, (int)data.size(), data.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
   }
 
   // Step 5: re-setup internal dof row map (non-interface dofs)

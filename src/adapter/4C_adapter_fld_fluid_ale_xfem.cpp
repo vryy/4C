@@ -35,7 +35,7 @@ std::shared_ptr<Core::FE::Discretization> Adapter::FluidAleXFEM::boundary_discre
   // returns the boundary discretization
   // REMARK:
   // the returned discretization has to match the structure discretization at the interface coupling
-  // (see FSI::Partitioned::Partitioned(const Epetra_Comm& comm) ) therefore return the boundary dis
+  // (see FSI::Partitioned::Partitioned(MPI_Comm comm) ) therefore return the boundary dis
   // this is similar to the matching of fluid dis and ale dis in case of Adapter::FluidALE
 
   std::shared_ptr<XFluidFSI> xfluid = std::dynamic_pointer_cast<XFluidFSI>(fluid_field());

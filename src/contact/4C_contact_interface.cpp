@@ -75,9 +75,8 @@ CONTACT::InterfaceDataContainer::InterfaceDataContainer()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::shared_ptr<CONTACT::Interface> CONTACT::Interface::create(const int id,
-    const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
-    const bool selfcontact)
+std::shared_ptr<CONTACT::Interface> CONTACT::Interface::create(const int id, MPI_Comm comm,
+    const int spatialDim, const Teuchos::ParameterList& icontact, const bool selfcontact)
 {
   std::shared_ptr<Mortar::InterfaceDataContainer> interfaceData_ptr =
       std::make_shared<CONTACT::InterfaceDataContainer>();
@@ -128,8 +127,8 @@ CONTACT::Interface::Interface(const std::shared_ptr<CONTACT::InterfaceDataContai
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 CONTACT::Interface::Interface(const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData,
-    const int id, const Epetra_Comm& comm, const int spatialDim,
-    const Teuchos::ParameterList& icontact, bool selfcontact)
+    const int id, MPI_Comm comm, const int spatialDim, const Teuchos::ParameterList& icontact,
+    bool selfcontact)
     : Mortar::Interface(interfaceData, id, comm, spatialDim, icontact,
           Global::Problem::instance()->output_control_file(),
           Global::Problem::instance()->spatial_approximation_type()),
@@ -277,14 +276,18 @@ void CONTACT::Interface::update_master_slave_sets()
       }
     }
 
-    sdofVertexRowmap_ =
-        std::make_shared<Epetra_Map>(-1, (int)sVr.size(), sVr.data(), 0, get_comm());
-    sdofVertexColmap_ =
-        std::make_shared<Epetra_Map>(-1, (int)sVc.size(), sVc.data(), 0, get_comm());
-    sdofEdgeRowmap_ = std::make_shared<Epetra_Map>(-1, (int)sEr.size(), sEr.data(), 0, get_comm());
-    sdofEdgeColmap_ = std::make_shared<Epetra_Map>(-1, (int)sEc.size(), sEc.data(), 0, get_comm());
-    sdofSurfRowmap_ = std::make_shared<Epetra_Map>(-1, (int)sSr.size(), sSr.data(), 0, get_comm());
-    sdofSurfColmap_ = std::make_shared<Epetra_Map>(-1, (int)sSc.size(), sSc.data(), 0, get_comm());
+    sdofVertexRowmap_ = std::make_shared<Epetra_Map>(
+        -1, (int)sVr.size(), sVr.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+    sdofVertexColmap_ = std::make_shared<Epetra_Map>(
+        -1, (int)sVc.size(), sVc.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+    sdofEdgeRowmap_ = std::make_shared<Epetra_Map>(
+        -1, (int)sEr.size(), sEr.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+    sdofEdgeColmap_ = std::make_shared<Epetra_Map>(
+        -1, (int)sEc.size(), sEc.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+    sdofSurfRowmap_ = std::make_shared<Epetra_Map>(
+        -1, (int)sSr.size(), sSr.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+    sdofSurfColmap_ = std::make_shared<Epetra_Map>(
+        -1, (int)sSc.size(), sSc.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
   }
 }
 
@@ -522,7 +525,8 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), get_comm());
 
       // build completely overlapping map of nodes (on ALL processors)
-      Epetra_Map newnodecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+      Epetra_Map newnodecolmap(
+          -1, (int)rdata.size(), rdata.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
       sdata.clear();
       rdata.clear();
 
@@ -536,7 +540,8 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), get_comm());
 
       // build complete overlapping map of elements (on ALL processors)
-      Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+      Epetra_Map newelecolmap(
+          -1, (int)rdata.size(), rdata.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
       sdata.clear();
       rdata.clear();
       allproc.clear();
@@ -588,7 +593,8 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       }
 
       // build new node column map (on ALL processors)
-      Epetra_Map newnodecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+      Epetra_Map newnodecolmap(
+          -1, (int)rdata.size(), rdata.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
       sdata.clear();
       rdata.clear();
 
@@ -620,7 +626,8 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       }
 
       // build new element column map (on ALL processors)
-      Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+      Epetra_Map newelecolmap(
+          -1, (int)rdata.size(), rdata.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
       sdata.clear();
       rdata.clear();
       allproc.clear();
@@ -679,7 +686,8 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       }
 
       std::vector<int> colnodes(nodes.begin(), nodes.end());
-      Epetra_Map nodecolmap(-1, (int)colnodes.size(), colnodes.data(), 0, get_comm());
+      Epetra_Map nodecolmap(-1, (int)colnodes.size(), colnodes.data(), 0,
+          Core::Communication::as_epetra_comm(get_comm()));
 
       discret().export_column_nodes(nodecolmap);
       break;
@@ -712,9 +720,9 @@ void CONTACT::Interface::redistribute()
   }
 
   // some local variables
-  std::shared_ptr<Epetra_Comm> comm(Interface::get_comm().Clone());
-  const int myrank = Core::Communication::my_mpi_rank(*comm);
-  const int numproc = Core::Communication::num_mpi_ranks(*comm);
+  MPI_Comm comm(Interface::get_comm());
+  const int myrank = Core::Communication::my_mpi_rank(comm);
+  const int numproc = Core::Communication::num_mpi_ranks(comm);
   Teuchos::Time time("", true);
   std::set<int>::const_iterator iter;
 
@@ -755,9 +763,10 @@ void CONTACT::Interface::redistribute()
   }
 
   // we need an arbitrary preliminary element row map
-  Epetra_Map slaveCloseRowEles(-1, (int)closeele.size(), closeele.data(), 0, Interface::get_comm());
-  Epetra_Map slaveNonCloseRowEles(
-      -1, (int)noncloseele.size(), noncloseele.data(), 0, Interface::get_comm());
+  Epetra_Map slaveCloseRowEles(-1, (int)closeele.size(), closeele.data(), 0,
+      Core::Communication::as_epetra_comm(Interface::get_comm()));
+  Epetra_Map slaveNonCloseRowEles(-1, (int)noncloseele.size(), noncloseele.data(), 0,
+      Core::Communication::as_epetra_comm(Interface::get_comm()));
   Epetra_Map masterRowEles(*master_row_elements());
 
   // check for consistency
@@ -937,7 +946,7 @@ void CONTACT::Interface::redistribute()
   std::shared_ptr<Epetra_Map> mrownodes = nullptr;
   std::shared_ptr<Epetra_Map> mcolnodes = nullptr;
 
-  redistribute_master_side(mrownodes, mcolnodes, masterRowEles, *comm, mproc, imbalance_tol);
+  redistribute_master_side(mrownodes, mcolnodes, masterRowEles, comm, mproc, imbalance_tol);
 
   //**********************************************************************
   // (7) Merge global interface node row and column map
@@ -1022,8 +1031,9 @@ void CONTACT::Interface::redistribute()
   // get column map from the graph -> build slave node column map
   // (do stupid conversion from Epetra_BlockMap to Epetra_Map)
   const Epetra_BlockMap& bcol = outgraph->ColMap();
-  std::shared_ptr<Epetra_Map> scolnodes = std::make_shared<Epetra_Map>(bcol.NumGlobalElements(),
-      bcol.NumMyElements(), bcol.MyGlobalElements(), 0, Interface::get_comm());
+  std::shared_ptr<Epetra_Map> scolnodes =
+      std::make_shared<Epetra_Map>(bcol.NumGlobalElements(), bcol.NumMyElements(),
+          bcol.MyGlobalElements(), 0, Core::Communication::as_epetra_comm(Interface::get_comm()));
 
   // trash new graph
   outgraph = nullptr;
@@ -7396,9 +7406,9 @@ bool CONTACT::Interface::split_active_dofs()
   // get out of here if active set is empty
   if (activenodes_ == nullptr or activenodes_->NumGlobalElements() == 0)
   {
-    activen_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
-    activet_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
-    slipt_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
+    activen_ = std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
+    activet_ = std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
+    slipt_ = std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
     return true;
   }
 
@@ -7447,8 +7457,10 @@ bool CONTACT::Interface::split_active_dofs()
     FOUR_C_THROW("split_active_dofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  activen_ = std::make_shared<Epetra_Map>(gcountN, countN, myNgids.data(), 0, get_comm());
-  activet_ = std::make_shared<Epetra_Map>(gcountT, countT, myTgids.data(), 0, get_comm());
+  activen_ = std::make_shared<Epetra_Map>(
+      gcountN, countN, myNgids.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  activet_ = std::make_shared<Epetra_Map>(
+      gcountT, countT, myTgids.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
   // *******************************************************************
   // FRICTION - EXTRACTING TANGENTIAL DOFS FROM SLIP DOFS
@@ -7463,13 +7475,13 @@ bool CONTACT::Interface::split_active_dofs()
   // get out of here if slip set is empty
   if (slipnodes_ == nullptr)
   {
-    slipt_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
+    slipt_ = std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
     return true;
   }
 
   if (slipnodes_->NumGlobalElements() == 0)
   {
-    slipt_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
+    slipt_ = std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
     return true;
   }
 
@@ -7506,7 +7518,8 @@ bool CONTACT::Interface::split_active_dofs()
   Core::Communication::sum_all(&countslipT, &gcountslipT, 1, get_comm());
 
   // create Tslipmap objects
-  slipt_ = std::make_shared<Epetra_Map>(gcountslipT, countslipT, myslipTgids.data(), 0, get_comm());
+  slipt_ = std::make_shared<Epetra_Map>(gcountslipT, countslipT, myslipTgids.data(), 0,
+      Core::Communication::as_epetra_comm(get_comm()));
 
   return true;
 }
@@ -7590,8 +7603,8 @@ void CONTACT::Interface::update_self_contact_lag_mult_set(
     lmdofs.push_back(ref_lmgids[ref_lid]);
   }
 
-  lmdofmap_ = std::make_shared<Epetra_Map>(
-      -1, static_cast<int>(lmdofs.size()), lmdofs.data(), 0, get_comm());
+  lmdofmap_ = std::make_shared<Epetra_Map>(-1, static_cast<int>(lmdofs.size()), lmdofs.data(), 0,
+      Core::Communication::as_epetra_comm(get_comm()));
 }
 
 /*----------------------------------------------------------------------------*

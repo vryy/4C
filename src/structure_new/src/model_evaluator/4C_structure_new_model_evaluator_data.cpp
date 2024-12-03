@@ -20,7 +20,6 @@
 #include "4C_structure_new_nln_solver_utils.hpp"
 #include "4C_structure_new_timint_implicit.hpp"
 
-#include <Epetra_Comm.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -30,7 +29,7 @@ namespace
       const std::vector<int>& mysize, const std::vector<char>& mydata,
       std::vector<int>& receivedsize, std::vector<char>& receiveddata)
   {
-    const Epetra_Comm& comm = exporter.get_comm();
+    MPI_Comm comm = exporter.get_comm();
 
     const int numprocs = Core::Communication::num_mpi_ranks(comm);
     const int myrank = Core::Communication::my_mpi_rank(comm);
@@ -94,7 +93,7 @@ namespace
 
   template <typename T>
   static void round_robin_loop(
-      const Epetra_Comm& comm, Core::Communication::PackBuffer& pack_data, T& collected_data)
+      MPI_Comm comm, Core::Communication::PackBuffer& pack_data, T& collected_data)
   {
     // collect the information over all procs
     std::vector<char> mydata;
@@ -143,7 +142,7 @@ namespace
   }
 
   template <typename T>
-  static void collect_data(const Epetra_Comm& comm, const T& my_data, T& collected_data)
+  static void collect_data(MPI_Comm comm, const T& my_data, T& collected_data)
   {
     Core::Communication::PackBuffer pack_data;
 
@@ -335,7 +334,7 @@ void Solid::ModelEvaluator::Data::collect_norm_types_over_all_procs(
 
   const quantity_norm_type_map mynormtypes(normtypes);
   quantity_norm_type_map& gnormtypes = const_cast<quantity_norm_type_map&>(normtypes);
-  collect_data(*comm_ptr_, mynormtypes, gnormtypes);
+  collect_data(comm_ptr_, mynormtypes, gnormtypes);
 }
 
 /*----------------------------------------------------------------------------*
@@ -384,7 +383,7 @@ void Solid::ModelEvaluator::Data::sum_into_my_update_norm(
     const double* my_update_values, const double* my_new_sol_values, const double& step_length,
     const int& owner)
 {
-  if (owner != Core::Communication::my_mpi_rank(*comm_ptr_)) return;
+  if (owner != Core::Communication::my_mpi_rank(comm_ptr_)) return;
   // --- standard update norms
   enum ::NOX::Abstract::Vector::NormType normtype = ::NOX::Abstract::Vector::TwoNorm;
   if (get_update_norm_type(qtype, normtype))
@@ -406,7 +405,7 @@ void Solid::ModelEvaluator::Data::sum_into_my_previous_sol_norm(
     const enum NOX::Nln::StatusTest::QuantityType& qtype, const int& numentries,
     const double* my_old_sol_values, const int& owner)
 {
-  if (owner != Core::Communication::my_mpi_rank(*comm_ptr_)) return;
+  if (owner != Core::Communication::my_mpi_rank(comm_ptr_)) return;
 
   enum ::NOX::Abstract::Vector::NormType normtype = ::NOX::Abstract::Vector::TwoNorm;
   if (not get_update_norm_type(qtype, normtype)) return;

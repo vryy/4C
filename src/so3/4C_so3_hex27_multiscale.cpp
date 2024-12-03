@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 void Discret::Elements::SoHex27::soh27_homog(Teuchos::ParameterList& params)
 {
   if (Core::Communication::my_mpi_rank(
-          *Global::Problem::instance(0)->get_communicators()->sub_comm()) == owner())
+          Global::Problem::instance(0)->get_communicators()->sub_comm()) == owner())
   {
     double homogdens = 0.;
     const static std::vector<double> weights = soh27_weights();

@@ -13,7 +13,7 @@
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
 
 #include <memory>
 #include <unordered_map>
@@ -57,7 +57,7 @@ namespace ParticleRigidBody
      *
      * \param[in] comm   communicator
      */
-    explicit RigidBodyAffiliationPairs(const Epetra_Comm& comm);
+    explicit RigidBodyAffiliationPairs(MPI_Comm comm);
 
     /*!
      * \brief init affiliation pair handler
@@ -158,7 +158,7 @@ namespace ParticleRigidBody
         std::vector<char>& buffer, int globalid, int rigidbody) const;
 
     //! communicator
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! processor id
     const int myrank_;

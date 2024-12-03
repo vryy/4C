@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  | Constructor (public)                                  rasthofer 06/11|
  *----------------------------------------------------------------------*/
 FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& fdyn)
+    MPI_Comm comm, const Teuchos::ParameterList& fdyn)
     : step_(0)
 {
   if (Core::Communication::my_mpi_rank(comm) == 0)

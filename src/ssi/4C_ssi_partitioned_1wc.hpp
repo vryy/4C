@@ -20,7 +20,7 @@ namespace SSI
   {
    public:
     //! constructor
-    SSIPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    SSIPart1WC(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
 
     /*!
@@ -36,7 +36,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
@@ -61,8 +61,7 @@ namespace SSI
   {
    public:
     //! constructor
-    SSIPart1WCSolidToScatra(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    SSIPart1WCSolidToScatra(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
 
     /*!
@@ -78,7 +77,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
@@ -93,8 +92,7 @@ namespace SSI
   {
    public:
     //! constructor
-    SSIPart1WCScatraToSolid(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    SSIPart1WCScatraToSolid(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
 
     /*!
@@ -110,7 +108,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 

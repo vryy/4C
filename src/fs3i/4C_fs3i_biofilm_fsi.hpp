@@ -38,7 +38,7 @@ namespace FS3I
   class BiofilmFSI : public PartFS3I1Wc
   {
    public:
-    BiofilmFSI(const Epetra_Comm& comm);
+    BiofilmFSI(MPI_Comm comm);
 
     void init() override;
 
@@ -86,7 +86,7 @@ namespace FS3I
 
     void update_and_output();
 
-    const Epetra_Comm& comm() { return comm_; }
+    MPI_Comm comm() { return comm_; }
 
     void vec_to_scatravec(Core::FE::Discretization& scatradis, Core::LinAlg::Vector<double>& vec,
         Core::LinAlg::MultiVector<double>& scatravec);
@@ -97,7 +97,7 @@ namespace FS3I
 
    private:
     /// communication (mainly for screen output)
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     /// coupling of fluid and ale (interface only)
     std::shared_ptr<Coupling::Adapter::Coupling> icoupfa_;

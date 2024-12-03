@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 POROMULTIPHASE::PoroMultiPhaseMonolithic::PoroMultiPhaseMonolithic(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseBase(comm, globaltimeparams)
 {
 }

@@ -105,7 +105,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
   if (masterdis.get() != slavedis.get())
   {
     int nummastermtreles = masterelements.size();
-    comm_->SumAll(&nummastermtreles, &eleoffset, 1);
+    Core::Communication::sum_all(&nummastermtreles, &eleoffset, 1, comm_);
   }
 
   // feeding master elements to the interface
@@ -270,14 +270,14 @@ void Adapter::CouplingPoroMortar::create_strategy(
   bool structslave = false;
 
   // wait for all processors to determine if they have poro or structural master or slave elements
-  comm_->Barrier();
-  std::vector<int> slaveTypeList(Core::Communication::num_mpi_ranks(*comm_));
-  std::vector<int> masterTypeList(Core::Communication::num_mpi_ranks(*comm_));
-  comm_->GatherAll(&slavetype_, slaveTypeList.data(), 1);
-  comm_->GatherAll(&mastertype_, masterTypeList.data(), 1);
-  comm_->Barrier();
+  Core::Communication::barrier(comm_);
+  std::vector<int> slaveTypeList(Core::Communication::num_mpi_ranks(comm_));
+  std::vector<int> masterTypeList(Core::Communication::num_mpi_ranks(comm_));
+  Core::Communication::gather_all(&slavetype_, slaveTypeList.data(), 1, comm_);
+  Core::Communication::gather_all(&mastertype_, masterTypeList.data(), 1, comm_);
+  Core::Communication::barrier(comm_);
 
-  for (int i = 0; i < Core::Communication::num_mpi_ranks(*comm_); ++i)
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(comm_); ++i)
   {
     switch (slaveTypeList[i])
     {
@@ -302,7 +302,7 @@ void Adapter::CouplingPoroMortar::create_strategy(
     }
   }
 
-  for (int i = 0; i < Core::Communication::num_mpi_ranks(*comm_); ++i)
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(comm_); ++i)
   {
     switch (masterTypeList[i])
     {

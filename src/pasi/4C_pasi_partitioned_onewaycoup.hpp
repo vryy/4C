@@ -41,7 +41,7 @@ namespace PaSI
      * \param[in] comm   communicator
      * \param[in] params particle structure interaction parameter list
      */
-    explicit PasiPartOneWayCoup(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit PasiPartOneWayCoup(MPI_Comm comm, const Teuchos::ParameterList& params);
 
     /*!
      * \brief setup pasi algorithm

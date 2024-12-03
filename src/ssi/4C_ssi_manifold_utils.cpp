@@ -938,7 +938,7 @@ SSI::ManifoldMeshTyingStrategyBlock::ManifoldMeshTyingStrategyBlock(
  *----------------------------------------------------------------------*/
 std::tuple<std::shared_ptr<const Epetra_Map>, std::shared_ptr<const Epetra_Map>>
 SSI::ManifoldMeshTyingStrategyBlock::intersect_coupling_maps_block_map(const Epetra_Map& block_map,
-    const Epetra_Map& intersecting_map, const Epetra_Map& permuted_map, const Epetra_Comm& comm)
+    const Epetra_Map& intersecting_map, const Epetra_Map& permuted_map, MPI_Comm comm)
 {
   std::vector<int> intersecting_map_vec, permuted_intersecting_map_vec;
   for (int slave_lid = 0; slave_lid < intersecting_map.NumMyElements(); ++slave_lid)
@@ -951,12 +951,13 @@ SSI::ManifoldMeshTyingStrategyBlock::intersect_coupling_maps_block_map(const Epe
     }
   }
 
-  auto intersected_map = std::make_shared<Epetra_Map>(
-      -1, static_cast<int>(intersecting_map_vec.size()), intersecting_map_vec.data(), 0, comm);
+  auto intersected_map =
+      std::make_shared<Epetra_Map>(-1, static_cast<int>(intersecting_map_vec.size()),
+          intersecting_map_vec.data(), 0, Core::Communication::as_epetra_comm(comm));
 
   auto permuted_intersected_map =
       std::make_shared<Epetra_Map>(-1, static_cast<int>(permuted_intersecting_map_vec.size()),
-          permuted_intersecting_map_vec.data(), 0, comm);
+          permuted_intersecting_map_vec.data(), 0, Core::Communication::as_epetra_comm(comm));
 
   return {intersected_map, permuted_intersected_map};
 }

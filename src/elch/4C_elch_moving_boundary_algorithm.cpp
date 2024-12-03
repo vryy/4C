@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ElCh::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(const Epetra_Comm& comm,
+ElCh::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(MPI_Comm comm,
     const Teuchos::ParameterList& elchcontrol, const Teuchos::ParameterList& scatradyn,
     const Teuchos::ParameterList& solverparams)
     : ScaTraFluidAleCouplingAlgorithm(comm, scatradyn, "FSICoupling", solverparams),

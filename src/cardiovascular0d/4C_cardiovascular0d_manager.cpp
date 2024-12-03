@@ -992,7 +992,8 @@ int Utils::Cardiovascular0DManager::solve(Core::LinAlg::SparseMatrix& mat_struct
     std::shared_ptr<Core::LinAlg::MultiVector<double>> rhsstruct_R = mor_->reduce_rhs(rhsstruct);
 
     // define maps of reduced standard dofs and additional pressures
-    Epetra_Map structmap_R(mor_->get_red_dim(), 0, actdisc_->get_comm());
+    Epetra_Map structmap_R(
+        mor_->get_red_dim(), 0, Core::Communication::as_epetra_comm(actdisc_->get_comm()));
     std::shared_ptr<Epetra_Map> standrowmap_R = std::make_shared<Epetra_Map>(structmap_R);
     std::shared_ptr<Epetra_Map> cardvasc0drowmap_R =
         std::make_shared<Epetra_Map>(mat_cardvasc0dstiff->row_map());

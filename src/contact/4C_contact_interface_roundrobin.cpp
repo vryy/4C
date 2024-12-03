@@ -49,10 +49,12 @@ void CONTACT::Interface::round_robin_extend_ghosting(bool firstevaluation)
     slave_ele->delete_search_elements();
   }
 
-  std::shared_ptr<Epetra_Map> currently_ghosted_elements = std::make_shared<Epetra_Map>(
-      -1, (int)element_GIDs_to_be_ghosted.size(), element_GIDs_to_be_ghosted.data(), 0, get_comm());
-  std::shared_ptr<Epetra_Map> currently_ghosted_nodes = std::make_shared<Epetra_Map>(
-      -1, (int)node_GIDs_to_be_ghosted.size(), node_GIDs_to_be_ghosted.data(), 0, get_comm());
+  std::shared_ptr<Epetra_Map> currently_ghosted_elements =
+      std::make_shared<Epetra_Map>(-1, (int)element_GIDs_to_be_ghosted.size(),
+          element_GIDs_to_be_ghosted.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  std::shared_ptr<Epetra_Map> currently_ghosted_nodes =
+      std::make_shared<Epetra_Map>(-1, (int)node_GIDs_to_be_ghosted.size(),
+          node_GIDs_to_be_ghosted.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
   if (firstevaluation)
   {
@@ -85,9 +87,9 @@ void CONTACT::Interface::round_robin_change_ownership()
 
   // change master-side proc ownership
   // some local variables
-  std::shared_ptr<Epetra_Comm> comm_v(get_comm().Clone());
-  const int myrank = Core::Communication::my_mpi_rank(*comm_v);
-  const int numproc = Core::Communication::num_mpi_ranks(*comm_v);
+  MPI_Comm comm_v(get_comm());
+  const int myrank = Core::Communication::my_mpi_rank(comm_v);
+  const int numproc = Core::Communication::num_mpi_ranks(comm_v);
   const int torank = (myrank + 1) % numproc;              // to
   const int fromrank = (myrank + numproc - 1) % numproc;  // from
 
@@ -197,7 +199,7 @@ void CONTACT::Interface::round_robin_change_ownership()
 
   // wait for all communication to finish
   exporter.wait(request);
-  comm_v->Barrier();
+  Core::Communication::barrier(comm_v);
 
   // *****************************************
   // NODES
@@ -330,18 +332,18 @@ void CONTACT::Interface::round_robin_change_ownership()
 
   // wait for all communication to finish
   exportern.wait(requestn);
-  comm_v->Barrier();
+  Core::Communication::barrier(comm_v);
 
   // create maps from sending
-  std::shared_ptr<Epetra_Map> noderowmap =
-      std::make_shared<Epetra_Map>(-1, (int)nrow.size(), nrow.data(), 0, get_comm());
-  std::shared_ptr<Epetra_Map> nodecolmap =
-      std::make_shared<Epetra_Map>(-1, (int)ncol.size(), ncol.data(), 0, get_comm());
+  std::shared_ptr<Epetra_Map> noderowmap = std::make_shared<Epetra_Map>(
+      -1, (int)nrow.size(), nrow.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  std::shared_ptr<Epetra_Map> nodecolmap = std::make_shared<Epetra_Map>(
+      -1, (int)ncol.size(), ncol.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
-  std::shared_ptr<Epetra_Map> elerowmap =
-      std::make_shared<Epetra_Map>(-1, (int)erow.size(), erow.data(), 0, get_comm());
-  std::shared_ptr<Epetra_Map> elecolmap =
-      std::make_shared<Epetra_Map>(-1, (int)ecol.size(), ecol.data(), 0, get_comm());
+  std::shared_ptr<Epetra_Map> elerowmap = std::make_shared<Epetra_Map>(
+      -1, (int)erow.size(), erow.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  std::shared_ptr<Epetra_Map> elecolmap = std::make_shared<Epetra_Map>(
+      -1, (int)ecol.size(), ecol.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
   // Merge s/m column maps for eles and nodes
   std::shared_ptr<Epetra_Map> colnodesfull = Core::LinAlg::merge_map(nodecolmap, SCN, true);

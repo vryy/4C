@@ -860,8 +860,8 @@ std::shared_ptr<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_t
   // reduce and sum over all procs
 
   for (int i = 0; i < num_dom_norms; ++i) (*glob_dom_norms_emb)(i) = 0.0;
-  mc_xff_->get_cond_dis()->get_comm().SumAll(
-      cpu_dom_norms_emb.values(), glob_dom_norms_emb->values(), num_dom_norms);
+  Core::Communication::sum_all(cpu_dom_norms_emb.values(), glob_dom_norms_emb->values(),
+      num_dom_norms, mc_xff_->get_cond_dis()->get_comm());
 
   // standard domain errors bg-dis
   double dom_bg_err_vel_L2 =

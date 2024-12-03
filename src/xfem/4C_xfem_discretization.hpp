@@ -34,8 +34,7 @@ namespace XFEM
     \param name (in): name of this discretization
     \param comm (in): An epetra comm object associated with this discretization
     */
-    DiscretizationXFEM(
-        const std::string name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim);
+    DiscretizationXFEM(const std::string name, MPI_Comm comm, unsigned int n_dim);
 
     /*!
     \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)

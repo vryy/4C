@@ -18,7 +18,6 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_pairedvector.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -166,9 +165,9 @@ namespace Mortar
 
     inline int id() const { return id_; }
 
-    inline std::shared_ptr<const Epetra_Comm>& comm_ptr() { return comm_; }
+    inline MPI_Comm& comm_ptr() { return comm_; }
 
-    inline const Epetra_Comm& get_comm() const { return *comm_; }
+    inline MPI_Comm get_comm() const { return comm_; }
 
     inline std::map<int, int>& proc_map() { return procmap_; }
 
@@ -423,7 +422,7 @@ namespace Mortar
     //! @{
 
     //! communicator
-    std::shared_ptr<const Epetra_Comm> comm_;
+    MPI_Comm comm_;
 
     //! mapping global -> local communicator PIDs
     std::map<int, int> procmap_;
@@ -606,8 +605,8 @@ namespace Mortar
      *  \param imortar (in) : global contact/mesh-tying parameter-list
      *
      *  \author hiermeier \date 03/17 */
-    static std::shared_ptr<Interface> create(const int id, const Epetra_Comm& comm,
-        const int spatialDim, const Teuchos::ParameterList& imortar,
+    static std::shared_ptr<Interface> create(const int id, MPI_Comm comm, const int spatialDim,
+        const Teuchos::ParameterList& imortar,
         std::shared_ptr<Core::IO::OutputControl> output_control,
         Core::FE::ShapeFunctionType spatial_approximation_type);
 
@@ -620,8 +619,8 @@ namespace Mortar
     \param spatialDim (in): Global problem dimension
     \param imortar (in): Global contact parameter list
     */
-    Interface(std::shared_ptr<InterfaceDataContainer> interfaceData_ptr, int id,
-        const Epetra_Comm& comm, int spatialDim, const Teuchos::ParameterList& imortar,
+    Interface(std::shared_ptr<InterfaceDataContainer> interfaceData_ptr, int id, MPI_Comm comm,
+        int spatialDim, const Teuchos::ParameterList& imortar,
         std::shared_ptr<Core::IO::OutputControl> output_control,
         Core::FE::ShapeFunctionType spatial_approximation_type);
 
@@ -660,7 +659,7 @@ namespace Mortar
     /*!
     \brief Get communicator
     */
-    const Epetra_Comm& get_comm() const { return *comm_; }
+    MPI_Comm get_comm() const { return comm_; }
 
     /*!
     \brief Get global -> local processor map
@@ -1429,8 +1428,8 @@ namespace Mortar
     \param[in] imbalance Max. relative imbalance of subdomain size
     */
     void redistribute_master_side(std::shared_ptr<Epetra_Map>& rownodes,
-        std::shared_ptr<Epetra_Map>& colnodes, Epetra_Map& roweles, Epetra_Comm& comm,
-        const int parts, const double imbalance) const;
+        std::shared_ptr<Epetra_Map>& colnodes, Epetra_Map& roweles, MPI_Comm comm, const int parts,
+        const double imbalance) const;
 
     /*!
     \brief Setup the binning strategy for geometrically motivated extended ghosting
@@ -1800,8 +1799,8 @@ namespace Mortar
      *                                                          hiermeier 03/17 */
     /// @{
 
-    int& id_;                                   ///< ref. to unique interface id
-    std::shared_ptr<const Epetra_Comm>& comm_;  ///< ref. to communicator
+    int& id_;                      ///< ref. to unique interface id
+    MPI_Comm comm_;                ///< ref. to communicator
     std::map<int, int>& procmap_;  ///< ref. to mapping global -> local communicator PIDs
     bool& redistributed_;          ///< ref. to redistribution for this time step?
 

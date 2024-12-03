@@ -603,11 +603,11 @@ namespace XFEM
       return *(interface_couplings_[dis_id]);
     }
 
-    inline const Epetra_Comm& get_comm() const
+    inline MPI_Comm get_comm() const
     {
-      if (!comm_) FOUR_C_THROW("The Epetra_Comm object has not been initialized!");
+      if (!comm_) FOUR_C_THROW("The MPI_Comm object has not been initialized!");
 
-      return *comm_;
+      return comm_;
     }
 
     inline unsigned num_sl_dis() const { return sl_dis_vec().size(); }
@@ -669,7 +669,7 @@ namespace XFEM
     int max_num_reserved_dofs_per_node_;
 
     /// Epetra communicator
-    std::shared_ptr<const Epetra_Comm> comm_;
+    MPI_Comm comm_;
 
     /// vector containing pointers to all the input discretizations
     std::vector<std::shared_ptr<const Core::FE::Discretization>> slave_discret_vec_;

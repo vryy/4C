@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void fs3i_dyn()
 {
-  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("structure")->get_comm();
+  MPI_Comm comm = Global::Problem::instance()->get_dis("structure")->get_comm();
 
   std::shared_ptr<FS3I::FS3IBase> fs3i;
 

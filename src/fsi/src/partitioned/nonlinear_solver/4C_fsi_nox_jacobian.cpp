@@ -9,7 +9,6 @@
 
 #include "4C_linalg_vector.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_RowMatrix.h>
 #include <NOX_Abstract_Group.H>
@@ -50,7 +49,7 @@ NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
     int size = currentX.getEpetraVector().Map().NumGlobalPoints();
     int mySize = currentX.getEpetraVector().Map().NumMyPoints();
     int indexBase = currentX.getEpetraVector().Map().IndexBase();
-    const Epetra_Comm& comm = currentX.getEpetraVector().Map().Comm();
+    const auto& comm = currentX.getEpetraVector().Map().Comm();
     epetraMap = std::make_shared<Epetra_Map>(size, mySize, indexBase, comm);
   }
 }

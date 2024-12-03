@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                    schott 03/12|
  *----------------------------------------------------------------------*/
 Core::FE::DiscretizationFaces::DiscretizationFaces(
-    const std::string name, std::shared_ptr<Epetra_Comm> comm, const unsigned int n_dim)
+    const std::string name, MPI_Comm comm, const unsigned int n_dim)
     : Discretization(name, comm, n_dim),  // use base class constructor
       extension_filled_(false),
       doboundaryfaces_(false){};
@@ -69,9 +69,9 @@ void Core::FE::DiscretizationFaces::create_internal_faces_extension(const bool v
   {
     int summyfaces = facerowptr_.size();
     int summall = 0;
-    comm_->SumAll(&summyfaces, &summall, 1);
+    Core::Communication::sum_all(&summyfaces, &summall, 1, comm_);
 
-    if (Core::Communication::my_mpi_rank(*comm_) == 0)
+    if (Core::Communication::my_mpi_rank(comm_) == 0)
       std::cout << "number of created faces:   " << summall << "\n" << std::endl;
   }
 
@@ -87,7 +87,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
 {
   faces_.clear();
 
-  if (verbose and Core::Communication::my_mpi_rank(*comm_) == 0)
+  if (verbose and Core::Communication::my_mpi_rank(comm_) == 0)
   {
     std::cout << "Create internal faces ..." << std::endl;
   }
@@ -832,7 +832,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
             // set in face
             face_it->second.set_local_numbering_map(localtrafomap);
 
-            //            if (Core::Communication::my_mpi_rank(*comm_)==1)
+            //            if (Core::Communication::my_mpi_rank(comm_)==1)
             //            {
             //            std::cout << "\n added pbc face "  << std::endl;
             //
@@ -926,7 +926,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
        faceit != finalFaces.end(); ++faceit)
     faces_[faceit->first] = std::dynamic_pointer_cast<Core::Elements::FaceElement>(faceit->second);
 
-  if (verbose and Core::Communication::my_mpi_rank(*comm_) == 0)
+  if (verbose and Core::Communication::my_mpi_rank(comm_) == 0)
   {
     std::cout << "... done!" << std::endl;
   }
@@ -957,7 +957,8 @@ void Core::FE::DiscretizationFaces::build_face_row_map()
       ++count;
     }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of internal faces");
-  facerowmap_ = std::make_shared<Epetra_Map>(-1, nummyeles, eleids.data(), 0, get_comm());
+  facerowmap_ = std::make_shared<Epetra_Map>(
+      -1, nummyeles, eleids.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
   return;
 }
 
@@ -980,7 +981,8 @@ void Core::FE::DiscretizationFaces::build_face_col_map()
     ++count;
   }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
-  facecolmap_ = std::make_shared<Epetra_Map>(-1, nummyeles, eleids.data(), 0, get_comm());
+  facecolmap_ = std::make_shared<Epetra_Map>(
+      -1, nummyeles, eleids.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
   return;
 }
 

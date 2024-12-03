@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 ParticleInteraction::ParticleInteractionBase::ParticleInteractionBase(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    MPI_Comm comm, const Teuchos::ParameterList& params)
     : comm_(comm),
       myrank_(Core::Communication::my_mpi_rank(comm)),
       params_(params),

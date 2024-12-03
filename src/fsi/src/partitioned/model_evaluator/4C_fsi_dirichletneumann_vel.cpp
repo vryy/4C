@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::DirichletNeumannVel::DirichletNeumannVel(const Epetra_Comm& comm)
+FSI::DirichletNeumannVel::DirichletNeumannVel(MPI_Comm comm)
     : DirichletNeumann(comm),
       constraint_manager_(Adapter::ConstraintEnforcerFactory::create_enforcer(
           Global::Problem::instance()->fsi_dynamic_params(),

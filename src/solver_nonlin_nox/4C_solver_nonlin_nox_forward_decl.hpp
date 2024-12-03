@@ -16,7 +16,6 @@
 
 class Epetra_BlockMap;
 class Epetra_Map;
-class Epetra_Comm;
 class Epetra_Operator;
 class Epetra_RowMatrix;
 class Epetra_LinearProblem;

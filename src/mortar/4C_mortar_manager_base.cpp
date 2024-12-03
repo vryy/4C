@@ -35,7 +35,7 @@ Mortar::ManagerBase::ManagerBase()
   // CONTACT::MeshtyingManager class!
   //**********************************************************************
 
-  comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_SELF);
+  comm_ = MPI_COMM_SELF;
 }
 
 FOUR_C_NAMESPACE_CLOSE

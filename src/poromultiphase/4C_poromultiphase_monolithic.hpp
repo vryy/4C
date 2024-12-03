@@ -20,8 +20,7 @@ namespace POROMULTIPHASE
   class PoroMultiPhaseMonolithic : public PoroMultiPhaseBase
   {
    public:
-    /// create using a Epetra_Comm
-    PoroMultiPhaseMonolithic(const Epetra_Comm& comm,
+    PoroMultiPhaseMonolithic(MPI_Comm comm,
         const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
 

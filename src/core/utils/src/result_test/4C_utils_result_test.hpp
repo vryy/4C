@@ -13,7 +13,7 @@
 
 #include "4C_io_input_parameter_container.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
 
 #include <memory>
 #include <vector>
@@ -127,7 +127,7 @@ namespace Core::Utils
     void add_field_test(std::shared_ptr<ResultTest> test);
 
     /// do all tests of all fields including appropiate output
-    void test_all(const Epetra_Comm& comm);
+    void test_all(MPI_Comm comm);
 
     /// Store the parsed @p results.
     void set_parsed_lines(std::vector<Input::LineDefinition> results);

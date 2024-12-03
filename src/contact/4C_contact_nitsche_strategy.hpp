@@ -34,8 +34,8 @@ namespace CONTACT
     //! Standard constructor
     NitscheStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
-        const std::shared_ptr<Epetra_Comm>& comm, double alphaf, int maxdof)
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, const MPI_Comm& comm,
+        double alphaf, int maxdof)
         : AbstractStrategy(std::make_shared<CONTACT::AbstractStratDataContainer>(), dof_row_map,
               NodeRowMap, params, dim, comm, alphaf, maxdof),
           interface_(std::move(interface)),
@@ -47,8 +47,8 @@ namespace CONTACT
     NitscheStrategy(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
-        const std::shared_ptr<const Epetra_Comm>& comm, double alphaf, int maxdof)
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, const MPI_Comm& comm,
+        double alphaf, int maxdof)
         : AbstractStrategy(data_ptr, dof_row_map, NodeRowMap, params, dim, comm, alphaf, maxdof),
           interface_(std::move(interface)),
           curr_state_eval_(false)

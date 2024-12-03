@@ -18,7 +18,8 @@
 #include "4C_particle_engine_typedefs.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
+
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -60,7 +61,7 @@ namespace ParticleInteraction
   {
    public:
     //! constructor
-    explicit ParticleInteractionBase(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit ParticleInteractionBase(MPI_Comm comm, const Teuchos::ParameterList& params);
 
     //! virtual destructor
     virtual ~ParticleInteractionBase() = default;
@@ -136,7 +137,7 @@ namespace ParticleInteraction
     virtual double max_particle_radius() const;
 
     //! communication
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! processor id
     const int myrank_;

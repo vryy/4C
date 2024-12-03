@@ -154,7 +154,7 @@ CONTACT::Coupling2dManager::Coupling2dManager(Core::FE::Discretization& idiscret
 /*----------------------------------------------------------------------*
  |  get communicator  (public)                               farah 01/13|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::Coupling2dManager::get_comm() const { return idiscret_.get_comm(); }
+MPI_Comm CONTACT::Coupling2dManager::get_comm() const { return idiscret_.get_comm(); }
 
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                  farah 10/14|

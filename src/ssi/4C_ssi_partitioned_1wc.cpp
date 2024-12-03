@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-SSI::SSIPart1WC::SSIPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+SSI::SSIPart1WC::SSIPart1WC(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIPart(comm, globaltimeparams), isscatrafromfile_(false)
 {
   // Keep this constructor empty!
@@ -33,7 +33,7 @@ SSI::SSIPart1WC::SSIPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart1WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIPart1WC::init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
@@ -176,7 +176,7 @@ void SSI::SSIPart1WCSolidToScatra::prepare_time_step(bool printheader)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::SSIPart1WCSolidToScatra::SSIPart1WCSolidToScatra(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIPart1WC(comm, globaltimeparams)
 {
   // Keep this constructor empty!
@@ -189,7 +189,7 @@ SSI::SSIPart1WCSolidToScatra::SSIPart1WCSolidToScatra(
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart1WCSolidToScatra::init(const Epetra_Comm& comm,
+void SSI::SSIPart1WCSolidToScatra::init(MPI_Comm comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams, const std::string& struct_disname,
     const std::string& scatra_disname, bool isAle)
@@ -248,7 +248,7 @@ void SSI::SSIPart1WCSolidToScatra::timeloop()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::SSIPart1WCScatraToSolid::SSIPart1WCScatraToSolid(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIPart1WC(comm, globaltimeparams)
 {
   // Keep this constructor empty!
@@ -261,7 +261,7 @@ SSI::SSIPart1WCScatraToSolid::SSIPart1WCScatraToSolid(
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart1WCScatraToSolid::init(const Epetra_Comm& comm,
+void SSI::SSIPart1WCScatraToSolid::init(MPI_Comm comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams, const std::string& struct_disname,
     const std::string& scatra_disname, bool isAle)

@@ -10,10 +10,11 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
 
 #include <memory>
 #include <set>
+#include <string>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -89,7 +90,7 @@ namespace Core::IO
     Core::IO::InputFile& input_;
 
     /// my comm
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     /// my section to read
     std::string sectionname_;

@@ -29,7 +29,6 @@ namespace PoroMultiPhaseScaTra
   class PoroMultiPhaseScaTraArtCouplNodeBased : public PoroMultiPhaseScaTraArtCouplBase
   {
    public:
-    //! create using a Epetra_Comm
     PoroMultiPhaseScaTraArtCouplNodeBased(std::shared_ptr<Core::FE::Discretization> arterydis,
         std::shared_ptr<Core::FE::Discretization> contdis,
         const Teuchos::ParameterList& meshtyingparams, const std::string& condname,

@@ -21,7 +21,6 @@
 
 #include <memory>
 
-class Epetra_Comm;
 namespace Teuchos
 {
   class Time;
@@ -272,16 +271,16 @@ namespace Solid
       };
 
       /// communicator
-      std::shared_ptr<const Epetra_Comm> get_comm_ptr() const
+      MPI_Comm get_comm_ptr() const
       {
         check_init();
         return comm_;
       };
 
-      const Epetra_Comm& get_comm() const
+      MPI_Comm get_comm() const
       {
         check_init();
-        return *comm_;
+        return comm_;
       };
 
       /// ID of actual processor in parallel
@@ -934,7 +933,7 @@ namespace Solid
       std::shared_ptr<Core::FE::Discretization> discret_;
 
       /// communicator
-      std::shared_ptr<const Epetra_Comm> comm_;
+      MPI_Comm comm_;
 
       /// ID of actual processor in parallel
       int my_rank_;

@@ -37,7 +37,7 @@ void levelset_dyn(int restart)
   std::shared_ptr<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
 
   // access the communicator
-  const Epetra_Comm& comm = scatradis->get_comm();
+  MPI_Comm comm = scatradis->get_comm();
 
   // print warning to screen
   if (Core::Communication::my_mpi_rank(comm) == 0)

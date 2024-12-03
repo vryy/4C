@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::Solver::Solver(const Teuchos::ParameterList &inparams, const Epetra_Comm &comm,
+Core::LinAlg::Solver::Solver(const Teuchos::ParameterList &inparams, MPI_Comm comm,
     const std::function<const Teuchos::ParameterList &(int)> &get_solver_params,
     Core::IO::Verbositylevel verbosity, const bool translate_params_to_belos)
     : comm_(comm), params_(std::make_shared<Teuchos::ParameterList>())

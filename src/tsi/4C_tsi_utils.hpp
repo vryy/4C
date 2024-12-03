@@ -13,7 +13,7 @@
 
 #include "4C_coupling_volmortar_utils.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
 
 #include <map>
 #include <memory>
@@ -66,7 +66,7 @@ namespace TSI
     };  // class ThermoStructureCloneStrategy
 
     //! setup TSI, clone the structural discretization
-    void setup_tsi(const Epetra_Comm& comm);
+    void setup_tsi(MPI_Comm comm);
 
 
     void set_material_pointers_matching_grid(

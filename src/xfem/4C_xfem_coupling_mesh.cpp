@@ -419,10 +419,10 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
     std::vector<int> full_nodes(full_ele_nodes_col.begin(), full_ele_nodes_col.end());
     std::vector<int> full_eles(full_eles_col.begin(), full_eles_col.end());
 
-    const Epetra_Map full_nodecolmap(
-        -1, full_nodes.size(), full_nodes.data(), 0, cond_dis_->get_comm());
-    const Epetra_Map full_elecolmap(
-        -1, full_eles.size(), full_eles.data(), 0, cond_dis_->get_comm());
+    const Epetra_Map full_nodecolmap(-1, full_nodes.size(), full_nodes.data(), 0,
+        Core::Communication::as_epetra_comm(cond_dis_->get_comm()));
+    const Epetra_Map full_elecolmap(-1, full_eles.size(), full_eles.data(), 0,
+        Core::Communication::as_epetra_comm(cond_dis_->get_comm()));
 
     // redistribute nodes and elements to column (ghost) map
     cond_dis_->export_column_nodes(full_nodecolmap);
@@ -496,9 +496,8 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
 {
   std::string aux_coup_disname("auxiliary_coupling_");
   aux_coup_disname += cond_dis_->name();
-  aux_coup_dis_ = std::make_shared<Core::FE::Discretization>(aux_coup_disname,
-      std::shared_ptr<Epetra_Comm>(cond_dis_->get_comm().Clone()),
-      Global::Problem::instance()->n_dim());
+  aux_coup_dis_ = std::make_shared<Core::FE::Discretization>(
+      aux_coup_disname, cond_dis_->get_comm(), Global::Problem::instance()->n_dim());
 
   // make the condition known to the auxiliary discretization
   // we use the same nodal ids and therefore we can just copy the conditions
@@ -580,14 +579,14 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
     // (expected by Epetra_Map ctor)
     std::vector<int> rownodes(adjacent_row.begin(), adjacent_row.end());
     // build noderowmap for new distribution of nodes
-    newnoderowmap = std::make_shared<Epetra_Map>(
-        -1, rownodes.size(), rownodes.data(), 0, aux_coup_dis_->get_comm());
+    newnoderowmap = std::make_shared<Epetra_Map>(-1, rownodes.size(), rownodes.data(), 0,
+        Core::Communication::as_epetra_comm(aux_coup_dis_->get_comm()));
 
     std::vector<int> colnodes(adjacent_col.begin(), adjacent_col.end());
 
     // build nodecolmap for new distribution of nodes
-    newnodecolmap = std::make_shared<Epetra_Map>(
-        -1, colnodes.size(), colnodes.data(), 0, aux_coup_dis_->get_comm());
+    newnodecolmap = std::make_shared<Epetra_Map>(-1, colnodes.size(), colnodes.data(), 0,
+        Core::Communication::as_epetra_comm(aux_coup_dis_->get_comm()));
 
     aux_coup_dis_->redistribute(*newnoderowmap, *newnodecolmap,
         {.assign_degrees_of_freedom = false,

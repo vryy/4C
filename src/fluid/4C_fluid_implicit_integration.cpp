@@ -1456,7 +1456,8 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
 
       // sum up global flow rate over all processors and set to global value
       double flowrate = 0.0;
-      Core::Communication::sum_all(&local_flowrate, &flowrate, 1, dofrowmap->Comm());
+      Core::Communication::sum_all(&local_flowrate, &flowrate, 1,
+          Core::Communication::unpack_epetra_comm(dofrowmap->Comm()));
 
       // set current flow rate
       flowratenp_[fdpcondid] = flowrate;
@@ -2770,12 +2771,12 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
 
         // Sum variables over all processors to obtain global value
         double globalSumVelnpDotNodeTangent = 0.0;
-        Core::Communication::sum_all(
-            &localSumVelnpDotNodeTangent, &globalSumVelnpDotNodeTangent, 1, dofrowmap->Comm());
+        Core::Communication::sum_all(&localSumVelnpDotNodeTangent, &globalSumVelnpDotNodeTangent, 1,
+            Core::Communication::unpack_epetra_comm(dofrowmap->Comm()));
 
         int globalNumOfCondNodes = 0;
-        Core::Communication::sum_all(
-            &localNumOfCondNodes, &globalNumOfCondNodes, 1, dofrowmap->Comm());
+        Core::Communication::sum_all(&localNumOfCondNodes, &globalNumOfCondNodes, 1,
+            Core::Communication::unpack_epetra_comm(dofrowmap->Comm()));
 
         // Finalize calculation of mean tangent velocity
         double lambda = 0.0;

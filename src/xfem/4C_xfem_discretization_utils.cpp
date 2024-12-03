@@ -449,20 +449,20 @@ void XFEM::Utils::XFEMDiscretizationBuilder::redistribute(
 {
   dis.check_filled_globally();
 
-  std::shared_ptr<Epetra_Comm> comm(dis.get_comm().Clone());
+  MPI_Comm comm(dis.get_comm());
 
-  std::shared_ptr<Epetra_Map> noderowmap =
-      std::make_shared<Epetra_Map>(-1, noderowvec.size(), noderowvec.data(), 0, *comm);
+  std::shared_ptr<Epetra_Map> noderowmap = std::make_shared<Epetra_Map>(
+      -1, noderowvec.size(), noderowvec.data(), 0, Core::Communication::as_epetra_comm(comm));
 
-  std::shared_ptr<Epetra_Map> nodecolmap =
-      std::make_shared<Epetra_Map>(-1, nodecolvec.size(), nodecolvec.data(), 0, *comm);
+  std::shared_ptr<Epetra_Map> nodecolmap = std::make_shared<Epetra_Map>(
+      -1, nodecolvec.size(), nodecolvec.data(), 0, Core::Communication::as_epetra_comm(comm));
   if (!dis.filled()) dis.redistribute(*noderowmap, *nodecolmap);
 
   Epetra_Map elerowmap(*dis.element_row_map());
   std::shared_ptr<const Epetra_CrsGraph> nodegraph = Core::Rebalance::build_graph(dis, elerowmap);
 
   Teuchos::ParameterList rebalanceParams;
-  rebalanceParams.set("num parts", std::to_string(Core::Communication::num_mpi_ranks(*comm)));
+  rebalanceParams.set("num parts", std::to_string(Core::Communication::num_mpi_ranks(comm)));
   std::tie(noderowmap, nodecolmap) =
       Core::Rebalance::rebalance_node_maps(*nodegraph, rebalanceParams);
 
@@ -538,7 +538,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
  *----------------------------------------------------------------------------*/
 std::shared_ptr<Core::Conditions::Condition>
 XFEM::Utils::XFEMDiscretizationBuilder::split_condition(const Core::Conditions::Condition* src_cond,
-    const std::vector<int>& nodecolvec, const Epetra_Comm& comm) const
+    const std::vector<int>& nodecolvec, MPI_Comm comm) const
 {
   const std::vector<int>* cond_node_gids = src_cond->get_nodes();
   std::set<int> nodecolset;
@@ -564,7 +564,7 @@ XFEM::Utils::XFEMDiscretizationBuilder::split_condition(const Core::Conditions::
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 XFEM::DiscretizationXWall::DiscretizationXWall(
-    const std::string name, std::shared_ptr<Epetra_Comm> comm, const unsigned int n_dim)
+    const std::string name, MPI_Comm comm, const unsigned int n_dim)
     : DiscretizationFaces(name, comm, n_dim)  // use base class constructor
       {};
 

@@ -13,7 +13,6 @@
 #include "4C_inpar_poromultiphase_scatra.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Epetra_Comm.h>
 #include <Sacado.hpp>
 
 #include <cmath>
@@ -40,7 +39,7 @@ namespace PoroMultiPhaseScaTra
   namespace Utils
   {
     //! setup discretizations and dofsets
-    std::map<int, std::set<int>> setup_discretizations_and_field_coupling(const Epetra_Comm& comm,
+    std::map<int, std::set<int>> setup_discretizations_and_field_coupling(MPI_Comm comm,
         const std::string& struct_disname, const std::string& fluid_disname,
         const std::string& scatra_disname, int& ndsporo_disp, int& ndsporo_vel,
         int& ndsporo_solidpressure, int& ndsporofluid_scatra, const bool artery_coupl);
@@ -55,7 +54,7 @@ namespace PoroMultiPhaseScaTra
     create_poro_multi_phase_scatra_algorithm(Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields
                                                  solscheme,  //!< solution scheme to build (i)
         const Teuchos::ParameterList& timeparams,            //!< problem parameters (i)
-        const Epetra_Comm& comm                              //!< communicator(i)
+        MPI_Comm comm                                        //!< communicator(i)
     );
 
     //! create coupling strategy for coupling with 1D network depending on input file

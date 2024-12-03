@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                            gammi 05/08|
  *----------------------------------------------------------------------*/
 Core::FE::Nurbs::NurbsDiscretization::NurbsDiscretization(
-    const std::string name, std::shared_ptr<Epetra_Comm> comm, const unsigned int n_dim)
+    const std::string name, MPI_Comm comm, const unsigned int n_dim)
     : Core::FE::Discretization::Discretization(name, comm, n_dim), knots_(nullptr)
 {
   return;

@@ -708,8 +708,8 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::initialize_gp()
  | required                                                                             |
  *--------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_2d(Mortar::Element& sele,
-    std::vector<Mortar::Element*> meles, bool* boundary_ele, const Epetra_Comm& comm)
+void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_2d(
+    Mortar::Element& sele, std::vector<Mortar::Element*> meles, bool* boundary_ele, MPI_Comm comm)
 {
   // check for problem dimension
   if (ndim_ != 2) FOUR_C_THROW("2D integration method called for non-2D problem");
@@ -831,8 +831,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_2d(Mortar
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_segment_2d(Mortar::Element& sele,
-    double& sxia, double& sxib, Mortar::Element& mele, double& mxia, double& mxib,
-    const Epetra_Comm& comm)
+    double& sxia, double& sxib, Mortar::Element& mele, double& mxia, double& mxib, MPI_Comm comm)
 {
   // get LMtype
   Inpar::Mortar::LagMultQuad lmtype = lmquadtype_;
@@ -980,7 +979,7 @@ template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void inline Mortar::IntegratorCalc<distype_s, distype_m>::gp_dm(Mortar::Element& sele,
     Mortar::Element& mele, Core::LinAlg::Matrix<ns_, 1>& lmval, Core::LinAlg::Matrix<ns_, 1>& sval,
     Core::LinAlg::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& ncol, int& ndof,
-    bool& bound, const Epetra_Comm& comm)
+    bool& bound, MPI_Comm comm)
 {
   // get slave element nodes themselves
   Core::Nodes::Node** snodes = sele.nodes();
@@ -1378,8 +1377,8 @@ Mortar::IntegratorCalc<distype_s, distype_m>::integrate_mmod_2d(Mortar::Element&
  |  Integrate and linearize without segmentation             farah 01/13|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_3d(Mortar::Element& sele,
-    std::vector<Mortar::Element*> meles, bool* boundary_ele, const Epetra_Comm& comm)
+void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_3d(
+    Mortar::Element& sele, std::vector<Mortar::Element*> meles, bool* boundary_ele, MPI_Comm comm)
 {
   // explicitly defined shape function type needed
   if (shapefcn_ == Inpar::Mortar::shape_undefined)
@@ -1508,7 +1507,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_3d(Mortar
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane(
     Mortar::Element& sele, Mortar::Element& mele, std::shared_ptr<Mortar::IntCell> cell,
-    double* auxn, const Epetra_Comm& comm)
+    double* auxn, MPI_Comm comm)
 {
   // explicitly defined shape function type needed
   if (shapefcn_ == Inpar::Mortar::shape_undefined)

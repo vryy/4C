@@ -59,9 +59,8 @@ Core::IO::Pstream::~Pstream()
  * configure the output                                       wic 11/12 *
  *----------------------------------------------------------------------*/
 void Core::IO::Pstream::setup(const bool writetoscreen, const bool writetofile,
-    const bool prefixgroupID, const Core::IO::Verbositylevel level,
-    std::shared_ptr<Epetra_Comm> comm, const int targetpid, const int groupID,
-    const std::string fileprefix)
+    const bool prefixgroupID, const Core::IO::Verbositylevel level, MPI_Comm comm,
+    const int targetpid, const int groupID, const std::string fileprefix)
 {
   // make sure that setup is called only once or we get unpredictable behavior
   if (is_initialized_) FOUR_C_THROW("Thou shalt not call setup on the output twice!");
@@ -77,7 +76,7 @@ void Core::IO::Pstream::setup(const bool writetoscreen, const bool writetofile,
   group_id_ = groupID;
 
   // make sure the target processor exists
-  if (targetpid_ >= Core::Communication::num_mpi_ranks(*comm_))
+  if (targetpid_ >= Core::Communication::num_mpi_ranks(comm_))
     FOUR_C_THROW("Chosen target processor does not exist.");
 
   // prepare the file handle
@@ -85,7 +84,7 @@ void Core::IO::Pstream::setup(const bool writetoscreen, const bool writetofile,
   {
     std::stringstream fname;
     fname << fileprefix << ".p" << std::setfill('0') << std::setw(2)
-          << Core::Communication::my_mpi_rank(*comm_) << ".log";
+          << Core::Communication::my_mpi_rank(comm_) << ".log";
     outfile_ = new std::ofstream(fname.str().c_str());
     if (!outfile_) FOUR_C_THROW("could not open output file");
   }
@@ -95,7 +94,7 @@ void Core::IO::Pstream::setup(const bool writetoscreen, const bool writetofile,
 
   // setup mystream
   blackholestream_ = new Teuchos::oblackholestream;
-  if (writetoscreen_ and (Core::Communication::my_mpi_rank(*comm_) == targetpid_ or targetpid_ < 0))
+  if (writetoscreen_ and (Core::Communication::my_mpi_rank(comm_) == targetpid_ or targetpid_ < 0))
     mystream_ = &std::cout;
   else
     mystream_ = blackholestream_;
@@ -179,7 +178,7 @@ void Core::IO::Pstream::flush()
 bool Core::IO::Pstream::on_pid()
 {
   if (targetpid_ < 0) return true;
-  return (Core::Communication::my_mpi_rank(*comm_) == targetpid_);
+  return (Core::Communication::my_mpi_rank(comm_) == targetpid_);
 }
 
 

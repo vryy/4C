@@ -23,10 +23,10 @@ namespace
   {
    public:
     //! Testing parameters
-    std::shared_ptr<Epetra_Comm> comm_;
+    MPI_Comm comm_;
 
    protected:
-    SparseAlgebraManipulationTest() { comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD); }
+    SparseAlgebraManipulationTest() { comm_ = MPI_COMM_WORLD; }
   };
 
   /** The test setup is based on a simple 1d poisson problem with the given matrix "poisson1d.mm"
@@ -40,7 +40,8 @@ namespace
     Epetra_CrsMatrix* A;
 
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
-        TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(), *comm_, A);
+        TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(),
+        Core::Communication::as_epetra_comm(comm_), A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
     std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
@@ -66,7 +67,8 @@ namespace
     Epetra_CrsMatrix* A;
 
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
-        TESTING::get_support_file_path("test_matrices/filter.mm").c_str(), *comm_, A);
+        TESTING::get_support_file_path("test_matrices/filter.mm").c_str(),
+        Core::Communication::as_epetra_comm(comm_), A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
     std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
@@ -92,7 +94,8 @@ namespace
     Epetra_CrsMatrix* A;
 
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
-        TESTING::get_support_file_path("test_matrices/filter.mm").c_str(), *comm_, A);
+        TESTING::get_support_file_path("test_matrices/filter.mm").c_str(),
+        Core::Communication::as_epetra_comm(comm_), A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
     std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
@@ -116,7 +119,8 @@ namespace
     Epetra_CrsMatrix* A;
 
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
-        TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(), *comm_, A);
+        TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(),
+        Core::Communication::as_epetra_comm(comm_), A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
     std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
@@ -181,7 +185,8 @@ namespace
     Epetra_CrsMatrix* A;
 
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
-        TESTING::get_support_file_path("test_matrices/beam.mm").c_str(), *comm_, A);
+        TESTING::get_support_file_path("test_matrices/beam.mm").c_str(),
+        Core::Communication::as_epetra_comm(comm_), A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
     std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);

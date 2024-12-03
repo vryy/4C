@@ -29,8 +29,8 @@ namespace CONTACT
     NitscheStrategySsiElch(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
-        const std::shared_ptr<const Epetra_Comm>& comm, double alphaf, int maxdof)
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, const MPI_Comm& comm,
+        double alphaf, int maxdof)
         : NitscheStrategySsi(data_ptr, dof_row_map, NodeRowMap, params, std::move(interface), dim,
               comm, alphaf, maxdof)
     {

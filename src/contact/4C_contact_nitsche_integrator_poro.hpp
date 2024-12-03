@@ -40,7 +40,7 @@ namespace CONTACT
 
      */
     IntegratorNitschePoro(
-        Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm);
+        Teuchos::ParameterList& params, Core::FE::CellType eletype, MPI_Comm comm);
 
    protected:
     /*!

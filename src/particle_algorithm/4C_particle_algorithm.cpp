@@ -40,7 +40,7 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::ParticleAlgorithm::ParticleAlgorithm(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    MPI_Comm comm, const Teuchos::ParameterList& params)
     : AlgorithmBase(comm, params),
       myrank_(Core::Communication::my_mpi_rank(comm)),
       params_(params),

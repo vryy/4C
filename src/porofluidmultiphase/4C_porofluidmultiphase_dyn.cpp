@@ -33,7 +33,7 @@ void porofluidmultiphase_dyn(int restart)
   const std::string artery_disname = "artery";
 
   // access the communicator
-  const Epetra_Comm& comm = Global::Problem::instance()->get_dis(fluid_disname)->get_comm();
+  MPI_Comm comm = Global::Problem::instance()->get_dis(fluid_disname)->get_comm();
 
   // access the problem
   Global::Problem* problem = Global::Problem::instance();

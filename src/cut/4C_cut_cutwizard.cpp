@@ -75,7 +75,7 @@ Cut::CutWizard::CutWizard(const std::shared_ptr<Core::FE::Discretization>& backd
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Cut::CutWizard::CutWizard(const Epetra_Comm& comm)
+Cut::CutWizard::CutWizard(MPI_Comm comm)
     : back_mesh_(nullptr),
       comm_(comm),
       myrank_(Core::Communication::my_mpi_rank(comm)),

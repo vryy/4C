@@ -16,7 +16,6 @@
 #include "4C_cut_utils.hpp"
 #include "4C_mortar_coupling3d_classes.hpp"
 
-#include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
 #include <memory>
@@ -446,8 +445,8 @@ namespace Coupling::VolMortar
     std::pair<int, int>
         dofset21_;  /// dofset number dofs of Omega_1 and Omega_2 in P Omega_1 -> Omega_2
 
-    std::shared_ptr<Epetra_Comm> comm_;  /// communicator
-    int myrank_;                         /// my proc id
+    MPI_Comm comm_;  /// communicator
+    int myrank_;     /// my proc id
 
     //@}
 

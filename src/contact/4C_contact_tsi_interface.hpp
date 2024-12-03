@@ -26,8 +26,8 @@ namespace CONTACT
 
     */
     TSIInterface(const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData_ptr,
-        const int id, const Epetra_Comm& comm, const int dim,
-        const Teuchos::ParameterList& icontact, bool selfcontact);
+        const int id, MPI_Comm comm, const int dim, const Teuchos::ParameterList& icontact,
+        bool selfcontact);
 
     enum LinDmXMode
     {

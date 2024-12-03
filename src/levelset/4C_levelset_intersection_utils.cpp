@@ -402,7 +402,7 @@ void ScaTra::LevelSet::Intersection::set_desired_positions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::LevelSet::Intersection::export_interface(
-    std::map<int, Core::Geo::BoundaryIntCells>& myinterface, const Epetra_Comm& comm)
+    std::map<int, Core::Geo::BoundaryIntCells>& myinterface, MPI_Comm comm)
 {
   //-------------------------------
   // prepare parallel communication

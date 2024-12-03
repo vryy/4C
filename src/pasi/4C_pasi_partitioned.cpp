@@ -28,8 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PaSI::PartitionedAlgo::PartitionedAlgo(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+PaSI::PartitionedAlgo::PartitionedAlgo(MPI_Comm comm, const Teuchos::ParameterList& params)
     : AlgorithmBase(comm, params), isinit_(false), issetup_(false)
 {
   // empty constructor
@@ -91,7 +90,7 @@ void PaSI::PartitionedAlgo::read_restart(int restartstep)
   set_interface_states(intfdispnp_, intfvelnp_, intfaccnp_);
 }
 
-void PaSI::PartitionedAlgo::test_results(const Epetra_Comm& comm)
+void PaSI::PartitionedAlgo::test_results(MPI_Comm comm)
 {
   // get instance of global problem
   Global::Problem* problem = Global::Problem::instance();

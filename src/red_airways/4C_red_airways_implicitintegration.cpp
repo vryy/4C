@@ -114,14 +114,15 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
 
     // extended ghosting for elements (also revert fully overlapping here)
     std::vector<int> coleles(elecolset.begin(), elecolset.end());
-    const Epetra_Map extendedelecolmap(-1, coleles.size(), coleles.data(), 0, discret_->get_comm());
+    const Epetra_Map extendedelecolmap(-1, coleles.size(), coleles.data(), 0,
+        Core::Communication::as_epetra_comm(discret_->get_comm()));
 
     discret_->export_column_elements(extendedelecolmap);
 
     // extended ghosting for nodes
     std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
-    const Epetra_Map extendednodecolmap(
-        -1, colnodes.size(), colnodes.data(), 0, discret_->get_comm());
+    const Epetra_Map extendednodecolmap(-1, colnodes.size(), colnodes.data(), 0,
+        Core::Communication::as_epetra_comm(discret_->get_comm()));
 
     discret_->export_column_nodes(extendednodecolmap);
 
@@ -1851,8 +1852,8 @@ void Airway::RedAirwayImplicitTimeInt::setup_for_coupling()
   }
   unsigned int numcond = tmp.size();
   if (numcond == 0) FOUR_C_THROW("no coupling conditions found");
-  coupmap_ =
-      std::make_shared<Epetra_Map>(tmp.size(), tmp.size(), tmp.data(), 0, discret_->get_comm());
+  coupmap_ = std::make_shared<Epetra_Map>(tmp.size(), tmp.size(), tmp.data(), 0,
+      Core::Communication::as_epetra_comm(discret_->get_comm()));
 }
 
 

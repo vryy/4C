@@ -15,8 +15,6 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -55,7 +53,7 @@ namespace SSI
     class SSISlaveSideConverter;
 
     //! Modification of time parameter list for problem with different time step size
-    void change_time_parameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
+    void change_time_parameter(MPI_Comm comm, Teuchos::ParameterList& ssiparams,
         Teuchos::ParameterList& scatradyn, Teuchos::ParameterList& sdyn);
 
     //! check for a consistent input file definition of the SSIInterfaceContact condition
@@ -504,7 +502,7 @@ namespace SSI
           bool check_over_constrained);
 
       //! communicator
-      const Epetra_Comm& comm_;
+      MPI_Comm comm_;
 
       //! should this proc write screen output
       const bool do_print_;

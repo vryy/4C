@@ -7,6 +7,7 @@
 
 #include "4C_linalg_vector.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_linalg_multi_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -185,6 +186,12 @@ int Core::LinAlg::Vector<T>::ReplaceMap(const Epetra_BlockMap& map)
 }
 
 template <typename T>
+MPI_Comm Core::LinAlg::Vector<T>::Comm() const
+{
+  return Core::Communication::unpack_epetra_comm(vector_->Comm());
+}
+
+template <typename T>
 void Core::LinAlg::Vector<T>::sync_view() const
 {
   // Only do this once.
@@ -233,6 +240,11 @@ int Core::LinAlg::Vector<int>::MaxValue() { return vector_->MaxValue(); }
 int Core::LinAlg::Vector<int>::MinValue() { return vector_->MinValue(); }
 
 void Core::LinAlg::Vector<int>::Print(std::ostream& os) const { vector_->Print(os); }
+
+MPI_Comm Core::LinAlg::Vector<int>::Comm() const
+{
+  return Core::Communication::unpack_epetra_comm(vector_->Comm());
+}
 
 
 FOUR_C_NAMESPACE_CLOSE

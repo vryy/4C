@@ -21,7 +21,6 @@
 #include <BelosLinearProblem.hpp>
 #include <BelosPseudoBlockCGSolMgr.hpp>
 #include <BelosPseudoBlockGmresSolMgr.hpp>
-#include <Epetra_Comm.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
@@ -36,7 +35,7 @@ using BelosVectorType = Epetra_MultiVector;
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
 Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::IterativeSolver(
-    const Epetra_Comm& comm, Teuchos::ParameterList& params)
+    MPI_Comm comm, Teuchos::ParameterList& params)
     : comm_(comm), params_(params)
 {
 }
@@ -94,8 +93,9 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
   {
     const std::string xmlFileName = belist.get<std::string>("SOLVER_XML_FILE");
     Teuchos::ParameterList belosParams;
-    Teuchos::updateParametersFromXmlFileAndBroadcast(
-        xmlFileName, Teuchos::Ptr<Teuchos::ParameterList>(&belosParams), *Xpetra::toXpetra(comm_));
+    Teuchos::updateParametersFromXmlFileAndBroadcast(xmlFileName,
+        Teuchos::Ptr<Teuchos::ParameterList>(&belosParams),
+        *Xpetra::toXpetra(Core::Communication::as_epetra_comm(comm_)));
 
     if (belosParams.isSublist("GMRES"))
     {

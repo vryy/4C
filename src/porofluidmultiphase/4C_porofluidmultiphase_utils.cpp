@@ -66,7 +66,7 @@ namespace
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::Utils::setup_material(
-    const Epetra_Comm& comm, const std::string& struct_disname, const std::string& fluid_disname)
+    MPI_Comm comm, const std::string& struct_disname, const std::string& fluid_disname)
 {
   // get the fluid discretization
   std::shared_ptr<Core::FE::Discretization> fluiddis =
@@ -256,13 +256,15 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::Utils::extended_ghosting_arter
 
   // extended ghosting for elements
   std::vector<int> coleles(elecolset.begin(), elecolset.end());
-  const Epetra_Map extendedelecolmap(-1, coleles.size(), coleles.data(), 0, contdis.get_comm());
+  const Epetra_Map extendedelecolmap(-1, coleles.size(), coleles.data(), 0,
+      Core::Communication::as_epetra_comm(contdis.get_comm()));
 
   artdis->export_column_elements(extendedelecolmap);
 
   // extended ghosting for nodes
   std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
-  const Epetra_Map extendednodecolmap(-1, colnodes.size(), colnodes.data(), 0, contdis.get_comm());
+  const Epetra_Map extendednodecolmap(-1, colnodes.size(), colnodes.data(), 0,
+      Core::Communication::as_epetra_comm(contdis.get_comm()));
 
   artdis->export_column_nodes(extendednodecolmap);
 

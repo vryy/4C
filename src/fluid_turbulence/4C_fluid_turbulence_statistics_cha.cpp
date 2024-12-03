@@ -610,8 +610,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
     Core::Communication::sum_all(
         lnodeplanes.data(), nodeplanes_->data(), nodeplanes_->size(), discret_->get_comm());
-    discret_->get_comm().SumAll(
-        lplanecoordinates.data(), planecoordinates_->data(), planecoordinates_->size());
+    Core::Communication::sum_all(lplanecoordinates.data(), planecoordinates_->data(),
+        planecoordinates_->size(), discret_->get_comm());
 
     {
       (*nodeplanes_).resize(nele_x_mele_x_lele[1] + 1);
@@ -2722,22 +2722,23 @@ void FLD::TurbulenceStatisticsCha::add_dynamic_smagorinsky_quantities()
     FOUR_C_THROW("local_Ci_delta_sq_sum==null from parameterlist");
 
   // now add all the stuff from the different processors
-  discret_->get_comm().SumAll(
-      local_Cs_sum->data(), global_incr_Cs_sum->data(), local_Cs_sum->size());
-  discret_->get_comm().SumAll(local_Cs_delta_sq_sum->data(), global_incr_Cs_delta_sq_sum->data(),
-      local_Cs_delta_sq_sum->size());
-  discret_->get_comm().SumAll(
-      local_visceff_sum->data(), global_incr_visceff_sum->data(), local_visceff_sum->size());
-  discret_->get_comm().SumAll(
-      local_Prt_sum->data(), global_incr_Prt_sum->data(), local_Prt_sum->size());
-  discret_->get_comm().SumAll(local_Cs_delta_sq_Prt_sum->data(),
-      global_incr_Cs_delta_sq_Prt_sum->data(), local_Cs_delta_sq_Prt_sum->size());
-  discret_->get_comm().SumAll(
-      local_diffeff_sum->data(), global_incr_diffeff_sum->data(), local_diffeff_sum->size());
-  discret_->get_comm().SumAll(
-      local_Ci_sum->data(), global_incr_Ci_sum->data(), local_Ci_sum->size());
-  discret_->get_comm().SumAll(local_Ci_delta_sq_sum->data(), global_incr_Ci_delta_sq_sum->data(),
-      local_Ci_delta_sq_sum->size());
+  Core::Communication::sum_all(
+      local_Cs_sum->data(), global_incr_Cs_sum->data(), local_Cs_sum->size(), discret_->get_comm());
+  Core::Communication::sum_all(local_Cs_delta_sq_sum->data(), global_incr_Cs_delta_sq_sum->data(),
+      local_Cs_delta_sq_sum->size(), discret_->get_comm());
+  Core::Communication::sum_all(local_visceff_sum->data(), global_incr_visceff_sum->data(),
+      local_visceff_sum->size(), discret_->get_comm());
+  Core::Communication::sum_all(local_Prt_sum->data(), global_incr_Prt_sum->data(),
+      local_Prt_sum->size(), discret_->get_comm());
+  Core::Communication::sum_all(local_Cs_delta_sq_Prt_sum->data(),
+      global_incr_Cs_delta_sq_Prt_sum->data(), local_Cs_delta_sq_Prt_sum->size(),
+      discret_->get_comm());
+  Core::Communication::sum_all(local_diffeff_sum->data(), global_incr_diffeff_sum->data(),
+      local_diffeff_sum->size(), discret_->get_comm());
+  Core::Communication::sum_all(
+      local_Ci_sum->data(), global_incr_Ci_sum->data(), local_Ci_sum->size(), discret_->get_comm());
+  Core::Communication::sum_all(local_Ci_delta_sq_sum->data(), global_incr_Ci_delta_sq_sum->data(),
+      local_Ci_delta_sq_sum->size(), discret_->get_comm());
 
   // Replace increment to compute average of Smagorinsky Constant, effective
   // viscosity and (Cs_delta)^2
@@ -2928,30 +2929,30 @@ void FLD::TurbulenceStatisticsCha::add_model_params_multifractal(
   }
 
   // now add all the stuff from the different processors
-  discret_->get_comm().SumAll(
-      local_N_stream_sum->data(), global_incr_N_stream_sum->data(), local_N_stream_sum->size());
-  discret_->get_comm().SumAll(
-      local_N_normal_sum->data(), global_incr_N_normal_sum->data(), local_N_normal_sum->size());
-  discret_->get_comm().SumAll(
-      local_N_span_sum->data(), global_incr_N_span_sum->data(), local_N_span_sum->size());
-  discret_->get_comm().SumAll(
-      local_B_stream_sum->data(), global_incr_B_stream_sum->data(), local_B_stream_sum->size());
-  discret_->get_comm().SumAll(
-      local_B_normal_sum->data(), global_incr_B_normal_sum->data(), local_B_normal_sum->size());
-  discret_->get_comm().SumAll(
-      local_B_span_sum->data(), global_incr_B_span_sum->data(), local_B_span_sum->size());
-  discret_->get_comm().SumAll(
-      local_Csgs_sum->data(), global_incr_Csgs_sum->data(), local_Csgs_sum->size());
-  discret_->get_comm().SumAll(
-      local_sgvisc_sum->data(), global_incr_sgvisc_sum->data(), local_sgvisc_sum->size());
+  Core::Communication::sum_all(local_N_stream_sum->data(), global_incr_N_stream_sum->data(),
+      local_N_stream_sum->size(), discret_->get_comm());
+  Core::Communication::sum_all(local_N_normal_sum->data(), global_incr_N_normal_sum->data(),
+      local_N_normal_sum->size(), discret_->get_comm());
+  Core::Communication::sum_all(local_N_span_sum->data(), global_incr_N_span_sum->data(),
+      local_N_span_sum->size(), discret_->get_comm());
+  Core::Communication::sum_all(local_B_stream_sum->data(), global_incr_B_stream_sum->data(),
+      local_B_stream_sum->size(), discret_->get_comm());
+  Core::Communication::sum_all(local_B_normal_sum->data(), global_incr_B_normal_sum->data(),
+      local_B_normal_sum->size(), discret_->get_comm());
+  Core::Communication::sum_all(local_B_span_sum->data(), global_incr_B_span_sum->data(),
+      local_B_span_sum->size(), discret_->get_comm());
+  Core::Communication::sum_all(local_Csgs_sum->data(), global_incr_Csgs_sum->data(),
+      local_Csgs_sum->size(), discret_->get_comm());
+  Core::Communication::sum_all(local_sgvisc_sum->data(), global_incr_sgvisc_sum->data(),
+      local_sgvisc_sum->size(), discret_->get_comm());
   if (withscatra)
   {
-    discret_->get_comm().SumAll(
-        local_Nphi_sum->data(), global_incr_Nphi_sum->data(), local_Nphi_sum->size());
-    discret_->get_comm().SumAll(
-        local_Dphi_sum->data(), global_incr_Dphi_sum->data(), local_Dphi_sum->size());
-    discret_->get_comm().SumAll(
-        local_Csgs_phi_sum->data(), global_incr_Csgs_phi_sum->data(), local_Csgs_phi_sum->size());
+    Core::Communication::sum_all(local_Nphi_sum->data(), global_incr_Nphi_sum->data(),
+        local_Nphi_sum->size(), discret_->get_comm());
+    Core::Communication::sum_all(local_Dphi_sum->data(), global_incr_Dphi_sum->data(),
+        local_Dphi_sum->size(), discret_->get_comm());
+    Core::Communication::sum_all(local_Csgs_phi_sum->data(), global_incr_Csgs_phi_sum->data(),
+        local_Csgs_phi_sum->size(), discret_->get_comm());
   }
 
   // Replace increment to compute average of parameters N and B as well as
@@ -3381,8 +3382,8 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
         local_incrres->data(), global_incrres->data(), velsize, discret_->get_comm());
     Core::Communication::sum_all(
         local_incrres_sq->data(), global_incrres_sq->data(), velsize, discret_->get_comm());
-    discret_->get_comm().SumAll(
-        local_incrtauinvsvel->data(), global_incrtauinvsvel->data(), velsize);
+    Core::Communication::sum_all(
+        local_incrtauinvsvel->data(), global_incrtauinvsvel->data(), velsize, discret_->get_comm());
     Core::Communication::sum_all(
         local_incrabsres->data(), global_incrabsres->data(), presize, discret_->get_comm());
 
@@ -3401,8 +3402,8 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
 
     Core::Communication::sum_all(
         local_incrspressnp->data(), global_incrspressnp->data(), presize, discret_->get_comm());
-    discret_->get_comm().SumAll(
-        local_incrspressnp_sq->data(), global_incrspressnp_sq->data(), presize);
+    Core::Communication::sum_all(local_incrspressnp_sq->data(), global_incrspressnp_sq->data(),
+        presize, discret_->get_comm());
 
     // compute global sums, disspiation rates
 
@@ -3410,14 +3411,14 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
         local_incr_eps_pspg->data(), global_incr_eps_pspg->data(), presize, discret_->get_comm());
     Core::Communication::sum_all(
         local_incr_eps_supg->data(), global_incr_eps_supg->data(), presize, discret_->get_comm());
-    discret_->get_comm().SumAll(
-        local_incr_eps_cross->data(), global_incr_eps_cross->data(), presize);
+    Core::Communication::sum_all(
+        local_incr_eps_cross->data(), global_incr_eps_cross->data(), presize, discret_->get_comm());
     Core::Communication::sum_all(
         local_incr_eps_rey->data(), global_incr_eps_rey->data(), presize, discret_->get_comm());
-    discret_->get_comm().SumAll(
-        local_incr_eps_graddiv->data(), global_incr_eps_graddiv->data(), presize);
-    discret_->get_comm().SumAll(
-        local_incr_eps_eddyvisc->data(), global_incr_eps_eddyvisc->data(), presize);
+    Core::Communication::sum_all(local_incr_eps_graddiv->data(), global_incr_eps_graddiv->data(),
+        presize, discret_->get_comm());
+    Core::Communication::sum_all(local_incr_eps_eddyvisc->data(), global_incr_eps_eddyvisc->data(),
+        presize, discret_->get_comm());
     Core::Communication::sum_all(
         local_incr_eps_visc->data(), global_incr_eps_visc->data(), presize, discret_->get_comm());
     Core::Communication::sum_all(
@@ -3426,16 +3427,16 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
         local_incr_eps_avm3->data(), global_incr_eps_avm3->data(), presize, discret_->get_comm());
     Core::Communication::sum_all(
         local_incr_eps_mfs->data(), global_incr_eps_mfs->data(), presize, discret_->get_comm());
-    discret_->get_comm().SumAll(
-        local_incr_eps_mfscross->data(), global_incr_eps_mfscross->data(), presize);
-    discret_->get_comm().SumAll(
-        local_incr_eps_mfsrey->data(), global_incr_eps_mfsrey->data(), presize);
+    Core::Communication::sum_all(local_incr_eps_mfscross->data(), global_incr_eps_mfscross->data(),
+        presize, discret_->get_comm());
+    Core::Communication::sum_all(local_incr_eps_mfsrey->data(), global_incr_eps_mfsrey->data(),
+        presize, discret_->get_comm());
 
     // compute global sums, subgrid stresses
-    discret_->get_comm().SumAll(
-        local_incrcrossstress->data(), global_incrcrossstress->data(), stresssize);
-    discret_->get_comm().SumAll(
-        local_incrreystress->data(), global_incrreystress->data(), stresssize);
+    Core::Communication::sum_all(local_incrcrossstress->data(), global_incrcrossstress->data(),
+        stresssize, discret_->get_comm());
+    Core::Communication::sum_all(local_incrreystress->data(), global_incrreystress->data(),
+        stresssize, discret_->get_comm());
 
 
     for (int rr = 0; rr < velsize; ++rr)
@@ -3664,35 +3665,35 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
           local_scatra_vol->data(), global_scatra_vol->data(), phisize, discret_->get_comm());
 
       // compute global sums, stabilisation parameters
-      discret_->get_comm().SumAll(
-          local_scatra_incrtauS->data(), global_scatra_incrtauS->data(), phisize);
+      Core::Communication::sum_all(local_scatra_incrtauS->data(), global_scatra_incrtauS->data(),
+          phisize, discret_->get_comm());
 
       // compute global sums, incompressibility residuals
-      discret_->get_comm().SumAll(
-          local_scatra_incrresS->data(), global_scatra_incrresS->data(), phisize);
-      discret_->get_comm().SumAll(
-          local_scatra_incrresS_sq->data(), global_scatra_incrresS_sq->data(), phisize);
+      Core::Communication::sum_all(local_scatra_incrresS->data(), global_scatra_incrresS->data(),
+          phisize, discret_->get_comm());
+      Core::Communication::sum_all(local_scatra_incrresS_sq->data(),
+          global_scatra_incrresS_sq->data(), phisize, discret_->get_comm());
 
       // compute global sums, disspiation rates
 
-      discret_->get_comm().SumAll(
-          local_scatra_incr_eps_supg->data(), global_scatra_incr_eps_supg->data(), phisize);
-      discret_->get_comm().SumAll(
-          local_scatra_incr_eps_cross->data(), global_scatra_incr_eps_cross->data(), phisize);
-      discret_->get_comm().SumAll(
-          local_scatra_incr_eps_rey->data(), global_scatra_incr_eps_rey->data(), phisize);
-      discret_->get_comm().SumAll(
-          local_scatra_incr_eps_eddyvisc->data(), global_scatra_incr_eps_eddyvisc->data(), phisize);
-      discret_->get_comm().SumAll(
-          local_scatra_incr_eps_visc->data(), global_scatra_incr_eps_visc->data(), phisize);
-      discret_->get_comm().SumAll(
-          local_scatra_incr_eps_conv->data(), global_scatra_incr_eps_conv->data(), phisize);
-      discret_->get_comm().SumAll(
-          local_scatra_incr_eps_avm3->data(), global_scatra_incr_eps_avm3->data(), phisize);
-      discret_->get_comm().SumAll(
-          local_scatra_incr_eps_mfs->data(), global_scatra_incr_eps_mfs->data(), phisize);
-      discret_->get_comm().SumAll(
-          local_scatra_incr_eps_mfsrey->data(), global_scatra_incr_eps_mfsrey->data(), phisize);
+      Core::Communication::sum_all(local_scatra_incr_eps_supg->data(),
+          global_scatra_incr_eps_supg->data(), phisize, discret_->get_comm());
+      Core::Communication::sum_all(local_scatra_incr_eps_cross->data(),
+          global_scatra_incr_eps_cross->data(), phisize, discret_->get_comm());
+      Core::Communication::sum_all(local_scatra_incr_eps_rey->data(),
+          global_scatra_incr_eps_rey->data(), phisize, discret_->get_comm());
+      Core::Communication::sum_all(local_scatra_incr_eps_eddyvisc->data(),
+          global_scatra_incr_eps_eddyvisc->data(), phisize, discret_->get_comm());
+      Core::Communication::sum_all(local_scatra_incr_eps_visc->data(),
+          global_scatra_incr_eps_visc->data(), phisize, discret_->get_comm());
+      Core::Communication::sum_all(local_scatra_incr_eps_conv->data(),
+          global_scatra_incr_eps_conv->data(), phisize, discret_->get_comm());
+      Core::Communication::sum_all(local_scatra_incr_eps_avm3->data(),
+          global_scatra_incr_eps_avm3->data(), phisize, discret_->get_comm());
+      Core::Communication::sum_all(local_scatra_incr_eps_mfs->data(),
+          global_scatra_incr_eps_mfs->data(), phisize, discret_->get_comm());
+      Core::Communication::sum_all(local_scatra_incr_eps_mfsrey->data(),
+          global_scatra_incr_eps_mfsrey->data(), phisize, discret_->get_comm());
 
       for (int rr = 0; rr < presize; ++rr)
       {

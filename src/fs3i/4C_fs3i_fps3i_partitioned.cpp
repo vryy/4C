@@ -39,7 +39,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor                                           hemmler 07/14 |
  *----------------------------------------------------------------------*/
-FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm) : FS3IBase(), comm_(comm)
+FS3I::PartFPS3I::PartFPS3I(MPI_Comm comm) : FS3IBase(), comm_(comm)
 {
   // keep empty
   return;
@@ -561,7 +561,7 @@ void FS3I::PartFPS3I::setup_system()
 /*----------------------------------------------------------------------*
  |  Test results                                          hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I::test_results(const Epetra_Comm& comm)
+void FS3I::PartFPS3I::test_results(MPI_Comm comm)
 {
   Global::Problem::instance()->add_field_test(fpsi_->fluid_field()->create_field_test());
 

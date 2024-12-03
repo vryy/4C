@@ -43,7 +43,7 @@ namespace FSI
      *
      * \param[in] comm Communicator
      */
-    explicit DirichletNeumannDisp(const Epetra_Comm &comm);
+    explicit DirichletNeumannDisp(MPI_Comm comm);
 
    public:
     /// setup this object

@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseScaTraMonolithicTwoWay(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseScaTraMonolithic(comm, globaltimeparams),
       ittolinc_(0.0),
       ittolres_(0.0),
@@ -1309,7 +1309,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::poro_multi_phas
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
     PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+        MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseScaTraMonolithicTwoWay(comm, globaltimeparams)
 {
   blockrowdofmap_artscatra_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();

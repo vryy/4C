@@ -14,7 +14,6 @@
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Comm.h>
 
 FOUR_C_NAMESPACE_OPEN
 

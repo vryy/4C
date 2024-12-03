@@ -70,7 +70,7 @@ namespace SSTI
   class SSTIMono : public SSTIAlgorithm
   {
    public:
-    explicit SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    explicit SSTIMono(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
     //! get vector containing positions within system matrix for specific subproblem
     std::vector<int> get_block_positions(Subproblem subproblem) const;
 
@@ -79,7 +79,7 @@ namespace SSTI
 
     //! Setup of algorithm
     //@{
-    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
+    void init(MPI_Comm comm, const Teuchos::ParameterList& sstitimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams,
         const Teuchos::ParameterList& structparams) override;
     void setup() override;

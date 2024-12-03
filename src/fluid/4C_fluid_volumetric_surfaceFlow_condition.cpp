@@ -722,8 +722,8 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::build_condition_node_row_map(
   //--------------------------------------------------------------------
   // create the node row map of the nodes on the current proc
   //--------------------------------------------------------------------
-  cond_noderowmap =
-      std::make_shared<Epetra_Map>(-1, nodeids.size(), nodeids.data(), 0, dis->get_comm());
+  cond_noderowmap = std::make_shared<Epetra_Map>(
+      -1, nodeids.size(), nodeids.data(), 0, Core::Communication::as_epetra_comm(dis->get_comm()));
 
 }  // build_condition_node_row_map
 
@@ -776,8 +776,8 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
   //--------------------------------------------------------------------
   // create the node row map of the nodes on the current proc
   //--------------------------------------------------------------------
-  cond_dofrowmap =
-      std::make_shared<Epetra_Map>(-1, dofids.size(), dofids.data(), 0, dis->get_comm());
+  cond_dofrowmap = std::make_shared<Epetra_Map>(
+      -1, dofids.size(), dofids.data(), 0, Core::Communication::as_epetra_comm(dis->get_comm()));
 
 }  // FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map
 
@@ -1354,7 +1354,8 @@ double FLD::Utils::FluidVolumetricSurfaceFlowBc::flow_rate_calculation(
   }
 
   double flowrate = 0.0;
-  Core::Communication::sum_all(&local_flowrate, &flowrate, 1, dofrowmap->Comm());
+  Core::Communication::sum_all(
+      &local_flowrate, &flowrate, 1, Core::Communication::unpack_epetra_comm(dofrowmap->Comm()));
 
   return flowrate;
 

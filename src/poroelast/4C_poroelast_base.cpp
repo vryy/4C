@@ -37,7 +37,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+PoroElast::PoroBase::PoroBase(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
     std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter)
     : AlgorithmBase(comm, timeparams),
       is_part_of_multifield_problem_(false),
@@ -333,7 +333,7 @@ void PoroElast::PoroBase::prepare_output(bool force_prepare_timestep)
   structure_field()->prepare_output(force_prepare_timestep);
 }
 
-void PoroElast::PoroBase::test_results(const Epetra_Comm& comm)
+void PoroElast::PoroBase::test_results(MPI_Comm comm)
 {
   Global::Problem::instance()->add_field_test(structure_field()->create_field_test());
   Global::Problem::instance()->add_field_test(fluid_field()->create_field_test());
@@ -551,7 +551,7 @@ void PoroElast::PoroBase::check_for_poro_conditions()
 }
 
 void PoroElast::NoPenetrationConditionHandle::buid_no_penetration_map(
-    const Epetra_Comm& comm, std::shared_ptr<const Epetra_Map> dofRowMap)
+    MPI_Comm comm, std::shared_ptr<const Epetra_Map> dofRowMap)
 {
   std::vector<int> condIDs;
   std::set<int>::iterator it;
@@ -559,8 +559,8 @@ void PoroElast::NoPenetrationConditionHandle::buid_no_penetration_map(
   {
     condIDs.push_back(*it);
   }
-  std::shared_ptr<Epetra_Map> nopendofmap =
-      std::make_shared<Epetra_Map>(-1, int(condIDs.size()), condIDs.data(), 0, comm);
+  std::shared_ptr<Epetra_Map> nopendofmap = std::make_shared<Epetra_Map>(
+      -1, int(condIDs.size()), condIDs.data(), 0, Core::Communication::as_epetra_comm(comm));
 
   nopenetration_ = std::make_shared<Core::LinAlg::MapExtractor>(*dofRowMap, nopendofmap);
 }

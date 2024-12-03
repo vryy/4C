@@ -35,7 +35,7 @@ std::shared_ptr<Core::FE::Discretization> Adapter::FluidXFEM::discretization()
   // returns the boundary discretization
   // REMARK:
   // the returned discretization has to match the structure discretization at the interface coupling
-  // (see FSI::Partitioned::Partitioned(const Epetra_Comm& comm) ) therefore return the boundary dis
+  // (see FSI::Partitioned::Partitioned(MPI_Comm comm) ) therefore return the boundary dis
   // this is similar to the matching of fluid dis and ale dis in case of Adapter::FluidALE
   return fluid_field()->discretization();
 }
@@ -48,7 +48,7 @@ std::shared_ptr<Core::FE::Discretization> Adapter::FluidXFEM::boundary_discretiz
   // returns the boundary discretization
   // REMARK:
   // the returned discretization has to match the structure discretization at the interface coupling
-  // (see FSI::Partitioned::Partitioned(const Epetra_Comm& comm) ) therefore return the boundary dis
+  // (see FSI::Partitioned::Partitioned(MPI_Comm comm) ) therefore return the boundary dis
   // this is similar to the matching of fluid dis and ale dis in case of Adapter::FluidALE
 
   std::shared_ptr<XFluidFSI> xfluid = std::dynamic_pointer_cast<XFluidFSI>(fluid_field());
@@ -65,7 +65,7 @@ std::shared_ptr<FLD::Utils::MapExtractor> const& Adapter::FluidXFEM::struct_inte
   // returns the boundary discretization
   // REMARK:
   // the returned discretization has to match the structure discretization at the interface coupling
-  // (see FSI::Partitioned::Partitioned(const Epetra_Comm& comm) ) therefore return the boundary dis
+  // (see FSI::Partitioned::Partitioned(MPI_Comm comm) ) therefore return the boundary dis
   // this is similar to the matching of fluid dis and ale dis in case of Adapter::FluidALE
 
   std::shared_ptr<XFluidFSI> xfluid = std::dynamic_pointer_cast<XFluidFSI>(fluid_field());

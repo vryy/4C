@@ -12,7 +12,7 @@
 
 #include "4C_inpar_contact.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
 
 #include <memory>
 #include <vector>
@@ -136,10 +136,7 @@ namespace Mortar
       const Core::FE::Discretization& discret() const;
 
       //! returns a reference to a copy of the structural communicator
-      Epetra_Comm& get_comm();
-      const Epetra_Comm& get_comm() const;
-      std::shared_ptr<Epetra_Comm> comm_ptr();
-      std::shared_ptr<const Epetra_Comm> comm_ptr() const;
+      MPI_Comm get_comm() const;
 
       //! returns the problem dimension
       const int& n_dim() const;
@@ -161,7 +158,7 @@ namespace Mortar
 
       //!@}
       //! pointer to a COPY of the structural communicator
-      std::shared_ptr<Epetra_Comm> comm_ptr_;
+      MPI_Comm comm_ptr_;
 
       int dim_;
     };  // namespace STRATEGY

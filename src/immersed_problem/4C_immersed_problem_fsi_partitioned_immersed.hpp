@@ -20,13 +20,13 @@ namespace FSI
   {
    public:
     //! constructor
-    explicit PartitionedImmersed(const Epetra_Comm& comm);
+    explicit PartitionedImmersed(MPI_Comm comm);
 
     //! setup this object
     void setup() override;
 
     //! overrides method of base class.
-    void setup_coupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm) override;
+    void setup_coupling(const Teuchos::ParameterList& fsidyn, MPI_Comm comm) override;
 
     //! call the time loop of the base class
     void timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface) override

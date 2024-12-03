@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::LinAlg::find_my_pos(int nummyelements, const Epetra_Comm& comm)
+int Core::LinAlg::find_my_pos(int nummyelements, MPI_Comm comm)
 {
   const int myrank = Core::Communication::my_mpi_rank(comm);
   const int numproc = Core::Communication::num_mpi_ranks(comm);
@@ -32,7 +32,7 @@ int Core::LinAlg::find_my_pos(int nummyelements, const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::LinAlg::allreduce_vector(
-    const std::vector<int>& src, std::vector<int>& dest, const Epetra_Comm& comm)
+    const std::vector<int>& src, std::vector<int>& dest, MPI_Comm comm)
 {
   // communicate size
   int localsize = static_cast<int>(src.size());
@@ -56,7 +56,8 @@ void Core::LinAlg::allreduce_vector(
 /*----------------------------------------------------------------------*/
 void Core::LinAlg::allreduce_e_map(std::vector<int>& rredundant, const Epetra_Map& emap)
 {
-  const int mynodepos = find_my_pos(emap.NumMyElements(), emap.Comm());
+  const int mynodepos =
+      find_my_pos(emap.NumMyElements(), Core::Communication::unpack_epetra_comm(emap.Comm()));
 
   std::vector<int> sredundant(emap.NumGlobalElements(), 0);
 
@@ -64,8 +65,8 @@ void Core::LinAlg::allreduce_e_map(std::vector<int>& rredundant, const Epetra_Ma
   std::copy(gids, gids + emap.NumMyElements(), sredundant.data() + mynodepos);
 
   rredundant.resize(emap.NumGlobalElements());
-  Core::Communication::sum_all(
-      sredundant.data(), rredundant.data(), emap.NumGlobalElements(), emap.Comm());
+  Core::Communication::sum_all(sredundant.data(), rredundant.data(), emap.NumGlobalElements(),
+      Core::Communication::unpack_epetra_comm(emap.Comm()));
 }
 
 /*----------------------------------------------------------------------*/
@@ -99,7 +100,7 @@ std::shared_ptr<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap
   allreduce_e_map(rv, emap);
   std::shared_ptr<Epetra_Map> rmap;
 
-  if (Core::Communication::my_mpi_rank(emap.Comm()) == pid)
+  if (Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(emap.Comm())) == pid)
   {
     rmap = std::make_shared<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
     // check the map
@@ -158,7 +159,7 @@ std::shared_ptr<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(
   allreduce_e_map(rv, emap);
   std::shared_ptr<Epetra_Map> rmap;
 
-  if (Core::Communication::my_mpi_rank(emap.Comm()) == pid)
+  if (Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(emap.Comm())) == pid)
   {
     // remove duplicates only on proc pid
     std::set<int> rs(rv.begin(), rv.end());
@@ -182,8 +183,8 @@ std::shared_ptr<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(
 /*----------------------------------------------------------------------*
  |  Send and receive lists of ints.  (heiner 09/07)                     |
  *----------------------------------------------------------------------*/
-void Core::LinAlg::all_to_all_communication(const Epetra_Comm& comm,
-    const std::vector<std::vector<int>>& send, std::vector<std::vector<int>>& recv)
+void Core::LinAlg::all_to_all_communication(
+    MPI_Comm comm, const std::vector<std::vector<int>>& send, std::vector<std::vector<int>>& recv)
 {
   if (Core::Communication::num_mpi_ranks(comm) == 1)
   {
@@ -195,8 +196,6 @@ void Core::LinAlg::all_to_all_communication(const Epetra_Comm& comm,
   }
   else
   {
-    const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm);
-
     std::vector<int> sendbuf;
     std::vector<int> sendcounts;
     sendcounts.reserve(Core::Communication::num_mpi_ranks(comm));
@@ -219,8 +218,7 @@ void Core::LinAlg::all_to_all_communication(const Epetra_Comm& comm,
     // initial communication: Request. Send and receive the number of
     // ints we communicate with each process.
 
-    int status = MPI_Alltoall(
-        sendcounts.data(), 1, MPI_INT, recvcounts.data(), 1, MPI_INT, mpicomm.GetMpiComm());
+    int status = MPI_Alltoall(sendcounts.data(), 1, MPI_INT, recvcounts.data(), 1, MPI_INT, comm);
 
     if (status != MPI_SUCCESS) FOUR_C_THROW("MPI_Alltoall returned status=%d", status);
 
@@ -241,7 +239,7 @@ void Core::LinAlg::all_to_all_communication(const Epetra_Comm& comm,
     // transmit communication: Send and get the data.
 
     status = MPI_Alltoallv(sendbuf.data(), sendcounts.data(), sdispls.data(), MPI_INT,
-        recvbuf.data(), recvcounts.data(), rdispls.data(), MPI_INT, mpicomm.GetMpiComm());
+        recvbuf.data(), recvcounts.data(), rdispls.data(), MPI_INT, comm);
     if (status != MPI_SUCCESS) FOUR_C_THROW("MPI_Alltoallv returned status=%d", status);
 
     recv.clear();
@@ -257,7 +255,7 @@ void Core::LinAlg::all_to_all_communication(const Epetra_Comm& comm,
  |  Send and receive lists of ints.                                     |
  *----------------------------------------------------------------------*/
 void Core::LinAlg::all_to_all_communication(
-    const Epetra_Comm& comm, const std::vector<std::vector<int>>& send, std::vector<int>& recv)
+    MPI_Comm comm, const std::vector<std::vector<int>>& send, std::vector<int>& recv)
 {
   if (Core::Communication::num_mpi_ranks(comm) == 1)
   {
@@ -269,8 +267,6 @@ void Core::LinAlg::all_to_all_communication(
   }
   else
   {
-    const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm);
-
     std::vector<int> sendbuf;
     std::vector<int> sendcounts;
     sendcounts.reserve(Core::Communication::num_mpi_ranks(comm));
@@ -293,8 +289,7 @@ void Core::LinAlg::all_to_all_communication(
     // initial communication: Request. Send and receive the number of
     // ints we communicate with each process.
 
-    int status = MPI_Alltoall(
-        sendcounts.data(), 1, MPI_INT, recvcounts.data(), 1, MPI_INT, mpicomm.GetMpiComm());
+    int status = MPI_Alltoall(sendcounts.data(), 1, MPI_INT, recvcounts.data(), 1, MPI_INT, comm);
 
     if (status != MPI_SUCCESS) FOUR_C_THROW("MPI_Alltoall returned status=%d", status);
 
@@ -318,7 +313,7 @@ void Core::LinAlg::all_to_all_communication(
     recv.resize(rdispls.back());
 
     status = MPI_Alltoallv(sendbuf.data(), sendcounts.data(), sdispls.data(), MPI_INT, recv.data(),
-        recvcounts.data(), rdispls.data(), MPI_INT, mpicomm.GetMpiComm());
+        recvcounts.data(), rdispls.data(), MPI_INT, comm);
     if (status != MPI_SUCCESS) FOUR_C_THROW("MPI_Alltoallv returned status=%d", status);
   }
 }

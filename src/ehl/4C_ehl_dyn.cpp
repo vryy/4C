@@ -59,7 +59,7 @@ void ehl_dyn()
   Global::Problem* problem = Global::Problem::instance();
 
   // 1.- Initialization
-  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
+  MPI_Comm comm = problem->get_dis("structure")->get_comm();
 
   // 2.- Parameter reading
   Teuchos::ParameterList& ehlparams =

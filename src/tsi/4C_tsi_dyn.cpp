@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 void tsi_dyn_drt()
 {
   // create a communicator
-  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("structure")->get_comm();
+  MPI_Comm comm = Global::Problem::instance()->get_dis("structure")->get_comm();
 
   // print TSI-Logo to screen
   if (Core::Communication::my_mpi_rank(comm) == 0) TSI::printlogo();

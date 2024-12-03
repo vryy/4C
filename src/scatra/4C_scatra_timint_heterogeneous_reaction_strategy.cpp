@@ -93,7 +93,7 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
   // make sure we set up everything properly
   heterogeneous_reaction_sanity_check();
 
-  std::shared_ptr<Epetra_Comm> com(scatratimint_->discretization()->get_comm().Clone());
+  MPI_Comm com(scatratimint_->discretization()->get_comm());
 
   // standard case
   discret_ = std::make_shared<Core::FE::Discretization>(
@@ -154,8 +154,7 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
     // done. Rebuild all maps and boundary condition geometries
     discret_->fill_complete(true, true, true);
 
-    if (Core::Communication::my_mpi_rank(*com) == 0 and
-        Core::Communication::num_mpi_ranks(*com) > 1)
+    if (Core::Communication::my_mpi_rank(com) == 0 and Core::Communication::num_mpi_ranks(com) > 1)
       std::cout << "parallel distribution of auxiliary discr. with standard ghosting" << std::endl;
     Core::Rebalance::Utils::print_parallel_distribution(*discret_);
   }
@@ -222,7 +221,7 @@ void ScaTra::HeterogeneousReactionStrategy::heterogeneous_reaction_sanity_check(
 {
   bool valid_slave = false;
 
-  const Epetra_Comm& com = scatratimint_->discretization()->get_comm();
+  MPI_Comm com = scatratimint_->discretization()->get_comm();
 
   if (Core::Communication::my_mpi_rank(com) == 0)
     std::cout << " Sanity check for HeterogeneousReactionStrategy ...";

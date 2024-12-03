@@ -392,8 +392,8 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
   const int numallele = discretization()->num_global_elements();
   const int mapoffset =
       dbcfsimap->MaxAllGID() + discretization()->element_row_map()->MinAllGID() + 1;
-  std::shared_ptr<Epetra_Map> elemap =
-      std::make_shared<Epetra_Map>(numallele, mapoffset, discretization()->get_comm());
+  std::shared_ptr<Epetra_Map> elemap = std::make_shared<Epetra_Map>(
+      numallele, mapoffset, Core::Communication::as_epetra_comm(discretization()->get_comm()));
 
   // create the combination of dbcfsimap and elemap
   std::vector<std::shared_ptr<const Epetra_Map>> domainmaps;

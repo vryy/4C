@@ -21,8 +21,6 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <utility>
 
 FOUR_C_NAMESPACE_OPEN
@@ -30,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 BeamDiscretizationRuntimeOutputWriter::BeamDiscretizationRuntimeOutputWriter(
-    Core::IO::VisualizationParameters parameters, const Epetra_Comm& comm)
+    Core::IO::VisualizationParameters parameters, MPI_Comm comm)
     : visualization_manager_(std::make_shared<Core::IO::VisualizationManager>(
           std::move(parameters), comm, "structure-beams")),
       use_absolute_positions_(true)
@@ -1402,8 +1400,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater
 
   // calculate length of all (linear) elements
   double global_linear_filament_length = 0;
-  discretization_->get_comm().SumAll(
-      &local_accumulated_ele_lengths, &global_linear_filament_length, 1);
+  Core::Communication::sum_all(&local_accumulated_ele_lengths, &global_linear_filament_length, 1,
+      discretization_->get_comm());
 
   //
   for (int unsigned i = 0; i < 3; ++i)
@@ -1411,8 +1409,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater
 
   // calculate global orientation parameter
   std::vector<double> global_orientation_parameter(3, 0.0);
-  discretization_->get_comm().SumAll(
-      local_orientation_parameter.data(), global_orientation_parameter.data(), 3);
+  Core::Communication::sum_all(local_orientation_parameter.data(),
+      global_orientation_parameter.data(), 3, discretization_->get_comm());
 
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)

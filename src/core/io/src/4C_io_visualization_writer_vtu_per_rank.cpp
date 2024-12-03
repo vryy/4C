@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 Core::IO::VisualizationWriterVtuPerRank::VisualizationWriterVtuPerRank(
-    const Core::IO::VisualizationParameters& parameters, const Epetra_Comm& comm,
+    const Core::IO::VisualizationParameters& parameters, MPI_Comm comm,
     std::string visualization_data_name)
     : VisualizationWriterBase(parameters, comm, std::move(visualization_data_name)),
       vtu_writer_(Core::Communication::my_mpi_rank(comm), Core::Communication::num_mpi_ranks(comm),

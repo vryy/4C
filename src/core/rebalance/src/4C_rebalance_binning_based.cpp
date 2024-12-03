@@ -40,7 +40,7 @@ void Core::Rebalance::rebalance_discretizations_by_binning(
     FOUR_C_THROW("No discretizations provided for binning !");
 
   // get communicator
-  const Epetra_Comm& comm = vector_of_discretizations[0]->get_comm();
+  MPI_Comm comm = vector_of_discretizations[0]->get_comm();
 
   // rebalance discr. with help of binning strategy
   if (Core::Communication::num_mpi_ranks(comm) > 1)
@@ -89,10 +89,8 @@ void Core::Rebalance::rebalance_discretizations_by_binning(
  *----------------------------------------------------------------------*/
 void Core::Rebalance::ghost_discretization_on_all_procs(Core::FE::Discretization& distobeghosted)
 {
-  // clone communicator of target discretization
-  std::shared_ptr<Epetra_Comm> com(distobeghosted.get_comm().Clone());
-
-  if (Core::Communication::my_mpi_rank(*com) == 0)
+  MPI_Comm com = distobeghosted.get_comm();
+  if (Core::Communication::my_mpi_rank(com) == 0)
   {
     Core::IO::cout(Core::IO::verbose)
         << "+-----------------------------------------------------------------------+"
@@ -105,8 +103,8 @@ void Core::Rebalance::ghost_discretization_on_all_procs(Core::FE::Discretization
         << Core::IO::endl;
   }
 
-  std::vector<int> allproc(Core::Communication::num_mpi_ranks(*com));
-  for (int i = 0; i < Core::Communication::num_mpi_ranks(*com); ++i) allproc[i] = i;
+  std::vector<int> allproc(Core::Communication::num_mpi_ranks(com));
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(com); ++i) allproc[i] = i;
 
   // fill my own row node ids
   const Epetra_Map* noderowmap = distobeghosted.node_row_map();
@@ -119,10 +117,11 @@ void Core::Rebalance::ghost_discretization_on_all_procs(Core::FE::Discretization
 
   // gather all master row node gids redundantly in rdata
   std::vector<int> rdata;
-  Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), *com);
+  Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), com);
 
   // build new node column map (on ALL processors)
-  Epetra_Map newnodecolmap(-1, (int)rdata.size(), rdata.data(), 0, *com);
+  Epetra_Map newnodecolmap(
+      -1, (int)rdata.size(), rdata.data(), 0, Core::Communication::as_epetra_comm(com));
   sdata.clear();
   rdata.clear();
 
@@ -137,10 +136,11 @@ void Core::Rebalance::ghost_discretization_on_all_procs(Core::FE::Discretization
 
   // gather all gids of elements redundantly
   rdata.resize(0);
-  Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), *com);
+  Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), com);
 
   // build new element column map (on ALL processors)
-  Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0, *com);
+  Epetra_Map newelecolmap(
+      -1, (int)rdata.size(), rdata.data(), 0, Core::Communication::as_epetra_comm(com));
   sdata.clear();
   rdata.clear();
   allproc.clear();
@@ -153,10 +153,10 @@ void Core::Rebalance::ghost_discretization_on_all_procs(Core::FE::Discretization
   // Safety checks in DEBUG
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   int nummycolnodes = newnodecolmap.NumMyElements();
-  std::vector<int> sizelist(Core::Communication::num_mpi_ranks(*com));
-  com->GatherAll(&nummycolnodes, sizelist.data(), 1);
-  com->Barrier();
-  for (int k = 1; k < Core::Communication::num_mpi_ranks(*com); ++k)
+  std::vector<int> sizelist(Core::Communication::num_mpi_ranks(com));
+  Core::Communication::gather_all(&nummycolnodes, sizelist.data(), 1, com);
+  Core::Communication::barrier(com);
+  for (int k = 1; k < Core::Communication::num_mpi_ranks(com); ++k)
   {
     if (sizelist[k - 1] != nummycolnodes)
       FOUR_C_THROW(
@@ -174,11 +174,11 @@ void Core::Rebalance::match_element_distribution_of_matching_discretizations(
     Core::FE::Discretization& dis_template, Core::FE::Discretization& dis_to_rebalance)
 {
   // clone communicator of target discretization
-  std::shared_ptr<Epetra_Comm> com(dis_template.get_comm().Clone());
-  if (Core::Communication::num_mpi_ranks(*com) > 1)
+  MPI_Comm com(dis_template.get_comm());
+  if (Core::Communication::num_mpi_ranks(com) > 1)
   {
     // print to screen
-    if (Core::Communication::my_mpi_rank(*com) == 0)
+    if (Core::Communication::my_mpi_rank(com) == 0)
     {
       Core::IO::cout(Core::IO::verbose)
           << "+-----------------------------------------------------------------------------+"
@@ -203,12 +203,12 @@ void Core::Rebalance::match_element_distribution_of_matching_discretizations(
         dis_template, dis_to_rebalance, rebalance_rowelegid_vec, rebalance_colelegid_vec);
 
     // construct rebalanced element row map
-    Epetra_Map rebalanced_elerowmap(
-        -1, rebalance_rowelegid_vec.size(), rebalance_rowelegid_vec.data(), 0, *com);
+    Epetra_Map rebalanced_elerowmap(-1, rebalance_rowelegid_vec.size(),
+        rebalance_rowelegid_vec.data(), 0, Core::Communication::as_epetra_comm(com));
 
     // construct rebalanced element col map
-    Epetra_Map rebalanced_elecolmap(
-        -1, rebalance_colelegid_vec.size(), rebalance_colelegid_vec.data(), 0, *com);
+    Epetra_Map rebalanced_elecolmap(-1, rebalance_colelegid_vec.size(),
+        rebalance_colelegid_vec.data(), 0, Core::Communication::as_epetra_comm(com));
 
     ////////////////////////////////////////
     // MATCH NODES
@@ -222,12 +222,12 @@ void Core::Rebalance::match_element_distribution_of_matching_discretizations(
         dis_template, dis_to_rebalance, rebalance_nodegid_vec, rebalance_colnodegid_vec);
 
     // construct rebalanced node row map
-    Epetra_Map rebalanced_noderowmap(
-        -1, rebalance_nodegid_vec.size(), rebalance_nodegid_vec.data(), 0, *com);
+    Epetra_Map rebalanced_noderowmap(-1, rebalance_nodegid_vec.size(), rebalance_nodegid_vec.data(),
+        0, Core::Communication::as_epetra_comm(com));
 
     // construct rebalanced node col map
-    Epetra_Map rebalanced_nodecolmap(
-        -1, rebalance_colnodegid_vec.size(), rebalance_colnodegid_vec.data(), 0, *com);
+    Epetra_Map rebalanced_nodecolmap(-1, rebalance_colnodegid_vec.size(),
+        rebalance_colnodegid_vec.data(), 0, Core::Communication::as_epetra_comm(com));
 
     ////////////////////////////////////////
     // REBALANCE
@@ -260,11 +260,11 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
     const std::string& condname_template, const std::string& condname_rebalance, const bool print)
 {
   // clone communicator of target discretization
-  std::shared_ptr<Epetra_Comm> com(dis_template.get_comm().Clone());
-  if (Core::Communication::num_mpi_ranks(*com) > 1)
+  MPI_Comm com(dis_template.get_comm());
+  if (Core::Communication::num_mpi_ranks(com) > 1)
   {
     // print to screen
-    if (Core::Communication::my_mpi_rank(*com) == 0)
+    if (Core::Communication::my_mpi_rank(com) == 0)
     {
       Core::IO::cout(Core::IO::verbose)
           << "+-----------------------------------------------------------------------------+"
@@ -398,7 +398,7 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
         rebalance_colelegid_vec.push_back(ele->id());
 
         // append unconditioned ele id to row gid vec
-        if (ele->owner() == Core::Communication::my_mpi_rank(*com))
+        if (ele->owner() == Core::Communication::my_mpi_rank(com))
           rebalance_rowelegid_vec.push_back(ele->id());
       }
 
@@ -406,12 +406,12 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
 
 
     // construct rebalanced element row map
-    Epetra_Map rebalanced_elerowmap(
-        -1, rebalance_rowelegid_vec.size(), rebalance_rowelegid_vec.data(), 0, *com);
+    Epetra_Map rebalanced_elerowmap(-1, rebalance_rowelegid_vec.size(),
+        rebalance_rowelegid_vec.data(), 0, Core::Communication::as_epetra_comm(com));
 
     // construct rebalanced element col map
-    Epetra_Map rebalanced_elecolmap(
-        -1, rebalance_colelegid_vec.size(), rebalance_colelegid_vec.data(), 0, *com);
+    Epetra_Map rebalanced_elecolmap(-1, rebalance_colelegid_vec.size(),
+        rebalance_colelegid_vec.data(), 0, Core::Communication::as_epetra_comm(com));
 
 
     ////////////////////////////////////////
@@ -436,7 +436,7 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
       {
         if (dis_to_rebalance.have_global_node(rebalance_cond_node))
           if (dis_to_rebalance.g_node(rebalance_cond_node)->owner() ==
-              Core::Communication::my_mpi_rank(*com))
+              Core::Communication::my_mpi_rank(com))
             rebalance_rownodegid_vec.push_back(rebalance_cond_node);
       }
     }
@@ -504,12 +504,12 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
     }
 
     // construct rebalanced node row map
-    Epetra_Map rebalanced_noderowmap(
-        -1, rebalance_rownodegid_vec.size(), rebalance_rownodegid_vec.data(), 0, *com);
+    Epetra_Map rebalanced_noderowmap(-1, rebalance_rownodegid_vec.size(),
+        rebalance_rownodegid_vec.data(), 0, Core::Communication::as_epetra_comm(com));
 
     // construct rebalanced node col map
-    Epetra_Map rebalanced_nodecolmap(
-        -1, rebalance_colnodegid_vec.size(), rebalance_colnodegid_vec.data(), 0, *com);
+    Epetra_Map rebalanced_nodecolmap(-1, rebalance_colnodegid_vec.size(),
+        rebalance_colnodegid_vec.data(), 0, Core::Communication::as_epetra_comm(com));
 
 
     ////////////////////////////////////////
@@ -590,8 +590,8 @@ std::shared_ptr<Epetra_Map> Core::Rebalance::compute_node_col_map(
   }
 
   // now reconstruct the extended colmap
-  std::shared_ptr<Epetra_Map> newcolnodemap = std::make_shared<Epetra_Map>(
-      -1, mycolnodes.size(), mycolnodes.data(), 0, sourcedis.get_comm());
+  std::shared_ptr<Epetra_Map> newcolnodemap = std::make_shared<Epetra_Map>(-1, mycolnodes.size(),
+      mycolnodes.data(), 0, Core::Communication::as_epetra_comm(sourcedis.get_comm()));
   return newcolnodemap;
 }  // Core::Rebalance::ComputeNodeColMap
 

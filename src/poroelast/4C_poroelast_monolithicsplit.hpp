@@ -23,8 +23,7 @@ namespace PoroElast
   class MonolithicSplit : public Monolithic
   {
    public:
-    //! create using a Epetra_Comm
-    explicit MonolithicSplit(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+    explicit MonolithicSplit(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
         std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! Setup the monolithic system (depends on which field is splitted)

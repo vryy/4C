@@ -42,7 +42,7 @@ CONTACT::SelfBinaryTreeNode::SelfBinaryTreeNode(SelfBinaryTreeNodeType type,
 /*----------------------------------------------------------------------*
  |  get communicator (public)                                 popp 11/09|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::SelfBinaryTreeNode::get_comm() const { return discret().get_comm(); }
+MPI_Comm CONTACT::SelfBinaryTreeNode::get_comm() const { return discret().get_comm(); }
 
 /*----------------------------------------------------------------------*
  | complete the tree storage in a top down way (public)       popp 11/09|
@@ -876,7 +876,7 @@ void CONTACT::SelfBinaryTree::evaluate_search()
 /*----------------------------------------------------------------------*
  |  get communicator (protected)                              popp 11/09|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::SelfBinaryTree::get_comm() const { return discret().get_comm(); }
+MPI_Comm CONTACT::SelfBinaryTree::get_comm() const { return discret().get_comm(); }
 
 /*----------------------------------------------------------------------*
  | Find minimal length of contact elements (protected)        popp 11/09|
@@ -1562,7 +1562,8 @@ void CONTACT::SelfBinaryTree::search_contact()
     int gid = elements_->GID(i);
     if (contactpairs_.find(gid) != contactpairs_.end()) locdata.push_back(gid);
   }
-  Epetra_Map mymap(-1, (int)locdata.size(), locdata.data(), 0, get_comm());
+  Epetra_Map mymap(
+      -1, (int)locdata.size(), locdata.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
   std::shared_ptr<Epetra_Map> redmap = Core::LinAlg::allreduce_e_map(mymap);
   Core::Communication::Exporter ex(mymap, *redmap, get_comm());
   ex.do_export(contactpairs_);

@@ -27,8 +27,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 CONTACT::TSIInterface::TSIInterface(
     const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData_ptr, const int id,
-    const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-    bool selfcontact)
+    MPI_Comm comm, const int dim, const Teuchos::ParameterList& icontact, bool selfcontact)
     : CONTACT::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact)
 {
   return;

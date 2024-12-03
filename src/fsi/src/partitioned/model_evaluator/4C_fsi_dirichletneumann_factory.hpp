@@ -12,7 +12,8 @@
 
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
+
 
 
 FOUR_C_NAMESPACE_OPEN
@@ -46,7 +47,7 @@ namespace FSI
      * \return Coupling algorithm based on Dirichlet-Neumann partitioning
      */
     static std::shared_ptr<DirichletNeumann> create_algorithm(
-        const Epetra_Comm &comm, const Teuchos::ParameterList &fsidyn);
+        MPI_Comm comm, const Teuchos::ParameterList &fsidyn);
   };
 }  // namespace FSI
 

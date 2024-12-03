@@ -147,7 +147,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
     std::vector<Core::Conditions::Condition*> constrcondvec, const std::string& discret_name,
     const std::string& element_name, int& startID)
 {
-  std::shared_ptr<Epetra_Comm> com(actdisc->get_comm().Clone());
+  MPI_Comm com(actdisc->get_comm());
 
   std::shared_ptr<Core::FE::Discretization> newdis =
       std::make_shared<Core::FE::Discretization>(discret_name, com, actdisc->n_dim());
@@ -209,15 +209,15 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
   // build unique node row map
   std::vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
-  Epetra_Map constraintnoderowmap(
-      -1, boundarynoderowvec.size(), boundarynoderowvec.data(), 0, newdis->get_comm());
+  Epetra_Map constraintnoderowmap(-1, boundarynoderowvec.size(), boundarynoderowvec.data(), 0,
+      Core::Communication::as_epetra_comm(newdis->get_comm()));
   boundarynoderowvec.clear();
 
   // build overlapping node column map
   std::vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  Epetra_Map constraintnodecolmap(
-      -1, constraintnodecolvec.size(), constraintnodecolvec.data(), 0, newdis->get_comm());
+  Epetra_Map constraintnodecolmap(-1, constraintnodecolvec.size(), constraintnodecolvec.data(), 0,
+      Core::Communication::as_epetra_comm(newdis->get_comm()));
 
   constraintnodecolvec.clear();
 

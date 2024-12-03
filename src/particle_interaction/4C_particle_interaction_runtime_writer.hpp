@@ -17,8 +17,6 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <memory>
 #include <unordered_map>
 
@@ -42,7 +40,7 @@ namespace ParticleInteraction
   {
    public:
     //! constructor
-    explicit InteractionWriter(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit InteractionWriter(MPI_Comm comm, const Teuchos::ParameterList& params);
 
     //! init interaction writer
     void init();
@@ -96,7 +94,7 @@ namespace ParticleInteraction
 
    private:
     //! communication
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! setup time of runtime output writer
     double setuptime_;

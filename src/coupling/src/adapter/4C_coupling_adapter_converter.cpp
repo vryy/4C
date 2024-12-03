@@ -126,7 +126,8 @@ bool Coupling::Adapter::MatrixLogicalSplitAndTransform::operator()(
       }
 
     int gsubset = 0;
-    Core::Communication::min_all(&subset, &gsubset, 1, logical_range_map.Comm());
+    Core::Communication::min_all(
+        &subset, &gsubset, 1, Core::Communication::unpack_epetra_comm(logical_range_map.Comm()));
 
     // need communication -> call import on permuted map
     if (!gsubset)
@@ -150,7 +151,7 @@ bool Coupling::Adapter::MatrixLogicalSplitAndTransform::operator()(
   }
 
   setup_gid_map(col_converter ? *col_converter->src_map() : esrc->RowMap(), esrc->ColMap(),
-      col_converter, src.Comm());
+      col_converter, Core::Communication::unpack_epetra_comm(src.Comm()));
 
   if (!addmatrix) dst.zero();
 
@@ -166,7 +167,7 @@ bool Coupling::Adapter::MatrixLogicalSplitAndTransform::operator()(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::MatrixLogicalSplitAndTransform::setup_gid_map(const Epetra_Map& rowmap,
-    const Epetra_Map& colmap, const CouplingConverter* converter, const Epetra_Comm& comm)
+    const Epetra_Map& colmap, const CouplingConverter* converter, MPI_Comm comm)
 {
   if (not havegidmap_)
   {

@@ -79,7 +79,7 @@ namespace FSI
           Core::LinAlg::Vector<double>& idispale,      ///< standard ALE interface displacement
           Core::LinAlg::Vector<double>& iprojdispale,  ///< projected ALE interface displacement
           Coupling::Adapter::CouplingMortar& coupsf,   ///< mortar adapter
-          const Epetra_Comm& comm                      ///< communicator
+          MPI_Comm comm                                ///< communicator
       );
 
       /// Compute new coupling matrices D and M for solid/fluid
@@ -112,13 +112,13 @@ namespace FSI
       /// compute average interface displacement
       std::vector<double> centerdisp(
           Adapter::FSIStructureWrapper& structure,  ///< structure adapter
-          const Epetra_Comm& comm                   ///< communicator
+          MPI_Comm comm                             ///< communicator
       );
 
       /// compute approximate interface rotation (structuresplit)
       void rotation(Core::FE::Discretization& mtrdis,  ///< mtr interface  discretization
           Core::LinAlg::Vector<double>& idispale,      ///< vector of ALE displacements
-          const Epetra_Comm& comm,                     ///< communicator
+          MPI_Comm comm,                               ///< communicator
           std::map<int, double>& rotrat,  ///< rotation ratio of tangential displacements
           Core::LinAlg::Vector<double>&
               rotfull  ///< vector of full displacements in tangential directions
@@ -138,14 +138,14 @@ namespace FSI
           Core::LinAlg::Vector<double>& idispale,      ///< standard ALE interface displacement
           Core::LinAlg::Vector<double>& iprojdispale,  ///< projected ALE interface displacement
           Coupling::Adapter::CouplingMortar& coupsf,   ///< mortar adapter
-          const Epetra_Comm& comm                      ///< communicator
+          MPI_Comm comm                                ///< communicator
       );
 
       /// Build full redundant structure and fluid elements.
       /// Necessary for search-trees since MORTAR elements do not know about their facets and edges.
       /// Furthermore, this function builds StructuralSurface elements from the fluid outer surface
       /// for rotation.
-      void redundant_elements(Coupling::Adapter::CouplingMortar& coupsf, const Epetra_Comm& comm);
+      void redundant_elements(Coupling::Adapter::CouplingMortar& coupsf, MPI_Comm comm);
 
      private:
       const Inpar::FSI::SlideALEProj aletype_;

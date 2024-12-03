@@ -15,7 +15,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-FSI::PartitionedImmersed::PartitionedImmersed(const Epetra_Comm& comm) : Partitioned(comm)
+FSI::PartitionedImmersed::PartitionedImmersed(MPI_Comm comm) : Partitioned(comm)
 {
   // empty constructor
 }
@@ -28,8 +28,7 @@ void FSI::PartitionedImmersed::setup()
 }
 
 
-void FSI::PartitionedImmersed::setup_coupling(
-    const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
+void FSI::PartitionedImmersed::setup_coupling(const Teuchos::ParameterList& fsidyn, MPI_Comm comm)
 {
   if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\n setup_coupling in FSI::PartitionedImmersed ..." << std::endl;

@@ -592,8 +592,8 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
 
   Core::Communication::sum_all(
       local_incrspressnp->data(), global_incrspressnp->data(), presize, discret_->get_comm());
-  discret_->get_comm().SumAll(
-      local_incrspressnp_sq->data(), global_incrspressnp_sq->data(), presize);
+  Core::Communication::sum_all(
+      local_incrspressnp_sq->data(), global_incrspressnp_sq->data(), presize, discret_->get_comm());
 
   // compute global sums, dissipation rates
 
@@ -605,10 +605,10 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
       local_incr_eps_cross->data(), global_incr_eps_cross->data(), presize, discret_->get_comm());
   Core::Communication::sum_all(
       local_incr_eps_rey->data(), global_incr_eps_rey->data(), presize, discret_->get_comm());
-  discret_->get_comm().SumAll(
-      local_incr_eps_graddiv->data(), global_incr_eps_graddiv->data(), presize);
-  discret_->get_comm().SumAll(
-      local_incr_eps_eddyvisc->data(), global_incr_eps_eddyvisc->data(), presize);
+  Core::Communication::sum_all(local_incr_eps_graddiv->data(), global_incr_eps_graddiv->data(),
+      presize, discret_->get_comm());
+  Core::Communication::sum_all(local_incr_eps_eddyvisc->data(), global_incr_eps_eddyvisc->data(),
+      presize, discret_->get_comm());
   Core::Communication::sum_all(
       local_incr_eps_visc->data(), global_incr_eps_visc->data(), presize, discret_->get_comm());
   Core::Communication::sum_all(
@@ -617,16 +617,16 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
       local_incr_eps_avm3->data(), global_incr_eps_avm3->data(), presize, discret_->get_comm());
   Core::Communication::sum_all(
       local_incr_eps_mfs->data(), global_incr_eps_mfs->data(), presize, discret_->get_comm());
-  discret_->get_comm().SumAll(
-      local_incr_eps_mfscross->data(), global_incr_eps_mfscross->data(), presize);
-  discret_->get_comm().SumAll(
-      local_incr_eps_mfsrey->data(), global_incr_eps_mfsrey->data(), presize);
+  Core::Communication::sum_all(local_incr_eps_mfscross->data(), global_incr_eps_mfscross->data(),
+      presize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incr_eps_mfsrey->data(), global_incr_eps_mfsrey->data(), presize, discret_->get_comm());
 
   // compute global sums, subgrid stresses
-  discret_->get_comm().SumAll(
-      local_incrcrossstress->data(), global_incrcrossstress->data(), stresssize);
-  discret_->get_comm().SumAll(
-      local_incrreystress->data(), global_incrreystress->data(), stresssize);
+  Core::Communication::sum_all(local_incrcrossstress->data(), global_incrcrossstress->data(),
+      stresssize, discret_->get_comm());
+  Core::Communication::sum_all(
+      local_incrreystress->data(), global_incrreystress->data(), stresssize, discret_->get_comm());
 
 
   for (int rr = 0; rr < velsize; ++rr)

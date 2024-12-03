@@ -86,8 +86,7 @@ namespace ScaTra
       /** \brief export boundary integration cells from this proc to parallel distribution
        *
        * \author henke \date 12/09 */
-      void export_interface(
-          std::map<int, Core::Geo::BoundaryIntCells>& myinterface, const Epetra_Comm& comm);
+      void export_interface(std::map<int, Core::Geo::BoundaryIntCells>& myinterface, MPI_Comm comm);
 
       /** \brief pack boundary integration cells from set into char array
        *

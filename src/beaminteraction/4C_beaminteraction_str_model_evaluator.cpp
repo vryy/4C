@@ -560,8 +560,9 @@ void Solid::ModelEvaluator::BeamInteraction::extend_ghosting()
 
   // build auxiliary bin col map
   std::vector<int> auxgids(colbins.begin(), colbins.end());
-  std::shared_ptr<Epetra_Map> auxmap = std::make_shared<Epetra_Map>(
-      -1, static_cast<int>(auxgids.size()), auxgids.data(), 0, bindis_->get_comm());
+  std::shared_ptr<Epetra_Map> auxmap =
+      std::make_shared<Epetra_Map>(-1, static_cast<int>(auxgids.size()), auxgids.data(), 0,
+          Core::Communication::as_epetra_comm(bindis_->get_comm()));
 
   std::shared_ptr<Epetra_Map> ia_elecolmap = binstrategy_->extend_element_col_map(
       ia_state_ptr_->get_bin_to_row_ele_map(), ia_state_ptr_->get_bin_to_row_ele_map(),

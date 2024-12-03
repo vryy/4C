@@ -41,9 +41,8 @@ namespace PoroMultiPhaseScaTra
   class PoroMultiPhaseScaTraMonolithicTwoWay : public PoroMultiPhaseScaTraMonolithic
   {
    public:
-    /// create using a Epetra_Comm
     PoroMultiPhaseScaTraMonolithicTwoWay(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+        MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// initialization
     void init(const Teuchos::ParameterList& globaltimeparams,
@@ -300,9 +299,8 @@ namespace PoroMultiPhaseScaTra
       : public PoroMultiPhaseScaTraMonolithicTwoWay
   {
    public:
-    /// create using a Epetra_Comm
     PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+        MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
    private:
     // Setup full map

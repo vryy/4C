@@ -17,7 +17,6 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
 #include <memory>
@@ -178,7 +177,7 @@ namespace Adapter
         std::shared_ptr<Core::FE::Discretization> slavedis,    ///< slave discretization
         std::shared_ptr<Core::FE::Discretization> aledis,      ///< ALE discretization
         std::shared_ptr<Core::LinAlg::Vector<double>>& idisp,  ///< ALE displacements
-        const Epetra_Comm& comm,                               ///< communicator
+        MPI_Comm comm,                                         ///< communicator
         bool slavewithale                                      ///< flag defining if slave is ALE
         ) override
     {

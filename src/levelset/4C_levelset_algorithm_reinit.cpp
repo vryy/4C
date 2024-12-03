@@ -1224,7 +1224,7 @@ void ScaTra::LevelSetAlgorithm::compute_normal_vector_to_interface(
   normal(1) = (edge1(2) * edge2(0) - edge1(0) * edge2(2));
   normal(2) = (edge1(0) * edge2(1) - edge1(1) * edge2(0));
 
-  //  const Epetra_Comm& comm = scatra_.discretization()->Comm();
+  //  MPI_Comm comm = scatra_.discretization()->Comm();
   //  std::cout << "proc " << Core::Communication::my_mpi_rank(comm) << " normal " <<  normal <<
   //  std::endl; std::cout << "proc " << Core::Communication::my_mpi_rank(comm) << " patch " <<
   //  patchcoord << std::endl;

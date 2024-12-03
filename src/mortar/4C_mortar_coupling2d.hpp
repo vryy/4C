@@ -12,7 +12,7 @@
 
 #include "4C_inpar_mortar.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <vector>
@@ -189,7 +189,7 @@ namespace Mortar
      \brief Get communicator
 
      */
-    virtual const Epetra_Comm& get_comm() const;
+    virtual MPI_Comm get_comm() const;
 
     // don't want = operator and cctor
     Coupling2d operator=(const Coupling2d& old);

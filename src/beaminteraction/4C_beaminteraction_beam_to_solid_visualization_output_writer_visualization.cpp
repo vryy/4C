@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 BeamInteraction::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVisualization(
     const std::string& writer_full_name, Core::IO::VisualizationParameters visualization_params)
     : Core::IO::VisualizationManager(std::move(visualization_params),
-          *(Global::Problem::instance()->get_communicators()->global_comm()), writer_full_name),
+          (Global::Problem::instance()->get_communicators()->global_comm()), writer_full_name),
       discret_(nullptr),
       node_gid_map_(nullptr)
 {
@@ -82,8 +82,8 @@ void BeamInteraction::BeamToSolidOutputWriterVisualization::
       point_coordinates.push_back(current_node->x()[dim]);
     }
   }
-  node_gid_map_ = std::make_shared<Epetra_Map>(
-      -1, my_global_dof_ids.size(), my_global_dof_ids.data(), 0, discret_->get_comm());
+  node_gid_map_ = std::make_shared<Epetra_Map>(-1, my_global_dof_ids.size(),
+      my_global_dof_ids.data(), 0, Core::Communication::as_epetra_comm(discret_->get_comm()));
 }
 
 /**

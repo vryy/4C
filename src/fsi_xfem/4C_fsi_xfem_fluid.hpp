@@ -20,13 +20,13 @@ namespace FSI
   class FluidXFEMAlgorithm : public Adapter::FluidMovingBoundaryBaseAlgorithm
   {
    public:
-    explicit FluidXFEMAlgorithm(const Epetra_Comm& comm);
+    explicit FluidXFEMAlgorithm(MPI_Comm comm);
 
     /// time loop
     void timeloop();
 
     /// communicator
-    const Epetra_Comm& get_comm() const { return comm_; }
+    MPI_Comm get_comm() const { return comm_; }
 
     /// read restart data
     virtual void read_restart(int step);
@@ -59,7 +59,7 @@ namespace FSI
 
    private:
     /// comunication (mainly for screen output)
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! @name Time stepping variables
     int step_;

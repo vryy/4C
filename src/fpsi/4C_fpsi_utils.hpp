@@ -43,7 +43,7 @@ namespace FPSI
     static std::shared_ptr<FPSI::InterfaceUtils> instance_;
 
     //! Setup Discretizations for FPSI problem (clone ALE and porofluid and setup interfaces)
-    std::shared_ptr<FPSI::FpsiBase> setup_discretizations(const Epetra_Comm& comm,
+    std::shared_ptr<FPSI::FpsiBase> setup_discretizations(MPI_Comm comm,
         const Teuchos::ParameterList& fpsidynparams,
         const Teuchos::ParameterList& poroelastdynparams);
 
@@ -52,7 +52,7 @@ namespace FPSI
         std::map<int, int>& interfacefacingelementmap);
 
     //! build map for fpsi interface
-    void setup_interface_map(const Epetra_Comm& comm, Core::FE::Discretization& structdis,
+    void setup_interface_map(MPI_Comm comm, Core::FE::Discretization& structdis,
         std::shared_ptr<Core::FE::Discretization> porofluiddis,
         std::shared_ptr<Core::FE::Discretization> fluiddis, Core::FE::Discretization& aledis);
 

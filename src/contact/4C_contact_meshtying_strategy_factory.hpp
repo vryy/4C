@@ -112,7 +112,7 @@ namespace Mortar
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<std::shared_ptr<Mortar::Interface>>& interfaces,
           const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map, const int dim,
-          const std::shared_ptr<const Epetra_Comm>& comm_ptr, Mortar::StratDataContainer& data_ptr);
+          const MPI_Comm& comm_ptr, Mortar::StratDataContainer& data_ptr);
 
      protected:
      private:

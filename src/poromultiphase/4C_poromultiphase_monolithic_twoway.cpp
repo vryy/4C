@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
  | constructor                                          kremheller 03/17 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroMultiPhaseMonolithicTwoWay(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseMonolithic(comm, globaltimeparams),
       ittolinc_(0.0),
       ittolres_(0.0),
@@ -1282,7 +1282,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
  *----------------------------------------------------------------------*/
 POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::
     PoroMultiPhaseMonolithicTwoWayArteryCoupling(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+        MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseMonolithicTwoWay(comm, globaltimeparams)
 {
   blockrowdofmap_artporo_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();

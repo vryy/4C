@@ -16,9 +16,8 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-void PaSI::Utils::change_time_parameter(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& pasi_params, Teuchos::ParameterList& particle_params,
-    Teuchos::ParameterList& struct_params)
+void PaSI::Utils::change_time_parameter(MPI_Comm comm, const Teuchos::ParameterList& pasi_params,
+    Teuchos::ParameterList& particle_params, Teuchos::ParameterList& struct_params)
 {
   // the default time step size
   particle_params.set<double>("TIMESTEP", pasi_params.get<double>("TIMESTEP"));

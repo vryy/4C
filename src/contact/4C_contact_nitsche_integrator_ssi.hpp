@@ -49,8 +49,7 @@ namespace CONTACT
      *                     mortar contact element for element based integration
      * @param[in] comm     contact interface communicator
      */
-    IntegratorNitscheSsi(
-        Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm);
+    IntegratorNitscheSsi(Teuchos::ParameterList& params, Core::FE::CellType eletype, MPI_Comm comm);
 
    protected:
     //! access method to scatra time integration factors

@@ -26,7 +26,7 @@ namespace CONTACT
     */
     PoroMtLagrangeStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<std::shared_ptr<Mortar::Interface>> interface,
-        int dim, std::shared_ptr<Epetra_Comm> comm, double alphaf, int maxdof);
+        int dim, MPI_Comm comm, double alphaf, int maxdof);
 
 
     /*!

@@ -30,8 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 // constructor (public)
 /*----------------------------------------------------------------------*/
-FSI::MonolithicNoNOX::MonolithicNoNOX(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+FSI::MonolithicNoNOX::MonolithicNoNOX(MPI_Comm comm, const Teuchos::ParameterList& timeparams)
     : MonolithicBase(comm, timeparams), zeros_(nullptr)
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();

@@ -40,7 +40,7 @@ namespace FPSI
   class MonolithicPlain : public Monolithic
   {
    public:
-    explicit MonolithicPlain(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams,
+    explicit MonolithicPlain(MPI_Comm comm, const Teuchos::ParameterList& fpsidynparams,
         const Teuchos::ParameterList& poroelastdynparams);
 
     /*! do the setup for the monolithic system

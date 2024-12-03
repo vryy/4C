@@ -20,9 +20,7 @@ namespace PoroMultiPhaseScaTra
   class PoroMultiPhaseScaTraPartitioned : public PoroMultiPhaseScaTraBase
   {
    public:
-    /// create using a Epetra_Comm
-    PoroMultiPhaseScaTraPartitioned(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    PoroMultiPhaseScaTraPartitioned(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
         : PoroMultiPhaseScaTraBase(comm, globaltimeparams){};  // Problem builder
 
 

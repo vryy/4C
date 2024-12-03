@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm) : PartFS3I1Wc(comm), comm_(comm)
+FS3I::BiofilmFSI::BiofilmFSI(MPI_Comm comm) : PartFS3I1Wc(comm), comm_(comm)
 {
   // has to stay empty
   return;

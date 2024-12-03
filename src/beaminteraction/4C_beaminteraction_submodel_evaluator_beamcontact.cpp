@@ -725,7 +725,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
   double globalmax_beam_ia_distance = 0.0;
   // build sum over all procs
   MPI_Allreduce(&locmax_ia_distance, &globalmax_beam_ia_distance, 1, MPI_DOUBLE, MPI_MAX,
-      dynamic_cast<const Epetra_MpiComm*>(&(discret().get_comm()))->Comm());
+      discret().get_comm());
 
   // i) beam to beam contact
   if (have_contact_type(Core::Binstrategy::Utils::BinContentType::Beam))
@@ -766,7 +766,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
     double spherebeamlinking_half_interaction_distance_global = 0.0;
     // build sum over all procs
     MPI_Allreduce(&loc_max_ia_dist, &spherebeamlinking_half_interaction_distance_global, 1,
-        MPI_DOUBLE, MPI_MAX, dynamic_cast<const Epetra_MpiComm*>(&(discret().get_comm()))->Comm());
+        MPI_DOUBLE, MPI_MAX, discret().get_comm());
 
     half_interaction_distance =
         (spherebeamlinking_half_interaction_distance_global > half_interaction_distance)

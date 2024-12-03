@@ -401,8 +401,9 @@ void Core::Conditions::LocsysManager::update(const double time,
     nummyentries = static_cast<int>(locsysdofs.size());
     myglobalentries = locsysdofs.data();
   }
-  locsysdofmap_ = std::make_shared<Epetra_Map>(
-      -1, nummyentries, myglobalentries, discret_.dof_row_map()->IndexBase(), discret_.get_comm());
+  locsysdofmap_ = std::make_shared<Epetra_Map>(-1, nummyentries, myglobalentries,
+      discret_.dof_row_map()->IndexBase(),
+      Core::Communication::as_epetra_comm(discret_.get_comm()));
   if (locsysdofmap_ == nullptr) FOUR_C_THROW("Creation failed.");
 
   // The matrix subtrafo_ is used in order to apply the Dirichlet Conditions in a more efficient
@@ -468,10 +469,7 @@ void Core::Conditions::LocsysManager::print() const
 /*----------------------------------------------------------------------*
  |  Get the communicator                                                |
  *----------------------------------------------------------------------*/
-inline const Epetra_Comm& Core::Conditions::LocsysManager::get_comm() const
-{
-  return discret_.get_comm();
-}
+inline MPI_Comm Core::Conditions::LocsysManager::get_comm() const { return discret_.get_comm(); }
 
 
 /*----------------------------------------------------------------------*

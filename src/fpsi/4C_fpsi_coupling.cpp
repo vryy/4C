@@ -26,7 +26,6 @@
 #include "4C_poroelast_monolithic.hpp"
 #include "4C_structure_aux.hpp"
 
-#include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>

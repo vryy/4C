@@ -39,7 +39,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor                                           hemmler 07/14 |
  *----------------------------------------------------------------------*/
-FS3I::PartFpS3I1Wc::PartFpS3I1Wc(const Epetra_Comm& comm) : PartFPS3I(comm)
+FS3I::PartFpS3I1Wc::PartFpS3I1Wc(MPI_Comm comm) : PartFPS3I(comm)
 {
   // keep constructor empty
   return;

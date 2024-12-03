@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::IntegratorNitscheSsi::IntegratorNitscheSsi(
-    Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm)
+    Teuchos::ParameterList& params, Core::FE::CellType eletype, MPI_Comm comm)
     : IntegratorNitsche(params, eletype, comm),
       scatraparamstimint_(Discret::Elements::ScaTraEleParameterTimInt::instance("scatra")),
       scatraparamsboundary_(Discret::Elements::ScaTraEleParameterBoundary::instance("scatra"))

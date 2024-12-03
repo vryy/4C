@@ -26,7 +26,7 @@ void fpsi_drt()
   Global::Problem* problem = Global::Problem::instance();
 
   // 1.- Get Communicator
-  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
+  MPI_Comm comm = problem->get_dis("structure")->get_comm();
 
   // print the chuck
   if (Core::Communication::my_mpi_rank(comm) == 0)

@@ -14,7 +14,6 @@
 #include "4C_fsi_monolithic.hpp"
 #include "4C_inpar_fsi.hpp"
 
-class Epetra_Comm;
 namespace NOX
 {
   namespace Epetra
@@ -60,7 +59,7 @@ namespace FSI
 
    public:
     explicit MortarMonolithicFluidSplitSaddlePoint(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+        MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
     void setup_system() final;
 
@@ -209,7 +208,7 @@ namespace FSI
     std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     /// communicator
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     /// @name Matrix block transform objects to handle row and column map exchange for matrix blocks
 

@@ -13,6 +13,7 @@
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
+#include <mpi.h>
 
 #include <memory>
 
@@ -107,8 +108,8 @@ namespace Core::LinAlg
     //! Returns the address of the Epetra_BlockMap for this multi-vector.
     const Epetra_BlockMap &Map() const { return (vector_->Map()); };
 
-    //! Returns the address of the Epetra_Comm for this multi-vector.
-    const Epetra_Comm &Comm() const { return (vector_->Comm()); };
+    //! Returns the MPI_Comm for this multi-vector.
+    [[nodiscard]] MPI_Comm Comm() const;
 
     //! Returns true if this multi-vector is distributed global, i.e., not local replicated.
     bool DistributedGlobal() const { return (vector_->Map().DistributedGlobal()); };

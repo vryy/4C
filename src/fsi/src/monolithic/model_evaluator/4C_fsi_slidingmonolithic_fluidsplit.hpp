@@ -62,8 +62,7 @@ namespace FSI
     friend class FSI::FSIResultTest;
 
    public:
-    explicit SlidingMonolithicFluidSplit(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit SlidingMonolithicFluidSplit(MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
 
@@ -292,7 +291,7 @@ namespace FSI
     std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     /// communicator
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks

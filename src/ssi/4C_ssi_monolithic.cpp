@@ -41,7 +41,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-SSI::SsiMono::SsiMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+SSI::SsiMono::SsiMono(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIBase(comm, globaltimeparams),
       equilibration_method_{Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(
                                 globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION"),
@@ -476,7 +476,7 @@ const std::shared_ptr<const Epetra_Map>& SSI::SsiMono::dof_row_map() const
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SsiMono::init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SsiMono::init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {

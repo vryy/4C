@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 std::shared_ptr<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integrator(
     const Inpar::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
-    const Core::FE::CellType& slave_type, const Epetra_Comm& comm) const
+    const Core::FE::CellType& slave_type, MPI_Comm comm) const
 {
   std::shared_ptr<CONTACT::Integrator> integrator = nullptr;
   switch (sol_type)
@@ -98,7 +98,7 @@ std::shared_ptr<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integra
  *----------------------------------------------------------------------*/
 std::shared_ptr<CONTACT::Integrator> CONTACT::INTEGRATOR::build_integrator(
     const Inpar::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
-    const Core::FE::CellType& slave_type, const Epetra_Comm& comm)
+    const Core::FE::CellType& slave_type, MPI_Comm comm)
 {
   Factory factory;
   return factory.build_integrator(sol_type, mortar_params, slave_type, comm);

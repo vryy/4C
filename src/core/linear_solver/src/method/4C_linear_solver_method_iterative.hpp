@@ -27,7 +27,7 @@ namespace Core::LinearSolver
   {
    public:
     //! Constructor
-    IterativeSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params);
+    IterativeSolver(MPI_Comm comm, Teuchos::ParameterList& params);
 
     /*! \brief Setup the solver object
      *
@@ -79,7 +79,7 @@ namespace Core::LinearSolver
         std::shared_ptr<Core::LinAlg::KrylovProjector> projector);
 
     //! a communicator
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! (internal) parameter lists
     Teuchos::ParameterList& params_;

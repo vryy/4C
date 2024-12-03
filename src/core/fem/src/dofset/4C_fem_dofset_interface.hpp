@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
+#include <mpi.h>
 
 #include <memory>
 #include <vector>
@@ -127,7 +127,7 @@ namespace Core::DOFSets
     virtual void print(std::ostream& os) const = 0;
 
     /// Print the dofsets in the static_dofsets_ list
-    virtual void print_all_dofsets(const Epetra_Comm& comm) const = 0;
+    virtual void print_all_dofsets(MPI_Comm comm) const = 0;
 
     /// Returns true if filled
     virtual bool filled() const = 0;
@@ -155,7 +155,7 @@ namespace Core::DOFSets
 
     /// Get Max of all GID assigned in the DofSets in front of current one in the list
     /// #static_dofsets_
-    virtual int max_gi_din_list(const Epetra_Comm& comm) const = 0;
+    virtual int max_gi_din_list(MPI_Comm comm) const = 0;
 
     /// are the dof maps already initialized?
     virtual bool initialized() const = 0;

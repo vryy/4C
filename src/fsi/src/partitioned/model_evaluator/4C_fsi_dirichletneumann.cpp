@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::DirichletNeumann::DirichletNeumann(const Epetra_Comm& comm)
+FSI::DirichletNeumann::DirichletNeumann(MPI_Comm comm)
     : Partitioned(comm), kinematiccoupling_(false)
 {
   // empty constructor

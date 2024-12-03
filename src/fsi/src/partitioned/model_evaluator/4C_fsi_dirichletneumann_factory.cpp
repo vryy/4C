@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::shared_ptr<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorithm(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& fsidyn)
+    MPI_Comm comm, const Teuchos::ParameterList& fsidyn)
 {
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   auto method =

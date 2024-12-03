@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SSI::SSIPart::SSIPart(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+SSI::SSIPart::SSIPart(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIBase(comm, globaltimeparams)
 {
   // Keep this constructor empty!
@@ -31,7 +31,7 @@ SSI::SSIPart::SSIPart(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIPart::init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIPart::init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {

@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<std::shared_ptr<Mortar::Interface>> interface, const int spatialDim,
-    const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    const MPI_Comm& comm, const double alphaf, const int maxdof)
     : MtAbstractStrategy(
           dof_row_map, NodeRowMap, params, interface, spatialDim, comm, alphaf, maxdof)
 {

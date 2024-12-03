@@ -65,9 +65,8 @@ namespace CONTACT
       /** \brief Create a contact interface object based on the given information
        *
        *  \author hiermeier \date 03/17 */
-      static std::shared_ptr<CONTACT::Interface> create_interface(const int id,
-          const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
-          const bool selfcontact,
+      static std::shared_ptr<CONTACT::Interface> create_interface(const int id, MPI_Comm comm,
+          const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
           std::shared_ptr<CONTACT::InterfaceDataContainer> interfaceData_ptr = nullptr,
           const int contactconstitutivelaw_id = -1);
 
@@ -75,7 +74,7 @@ namespace CONTACT
        *
        *  \author hiermeier \date 03/17 */
       static std::shared_ptr<CONTACT::Interface> create_interface(
-          const enum Inpar::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
+          const enum Inpar::CONTACT::SolvingStrategy stype, const int id, MPI_Comm comm,
           const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
           std::shared_ptr<CONTACT::InterfaceDataContainer> interface_data_ptr,
           const int contactconstitutivelaw_id = -1);
@@ -99,8 +98,7 @@ namespace CONTACT
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces,
           const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map, const int dim,
-          const std::shared_ptr<const Epetra_Comm>& comm_ptr,
-          std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr,
+          const MPI_Comm& comm_ptr, std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr,
           CONTACT::ParamsInterface* cparams_interface = nullptr);
 
       //! Create the desired search tree object

@@ -13,7 +13,7 @@
 #include "4C_fem_general_shape_function_type.hpp"
 #include "4C_io_legacy_types.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
 
 #include <fstream>
 #include <memory>
@@ -41,7 +41,7 @@ namespace Core::IO
      * @param[in] filesteps            number of output steps per binary file
      * @param[in] write_binary_output  flag indicating if output is written in binary format
      */
-    OutputControl(const Epetra_Comm& comm, std::string problemtype,
+    OutputControl(MPI_Comm comm, std::string problemtype,
         Core::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
         const std::string& outputname, int ndim, int restart_step, int filesteps,
         bool write_binary_output);
@@ -61,7 +61,7 @@ namespace Core::IO
      * @param[in] write_binary_output  flag indicating if output is written in binary format
      * @param[in] adaptname            flag indicating if output name is adapted
      */
-    OutputControl(const Epetra_Comm& comm, std::string problemtype,
+    OutputControl(MPI_Comm comm, std::string problemtype,
         Core::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
         const std::string& restartname, std::string outputname, int ndim, int restart_step,
         int filesteps, bool write_binary_output, bool adaptname = true);
@@ -161,7 +161,7 @@ namespace Core::IO
   {
    public:
     InputControl(const std::string& filename, const bool serial = false);
-    InputControl(const std::string& filename, const Epetra_Comm& comm);
+    InputControl(const std::string& filename, MPI_Comm comm);
     ~InputControl();
 
     MAP* control_file() { return &table_; }

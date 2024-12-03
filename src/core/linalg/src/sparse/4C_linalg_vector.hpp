@@ -154,8 +154,8 @@ namespace Core::LinAlg
     //! Returns the address of the Epetra_BlockMap for this multi-vector.
     const Epetra_BlockMap &Map() const { return (vector_->Map()); };
 
-    //! Returns the address of the Epetra_Comm for this multi-vector.
-    const Epetra_Comm &Comm() const { return (vector_->Comm()); };
+    //! Returns the MPI_Comm for this multi-vector.
+    MPI_Comm Comm() const;
 
     //! Returns true if this multi-vector is distributed global, i.e., not local replicated.
     bool DistributedGlobal() const { return (vector_->Map().DistributedGlobal()); };
@@ -402,7 +402,7 @@ namespace Core::LinAlg
       return vector_->Export(*A.vector_, Exporter, CombineMode, Indexor);
     }
 
-    const Epetra_Comm &Comm() const { return vector_->Comm(); };
+    [[nodiscard]] MPI_Comm Comm() const;
 
    private:
     std::shared_ptr<Epetra_IntVector> vector_;

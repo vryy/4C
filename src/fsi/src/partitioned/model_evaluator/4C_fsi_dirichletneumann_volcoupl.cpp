@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::DirichletNeumannVolCoupl::DirichletNeumannVolCoupl(const Epetra_Comm& comm)
+FSI::DirichletNeumannVolCoupl::DirichletNeumannVolCoupl(MPI_Comm comm)
     : DirichletNeumannDisp(comm), coupsa_(nullptr)
 {
 }
@@ -61,7 +61,7 @@ void FSI::DirichletNeumannVolCoupl::setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::DirichletNeumannVolCoupl::setup_coupling_struct_ale(
-    const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
+    const Teuchos::ParameterList& fsidyn, MPI_Comm comm)
 {
   const int ndim = Global::Problem::instance()->n_dim();
 
@@ -92,7 +92,7 @@ void FSI::DirichletNeumannVolCoupl::setup_coupling_struct_ale(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::DirichletNeumannVolCoupl::setup_interface_corrector(
-    const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
+    const Teuchos::ParameterList& fsidyn, MPI_Comm comm)
 {
   icorrector_ = std::make_shared<InterfaceCorrector>();
 

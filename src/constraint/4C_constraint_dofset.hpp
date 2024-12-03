@@ -59,7 +59,8 @@ namespace CONSTRAINTS
       int lmin = dofrowmap_->MinMyGID();
       if (dofrowmap_->NumMyElements() == 0) lmin = std::numeric_limits<int>::max();
       int gmin = std::numeric_limits<int>::max();
-      Core::Communication::min_all(&lmin, &gmin, 1, dofrowmap_->Comm());
+      Core::Communication::min_all(
+          &lmin, &gmin, 1, Core::Communication::unpack_epetra_comm(dofrowmap_->Comm()));
       return gmin;
     };
 

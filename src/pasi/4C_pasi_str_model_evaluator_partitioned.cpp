@@ -15,7 +15,6 @@
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 #include "4C_structure_new_timint_implicit.hpp"
 
-#include <Epetra_Comm.h>
 
 FOUR_C_NAMESPACE_OPEN
 

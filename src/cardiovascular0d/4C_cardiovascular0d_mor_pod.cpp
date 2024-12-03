@@ -314,7 +314,7 @@ void Cardiovascular0D::ProperOrthogonalDecomposition::read_pod_basis_vectors_fro
   char* memblock = new char[mysize];
 
   // calculation of starting points in matrix for each processor
-  const Epetra_Comm& comm(full_model_dof_row_map_->Comm());
+  MPI_Comm comm(Core::Communication::unpack_epetra_comm(full_model_dof_row_map_->Comm()));
   const int numproc(Core::Communication::num_mpi_ranks(comm));
   const int mypid(Core::Communication::my_mpi_rank(comm));
   std::vector<int> localnumbers(numproc, 0);

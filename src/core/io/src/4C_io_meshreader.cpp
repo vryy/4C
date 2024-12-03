@@ -165,9 +165,11 @@ void Core::IO::MeshReader::rebalance()
           // in addition calculate geometric information based on the coordinates of the
           // discretization
           rowmap = std::make_shared<Epetra_Map>(-1, graph_[i]->RowMap().NumMyElements(),
-              graph_[i]->RowMap().MyGlobalElements(), 0, comm_);
+              graph_[i]->RowMap().MyGlobalElements(), 0,
+              Core::Communication::as_epetra_comm(comm_));
           colmap = std::make_shared<Epetra_Map>(-1, graph_[i]->ColMap().NumMyElements(),
-              graph_[i]->ColMap().MyGlobalElements(), 0, comm_);
+              graph_[i]->ColMap().MyGlobalElements(), 0,
+              Core::Communication::as_epetra_comm(comm_));
 
           discret->redistribute(*rowmap, *colmap,
               {.assign_degrees_of_freedom = false,
@@ -187,9 +189,11 @@ void Core::IO::MeshReader::rebalance()
           rebalanceParams.set("partitioning method", "HYPERGRAPH");
 
           rowmap = std::make_shared<Epetra_Map>(-1, graph_[i]->RowMap().NumMyElements(),
-              graph_[i]->RowMap().MyGlobalElements(), 0, comm_);
+              graph_[i]->RowMap().MyGlobalElements(), 0,
+              Core::Communication::as_epetra_comm(comm_));
           colmap = std::make_shared<Epetra_Map>(-1, graph_[i]->ColMap().NumMyElements(),
-              graph_[i]->ColMap().MyGlobalElements(), 0, comm_);
+              graph_[i]->ColMap().MyGlobalElements(), 0,
+              Core::Communication::as_epetra_comm(comm_));
 
           discret->redistribute(*rowmap, *colmap, {.do_boundary_conditions = false});
 
@@ -209,7 +213,8 @@ void Core::IO::MeshReader::rebalance()
     }
     else
     {
-      rowmap = colmap = std::make_shared<Epetra_Map>(-1, 0, nullptr, 0, comm_);
+      rowmap = colmap = std::make_shared<Epetra_Map>(
+          -1, 0, nullptr, 0, Core::Communication::as_epetra_comm(comm_));
     }
 
     auto options_redistribution = Core::FE::OptionsRedistribution();

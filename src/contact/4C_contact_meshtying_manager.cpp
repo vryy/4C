@@ -33,7 +33,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
     : Mortar::ManagerBase()
 {
   // overwrite base class communicator
-  comm_ = std::shared_ptr<Epetra_Comm>(discret.get_comm().Clone());
+  comm_ = discret.get_comm();
 
   // create some local variables (later to be stored in strategy)
   const int spatialDim = Global::Problem::instance()->n_dim();
@@ -306,7 +306,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
               mtparams.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
       bool isFinalDistribution = false;
       if (parallelRedist == Inpar::Mortar::ParallelRedist::redist_none or
-          Core::Communication::num_mpi_ranks(*comm_) == 1)
+          Core::Communication::num_mpi_ranks(comm_) == 1)
         isFinalDistribution = true;
 
       interface->fill_complete(Global::Problem::instance()->discretization_map(),

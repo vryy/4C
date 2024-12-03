@@ -76,8 +76,7 @@ namespace TSI
   class Algorithm : public Adapter::AlgorithmBase
   {
    public:
-    //! create using a Epetra_Comm
-    explicit Algorithm(const Epetra_Comm& comm);
+    explicit Algorithm(MPI_Comm comm);
 
 
     //! outer level time loop (to be implemented by deriving classes)

@@ -208,7 +208,8 @@ std::shared_ptr<const Epetra_CrsGraph> Core::Rebalance::build_graph(
     for (fool = mynodes.begin(); fool != mynodes.end(); ++fool) nodes.push_back(*fool);
     mynodes.clear();
     // create a non-overlapping row map
-    rownodes = std::make_shared<Epetra_Map>(-1, (int)nodes.size(), &nodes[0], 0, dis.get_comm());
+    rownodes = std::make_shared<Epetra_Map>(
+        -1, (int)nodes.size(), &nodes[0], 0, Core::Communication::as_epetra_comm(dis.get_comm()));
   }
 
   // start building the graph object
@@ -380,7 +381,7 @@ std::shared_ptr<const Epetra_CrsGraph> Core::Rebalance::build_monolithic_node_gr
   std::vector<int> my_colliding_primitives_vec(
       my_colliding_primitives.begin(), my_colliding_primitives.end());
   Epetra_Map my_colliding_primitives_map(-1, my_colliding_primitives_vec.size(),
-      my_colliding_primitives_vec.data(), 0, dis.get_comm());
+      my_colliding_primitives_vec.data(), 0, Core::Communication::as_epetra_comm(dis.get_comm()));
   Epetra_Import importer(my_colliding_primitives_map, *dis.element_row_map());
   Epetra_CrsGraph my_colliding_primitives_connectivity(
       Copy, my_colliding_primitives_map, n_nodes_per_element_max, false);

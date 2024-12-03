@@ -77,7 +77,7 @@ void Core::DOFSets::DofSetBase::replace_in_static_dofsets(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::DOFSets::DofSetBase::max_gi_din_list(const Epetra_Comm& comm) const
+int Core::DOFSets::DofSetBase::max_gi_din_list(MPI_Comm comm) const
 {
   int count = -1;
   for (std::list<DofSetInterface*>::const_iterator i = static_dofsets_.begin();
@@ -96,7 +96,7 @@ int Core::DOFSets::DofSetBase::max_gi_din_list(const Epetra_Comm& comm) const
   return max;
 }
 
-void Core::DOFSets::DofSetBase::print_all_dofsets(const Epetra_Comm& comm) const
+void Core::DOFSets::DofSetBase::print_all_dofsets(MPI_Comm comm) const
 {
   if (Core::Communication::my_mpi_rank(comm) == 0)
   {

@@ -307,10 +307,10 @@ void BeamInteraction::BeamToSolidSurfaceVisualizationOutputWriter::
         Core::LinAlg::Matrix<3, 2, double> solid_resultant_global(true);
         MPI_Allreduce(beam_resultant.data(), beam_resultant_global.data(),
             beam_resultant.num_rows() * beam_resultant.num_cols(), MPI_DOUBLE, MPI_SUM,
-            dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->discret().get_comm()))->Comm());
+            beam_contact->discret().get_comm());
         MPI_Allreduce(solid_resultant.data(), solid_resultant_global.data(),
             solid_resultant.num_rows() * solid_resultant.num_cols(), MPI_DOUBLE, MPI_SUM,
-            dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->discret().get_comm()))->Comm());
+            beam_contact->discret().get_comm());
 
         // Add to the visualization output writer.
         auto& visualization_data = nodal_force_visualization->get_visualization_data();

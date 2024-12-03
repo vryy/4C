@@ -122,7 +122,7 @@ namespace PoroMultiPhaseScaTra
 
    protected:
     //! communicator
-    const Epetra_Comm& get_comm() const { return comm_; }
+    MPI_Comm get_comm() const { return comm_; }
 
     //! artery (1D) discretization
     std::shared_ptr<Core::FE::Discretization> arterydis_;
@@ -160,7 +160,7 @@ namespace PoroMultiPhaseScaTra
 
    private:
     //! communication (mainly for screen output)
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
   };
 
 }  // namespace PoroMultiPhaseScaTra

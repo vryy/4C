@@ -36,7 +36,7 @@ namespace Airway
   {
    public:
     /// Standard Constructor
-    RedAirwayTissue(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    RedAirwayTissue(MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
 
     void read_restart(const int step) override;

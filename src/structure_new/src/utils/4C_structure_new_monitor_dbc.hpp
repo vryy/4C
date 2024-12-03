@@ -14,6 +14,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 
 #include <Epetra_Map.h>
+#include <mpi.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -127,7 +128,7 @@ namespace Solid
         const Core::LinAlg::Matrix<DIM, 1>& rmoment, const double& area_ref,
         const double& area_cur) const;
 
-    inline const Epetra_Comm& get_comm() const;
+    inline MPI_Comm get_comm() const;
 
     inline void throw_if_not_init() const { FOUR_C_ASSERT(isinit_, "Call init() first!"); }
 

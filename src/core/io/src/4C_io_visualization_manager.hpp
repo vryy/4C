@@ -14,8 +14,6 @@
 #include "4C_io_visualization_parameters.hpp"
 #include "4C_io_visualization_writer_base.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -54,8 +52,8 @@ namespace Core::IO
      * - "contact_forces"
      * - "contact_segmentation"
      */
-    VisualizationManager(Core::IO::VisualizationParameters parameters, const Epetra_Comm& comm,
-        std::string base_output_name);
+    VisualizationManager(
+        Core::IO::VisualizationParameters parameters, MPI_Comm comm, std::string base_output_name);
 
     /**
      * @brief Return a const reference to the visualization data
@@ -120,7 +118,7 @@ namespace Core::IO
     const Core::IO::VisualizationParameters parameters_;
 
     //! MPI communicator
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! The visualization data containers
     std::map<std::string, std::pair<VisualizationData, std::unique_ptr<VisualizationWriterBase>>>

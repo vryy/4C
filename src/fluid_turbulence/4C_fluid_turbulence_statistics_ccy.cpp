@@ -311,13 +311,13 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
 
     Core::Communication::sum_all(
         lnodeplanes.data(), nodeshells_->data(), nodeshells_->size(), discret_->get_comm());
-    discret_->get_comm().SumAll(
-        lplanecoordinates.data(), shellcoordinates_->data(), shellcoordinates_->size());
+    Core::Communication::sum_all(lplanecoordinates.data(), shellcoordinates_->data(),
+        shellcoordinates_->size(), discret_->get_comm());
 
-    discret_->get_comm().SumAll(
-        lnodeshells_numnodes.data(), nodeshells_numnodes.data(), nodeshells_numnodes.size());
-    discret_->get_comm().SumAll(lshellcoordinates_numnodes.data(), shellcoordinates_numnodes.data(),
-        shellcoordinates_numnodes.size());
+    Core::Communication::sum_all(lnodeshells_numnodes.data(), nodeshells_numnodes.data(),
+        nodeshells_numnodes.size(), discret_->get_comm());
+    Core::Communication::sum_all(lshellcoordinates_numnodes.data(),
+        shellcoordinates_numnodes.data(), shellcoordinates_numnodes.size(), discret_->get_comm());
 
     {
       (*nodeshells_).resize(nele_x_mele_x_lele[1] + 1);
