@@ -37,9 +37,6 @@
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rigidsphere.hpp"
 #include "4C_shell7p_ele.hpp"
-#include "4C_so3_plast_ssn_eletypes.hpp"
-#include "4C_so3_plast_ssn_sosh18.hpp"
-#include "4C_so3_plast_ssn_sosh8.hpp"
 #include "4C_solid_3D_ele.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_group_prepostoperator.hpp"
@@ -587,9 +584,6 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
 void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
     std::set<enum Inpar::Solid::EleTech>& eletechs) const
 {
-  int isplasticity_local = 0;
-  int isplasticity_global = 0;
-
   int iseas_local = 0;
   int iseas_global = 0;
 
@@ -602,17 +596,6 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
   for (int i = 0; i < actdis_->num_my_row_elements(); ++i)
   {
     Core::Elements::Element* actele = actdis_->l_row_element(i);
-    // Detect plasticity -------------------------------------------------------
-    if (actele->element_type() == Discret::Elements::SoHex8PlastType::instance() or
-        actele->element_type() == Discret::Elements::SoHex27PlastType::instance() or
-        actele->element_type() == Discret::Elements::SoSh8PlastType::instance() or
-        actele->element_type() == Discret::Elements::SoHex18PlastType::instance() or
-        actele->element_type() == Discret::Elements::SoSh18PlastType::instance())
-    {
-      if (actele->material()->material_type() == Core::Materials::m_plelasthyper)
-        isplasticity_local = true;
-    }
-
     // Detect EAS --------------------------------------------------------------
     Discret::Elements::SoBase* so_base_ele = dynamic_cast<Discret::Elements::SoBase*>(actele);
     if (so_base_ele != nullptr)
@@ -637,10 +620,6 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
       break;
     }
   }
-
-  // plasticity - sum over all processors
-  Core::Communication::sum_all(&isplasticity_local, &isplasticity_global, 1, actdis_->get_comm());
-  if (isplasticity_global > 0) eletechs.insert(Inpar::Solid::EleTech::plasticity);
 
   // eas - sum over all processors
   Core::Communication::sum_all(&iseas_local, &iseas_global, 1, actdis_->get_comm());

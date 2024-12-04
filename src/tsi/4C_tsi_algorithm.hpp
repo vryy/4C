@@ -167,8 +167,6 @@ namespace TSI
 
     //! contact strategies
     std::shared_ptr<CONTACT::LagrangeStrategyTsi> contact_strategy_lagrange_;
-    std::shared_ptr<CONTACT::NitscheStrategyTsi> contact_strategy_nitsche_;
-
     //@}
 
     //! @name Volume Mortar stuff

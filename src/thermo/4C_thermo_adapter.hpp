@@ -208,10 +208,6 @@ namespace Thermo
     /// reset everything to beginning of time step, for adaptivity
     virtual void reset_step() = 0;
 
-    //! store an RCP to the contact strategy constructed in the structural time integration
-    virtual void set_nitsche_contact_strategy(
-        std::shared_ptr<CONTACT::NitscheStrategyTsi> strategy) = 0;
-
     //! store an RCP to the contact interface parameters in the structural time integration
     virtual void set_nitsche_contact_parameters(
         std::shared_ptr<CONTACT::ParamsInterface> params) = 0;

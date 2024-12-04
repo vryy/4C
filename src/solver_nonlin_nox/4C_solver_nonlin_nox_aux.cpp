@@ -529,7 +529,6 @@ enum NOX::Nln::SolutionType NOX::Nln::Aux::convert_quantity_type_to_solution_typ
   {
     case NOX::Nln::StatusTest::quantity_structure:
     case NOX::Nln::StatusTest::quantity_eas:
-    case NOX::Nln::StatusTest::quantity_plasticity:
     case NOX::Nln::StatusTest::quantity_pressure:
       soltype = NOX::Nln::sol_structure;
       break;

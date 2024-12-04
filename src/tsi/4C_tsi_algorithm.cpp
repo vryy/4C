@@ -13,7 +13,6 @@
 #include "4C_contact_lagrange_strategy.hpp"
 #include "4C_contact_lagrange_strategy_tsi.hpp"
 #include "4C_contact_meshtying_contact_bridge.hpp"
-#include "4C_contact_nitsche_strategy_tsi.hpp"
 #include "4C_contact_strategy_factory.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
@@ -428,8 +427,6 @@ void TSI::Algorithm::apply_thermo_coupling_state(
     if (contact_strategy_lagrange_ != nullptr)
       contact_strategy_lagrange_->set_state(
           Mortar::state_temperature, *coupST_->slave_to_master(*thermo_field()->tempnp()));
-    if (contact_strategy_nitsche_ != nullptr)
-      contact_strategy_nitsche_->set_state(Mortar::state_temperature, *thermo_field()->tempnp());
   }
 }  // apply_thermo_coupling_state()
 
@@ -464,27 +461,7 @@ void TSI::Algorithm::prepare_contact_strategy()
   auto stype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
       Global::Problem::instance()->contact_dynamic_params(), "STRATEGY");
 
-  if (stype == Inpar::CONTACT::solution_nitsche)
-  {
-    if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
-            Global::Problem::instance()->structural_dynamic_params(), "INT_STRATEGY") !=
-        Inpar::Solid::int_standard)
-      FOUR_C_THROW("thermo-mechanical contact only with new structural time integration");
-
-    if (coupST_ == nullptr) FOUR_C_THROW("coupST_ not yet here");
-
-    Solid::ModelEvaluator::Contact& a = static_cast<Solid::ModelEvaluator::Contact&>(
-        structure_field()->model_evaluator(Inpar::Solid::model_contact));
-    contact_strategy_nitsche_ =
-        std::dynamic_pointer_cast<CONTACT::NitscheStrategyTsi>(a.strategy_ptr());
-    contact_strategy_nitsche_->enable_redistribution();
-
-    thermo_->set_nitsche_contact_strategy(contact_strategy_nitsche_);
-
-    return;
-  }
-
-  else if (stype == Inpar::CONTACT::solution_lagmult)
+  if (stype == Inpar::CONTACT::solution_lagmult)
   {
     if (structure_field()->have_model(Inpar::Solid::model_contact))
       FOUR_C_THROW(

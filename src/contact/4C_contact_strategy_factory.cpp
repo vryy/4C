@@ -18,7 +18,6 @@
 #include "4C_contact_nitsche_strategy.hpp"
 #include "4C_contact_nitsche_strategy_ssi.hpp"
 #include "4C_contact_nitsche_strategy_ssi_elch.hpp"
-#include "4C_contact_nitsche_strategy_tsi.hpp"
 #include "4C_contact_paramsinterface.hpp"
 #include "4C_contact_penalty_strategy.hpp"
 #include "4C_contact_rough_node.hpp"
@@ -1609,13 +1608,7 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
   else if (algo == Inpar::Mortar::algorithm_gpts &&
            (stype == Inpar::CONTACT::solution_nitsche || stype == Inpar::CONTACT::solution_penalty))
   {
-    if (params.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)
-    {
-      data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
-      strategy_ptr = std::make_shared<NitscheStrategyTsi>(
-          data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset);
-    }
-    else if (params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi)
+    if (params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi)
     {
       data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
       strategy_ptr = std::make_shared<NitscheStrategySsi>(

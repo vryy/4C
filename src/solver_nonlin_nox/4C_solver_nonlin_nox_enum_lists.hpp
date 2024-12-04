@@ -290,7 +290,6 @@ namespace NOX
         quantity_meshtying,           ///< check meshtying quantities
         quantity_cardiovascular0d,    ///< check 0d cardiovascular quantities
         quantity_lag_pen_constraint,  ///< check Lagrange/penalty enforced constraint quantities
-        quantity_plasticity,          ///< check semi-smooth plasticity
         quantity_pressure,            ///< check pressure dofs
         quantity_eas,                 ///< check eas dofs
         quantity_levelset_reinit,     ///< check levelset reinitialization
@@ -314,8 +313,6 @@ namespace NOX
             return "Cardiovascular0D";
           case quantity_lag_pen_constraint:
             return "Lag-Pen-Constraint";
-          case quantity_plasticity:
-            return "Plasticity";
           case quantity_pressure:
             return "Pressure";
           case quantity_eas:
@@ -348,8 +345,6 @@ namespace NOX
           type = quantity_cardiovascular0d;
         else if (name == "Lag-Pen-Constraint")
           type = quantity_lag_pen_constraint;
-        else if (name == "Plasticity")
-          type = quantity_plasticity;
         else if (name == "Pressure")
           type = quantity_pressure;
         else if (name == "EAS")

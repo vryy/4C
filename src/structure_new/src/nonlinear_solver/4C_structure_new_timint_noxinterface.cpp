@@ -272,7 +272,6 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetr
       break;
     }
     case NOX::Nln::StatusTest::quantity_eas:
-    case NOX::Nln::StatusTest::quantity_plasticity:
     {
       rms = int_ptr_->get_condensed_solution_update_rms(checkquantity);
       break;
@@ -330,7 +329,6 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epe
       break;
     }
     case NOX::Nln::StatusTest::quantity_eas:
-    case NOX::Nln::StatusTest::quantity_plasticity:
     {
       // get the update norm of the condensed quantities
       updatenorm = int_ptr_->get_condensed_update_norm(checkquantity);
@@ -389,7 +387,6 @@ double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(const E
       break;
     }
     case NOX::Nln::StatusTest::quantity_eas:
-    case NOX::Nln::StatusTest::quantity_plasticity:
     {
       // get the update norm of the condensed quantities
       xoldnorm = int_ptr_->get_condensed_previous_sol_norm(checkquantity);

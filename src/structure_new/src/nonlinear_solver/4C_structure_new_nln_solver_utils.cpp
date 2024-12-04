@@ -174,12 +174,6 @@ void Solid::Nln::SOLVER::convert_ele_tech_to_quantity_type(
       qt.push_back(NOX::Nln::StatusTest::quantity_eas);
       break;
     }
-    // --- Plasticity case -----------------------------------------------------
-    case Inpar::Solid::EleTech::plasticity:
-    {
-      qt.push_back(NOX::Nln::StatusTest::quantity_plasticity);
-      break;
-    }
     default:
     {
       // no representation in the quantity type list
@@ -316,17 +310,6 @@ void Solid::Nln::SOLVER::set_status_test_params(Teuchos::ParameterList& pstatus,
   {
     set_quantity_test_params(pcombo_incr_fres_constr, datasdyn,
         NOX::Nln::StatusTest::quantity_contact_friction, opt_count, "ActiveSet");
-    ++opt_count;
-  }
-
-  // ---------------------------------------------------------------------------
-  // | lvl. 1: combo AND - Test OPTIONAL:
-  // | Tests the semi-smooth plasticity active set
-  // ---------------------------------------------------------------------------
-  if (qt.find(NOX::Nln::StatusTest::quantity_plasticity) != qt.end())
-  {
-    set_quantity_test_params(pcombo_incr_fres_constr, datasdyn,
-        NOX::Nln::StatusTest::quantity_plasticity, opt_count, "ActiveSet");
     ++opt_count;
   }
   // *** END: OPTIONAL STATUS TESTS ********************************************

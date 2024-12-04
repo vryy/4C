@@ -67,7 +67,7 @@ Inner Iteration = no
 Outer Iteration = yes
 Outer Iteration StatusTest = no
 ------------------------------------------------------STRUCT NOX/Status Test
-XML File                        = plastic_ssn_status_test.xml
+XML File                        = tsi_meshtying_nurbs.xml
 -----------------------------------------------------------------TSI DYNAMIC
 COUPALGO                        tsi_monolithic
 ITEMAX                          20
