@@ -16,7 +16,7 @@ runs:
       name: Compute the dependencies hash
       run: |
         cd $GITHUB_WORKSPACE
-        COMPUTED_DOCKER_DEPENDENCIES_HASH=`./docker/compute_dependencies_hash.sh`
+        COMPUTED_DOCKER_DEPENDENCIES_HASH=`./docker/dependencies/compute_dependencies_hash.sh`
         echo "dependencies_hash=$COMPUTED_DOCKER_DEPENDENCIES_HASH" >> $GITHUB_OUTPUT
       shell: bash
     - id: check-if-dependencies-hash-matches

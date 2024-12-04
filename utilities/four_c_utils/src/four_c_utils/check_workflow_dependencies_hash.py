@@ -13,7 +13,7 @@ import sys
 
 def compute_dependencies_hash():
     result = subprocess.run(
-        ["./docker/compute_dependencies_hash.sh"],
+        ["./docker/dependencies/compute_dependencies_hash.sh"],
         capture_output=True,
     )
 
