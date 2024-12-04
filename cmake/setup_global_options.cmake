@@ -62,11 +62,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   enable_compiler_flag_if_supported("-Wno-maybe-uninitialized")
 endif()
 
-# For clang: do not error for a number of checks that are not yet fixed
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  enable_compiler_flag_if_supported("-Wno-error=undefined-var-template")
-endif()
-
 four_c_process_global_option(
   FOUR_C_ENABLE_WARNINGS_AS_ERRORS "Treat warnings as errors when compiling" OFF
   )
