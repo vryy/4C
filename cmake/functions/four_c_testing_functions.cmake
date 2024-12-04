@@ -517,15 +517,12 @@ function(four_c_test_framework name_of_input_file num_proc xml_filename)
   set(RUNFOURC
       ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}>\ ${test_directory}/xxx.dat\ ${test_directory}/xxx
       ) # 4C is run using the generated dat file
-  set(RUNPOSTFILTER
-      ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx
-      ) # post_ensight is run for the resulting output
 
   add_test(
     NAME ${name_of_test}
     COMMAND
       bash -c
-      "mkdir -p ${PROJECT_BINARY_DIR}/${test_directory} && ${RUNCOPYXML} && ${RUNPREEXODUS} && ${RUNFOURC} && ${RUNPOSTFILTER}"
+      "mkdir -p ${PROJECT_BINARY_DIR}/${test_directory} && ${RUNCOPYXML} && ${RUNPREEXODUS} && ${RUNFOURC}"
     )
 
   require_fixture(${name_of_test} test_cleanup)
