@@ -2,19 +2,22 @@
 \htmlonly
 \endhtmlonly
 
-\section Overview
+\section mainpageoverview Overview
 
 4C (Comprehensive Computational Community Code) is a powerful research code for multi-physics computer simulations.
 Building on more than 20 years of research and development, 4C can model a plethora of physical systems, including solid mechanics, fluid dynamics, scalar transport, and chemical reaction among others.
 
-Large parts of 4C are based on finite element methods (FEM), but alternative discretization methods such as discontinuous Galerkin methods (DG), particle methods and mesh-free methods have also been successfully integrated. The research software is implemented throughout in object-oriented programming (C++) using modern software design and is parallelized with MPI for distributed memory hardware architectures.
+4C mainly implements finite element methods (FEM) but also offers alternative discretization methods such as discontinuous Galerkin methods (DG), particle methods, and mesh-free methods. 4C is written in C++ using modern software design and uses MPI for distributed memory hardware architectures.
 
-\section Purpose of this document
+\section mainpagepurpose Purpose of this document
 
 This document / web page provides source code documentation via Doxygen. It documents code constructs such as classes, functions, or class members.
 
 A high-level documentation of 4C (including a user guide and a developer guide) can be found in our user manual: https://4c-multiphysics.github.io/4C/readthedocs/
 
-\section Further resources
+\section mainpagepurposefurtherresources Further resources
 
+- Website: https://www.4c-multiphysics.org
 - Source Code Repository on GitHub: https://github.com/4C-multiphysics/4C
+- Readthedocs: https://4c-multiphysics.github.io/4C/readthedocs/
+*/
