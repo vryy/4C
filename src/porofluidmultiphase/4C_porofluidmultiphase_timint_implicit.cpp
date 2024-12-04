@@ -749,19 +749,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output()
     // this method should be moved to collect_runtime_output_data()
     strategy_->output();
 
-    // step number and time (only after that data output is possible)
-    output_->new_step(step_, time_);
-
-    // write domain decomposition for visualization (only once at step 0!)
-    if (step_ == 0)
-    {
-      output_->write_element_data(true);
-      // write output of blood vessel volume fraction
-      if (output_bloodvesselvolfrac_)
-        output_->write_vector("bloodvesselvolfrac", strategy_->blood_vessel_volume_fraction(),
-            Core::IO::elementvector);
-    }
-
     // reconstruct porosity for output; porosity is only needed for output and does not have to be
     // transferred between fields
     if (output_porosity_) reconstruct_porosity();
@@ -770,9 +757,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output()
 
     // evaluate domain integrals
     if (num_domainint_funct_ > 0) evaluate_domain_integrals();
-
-    // write state vectors
-    output_state();
 
     // do the runtime output
     {
@@ -788,6 +772,17 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output()
   }
 
 }  // TimIntImpl::Output
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::TimIntImpl::output_restart()
+{
+  // step number and time (only after that data output is possible)
+  output_->new_step(step_, time_);
+
+  // solution
+  output_->write_vector("phinp_fluid", phinp_);
+}
 
 /*----------------------------------------------------------------------*
  | output of solution vector to BINIO                       vuong 08/16 |
@@ -1794,120 +1789,6 @@ inline void POROFLUIDMULTIPHASE::TimIntImpl::print_convergence_finish_line()
 
   return;
 }  // POROFLUIDMULTIPHASE::TimIntImpl::print_convergence_finish_line
-
-
-/*----------------------------------------------------------------------*
- |  write current state to BINIO                            vuong 08/16 |
- *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
-{
-  // solution
-  output_->write_vector("phinp_fluid", phinp_);
-  // time derivative of solution
-  // output_->write_vector("phidtnp", phidtnp_);
-  if (output_satpress_)
-  {
-    // pressures
-    output_->write_vector("pressure", pressure_);
-    // saturations
-    output_->write_vector("saturation", saturation_);
-  }
-
-  // solid pressure
-  if (output_solidpress_)
-  {
-    // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
-    std::shared_ptr<Core::LinAlg::MultiVector<double>> solidpressure_multi =
-        POROFLUIDMULTIPHASE::Utils::convert_dof_vector_to_node_based_multi_vector(
-            *discret_, *solidpressure_, nds_solidpressure_, 1);
-
-    output_->write_multi_vector("solidpressure", *solidpressure_multi, Core::IO::nodevector);
-  }
-
-  // displacement field
-  if (isale_)
-  {
-    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
-        discret_->get_state(nds_disp_, "dispnp");
-    if (dispnp == nullptr) FOUR_C_THROW("Cannot extract displacement field from discretization");
-
-    // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
-    std::shared_ptr<Core::LinAlg::MultiVector<double>> dispnp_multi =
-        POROFLUIDMULTIPHASE::Utils::convert_dof_vector_to_node_based_multi_vector(
-            *discret_, *dispnp, nds_disp_, nsd_);
-
-    output_->write_multi_vector("dispnp", *dispnp_multi, Core::IO::nodevector);
-  }
-  // fluxes
-  if (flux_ != nullptr)
-  {
-    // post_ensight does not support multivectors based on the dofmap
-    // for now, I create single vectors that can be handled by the filter
-
-    const int dim = Global::Problem::instance()->n_dim();
-    const int numdof = discret_->num_dof(0, discret_->l_row_node(0));
-    // get the noderowmap
-    const Epetra_Map* noderowmap = discret_->node_row_map();
-    for (int k = 0; k < numdof; k++)
-    {
-      Core::LinAlg::MultiVector<double> flux_k(*noderowmap, 3, true);
-
-      std::ostringstream temp;
-      temp << k + 1;
-      std::string name = "flux_" + temp.str();
-      for (int i = 0; i < flux_k.MyLength(); ++i)
-      {
-        // get value for each component of flux vector
-        for (int idim = 0; idim < dim; idim++)
-        {
-          double value = ((*flux_)(k * dim + idim))[i];
-          int err = flux_k.ReplaceMyValue(i, idim, value);
-          if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
-        }
-      }
-      output_->write_multi_vector(name, flux_k, Core::IO::nodevector);
-    }
-  }
-
-  if (output_phase_velocities_)
-  {
-    const int num_dim = Global::Problem::instance()->n_dim();
-    const int num_poro_dof = discret_->num_dof(0, discret_->l_row_node(0));
-
-    const Epetra_Map* element_row_map = discret_->element_row_map();
-
-    for (int k = 0; k < num_poro_dof; k++)
-    {
-      Core::LinAlg::MultiVector<double> velocity_k(*element_row_map, num_dim, true);
-
-      for (int i = 0; i < velocity_k.MyLength(); ++i)
-      {
-        for (int idim = 0; idim < num_dim; idim++)
-        {
-          double value = ((*phase_velocities_)(k * num_dim + idim))[i];
-          int err = velocity_k.ReplaceMyValue(i, idim, value);
-          if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
-        }
-      }
-
-      std::string output_name = "velocity_" + std::to_string(k + 1);
-      output_->write_multi_vector(output_name, velocity_k, Core::IO::elementvector);
-    }
-  }
-
-  // porosity
-  if (output_porosity_)
-  {
-    // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
-    std::shared_ptr<Core::LinAlg::MultiVector<double>> porosity_multi =
-        POROFLUIDMULTIPHASE::Utils::convert_dof_vector_to_node_based_multi_vector(
-            *discret_, *porosity_, nds_solidpressure_, 1);
-
-    output_->write_multi_vector("porosity", *porosity_multi, Core::IO::nodevector);
-  }
-
-  return;
-}  // TimIntImpl::output_state
 
 
 /*----------------------------------------------------------------------*

@@ -258,10 +258,6 @@ namespace
       {
         std::string basename = problem.outname();
 
-        PostField* field = problem.get_discretization(0);
-        PoroFluidMultiPhaseFilter writer(field, problem.outname());
-        writer.write_files();
-
         // write output for artery
         if (problem.num_discr() == 2)
         {
@@ -281,9 +277,6 @@ namespace
             structfield, basename, problem.stresstype(), problem.straintype());
         structwriter.write_files();
 
-        PostField* fluidfield = problem.get_discretization(1);
-        PoroFluidMultiPhaseFilter fluidwriter(fluidfield, basename);
-        fluidwriter.write_files();
         if (problem.num_discr() == 3)
         {
           // artery
@@ -302,10 +295,6 @@ namespace
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
         structwriter.write_files();
-
-        PostField* fluidfield = problem.get_discretization(1);
-        PoroFluidMultiPhaseFilter fluidwriter(fluidfield, basename);
-        fluidwriter.write_files();
 
         // no artery discretization
         if (problem.num_discr() == 3)

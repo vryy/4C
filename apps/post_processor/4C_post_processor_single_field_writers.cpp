@@ -362,55 +362,6 @@ void LubricationFilter::write_all_results(PostField* field)
   write_element_results(field);
 }
 
-/*----------------------------------------------------------------------*
-|                                                           vuong 08/16 |
-\*----------------------------------------------------------------------*/
-void PoroFluidMultiPhaseFilter::write_all_results(PostField* field)
-{
-  using namespace FourC;
-
-  // compute maximum number of dofs per node on poro fluid discretization
-  const Core::FE::Discretization& discret = *field->discretization();
-  int mynumdofpernode(-1);
-  for (int inode = 0; inode < discret.num_my_row_nodes(); ++inode)
-  {
-    const int numdof = discret.num_dof(discret.l_row_node(inode));
-    if (numdof > mynumdofpernode) mynumdofpernode = numdof;
-  }
-  int numdofpernode(-1);
-  Core::Communication::max_all(&mynumdofpernode, &numdofpernode, 1, discret.get_comm());
-
-  // write results for each transported scalar
-  for (int k = 1; k <= numdofpernode; k++)
-  {
-    std::ostringstream temp;
-    temp << k;
-    // write generic degree of freedom
-    writer_->write_result("phinp_fluid", "phi_" + temp.str(), dofbased, 1, k - 1);
-    // write pressure solution
-    writer_->write_result("pressure", "pressure_" + temp.str(), dofbased, 1, k - 1);
-    // write saturation solution
-    writer_->write_result("saturation", "saturation_" + temp.str(), dofbased, 1, k - 1);
-
-    // write generic degree of freedom
-    writer_->write_result("phidtnp", "phidt_" + temp.str(), dofbased, 1, k - 1);
-
-    // write flux vectors (always 3D)
-    writer_->write_result("flux_" + temp.str(), "flux_" + temp.str(), nodebased, 3);
-  }
-  // write solid pressure solution
-  writer_->write_result("solidpressure", "solid_pressure", nodebased, 1);
-
-  // write porosity
-  writer_->write_result("porosity", "porosity", nodebased, 1);
-
-  // write displacement field
-  writer_->write_result("dispnp", "ale-displacement", nodebased, field->problem()->num_dim());
-
-  // write element results (e.g. element owner)
-  write_element_results(field);
-}
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ThermoFilter::write_all_results(PostField* field)

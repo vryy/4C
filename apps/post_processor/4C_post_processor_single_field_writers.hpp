@@ -152,21 +152,6 @@ class LubricationFilter : public PostFilterBase
   void write_all_results(PostField* field) override;
 };
 
-/*!
- \brief Writer for multiphase porous fluid  problems
-
- \author vuong
- \date 08/16
-*/
-class PoroFluidMultiPhaseFilter : public PostFilterBase
-{
- public:
-  /// constructor
-  PoroFluidMultiPhaseFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
-
- protected:
-  void write_all_results(PostField* field) override;
-};
 
 /*!
  \brief Writer for (in)stationary heat conduction

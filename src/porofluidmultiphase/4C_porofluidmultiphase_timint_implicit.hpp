@@ -204,8 +204,8 @@ namespace POROFLUIDMULTIPHASE
     //! output solution and restart data to file
     virtual void print_header();
 
-    //! write additional data required for restart
-    virtual void output_restart() = 0;
+    //! write data required for restart
+    virtual void output_restart();
 
     /*========================================================================*/
     //! @name Time, time-step and related methods
@@ -421,9 +421,6 @@ namespace POROFLUIDMULTIPHASE
 
     //! collect runtime output data
     void collect_runtime_output_data();
-
-    //! write state vectors prenp to BINIO
-    virtual void output_state();
 
     //! print header of convergence table to screen
     virtual void print_convergence_header();
