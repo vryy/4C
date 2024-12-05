@@ -159,6 +159,8 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::update()
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntOneStepTheta::output_restart()
 {
+  POROFLUIDMULTIPHASE::TimIntImpl::output_restart();
+
   // additional state vectors that are needed for One-Step-Theta restart
   output_->write_vector("phidtn_fluid", phidtn_);
   output_->write_vector("phin_fluid", phin_);

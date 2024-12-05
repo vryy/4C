@@ -16,6 +16,7 @@
 #include "4C_adapter_porofluidmultiphase.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_inpar_porofluidmultiphase.hpp"
+#include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
@@ -203,8 +204,8 @@ namespace POROFLUIDMULTIPHASE
     //! output solution and restart data to file
     virtual void print_header();
 
-    //! write additional data required for restart
-    virtual void output_restart() = 0;
+    //! write data required for restart
+    virtual void output_restart();
 
     /*========================================================================*/
     //! @name Time, time-step and related methods
@@ -418,8 +419,8 @@ namespace POROFLUIDMULTIPHASE
     //! is output needed for the current time step?
     bool do_output() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
 
-    //! write state vectors prenp to BINIO
-    virtual void output_state();
+    //! collect runtime output data
+    void collect_runtime_output_data();
 
     //! print header of convergence table to screen
     virtual void print_convergence_header();
@@ -705,6 +706,9 @@ namespace POROFLUIDMULTIPHASE
 
     //! function ID prescribing the starting Dirichlet boundary condition
     std::vector<int> starting_dbc_funct_;
+
+   private:
+    std::unique_ptr<Core::IO::DiscretizationVisualizationWriterMesh> visualization_writer_;
 
     /*========================================================================*/
 
