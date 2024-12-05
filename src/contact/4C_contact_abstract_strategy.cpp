@@ -2926,20 +2926,9 @@ void CONTACT::AbstractStrategy::evaluate(CONTACT::ParamsInterface& cparams,
     }
     case Mortar::eval_run_post_apply_jacobian_inverse:
     {
-      const Core::LinAlg::Vector<double>* rhs = cparams.get<const Core::LinAlg::Vector<double>>(0);
-      Core::LinAlg::Vector<double>* result = cparams.get<Core::LinAlg::Vector<double>>(1);
-      const Core::LinAlg::Vector<double>* xold = cparams.get<const Core::LinAlg::Vector<double>>(2);
-      const NOX::Nln::Group* grp = cparams.get<const NOX::Nln::Group>(3);
+      PostApplyJacobianData data = std::any_cast<PostApplyJacobianData>(cparams.get_user_data());
 
-      run_post_apply_jacobian_inverse(cparams, *rhs, *result, *xold, *grp);
-
-      break;
-    }
-    case Mortar::eval_correct_parameters:
-    {
-      const NOX::Nln::CorrectionType* type = cparams.get<const NOX::Nln::CorrectionType>(0);
-
-      correct_parameters(cparams, *type);
+      run_post_apply_jacobian_inverse(cparams, *data.rhs, *data.result, *data.xold, *data.grp);
 
       break;
     }
@@ -3109,13 +3098,6 @@ void CONTACT::AbstractStrategy::reset_lagrange_multipliers(
       "example.");
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::correct_parameters(
-    CONTACT::ParamsInterface& cparams, const NOX::Nln::CorrectionType type)
-{
-  /* do nothing */
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

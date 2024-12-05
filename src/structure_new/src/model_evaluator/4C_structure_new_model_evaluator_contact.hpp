@@ -73,9 +73,6 @@ namespace Solid
       bool assemble_jacobian(
           Core::LinAlg::SparseOperator& jac, const double& timefac_np) const override;
 
-      //! Perform a correction of adaptive parameters
-      bool correct_parameters(NOX::Nln::CorrectionType type) override;
-
       //! [derived]
       void write_restart(
           Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;

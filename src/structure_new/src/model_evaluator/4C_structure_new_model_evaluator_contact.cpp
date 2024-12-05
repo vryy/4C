@@ -64,10 +64,8 @@ void Solid::ModelEvaluator::Contact::setup()
   // ---------------------------------------------------------------------
   // build the solver strategy object
   // ---------------------------------------------------------------------
-  eval_contact_ptr_->set(&discret(), 0);
   strategy_ptr_ = factory.build_strategy(
       cparams, poroslave, poromaster, dof_offset(), interfaces, eval_contact_ptr_.get());
-  eval_contact_ptr_->clear_entry(Core::Gen::AnyDataContainer::DataType::any, 0);
 
   // build the search tree
   factory.build_search_tree(interfaces);
@@ -801,19 +799,19 @@ void Solid::ModelEvaluator::Contact::run_post_apply_jacobian_inverse(
 {
   check_init_setup();
 
-  eval_contact().set(&rhs, 0);
-  eval_contact().set(&result, 1);
-  eval_contact().set(&xold, 2);
-  eval_contact().set(&grp, 3);
+  CONTACT::AbstractStrategy::PostApplyJacobianData data{
+      .rhs = &rhs,
+      .result = &result,
+      .xold = &xold,
+      .grp = &grp,
+  };
+  eval_contact().set_user_data(std::any{data});
 
   eval_contact().set_action_type(Mortar::eval_run_post_apply_jacobian_inverse);
   eval_data().set_model_evaluator(this);
 
   // augment the search direction
   strategy().evaluate(eval_data().contact());
-
-  // clear the set any data again
-  eval_contact().clear_all(Core::Gen::AnyDataContainer::DataType::any);
 }
 
 /*----------------------------------------------------------------------------*
@@ -893,22 +891,6 @@ bool Solid::ModelEvaluator::Contact::assemble_cheap_soc_rhs(
     Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
   return assemble_force(f, timefac_np);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-bool Solid::ModelEvaluator::Contact::correct_parameters(NOX::Nln::CorrectionType type)
-{
-  check_init_setup();
-
-  eval_contact().set_action_type(Mortar::eval_correct_parameters);
-  eval_contact().set(&type, 0);
-
-  strategy().evaluate(eval_contact());
-
-  eval_contact().clear_entry(Core::Gen::AnyDataContainer::DataType::any, 0);
-
-  return true;
 }
 
 /*----------------------------------------------------------------------------*

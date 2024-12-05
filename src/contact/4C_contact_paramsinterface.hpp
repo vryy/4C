@@ -12,6 +12,8 @@
 
 #include "4C_mortar_paramsinterface.hpp"
 
+#include <any>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
@@ -91,6 +93,9 @@ namespace CONTACT
 
     //! set the coupling scheme
     virtual void set_coupling_scheme(const enum Inpar::CONTACT::CouplingScheme scheme) = 0;
+
+    //! Get any additional data that has been set.
+    virtual const std::any& get_user_data() const = 0;
   };
 }  // namespace CONTACT
 

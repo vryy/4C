@@ -1258,6 +1258,18 @@ namespace Solid
         mortar_action_ = actiontype;
       }
 
+      void set_user_data(const std::any& user_data)
+      {
+        check_init();
+        user_data_ = user_data;
+      }
+
+      void clear_user_data()
+      {
+        check_init();
+        user_data_.reset();
+      }
+
       //! @}
 
      protected:
@@ -1307,6 +1319,14 @@ namespace Solid
         return str_data_ptr_->global_state();
       }
 
+      [[nodiscard]] const std::any& get_user_data() const override
+      {
+        check_init();
+        return user_data_;
+      }
+
+
+
      private:
       bool isinit_;
 
@@ -1320,7 +1340,8 @@ namespace Solid
 
       std::shared_ptr<const Solid::ModelEvaluator::Data> str_data_ptr_;
 
-    };  // class ContactData
+      std::any user_data_;
+    };
 
     /*! Brownian dynamic data container for the model evaluation procedure.
      *
