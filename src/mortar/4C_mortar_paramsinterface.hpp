@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_utils_any_data_container.hpp"
+#include <string>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -43,7 +43,6 @@ namespace Mortar
                                    active set is not updated during the evaluation. */
     eval_run_post_apply_jacobian_inverse,       /*!< run in the end of a
                                                    NOX::Nln::LinearSystem::applyJacobianInverse call */
-    eval_correct_parameters,                    /*!< correct or adapt contact parameters */
     remove_condensed_contributions_from_str_rhs /*!< remove any condensed contact contributions from
                                                    the structural rhs */
   };
@@ -83,8 +82,6 @@ namespace Mortar
         return "eval_static_constraint_rhs";
       case Mortar::eval_run_post_apply_jacobian_inverse:
         return "eval_run_post_apply_jacobian_inverse";
-      case Mortar::eval_correct_parameters:
-        return "eval_correct_parameters";
       case remove_condensed_contributions_from_str_rhs:
         return "remove_condensed_contributions_from_str_rhs";
       case eval_run_pre_solve:
@@ -100,7 +97,7 @@ namespace Mortar
    * Necessary for the communication between the structural time integration framework and the
    * mortar strategies.
    */
-  class ParamsInterface : public Core::Gen::AnyDataContainer
+  class ParamsInterface
   {
    public:
     //! destructor

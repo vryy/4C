@@ -63,6 +63,14 @@ namespace CONTACT
   class AbstractStrategy : public Mortar::StrategyBase
   {
    public:
+    struct PostApplyJacobianData
+    {
+      const Core::LinAlg::Vector<double>* rhs;
+      Core::LinAlg::Vector<double>* result;
+      const Core::LinAlg::Vector<double>* xold;
+      const NOX::Nln::Group* grp;
+    };
+
     /*!
     \brief Standard constructor
 
@@ -1137,8 +1145,6 @@ namespace CONTACT
     //! Evaluate the weighted gap gradient error
     virtual void evaluate_weighted_gap_gradient_error(CONTACT::ParamsInterface& cparams);
 
-    virtual void correct_parameters(
-        CONTACT::ParamsInterface& cparams, const NOX::Nln::CorrectionType type);
 
     /*! \brief Remove condensed contact contributions from the structural right-hand side
      *
