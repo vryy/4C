@@ -13,7 +13,6 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
 #include <memory>
@@ -88,7 +87,7 @@ namespace Mortar
     \brief Get Epetra communicator
 
     */
-    const Epetra_Comm& get_comm() const { return *comm_; }
+    MPI_Comm get_comm() const { return comm_; }
 
     /*!
     \brief Return the object for the solving strategy.
@@ -133,7 +132,7 @@ namespace Mortar
     ManagerBase(const ManagerBase& old) = delete;
 
     //! Communicator
-    std::shared_ptr<Epetra_Comm> comm_;
+    MPI_Comm comm_;
 
     //! Strategy object
     std::shared_ptr<Mortar::StrategyBase> strategy_;

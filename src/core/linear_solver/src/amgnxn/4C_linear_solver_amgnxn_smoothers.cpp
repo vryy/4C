@@ -172,7 +172,8 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::setup(BlockedMatrix matrix)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::MergeAndSolve::Setup");
 
-  if (Core::Communication::my_mpi_rank(matrix.get_matrix(0, 0)->Comm()) == 0)
+  if (Core::Communication::my_mpi_rank(
+          Core::Communication::unpack_epetra_comm(matrix.get_matrix(0, 0)->Comm())) == 0)
   {
     std::cout
         << "Warning!!!: We are going to build a Core::LinAlg::BlockSparseMatrix. If this is a "
@@ -197,8 +198,9 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::setup(BlockedMatrix matrix)
   Teuchos::ParameterList solvparams;
   Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-  solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(
-      solvparams, a_->Comm(), nullptr, Core::IO::Verbositylevel::standard);
+  solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(solvparams,
+      Core::Communication::unpack_epetra_comm(a_->Comm()), nullptr,
+      Core::IO::Verbositylevel::standard);
 
   // Set up solver
   Core::LinAlg::SolverParams solver_params;
@@ -270,7 +272,9 @@ void Core::LinearSolver::AMGNxN::CoupledAmg::setup()
 
 
 
-  if (Core::Communication::my_mpi_rank(a_->get_matrix(0, 0)->Comm()) != 0) verbosity = "off";
+  if (Core::Communication::my_mpi_rank(
+          Core::Communication::unpack_epetra_comm(a_->get_matrix(0, 0)->Comm())) != 0)
+    verbosity = "off";
 
   if (verbosity == "on")
   {
@@ -512,7 +516,7 @@ void Core::LinearSolver::AMGNxN::MueluAMGWrapper::setup()
 
   double elaptime = timer.totalElapsedTime(true);
   if (muelu_list_.sublist("Hierarchy").get<std::string>("verbosity", "None") != "None" and
-      Core::Communication::my_mpi_rank(A_->Comm()) == 0)
+      Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(A_->Comm())) == 0)
     std::cout << "       Calling Core::LinAlg::SOLVER::AMGNxN::MueluAMGWrapper::Setup takes "
               << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;
 }
@@ -665,7 +669,7 @@ void Core::LinearSolver::AMGNxN::SingleFieldAMG::setup()
 
 
   double elaptime = timer.totalElapsedTime(true);
-  if (Core::Communication::my_mpi_rank(A_->Comm()) == 0)
+  if (Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(A_->Comm())) == 0)
     std::cout << "       Calling Core::LinAlg::SOLVER::AMGNxN::SingleFieldAMG::Setup takes "
               << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;
 }
@@ -781,8 +785,9 @@ void Core::LinearSolver::AMGNxN::DirectSolverWrapper::setup(
   else
     FOUR_C_THROW("Solver type not supported as direct solver in AMGNXN framework");
 
-  solver_ = std::make_shared<Core::LinAlg::Solver>(
-      *params, a_->Comm(), nullptr, Core::IO::Verbositylevel::standard);
+  solver_ = std::make_shared<Core::LinAlg::Solver>(*params,
+      Core::Communication::unpack_epetra_comm(a_->Comm()), nullptr,
+      Core::IO::Verbositylevel::standard);
 
   // Set up solver
   Core::LinAlg::SolverParams solver_params;

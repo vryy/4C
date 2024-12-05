@@ -40,8 +40,7 @@ namespace PoroElast
   class Monolithic : public PoroBase
   {
    public:
-    //! create using a Epetra_Comm
-    Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+    Monolithic(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
         std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     /*! do the setup for the monolithic system

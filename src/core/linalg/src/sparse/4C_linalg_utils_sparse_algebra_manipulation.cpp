@@ -597,7 +597,9 @@ int Core::LinAlg::insert_my_row_diagonal_into_unfilled_matrix(
       FOUR_C_THROW(
           "Could not find the row GID %d in the destination matrix RowMap"
           " on proc %d.",
-          rgid, Core::Communication::my_mpi_rank(dst_mat.Comm()));
+          rgid,
+          Core::Communication::my_mpi_rank(
+              Core::Communication::unpack_epetra_comm(dst_mat.Comm())));
 
     if (dst_mat.NumAllocatedGlobalEntries(rgid))
     {
@@ -627,7 +629,7 @@ int Core::LinAlg::insert_my_row_diagonal_into_unfilled_matrix(
 std::shared_ptr<Epetra_Map> Core::LinAlg::split_map(
     const Epetra_Map& Amap, const Epetra_Map& Agiven)
 {
-  const Epetra_Comm& Comm = Amap.Comm();
+  MPI_Comm Comm = Core::Communication::unpack_epetra_comm(Amap.Comm());
   const Epetra_Map& Ag = Agiven;
 
   int count = 0;
@@ -642,8 +644,8 @@ std::shared_ptr<Epetra_Map> Core::LinAlg::split_map(
   myaugids.resize(count);
   int gcount;
   Core::Communication::sum_all(&count, &gcount, 1, Comm);
-  std::shared_ptr<Epetra_Map> Aunknown =
-      std::make_shared<Epetra_Map>(gcount, count, myaugids.data(), 0, Comm);
+  std::shared_ptr<Epetra_Map> Aunknown = std::make_shared<Epetra_Map>(
+      gcount, count, myaugids.data(), 0, Core::Communication::as_epetra_comm(Comm));
 
   return Aunknown;
 }

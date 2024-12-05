@@ -64,8 +64,8 @@ void Immersed::ImmersedBase::build_condition_dof_map(
   }    // loop over all conditioned nodes
 
   int nummydirichvals = mydirichdofs.size();
-  cond_dofmap =
-      std::make_shared<Epetra_Map>(-1, nummydirichvals, mydirichdofs.data(), 0, dis->get_comm());
+  cond_dofmap = std::make_shared<Epetra_Map>(-1, nummydirichvals, mydirichdofs.data(), 0,
+      Core::Communication::as_epetra_comm(dis->get_comm()));
 
   return;
 }  // build_condition_dof_row_map
@@ -566,7 +566,7 @@ void Immersed::ImmersedBase::evaluate_subset_elements(Teuchos::ParameterList& pa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Immersed::ImmersedBase::write_extra_output(const Epetra_Comm& comm, const double time,
+void Immersed::ImmersedBase::write_extra_output(MPI_Comm comm, const double time,
     const std::string filenameending, const std::vector<double> valuetowrite,
     const std::vector<double> valuetowrite2, const std::vector<double> valuetowrite3)
 {
@@ -594,9 +594,8 @@ void Immersed::ImmersedBase::write_extra_output(const Epetra_Comm& comm, const d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> Immersed::ImmersedBase::calc_global_resultantfrom_epetra_vector(
-    const Epetra_Comm& comm, const Core::FE::Discretization& dis,
-    const Core::LinAlg::Vector<double>& vec_epetra)
+std::vector<double> Immersed::ImmersedBase::calc_global_resultantfrom_epetra_vector(MPI_Comm comm,
+    const Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& vec_epetra)
 {
   double summyrowentriesx = 0.0;
   double summyrowentriesy = 0.0;

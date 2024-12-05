@@ -32,7 +32,7 @@ void immersed_problem_drt()
   // get pointer to global problem
   Global::Problem* problem = Global::Problem::instance();
   // get communicator
-  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
+  MPI_Comm comm = problem->get_dis("structure")->get_comm();
 
   ///////////////////////////////////////////////////////////////////////
   // Get Parameters

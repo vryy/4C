@@ -17,7 +17,6 @@
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 #include "4C_structure_new_timint_implicit.hpp"
 
-#include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -110,7 +109,8 @@ Solid::ModelEvaluator::PartitionedFSI::solve_relaxation_linear(
     std::shared_ptr<Adapter::Structure> structure)
 {
   // print to screen
-  if (Core::Communication::my_mpi_rank(global_state().dof_row_map()->Comm()) == 0)
+  if (Core::Communication::my_mpi_rank(
+          Core::Communication::unpack_epetra_comm(global_state().dof_row_map()->Comm())) == 0)
     std::cout << "\n DO SRUCTURAL RELAXATION SOLVE ..." << std::endl;
 
   // cast adapter structure to implicit time integrator

@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 void dyn_fluid_drt(const int restart)
 {
   // create a communicator
-  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("fluid")->get_comm();
+  MPI_Comm comm = Global::Problem::instance()->get_dis("fluid")->get_comm();
 
   // access to some parameter lists
   // const Teuchos::ParameterList& probtype = Global::Problem::instance()->ProblemTypeParams();

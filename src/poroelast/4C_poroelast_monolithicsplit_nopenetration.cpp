@@ -30,7 +30,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-PoroElast::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epetra_Comm& comm,
+PoroElast::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(MPI_Comm comm,
     const Teuchos::ParameterList& timeparams,
     std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter)
     : MonolithicSplit(comm, timeparams, porosity_splitter), normrhs_nopenetration_(-1.0)

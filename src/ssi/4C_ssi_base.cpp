@@ -44,7 +44,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+SSI::SSIBase::SSIBase(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
       diff_time_step_size_(globaltimeparams.get<bool>("DIFFTIMESTEPSIZE")),
       fieldcoupling_(Teuchos::getIntegralValue<Inpar::SSI::FieldCoupling>(
@@ -80,7 +80,7 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIBase::init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIBase::init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
@@ -227,7 +227,7 @@ void SSI::SSIBase::setup()
 /*----------------------------------------------------------------------*
  | Setup the discretizations                                rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIBase::init_discretizations(const Epetra_Comm& comm, const std::string& struct_disname,
+void SSI::SSIBase::init_discretizations(MPI_Comm comm, const std::string& struct_disname,
     const std::string& scatra_disname, bool redistribute_struct_dis)
 {
   Global::Problem* problem = Global::Problem::instance();
@@ -318,8 +318,8 @@ void SSI::SSIBase::init_discretizations(const Epetra_Comm& comm, const std::stri
 
         std::vector<int> glob_node_ids(
             max_num_nodes * Core::Communication::num_mpi_ranks(get_comm()), -1);
-        get_comm().GatherAll(
-            my_node_ids.data(), glob_node_ids.data(), static_cast<int>(my_node_ids.size()));
+        Core::Communication::gather_all(my_node_ids.data(), glob_node_ids.data(),
+            static_cast<int>(my_node_ids.size()), get_comm());
 
         // remove place holders (-1)
         glob_node_ids.erase(
@@ -492,7 +492,7 @@ void SSI::SSIBase::read_restart(int restart)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::test_results(const Epetra_Comm& comm) const
+void SSI::SSIBase::test_results(MPI_Comm comm) const
 {
   Global::Problem* problem = Global::Problem::instance();
 

@@ -66,14 +66,14 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit SsiMono(const Epetra_Comm& comm,           //!< communicator
+    explicit SsiMono(MPI_Comm comm,                     //!< communicator
         const Teuchos::ParameterList& globaltimeparams  //!< parameter list for time integration
     );
 
     //! return global map of degrees of freedom
     const std::shared_ptr<const Epetra_Map>& dof_row_map() const;
 
-    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 

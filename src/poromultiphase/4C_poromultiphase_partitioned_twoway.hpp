@@ -21,9 +21,7 @@ namespace POROMULTIPHASE
   class PoroMultiPhasePartitionedTwoWay : public PoroMultiPhasePartitioned
   {
    public:
-    /// create using a Epetra_Comm
-    PoroMultiPhasePartitionedTwoWay(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    PoroMultiPhasePartitionedTwoWay(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// initialization
     void init(const Teuchos::ParameterList& globaltimeparams,

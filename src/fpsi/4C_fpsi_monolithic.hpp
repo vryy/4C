@@ -62,7 +62,7 @@ namespace FPSI
   {
    public:
     //! ctor
-    explicit MonolithicBase(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams,
+    explicit MonolithicBase(MPI_Comm comm, const Teuchos::ParameterList& fpsidynparams,
         const Teuchos::ParameterList& poroelastdynparams);
 
 
@@ -181,7 +181,7 @@ namespace FPSI
 
    public:
     //! ctor
-    explicit Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams,
+    explicit Monolithic(MPI_Comm comm, const Teuchos::ParameterList& fpsidynparams,
         const Teuchos::ParameterList& poroelastdynparams);
 
     //! setup fpsi system
@@ -200,7 +200,7 @@ namespace FPSI
     virtual void time_step();
 
     //! perform result test
-    void test_results(const Epetra_Comm& comm) override;
+    void test_results(MPI_Comm comm) override;
 
     //! build RHS vector from sub fields
     virtual void setup_rhs(bool firstcall = false) = 0;

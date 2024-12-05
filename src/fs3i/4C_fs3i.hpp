@@ -15,8 +15,6 @@
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -65,7 +63,7 @@ namespace FS3I
     virtual void timeloop() = 0;
 
     /// test results (if necessary)
-    virtual void test_results(const Epetra_Comm& comm) = 0;
+    virtual void test_results(MPI_Comm comm) = 0;
 
     /// read restart
     virtual void read_restart() = 0;

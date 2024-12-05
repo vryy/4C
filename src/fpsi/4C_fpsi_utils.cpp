@@ -39,7 +39,7 @@ FPSI::InterfaceUtils* FPSI::InterfaceUtils::instance()
 /*----------------------------------------------------------------------/
 | Setup discretization                                           rauch  |
 /----------------------------------------------------------------------*/
-std::shared_ptr<FPSI::FpsiBase> FPSI::InterfaceUtils::setup_discretizations(const Epetra_Comm& comm,
+std::shared_ptr<FPSI::FpsiBase> FPSI::InterfaceUtils::setup_discretizations(MPI_Comm comm,
     const Teuchos::ParameterList& fpsidynparams, const Teuchos::ParameterList& poroelastdynparams)
 {
   Global::Problem* problem = Global::Problem::instance();
@@ -173,7 +173,7 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
     const std::string& condname, std::map<int, int>& interfacefacingelementmap)
 {
   Global::Problem* problem = Global::Problem::instance();
-  const Epetra_Comm& mastercomm = problem->get_dis(masterdis.name())->get_comm();
+  MPI_Comm mastercomm = problem->get_dis(masterdis.name())->get_comm();
 
   bool condition_exists = true;
 
@@ -462,8 +462,7 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
   Core::Elements::Element* masterele = nullptr;
 
   Global::Problem* problem = Global::Problem::instance();
-  const Epetra_Comm& comm = problem->get_dis(masterdis.name())->get_comm();
-  std::shared_ptr<Epetra_Comm> rcpcomm(comm.Clone());
+  MPI_Comm comm = problem->get_dis(masterdis.name())->get_comm();
 
   int mymapsize = interfacefacingelementmap.size();
   int globalmapsize;
@@ -547,7 +546,8 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
 
       int globalsize;
       Core::Communication::sum_all(&myglobalelementsize, &globalsize, 1, comm);
-      Epetra_Map newelecolmap(globalsize, myglobalelementsize, myglobalelements.data(), 0, comm);
+      Epetra_Map newelecolmap(globalsize, myglobalelementsize, myglobalelements.data(), 0,
+          Core::Communication::as_epetra_comm(comm));
 
       if (mastereleid == printid)
       {
@@ -605,8 +605,8 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
 /*---------------------------------------------------------------------------/
 | Setup Interface Map (for parallel distr.)                           rauch  |
 /---------------------------------------------------------------------------*/
-void FPSI::InterfaceUtils::setup_interface_map(const Epetra_Comm& comm,
-    Core::FE::Discretization& structdis, std::shared_ptr<Core::FE::Discretization> porofluiddis,
+void FPSI::InterfaceUtils::setup_interface_map(MPI_Comm comm, Core::FE::Discretization& structdis,
+    std::shared_ptr<Core::FE::Discretization> porofluiddis,
     std::shared_ptr<Core::FE::Discretization> fluiddis, Core::FE::Discretization& aledis)
 {
   poro_fluid_fluid_interface_map_ = std::make_shared<std::map<int, int>>();

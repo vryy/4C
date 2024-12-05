@@ -1378,8 +1378,8 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
     macro_dis_name = "scatra";
 
   // fetch communicators
-  std::shared_ptr<Epetra_Comm> lcomm = problem.get_communicators()->local_comm();
-  std::shared_ptr<Epetra_Comm> gcomm = problem.get_communicators()->global_comm();
+  MPI_Comm lcomm = problem.get_communicators()->local_comm();
+  MPI_Comm gcomm = problem.get_communicators()->global_comm();
 
   Global::Problem* macro_problem = Global::Problem::instance();
   std::shared_ptr<Core::FE::Discretization> macro_dis = macro_problem->get_dis(macro_dis_name);
@@ -1436,20 +1436,20 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
   if (my_multimat_IDs.size() != 0)
   {
     foundmicromat = 1;
-    foundmicromatmyrank = Core::Communication::my_mpi_rank(*lcomm);
+    foundmicromatmyrank = Core::Communication::my_mpi_rank(lcomm);
   }
 
   // find out how many procs have micro material
   int nummicromat = 0;
-  lcomm->SumAll(&foundmicromat, &nummicromat, 1);
+  Core::Communication::sum_all(&foundmicromat, &nummicromat, 1, lcomm);
   // broadcast number of procs that have micro material
-  gcomm->Broadcast(&nummicromat, 1, 0);
+  Core::Communication::broadcast(&nummicromat, 1, 0, gcomm);
 
   // every proc needs to know which procs have micro material in order to distribute colors
   // array is filled with either its local proc id or -1 when no micro mat was found
   std::vector<int> foundmyranks;
-  foundmyranks.resize(Core::Communication::num_mpi_ranks(*lcomm), -1);
-  lcomm->GatherAll(&foundmicromatmyrank, foundmyranks.data(), 1);
+  foundmyranks.resize(Core::Communication::num_mpi_ranks(lcomm), -1);
+  Core::Communication::gather_all(&foundmicromatmyrank, foundmyranks.data(), 1, lcomm);
 
   // determine color of macro procs with any contribution to micro material, only important for
   // procs with micro material color starts with 0 and is incremented for each group
@@ -1471,14 +1471,13 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
   // key
   // --> 0 is inserted here)
   MPI_Comm mpi_local_comm;
-  MPI_Comm_split((std::dynamic_pointer_cast<Epetra_MpiComm>(gcomm)->GetMpiComm()), color,
-      0 /*important here*/, &mpi_local_comm);
+  MPI_Comm_split(gcomm, color, 0 /*important here*/, &mpi_local_comm);
 
   // sort out macro procs that do not have micro material
   if (foundmicromat == 1)
   {
     // create the sub communicator that includes one macro proc and some supporting procs
-    std::shared_ptr<Epetra_Comm> subgroupcomm = std::make_shared<Epetra_MpiComm>(mpi_local_comm);
+    MPI_Comm subgroupcomm = mpi_local_comm;
     problem.get_communicators()->set_sub_comm(subgroupcomm);
 
     // find out how many micro problems have to be solved on this macro proc
@@ -1489,7 +1488,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
       if (my_multimat_IDs.find(matid) != my_multimat_IDs.end()) microcount++;
     }
     // and broadcast it to the corresponding group of procs
-    subgroupcomm->Broadcast(&microcount, 1, 0);
+    Core::Communication::broadcast(&microcount, 1, 0, subgroupcomm);
 
     for (const auto& material_map : problem.materials()->map())
     {
@@ -1513,7 +1512,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
 
           // extract and broadcast number of micro-scale discretization
           microdisnum = micromat->micro_dis_num();
-          subgroupcomm->Broadcast(&microdisnum, 1, 0);
+          Core::Communication::broadcast(&microdisnum, 1, 0, subgroupcomm);
 
           // set name of micro-scale discretization
           micro_dis_name = "structure";
@@ -1539,7 +1538,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
 
           // extract and broadcast number of micro-scale discretization
           microdisnum = micromat->micro_dis_num();
-          subgroupcomm->Broadcast(&microdisnum, 1, 0);
+          Core::Communication::broadcast(&microdisnum, 1, 0, subgroupcomm);
 
           // set unique name of micro-scale discretization
           std::stringstream name;
@@ -1561,11 +1560,12 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
 
         // broadcast micro input file name
         int length = static_cast<int>(micro_inputfile_name.length());
-        subgroupcomm->Broadcast(&length, 1, 0);
-        subgroupcomm->Broadcast((const_cast<char*>(micro_inputfile_name.c_str())), length, 0);
+        Core::Communication::broadcast(&length, 1, 0, subgroupcomm);
+        Core::Communication::broadcast(
+            (const_cast<char*>(micro_inputfile_name.c_str())), length, 0, subgroupcomm);
 
         // start with actual reading
-        Core::IO::InputFile micro_reader(micro_inputfile_name, *subgroupcomm, 1);
+        Core::IO::InputFile micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
         std::shared_ptr<Core::FE::Discretization> dis_micro =
             std::make_shared<Core::FE::Discretization>(
@@ -1631,7 +1631,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
 
         // broadcast restart information
         int restart_step = problem.restart();
-        subgroupcomm->Broadcast(&restart_step, 1, 0);
+        Core::Communication::broadcast(&restart_step, 1, 0, subgroupcomm);
         problem.set_restart_step(restart_step);
 
         // set the problem number from which to call materials again to zero
@@ -1648,21 +1648,21 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
 /*----------------------------------------------------------------------*/
 void Global::read_microfields_np_support(Global::Problem& problem)
 {
-  std::shared_ptr<Epetra_Comm> lcomm = problem.get_communicators()->local_comm();
-  std::shared_ptr<Epetra_Comm> gcomm = problem.get_communicators()->global_comm();
+  MPI_Comm lcomm = problem.get_communicators()->local_comm();
+  MPI_Comm gcomm = problem.get_communicators()->global_comm();
 
   // receive number of procs that have micro material
   int nummicromat = 0;
-  gcomm->Broadcast(&nummicromat, 1, 0);
+  Core::Communication::broadcast(&nummicromat, 1, 0, gcomm);
 
   // prepare the supporting procs for a splitting of gcomm
 
   // groups should be equally sized
   // in a first step every macro proc that needs support gets procpergroup supporting procs
-  int procpergroup = int(floor((Core::Communication::num_mpi_ranks(*lcomm)) / nummicromat));
+  int procpergroup = int(floor((Core::Communication::num_mpi_ranks(lcomm)) / nummicromat));
   std::vector<int> supgrouplayout(nummicromat, procpergroup);
   // remaining procs are added to the groups in the beginning
-  int remainingProcs = Core::Communication::num_mpi_ranks(*lcomm) - procpergroup * nummicromat;
+  int remainingProcs = Core::Communication::num_mpi_ranks(lcomm) - procpergroup * nummicromat;
   for (int k = 0; k < remainingProcs; ++k)
   {
     supgrouplayout[k]++;
@@ -1676,38 +1676,38 @@ void Global::read_microfields_np_support(Global::Problem& problem)
   {
     color++;
     gsum += supgrouplayout[color];
-  } while (gsum <= Core::Communication::my_mpi_rank(*lcomm));
+  } while (gsum <= Core::Communication::my_mpi_rank(lcomm));
 
   // do the splitting of the communicator
   MPI_Comm mpi_local_comm;
-  MPI_Comm_split((std::dynamic_pointer_cast<Epetra_MpiComm>(gcomm)->GetMpiComm()), color,
-      Core::Communication::my_mpi_rank(*gcomm), &mpi_local_comm);
+  MPI_Comm_split(gcomm, color, Core::Communication::my_mpi_rank(gcomm), &mpi_local_comm);
 
   // create the sub communicator that includes one macro proc and some supporting procs
-  std::shared_ptr<Epetra_Comm> subgroupcomm = std::make_shared<Epetra_MpiComm>(mpi_local_comm);
+  MPI_Comm subgroupcomm = mpi_local_comm;
   problem.get_communicators()->set_sub_comm(subgroupcomm);
 
   // number of micro problems for this sub group
   int microcount = 0;
-  subgroupcomm->Broadcast(&microcount, 1, 0);
+  Core::Communication::broadcast(&microcount, 1, 0, subgroupcomm);
 
   for (int n = 0; n < microcount; n++)
   {
     // broadcast microdis number
     int microdisnum = -1;
-    subgroupcomm->Broadcast(&microdisnum, 1, 0);
+    Core::Communication::broadcast(&microdisnum, 1, 0, subgroupcomm);
 
     Global::Problem* micro_problem = Global::Problem::instance(microdisnum);
 
     // broadcast micro input file name
     int length = -1;
     std::string micro_inputfile_name;
-    subgroupcomm->Broadcast(&length, 1, 0);
+    Core::Communication::broadcast(&length, 1, 0, subgroupcomm);
     micro_inputfile_name.resize(length);
-    subgroupcomm->Broadcast((const_cast<char*>(micro_inputfile_name.c_str())), length, 0);
+    Core::Communication::broadcast(
+        (const_cast<char*>(micro_inputfile_name.c_str())), length, 0, subgroupcomm);
 
     // start with actual reading
-    Core::IO::InputFile micro_reader(micro_inputfile_name, *subgroupcomm, 1);
+    Core::IO::InputFile micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
     std::shared_ptr<Core::FE::Discretization> structdis_micro =
         std::make_shared<Core::FE::Discretization>("structure", subgroupcomm, problem.n_dim());
@@ -1750,7 +1750,7 @@ void Global::read_microfields_np_support(Global::Problem& problem)
 
     // broadcast restart information
     int restart_step = problem.restart();
-    subgroupcomm->Broadcast(&restart_step, 1, 0);
+    Core::Communication::broadcast(&restart_step, 1, 0, subgroupcomm);
     problem.set_restart_step(restart_step);
 
     // set the problem number from which to call materials again to zero
@@ -2031,7 +2031,7 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::InputFile& input
     if (rs < 0)
       rs = static_cast<int>(time(nullptr)) +
            42 * Core::Communication::my_mpi_rank(
-                    *Global::Problem::instance(0)->get_communicators()->global_comm());
+                    Global::Problem::instance(0)->get_communicators()->global_comm());
 
     srand((unsigned int)rs);  // Set random seed for stdlibrary. This is deprecated, as it does not
     // produce random numbers on some platforms!

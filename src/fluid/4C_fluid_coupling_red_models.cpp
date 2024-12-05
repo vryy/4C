@@ -953,7 +953,8 @@ double FLD::Utils::FluidCouplingBc::flow_rate_calculation(double time, double dt
   }
 
   double flowrate = 0.0;
-  Core::Communication::sum_all(&local_flowrate, &flowrate, 1, dofrowmap->Comm());
+  Core::Communication::sum_all(
+      &local_flowrate, &flowrate, 1, Core::Communication::unpack_epetra_comm(dofrowmap->Comm()));
 
   return flowrate;
 }  // FluidImplicitTimeInt::flow_rate_calculation

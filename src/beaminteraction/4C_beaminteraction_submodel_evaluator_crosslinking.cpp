@@ -466,7 +466,7 @@ void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::communicate_initial_linke
   global_bspot_linker.clear();
 
   // gather all data over all procs
-  Epetra_Comm const& com = discret().get_comm();
+  MPI_Comm com = discret().get_comm();
   const int numproc = Core::Communication::num_mpi_ranks(com);
   int numpairs = static_cast<int>(my_bspot_linker.size());
   std::vector<int> elegid_1, elegid_2, locbspot_1, locbspot_2, type, mat;
@@ -639,7 +639,7 @@ void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::setup_my_initial_double_b
 {
   // determine unique gids on each proc (ascending over all procs)
   // gather numbers of new linker on each proc
-  Epetra_Comm const& com = discret().get_comm();
+  MPI_Comm com = discret().get_comm();
   std::vector<int> nummynewlinks(1);
   nummynewlinks[0] = static_cast<int>(newlinker.size());
   // initialize std::vector for communication
@@ -1465,8 +1465,8 @@ void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::read_restart(
   }
 
   // build dummy map according to read data on myrank
-  Epetra_Map dummy_cl_map(
-      -1, read_node_ids.size(), read_node_ids.data(), 0, bin_discret().get_comm());
+  Epetra_Map dummy_cl_map(-1, read_node_ids.size(), read_node_ids.data(), 0,
+      Core::Communication::as_epetra_comm(bin_discret().get_comm()));
 
   // build exporter object
   std::shared_ptr<Core::Communication::Exporter> exporter =
@@ -1516,8 +1516,8 @@ void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::read_restart(
   }
 
   // build dummy map according to read data on myrank
-  std::shared_ptr<Epetra_Map> dummy_beam_map = std::make_shared<Epetra_Map>(
-      -1, read_ele_ids.size(), read_ele_ids.data(), 0, discret().get_comm());
+  std::shared_ptr<Epetra_Map> dummy_beam_map = std::make_shared<Epetra_Map>(-1, read_ele_ids.size(),
+      read_ele_ids.data(), 0, Core::Communication::as_epetra_comm(discret().get_comm()));
 
   // build exporter object
   exporter = std::make_shared<Core::Communication::Exporter>(
@@ -1658,7 +1658,7 @@ void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::get_half_interaction_dist
   double global_half_interaction_distance = 0.0;
   // build sum over all procs
   MPI_Allreduce(&local_half_interaction_distance, &global_half_interaction_distance, 1, MPI_DOUBLE,
-      MPI_MAX, dynamic_cast<const Epetra_MpiComm*>(&(discret().get_comm()))->Comm());
+      MPI_MAX, discret().get_comm());
   half_interaction_distance_ = global_half_interaction_distance;
 
   // some screen output
@@ -2196,8 +2196,7 @@ void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::bind_and_unbind_crosslink
   num_local[0] = static_cast<int>(doublebondcl_.size());
   num_local[1] = num_new_linker;
   num_local[2] = num_dissolved_linker;
-  MPI_Reduce(num_local.data(), num_global.data(), 3, MPI_INT, MPI_SUM, 0,
-      dynamic_cast<const Epetra_MpiComm*>(&(discret().get_comm()))->Comm());
+  MPI_Reduce(num_local.data(), num_global.data(), 3, MPI_INT, MPI_SUM, 0, discret().get_comm());
   if (g_state().get_my_rank() == 0)
   {
     Core::IO::cout(Core::IO::standard)

@@ -33,8 +33,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& fpsidynparams, const Teuchos::ParameterList& poroelastdynparams)
+FPSI::MonolithicBase::MonolithicBase(MPI_Comm comm, const Teuchos::ParameterList& fpsidynparams,
+    const Teuchos::ParameterList& poroelastdynparams)
     : FpsiBase(comm, fpsidynparams)
 {
   // Creation of the subproblems
@@ -195,7 +195,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::ale_to_fluid
 //<<<<<<<<<<<<<<<<<<<<<<  MonolithicBase -> Monolithic  >>>>>>>>>>>>>>>>>>>>>
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams,
+FPSI::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& fpsidynparams,
     const Teuchos::ParameterList& poroelastdynparams)
     : MonolithicBase(comm, fpsidynparams, poroelastdynparams),
       directsolve_(true),
@@ -485,7 +485,7 @@ void FPSI::Monolithic::evaluate(std::shared_ptr<const Core::LinAlg::Vector<doubl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic::test_results(const Epetra_Comm& comm)
+void FPSI::Monolithic::test_results(MPI_Comm comm)
 {
   Global::Problem::instance()->add_field_test(poro_field()->structure_field()->create_field_test());
   Global::Problem::instance()->add_field_test(poro_field()->fluid_field()->create_field_test());

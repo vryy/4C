@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::PoroMultiPhasePartitionedTwoWay(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhasePartitioned(comm, globaltimeparams),
       phiincnp_(nullptr),
       dispincnp_(nullptr),

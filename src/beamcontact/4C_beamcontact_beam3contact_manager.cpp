@@ -640,7 +640,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // the copied beam contact discretization.
 
   {
-    std::shared_ptr<Epetra_Comm> comm(pdiscret_.get_comm().Clone());
+    MPI_Comm comm(pdiscret_.get_comm());
     btsoldiscret_ = std::make_shared<Core::FE::Discretization>(
         (std::string) "beam to solid contact", comm, Global::Problem::instance()->n_dim());
   }
@@ -925,16 +925,16 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       esdata, erdata, (int)ertproc.size(), ertproc.data(), bt_sol_discret().get_comm());
 
   // build completely overlapping node map (on participating processors)
-  std::shared_ptr<Epetra_Map> newnodecolmap = std::make_shared<Epetra_Map>(
-      -1, (int)rdata.size(), rdata.data(), 0, bt_sol_discret().get_comm());
+  std::shared_ptr<Epetra_Map> newnodecolmap = std::make_shared<Epetra_Map>(-1, (int)rdata.size(),
+      rdata.data(), 0, Core::Communication::as_epetra_comm(bt_sol_discret().get_comm()));
   sdata.clear();
   stproc.clear();
   rdata.clear();
   allproc.clear();
 
   // build completely overlapping element map (on participating processors)
-  std::shared_ptr<Epetra_Map> newelecolmap = std::make_shared<Epetra_Map>(
-      -1, (int)erdata.size(), erdata.data(), 0, bt_sol_discret().get_comm());
+  std::shared_ptr<Epetra_Map> newelecolmap = std::make_shared<Epetra_Map>(-1, (int)erdata.size(),
+      erdata.data(), 0, Core::Communication::as_epetra_comm(bt_sol_discret().get_comm()));
   esdata.clear();
   estproc.clear();
   erdata.clear();

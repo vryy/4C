@@ -311,8 +311,8 @@ void FLD::XWall::init_x_wall_maps()
       if (enriched) rowvec.push_back(xwallgid);
     }
 
-    xwallrownodemap_ = std::make_shared<Epetra_Map>(
-        -1, (int)rowvec.size(), rowvec.data(), 0, discret_->get_comm());
+    xwallrownodemap_ = std::make_shared<Epetra_Map>(-1, (int)rowvec.size(), rowvec.data(), 0,
+        Core::Communication::as_epetra_comm(discret_->get_comm()));
   }
 
   // get Dirichlet conditions
@@ -337,8 +337,8 @@ void FLD::XWall::init_x_wall_maps()
 
     int gcount;
     Core::Communication::sum_all(&count, &gcount, 1, (discret_->get_comm()));
-    dircolnodemap_ =
-        std::make_shared<Epetra_Map>(gcount, count, testcollect.data(), 0, discret_->get_comm());
+    dircolnodemap_ = std::make_shared<Epetra_Map>(gcount, count, testcollect.data(), 0,
+        Core::Communication::as_epetra_comm(discret_->get_comm()));
   }  // end loop this conditions
   else
     FOUR_C_THROW("You need DESIGN FLUID STRESS CALC SURF CONDITIONS for xwall");
@@ -369,7 +369,7 @@ void FLD::XWall::init_wall_dist()
   walldist_ = std::make_shared<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
 
   // build a new discretization which lies on all procs
-  std::shared_ptr<Epetra_Comm> newcomm(discret_->get_comm().Clone());
+  MPI_Comm newcomm(discret_->get_comm());
 
   // this is very expensive in terms of memory
   // we will delete it as soon as we are ready here
@@ -424,8 +424,8 @@ void FLD::XWall::init_wall_dist()
   }
   int count = (int)colvec.size();
 
-  xwallcolnodemap_ =
-      std::make_shared<Epetra_Map>(count, count, colvec.data(), 0, discret_->get_comm());
+  xwallcolnodemap_ = std::make_shared<Epetra_Map>(
+      count, count, colvec.data(), 0, Core::Communication::as_epetra_comm(discret_->get_comm()));
 
   for (int j = 0; j < xwallcolnodemap_->NumMyElements(); ++j)
   {
@@ -569,7 +569,7 @@ void FLD::XWall::init_toggle_vector()
 void FLD::XWall::setup_x_wall_dis()
 {
   // build a new discretization
-  std::shared_ptr<Epetra_Comm> newcomm(discret_->get_comm().Clone());
+  MPI_Comm newcomm(discret_->get_comm());
 
   xwdiscret_ = std::make_shared<Core::FE::Discretization>(
       (std::string) "xwalldis", newcomm, Global::Problem::instance()->n_dim());
@@ -638,14 +638,14 @@ void FLD::XWall::setup_x_wall_dis()
   {
     // redistribute
     Epetra_Map elemap(*xwdiscret_->element_row_map());
-    std::shared_ptr<Epetra_Comm> comm(discret_->get_comm().Clone());
+    MPI_Comm comm(discret_->get_comm());
 
     std::shared_ptr<const Epetra_CrsGraph> nodegraph =
         Core::Rebalance::build_graph(*xwdiscret_, elemap);
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>(
-        "num parts", std::to_string(Core::Communication::num_mpi_ranks(*comm)));
+        "num parts", std::to_string(Core::Communication::num_mpi_ranks(comm)));
 
     const auto& [rownodes, colnodes] =
         Core::Rebalance::rebalance_node_maps(*nodegraph, rebalanceParams);
@@ -711,8 +711,8 @@ void FLD::XWall::setup_l2_projection()
       }
     }
 
-    enrdofrowmap_ = std::make_shared<Epetra_Map>(
-        -1, (int)enrdf.size(), enrdf.data(), 0, xwdiscret_->get_comm());
+    enrdofrowmap_ = std::make_shared<Epetra_Map>(-1, (int)enrdf.size(), enrdf.data(), 0,
+        Core::Communication::as_epetra_comm(xwdiscret_->get_comm()));
 
     massmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*enrdofrowmap_, 108, false, true);
 

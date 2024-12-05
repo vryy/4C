@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::Aux::set_printing_parameters(Teuchos::ParameterList& p_nox, const Epetra_Comm& comm)
+void NOX::Nln::Aux::set_printing_parameters(Teuchos::ParameterList& p_nox, MPI_Comm comm)
 {
   // make all Yes/No integral values to Boolean
   Input::boolify_valid_input_parameters(p_nox);

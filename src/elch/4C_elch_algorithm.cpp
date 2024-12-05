@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ElCh::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& elchcontrol,
+ElCh::Algorithm::Algorithm(MPI_Comm comm, const Teuchos::ParameterList& elchcontrol,
     const Teuchos::ParameterList& scatradyn, const Teuchos::ParameterList& fdyn,
     const Teuchos::ParameterList& solverparams)
     : ScaTraAlgorithm(comm, scatradyn, fdyn, "scatra", solverparams)

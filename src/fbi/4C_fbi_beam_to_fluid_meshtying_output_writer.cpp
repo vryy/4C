@@ -128,7 +128,8 @@ void BeamInteraction::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
         for (unsigned int dim = 0; dim < 3; ++dim) gid_beam_dof.push_back(gid_node[dim]);
     }
     Epetra_Map beam_dof_map(-1, gid_beam_dof.size(), gid_beam_dof.data(), 0,
-        couplingenforcer.get_structure()->get_discretization()->get_comm());
+        Core::Communication::as_epetra_comm(
+            couplingenforcer.get_structure()->get_discretization()->get_comm()));
 
     // Extract the forces and add them to the discretization.
     std::shared_ptr<Core::LinAlg::Vector<double>> force_beam =

@@ -258,8 +258,8 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
   // compute density of all elements
   double micro_discretization_density_integration = 0.0;
-  discret_->get_comm().SumAll(
-      &my_micro_discretization_density_integration, &micro_discretization_density_integration, 1);
+  Core::Communication::sum_all(&my_micro_discretization_density_integration,
+      &micro_discretization_density_integration, 1, discret_->get_comm());
 
   density_ = micro_discretization_density_integration / V0_;
 
@@ -1123,11 +1123,10 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
 
 void MultiScale::stop_np_multiscale()
 {
-  std::shared_ptr<Epetra_Comm> subcomm =
-      Global::Problem::instance(0)->get_communicators()->sub_comm();
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
   int task[2] = {
       static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::stop_multiscale), -1};
-  subcomm->Broadcast(task, 2, 0);
+  Core::Communication::broadcast(task, 2, 0, subcomm);
 }
 
 

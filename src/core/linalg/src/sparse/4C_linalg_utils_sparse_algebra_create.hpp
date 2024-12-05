@@ -15,7 +15,6 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_CrsGraph.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Export.h>
@@ -86,7 +85,7 @@ namespace Core::LinAlg
    \param gids The local gids of this map
    \param comm The map's communicator
    */
-  std::shared_ptr<Epetra_Map> create_map(const std::set<int>& gids, const Epetra_Comm& comm);
+  std::shared_ptr<Epetra_Map> create_map(const std::set<int>& gids, MPI_Comm comm);
 
   /*!
    \brief Create an Epetra_Map from a vector of gids
@@ -96,7 +95,7 @@ namespace Core::LinAlg
    \param gids The local gids of this map
    \param comm The map's communicator
    */
-  std::shared_ptr<Epetra_Map> create_map(const std::vector<int>& gids, const Epetra_Comm& comm);
+  std::shared_ptr<Epetra_Map> create_map(const std::vector<int>& gids, MPI_Comm comm);
 
   /*!
       \brief Creates MultiMapExtractor to split dofs at certain position

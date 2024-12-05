@@ -1050,7 +1050,7 @@ CONTACT::Coupling3dQuad::Coupling3dQuad(Core::FE::Discretization& idiscret, int 
 /*----------------------------------------------------------------------*
  |  get communicator  (public)                               farah 01/13|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::Coupling3dManager::get_comm() const { return idiscret_.get_comm(); }
+MPI_Comm CONTACT::Coupling3dManager::get_comm() const { return idiscret_.get_comm(); }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|

@@ -215,7 +215,7 @@ FSI::Utils::SlideAleUtils::SlideAleUtils(std::shared_ptr<Core::FE::Discretizatio
 void FSI::Utils::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structure,
     Core::FE::Discretization& fluiddis, Core::LinAlg::Vector<double>& idispale,
     Core::LinAlg::Vector<double>& iprojdispale, Coupling::Adapter::CouplingMortar& coupsf,
-    const Epetra_Comm& comm)
+    MPI_Comm comm)
 {
   std::shared_ptr<Core::LinAlg::Vector<double>> idisptotal = structure.extract_interface_dispnp();
   const int dim = Global::Problem::instance()->n_dim();
@@ -304,7 +304,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Utils::SlideAleUtils::interpo
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FSI::Utils::SlideAleUtils::centerdisp(
-    Adapter::FSIStructureWrapper& structure, const Epetra_Comm& comm)
+    Adapter::FSIStructureWrapper& structure, MPI_Comm comm)
 {
   std::shared_ptr<Core::FE::Discretization> structdis = structure.discretization();
 
@@ -437,7 +437,7 @@ std::map<int, Core::LinAlg::Matrix<3, 1>> FSI::Utils::SlideAleUtils::current_str
 void FSI::Utils::SlideAleUtils::slide_projection(
     Adapter::FSIStructureWrapper& structure, Core::FE::Discretization& fluiddis,
     Core::LinAlg::Vector<double>& idispale, Core::LinAlg::Vector<double>& iprojdispale,
-    Coupling::Adapter::CouplingMortar& coupsf, const Epetra_Comm& comm
+    Coupling::Adapter::CouplingMortar& coupsf, MPI_Comm comm
 
 )
 {
@@ -574,7 +574,7 @@ void FSI::Utils::SlideAleUtils::slide_projection(
 }
 
 void FSI::Utils::SlideAleUtils::redundant_elements(
-    Coupling::Adapter::CouplingMortar& coupsf, const Epetra_Comm& comm)
+    Coupling::Adapter::CouplingMortar& coupsf, MPI_Comm comm)
 {
   // We need the structure elements (NOT THE MORTAR-ELEMENTS!) on every processor for the projection
   // of the fluid nodes. Furthermore we need the current position of the structnodes on every
@@ -624,7 +624,8 @@ void FSI::Utils::SlideAleUtils::redundant_elements(
 
     Core::Communication::sum_all(&partsum, &globsum, 1, comm);
     // map with ele ids
-    Epetra_Map mstruslideleids(globsum, vstruslideleids.size(), vstruslideleids.data(), 0, comm);
+    Epetra_Map mstruslideleids(globsum, vstruslideleids.size(), vstruslideleids.data(), 0,
+        Core::Communication::as_epetra_comm(comm));
     // redundant version of it
     Epetra_Map redmstruslideleids(*Core::LinAlg::allreduce_e_map(mstruslideleids));
 
@@ -674,7 +675,7 @@ void FSI::Utils::SlideAleUtils::redundant_elements(
 void FSI::Utils::SlideAleUtils::rotation(
     Core::FE::Discretization& mtrdis,        ///< fluid discretization
     Core::LinAlg::Vector<double>& idispale,  ///< vector of ALE displacements
-    const Epetra_Comm& comm,                 ///< communicator
+    MPI_Comm comm,                           ///< communicator
     std::map<int, double>& rotrat,           ///< rotation ratio of tangential displacements
     Core::LinAlg::Vector<double>&
         rotfull  ///< vector of full displacements in tangential directions

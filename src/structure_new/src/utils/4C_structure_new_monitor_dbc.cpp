@@ -194,7 +194,7 @@ void Solid::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& dis
 
   for (auto& my_dof : my_dofs) my_dof.reserve(nids->size() * ndof);
 
-  const Epetra_Comm& comm = discret.get_comm();
+  MPI_Comm comm = discret.get_comm();
   for (int nid : *nids)
   {
     const int rlid = discret.node_row_map()->LID(nid);
@@ -207,7 +207,8 @@ void Solid::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& dis
   }
 
   for (unsigned i = 0; i < DIM; ++i)
-    react_maps[i] = std::make_shared<Epetra_Map>(-1, my_dofs[i].size(), my_dofs[i].data(), 0, comm);
+    react_maps[i] = std::make_shared<Epetra_Map>(
+        -1, my_dofs[i].size(), my_dofs[i].data(), 0, Core::Communication::as_epetra_comm(comm));
 }
 
 /*----------------------------------------------------------------------------*
@@ -413,7 +414,7 @@ void Solid::MonitorDbc::write_results(std::ostream& os, const int col_width, con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Comm& Solid::MonitorDbc::get_comm() const { return discret_ptr_->get_comm(); }
+MPI_Comm Solid::MonitorDbc::get_comm() const { return discret_ptr_->get_comm(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 void Core::LinAlg::print_matrix_in_matlab_format(
     const std::string& filename, const Epetra_CrsMatrix& sparsematrix, const bool newfile)
 {
-  const auto& comm = sparsematrix.Comm();
+  const auto& comm = Core::Communication::unpack_epetra_comm(sparsematrix.Comm());
 
   const int my_PID = Core::Communication::my_mpi_rank(comm);
   const int num_proc = Core::Communication::num_mpi_ranks(comm);
@@ -176,7 +176,7 @@ void Core::LinAlg::print_vector_in_matlab_format(
 void Core::LinAlg::print_map_in_matlab_format(
     const std::string& filename, const Epetra_Map& map, const bool newfile)
 {
-  const auto& comm = map.Comm();
+  const auto& comm = Core::Communication::unpack_epetra_comm(map.Comm());
 
   const int my_PID = Core::Communication::my_mpi_rank(comm);
   const int num_proc = Core::Communication::num_mpi_ranks(comm);

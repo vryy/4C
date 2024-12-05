@@ -48,7 +48,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | monolithic                                               wirtz 01/16 |
  *----------------------------------------------------------------------*/
-EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+EHL::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& lubricationparams, const Teuchos::ParameterList& structparams,
     const std::string struct_disname, const std::string lubrication_disname)
     : Base(comm, globaltimeparams, lubricationparams, structparams, struct_disname,

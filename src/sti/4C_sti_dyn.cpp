@@ -33,7 +33,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
   Global::Problem* problem = Global::Problem::instance();
 
   // access communicator
-  const Epetra_Comm& comm = problem->get_dis("scatra")->get_comm();
+  MPI_Comm comm = problem->get_dis("scatra")->get_comm();
 
   // access scatra discretization
   std::shared_ptr<Core::FE::Discretization> scatradis = problem->get_dis("scatra");

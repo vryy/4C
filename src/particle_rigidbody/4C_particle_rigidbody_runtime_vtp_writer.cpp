@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-ParticleRigidBody::RigidBodyRuntimeVtpWriter::RigidBodyRuntimeVtpWriter(const Epetra_Comm& comm)
+ParticleRigidBody::RigidBodyRuntimeVtpWriter::RigidBodyRuntimeVtpWriter(MPI_Comm comm)
     : comm_(comm), setuptime_(0.0)
 {
   // empty constructor

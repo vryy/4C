@@ -21,9 +21,8 @@ namespace PoroMultiPhaseScaTra
   class PoroMultiPhaseScaTraPartitionedTwoWay : public PoroMultiPhaseScaTraPartitioned
   {
    public:
-    /// create using a Epetra_Comm
     PoroMultiPhaseScaTraPartitionedTwoWay(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+        MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// initialization
     void init(const Teuchos::ParameterList& globaltimeparams,
@@ -94,9 +93,8 @@ namespace PoroMultiPhaseScaTra
   class PoroMultiPhaseScaTraPartitionedTwoWayNested : public PoroMultiPhaseScaTraPartitionedTwoWay
   {
    public:
-    /// create using a Epetra_Comm
     PoroMultiPhaseScaTraPartitionedTwoWayNested(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+        MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// initialization
     void init(const Teuchos::ParameterList& globaltimeparams,
@@ -125,9 +123,8 @@ namespace PoroMultiPhaseScaTra
       : public PoroMultiPhaseScaTraPartitionedTwoWay
   {
    public:
-    /// create using a Epetra_Comm
     PoroMultiPhaseScaTraPartitionedTwoWaySequential(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+        MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// initialization
     void init(const Teuchos::ParameterList& globaltimeparams,

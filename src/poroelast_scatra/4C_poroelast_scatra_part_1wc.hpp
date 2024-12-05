@@ -19,7 +19,7 @@ namespace PoroElastScaTra
   class PoroScatraPart1WC : public PoroScatraPart
   {
    public:
-    explicit PoroScatraPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    explicit PoroScatraPart1WC(MPI_Comm comm, const Teuchos::ParameterList& timeparams)
         : PoroScatraPart(comm, timeparams){};
 
     //! solve one time step of porous media problem
@@ -41,8 +41,7 @@ namespace PoroElastScaTra
   {
    public:
     //! constructor
-    explicit PoroScatraPart1WCPoroToScatra(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit PoroScatraPart1WCPoroToScatra(MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
     //! actual time loop
     void timeloop() override;
@@ -61,8 +60,7 @@ namespace PoroElastScaTra
   {
    public:
     //! constructor
-    explicit PoroScatraPart1WCScatraToPoro(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit PoroScatraPart1WCScatraToPoro(MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
     //! actual time loop
     void timeloop() override;

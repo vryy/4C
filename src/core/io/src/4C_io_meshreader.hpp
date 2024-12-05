@@ -134,7 +134,7 @@ namespace Core::IO
     void create_inline_mesh(int& max_node_id);
 
     /// my comm
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! graphs of each discretization
     std::vector<std::shared_ptr<const Epetra_CrsGraph>> graph_;

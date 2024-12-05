@@ -16,7 +16,6 @@
 #include "4C_poroelast_scatra_base.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -43,7 +42,7 @@ namespace PoroElastScaTra
   {
    public:
     /// Constructor
-    explicit PoroScatraPart(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit PoroScatraPart(MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
     // Methods
 

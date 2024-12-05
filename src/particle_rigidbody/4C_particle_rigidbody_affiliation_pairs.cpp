@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-ParticleRigidBody::RigidBodyAffiliationPairs::RigidBodyAffiliationPairs(const Epetra_Comm& comm)
+ParticleRigidBody::RigidBodyAffiliationPairs::RigidBodyAffiliationPairs(MPI_Comm comm)
     : comm_(comm), myrank_(Core::Communication::my_mpi_rank(comm))
 {
   // empty constructor

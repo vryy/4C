@@ -1129,8 +1129,9 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 
     //--------------------------------------------------
     // build noderowmap for new distribution of nodes
-    newrownodemap = std::make_shared<Epetra_Map>(discret_->num_global_nodes(),
-        nodesonthisproc.size(), nodesonthisproc.data(), 0, discret_->get_comm());
+    newrownodemap =
+        std::make_shared<Epetra_Map>(discret_->num_global_nodes(), nodesonthisproc.size(),
+            nodesonthisproc.data(), 0, Core::Communication::as_epetra_comm(discret_->get_comm()));
 
     // create nodal graph of problem, according to old RowNodeMap
     std::shared_ptr<Epetra_CrsGraph> oldnodegraph = discret_->build_node_graph();
@@ -1151,8 +1152,8 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 
     std::shared_ptr<Epetra_Map> newcolnodemap;
 
-    newcolnodemap = std::make_shared<Epetra_Map>(
-        -1, cntmp.NumMyElements(), cntmp.MyGlobalElements(), 0, discret_->get_comm());
+    newcolnodemap = std::make_shared<Epetra_Map>(-1, cntmp.NumMyElements(),
+        cntmp.MyGlobalElements(), 0, Core::Communication::as_epetra_comm(discret_->get_comm()));
 
     // time measurement --- this causes the TimeMonitor tm6 to stop here
     tm6_ref_ = nullptr;
@@ -1227,8 +1228,8 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       // that might have been added in the previous loop over the inversenodecoupling
       {
         // now reconstruct the extended colmap
-        newcolnodemap = std::make_shared<Epetra_Map>(
-            -1, mycolnodes.size(), mycolnodes.data(), 0, discret_->get_comm());
+        newcolnodemap = std::make_shared<Epetra_Map>(-1, mycolnodes.size(), mycolnodes.data(), 0,
+            Core::Communication::as_epetra_comm(discret_->get_comm()));
 
         *allcoupledcolnodes_ = (*allcoupledrownodes_);
 
@@ -1268,8 +1269,8 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       }
 
       // now reconstruct the extended colmap
-      newcolnodemap = std::make_shared<Epetra_Map>(
-          -1, mycolnodes.size(), mycolnodes.data(), 0, discret_->get_comm());
+      newcolnodemap = std::make_shared<Epetra_Map>(-1, mycolnodes.size(), mycolnodes.data(), 0,
+          Core::Communication::as_epetra_comm(discret_->get_comm()));
 
       *allcoupledcolnodes_ = (*allcoupledrownodes_);
 
@@ -1504,8 +1505,10 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
     // nodegraph: row for each node, column with nodes from the same element and coupled nodes
     //
 
-    const int myrank = Core::Communication::my_mpi_rank(nodegraph->Comm());
-    const int numproc = Core::Communication::num_mpi_ranks(nodegraph->Comm());
+    const int myrank = Core::Communication::my_mpi_rank(
+        Core::Communication::unpack_epetra_comm(nodegraph->Comm()));
+    const int numproc = Core::Communication::num_mpi_ranks(
+        Core::Communication::unpack_epetra_comm(nodegraph->Comm()));
 
     if (numproc > 1)
     {
@@ -1576,11 +1579,13 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
 
       // the rowmap will become the new distribution of nodes
       const Epetra_Map newnoderowmap(-1, newnodegraph->RowMap().NumMyElements(),
-          newnodegraph->RowMap().MyGlobalElements(), 0, discret_->get_comm());
+          newnodegraph->RowMap().MyGlobalElements(), 0,
+          Core::Communication::as_epetra_comm(discret_->get_comm()));
 
       // the column map will become the new ghosted distribution of nodes
       const Epetra_Map newnodecolmap(-1, newnodegraph->ColMap().NumMyElements(),
-          newnodegraph->ColMap().MyGlobalElements(), 0, discret_->get_comm());
+          newnodegraph->ColMap().MyGlobalElements(), 0,
+          Core::Communication::as_epetra_comm(discret_->get_comm()));
 
       // do the redistribution without assigning dofs
       discret_->redistribute(newnoderowmap, newnodecolmap, {.assign_degrees_of_freedom = false});

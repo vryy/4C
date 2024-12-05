@@ -49,7 +49,7 @@ namespace
     void SetUp() override
     {
       create_material_in_global_problem();
-      comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
+      comm_ = MPI_COMM_WORLD;
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
       testdis_ = std::make_shared<Core::FE::Discretization>("dummy", comm_, 3);
     }
@@ -59,7 +59,7 @@ namespace
    public:
     Core::IO::GridGenerator::RectangularCuboidInputs inputData_{};
     std::shared_ptr<Core::FE::Discretization> testdis_;
-    std::shared_ptr<Epetra_Comm> comm_;
+    MPI_Comm comm_;
 
     Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };

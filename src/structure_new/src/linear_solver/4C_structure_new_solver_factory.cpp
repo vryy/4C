@@ -137,10 +137,10 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_li
           actdis.dof(node, solidDofs);
       }
 
-      std::shared_ptr<Epetra_Map> rowmap1(
-          new Epetra_Map(-1, solidDofs.size(), solidDofs.data(), 0, actdis.get_comm()));
-      std::shared_ptr<Epetra_Map> rowmap2(
-          new Epetra_Map(-1, beamDofs.size(), beamDofs.data(), 0, actdis.get_comm()));
+      std::shared_ptr<Epetra_Map> rowmap1(new Epetra_Map(-1, solidDofs.size(), solidDofs.data(), 0,
+          Core::Communication::as_epetra_comm(actdis.get_comm())));
+      std::shared_ptr<Epetra_Map> rowmap2(new Epetra_Map(-1, beamDofs.size(), beamDofs.data(), 0,
+          Core::Communication::as_epetra_comm(actdis.get_comm())));
 
       std::vector<std::shared_ptr<const Epetra_Map>> maps;
       maps.emplace_back(rowmap1);

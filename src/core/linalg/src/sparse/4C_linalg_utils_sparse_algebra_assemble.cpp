@@ -25,7 +25,8 @@ void Core::LinAlg::assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDense
   if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.numRows() || lcoldim > Aele.numCols())
     FOUR_C_THROW("Mismatch in dimensions");
 
-  const int myrank = Core::Communication::my_mpi_rank(A.Comm());
+  const int myrank =
+      Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(A.Comm()));
   const Epetra_Map& rowmap = A.RowMap();
 
   // this 'Assemble' is not implemented for a Filled() matrix A

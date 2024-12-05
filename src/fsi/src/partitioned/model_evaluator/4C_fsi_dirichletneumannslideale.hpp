@@ -54,7 +54,7 @@ namespace FSI
      *
      * @param[in] comm Communicator
      */
-    explicit DirichletNeumannSlideale(const Epetra_Comm& comm);
+    explicit DirichletNeumannSlideale(MPI_Comm comm);
 
    public:
     /// setup this object

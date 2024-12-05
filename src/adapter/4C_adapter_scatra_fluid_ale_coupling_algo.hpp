@@ -36,9 +36,8 @@ namespace Adapter
                                           public Adapter::AleBaseAlgorithm
   {
    public:
-    /// constructor using a Epetra_Comm
-    ScaTraFluidAleCouplingAlgorithm(const Epetra_Comm& comm,  ///< communicator
-        const Teuchos::ParameterList& prbdyn,                 ///< problem-specific parameters
+    ScaTraFluidAleCouplingAlgorithm(MPI_Comm comm,  ///< communicator
+        const Teuchos::ParameterList& prbdyn,       ///< problem-specific parameters
         const std::string condname,  ///< name of condition that defines fluid-ale coupling
         const Teuchos::ParameterList& solverparams);
 

@@ -13,7 +13,6 @@
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
 
@@ -52,7 +51,7 @@ namespace Core::Communication
 
     \param comm    (in): Communicator that shall be used in exports
     */
-    Exporter(const Epetra_Comm& comm);
+    Exporter(MPI_Comm comm);
 
     /*!
     \brief Standard Constructor
@@ -61,7 +60,7 @@ namespace Core::Communication
     \param tomap   (in): The target map data shall be exported to
     \param comm    (in): Communicator that shall be used in exports
     */
-    Exporter(const Epetra_Map& frommap, const Epetra_Map& tomap, const Epetra_Comm& comm);
+    Exporter(const Epetra_Map& frommap, const Epetra_Map& tomap, MPI_Comm comm);
 
     /*!
     \brief Copy Constructor (default)
@@ -80,7 +79,7 @@ namespace Core::Communication
     /*!
     \brief Get communicator
     */
-    inline const Epetra_Comm& get_comm() const { return comm_; }
+    inline MPI_Comm get_comm() const { return comm_; }
 
     /*!
     \brief Get source map
@@ -467,7 +466,7 @@ namespace Core::Communication
     //! target map
     const Epetra_Map& tomap_;
     //! communicator
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
     //! PID
     int myrank_;
     //! no. of processors

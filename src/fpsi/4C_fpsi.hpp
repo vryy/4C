@@ -12,7 +12,6 @@
 
 #include "4C_adapter_algorithmbase.hpp"
 
-#include <Epetra_Comm.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -22,7 +21,7 @@ namespace FPSI
   {
    public:
     /// constructor of base class
-    FpsiBase(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams);
+    FpsiBase(MPI_Comm comm, const Teuchos::ParameterList& fpsidynparams);
 
     /// setup
     virtual void setup_system() = 0;
@@ -34,7 +33,7 @@ namespace FPSI
     virtual void timeloop() = 0;
 
     /// test results (if necessary)
-    virtual void test_results(const Epetra_Comm& comm) = 0;
+    virtual void test_results(MPI_Comm comm) = 0;
 
     /// read restart
     void read_restart(int restartstep) override = 0;

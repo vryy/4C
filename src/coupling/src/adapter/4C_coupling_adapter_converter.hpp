@@ -180,7 +180,7 @@ namespace Coupling::Adapter
       Internal method.
      */
     void setup_gid_map(const Epetra_Map& rowmap, const Epetra_Map& colmap,
-        const CouplingConverter* converter, const Epetra_Comm& comm);
+        const CouplingConverter* converter, MPI_Comm comm);
 
     /// copy values from source to destination matrix
     /*!

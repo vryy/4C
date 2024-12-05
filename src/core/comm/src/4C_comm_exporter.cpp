@@ -15,8 +15,8 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Core::Communication::Exporter::Exporter(const Epetra_Comm& comm)
-    : dummymap_(0, 0, comm),
+Core::Communication::Exporter::Exporter(MPI_Comm comm)
+    : dummymap_(0, 0, Core::Communication::as_epetra_comm(comm)),
       frommap_(dummymap_),
       tomap_(dummymap_),
       comm_(comm),
@@ -26,8 +26,8 @@ Core::Communication::Exporter::Exporter(const Epetra_Comm& comm)
 }
 
 Core::Communication::Exporter::Exporter(
-    const Epetra_Map& frommap, const Epetra_Map& tomap, const Epetra_Comm& comm)
-    : dummymap_(0, 0, comm),
+    const Epetra_Map& frommap, const Epetra_Map& tomap, MPI_Comm comm)
+    : dummymap_(0, 0, Core::Communication::as_epetra_comm(comm)),
       frommap_(frommap),
       tomap_(tomap),
       comm_(comm),
@@ -41,147 +41,123 @@ void Core::Communication::Exporter::i_send(const int frompid, const int topid, c
     const int dsize, const int tag, MPI_Request& request) const
 {
   if (my_pid() != frompid) return;
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
-  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
-  MPI_Isend((void*)data, dsize, MPI_CHAR, topid, tag, comm->Comm(), &request);
+  MPI_Isend((void*)data, dsize, MPI_CHAR, topid, tag, get_comm(), &request);
 }
 
 void Core::Communication::Exporter::i_send(const int frompid, const int topid, const int* data,
     const int dsize, const int tag, MPI_Request& request) const
 {
   if (my_pid() != frompid) return;
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
-  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
-  MPI_Isend((void*)data, dsize, MPI_INT, topid, tag, comm->Comm(), &request);
+  MPI_Isend((void*)data, dsize, MPI_INT, topid, tag, get_comm(), &request);
 }
 
 void Core::Communication::Exporter::i_send(const int frompid, const int topid, const double* data,
     const int dsize, const int tag, MPI_Request& request) const
 {
   if (my_pid() != frompid) return;
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
-  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
-  MPI_Isend((void*)data, dsize, MPI_DOUBLE, topid, tag, comm->Comm(), &request);
+  MPI_Isend((void*)data, dsize, MPI_DOUBLE, topid, tag, get_comm(), &request);
 }
 
 void Core::Communication::Exporter::receive_any(
     int& source, int& tag, std::vector<char>& recvbuff, int& length) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
-  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
-  MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm->Comm(), &status);
+  MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, get_comm(), &status);
   // get sender, tag and length
   source = status.MPI_SOURCE;
   tag = status.MPI_TAG;
   MPI_Get_count(&status, MPI_CHAR, &length);
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
-  MPI_Recv(recvbuff.data(), length, MPI_CHAR, source, tag, comm->Comm(), &status);
+  MPI_Recv(recvbuff.data(), length, MPI_CHAR, source, tag, get_comm(), &status);
 }
 
 void Core::Communication::Exporter::receive(
     const int source, const int tag, std::vector<char>& recvbuff, int& length) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
-  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
-  MPI_Probe(source, tag, comm->Comm(), &status);
+  MPI_Probe(source, tag, get_comm(), &status);
   MPI_Get_count(&status, MPI_CHAR, &length);
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
-  MPI_Recv(recvbuff.data(), length, MPI_CHAR, source, tag, comm->Comm(), &status);
+  MPI_Recv(recvbuff.data(), length, MPI_CHAR, source, tag, get_comm(), &status);
 }
 
 void Core::Communication::Exporter::receive_any(
     int& source, int& tag, std::vector<int>& recvbuff, int& length) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
-  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
-  MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm->Comm(), &status);
+  MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, get_comm(), &status);
   // get sender, tag and length
   source = status.MPI_SOURCE;
   tag = status.MPI_TAG;
   MPI_Get_count(&status, MPI_INT, &length);
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
-  MPI_Recv(recvbuff.data(), length, MPI_INT, source, tag, comm->Comm(), &status);
+  MPI_Recv(recvbuff.data(), length, MPI_INT, source, tag, get_comm(), &status);
 }
 
 void Core::Communication::Exporter::receive(
     const int source, const int tag, std::vector<int>& recvbuff, int& length) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
-  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
-  MPI_Probe(source, tag, comm->Comm(), &status);
+  MPI_Probe(source, tag, get_comm(), &status);
   MPI_Get_count(&status, MPI_INT, &length);
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
-  MPI_Recv(recvbuff.data(), length, MPI_INT, source, tag, comm->Comm(), &status);
+  MPI_Recv(recvbuff.data(), length, MPI_INT, source, tag, get_comm(), &status);
 }
 
 void Core::Communication::Exporter::receive_any(
     int& source, int& tag, std::vector<double>& recvbuff, int& length) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
-  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
-  MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm->Comm(), &status);
+  MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, get_comm(), &status);
   // get sender, tag and length
   source = status.MPI_SOURCE;
   tag = status.MPI_TAG;
   MPI_Get_count(&status, MPI_DOUBLE, &length);
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
-  MPI_Recv(recvbuff.data(), length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
+  MPI_Recv(recvbuff.data(), length, MPI_DOUBLE, source, tag, get_comm(), &status);
 }
 
 void Core::Communication::Exporter::receive(
     const int source, const int tag, std::vector<double>& recvbuff, int& length) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
-  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
-  MPI_Probe(source, tag, comm->Comm(), &status);
+  MPI_Probe(source, tag, get_comm(), &status);
   MPI_Get_count(&status, MPI_DOUBLE, &length);
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
-  MPI_Recv(recvbuff.data(), length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
+  MPI_Recv(recvbuff.data(), length, MPI_DOUBLE, source, tag, get_comm(), &status);
 }
 
 void Core::Communication::Exporter::allreduce(
     std::vector<int>& sendbuff, std::vector<int>& recvbuff, MPI_Op mpi_op)
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
-  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
-
   int length = (int)sendbuff.size();
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
 
-  MPI_Allreduce(sendbuff.data(), recvbuff.data(), length, MPI_INT, mpi_op, comm->Comm());
+  MPI_Allreduce(sendbuff.data(), recvbuff.data(), length, MPI_INT, mpi_op, get_comm());
 }
 
 void Core::Communication::Exporter::broadcast(
     const int frompid, std::vector<char>& data, const int tag) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
-  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
-
   int length = static_cast<int>(data.size());
-  MPI_Bcast(&length, 1, MPI_INT, frompid, comm->Comm());
+  MPI_Bcast(&length, 1, MPI_INT, frompid, get_comm());
   if (my_pid() != frompid)
   {
     data.resize(length);
   }
-  MPI_Bcast((void*)data.data(), length, MPI_CHAR, frompid, comm->Comm());
+  MPI_Bcast((void*)data.data(), length, MPI_CHAR, frompid, get_comm());
 }
 
 void Core::Communication::Exporter::construct_exporter()

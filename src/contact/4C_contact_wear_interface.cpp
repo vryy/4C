@@ -31,8 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Wear::WearInterface::WearInterface(
     const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData_ptr, const int id,
-    const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-    bool selfcontact)
+    MPI_Comm comm, const int dim, const Teuchos::ParameterList& icontact, bool selfcontact)
     : CONTACT::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact),
       wear_(false),
       wearimpl_(false),
@@ -3119,8 +3118,9 @@ bool Wear::WearInterface::build_active_set_master()
 
     if (frinode->fri_data().slip()) sl.push_back(frinode->id());
   }
-  Epetra_Map auxa(-1, (int)a.size(), a.data(), 0, get_comm());
-  Epetra_Map auxsl(-1, (int)sl.size(), sl.data(), 0, get_comm());
+  Epetra_Map auxa(-1, (int)a.size(), a.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  Epetra_Map auxsl(
+      -1, (int)sl.size(), sl.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
   const std::shared_ptr<Epetra_Map> ara = Core::LinAlg::allreduce_e_map((auxa));
   const std::shared_ptr<Epetra_Map> arsl = Core::LinAlg::allreduce_e_map((auxsl));
@@ -3171,7 +3171,8 @@ bool Wear::WearInterface::build_active_set_master()
       eleatt.push_back(moele->id());
   }
 
-  Epetra_Map auxe(-1, (int)eleatt.size(), eleatt.data(), 0, get_comm());
+  Epetra_Map auxe(
+      -1, (int)eleatt.size(), eleatt.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
   const std::shared_ptr<Epetra_Map> att = Core::LinAlg::allreduce_e_map((auxe));
 
   for (int j = 0; j < att->NumMyElements(); ++j)
@@ -3270,9 +3271,12 @@ bool Wear::WearInterface::build_active_set_master()
     mele->set_attached() = false;
   }
 
-  Epetra_Map actmn(-1, (int)wa.size(), wa.data(), 0, get_comm());
-  Epetra_Map slimn(-1, (int)wsl.size(), wsl.data(), 0, get_comm());
-  Epetra_Map slimd(-1, (int)wsln.size(), wsln.data(), 0, get_comm());
+  Epetra_Map actmn(
+      -1, (int)wa.size(), wa.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  Epetra_Map slimn(
+      -1, (int)wsl.size(), wsl.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  Epetra_Map slimd(
+      -1, (int)wsln.size(), wsln.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
   const std::shared_ptr<Epetra_Map> ARactmn = Core::LinAlg::allreduce_overlapping_e_map((actmn));
   const std::shared_ptr<Epetra_Map> ARslimn = Core::LinAlg::allreduce_overlapping_e_map((slimn));
@@ -3322,9 +3326,12 @@ bool Wear::WearInterface::build_active_set_master()
     }
   }
 
-  activmasternodes_ = std::make_shared<Epetra_Map>(-1, (int)ga.size(), ga.data(), 0, get_comm());
-  slipmasternodes_ = std::make_shared<Epetra_Map>(-1, (int)gs.size(), gs.data(), 0, get_comm());
-  slipmn_ = std::make_shared<Epetra_Map>(-1, (int)gsd.size(), gsd.data(), 0, get_comm());
+  activmasternodes_ = std::make_shared<Epetra_Map>(
+      -1, (int)ga.size(), ga.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  slipmasternodes_ = std::make_shared<Epetra_Map>(
+      -1, (int)gs.size(), gs.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  slipmn_ = std::make_shared<Epetra_Map>(
+      -1, (int)gsd.size(), gsd.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
   for (int j = 0; j < slave_col_nodes()->NumMyElements(); ++j)
   {
@@ -3415,10 +3422,10 @@ bool Wear::WearInterface::build_active_set(bool init)
     }
 
     // create map for all involved master nodes -- both-sided wear specific
-    involvednodes_ = std::make_shared<Epetra_Map>(
-        -1, (int)mymnodegids.size(), mymnodegids.data(), 0, get_comm());
-    involveddofs_ =
-        std::make_shared<Epetra_Map>(-1, (int)mymdofgids.size(), mymdofgids.data(), 0, get_comm());
+    involvednodes_ = std::make_shared<Epetra_Map>(-1, (int)mymnodegids.size(), mymnodegids.data(),
+        0, Core::Communication::as_epetra_comm(get_comm()));
+    involveddofs_ = std::make_shared<Epetra_Map>(-1, (int)mymdofgids.size(), mymdofgids.data(), 0,
+        Core::Communication::as_epetra_comm(get_comm()));
   }
 
   return true;
@@ -4035,13 +4042,13 @@ void Wear::WearInterface::split_slave_dofs()
   // get out of here if active set is empty
   if (snoderowmap_ == nullptr)
   {
-    sndofmap_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
+    sndofmap_ = std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
     return;
   }
 
   else if (snoderowmap_->NumGlobalElements() == 0)
   {
-    sndofmap_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
+    sndofmap_ = std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
     return;
   }
 
@@ -4078,7 +4085,8 @@ void Wear::WearInterface::split_slave_dofs()
     FOUR_C_THROW("SplitSlaveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  sndofmap_ = std::make_shared<Epetra_Map>(gcountN, countN, myNgids.data(), 0, get_comm());
+  sndofmap_ = std::make_shared<Epetra_Map>(
+      gcountN, countN, myNgids.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
   return;
 }
@@ -4092,13 +4100,13 @@ void Wear::WearInterface::split_master_dofs()
   // get out of here if active set is empty
   if (mnoderowmap_ == nullptr)
   {
-    mndofmap_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
+    mndofmap_ = std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
     return;
   }
 
   else if (mnoderowmap_->NumGlobalElements() == 0)
   {
-    mndofmap_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
+    mndofmap_ = std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
     return;
   }
 
@@ -4135,7 +4143,8 @@ void Wear::WearInterface::split_master_dofs()
     FOUR_C_THROW("SplitSlaveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  mndofmap_ = std::make_shared<Epetra_Map>(gcountN, countN, myNgids.data(), 0, get_comm());
+  mndofmap_ = std::make_shared<Epetra_Map>(
+      gcountN, countN, myNgids.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
   return;
 }
@@ -4193,8 +4202,8 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
   std::vector<int> globalnumlmdof(Core::Communication::num_mpi_ranks(get_comm()));
   localnumwdof[Core::Communication::my_mpi_rank(get_comm())] =
       (int)((sdofrowmap_->NumMyElements()) / n_dim());
-  get_comm().SumAll(
-      localnumwdof.data(), globalnumlmdof.data(), Core::Communication::num_mpi_ranks(get_comm()));
+  Core::Communication::sum_all(localnumwdof.data(), globalnumlmdof.data(),
+      Core::Communication::num_mpi_ranks(get_comm()), get_comm());
 
   // compute offet for LM dof initialization for all procs
   int offset = 0;
@@ -4208,7 +4217,8 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
   // create interface w map
   // (if maxdofglobal_ == 0, we do not want / need this)
   if (maxdofwear > 0)
-    wdofmap_ = std::make_shared<Epetra_Map>(-1, (int)wdof.size(), wdof.data(), 0, get_comm());
+    wdofmap_ = std::make_shared<Epetra_Map>(
+        -1, (int)wdof.size(), wdof.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
   //********************************************************************
   // For discrete both-sided wear
@@ -4225,8 +4235,8 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
     std::vector<int> globalnumlmdof(Core::Communication::num_mpi_ranks(get_comm()));
     localnumwdof[Core::Communication::my_mpi_rank(get_comm())] =
         (int)((mdofrowmap_->NumMyElements()) / n_dim());
-    get_comm().SumAll(
-        localnumwdof.data(), globalnumlmdof.data(), Core::Communication::num_mpi_ranks(get_comm()));
+    Core::Communication::sum_all(localnumwdof.data(), globalnumlmdof.data(),
+        Core::Communication::num_mpi_ranks(get_comm()), get_comm());
 
     // compute offet for LM dof initialization for all procs
     int offset = 0;
@@ -4240,7 +4250,8 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
     // create interface w map
     // (if maxdofglobal_ == 0, we do not want / need this)
     if (maxdofwear > 0)
-      wmdofmap_ = std::make_shared<Epetra_Map>(-1, (int)wmdof.size(), wmdof.data(), 0, get_comm());
+      wmdofmap_ = std::make_shared<Epetra_Map>(
+          -1, (int)wmdof.size(), wmdof.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
   }
 
   return;

@@ -42,7 +42,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
+FSI::Partitioned::Partitioned(MPI_Comm comm)
     : Algorithm(comm),
       idispn_(nullptr),
       iveln_(nullptr),
@@ -72,7 +72,7 @@ void FSI::Partitioned::setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
+void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, MPI_Comm comm)
 {
   if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     std::cout << "\n setup_coupling in FSI::Partitioned ..." << std::endl;

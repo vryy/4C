@@ -360,8 +360,8 @@ namespace CONTACT
      *  \param selfcontact (in): Boolean flag to indicate self-contact
      *
      *  \author hiermeier \date 03/17 */
-    static std::shared_ptr<Interface> create(const int id, const Epetra_Comm& comm,
-        const int spatialDim, const Teuchos::ParameterList& icontact, const bool selfcontact);
+    static std::shared_ptr<Interface> create(const int id, MPI_Comm comm, const int spatialDim,
+        const Teuchos::ParameterList& icontact, const bool selfcontact);
 
     /*!
     \brief Standard constructor creating empty contact interface
@@ -379,8 +379,8 @@ namespace CONTACT
 
     */
     Interface(const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData_ptr,
-        const int id, const Epetra_Comm& comm, const int spatialDim,
-        const Teuchos::ParameterList& icontact, bool selfcontact);
+        const int id, MPI_Comm comm, const int spatialDim, const Teuchos::ParameterList& icontact,
+        bool selfcontact);
 
     // don't want = operator and cctor
     Interface operator=(const Interface& old) = delete;

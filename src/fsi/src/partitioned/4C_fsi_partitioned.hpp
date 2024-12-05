@@ -91,7 +91,7 @@ namespace FSI
      *
      * \param[in] comm Communicator
      */
-    explicit Partitioned(const Epetra_Comm& comm);
+    explicit Partitioned(MPI_Comm comm);
 
     /// setup this object
     void setup() override;
@@ -112,7 +112,7 @@ namespace FSI
     virtual void remeshing();
 
     /// setup of coupling at fsi interface
-    virtual void setup_coupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
+    virtual void setup_coupling(const Teuchos::ParameterList& fsidyn, MPI_Comm comm);
 
     /// read restart data
     void read_restart(int step) override;

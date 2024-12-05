@@ -199,8 +199,8 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_nodal_l2_pr
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_projection(
-    Core::LinAlg::SparseMatrix &massmatrix, Core::LinAlg::MultiVector<double> &rhs,
-    const Epetra_Comm &comm, const int &numvec, const Teuchos::ParameterList &solverparams,
+    Core::LinAlg::SparseMatrix &massmatrix, Core::LinAlg::MultiVector<double> &rhs, MPI_Comm comm,
+    const int &numvec, const Teuchos::ParameterList &solverparams,
     const std::function<const Teuchos::ParameterList &(int)> get_solver_params,
     const Epetra_Map &noderowmap, const Epetra_Map &fullnoderowmap,
     const std::map<int, int> &slavetomastercolnodesmap)

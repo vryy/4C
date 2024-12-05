@@ -13,8 +13,8 @@
 #include "4C_inpar_mortar.hpp"
 #include "4C_mortar_base_binarytree.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
+#include <mpi.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -110,7 +110,7 @@ namespace Mortar
     \brief Get communicator
 
     */
-    const Epetra_Comm& get_comm() const;
+    MPI_Comm get_comm() const;
 
     /*!
     \brief Return type of treenode
@@ -235,7 +235,7 @@ namespace Mortar
     \brief Get communicator
 
     */
-    const Epetra_Comm& get_comm() const;
+    MPI_Comm get_comm() const;
 
     /*!
     \brief Return reference to slave treenodesmap

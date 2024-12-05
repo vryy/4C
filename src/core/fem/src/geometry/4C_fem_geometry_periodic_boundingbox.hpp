@@ -53,8 +53,8 @@ namespace Core::Geo
 
       /// setup bounding box object, setup call is needed in case of box dirichlet
       void setup(const Teuchos::ParameterList& io_params,
-          std::shared_ptr<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
-          int n_dim, const Core::IO::OutputControl& output_control);
+          std::shared_ptr<Core::FE::Discretization> boundingbox_dis, MPI_Comm comm, int n_dim,
+          const Core::IO::OutputControl& output_control);
 
       /// get edge length
       double edge_length(int dim) const { return edgelength_[dim]; }
@@ -73,7 +73,7 @@ namespace Core::Geo
 
       /// initialize bounding box discretization
       void setup_bounding_box_discretization(
-          std::shared_ptr<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
+          std::shared_ptr<Core::FE::Discretization> boundingbox_dis, MPI_Comm comm,
           const int n_dim);
 
       /*!

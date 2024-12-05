@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-PoroElast::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
+PoroElast::MonolithicMeshtying::MonolithicMeshtying(MPI_Comm comm,
     const Teuchos::ParameterList& timeparams,
     std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter)
     : Monolithic(comm, timeparams, porosity_splitter), normrhsfactiven_(0.0), tolfres_ncoup_(0.0)

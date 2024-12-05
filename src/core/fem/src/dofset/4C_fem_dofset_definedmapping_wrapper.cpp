@@ -114,8 +114,7 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
 
   }  // loop over all condition ids
 
-  // clone communicator of target discretization
-  std::shared_ptr<Epetra_Comm> com(dis.get_comm().Clone());
+  MPI_Comm com = dis.get_comm();
 
   // extract permutation
   std::vector<int> targetnodes(dis.node_row_map()->MyGlobalElements(),
@@ -142,9 +141,11 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
   }
 
   // Epetra maps
-  Epetra_Map targetnodemap(-1, patchedtargetnodes.size(), patchedtargetnodes.data(), 0, *com);
+  Epetra_Map targetnodemap(-1, patchedtargetnodes.size(), patchedtargetnodes.data(), 0,
+      Core::Communication::as_epetra_comm(com));
 
-  Epetra_Map permsourcenodemap(-1, permsourcenodes.size(), permsourcenodes.data(), 0, *com);
+  Epetra_Map permsourcenodemap(-1, permsourcenodes.size(), permsourcenodes.data(), 0,
+      Core::Communication::as_epetra_comm(com));
 
   // we expect to get maps of exactly the same shape
   if (not targetnodemap.PointSameAs(permsourcenodemap))

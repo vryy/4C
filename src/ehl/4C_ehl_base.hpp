@@ -37,8 +37,7 @@ namespace EHL
   class Base : public Adapter::AlgorithmBase
   {
    public:
-    /// create using a Epetra_Comm
-    explicit Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    explicit Base(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& lubricationparams, const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
         const std::string lubrication_disname);  // Problem builder
@@ -50,7 +49,7 @@ namespace EHL
     virtual void timeloop() = 0;
 
     /// test results (if necessary)
-    void test_results(const Epetra_Comm& comm);
+    void test_results(MPI_Comm comm);
 
     /// read restart
     void read_restart(int restart) override;
@@ -134,8 +133,8 @@ namespace EHL
 
    private:
     /// setup discretizations and dofsets
-    void setup_discretizations(const Epetra_Comm& comm, const std::string struct_disname,
-        const std::string lubrication_disname);
+    void setup_discretizations(
+        MPI_Comm comm, const std::string struct_disname, const std::string lubrication_disname);
 
     /// set structure mesh displacement on lubrication field
     void set_mesh_disp(const Core::LinAlg::Vector<double>& disp);

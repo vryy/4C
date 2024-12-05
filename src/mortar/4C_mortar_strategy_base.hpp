@@ -16,7 +16,6 @@
 #include "4C_solver_nonlin_nox_constraint_interface_preconditioner.hpp"  // interface specifications
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 
@@ -78,8 +77,8 @@ namespace Mortar
     std::shared_ptr<const Epetra_Map> prob_nodes_ptr() const { return probnodes_; }
 
     //! Return communicator
-    std::shared_ptr<const Epetra_Comm>& comm_ptr() { return comm_; }
-    std::shared_ptr<const Epetra_Comm> comm_ptr() const { return comm_; }
+    MPI_Comm& comm_ptr() { return comm_; }
+    MPI_Comm comm_ptr() const { return comm_; }
 
     //! Return containing contact input parameters
     Teuchos::ParameterList& s_contact() { return scontact_; }
@@ -125,7 +124,7 @@ namespace Mortar
     std::shared_ptr<Epetra_Map> probnodes_;
 
     //! Communicator
-    std::shared_ptr<const Epetra_Comm> comm_;
+    MPI_Comm comm_;
 
     //! Containing contact input parameters
     Teuchos::ParameterList scontact_;
@@ -205,8 +204,8 @@ namespace Mortar
     */
     StrategyBase(const std::shared_ptr<Mortar::StratDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
-        const Teuchos::ParameterList& params, const int spatialDim,
-        const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
+        const Teuchos::ParameterList& params, const int spatialDim, const MPI_Comm& comm,
+        const double alphaf, const int maxdof);
 
     //! @name Access methods
     //! @{
@@ -221,7 +220,7 @@ namespace Mortar
     int n_dim() const { return dim_; }
 
     //! Get Epetra communicator
-    const Epetra_Comm& get_comm() const { return *comm_; }
+    MPI_Comm get_comm() const { return comm_; }
 
     //! Get the underlying problem dof row map
     const std::shared_ptr<Epetra_Map>& problem_dofs() { return probdofs_; }
@@ -424,12 +423,12 @@ namespace Mortar
     std::shared_ptr<Epetra_Map>&
         probnodes_;  //!< ref. to underlying problem node row map (not only interfaces)
 
-    std::shared_ptr<const Epetra_Comm>& comm_;  //!< ref. to communicator
-    Teuchos::ParameterList& scontact_;          //!< ref. to containing contact input parameters
-    int& dim_;                                  //!< ref. to dimension of problem (2D or 3D)
-    double& alphaf_;   //!< ref. to generalized-alpha parameter (0.0 for statics)
-    bool& parredist_;  //!< ref. to flag indicating parallel redistribution status
-    int& maxdof_;      //!< ref. to highest dof number in problem discretization
+    MPI_Comm& comm_;                    //!< ref. to communicator
+    Teuchos::ParameterList& scontact_;  //!< ref. to containing contact input parameters
+    int& dim_;                          //!< ref. to dimension of problem (2D or 3D)
+    double& alphaf_;                    //!< ref. to generalized-alpha parameter (0.0 for statics)
+    bool& parredist_;                   //!< ref. to flag indicating parallel redistribution status
+    int& maxdof_;                       //!< ref. to highest dof number in problem discretization
     Inpar::CONTACT::SystemType& systype_;  //!< ref. to current used system type
                                            //! @}
 

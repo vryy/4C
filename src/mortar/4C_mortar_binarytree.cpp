@@ -45,7 +45,7 @@ Mortar::BinaryTreeNode::BinaryTreeNode(Mortar::BinaryTreeNodeType type,
 /*----------------------------------------------------------------------*
  | get communicator (public)                                  popp 10/08|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& Mortar::BinaryTreeNode::get_comm() const { return discret().get_comm(); }
+MPI_Comm Mortar::BinaryTreeNode::get_comm() const { return discret().get_comm(); }
 
 /*----------------------------------------------------------------------*
  | Initialize tree (public)                                   popp 10/08|
@@ -597,7 +597,7 @@ void Mortar::BinaryTree::evaluate_search()
 /*----------------------------------------------------------------------*
  | get communicator (public)                                  popp 10/08|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& Mortar::BinaryTree::get_comm() const { return discret().get_comm(); }
+MPI_Comm Mortar::BinaryTree::get_comm() const { return discret().get_comm(); }
 
 /*----------------------------------------------------------------------*
  | Find min. length of master and slave elements (public)     popp 10/08|

@@ -40,7 +40,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-PoroElast::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+PoroElast::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
     std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter)
     : PoroBase(comm, timeparams, porosity_splitter),
       printscreen_(true),  // ADD INPUT PARAMETER

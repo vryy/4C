@@ -18,7 +18,6 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 
@@ -77,8 +76,7 @@ namespace Adapter
 
     virtual void setup_spring_dashpot(std::shared_ptr<Core::FE::Discretization> masterdis,
         std::shared_ptr<Core::FE::Discretization> slavedis,
-        std::shared_ptr<Core::Conditions::Condition> spring, const int coupling_id,
-        const Epetra_Comm& comm);
+        std::shared_ptr<Core::Conditions::Condition> spring, const int coupling_id, MPI_Comm comm);
 
     virtual void integrate_lin_d(const std::string& statename,
         const std::shared_ptr<Core::LinAlg::Vector<double>> vec,
@@ -213,9 +211,9 @@ namespace Adapter
     }
 
    protected:
-    bool issetup_;                       ///< check for setup
-    std::shared_ptr<Epetra_Comm> comm_;  ///< communicator
-    int myrank_;                         ///< my proc id
+    bool issetup_;   ///< check for setup
+    MPI_Comm comm_;  ///< communicator
+    int myrank_;     ///< my proc id
 
     std::shared_ptr<Epetra_Map>
         slavenoderowmap_;  ///< map of slave row nodes (after parallel redist.)

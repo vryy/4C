@@ -2306,10 +2306,7 @@ void CONTACT::LineToSurfaceCoupling3d::master_vertex_linearization(
 /*----------------------------------------------------------------------*
  |  get communicator                                         farah 07/16|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::LineToSurfaceCoupling3d::get_comm() const
-{
-  return idiscret_.get_comm();
-}
+MPI_Comm CONTACT::LineToSurfaceCoupling3d::get_comm() const { return idiscret_.get_comm(); }
 
 
 /*----------------------------------------------------------------------*
@@ -2327,10 +2324,7 @@ CONTACT::LineToLineCouplingPoint3d::LineToLineCouplingPoint3d(Core::FE::Discreti
 /*----------------------------------------------------------------------*
  |  get communicator                                         farah 07/16|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::LineToLineCouplingPoint3d::get_comm() const
-{
-  return idiscret_.get_comm();
-}
+MPI_Comm CONTACT::LineToLineCouplingPoint3d::get_comm() const { return idiscret_.get_comm(); }
 
 /*----------------------------------------------------------------------*
  |  eval                                                     farah 07/16|

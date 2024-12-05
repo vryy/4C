@@ -153,7 +153,7 @@ namespace
   {
     const std::string input_file_name = TESTING::get_support_file_path("test_files/test1.dat");
 
-    Epetra_MpiComm comm(MPI_COMM_WORLD);
+    MPI_Comm comm(MPI_COMM_WORLD);
     Core::IO::InputFile input{input_file_name, comm};
 
     EXPECT_FALSE(input.has_section("EMPTY"));
@@ -170,7 +170,7 @@ namespace
     const std::string input_file_name =
         TESTING::get_support_file_path("test_files/has_includes/main.dat");
 
-    Epetra_MpiComm comm(MPI_COMM_WORLD);
+    MPI_Comm comm(MPI_COMM_WORLD);
     Core::IO::InputFile input{input_file_name, comm};
 
     check_section(input, "INCLUDED SECTION 1a", std::vector<std::string>(2, "line"));
@@ -186,7 +186,7 @@ namespace
     const std::string input_file_name =
         TESTING::get_support_file_path("test_files/cyclic_includes/cycle1.dat");
 
-    Epetra_MpiComm comm(MPI_COMM_WORLD);
+    MPI_Comm comm(MPI_COMM_WORLD);
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(Core::IO::InputFile(input_file_name, comm), Core::Exception,
         "cycle1.dat' was already included before.");
   }
@@ -195,7 +195,7 @@ namespace
   {
     const std::string input_file_name = TESTING::get_support_file_path("test_files/yaml/basic.yml");
 
-    Epetra_MpiComm comm(MPI_COMM_WORLD);
+    MPI_Comm comm(MPI_COMM_WORLD);
     Core::IO::InputFile input{input_file_name, comm};
 
     EXPECT_FALSE(input.has_section("EMPTY"));
@@ -209,7 +209,7 @@ namespace
     const std::string input_file_name =
         TESTING::get_support_file_path("test_files/yaml_includes/main.yaml");
 
-    Epetra_MpiComm comm(MPI_COMM_WORLD);
+    MPI_Comm comm(MPI_COMM_WORLD);
     Core::IO::InputFile input{input_file_name, comm};
 
     check_section(input, "INCLUDED SECTION 1", std::vector<std::string>(2, "line"));

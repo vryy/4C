@@ -20,7 +20,7 @@ namespace SSI
   {
    public:
     /// setup SSI algorithm
-    SSIPart(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    SSIPart(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
     /*!
     \brief Initialize this object
@@ -35,7 +35,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 

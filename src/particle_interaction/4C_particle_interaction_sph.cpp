@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 ParticleInteraction::ParticleInteractionSPH::ParticleInteractionSPH(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    MPI_Comm comm, const Teuchos::ParameterList& params)
     : ParticleInteraction::ParticleInteractionBase(comm, params), params_sph_(params.sublist("SPH"))
 {
   // empty constructor

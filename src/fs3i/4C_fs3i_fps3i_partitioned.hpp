@@ -54,7 +54,7 @@ namespace FS3I
   {
    public:
     //! constructor of base class for partitioned FPS3I
-    PartFPS3I(const Epetra_Comm& comm);
+    PartFPS3I(MPI_Comm comm);
 
     //! initialize this class
     void init() override;
@@ -79,7 +79,7 @@ namespace FS3I
     void setup_system() override;
 
     //! test results for individual fields
-    void test_results(const Epetra_Comm& comm) override;
+    void test_results(MPI_Comm comm) override;
 
     //! evaluate ScaTra fields
     void evaluate_scatra_fields() override;
@@ -91,7 +91,7 @@ namespace FS3I
     void set_struct_scatra_solution();
 
     //! return communicator
-    const Epetra_Comm& get_comm() const { return comm_; }
+    MPI_Comm get_comm() const { return comm_; }
 
 
     /// extract fluid convective and structure convective velocities
@@ -124,7 +124,7 @@ namespace FS3I
 
    private:
     /// communication (mainly for screen output)
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     /// scatra field on fluid
     std::shared_ptr<Adapter::ScaTraBaseAlgorithm> fluidscatra_;

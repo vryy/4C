@@ -34,8 +34,7 @@ namespace POROMULTIPHASE
   class PoroMultiPhaseBase : public Adapter::AlgorithmBase, public PoroMultiPhase
   {
    public:
-    /// create using a Epetra_Comm
-    PoroMultiPhaseBase(const Epetra_Comm& comm,
+    PoroMultiPhaseBase(MPI_Comm comm,
         const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
     /// initialization

@@ -346,7 +346,7 @@ std::shared_ptr<std::vector<double>> Core::IO::HDFReader::read_double_data(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::IO::HDFReader::read_result_data(
-    std::string id_path, std::string value_path, int columns, const Epetra_Comm& Comm) const
+    std::string id_path, std::string value_path, int columns, MPI_Comm Comm) const
 {
   int new_proc_num = Core::Communication::num_mpi_ranks(Comm);
   int my_id = Core::Communication::my_mpi_rank(Comm);
@@ -356,7 +356,8 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::IO::HDFReader::read_res
   calculate_range(new_proc_num, my_id, start, end);
 
   std::shared_ptr<std::vector<int>> ids = read_int_data(id_path, start, end);
-  Epetra_Map map(-1, static_cast<int>(ids->size()), ids->data(), 0, Comm);
+  Epetra_Map map(
+      -1, static_cast<int>(ids->size()), ids->data(), 0, Core::Communication::as_epetra_comm(Comm));
 
   std::shared_ptr<Core::LinAlg::MultiVector<double>> res =
       std::make_shared<Core::LinAlg::MultiVector<double>>(map, columns, false);
@@ -389,7 +390,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::IO::HDFReader::read_res
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::shared_ptr<std::vector<char>> Core::IO::HDFReader::read_result_data_vec_char(
-    std::string id_path, std::string value_path, int columns, const Epetra_Comm& Comm,
+    std::string id_path, std::string value_path, int columns, MPI_Comm Comm,
     std::shared_ptr<Epetra_Map>& elemap) const
 {
   if (columns != 1) FOUR_C_THROW("got multivector, std::vector<char> expected");
@@ -403,7 +404,8 @@ std::shared_ptr<std::vector<char>> Core::IO::HDFReader::read_result_data_vec_cha
 
   std::shared_ptr<std::vector<int>> ids = read_int_data(id_path, start, end);
   // cout << "size of ids:" << (*ids).size() << endl;
-  Epetra_Map map(-1, static_cast<int>(ids->size()), ids->data(), 0, Comm);
+  Epetra_Map map(
+      -1, static_cast<int>(ids->size()), ids->data(), 0, Core::Communication::as_epetra_comm(Comm));
   elemap = std::make_shared<Epetra_Map>(map);
 
   std::shared_ptr<std::vector<char>> res = read_char_data(value_path, start, end);
@@ -413,7 +415,7 @@ std::shared_ptr<std::vector<char>> Core::IO::HDFReader::read_result_data_vec_cha
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::shared_ptr<std::vector<char>> Core::IO::HDFReader::read_char_vector(
-    std::string value_path, const Epetra_Comm& Comm) const
+    std::string value_path, MPI_Comm Comm) const
 {
   int new_proc_num = Core::Communication::num_mpi_ranks(Comm);
   int my_id = Core::Communication::my_mpi_rank(Comm);

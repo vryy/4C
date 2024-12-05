@@ -25,7 +25,7 @@ namespace
   class VectorTest : public testing::Test
   {
    public:
-    std::shared_ptr<Epetra_Comm> comm_;
+    MPI_Comm comm_;
     std::shared_ptr<Epetra_Map> map_;
     int NumGlobalElements = 10;
 
@@ -33,10 +33,11 @@ namespace
     VectorTest()
     {
       // set up communicator
-      comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
+      comm_ = MPI_COMM_WORLD;
 
       // set up a map
-      map_ = std::make_shared<Epetra_Map>(NumGlobalElements, 0, *comm_);
+      map_ = std::make_shared<Epetra_Map>(
+          NumGlobalElements, 0, Core::Communication::as_epetra_comm(comm_));
     }
   };
 
@@ -68,7 +69,7 @@ namespace
     ASSERT_FLOAT_EQ(0.0, norm_of_test_vector);
 
     // test element access function for proc 0
-    if (Core::Communication::my_mpi_rank(*comm_) == 0) test_vector[1] = 1;
+    if (Core::Communication::my_mpi_rank(comm_) == 0) test_vector[1] = 1;
 
     // check result of Norm1
     test_vector.Norm1(&norm_of_test_vector);
@@ -285,11 +286,12 @@ namespace
 
     // New map where elements are distributed differently
     std::array<int, 5> my_elements;
-    if (Core::Communication::my_mpi_rank(*comm_) == 0)
+    if (Core::Communication::my_mpi_rank(comm_) == 0)
       my_elements = {0, 2, 4, 6, 8};
     else
       my_elements = {1, 3, 5, 7, 9};
-    Epetra_Map new_map(10, my_elements.size(), my_elements.data(), 0, *comm_);
+    Epetra_Map new_map(
+        10, my_elements.size(), my_elements.data(), 0, Core::Communication::as_epetra_comm(comm_));
 
     const Core::LinAlg::MultiVector<double>& b = a;
     const Core::LinAlg::Vector<double>& c = b(0);

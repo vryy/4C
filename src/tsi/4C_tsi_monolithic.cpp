@@ -52,7 +52,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | monolithic                                                dano 11/10 |
  *----------------------------------------------------------------------*/
-TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& sdynparams)
+TSI::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& sdynparams)
     : Algorithm(comm),
       solveradapttol_(((Global::Problem::instance()->tsi_dynamic_params()).sublist("MONOLITHIC"))
                           .get<bool>("ADAPTCONV")),
@@ -2557,8 +2557,8 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   }      // loop over all STRUCTURAL DBC conditions
 
   // map containing all z-displacement DOFs which have a DBC
-  Epetra_Map newdofmap(
-      -1, (int)sdata.size(), sdata.data(), 0, structure_field()->discretization()->get_comm());
+  Epetra_Map newdofmap(-1, (int)sdata.size(), sdata.data(), 0,
+      Core::Communication::as_epetra_comm(structure_field()->discretization()->get_comm()));
 
   //---------------------------------------------------------------------------
   // ------------------------------------ initialse STRUCTURAL output variables
@@ -2598,8 +2598,8 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   std::vector<int> one_dof_in_dbc_global(1);
   one_dof_in_dbc_global.at(0) = -1;
 
-  structure_field()->discretization()->get_comm().MaxAll(
-      &one_dof_in_dbc.at(0), &one_dof_in_dbc_global.at(0), 1);
+  Core::Communication::max_all(&one_dof_in_dbc.at(0), &one_dof_in_dbc_global.at(0), 1,
+      structure_field()->discretization()->get_comm());
 
   // extract axial displacements (here z-displacements) of top surface
   if (structure_field()->discretization()->dof_row_map()->MyGID(one_dof_in_dbc_global.at(0)))
@@ -2611,8 +2611,8 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   // initialse the top displacement
   double top_disp_global = 0.0;
   // sum all nodal displacements (top_disp_local) in one global vector (top_disp_global)
-  structure_field()->discretization()->get_comm().SumAll(
-      &top_disp_local.at(0), &top_disp_global, 1);
+  Core::Communication::sum_all(
+      &top_disp_local.at(0), &top_disp_global, 1, structure_field()->discretization()->get_comm());
 
   // ------------------------------------------------ necking radius at point A
   // necking, i.e. radial displacements in centre plane (here: xy-plane)
@@ -2646,8 +2646,8 @@ void TSI::Monolithic::calculate_necking_tsi_results()
 
   // sum necking deformations in the global variable necking_radius_global
   double necking_radius_global = 0.0;
-  structure_field()->discretization()->get_comm().SumAll(
-      &necking_radius.at(0), &necking_radius_global, 1);
+  Core::Communication::sum_all(&necking_radius.at(0), &necking_radius_global, 1,
+      structure_field()->discretization()->get_comm());
 
   //---------------------------------------------------------------------------
   // -------------------------------------------------- initialise TEMPERATURES
@@ -2683,8 +2683,8 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   }
   // sum necking temperatures in the variable temperature_global
   double necking_temperature_global = 0.0;
-  thermo_field()->discretization()->get_comm().SumAll(
-      &temperature.at(0), &necking_temperature_global, 1);
+  Core::Communication::sum_all(&temperature.at(0), &necking_temperature_global, 1,
+      thermo_field()->discretization()->get_comm());
 
   // -----------------------------------------temperatures at top, i.e. point B
 
@@ -2719,8 +2719,8 @@ void TSI::Monolithic::calculate_necking_tsi_results()
 
   // sum top-temperatures in the variable top_temperature_global
   double top_temperature_global = 0.0;
-  thermo_field()->discretization()->get_comm().SumAll(
-      &top_temperature_local.at(0), &top_temperature_global, 1);
+  Core::Communication::sum_all(&top_temperature_local.at(0), &top_temperature_global, 1,
+      thermo_field()->discretization()->get_comm());
 
   // -------------------------------------------------- print results to screen
   std::cout.precision(7);

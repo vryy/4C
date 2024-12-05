@@ -15,8 +15,8 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::COMMUNICATION::immediate_recv_blocking_send(const Epetra_Comm& comm,
-    std::map<int, std::vector<char>>& sdata, std::map<int, std::vector<char>>& rdata)
+void PARTICLEENGINE::COMMUNICATION::immediate_recv_blocking_send(
+    MPI_Comm comm, std::map<int, std::vector<char>>& sdata, std::map<int, std::vector<char>>& rdata)
 {
   // number of processors
   int const numproc = Core::Communication::num_mpi_ranks(comm);
@@ -26,10 +26,6 @@ void PARTICLEENGINE::COMMUNICATION::immediate_recv_blocking_send(const Epetra_Co
 
   // number of processors receiving data from this processor
   int const numsendtoprocs = sdata.size();
-
-  // mpi communicator
-  const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm);
-  if (!mpicomm) FOUR_C_THROW("dynamic cast to Epetra_MpiComm failed!");
 
   // ---- communicate target processors to all processors ----
   std::vector<int> targetprocs(numproc, 0);
@@ -61,7 +57,7 @@ void PARTICLEENGINE::COMMUNICATION::immediate_recv_blocking_send(const Epetra_Co
       FOUR_C_THROW("sending non-positive message size %i to proc %i!", msgsizetosend, torank);
 
     // perform non-blocking send operation
-    MPI_Isend(&msgsizetosend, 1, MPI_INT, torank, 1234, mpicomm->Comm(), &sizerequest[counter]);
+    MPI_Isend(&msgsizetosend, 1, MPI_INT, torank, 1234, comm, &sizerequest[counter]);
 
     ++counter;
   }
@@ -73,7 +69,7 @@ void PARTICLEENGINE::COMMUNICATION::immediate_recv_blocking_send(const Epetra_Co
   {
     // probe for any message to come
     MPI_Status status;
-    MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpicomm->Comm(), &status);
+    MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm, &status);
 
     // get message sender and tag
     int const msgsource = status.MPI_SOURCE;
@@ -92,8 +88,7 @@ void PARTICLEENGINE::COMMUNICATION::immediate_recv_blocking_send(const Epetra_Co
 
     // perform blocking receive operation
     int msgsizetorecv = -1;
-    MPI_Recv(
-        &msgsizetorecv, msgsize, MPI_INT, msgsource, msgtag, mpicomm->Comm(), MPI_STATUS_IGNORE);
+    MPI_Recv(&msgsizetorecv, msgsize, MPI_INT, msgsource, msgtag, comm, MPI_STATUS_IGNORE);
 
     // check received size of message
     if (not(msgsizetorecv > 0))
@@ -104,8 +99,8 @@ void PARTICLEENGINE::COMMUNICATION::immediate_recv_blocking_send(const Epetra_Co
     rbuffer.resize(msgsizetorecv);
 
     // perform non-blocking receive operation
-    MPI_Irecv((void*)(rbuffer.data()), msgsizetorecv, MPI_CHAR, msgsource, 5678, mpicomm->Comm(),
-        &recvrequest[rec]);
+    MPI_Irecv(
+        (void*)(rbuffer.data()), msgsizetorecv, MPI_CHAR, msgsource, 5678, comm, &recvrequest[rec]);
   }
 
   // ---- send data to already waiting processors ----
@@ -129,7 +124,7 @@ void PARTICLEENGINE::COMMUNICATION::immediate_recv_blocking_send(const Epetra_Co
 
       // perform non-blocking send operation
       MPI_Isend((void*)(sbuffer.data()), static_cast<int>(sbuffer.size()), MPI_CHAR, torank, 5678,
-          mpicomm->Comm(), &sendrequest[index]);
+          comm, &sendrequest[index]);
 
       ++counter;
     }

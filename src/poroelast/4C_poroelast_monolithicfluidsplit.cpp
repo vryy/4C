@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 #define FLUIDSPLITAMG
 
 
-PoroElast::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
+PoroElast::MonolithicFluidSplit::MonolithicFluidSplit(MPI_Comm comm,
     const Teuchos::ParameterList& timeparams,
     std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter)
     : MonolithicSplit(comm, timeparams, porosity_splitter)

@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 CONTACT::PoroMtLagrangeStrategy::PoroMtLagrangeStrategy(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<std::shared_ptr<Mortar::Interface>> interface, int dim,
-    std::shared_ptr<Epetra_Comm> comm, double alphaf, int maxdof)
+    std::vector<std::shared_ptr<Mortar::Interface>> interface, int dim, MPI_Comm comm,
+    double alphaf, int maxdof)
     : MtLagrangeStrategy(dof_row_map, NodeRowMap, params, interface, dim, comm, alphaf, maxdof)
 {
 }

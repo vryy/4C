@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::PoroMultiPhaseScaTraPartitionedTwoWay(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseScaTraPartitioned(comm, globaltimeparams),
       scaincnp_(nullptr),
       structincnp_(nullptr),
@@ -287,7 +287,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_ch
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested::
     PoroMultiPhaseScaTraPartitionedTwoWayNested(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+        MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseScaTraPartitionedTwoWay(comm, globaltimeparams)
 {
 }
@@ -347,7 +347,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested::solve()
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential::
     PoroMultiPhaseScaTraPartitionedTwoWaySequential(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+        MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseScaTraPartitionedTwoWay(comm, globaltimeparams)
 {
 }

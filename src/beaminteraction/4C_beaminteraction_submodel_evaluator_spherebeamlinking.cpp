@@ -401,8 +401,7 @@ void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::update_step_element(
   update_linker_length();
 
   // build sum over all procs
-  MPI_Reduce(num_local.data(), num_global.data(), 3, MPI_INT, MPI_SUM, 0,
-      dynamic_cast<const Epetra_MpiComm*>(&(discret().get_comm()))->Comm());
+  MPI_Reduce(num_local.data(), num_global.data(), 3, MPI_INT, MPI_SUM, 0, discret().get_comm());
 
   if (g_state().get_my_rank() == 0)
   {
@@ -580,7 +579,7 @@ void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::get_half_interaction
   // build sum over all procs
   MPI_Allreduce(&spherebeamlinking_half_interaction_distance,
       &spherebeamlinking_half_interaction_distance_global, 1, MPI_DOUBLE, MPI_MAX,
-      dynamic_cast<const Epetra_MpiComm*>(&(discret().get_comm()))->Comm());
+      discret().get_comm());
 
   // some screen output
   if (g_state().get_my_rank() == 0)

@@ -216,7 +216,7 @@ int PostProblem::field_pos(const PostField* field) const
 /*----------------------------------------------------------------------*
  * returns the Epetra Communicator object
  *----------------------------------------------------------------------*/
-std::shared_ptr<Epetra_Comm> PostProblem::get_comm() { return comm_; }
+MPI_Comm PostProblem::get_comm() { return comm_; }
 
 
 /*----------------------------------------------------------------------*
@@ -227,7 +227,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
 {
   MAP temp_table;
 
-  comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
+  comm_ = MPI_COMM_WORLD;
 
   /* The warning system is not set up. It's rather stupid anyway. */
 
@@ -310,7 +310,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
 
     /* read the previous control file */
     parse_control_file(table, control_file_name.c_str(), MPI_COMM_WORLD);
-    if (Core::Communication::my_mpi_rank(*comm_) == 0)
+    if (Core::Communication::my_mpi_rank(comm_) == 0)
       printf("read restarted control file: %s\n", control_file_name.c_str());
 
     /* find the previous results */
@@ -473,20 +473,20 @@ void PostProblem::read_meshes()
             "No meshfile name for discretization %s.", currfield.discretization()->name().c_str());
       std::string filename = fn;
       Core::IO::HDFReader reader = Core::IO::HDFReader(input_dir_);
-      reader.open(filename, num_output_procs, Core::Communication::num_mpi_ranks(*comm_),
-          Core::Communication::my_mpi_rank(*comm_));
+      reader.open(filename, num_output_procs, Core::Communication::num_mpi_ranks(comm_),
+          Core::Communication::my_mpi_rank(comm_));
 
       if (currfield.num_nodes() != 0)
       {
         std::shared_ptr<std::vector<char>> node_data = reader.read_node_data(step,
-            Core::Communication::num_mpi_ranks(*comm_), Core::Communication::my_mpi_rank(*comm_));
+            Core::Communication::num_mpi_ranks(comm_), Core::Communication::my_mpi_rank(comm_));
         currfield.discretization()->unpack_my_nodes(*node_data);
       }
 
       if (currfield.num_elements() != 0)
       {
         std::shared_ptr<std::vector<char>> element_data = reader.read_element_data(step,
-            Core::Communication::num_mpi_ranks(*comm_), Core::Communication::my_mpi_rank(*comm_));
+            Core::Communication::num_mpi_ranks(comm_), Core::Communication::my_mpi_rank(comm_));
         currfield.discretization()->unpack_my_elements(*element_data);
       }
 
@@ -507,24 +507,24 @@ void PostProblem::read_meshes()
                 currfield.discretization()->name().c_str());
 
           std::shared_ptr<std::vector<char>> packed_knots;
-          if (Core::Communication::my_mpi_rank(*comm_) == 0)
+          if (Core::Communication::my_mpi_rank(comm_) == 0)
             packed_knots = reader.read_knotvector(step);
           else
             packed_knots = std::make_shared<std::vector<char>>();
 
           // distribute knots to all procs
-          if (Core::Communication::num_mpi_ranks(*comm_) > 1)
+          if (Core::Communication::num_mpi_ranks(comm_) > 1)
           {
             Core::Communication::Exporter exporter(nurbsdis->get_comm());
 
-            if (Core::Communication::my_mpi_rank(*comm_) == 0)
+            if (Core::Communication::my_mpi_rank(comm_) == 0)
             {
               MPI_Request request;
               int tag = -1;
               int frompid = 0;
               int topid = -1;
 
-              for (int np = 1; np < Core::Communication::num_mpi_ranks(*comm_); ++np)
+              for (int np = 1; np < Core::Communication::num_mpi_ranks(comm_); ++np)
               {
                 tag = np;
                 topid = np;
@@ -537,7 +537,7 @@ void PostProblem::read_meshes()
             {
               int length = -1;
               int frompid = 0;
-              int mypid = Core::Communication::my_mpi_rank(*comm_);
+              int mypid = Core::Communication::my_mpi_rank(comm_);
 
               std::vector<char> rblock;
 
@@ -865,7 +865,7 @@ void PostResult::open_result_files(MAP* field_info)
   }
   const std::string basename = map_read_string(field_info, "result_file");
   // field_->problem()->set_basename(basename);
-  Epetra_Comm& comm = *field_->problem()->get_comm();
+  auto comm = field_->problem()->get_comm();
   file_.open(basename, num_output_procs, Core::Communication::num_mpi_ranks(comm),
       Core::Communication::my_mpi_rank(comm));
 }
@@ -896,7 +896,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
 {
   using namespace FourC;
 
-  std::shared_ptr<Epetra_Comm> comm = field_->problem()->get_comm();
+  MPI_Comm comm = field_->problem()->get_comm();
   MAP* result = map_read_map(group_, name.c_str());
   std::string id_path = map_read_string(result, "ids");
   std::string value_path = map_read_string(result, "values");
@@ -910,7 +910,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
 
   std::shared_ptr<Epetra_Map> elemap;
   std::shared_ptr<std::vector<char>> data =
-      file_.read_result_data_vec_char(id_path, value_path, columns, *comm, elemap);
+      file_.read_result_data_vec_char(id_path, value_path, columns, comm, elemap);
 
   std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> mapdata =
       std::make_shared<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>();
@@ -925,7 +925,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
   }
 
   const Epetra_Map& elecolmap = *field_->discretization()->element_col_map();
-  Core::Communication::Exporter ex(*elemap, elecolmap, *comm);
+  Core::Communication::Exporter ex(*elemap, elecolmap, comm);
   ex.do_export(*mapdata);
 
   return mapdata;
@@ -938,7 +938,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
 std::shared_ptr<Core::LinAlg::MultiVector<double>> PostResult::read_multi_result(
     const std::string name)
 {
-  const std::shared_ptr<Epetra_Comm> comm = field_->problem()->get_comm();
+  const MPI_Comm comm = field_->problem()->get_comm();
   MAP* result = map_read_map(group_, name.c_str());
   const std::string id_path = map_read_string(result, "ids");
   const std::string value_path = map_read_string(result, "values");
@@ -947,7 +947,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> PostResult::read_multi_result
   {
     columns = 1;
   }
-  return file_.read_result_data(id_path, value_path, columns, *comm);
+  return file_.read_result_data(id_path, value_path, columns, comm);
 }
 
 //! returns time of this result

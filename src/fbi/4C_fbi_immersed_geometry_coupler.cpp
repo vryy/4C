@@ -146,7 +146,8 @@ void FBI::FBIGeometryCoupler::extend_beam_ghosting(Core::FE::Discretization& dis
       sdata, rdata, (int)allproc.size(), allproc.data(), discretization.get_comm());
 
   // build completely overlapping map of nodes (on ALL processors)
-  Epetra_Map newnodecolmap(-1, (int)rdata.size(), rdata.data(), 0, discretization.get_comm());
+  Epetra_Map newnodecolmap(-1, (int)rdata.size(), rdata.data(), 0,
+      Core::Communication::as_epetra_comm(discretization.get_comm()));
   sdata.clear();
   rdata.clear();
 
@@ -161,7 +162,8 @@ void FBI::FBIGeometryCoupler::extend_beam_ghosting(Core::FE::Discretization& dis
       sdata, rdata, (int)allproc.size(), allproc.data(), discretization.get_comm());
 
   // build complete overlapping map of elements (on ALL processors)
-  Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0, discretization.get_comm());
+  Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0,
+      Core::Communication::as_epetra_comm(discretization.get_comm()));
   sdata.clear();
   rdata.clear();
   allproc.clear();
@@ -250,8 +252,8 @@ void FBI::FBIGeometryCoupler::prepare_pair_creation(
   }
 
   // build overlapping column map of the elements
-  Epetra_Map newelecolmap(
-      -1, (int)element_recvdata.size(), element_recvdata.data(), 0, discretizations[1]->get_comm());
+  Epetra_Map newelecolmap(-1, (int)element_recvdata.size(), element_recvdata.data(), 0,
+      Core::Communication::as_epetra_comm(discretizations[1]->get_comm()));
 
 
   if (!newelecolmap.SameAs(*elecolmap))
@@ -286,8 +288,8 @@ void FBI::FBIGeometryCoupler::prepare_pair_creation(
     }
 
     // build complete overlapping map of elements (on ALL processors)
-    Epetra_Map newnodecolmap(
-        -1, (int)node_recvdata.size(), node_recvdata.data(), 0, discretizations[1]->get_comm());
+    Epetra_Map newnodecolmap(-1, (int)node_recvdata.size(), node_recvdata.data(), 0,
+        Core::Communication::as_epetra_comm(discretizations[1]->get_comm()));
 
     // export nodes and elements
     discretizations[1]->export_column_nodes(newnodecolmap);

@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 std::shared_ptr<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase>
 PoroMultiPhaseScaTra::Utils::create_poro_multi_phase_scatra_algorithm(
     Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields solscheme,
-    const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
+    const Teuchos::ParameterList& timeparams, MPI_Comm comm)
 {
   // Creation of Coupled Problem algorithm.
   std::shared_ptr<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase> algo;
@@ -140,7 +140,7 @@ PoroMultiPhaseScaTra::Utils::create_and_init_artery_coupling_strategy(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int, std::set<int>> PoroMultiPhaseScaTra::Utils::setup_discretizations_and_field_coupling(
-    const Epetra_Comm& comm, const std::string& struct_disname, const std::string& fluid_disname,
+    MPI_Comm comm, const std::string& struct_disname, const std::string& fluid_disname,
     const std::string& scatra_disname, int& ndsporo_disp, int& ndsporo_vel,
     int& ndsporo_solidpressure, int& ndsporofluid_scatra, const bool artery_coupl)
 {

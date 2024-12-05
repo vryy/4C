@@ -49,7 +49,7 @@ namespace Solid
        * \brief Distribute and collect all quantities to and from all other procs to ensure that all
        * data is in this list.
        */
-      void distribute_quantities(const Epetra_Comm& comm);
+      void distribute_quantities(MPI_Comm comm);
 
       inline std::unordered_map<std::string, std::shared_ptr<Core::LinAlg::MultiVector<double>>>&
       get_nodal_data()

@@ -28,7 +28,7 @@ namespace ElCh
   {
    public:
     /// constructor
-    explicit Algorithm(const Epetra_Comm& comm,     ///< communicator
+    explicit Algorithm(MPI_Comm comm,               ///< communicator
         const Teuchos::ParameterList& elchcontrol,  ///< elch parameter list
         const Teuchos::ParameterList& scatradyn,    ///< scatra parameter list
         const Teuchos::ParameterList& fdyn,         ///< fluid parameter list

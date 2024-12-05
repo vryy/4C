@@ -45,7 +45,7 @@ void Mortar::STRATEGY::Factory::setup(const int dim)
   check_init();
 
   // get a copy of the underlying structural communicator
-  comm_ptr_ = std::shared_ptr<Epetra_Comm>(discret_ptr_->get_comm().Clone());
+  comm_ptr_ = discret_ptr_->get_comm();
 
   // get the problem dimension
   dim_ = dim;
@@ -87,31 +87,7 @@ const Core::FE::Discretization& Mortar::STRATEGY::Factory::discret() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Epetra_Comm& Mortar::STRATEGY::Factory::get_comm()
-{
-  check_init_setup();
-  return *comm_ptr_;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-const Epetra_Comm& Mortar::STRATEGY::Factory::get_comm() const
-{
-  check_init_setup();
-  return *comm_ptr_;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-std::shared_ptr<Epetra_Comm> Mortar::STRATEGY::Factory::comm_ptr()
-{
-  check_init_setup();
-  return comm_ptr_;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-std::shared_ptr<const Epetra_Comm> Mortar::STRATEGY::Factory::comm_ptr() const
+MPI_Comm Mortar::STRATEGY::Factory::get_comm() const
 {
   check_init_setup();
   return comm_ptr_;

@@ -17,7 +17,7 @@
 #include "4C_particle_engine_typedefs.hpp"
 #include "4C_particle_interaction_dem_history_pair_struct.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
 
 #include <unordered_map>
 
@@ -65,7 +65,7 @@ namespace ParticleInteraction
   {
    public:
     //! constructor
-    explicit DEMHistoryPairs(const Epetra_Comm& comm);
+    explicit DEMHistoryPairs(MPI_Comm comm);
 
     //! init history pair handler
     void init();
@@ -156,7 +156,7 @@ namespace ParticleInteraction
         const Historypairtype& historypair) const;
 
     //! communication
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! particle tangential history pair data
     DEMHistoryPairTangentialData particletangentialhistorydata_;

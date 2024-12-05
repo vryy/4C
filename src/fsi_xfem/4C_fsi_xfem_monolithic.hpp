@@ -67,7 +67,7 @@ namespace FSI
 
    public:
     //! constructor
-    explicit MonolithicXFEM(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+    explicit MonolithicXFEM(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
         const Adapter::FieldWrapper::Fieldtype type = Adapter::FieldWrapper::type_StructureField);
 
     //--------------------------------------------------------------------------//

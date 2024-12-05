@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEENGINE::ParticleRuntimeVtpWriter::ParticleRuntimeVtpWriter(const Epetra_Comm& comm)
+PARTICLEENGINE::ParticleRuntimeVtpWriter::ParticleRuntimeVtpWriter(MPI_Comm comm)
     : comm_(comm), setuptime_(0.0)
 {
   // empty constructor

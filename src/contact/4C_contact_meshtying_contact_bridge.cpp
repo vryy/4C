@@ -191,7 +191,7 @@ void CONTACT::MeshtyingContactBridge::visualize_gmsh(const int istep, const int 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::MeshtyingContactBridge::get_comm() const
+MPI_Comm CONTACT::MeshtyingContactBridge::get_comm() const
 {
   if (cman_ != nullptr) return cman_->get_comm();
 

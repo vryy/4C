@@ -15,7 +15,8 @@
 
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
+
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -28,7 +29,7 @@ namespace PaSI
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    void change_time_parameter(const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params,
+    void change_time_parameter(MPI_Comm comm, const Teuchos::ParameterList& pasi_params,
         Teuchos::ParameterList& particle_params, Teuchos::ParameterList& struct_params);
 
     /*!

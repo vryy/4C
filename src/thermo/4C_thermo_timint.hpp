@@ -492,7 +492,7 @@ namespace Thermo
     virtual void set_num_step(const int newNumStep) { stepmax_ = newNumStep; }
 
     //! Get communicator
-    virtual inline const Epetra_Comm& get_comm() const { return discret_->get_comm(); }
+    virtual inline MPI_Comm get_comm() const { return discret_->get_comm(); }
 
     //! Return MapExtractor for Dirichlet boundary conditions
     std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const

@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 12/09 |
  *----------------------------------------------------------------------*/
-TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
+TSI::Partitioned::Partitioned(MPI_Comm comm)
     : Algorithm(comm),
       tempincnp_(nullptr),
       dispincnp_(nullptr),

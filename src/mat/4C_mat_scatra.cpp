@@ -22,11 +22,11 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::ScatraMat::ScatraMat(const Core::Mat::PAR::Parameter::Data& matdata) : Parameter(matdata)
 {
   // extract relevant communicator
-  const Epetra_Comm& comm = Global::Problem::instance()->materials()->get_read_from_problem() == 0
-                                ? *Global::Problem::instance()->get_communicators()->local_comm()
-                                : *Global::Problem::instance()->get_communicators()->sub_comm();
+  MPI_Comm comm = Global::Problem::instance()->materials()->get_read_from_problem() == 0
+                      ? Global::Problem::instance()->get_communicators()->local_comm()
+                      : Global::Problem::instance()->get_communicators()->sub_comm();
 
-  Epetra_Map dummy_map(1, 1, 0, comm);
+  Epetra_Map dummy_map(1, 1, 0, Core::Communication::as_epetra_comm(comm));
   for (int i = first; i <= last; i++)
   {
     matparams_.push_back(std::make_shared<Core::LinAlg::Vector<double>>(dummy_map, true));

@@ -11,7 +11,6 @@
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
-#include "4C_inpar_particle.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_particle_engine_communication_utils.hpp"
@@ -32,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 ParticleRigidBody::RigidBodyHandler::RigidBodyHandler(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    MPI_Comm comm, const Teuchos::ParameterList& params)
     : comm_(comm), myrank_(Core::Communication::my_mpi_rank(comm)), params_(params)
 {
   // empty constructor
@@ -242,13 +241,9 @@ void ParticleRigidBody::RigidBodyHandler::set_unique_global_ids_for_all_rigid_bo
   // get used global ids on this processor
   for (const auto& it : affiliationpairdata) usedglobalids[it.second] = 1;
 
-  // mpi communicator
-  const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
-  if (!mpicomm) FOUR_C_THROW("dynamic cast to Epetra_MpiComm failed!");
 
   // get used global ids on all processors
-  MPI_Allreduce(
-      MPI_IN_PLACE, usedglobalids.data(), numglobalids, MPI_INT, MPI_MAX, mpicomm->Comm());
+  MPI_Allreduce(MPI_IN_PLACE, usedglobalids.data(), numglobalids, MPI_INT, MPI_MAX, comm_);
 
   // free unused global ids on processor 0
   if (myrank_ == 0)
@@ -592,13 +587,10 @@ void ParticleRigidBody::RigidBodyHandler::determine_owned_and_hosted_rigid_bodie
     if (maxnumberofparticlesperrigidbodyonproc[rigidbody_k].first > 0)
       hostedrigidbodies_.push_back(rigidbody_k);
 
-  // mpi communicator
-  const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
-  if (!mpicomm) FOUR_C_THROW("dynamic cast to Epetra_MpiComm failed!");
 
   // get maximum number of particles per rigid body over all processors
   MPI_Allreduce(MPI_IN_PLACE, maxnumberofparticlesperrigidbodyonproc.data(), numglobalids, MPI_2INT,
-      MPI_MAXLOC, mpicomm->Comm());
+      MPI_MAXLOC, comm_);
 
   // get owner of all rigid bodies
   ownerofrigidbodies_.reserve(numglobalids);

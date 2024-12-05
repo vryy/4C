@@ -45,7 +45,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
     : Mortar::ManagerBase(), discret_(discret)
 {
   // overwrite base class communicator
-  comm_ = std::shared_ptr<Epetra_Comm>(discret.get_comm().Clone());
+  comm_ = discret.get_comm();
 
   // create some local variables (later to be stored in strategy)
   const int dim = Global::Problem::instance()->n_dim();
@@ -1523,14 +1523,14 @@ void CONTACT::Manager::find_poro_interface_types(bool& poromaster, bool& porosla
   // constellations
   // s-s, p-s, s-p, p-p
   // wait for all processors to determine if they have poro or structural master or slave elements
-  comm_->Barrier();
-  std::vector<int> slaveTypeList(Core::Communication::num_mpi_ranks(*comm_));
-  std::vector<int> masterTypeList(Core::Communication::num_mpi_ranks(*comm_));
-  comm_->GatherAll(&slavetype, slaveTypeList.data(), 1);
-  comm_->GatherAll(&mastertype, masterTypeList.data(), 1);
-  comm_->Barrier();
+  Core::Communication::barrier(comm_);
+  std::vector<int> slaveTypeList(Core::Communication::num_mpi_ranks(comm_));
+  std::vector<int> masterTypeList(Core::Communication::num_mpi_ranks(comm_));
+  Core::Communication::gather_all(&slavetype, slaveTypeList.data(), 1, comm_);
+  Core::Communication::gather_all(&mastertype, masterTypeList.data(), 1, comm_);
+  Core::Communication::barrier(comm_);
 
-  for (int i = 0; i < Core::Communication::num_mpi_ranks(*comm_); ++i)
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(comm_); ++i)
   {
     switch (slaveTypeList[i])
     {
@@ -1557,7 +1557,7 @@ void CONTACT::Manager::find_poro_interface_types(bool& poromaster, bool& porosla
     }
   }
 
-  for (int i = 0; i < Core::Communication::num_mpi_ranks(*comm_); ++i)
+  for (int i = 0; i < Core::Communication::num_mpi_ranks(comm_); ++i)
   {
     switch (masterTypeList[i])
     {

@@ -13,7 +13,6 @@
 #include "4C_adapter_scatra_fluid_coupling_algorithm.hpp"
 #include "4C_linalg_mapextractor.hpp"
 
-#include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -35,7 +34,7 @@ namespace LowMach
   {
    public:
     /// constructor
-    Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn,
+    Algorithm(MPI_Comm comm, const Teuchos::ParameterList& prbdyn,
         const Teuchos::ParameterList& solverparams);
 
 

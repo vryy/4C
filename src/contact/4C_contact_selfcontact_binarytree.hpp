@@ -110,7 +110,7 @@ namespace CONTACT
     \brief Get communicator
 
     */
-    const Epetra_Comm& get_comm() const;
+    MPI_Comm get_comm() const;
 
     /*!
     \brief Complete tree by filling tree node storage scheme
@@ -550,7 +550,7 @@ namespace CONTACT
     \brief Get communicator
 
     */
-    const Epetra_Comm& get_comm() const;
+    MPI_Comm get_comm() const;
 
     /*!
     \brief Get access to the contact pairs

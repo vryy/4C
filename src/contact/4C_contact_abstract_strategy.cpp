@@ -40,8 +40,8 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::AbstractStrategy::AbstractStrategy(
     const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
-    const Teuchos::ParameterList& params_in, const int spatialDim,
-    const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    const Teuchos::ParameterList& params_in, const int spatialDim, const MPI_Comm& comm,
+    const double alphaf, const int maxdof)
     : Mortar::StrategyBase(
           data_ptr, dof_row_map, NodeRowMap, params_in, spatialDim, comm, alphaf, maxdof),
       glmdofrowmap_(data_ptr->global_lm_dof_row_map_ptr()),
@@ -828,8 +828,8 @@ std::shared_ptr<Epetra_Map> CONTACT::AbstractStrategy::create_deterministic_lm_d
 
     my_lm_gids[slid] = interface_lmgid;
   }
-  return std::make_shared<Epetra_Map>(
-      -1, static_cast<int>(my_lm_gids.size()), my_lm_gids.data(), 0, get_comm());
+  return std::make_shared<Epetra_Map>(-1, static_cast<int>(my_lm_gids.size()), my_lm_gids.data(), 0,
+      Core::Communication::as_epetra_comm(get_comm()));
 }
 
 
@@ -991,10 +991,14 @@ void CONTACT::AbstractStrategy::update_global_self_contact_state()
   if (not is_self_contact()) return;
 
   // reset global slave / master Epetra Maps
-  gsnoderowmap_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
-  gsdofrowmap_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
-  gmdofrowmap_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
-  glmdofrowmap_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
+  gsnoderowmap_ =
+      std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
+  gsdofrowmap_ =
+      std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
+  gmdofrowmap_ =
+      std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
+  glmdofrowmap_ =
+      std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
 
   // make numbering of LM dofs consecutive and unique across N interfaces
   int offset_if = 0;

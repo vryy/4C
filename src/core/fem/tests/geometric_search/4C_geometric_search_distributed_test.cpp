@@ -34,14 +34,14 @@ namespace
 
     GeometricSearchDistributed()
     {
-      comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
+      comm_ = MPI_COMM_WORLD;
       verbosity_ = Core::IO::minimal;
-      my_rank_ = Core::Communication::my_mpi_rank(*comm_);
+      my_rank_ = Core::Communication::my_mpi_rank(comm_);
     }
 
    protected:
     std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives_, predicates_;
-    std::shared_ptr<Epetra_Comm> comm_;
+    MPI_Comm comm_;
     int my_rank_;
     Core::IO::Verbositylevel verbosity_;
   };
@@ -77,8 +77,8 @@ namespace
       predicates_.emplace_back(std::pair{11, volumes[1]});
     }
 
-    const auto pairs = Core::GeometricSearch::global_collision_search(
-        primitives_, predicates_, *comm_, verbosity_);
+    const auto pairs =
+        Core::GeometricSearch::global_collision_search(primitives_, predicates_, comm_, verbosity_);
 
     // The order of the results we get are is not deterministic. Therefore, we save the reference
     // results in a map, with the colliding GIDs being the keys. Thus the ordering of the pairs in
@@ -161,8 +161,8 @@ namespace
       predicates_.emplace_back(std::pair{3, volumes[2]});
     }
 
-    const auto pairs = Core::GeometricSearch::global_collision_search(
-        primitives_, predicates_, *comm_, verbosity_);
+    const auto pairs =
+        Core::GeometricSearch::global_collision_search(primitives_, predicates_, comm_, verbosity_);
 
     if (my_rank_ == 1)
     {
@@ -194,8 +194,8 @@ namespace
     EXPECT_EQ(primitives_.size(), 0);
     EXPECT_EQ(predicates_.size(), 0);
 
-    const auto pairs = Core::GeometricSearch::global_collision_search(
-        primitives_, predicates_, *comm_, verbosity_);
+    const auto pairs =
+        Core::GeometricSearch::global_collision_search(primitives_, predicates_, comm_, verbosity_);
 
     EXPECT_EQ(pairs.size(), 0);
   }

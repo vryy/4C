@@ -49,8 +49,7 @@ FOUR_C_NAMESPACE_OPEN
  * Discretizations.
  */
 /*----------------------------------------------------------------------------*/
-FSI::MonolithicBase::MonolithicBase(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+FSI::MonolithicBase::MonolithicBase(MPI_Comm comm, const Teuchos::ParameterList& timeparams)
     : AlgorithmBase(comm, timeparams),
       isadastructure_(false),
       isadafluid_(false),
@@ -322,7 +321,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_fluid_
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+FSI::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& timeparams)
     : MonolithicBase(comm, timeparams),
       firstcall_(true),
       noxiter_(0),
@@ -1085,8 +1084,7 @@ void FSI::Monolithic::write_interface_energy_file(const double energystep, const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-FSI::BlockMonolithic::BlockMonolithic(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+FSI::BlockMonolithic::BlockMonolithic(MPI_Comm comm, const Teuchos::ParameterList& timeparams)
     : Monolithic(comm, timeparams),
       precondreusecount_(0),
       timeparams_(timeparams),

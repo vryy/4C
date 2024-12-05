@@ -15,7 +15,6 @@
 #include "4C_fem_general_node.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
 #include <list>

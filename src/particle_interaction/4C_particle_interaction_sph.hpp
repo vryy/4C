@@ -52,7 +52,7 @@ namespace ParticleInteraction
   {
    public:
     //! constructor
-    explicit ParticleInteractionSPH(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit ParticleInteractionSPH(MPI_Comm comm, const Teuchos::ParameterList& params);
 
     /*!
      * \brief destructor

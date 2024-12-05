@@ -100,7 +100,7 @@ namespace Core::LinAlg
     \param translate_params_to_belos  (in): translate parameters to Belos
 
     */
-    Solver(const Teuchos::ParameterList &inparams, const Epetra_Comm &comm,
+    Solver(const Teuchos::ParameterList &inparams, MPI_Comm comm,
         const std::function<const Teuchos::ParameterList &(int)> &get_solver_params,
         Core::IO::Verbositylevel verbosity, bool translate_params_to_belos = true);
 
@@ -218,7 +218,7 @@ namespace Core::LinAlg
     \brief Get communicator
 
     */
-    inline const Epetra_Comm &get_comm() const { return comm_; }
+    inline MPI_Comm get_comm() const { return comm_; }
 
     /*!
     \brief Get solver parameters
@@ -278,7 +278,7 @@ namespace Core::LinAlg
     void set_tolerance(double tolerance);
 
     //! a communicator
-    const Epetra_Comm &comm_;
+    MPI_Comm comm_;
 
     //! (internal) parameter list
     std::shared_ptr<Teuchos::ParameterList> params_;

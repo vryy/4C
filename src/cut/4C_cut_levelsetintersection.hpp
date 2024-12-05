@@ -37,7 +37,7 @@ namespace Cut
 
 
    public:
-    LevelSetIntersection(const Epetra_Comm& comm, bool create_side = true);
+    LevelSetIntersection(MPI_Comm comm, bool create_side = true);
 
     /// constructur for LevelSetIntersecton class
     LevelSetIntersection(int myrank = -1, bool create_side = true);
@@ -93,11 +93,11 @@ namespace Cut
     //! @}
 
    private:
-    const Epetra_Comm& get_comm() const
+    MPI_Comm get_comm() const
     {
       if (not comm_) FOUR_C_THROW("Epetra communicator was not initialized!");
 
-      return *comm_;
+      return comm_;
     }
 
    protected:
@@ -107,7 +107,7 @@ namespace Cut
     //! @{
     std::shared_ptr<Side> side_;
 
-    const Epetra_Comm* comm_;
+    MPI_Comm comm_;
 
     //! @}
   };

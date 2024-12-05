@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 PoroElastScaTra::PoroScatraPart2WC::PoroScatraPart2WC(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraPart(comm, timeparams),
       scaincnp_(std::make_shared<Core::LinAlg::Vector<double>>(*(scatra_field()->phinp()))),
       structincnp_(std::make_shared<Core::LinAlg::Vector<double>>(

@@ -44,7 +44,7 @@ namespace CONTACT
     LagrangeStrategy(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<std::shared_ptr<CONTACT::Interface>> interface, const int spatialDim,
-        std::shared_ptr<const Epetra_Comm> comm, const double alphaf, const int maxdof);
+        MPI_Comm comm, const double alphaf, const int maxdof);
 
     /*!
     \brief Return convergence status of fixed-point active set search

@@ -26,7 +26,6 @@
 #include <string>
 #include <vector>
 
-class Epetra_Comm;
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -116,7 +115,7 @@ class PostProblem
   //! returns the step parameter the user specified
   int step() const { return step_; }
 
-  std::shared_ptr<Epetra_Comm> get_comm();
+  MPI_Comm get_comm();
 
   //! returns the directory name in which the control files and data files are
   std::string input_dir() { return input_dir_; }
@@ -256,7 +255,7 @@ class PostProblem
   std::vector<MAP*> result_group_;
 
   std::string input_dir_;
-  std::shared_ptr<Epetra_Comm> comm_;
+  MPI_Comm comm_;
 };
 
 

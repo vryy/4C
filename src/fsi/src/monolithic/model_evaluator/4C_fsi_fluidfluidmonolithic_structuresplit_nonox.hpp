@@ -32,7 +32,7 @@ namespace FSI
    public:
     /// constructor
     explicit FluidFluidMonolithicStructureSplitNoNOX(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+        MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
 

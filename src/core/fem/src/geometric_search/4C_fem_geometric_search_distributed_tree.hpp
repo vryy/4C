@@ -15,7 +15,6 @@
 
 #include <vector>
 
-class Epetra_Comm;
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -54,7 +53,7 @@ namespace Core::GeometricSearch
    */
   std::vector<GlobalCollisionSearchResult> global_collision_search(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
-      const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
+      const std::vector<std::pair<int, BoundingVolume>>& predicates, MPI_Comm comm,
       const Core::IO::Verbositylevel verbosity);
 
 }  // namespace Core::GeometricSearch

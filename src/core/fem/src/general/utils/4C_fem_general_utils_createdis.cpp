@@ -90,8 +90,8 @@ std::shared_ptr<Epetra_Map> Core::FE::DiscretizationCreatorBase::create_map(
   std::vector<int> targetgidvec(gidset.begin(), gidset.end());
   gidset.clear();
 
-  std::shared_ptr<Epetra_Map> map = std::make_shared<Epetra_Map>(
-      -1, targetgidvec.size(), targetgidvec.data(), 0, targetdis.get_comm());
+  std::shared_ptr<Epetra_Map> map = std::make_shared<Epetra_Map>(-1, targetgidvec.size(),
+      targetgidvec.data(), 0, Core::Communication::as_epetra_comm(targetdis.get_comm()));
   targetgidvec.clear();
 
   return map;
@@ -127,9 +127,8 @@ Core::FE::DiscretizationCreatorBase::create_matching_discretization(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions) const
 {
   // initialize identical clone discretization
-  std::shared_ptr<Epetra_Comm> comm(sourcedis.get_comm().Clone());
-  std::shared_ptr<Core::FE::Discretization> targetdis =
-      std::make_shared<Core::FE::Discretization>(targetdisname, comm, sourcedis.n_dim());
+  std::shared_ptr<Core::FE::Discretization> targetdis = std::make_shared<Core::FE::Discretization>(
+      targetdisname, sourcedis.get_comm(), sourcedis.n_dim());
 
   // clone nodes
   for (int i = 0; i < sourcedis.node_col_map()->NumMyElements(); ++i)

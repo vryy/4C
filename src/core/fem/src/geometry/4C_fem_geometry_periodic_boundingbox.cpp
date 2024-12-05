@@ -137,8 +137,8 @@ void Core::Geo::MeshFree::BoundingBox::init(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Core::Geo::MeshFree::BoundingBox::setup(const Teuchos::ParameterList& io_params,
-    std::shared_ptr<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
-    const int n_dim, const Core::IO::OutputControl& output_control)
+    std::shared_ptr<Core::FE::Discretization> boundingbox_dis, MPI_Comm comm, const int n_dim,
+    const Core::IO::OutputControl& output_control)
 {
   throw_if_not_init();
 
@@ -162,8 +162,7 @@ void Core::Geo::MeshFree::BoundingBox::setup(const Teuchos::ParameterList& io_pa
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
 void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
-    std::shared_ptr<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
-    const int n_dim)
+    std::shared_ptr<Core::FE::Discretization> boundingbox_dis, MPI_Comm comm, const int n_dim)
 {
   if (boundingbox_dis != nullptr)
   {
@@ -188,9 +187,7 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
   {
     if (boundingbox_dis == nullptr)
     {
-      std::shared_ptr<Epetra_Comm> com(comm.Clone());
-      boxdiscret_ = std::make_shared<Core::FE::Discretization>(
-          "boundingbox", std::shared_ptr<Epetra_Comm>(comm.Clone()), n_dim);
+      boxdiscret_ = std::make_shared<Core::FE::Discretization>("boundingbox", comm, n_dim);
     }
     else
     {

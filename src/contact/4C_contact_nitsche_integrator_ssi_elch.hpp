@@ -41,7 +41,7 @@ namespace CONTACT
      * @param[in] comm     contact interface communicator
      */
     IntegratorNitscheSsiElch(
-        Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm);
+        Teuchos::ParameterList& params, Core::FE::CellType eletype, MPI_Comm comm);
 
    private:
     //! data bundle of current element

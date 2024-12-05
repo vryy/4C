@@ -10,9 +10,9 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Import.h>
 #include <Epetra_Operator.h>
+#include <mpi.h>
 #include <NOX_Abstract_Group.H>
 #include <NOX_Common.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
@@ -23,7 +23,6 @@
 #include <memory>
 
 // Forward Declarations
-class Epetra_Comm;
 class Epetra_Map;
 
 FOUR_C_NAMESPACE_OPEN

@@ -520,7 +520,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  InputFile::InputFile(std::string filename, const Epetra_Comm& comm, int outflag)
+  InputFile::InputFile(std::string filename, MPI_Comm comm, int outflag)
       : top_level_file_(std::move(filename)), comm_(std::move(comm)), outflag_(outflag)
   {
     read_generic();
@@ -679,8 +679,8 @@ namespace Core::IO
             }
           }
           // All other processors get this info broadcasted
-          input.get_comm().Broadcast(
-              box_specifications.data(), static_cast<int>(box_specifications.size()), 0);
+          Core::Communication::broadcast(box_specifications.data(),
+              static_cast<int>(box_specifications.size()), 0, input.get_comm());
         }
 
         // determine the active discretizations bounding box
@@ -1170,9 +1170,7 @@ namespace Core::IO
       // There are no char based functions available! Do it by hand!
       // Core::Communication::broadcast(inputfile_.data(),arraysize,0, comm_);
 
-      const auto& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm_);
-
-      MPI_Bcast(inputfile_.data(), arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
+      MPI_Bcast(inputfile_.data(), arraysize, MPI_CHAR, 0, comm_);
 
       if (Core::Communication::my_mpi_rank(comm_) > 0)
       {

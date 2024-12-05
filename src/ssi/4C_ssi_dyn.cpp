@@ -27,7 +27,7 @@ void ssi_drt()
   // 1.- Initialization
   std::shared_ptr<SSI::SSIBase> ssi = nullptr;
   Global::Problem* problem = Global::Problem::instance();
-  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
+  MPI_Comm comm = problem->get_dis("structure")->get_comm();
 
   {
     TEUCHOS_FUNC_TIME_MONITOR("SSI: setup");

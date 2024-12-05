@@ -40,8 +40,7 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    IntegratorEhl(
-        Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm)
+    IntegratorEhl(Teuchos::ParameterList& params, Core::FE::CellType eletype, MPI_Comm comm)
         : Integrator(params, eletype, comm)
     {
     }

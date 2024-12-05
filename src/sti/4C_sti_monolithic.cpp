@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& stidyn,
+STI::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& stidyn,
     const Teuchos::ParameterList& scatradyn, const Teuchos::ParameterList& solverparams,
     const Teuchos::ParameterList& solverparams_scatra,
     const Teuchos::ParameterList& solverparams_thermo)
@@ -536,7 +536,7 @@ void STI::Monolithic::output_matrix_to_file(
   if (!sparseoperator->filled()) FOUR_C_THROW("Sparse operator must be filled for output!");
 
   // extract communicator
-  const Epetra_Comm& comm = sparseoperator->Comm();
+  MPI_Comm comm = Core::Communication::unpack_epetra_comm(sparseoperator->Comm());
 
   // determine whether sparse matrix or block sparse matrix should be output
   const auto sparsematrix =
@@ -566,8 +566,8 @@ void STI::Monolithic::output_matrix_to_file(
   if (Core::Communication::my_mpi_rank(comm)) rowgids.clear();
 
   // create full row map on processor with ID 0
-  const Epetra_Map fullrowmap(
-      -1, static_cast<int>(rowgids.size()), rowgids.size() ? rowgids.data() : nullptr, 0, comm);
+  const Epetra_Map fullrowmap(-1, static_cast<int>(rowgids.size()),
+      rowgids.size() ? rowgids.data() : nullptr, 0, Core::Communication::as_epetra_comm(comm));
 
   // import matrix to processor with ID 0
   Epetra_CrsMatrix crsmatrix(Copy, fullrowmap, 0);
@@ -651,7 +651,7 @@ void STI::Monolithic::output_vector_to_file(
     const Core::LinAlg::MultiVector<double>& vector, const int precision, const double tolerance)
 {
   // extract communicator
-  const Epetra_Comm& comm = vector.Comm();
+  MPI_Comm comm = vector.Comm();
 
   // extract vector map
   const Epetra_BlockMap& map = vector.Map();
@@ -674,8 +674,8 @@ void STI::Monolithic::output_vector_to_file(
   if (Core::Communication::my_mpi_rank(comm)) gids.clear();
 
   // create full vector map on processor with ID 0
-  const Epetra_Map fullmap(
-      -1, static_cast<int>(gids.size()), gids.size() ? gids.data() : nullptr, 0, comm);
+  const Epetra_Map fullmap(-1, static_cast<int>(gids.size()), gids.size() ? gids.data() : nullptr,
+      0, Core::Communication::as_epetra_comm(comm));
 
   // export vector to processor with ID 0
   Core::LinAlg::MultiVector<double> fullvector(fullmap, vector.NumVectors(), true);

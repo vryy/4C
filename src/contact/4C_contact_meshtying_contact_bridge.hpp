@@ -15,8 +15,6 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -81,7 +79,7 @@ namespace CONTACT
     \brief Get Epetra communicator
 
     */
-    const Epetra_Comm& get_comm() const;
+    MPI_Comm get_comm() const;
 
     /*!
     \brief Get contact manager

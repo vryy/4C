@@ -54,7 +54,7 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    Integrator(Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm);
+    Integrator(Teuchos::ParameterList& params, Core::FE::CellType eletype, MPI_Comm comm);
 
     /*!
      \brief Destructor
@@ -70,7 +70,7 @@ namespace CONTACT
     //! get specified integration type
     inline enum Inpar::Mortar::IntType integration_type() const { return integrationtype_; }
 
-    const Epetra_Comm& get_comm() const { return Comm_; }
+    MPI_Comm get_comm() const { return Comm_; }
 
     //! @name 2D and 3D integration methods
 
@@ -101,7 +101,7 @@ namespace CONTACT
      \brief integrate D matrix without lin...
 
      */
-    void integrate_d(Mortar::Element& sele, const Epetra_Comm& comm, bool lin = false);
+    void integrate_d(Mortar::Element& sele, MPI_Comm comm, bool lin = false);
 
     /*!
      \brief Build all integrals and linearizations on a 1D slave /
@@ -110,10 +110,10 @@ namespace CONTACT
 
      */
     virtual void integrate_deriv_segment_2d(Mortar::Element& sele, double& sxia, double& sxib,
-        Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
+        Mortar::Element& mele, double& mxia, double& mxib, MPI_Comm comm,
         const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
     virtual void integrate_deriv_segment_2d(Mortar::Element& sele, double& sxia, double& sxib,
-        Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
+        Mortar::Element& mele, double& mxia, double& mxib, MPI_Comm comm,
         const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr);
 
     /*!
@@ -122,10 +122,10 @@ namespace CONTACT
 
      */
     virtual void integrate_deriv_ele_3d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
-        bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
+        bool* boundary_ele, bool* proj_, MPI_Comm comm,
         const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
     virtual void integrate_deriv_ele_3d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
-        bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
+        bool* boundary_ele, bool* proj_, MPI_Comm comm,
         const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr);
 
     /*!
@@ -135,10 +135,10 @@ namespace CONTACT
 
      */
     virtual void integrate_deriv_cell_3d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
-        std::shared_ptr<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm,
+        std::shared_ptr<Mortar::IntCell> cell, double* auxn, MPI_Comm comm,
         const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
     virtual void integrate_deriv_cell_3d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
-        std::shared_ptr<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm,
+        std::shared_ptr<Mortar::IntCell> cell, double* auxn, MPI_Comm comm,
         const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr);
 
     /*!
@@ -156,16 +156,14 @@ namespace CONTACT
 
      */
     void integrate_deriv_cell_3d_aux_plane_lts(Mortar::Element& sele, Mortar::Element& lsele,
-        Mortar::Element& mele, std::shared_ptr<Mortar::IntCell> cell, double* auxn,
-        const Epetra_Comm& comm);
+        Mortar::Element& mele, std::shared_ptr<Mortar::IntCell> cell, double* auxn, MPI_Comm comm);
 
     /*!
      \brief ....
 
      */
     void integrate_deriv_cell_3d_aux_plane_stl(Mortar::Element& mele, Mortar::Element& lele,
-        Mortar::Element& sele, std::shared_ptr<Mortar::IntCell> cell, double* auxn,
-        const Epetra_Comm& comm);
+        Mortar::Element& sele, std::shared_ptr<Mortar::IntCell> cell, double* auxn, MPI_Comm comm);
 
     /*!
      \brief Compute penalty scaling factor kappa on slave element
@@ -238,16 +236,15 @@ namespace CONTACT
      \brief Assemble g~ contribution of current overlap into slave nodes
 
      */
-    bool assemble_g(
-        const Epetra_Comm& comm, Mortar::Element& sele, Core::LinAlg::SerialDenseVector& gseg);
+    bool assemble_g(MPI_Comm comm, Mortar::Element& sele, Core::LinAlg::SerialDenseVector& gseg);
 
     /*!
      \brief Assemble g~ contribution of current overlap into slave nodes
      (special version for 3D quadratic mortar with piecewise linear LM interpolation)
 
      */
-    bool assemble_g(const Epetra_Comm& comm, Mortar::IntElement& sintele,
-        Core::LinAlg::SerialDenseVector& gseg);
+    bool assemble_g(
+        MPI_Comm comm, Mortar::IntElement& sintele, Core::LinAlg::SerialDenseVector& gseg);
 
     // GP calls
     /*!
@@ -365,7 +362,7 @@ namespace CONTACT
      */
     void inline gp_d2(Mortar::Element& sele, Mortar::Element& mele,
         Core::LinAlg::SerialDenseVector& lm2val, Core::LinAlg::SerialDenseVector& m2val,
-        double& jac, double& wgt, const Epetra_Comm& comm);
+        double& jac, double& wgt, MPI_Comm comm);
 
     /*!
      \brief evaluate D/M-matrix entries at GP
@@ -635,7 +632,7 @@ namespace CONTACT
     void inline gp_te_master(Mortar::Element& sele, Mortar::Element& mele,
         Core::LinAlg::SerialDenseVector& lmval, Core::LinAlg::SerialDenseVector& lm2val,
         Core::LinAlg::SerialDenseVector& mval, double& jac, double& wgt, double* jumpval,
-        const Epetra_Comm& comm);
+        MPI_Comm comm);
 
     /*!
      \brief evaluate Lin T and E matrix
@@ -665,7 +662,7 @@ namespace CONTACT
         const Core::Gen::Pairedvector<int, double>& dsliptmatrixgp,
         const std::vector<Core::Gen::Pairedvector<int, double>>& ximaps,
         const Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dualmap,
-        const Epetra_Comm& comm);
+        MPI_Comm comm);
 
     /*!
      \brief evaluate Lin T and E matrix
@@ -696,7 +693,7 @@ namespace CONTACT
         const Core::Gen::Pairedvector<int, double>& dsliptmatrixgp,
         const Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dualmap,
         const Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dual2map,
-        const Epetra_Comm& comm);
+        MPI_Comm comm);
 
     /*!
      \brief evaluate wear + lin at GP
@@ -838,7 +835,7 @@ namespace CONTACT
     //! containing contact input parameters
     Teuchos::ParameterList& imortar_;
     //! communicator
-    const Epetra_Comm& Comm_;
+    MPI_Comm Comm_;
 
     //! number of Gauss points
     int ngp_;

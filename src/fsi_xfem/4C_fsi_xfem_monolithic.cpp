@@ -47,8 +47,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 // constructor
 /*----------------------------------------------------------------------*/
-FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& timeparams, const Adapter::FieldWrapper::Fieldtype type)
+FSI::MonolithicXFEM::MonolithicXFEM(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
+    const Adapter::FieldWrapper::Fieldtype type)
     : AlgorithmXFEM(comm, timeparams, type),
       fsidyn_(Global::Problem::instance()->fsi_dynamic_params()),
       fsimono_(fsidyn_.sublist("MONOLITHIC SOLVER")),
@@ -668,7 +668,8 @@ void FSI::MonolithicXFEM::create_combined_dof_row_map()
   if (structure_poro()->is_poro())
   {
     vecSpaces.push_back(structure_poro()->fluid_field()->dof_row_map());
-    std::shared_ptr<const Epetra_Map> empty_map = std::make_shared<Epetra_Map>(0, 0, get_comm());
+    std::shared_ptr<const Epetra_Map> empty_map =
+        std::make_shared<Epetra_Map>(0, 0, Core::Communication::as_epetra_comm(get_comm()));
     vecSpaces_mergedporo.push_back(empty_map);
     // porofluid maps empty??
     if (vecSpaces[fluidp_block_]->NumGlobalElements() == 0)

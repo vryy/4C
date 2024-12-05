@@ -26,9 +26,7 @@ namespace PoroElast
   class MonolithicSplitNoPenetration : public MonolithicSplit
   {
    public:
-    //! create using a Epetra_Comm
-    explicit MonolithicSplitNoPenetration(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& timeparams,
+    explicit MonolithicSplitNoPenetration(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
         std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! Setup the monolithic system

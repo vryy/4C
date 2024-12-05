@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Adapter::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(const Epetra_Comm& comm,
+Adapter::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(MPI_Comm comm,
     const Teuchos::ParameterList& prbdyn, const std::string condname,
     const Teuchos::ParameterList& solverparams)
     : ScaTraFluidCouplingAlgorithm(

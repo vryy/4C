@@ -154,8 +154,7 @@ namespace Core::Binstrategy
      * current positions of elements and nodes can be considered for build up of binning domain
      */
     BinningStrategy(const Teuchos::ParameterList& binning_params,
-        std::shared_ptr<Core::IO::OutputControl> output_control, const Epetra_Comm& comm,
-        const int my_rank,
+        std::shared_ptr<Core::IO::OutputControl> output_control, MPI_Comm comm, const int my_rank,
         std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node = {},
         std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
             const Core::Elements::Element&,
@@ -427,7 +426,7 @@ namespace Core::Binstrategy
      *
      * \return linear map linear map based on bin ids
      */
-    std::shared_ptr<Epetra_Map> create_linear_map_for_numbin(const Epetra_Comm& comm) const;
+    std::shared_ptr<Epetra_Map> create_linear_map_for_numbin(MPI_Comm comm) const;
 
     /*!
      * \brief write binning domain and its parallel distribution as output
@@ -812,7 +811,7 @@ namespace Core::Binstrategy
     /*!
      * \brief local communicator
      */
-    std::shared_ptr<Epetra_Comm> comm_;
+    MPI_Comm comm_;
 
 
     //! Function that computes the points to consider as the bounding box of an element. May be

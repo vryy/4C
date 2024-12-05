@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 // define the order in which the filters handle the Discretizations, which in
 // turn defines the dof number ordering of the Discretizations.
 /*----------------------------------------------------------------------*/
-FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
+FSI::Algorithm::Algorithm(MPI_Comm comm)
     : AlgorithmBase(comm, Global::Problem::instance()->fsi_dynamic_params()),
       adapterbase_ptr_(nullptr),
       use_old_structure_(false)

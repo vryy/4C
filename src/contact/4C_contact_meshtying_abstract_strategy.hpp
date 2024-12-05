@@ -75,8 +75,7 @@ namespace CONTACT
     */
     MtAbstractStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<std::shared_ptr<Mortar::Interface>> interface,
-        const int spatialDim, const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf,
-        const int maxdof);
+        const int spatialDim, const MPI_Comm& comm, const double alphaf, const int maxdof);
 
 
 

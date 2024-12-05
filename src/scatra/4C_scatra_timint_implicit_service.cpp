@@ -465,8 +465,8 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> ScaTra::ScaTraTimIntImpl::cal
 
     // care for the parallel case
     std::vector<double> parnormfluxintegral(num_dof_per_node());
-    discret_->get_comm().SumAll(
-        normfluxintegral.data(), parnormfluxintegral.data(), num_dof_per_node());
+    Core::Communication::sum_all(normfluxintegral.data(), parnormfluxintegral.data(),
+        num_dof_per_node(), discret_->get_comm());
     double parboundaryint = 0.0;
     Core::Communication::sum_all(&boundaryint, &parboundaryint, 1, discret_->get_comm());
 
@@ -1080,7 +1080,7 @@ void ScaTra::ScaTraTimIntImpl::output_lin_solver_stats(
 )
 {
   // extract communicator
-  const Epetra_Comm& comm = solver.get_comm();
+  MPI_Comm comm = solver.get_comm();
 
   // write performance statistics to file
   if (Core::Communication::my_mpi_rank(comm) == 0)
@@ -1113,10 +1113,10 @@ void ScaTra::ScaTraTimIntImpl::output_lin_solver_stats(
  | output performance statistics associated with nonlinear solver into *.csv file   fang 04/15 |
  *---------------------------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::output_nonlin_solver_stats(
-    const int& iterations,   //!< iteration count of nonlinear solver
-    const double& time,      //!< solver time maximized over all processors
-    const int& step,         //!< time step
-    const Epetra_Comm& comm  //!< communicator
+    const int& iterations,  //!< iteration count of nonlinear solver
+    const double& time,     //!< solver time maximized over all processors
+    const int& step,        //!< time step
+    MPI_Comm comm           //!< communicator
 )
 {
   // write performance statistics to file
@@ -1293,7 +1293,8 @@ void ScaTra::ScaTraTimIntImpl::output_integr_reac(const int num)
     // global integral of reaction terms
     std::vector<double> intreacterm(num_scal(), 0.0);
     for (int k = 0; k < num_scal(); ++k)
-      Core::Communication::sum_all(&((*myreacnp)[k]), &intreacterm[k], 1, phinp_->Map().Comm());
+      Core::Communication::sum_all(&((*myreacnp)[k]), &intreacterm[k], 1,
+          Core::Communication::unpack_epetra_comm(phinp_->Map().Comm()));
 
     // print out values
     if (myrank_ == 0)
@@ -2989,8 +2990,8 @@ void ScaTra::ScalarHandler::setup(const ScaTraTimIntImpl* const scatratimint)
       maxsize * Core::Communication::num_mpi_ranks(discret->get_comm()), 0);
 
   // communicate
-  discret->get_comm().GatherAll(vecmynumdofpernode.data(), vecnumdofpernode.data(),
-      static_cast<int>(vecmynumdofpernode.size()));
+  Core::Communication::gather_all(vecmynumdofpernode.data(), vecnumdofpernode.data(),
+      static_cast<int>(vecmynumdofpernode.size()), discret->get_comm());
 
   // copy back into set
   for (int& ndofpernode : vecnumdofpernode)
@@ -3052,8 +3053,8 @@ int ScaTra::ScalarHandler::num_dof_per_node_in_condition(
       maxsize * Core::Communication::num_mpi_ranks(discret.get_comm()), 0);
 
   // communicate
-  discret.get_comm().GatherAll(vecmynumdofpernode.data(), vecnumdofpernode.data(),
-      static_cast<int>(vecmynumdofpernode.size()));
+  Core::Communication::gather_all(vecmynumdofpernode.data(), vecnumdofpernode.data(),
+      static_cast<int>(vecmynumdofpernode.size()), discret.get_comm());
 
   // copy back into set
   for (int& ndofpernode : vecnumdofpernode)

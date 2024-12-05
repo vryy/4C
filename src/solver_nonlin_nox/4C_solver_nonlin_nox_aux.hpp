@@ -14,6 +14,7 @@
 #include "4C_solver_nonlin_nox_forward_decl.hpp"
 #include "4C_solver_nonlin_nox_statustest_factory.hpp"
 
+#include <mpi.h>
 #include <NOX_Abstract_Vector.H>
 #include <Teuchos_RCP.hpp>
 
@@ -37,7 +38,7 @@ namespace NOX
       /*! Set printing parameters
        *
        *  Note: The Yes/No tuples are translated to booleans! */
-      void set_printing_parameters(Teuchos::ParameterList& p_nox, const Epetra_Comm& comm);
+      void set_printing_parameters(Teuchos::ParameterList& p_nox, MPI_Comm comm);
 
       /*! \brief Returns the type of operator that is passed in.
        *

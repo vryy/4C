@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
     int node)
-    : myrank_(Core::Communication::my_mpi_rank(*problem.get_comm()))  // get my processor id
+    : myrank_(Core::Communication::my_mpi_rank(problem.get_comm()))  // get my processor id
 {
   using namespace FourC;
 
@@ -58,7 +58,7 @@ MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
   {
     int localnodeowner = (int)nodeowner_;
     int numnodeowner = 0;
-    (problem.get_comm())->SumAll(&localnodeowner, &numnodeowner, 1);
+    Core::Communication::sum_all(&localnodeowner, &numnodeowner, 1, (problem.get_comm()));
     if ((myrank_ == 0) and (numnodeowner == 0)) FOUR_C_THROW("Could not find node %d", node);
     if ((myrank_ == 0) and (numnodeowner > 1))
       FOUR_C_THROW("Found more than one owner of node %d: %d", node, numnodeowner);

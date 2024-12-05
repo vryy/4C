@@ -151,7 +151,7 @@ void dyn_nlnstructural_drt()
 
   // test results
   Global::Problem::instance()->add_field_test(structadapter->create_field_test());
-  Global::Problem::instance()->test_all(structadapter->dof_row_map()->Comm());
+  Global::Problem::instance()->test_all(structdis->get_comm());
 
   // print monitoring of time consumption
   std::shared_ptr<const Teuchos::Comm<int>> TeuchosComm =

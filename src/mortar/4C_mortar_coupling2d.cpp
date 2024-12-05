@@ -42,7 +42,7 @@ Mortar::Coupling2d::Coupling2d(Core::FE::Discretization& idiscret, int dim, bool
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Comm& Mortar::Coupling2d::get_comm() const { return idiscret_.get_comm(); }
+MPI_Comm Mortar::Coupling2d::get_comm() const { return idiscret_.get_comm(); }
 
 
 /*----------------------------------------------------------------------*

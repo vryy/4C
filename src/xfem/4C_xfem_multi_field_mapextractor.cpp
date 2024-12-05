@@ -105,7 +105,7 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
         "to do? Seems as you are wrong here...");
 
   // get the communicator (supposed to be the same for all discretizations)
-  comm_ = Core::Utils::shared_ptr_from_ref(dis_vec[0]->get_comm());
+  comm_ = dis_vec[0]->get_comm();
 
   max_num_reserved_dofs_per_node_ = max_num_reserved_dofs_per_node;
 
@@ -139,8 +139,8 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
   // ------------------------------------------------------------------------
   // create an auxiliary master interface discretization
   // ------------------------------------------------------------------------
-  idiscret_ = std::make_shared<Core::FE::Discretization>("multifield_interface",
-      std::shared_ptr<Epetra_Comm>(get_comm().Clone()), Global::Problem::instance()->n_dim());
+  idiscret_ = std::make_shared<Core::FE::Discretization>(
+      "multifield_interface", get_comm(), Global::Problem::instance()->n_dim());
 
   // ------------------------------------------------------------------------
   // (1) create a list of coupling discretizations per node on this proc and
@@ -436,13 +436,13 @@ void XFEM::MultiFieldMapExtractor::build_slave_node_map_extractors()
     partial_maps[MultiField::block_interface] = nullptr;
     partial_maps[MultiField::block_interface] =
         std::make_shared<Epetra_Map>(-1, static_cast<int>(my_interface_row_node_gids.size()),
-            my_interface_row_node_gids.data(), 0, get_comm());
+            my_interface_row_node_gids.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
     // slave sided non-interface node maps
     partial_maps[MultiField::block_non_interface] = nullptr;
-    partial_maps[MultiField::block_non_interface] =
-        std::make_shared<Epetra_Map>(-1, static_cast<int>(my_non_interface_row_node_gids.size()),
-            my_non_interface_row_node_gids.data(), 0, get_comm());
+    partial_maps[MultiField::block_non_interface] = std::make_shared<Epetra_Map>(-1,
+        static_cast<int>(my_non_interface_row_node_gids.size()),
+        my_non_interface_row_node_gids.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
     // setup node map extractor
     slave_map_extractors_[dis_count++][map_nodes]->setup(
@@ -495,14 +495,15 @@ void XFEM::MultiFieldMapExtractor::build_slave_dof_map_extractors()
     }
     // create slave interface dof row map
     partial_maps[MultiField::block_interface] = nullptr;
-    partial_maps[MultiField::block_interface] = std::make_shared<Epetra_Map>(-1,
-        static_cast<int>(my_sl_interface_dofs.size()), my_sl_interface_dofs.data(), 0, get_comm());
+    partial_maps[MultiField::block_interface] =
+        std::make_shared<Epetra_Map>(-1, static_cast<int>(my_sl_interface_dofs.size()),
+            my_sl_interface_dofs.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
     // create slave non-interface dof row map
     partial_maps[MultiField::block_non_interface] = nullptr;
     partial_maps[MultiField::block_non_interface] =
         std::make_shared<Epetra_Map>(-1, static_cast<int>(my_sl_non_interface_dofs.size()),
-            my_sl_non_interface_dofs.data(), 0, get_comm());
+            my_sl_non_interface_dofs.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
     // setup dof map extractor
     slave_map_extractors_[dis_count++][map_dofs]->setup(*((*cit_dis)->dof_row_map()), partial_maps);
@@ -654,8 +655,9 @@ void XFEM::MultiFieldMapExtractor::build_master_dof_map_extractor()
       for (unsigned j = 0; j < numdof; ++j)
         my_ma_interface_dofs.push_back(i_discret().dof(inode, j));
     }
-    partial_maps.at(i) = std::shared_ptr<const Epetra_Map>(new Epetra_Map(-1,
-        static_cast<int>(my_ma_interface_dofs.size()), my_ma_interface_dofs.data(), 0, get_comm()));
+    partial_maps.at(i) = std::shared_ptr<const Epetra_Map>(
+        new Epetra_Map(-1, static_cast<int>(my_ma_interface_dofs.size()),
+            my_ma_interface_dofs.data(), 0, Core::Communication::as_epetra_comm(get_comm())));
   }
 
   // --------------------------------------------------------------------------
@@ -1051,7 +1053,8 @@ void XFEM::MultiFieldMapExtractor::build_master_interface_node_maps(
   {
     master_interface_node_maps_.push_back(
         std::make_shared<Epetra_Map>(-1, static_cast<int>(my_master_interface_node_gids[i].size()),
-            my_master_interface_node_gids[i].data(), 0, get_comm()));
+            my_master_interface_node_gids[i].data(), 0,
+            Core::Communication::as_epetra_comm(get_comm())));
   }
 }
 

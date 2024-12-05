@@ -17,7 +17,6 @@
 #include "4C_particle_wall_interface.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
 FOUR_C_NAMESPACE_OPEN
@@ -76,7 +75,7 @@ namespace PARTICLEWALL
      * \param[in] comm   communicator
      * \param[in] params particle simulation parameter list
      */
-    explicit WallHandlerBase(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit WallHandlerBase(MPI_Comm comm, const Teuchos::ParameterList& params);
 
     /*!
      * \brief destructor
@@ -276,7 +275,7 @@ namespace PARTICLEWALL
     virtual void create_wall_discretization() final;
 
     //! communicator
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! processor id
     const int myrank_;
@@ -328,8 +327,7 @@ namespace PARTICLEWALL
      * \param[in] comm   communicator
      * \param[in] params particle simulation parameter list
      */
-    explicit WallHandlerDiscretCondition(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit WallHandlerDiscretCondition(MPI_Comm comm, const Teuchos::ParameterList& params);
 
     /*!
      * \brief distribute wall elements and nodes
@@ -388,7 +386,7 @@ namespace PARTICLEWALL
      * \param[in] comm   communicator
      * \param[in] params particle simulation parameter list
      */
-    explicit WallHandlerBoundingBox(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit WallHandlerBoundingBox(MPI_Comm comm, const Teuchos::ParameterList& params);
 
     /*!
      * \brief distribute wall elements and nodes

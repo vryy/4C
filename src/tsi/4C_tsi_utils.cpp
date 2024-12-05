@@ -118,7 +118,7 @@ bool TSI::Utils::ThermoStructureCloneStrategy::determine_ele_type(
 /*----------------------------------------------------------------------*
  | setup TSI                                                 dano 12/11 |
  *----------------------------------------------------------------------*/
-void TSI::Utils::setup_tsi(const Epetra_Comm& comm)
+void TSI::Utils::setup_tsi(MPI_Comm comm)
 {
   // access the structure discretization, make sure it is filled
   std::shared_ptr<Core::FE::Discretization> structdis;

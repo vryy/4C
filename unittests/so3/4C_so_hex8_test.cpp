@@ -25,8 +25,7 @@ namespace
     void SetUp() override
     {
       // create a discretization, that creates node to element pointers and keeps the nodes alive
-      testdis_ = std::make_shared<Core::FE::Discretization>(
-          "dummy", std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD), 3);
+      testdis_ = std::make_shared<Core::FE::Discretization>("dummy", MPI_COMM_WORLD, 3);
 
       // create 8 nodes
       const std::array<int, 8> nodeids = {0, 1, 2, 3, 4, 5, 6, 7};

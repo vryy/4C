@@ -78,8 +78,7 @@ namespace FSI
     friend class FSI::FSIResultTest;
 
    public:
-    explicit MonolithicFluidSplit(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit MonolithicFluidSplit(MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
 

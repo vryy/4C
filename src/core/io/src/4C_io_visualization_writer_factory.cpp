@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 std::unique_ptr<Core::IO::VisualizationWriterBase> Core::IO::visualization_writer_factory(
-    const VisualizationParameters& parameters, const Epetra_Comm& comm,
+    const VisualizationParameters& parameters, MPI_Comm comm,
     const std::string& visualization_data_name)
 {
   if (parameters.writer_ == OutputWriter::vtu_per_rank)

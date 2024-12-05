@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 Core::FE::DiscretizationHDG::DiscretizationHDG(
-    const std::string name, std::shared_ptr<Epetra_Comm> comm, const unsigned int n_dim)
+    const std::string name, MPI_Comm comm, const unsigned int n_dim)
     : DiscretizationFaces(name, comm, n_dim)
 {
   this->doboundaryfaces_ = true;
@@ -148,7 +148,7 @@ int Core::FE::DiscretizationHDG::fill_complete(
 /*----------------------------------------------------------------------*
  | assign_global_i_ds                                        schoeder 06/14|
  *----------------------------------------------------------------------*/
-void Core::FE::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
+void Core::FE::DiscretizationHDG::assign_global_i_ds(MPI_Comm comm,
     const std::map<std::vector<int>, std::shared_ptr<Core::Elements::Element>>& elementmap,
     std::map<int, std::shared_ptr<Core::Elements::Element>>& finalelements)
 {

@@ -281,7 +281,7 @@ namespace Cut
     /** \brief hidden constructor for derived classes only
      *
      *  \author hiermeier \date 01/17 */
-    CutWizard(const Epetra_Comm& comm);
+    CutWizard(MPI_Comm comm);
 
     std::shared_ptr<BackMesh>& back_mesh_ptr() { return back_mesh_; }
 
@@ -386,7 +386,7 @@ namespace Cut
     std::shared_ptr<BackMesh> back_mesh_;
     std::function<void(const Core::Nodes::Node& node, std::vector<int>& lm)> global_dof_indices_;
     std::map<int, std::shared_ptr<CutterMesh>> cutter_meshes_;
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
     int myrank_;  ///< my processor Id
     //@}
 

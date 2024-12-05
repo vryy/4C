@@ -36,7 +36,7 @@ namespace
 
    protected:
     std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives_, predicates_;
-    Epetra_MpiComm comm_{MPI_COMM_WORLD};
+    MPI_Comm comm_{MPI_COMM_WORLD};
     Core::IO::Verbositylevel verbosity_;
   };
 

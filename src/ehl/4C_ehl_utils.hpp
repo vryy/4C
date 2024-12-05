@@ -13,7 +13,8 @@
 
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
+
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -26,7 +27,7 @@ namespace EHL
     int check_time_stepping(double dt1, double dt2);
 
     // Modification of time parameter list for problem with different time step size
-    void change_time_parameter(const Epetra_Comm& comm, Teuchos::ParameterList& ehlparams,
+    void change_time_parameter(MPI_Comm comm, Teuchos::ParameterList& ehlparams,
         Teuchos::ParameterList& lubricationdyn, Teuchos::ParameterList& sdyn);
 
   };  // namespace Utils

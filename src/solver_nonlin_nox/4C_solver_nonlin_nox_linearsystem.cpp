@@ -740,7 +740,8 @@ void NOX::Nln::LinearSystem::replace_diagonal_of_jacobian(
 double NOX::Nln::LinearSystem::compute_serial_condition_number_of_jacobian(
     const LinSystem::ConditionNumber condnum_type) const
 {
-  if (Core::Communication::num_mpi_ranks(jacobian().Comm()) > 1)
+  if (Core::Communication::num_mpi_ranks(
+          Core::Communication::unpack_epetra_comm(jacobian().Comm())) > 1)
     FOUR_C_THROW("Currently only one processor is supported!");
 
   Core::LinAlg::SerialDenseMatrix dense_jac;
@@ -799,7 +800,8 @@ void NOX::Nln::LinearSystem::compute_serial_eigenvalues_of_jacobian(
     Core::LinAlg::SerialDenseVector& reigenvalues,
     Core::LinAlg::SerialDenseVector& ieigenvalues) const
 {
-  if (Core::Communication::num_mpi_ranks(jacobian().Comm()) > 1)
+  if (Core::Communication::num_mpi_ranks(
+          Core::Communication::unpack_epetra_comm(jacobian().Comm())) > 1)
     FOUR_C_THROW("Currently only one processor is supported!");
 
   Core::LinAlg::SerialDenseMatrix dense_jac;

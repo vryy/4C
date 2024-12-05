@@ -44,7 +44,7 @@ Mortar::Coupling3d::Coupling3d(Core::FE::Discretization& idiscret, int dim, bool
 /*----------------------------------------------------------------------*
  |  get communicator  (public)                                popp 06/09|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& Mortar::Coupling3d::get_comm() const { return idiscret_.get_comm(); }
+MPI_Comm Mortar::Coupling3d::get_comm() const { return idiscret_.get_comm(); }
 
 
 /*----------------------------------------------------------------------*
@@ -3892,7 +3892,7 @@ Mortar::Coupling3dQuad::Coupling3dQuad(Core::FE::Discretization& idiscret, int d
 /*----------------------------------------------------------------------*
  |  get communicator  (public)                               farah 01/13|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& Mortar::Coupling3dManager::get_comm() const { return idiscret_.get_comm(); }
+MPI_Comm Mortar::Coupling3dManager::get_comm() const { return idiscret_.get_comm(); }
 
 
 /*----------------------------------------------------------------------*

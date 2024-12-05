@@ -42,8 +42,7 @@ namespace PoroElastScaTra
   class PoroScatraBase : public Adapter::AlgorithmBase
   {
    public:
-    /// create using a Epetra_Comm
-    explicit PoroScatraBase(const Epetra_Comm& comm,
+    explicit PoroScatraBase(MPI_Comm comm,
         const Teuchos::ParameterList& timeparams);  // Problem builder
 
     //! Main time loop.
@@ -86,7 +85,7 @@ namespace PoroElastScaTra
     virtual void build_combined_dbc_map() { poro_->build_combined_dbc_map(); };
 
     //! perform result test
-    void test_results(const Epetra_Comm& comm);
+    void test_results(MPI_Comm comm);
 
     //! apply solution of poro-problem to scatra
     void set_poro_solution();

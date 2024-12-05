@@ -80,7 +80,7 @@ int Discret::Elements::Bele3::evaluate(Teuchos::ParameterList& params,
     case calc_struct_constrvol:
     {
       // create communicator
-      const Epetra_Comm& Comm = discretization.get_comm();
+      MPI_Comm Comm = discretization.get_comm();
 
       // We are not interested in volume of ghosted elements
       if (Core::Communication::my_mpi_rank(Comm) == owner())

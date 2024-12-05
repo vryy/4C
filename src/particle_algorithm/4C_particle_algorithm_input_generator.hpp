@@ -16,7 +16,8 @@
 #include "4C_particle_engine_typedefs.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
+
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -49,7 +50,7 @@ namespace PARTICLEALGORITHM
      * \param[in] comm   communicator
      * \param[in] params particle simulation parameter list
      */
-    explicit InputGenerator(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit InputGenerator(MPI_Comm comm, const Teuchos::ParameterList& params);
 
     /*!
      * \brief init input generator

@@ -17,7 +17,7 @@
 #include "4C_particle_rigidbody_interface.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
 
 #include <unordered_map>
 
@@ -65,7 +65,7 @@ namespace ParticleRigidBody
      * \param[in] comm   communicator
      * \param[in] params particle simulation parameter list
      */
-    explicit RigidBodyHandler(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit RigidBodyHandler(MPI_Comm comm, const Teuchos::ParameterList& params);
 
     /*!
      * \brief destructor
@@ -644,7 +644,7 @@ namespace ParticleRigidBody
         const std::vector<std::vector<double>>& previousposition);
 
     //! communicator
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! processor id
     const int myrank_;

@@ -15,7 +15,7 @@
 #include "4C_inpar_mortar.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
 #include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -56,20 +56,20 @@ namespace Mortar
 
     //! @ pure virtual functions --> access per Mortar::IntegratorCalc
     virtual void integrate_ele_based_2d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
-        bool* boundary_ele, const Epetra_Comm& comm) = 0;
+        bool* boundary_ele, MPI_Comm comm) = 0;
 
     virtual void integrate_segment_2d(Mortar::Element& sele, double& sxia, double& sxib,
-        Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm) = 0;
+        Mortar::Element& mele, double& mxia, double& mxib, MPI_Comm comm) = 0;
 
     virtual std::shared_ptr<Core::LinAlg::SerialDenseMatrix> integrate_mmod_2d(
         Mortar::Element& sele, double& sxia, double& sxib, Mortar::Element& mele, double& mxia,
         double& mxib) = 0;
 
     virtual void integrate_ele_based_3d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
-        bool* boundary_ele, const Epetra_Comm& comm) = 0;
+        bool* boundary_ele, MPI_Comm comm) = 0;
 
     virtual void integrate_cell_3d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
-        std::shared_ptr<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm) = 0;
+        std::shared_ptr<Mortar::IntCell> cell, double* auxn, MPI_Comm comm) = 0;
 
     virtual void integrate_cell_3d_aux_plane_quad(Mortar::Element& sele, Mortar::Element& mele,
         Mortar::IntElement& sintele, Mortar::IntElement& mintele,
@@ -128,7 +128,7 @@ namespace Mortar
 
     */
     void integrate_ele_based_2d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
-        bool* boundary_ele, const Epetra_Comm& comm) override;
+        bool* boundary_ele, MPI_Comm comm) override;
 
     /*!
     \brief Build all integrals and linearizations on a 1D slave /
@@ -136,7 +136,7 @@ namespace Mortar
 
     */
     void integrate_segment_2d(Mortar::Element& sele, double& sxia, double& sxib,
-        Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm) override;
+        Mortar::Element& mele, double& mxia, double& mxib, MPI_Comm comm) override;
 
     /*!
     \brief Integrate modification Mmod on a 1D slave / master overlap
@@ -156,7 +156,7 @@ namespace Mortar
 
     */
     void integrate_ele_based_3d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
-        bool* boundary_ele, const Epetra_Comm& comm) override;
+        bool* boundary_ele, MPI_Comm comm) override;
 
     /*!
     \brief Build all integrals and linearizations on a 2D slave /
@@ -165,7 +165,7 @@ namespace Mortar
 
     */
     void integrate_cell_3d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
-        std::shared_ptr<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm) override;
+        std::shared_ptr<Mortar::IntCell> cell, double* auxn, MPI_Comm comm) override;
 
     /*!
     \brief Build all integrals and linearizations on a 2D slave /
@@ -212,7 +212,7 @@ namespace Mortar
     void inline gp_dm(Mortar::Element& sele, Mortar::Element& mele,
         Core::LinAlg::Matrix<ns_, 1>& lmval, Core::LinAlg::Matrix<ns_, 1>& sval,
         Core::LinAlg::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& ncol,
-        int& ndof, bool& bound, const Epetra_Comm& comm);
+        int& ndof, bool& bound, MPI_Comm comm);
 
     /*!
     \brief evaluate D/M-matrix entries at GP (3D and quadratic)

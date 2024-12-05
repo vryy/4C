@@ -43,8 +43,8 @@ Mortar::StratDataContainer::StratDataContainer()
  *----------------------------------------------------------------------*/
 Mortar::StrategyBase::StrategyBase(const std::shared_ptr<Mortar::StratDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
-    const Teuchos::ParameterList& params, const int spatialDim,
-    const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    const Teuchos::ParameterList& params, const int spatialDim, const MPI_Comm& comm,
+    const double alphaf, const int maxdof)
     : probdofs_(data_ptr->prob_dofs_ptr()),
       probnodes_(data_ptr->prob_nodes_ptr()),
       comm_(data_ptr->comm_ptr()),

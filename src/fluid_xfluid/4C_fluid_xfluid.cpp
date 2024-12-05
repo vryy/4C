@@ -2082,8 +2082,8 @@ void FLD::XFluid::compute_error_norms(Core::LinAlg::SerialDenseVector& glob_dom_
       cpu_dom_norms.values(), glob_dom_norms.values(), num_dom_norms, discret_->get_comm());
 
   for (int i = 0; i < num_interf_norms; ++i) (glob_interf_norms)(i) = 0.0;
-  discret_->get_comm().SumAll(
-      cpu_interf_norms.values(), glob_interf_norms.values(), num_interf_norms);
+  Core::Communication::sum_all(cpu_interf_norms.values(), glob_interf_norms.values(),
+      num_interf_norms, discret_->get_comm());
 
 
   //--------------------------------------------------------

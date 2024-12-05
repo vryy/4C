@@ -66,7 +66,7 @@ namespace PoroElast
     //! create solution algorithm depending on input file
     std::shared_ptr<PoroElast::PoroBase> create_poro_algorithm(
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
-        const Epetra_Comm& comm,                   //!< communicator(i)
+        MPI_Comm comm,                             //!< communicator(i)
         bool setup_solve = true,  //!< setup linear solver for Poroelastic problem (only required if
                                   //!< Solve() is called) (i)
         std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter =

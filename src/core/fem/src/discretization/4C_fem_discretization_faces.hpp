@@ -15,8 +15,6 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <memory>
 #include <string>
 
@@ -131,8 +129,7 @@ namespace Core::FE
     \param comm: Epetra comm object associated with this discretization
     \param n_dim: number of space dimensions of this discretization
     */
-    DiscretizationFaces(
-        const std::string name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim);
+    DiscretizationFaces(const std::string name, MPI_Comm comm, unsigned int n_dim);
 
 
 

@@ -143,7 +143,7 @@ Mortar::Interface::Interface(std::shared_ptr<Mortar::InterfaceDataContainer> int
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::shared_ptr<Mortar::Interface> Mortar::Interface::create(const int id, const Epetra_Comm& comm,
+std::shared_ptr<Mortar::Interface> Mortar::Interface::create(const int id, MPI_Comm comm,
     const int spatialDim, const Teuchos::ParameterList& imortar,
     std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type)
@@ -159,7 +159,7 @@ std::shared_ptr<Mortar::Interface> Mortar::Interface::create(const int id, const
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 Mortar::Interface::Interface(std::shared_ptr<InterfaceDataContainer> interfaceData, const int id,
-    const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar,
+    MPI_Comm comm, const int spatialDim, const Teuchos::ParameterList& imortar,
     std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type)
     : interface_data_(std::move(interfaceData)),
@@ -204,7 +204,7 @@ Mortar::Interface::Interface(std::shared_ptr<InterfaceDataContainer> interfaceDa
 {
   interface_data_->set_is_init(true);
   id_ = id;
-  comm_ = Core::Utils::shared_ptr_from_ref(comm);
+  comm_ = comm;
   dim_ = spatialDim;
   imortar_.setParameters(imortar);
   quadslave_ = false;
@@ -230,7 +230,7 @@ void Mortar::Interface::create_interface_discretization(
     std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type)
 {
-  std::shared_ptr<Epetra_Comm> comm(get_comm().Clone());
+  MPI_Comm comm(get_comm());
 
   // Create name for mortar interface discretization
   std::stringstream dis_name;
@@ -1110,9 +1110,9 @@ void Mortar::Interface::redistribute()
     FOUR_C_THROW("You are not supposed to be here...");
 
   // some local variables
-  std::shared_ptr<Epetra_Comm> comm(get_comm().Clone());
-  const int myrank = Core::Communication::my_mpi_rank(*comm);
-  const int numproc = Core::Communication::num_mpi_ranks(*comm);
+  MPI_Comm comm(get_comm());
+  const int myrank = Core::Communication::my_mpi_rank(comm);
+  const int numproc = Core::Communication::num_mpi_ranks(comm);
   Teuchos::Time time("", true);
 
   // vector containing all proc ids
@@ -1187,7 +1187,7 @@ void Mortar::Interface::redistribute()
     ss_master << "Mortar::Interface::redistribute of '" << discret().name() << "' (master)";
     TEUCHOS_FUNC_TIME_MONITOR(ss_master.str());
 
-    redistribute_master_side(mrownodes, mcolnodes, mroweles, *comm, mproc, imbalance_tol);
+    redistribute_master_side(mrownodes, mcolnodes, mroweles, comm, mproc, imbalance_tol);
   }
 
   //**********************************************************************
@@ -1222,7 +1222,7 @@ void Mortar::Interface::redistribute()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Mortar::Interface::redistribute_master_side(std::shared_ptr<Epetra_Map>& rownodes,
-    std::shared_ptr<Epetra_Map>& colnodes, Epetra_Map& roweles, Epetra_Comm& comm, const int parts,
+    std::shared_ptr<Epetra_Map>& colnodes, Epetra_Map& roweles, MPI_Comm comm, const int parts,
     const double imbalance) const
 {
   // call parallel redistribution
@@ -1299,7 +1299,8 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), get_comm());
 
     // build completely overlapping map of nodes (on ALL processors)
-    Epetra_Map newnodecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+    Epetra_Map newnodecolmap(
+        -1, (int)rdata.size(), rdata.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
     sdata.clear();
     rdata.clear();
 
@@ -1313,7 +1314,8 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), get_comm());
 
     // build complete overlapping map of elements (on ALL processors)
-    Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+    Epetra_Map newelecolmap(
+        -1, (int)rdata.size(), rdata.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
     sdata.clear();
     rdata.clear();
     allproc.clear();
@@ -1384,7 +1386,8 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     }
 
     // build new node column map (on ALL processors)
-    Epetra_Map newnodecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+    Epetra_Map newnodecolmap(
+        -1, (int)rdata.size(), rdata.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
     sdata.clear();
     rdata.clear();
 
@@ -1416,7 +1419,8 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     }
 
     // build new element column map (on ALL processors)
-    Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+    Epetra_Map newelecolmap(
+        -1, (int)rdata.size(), rdata.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
     sdata.clear();
     rdata.clear();
     allproc.clear();
@@ -1467,7 +1471,8 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     }
 
     // re-build node column map (now formally on ALL processors)
-    Epetra_Map newnodecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+    Epetra_Map newnodecolmap(
+        -1, (int)rdata.size(), rdata.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
     rdata.clear();
 
     // fill my own slave and master column element ids (non-redundant)
@@ -1479,8 +1484,8 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     }
 
     // re-build element column map (now formally on ALL processors)
-    std::shared_ptr<Epetra_Map> newelecolmap =
-        std::make_shared<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+    std::shared_ptr<Epetra_Map> newelecolmap = std::make_shared<Epetra_Map>(
+        -1, (int)rdata.size(), rdata.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
     rdata.clear();
 
     // redistribute the discretization of the interface according to the
@@ -1543,7 +1548,8 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
       }
 
       std::vector<int> colnodes(nodes.begin(), nodes.end());
-      Epetra_Map nodecolmap(-1, (int)colnodes.size(), colnodes.data(), 0, get_comm());
+      Epetra_Map nodecolmap(-1, (int)colnodes.size(), colnodes.data(), 0,
+          Core::Communication::as_epetra_comm(get_comm()));
 
       // now ghost the nodes
       discret().export_column_nodes(nodecolmap);
@@ -1658,10 +1664,14 @@ void Mortar::Interface::update_master_slave_dof_maps()
     }
   }
 
-  sdofrowmap_ = std::make_shared<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
-  sdofcolmap_ = std::make_shared<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
-  mdofrowmap_ = std::make_shared<Epetra_Map>(-1, (int)mr.size(), mr.data(), 0, get_comm());
-  mdofcolmap_ = std::make_shared<Epetra_Map>(-1, (int)mc.size(), mc.data(), 0, get_comm());
+  sdofrowmap_ = std::make_shared<Epetra_Map>(
+      -1, (int)sr.size(), sr.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  sdofcolmap_ = std::make_shared<Epetra_Map>(
+      -1, (int)sc.size(), sc.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  mdofrowmap_ = std::make_shared<Epetra_Map>(
+      -1, (int)mr.size(), mr.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  mdofcolmap_ = std::make_shared<Epetra_Map>(
+      -1, (int)mc.size(), mc.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 }
 
 /*----------------------------------------------------------------------*
@@ -1702,10 +1712,14 @@ void Mortar::Interface::update_master_slave_element_maps(
     }
   }
 
-  selerowmap_ = std::make_shared<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
-  selecolmap_ = std::make_shared<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
-  melerowmap_ = std::make_shared<Epetra_Map>(-1, (int)mr.size(), mr.data(), 0, get_comm());
-  melecolmap_ = std::make_shared<Epetra_Map>(-1, (int)mc.size(), mc.data(), 0, get_comm());
+  selerowmap_ = std::make_shared<Epetra_Map>(
+      -1, (int)sr.size(), sr.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  selecolmap_ = std::make_shared<Epetra_Map>(
+      -1, (int)sc.size(), sc.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  melerowmap_ = std::make_shared<Epetra_Map>(
+      -1, (int)mr.size(), mr.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  melecolmap_ = std::make_shared<Epetra_Map>(
+      -1, (int)mc.size(), mc.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 }
 
 /*----------------------------------------------------------------------*
@@ -1759,17 +1773,23 @@ void Mortar::Interface::update_master_slave_node_maps(
     }
   }
 
-  snoderowmap_ = std::make_shared<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
-  snodecolmap_ = std::make_shared<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
-  mnoderowmap_ = std::make_shared<Epetra_Map>(-1, (int)mr.size(), mr.data(), 0, get_comm());
-  mnodecolmap_ = std::make_shared<Epetra_Map>(-1, (int)mc.size(), mc.data(), 0, get_comm());
+  snoderowmap_ = std::make_shared<Epetra_Map>(
+      -1, (int)sr.size(), sr.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  snodecolmap_ = std::make_shared<Epetra_Map>(
+      -1, (int)sc.size(), sc.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  mnoderowmap_ = std::make_shared<Epetra_Map>(
+      -1, (int)mr.size(), mr.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  mnodecolmap_ = std::make_shared<Epetra_Map>(
+      -1, (int)mc.size(), mc.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
-  snoderowmapbound_ = std::make_shared<Epetra_Map>(-1, (int)srb.size(), srb.data(), 0, get_comm());
-  snodecolmapbound_ = std::make_shared<Epetra_Map>(-1, (int)scb.size(), scb.data(), 0, get_comm());
-  mnoderowmapnobound_ =
-      std::make_shared<Epetra_Map>(-1, (int)mrb.size(), mrb.data(), 0, get_comm());
-  mnodecolmapnobound_ =
-      std::make_shared<Epetra_Map>(-1, (int)mcb.size(), mcb.data(), 0, get_comm());
+  snoderowmapbound_ = std::make_shared<Epetra_Map>(
+      -1, (int)srb.size(), srb.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  snodecolmapbound_ = std::make_shared<Epetra_Map>(
+      -1, (int)scb.size(), scb.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  mnoderowmapnobound_ = std::make_shared<Epetra_Map>(
+      -1, (int)mrb.size(), mrb.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  mnodecolmapnobound_ = std::make_shared<Epetra_Map>(
+      -1, (int)mcb.size(), mcb.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
   // build exporter
   interface_data_->sl_exporter_ptr() = std::make_shared<Core::Communication::Exporter>(
@@ -1801,8 +1821,10 @@ void Mortar::Interface::restrict_slave_sets()
       if (istied && snoderowmap_->MyGID(gid)) sr.push_back(gid);
     }
 
-    snoderowmap_ = std::make_shared<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
-    snodecolmap_ = std::make_shared<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
+    snoderowmap_ = std::make_shared<Epetra_Map>(
+        -1, (int)sr.size(), sr.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+    snodecolmap_ = std::make_shared<Epetra_Map>(
+        -1, (int)sc.size(), sc.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
   }
 
   //********************************************************************
@@ -1837,8 +1859,10 @@ void Mortar::Interface::restrict_slave_sets()
         for (int j = 0; j < numdof; ++j) sr.push_back(mrtrnode->dofs()[j]);
     }
 
-    sdofrowmap_ = std::make_shared<Epetra_Map>(-1, (int)sr.size(), sr.data(), 0, get_comm());
-    sdofcolmap_ = std::make_shared<Epetra_Map>(-1, (int)sc.size(), sc.data(), 0, get_comm());
+    sdofrowmap_ = std::make_shared<Epetra_Map>(
+        -1, (int)sr.size(), sr.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+    sdofcolmap_ = std::make_shared<Epetra_Map>(
+        -1, (int)sc.size(), sc.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
   }
 }
 
@@ -1873,8 +1897,8 @@ std::shared_ptr<Epetra_Map> Mortar::Interface::update_lag_mult_sets(
   std::vector<int> localnumlmdof(Core::Communication::num_mpi_ranks(get_comm()));
   std::vector<int> globalnumlmdof(Core::Communication::num_mpi_ranks(get_comm()));
   localnumlmdof[Core::Communication::my_mpi_rank(get_comm())] = ref_map.NumMyElements();
-  get_comm().SumAll(
-      localnumlmdof.data(), globalnumlmdof.data(), Core::Communication::num_mpi_ranks(get_comm()));
+  Core::Communication::sum_all(localnumlmdof.data(), globalnumlmdof.data(),
+      Core::Communication::num_mpi_ranks(get_comm()), get_comm());
 
   // compute offset for LM dof initialization for all procs
   int offset = 0;
@@ -1889,7 +1913,8 @@ std::shared_ptr<Epetra_Map> Mortar::Interface::update_lag_mult_sets(
   // create interface LM map
   // (if maxdofglobal_ == 0, we do not want / need this)
   if (max_dof_global() > 0)
-    return std::make_shared<Epetra_Map>(-1, (int)lmdof.size(), lmdof.data(), 0, get_comm());
+    return std::make_shared<Epetra_Map>(
+        -1, (int)lmdof.size(), lmdof.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 
   return nullptr;
 }
@@ -1961,7 +1986,8 @@ std::shared_ptr<Epetra_Map> Mortar::Interface::redistribute_lag_mult_sets() cons
   }
 
   // create deterministic interface LM map
-  return std::make_shared<Epetra_Map>(-1, (int)lmdof.size(), lmdof.data(), 0, get_comm());
+  return std::make_shared<Epetra_Map>(
+      -1, (int)lmdof.size(), lmdof.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
 }
 
 /*----------------------------------------------------------------------*

@@ -28,8 +28,8 @@ namespace Wear
 
     */
     WearInterface(const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData_ptr,
-        const int id, const Epetra_Comm& comm, const int dim,
-        const Teuchos::ParameterList& icontact, bool selfcontact);
+        const int id, MPI_Comm comm, const int dim, const Teuchos::ParameterList& icontact,
+        bool selfcontact);
 
     /*!
     \brief Assemble second mortar D matrix for both-sided wear

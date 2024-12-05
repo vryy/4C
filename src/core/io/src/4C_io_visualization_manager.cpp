@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-Core::IO::VisualizationManager::VisualizationManager(Core::IO::VisualizationParameters parameters,
-    const Epetra_Comm& comm, std::string base_output_name)
+Core::IO::VisualizationManager::VisualizationManager(
+    Core::IO::VisualizationParameters parameters, MPI_Comm comm, std::string base_output_name)
     : parameters_(std::move(parameters)),
       comm_(comm),
       base_output_name_(std::move(base_output_name))

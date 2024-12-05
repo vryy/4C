@@ -23,8 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 yoshihara 09/12|
  *----------------------------------------------------------------------*/
-Airway::RedAirwayTissue::RedAirwayTissue(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+Airway::RedAirwayTissue::RedAirwayTissue(MPI_Comm comm, const Teuchos::ParameterList& timeparams)
     : Adapter::AlgorithmBase(comm, timeparams)
 {
   // Before setting up the structure time integrator, manipulate coupling conditions -> turn them
@@ -96,7 +95,8 @@ Airway::RedAirwayTissue::RedAirwayTissue(
   }
 
 
-  Epetra_Map redundantmap(tmp.size(), tmp.size(), tmp.data(), 0, comm);
+  Epetra_Map redundantmap(
+      tmp.size(), tmp.size(), tmp.data(), 0, Core::Communication::as_epetra_comm(comm));
   couppres_ip_ = std::make_shared<Core::LinAlg::Vector<double>>(redundantmap, true);
   couppres_ip_tilde_ = std::make_shared<Core::LinAlg::Vector<double>>(redundantmap, true);
   couppres_im_ = std::make_shared<Core::LinAlg::Vector<double>>(redundantmap, true);

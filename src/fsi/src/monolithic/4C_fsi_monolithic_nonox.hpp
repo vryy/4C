@@ -37,7 +37,7 @@ namespace FSI
     friend class FSI::Utils::MonolithicDebugWriter;
 
    public:
-    explicit MonolithicNoNOX(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit MonolithicNoNOX(MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
     ///
     /*! do the setup for the monolithic system

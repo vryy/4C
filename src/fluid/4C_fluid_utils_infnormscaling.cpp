@@ -12,7 +12,6 @@
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 
-#include <Epetra_Comm.h>
 #include <stdio.h>
 #include <Teuchos_ParameterList.hpp>
 
@@ -21,7 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::Utils::FluidInfNormScaling::FluidInfNormScaling(Core::LinAlg::MapExtractor& mapextractor)
-    : myrank_(Core::Communication::my_mpi_rank(mapextractor.Map(0)->Comm())),
+    : myrank_(Core::Communication::my_mpi_rank(
+          Core::Communication::unpack_epetra_comm(mapextractor.Map(0)->Comm()))),
       velpressplitter_(mapextractor),
       leftscale_momentum_(true),
       leftscale_continuity_(false)

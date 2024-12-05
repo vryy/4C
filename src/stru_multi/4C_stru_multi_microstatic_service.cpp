@@ -89,8 +89,10 @@ void MultiScale::MicroStatic::set_up_homogenization()
   }
 
   // create map based on the determined dofs of prescribed and free nodes
-  pdof_ = std::make_shared<Epetra_Map>(-1, np_, pdof.data(), 0, discret_->get_comm());
-  fdof_ = std::make_shared<Epetra_Map>(-1, ndof_ - np_, fdof.data(), 0, discret_->get_comm());
+  pdof_ = std::make_shared<Epetra_Map>(
+      -1, np_, pdof.data(), 0, Core::Communication::as_epetra_comm(discret_->get_comm()));
+  fdof_ = std::make_shared<Epetra_Map>(
+      -1, ndof_ - np_, fdof.data(), 0, Core::Communication::as_epetra_comm(discret_->get_comm()));
 
   // create importer
   importp_ = std::make_shared<Epetra_Import>(*pdof_, *(discret_->dof_row_map()));

@@ -1259,8 +1259,8 @@ int CONTACT::STRATEGY::Factory::identify_full_subset(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::shared_ptr<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(const int id,
-    const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
-    const bool selfcontact, std::shared_ptr<CONTACT::InterfaceDataContainer> interfaceData_ptr,
+    MPI_Comm comm, const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
+    std::shared_ptr<CONTACT::InterfaceDataContainer> interfaceData_ptr,
     const int contactconstitutivelaw_id)
 {
   auto stype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(icparams, "STRATEGY");
@@ -1272,8 +1272,8 @@ std::shared_ptr<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::shared_ptr<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(
-    const enum Inpar::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
-    const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
+    const enum Inpar::CONTACT::SolvingStrategy stype, const int id, MPI_Comm comm, const int dim,
+    Teuchos::ParameterList& icparams, const bool selfcontact,
     std::shared_ptr<CONTACT::InterfaceDataContainer> interface_data_ptr,
     const int contactconstitutivelaw_id)
 {
@@ -1515,7 +1515,7 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
   std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr = nullptr;
 
   return build_strategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
-      discret().dof_row_map(), discret().node_row_map(), n_dim(), comm_ptr(), data_ptr,
+      discret().dof_row_map(), discret().node_row_map(), n_dim(), get_comm(), data_ptr,
       cparams_interface);
 }
 
@@ -1525,12 +1525,11 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
     const Inpar::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
     const bool& poroslave, const bool& poromaster, const int& dof_offset,
     std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces, const Epetra_Map* dof_row_map,
-    const Epetra_Map* node_row_map, const int dim,
-    const std::shared_ptr<const Epetra_Comm>& comm_ptr,
+    const Epetra_Map* node_row_map, const int dim, const MPI_Comm& comm_ptr,
     std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr,
     CONTACT::ParamsInterface* cparams_interface)
 {
-  if (Core::Communication::my_mpi_rank(*comm_ptr) == 0)
+  if (Core::Communication::my_mpi_rank(comm_ptr) == 0)
   {
     std::cout << "Building contact strategy object............";
     fflush(stdout);
@@ -1636,7 +1635,7 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
   // setup the stategy object
   strategy_ptr->setup(false, true);
 
-  if (Core::Communication::my_mpi_rank(*comm_ptr) == 0) std::cout << "done!" << std::endl;
+  if (Core::Communication::my_mpi_rank(comm_ptr) == 0) std::cout << "done!" << std::endl;
 
   return strategy_ptr;
 }

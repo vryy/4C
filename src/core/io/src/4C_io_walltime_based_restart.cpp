@@ -56,7 +56,7 @@ void Core::IO::RestartManager::setup_restart_manager(
 }
 
 /// return whether it is time for a restart after a certain walltime interval
-bool Core::IO::RestartManager::restart(const int step, const Epetra_Comm& comm)
+bool Core::IO::RestartManager::restart(const int step, MPI_Comm comm)
 {
   // make sure that all after the first field write restart, too
   if (step == lastacceptedstep_) return true;

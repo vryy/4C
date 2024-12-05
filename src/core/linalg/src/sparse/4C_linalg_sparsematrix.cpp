@@ -150,7 +150,8 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const Core::LinAlg::Vector<double>& dia
       matrixtype_(matrixtype)
 {
   int length = diag.Map().NumMyElements();
-  Epetra_Map map(-1, length, diag.Map().MyGlobalElements(), diag.Map().IndexBase(), diag.Comm());
+  Epetra_Map map(-1, length, diag.Map().MyGlobalElements(), diag.Map().IndexBase(),
+      Core::Communication::as_epetra_comm(diag.Comm()));
   if (!map.UniqueGIDs()) FOUR_C_THROW("Row map is not unique");
 
   if (matrixtype_ == CRS_MATRIX)
@@ -364,7 +365,8 @@ void Core::LinAlg::SparseMatrix::assemble(int eid, const std::vector<int>& lmstr
   if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.numRows() || lcoldim > Aele.numCols())
     FOUR_C_THROW("Mismatch in dimensions");
 
-  const int myrank = Core::Communication::my_mpi_rank(sysmat_->Comm());
+  const int myrank =
+      Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(sysmat_->Comm()));
   const Epetra_Map& rowmap = sysmat_->RowMap();
   const Epetra_Map& colmap = sysmat_->ColMap();
 
@@ -553,7 +555,8 @@ void Core::LinAlg::SparseMatrix::assemble(int eid, const Core::LinAlg::SerialDen
   if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.numRows() || lcoldim > Aele.numCols())
     FOUR_C_THROW("Mismatch in dimensions");
 
-  const int myrank = Core::Communication::my_mpi_rank(sysmat_->Comm());
+  const int myrank =
+      Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(sysmat_->Comm()));
   const Epetra_Map& rowmap = sysmat_->RowMap();
   const Epetra_Map& colmap = sysmat_->ColMap();
 
@@ -663,7 +666,8 @@ void Core::LinAlg::SparseMatrix::fe_assemble(const Core::LinAlg::SerialDenseMatr
 
   std::shared_ptr<Epetra_FECrsMatrix> fe_mat =
       std::dynamic_pointer_cast<Epetra_FECrsMatrix>(sysmat_);
-  const int myrank = Core::Communication::my_mpi_rank(fe_mat->Comm());
+  const int myrank =
+      Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(fe_mat->Comm()));
 
   // loop rows of local matrix
   for (int lrow = 0; lrow < lrowdim; ++lrow)

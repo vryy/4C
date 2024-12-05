@@ -33,8 +33,7 @@ void ntam(int argc, char *argv[])
 {
   using namespace FourC;
 
-  std::shared_ptr<Epetra_Comm> gcomm =
-      Global::Problem::instance()->get_communicators()->global_comm();
+  MPI_Comm gcomm = Global::Problem::instance()->get_communicators()->global_comm();
 
   double t0, ti, tc;
 
@@ -52,7 +51,7 @@ void ntam(int argc, char *argv[])
   ntainp_ccadiscret(inputfile_name, outputfile_kenner, restartfile_kenner);
 
   ti = walltime_in_seconds() - t0;
-  if (Core::Communication::my_mpi_rank(*gcomm) == 0)
+  if (Core::Communication::my_mpi_rank(gcomm) == 0)
   {
     Core::IO::cout << "\nTotal CPU Time for INPUT:       " << std::setw(10) << std::setprecision(3)
                    << std::scientific << ti << " sec \n\n";
@@ -64,7 +63,7 @@ void ntam(int argc, char *argv[])
   ntacal();
 
   tc = walltime_in_seconds() - t0;
-  if (Core::Communication::my_mpi_rank(*gcomm) == 0)
+  if (Core::Communication::my_mpi_rank(gcomm) == 0)
   {
     Core::IO::cout << "\nTotal CPU Time for CALCULATION: " << std::setw(10) << std::setprecision(3)
                    << std::scientific << tc << " sec \n\n";

@@ -83,7 +83,7 @@ namespace PARTICLEALGORITHM
      * \param[in] comm   communicator
      * \param[in] params particle simulation parameter list
      */
-    explicit ParticleAlgorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit ParticleAlgorithm(MPI_Comm comm, const Teuchos::ParameterList& params);
 
     /*!
      * \brief destructor

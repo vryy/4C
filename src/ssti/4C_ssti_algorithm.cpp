@@ -30,8 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SSTI::SSTIAlgorithm::SSTIAlgorithm(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+SSTI::SSTIAlgorithm::SSTIAlgorithm(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
       iter_(0),
       scatra_(nullptr),
@@ -51,9 +50,9 @@ SSTI::SSTIAlgorithm::SSTIAlgorithm(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::init(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& sstitimeparams, const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& thermoparams, const Teuchos::ParameterList& structparams)
+void SSTI::SSTIAlgorithm::init(MPI_Comm comm, const Teuchos::ParameterList& sstitimeparams,
+    const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams,
+    const Teuchos::ParameterList& structparams)
 {
   // reset the setup flag
   issetup_ = false;
@@ -219,7 +218,7 @@ void SSTI::SSTIAlgorithm::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::clone_discretizations(const Epetra_Comm& comm)
+void SSTI::SSTIAlgorithm::clone_discretizations(MPI_Comm comm)
 {
   // The structure discretization is received from the input.
   // Then, the scatra discretization is cloned.
@@ -260,7 +259,7 @@ void SSTI::SSTIAlgorithm::read_restart(int restart)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::test_results(const Epetra_Comm& comm) const
+void SSTI::SSTIAlgorithm::test_results(MPI_Comm comm) const
 {
   Global::Problem* problem = Global::Problem::instance();
 
@@ -470,8 +469,8 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::clone_thermo_params(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::shared_ptr<SSTI::SSTIAlgorithm> SSTI::build_ssti(Inpar::SSTI::SolutionScheme coupling,
-    const Epetra_Comm& comm, const Teuchos::ParameterList& sstiparams)
+std::shared_ptr<SSTI::SSTIAlgorithm> SSTI::build_ssti(
+    Inpar::SSTI::SolutionScheme coupling, MPI_Comm comm, const Teuchos::ParameterList& sstiparams)
 {
   std::shared_ptr<SSTI::SSTIAlgorithm> ssti = nullptr;
   switch (coupling)

@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   void broadcast_input_data_to_all_procs(
-      const Epetra_Comm& comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData)
+      MPI_Comm comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData)
   {
     const int myrank = Core::Communication::my_mpi_rank(comm);
 

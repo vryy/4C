@@ -217,7 +217,7 @@ namespace Core::DOFSets
 
     /// Get Max of all GID assigned in the DofSets in front of current one in the list
     /// #static_dofsets_
-    int max_gi_din_list(const Epetra_Comm& comm) const override
+    int max_gi_din_list(MPI_Comm comm) const override
     {
       return sourcedofset_->max_gi_din_list(comm);
     };

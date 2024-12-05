@@ -13,10 +13,11 @@
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -59,7 +60,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] comm communicator
      */
-    explicit UniqueGlobalIdHandler(const Epetra_Comm& comm, const std::string& objectname);
+    explicit UniqueGlobalIdHandler(MPI_Comm comm, const std::string& objectname);
 
     /*!
      * \brief init unique global identifier handler
@@ -183,7 +184,7 @@ namespace PARTICLEENGINE
         std::vector<int>& requesteduniqueglobalids) const;
 
     //! communicator
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! processor id
     const int myrank_;

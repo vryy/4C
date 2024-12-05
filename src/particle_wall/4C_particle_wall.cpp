@@ -39,8 +39,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEWALL::WallHandlerBase::WallHandlerBase(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+PARTICLEWALL::WallHandlerBase::WallHandlerBase(MPI_Comm comm, const Teuchos::ParameterList& params)
     : comm_(comm),
       myrank_(Core::Communication::my_mpi_rank(comm)),
       params_(params),
@@ -448,8 +447,8 @@ void PARTICLEWALL::WallHandlerBase::create_wall_discretization_runtime_vtu_write
 void PARTICLEWALL::WallHandlerBase::create_wall_discretization()
 {
   // create wall discretization
-  walldiscretization_ = std::make_shared<Core::FE::Discretization>("particlewalls",
-      std::shared_ptr<Epetra_Comm>(comm_.Clone()), Global::Problem::instance()->n_dim());
+  walldiscretization_ = std::make_shared<Core::FE::Discretization>(
+      "particlewalls", comm_, Global::Problem::instance()->n_dim());
 
   // create wall discretization writer
   walldiscretization_->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
@@ -458,7 +457,7 @@ void PARTICLEWALL::WallHandlerBase::create_wall_discretization()
 }
 
 PARTICLEWALL::WallHandlerDiscretCondition::WallHandlerDiscretCondition(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    MPI_Comm comm, const Teuchos::ParameterList& params)
     : PARTICLEWALL::WallHandlerBase(comm, params)
 {
   // empty constructor
@@ -620,7 +619,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::setup_wall_discretization() cons
 }
 
 PARTICLEWALL::WallHandlerBoundingBox::WallHandlerBoundingBox(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    MPI_Comm comm, const Teuchos::ParameterList& params)
     : PARTICLEWALL::WallHandlerBase(comm, params)
 {
   // empty constructor
@@ -738,15 +737,15 @@ void PARTICLEWALL::WallHandlerBoundingBox::init_wall_discretization()
   }
 
   // node row map of wall elements
-  std::shared_ptr<Epetra_Map> noderowmap = std::make_shared<Epetra_Map>(
-      -1, nodeids.size(), nodeids.data(), 0, walldiscretization_->get_comm());
+  std::shared_ptr<Epetra_Map> noderowmap = std::make_shared<Epetra_Map>(-1, nodeids.size(),
+      nodeids.data(), 0, Core::Communication::as_epetra_comm(walldiscretization_->get_comm()));
 
   // fully overlapping node column map
   std::shared_ptr<Epetra_Map> nodecolmap = Core::LinAlg::allreduce_e_map(*noderowmap);
 
   // element row map of wall elements
-  std::shared_ptr<Epetra_Map> elerowmap = std::make_shared<Epetra_Map>(
-      -1, eleids.size(), eleids.data(), 0, walldiscretization_->get_comm());
+  std::shared_ptr<Epetra_Map> elerowmap = std::make_shared<Epetra_Map>(-1, eleids.size(),
+      eleids.data(), 0, Core::Communication::as_epetra_comm(walldiscretization_->get_comm()));
 
   // fully overlapping element column map
   std::shared_ptr<Epetra_Map> elecolmap = Core::LinAlg::allreduce_e_map(*elerowmap);

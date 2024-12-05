@@ -48,8 +48,7 @@ namespace FSI
   class AlgorithmXFEM : public Adapter::AlgorithmBase
   {
    public:
-    //! create using a Epetra_Comm
-    AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+    AlgorithmXFEM(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
         const Adapter::FieldWrapper::Fieldtype type);
 
 

@@ -36,7 +36,7 @@ namespace FSI
      *
      * You will have to use the FSI::DirichletNeumannFactory to create an instance of this class
      */
-    explicit DirichletNeumannVolCoupl(const Epetra_Comm& comm);
+    explicit DirichletNeumannVolCoupl(MPI_Comm comm);
 
    public:
     /// setup this object
@@ -44,10 +44,10 @@ namespace FSI
 
    protected:
     /// setup
-    void setup_coupling_struct_ale(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
+    void setup_coupling_struct_ale(const Teuchos::ParameterList& fsidyn, MPI_Comm comm);
 
     /// setup
-    void setup_interface_corrector(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
+    void setup_interface_corrector(const Teuchos::ParameterList& fsidyn, MPI_Comm comm);
 
     /** \brief interface fluid operator
      *

@@ -35,8 +35,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FPSI::MonolithicPlain::MonolithicPlain(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& fpsidynparams, const Teuchos::ParameterList& poroelastdynparams)
+FPSI::MonolithicPlain::MonolithicPlain(MPI_Comm comm, const Teuchos::ParameterList& fpsidynparams,
+    const Teuchos::ParameterList& poroelastdynparams)
     : Monolithic(comm, fpsidynparams, poroelastdynparams)
 {
   // create transformation object for the condensation

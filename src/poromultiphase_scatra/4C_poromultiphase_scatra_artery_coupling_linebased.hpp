@@ -25,7 +25,6 @@ namespace PoroMultiPhaseScaTra
   class PoroMultiPhaseScaTraArtCouplLineBased : public PoroMultiPhaseScaTraArtCouplNonConforming
   {
    public:
-    //! create using a Epetra_Comm
     PoroMultiPhaseScaTraArtCouplLineBased(std::shared_ptr<Core::FE::Discretization> arterydis,
         std::shared_ptr<Core::FE::Discretization> contdis,
         const Teuchos::ParameterList& couplingparams, const std::string& condname,

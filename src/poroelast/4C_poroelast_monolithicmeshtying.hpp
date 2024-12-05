@@ -25,8 +25,7 @@ namespace PoroElast
   class MonolithicMeshtying : public Monolithic
   {
    public:
-    //! create using a Epetra_Comm
-    explicit MonolithicMeshtying(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+    explicit MonolithicMeshtying(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
         std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! Setup the monolithic system

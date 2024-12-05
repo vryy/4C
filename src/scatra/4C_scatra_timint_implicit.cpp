@@ -3630,8 +3630,8 @@ void ScaTra::ScaTraTimIntImpl::build_block_maps(
       FOUR_C_ASSERT(dof_set.size() == dofs.size(), "The dofs are not unique");
 #endif
 
-      blockmaps.emplace_back(std::make_shared<Epetra_Map>(
-          -1, static_cast<int>(dofs.size()), dofs.data(), 0, discret_->get_comm()));
+      blockmaps.emplace_back(std::make_shared<Epetra_Map>(-1, static_cast<int>(dofs.size()),
+          dofs.data(), 0, Core::Communication::as_epetra_comm(discret_->get_comm())));
     }
   }
   else

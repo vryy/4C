@@ -45,8 +45,7 @@ namespace PoroElastScaTra
   class PoroScatraMono : public PoroScatraBase
   {
    public:
-    /// create using a Epetra_Comm
-    explicit PoroScatraMono(const Epetra_Comm& comm,
+    explicit PoroScatraMono(MPI_Comm comm,
         const Teuchos::ParameterList& timeparams);  // Problem builder
 
     //! Main time loop.

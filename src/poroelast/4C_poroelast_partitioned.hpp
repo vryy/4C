@@ -22,8 +22,7 @@ namespace PoroElast
   class Partitioned : public PoroBase
   {
    public:
-    //! create using a Epetra_Comm
-    explicit Partitioned(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+    explicit Partitioned(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
         std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! proceed one time step (prepare, solve, update)

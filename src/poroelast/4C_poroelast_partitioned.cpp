@@ -15,8 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-PoroElast::Partitioned::Partitioned(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& timeparams,
+PoroElast::Partitioned::Partitioned(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
     std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter)
     : PoroBase(comm, timeparams, porosity_splitter),
       fluidincnp_(std::make_shared<Core::LinAlg::Vector<double>>(*(fluid_field()->velnp()))),

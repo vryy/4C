@@ -78,7 +78,7 @@ void fluid_ale_drt()
 {
   Global::Problem* problem = Global::Problem::instance();
 
-  const Epetra_Comm& comm = problem->get_dis("fluid")->get_comm();
+  MPI_Comm comm = problem->get_dis("fluid")->get_comm();
 
   // make sure the three discretizations are filled in the right order
   // this creates dof numbers with
@@ -139,7 +139,7 @@ void fluid_ale_drt()
 /*----------------------------------------------------------------------*/
 void fluid_xfem_drt()
 {
-  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("structure")->get_comm();
+  MPI_Comm comm = Global::Problem::instance()->get_dis("structure")->get_comm();
 
   Global::Problem* problem = Global::Problem::instance();
 
@@ -232,7 +232,7 @@ void fsi_immersed_drt()
   Global::Problem* problem = Global::Problem::instance();
 
   std::shared_ptr<Core::FE::Discretization> structdis = problem->get_dis("structure");
-  const Epetra_Comm& comm = structdis->get_comm();
+  MPI_Comm comm = structdis->get_comm();
 
   auto correct_node = [](const Core::Nodes::Node& node) -> decltype(auto)
   {
@@ -361,7 +361,7 @@ void fsi_ale_drt()
   Global::Problem* problem = Global::Problem::instance();
 
   std::shared_ptr<Core::FE::Discretization> structdis = problem->get_dis("structure");
-  const Epetra_Comm& comm = structdis->get_comm();
+  MPI_Comm comm = structdis->get_comm();
 
   // make sure the three discretizations are filled in the right order
   // this creates dof numbers with
@@ -668,7 +668,7 @@ void fsi_ale_drt()
 /*----------------------------------------------------------------------*/
 void xfsi_drt()
 {
-  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("structure")->get_comm();
+  MPI_Comm comm = Global::Problem::instance()->get_dis("structure")->get_comm();
 
   if (Core::Communication::my_mpi_rank(comm) == 0)
   {
@@ -818,7 +818,7 @@ void xfsi_drt()
 /*----------------------------------------------------------------------*/
 void xfpsi_drt()
 {
-  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("structure")->get_comm();
+  MPI_Comm comm = Global::Problem::instance()->get_dis("structure")->get_comm();
 
   if (Core::Communication::my_mpi_rank(comm) == 0)
   {

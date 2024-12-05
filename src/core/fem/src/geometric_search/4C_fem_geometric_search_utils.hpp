@@ -12,8 +12,6 @@
 
 #include "4C_fem_geometric_search_bounding_volume.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -31,7 +29,7 @@ namespace Core::GeometricSearch
 
   /*! \brief Prints details on the geometric search algorithm
    */
-  void print_geometric_search_details(const Epetra_Comm &comm, const GeometricSearchInfo info);
+  void print_geometric_search_details(MPI_Comm comm, const GeometricSearchInfo info);
 
   /*! \brief Returns interaction pair indices based on the search output of ArborX
    *

@@ -47,7 +47,7 @@ namespace FSI
      *
      * You will have to use the FSI::DirichletNeumannFactory to create an instance of this class
      */
-    explicit DirichletNeumannVel(const Epetra_Comm& comm);
+    explicit DirichletNeumannVel(MPI_Comm comm);
 
    public:
     /*! \brief Outer level FSI time loop

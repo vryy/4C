@@ -62,7 +62,7 @@ void Adapter::CouplingNonLinMortar::setup(std::shared_ptr<Core::FE::Discretizati
     const std::string& couplingcond)
 {
   myrank_ = Core::Communication::my_mpi_rank(masterdis->get_comm());
-  comm_ = std::shared_ptr<Epetra_Comm>(masterdis->get_comm().Clone());
+  comm_ = masterdis->get_comm();
 
   // ParameterList
   Teuchos::ParameterList input;
@@ -240,7 +240,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
   const int dim = Global::Problem::instance()->n_dim();
 
   // create an empty mortar interface
-  interface = CONTACT::Interface::create(0, *comm_, dim, input, false);
+  interface = CONTACT::Interface::create(0, comm_, dim, input, false);
 
   //  if((masterdis->NumDof(masterdis->lRowNode(0))!=dof and slavewithale==true and
   //  slidingale==false) or
@@ -374,7 +374,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
   if (masterdis.get() != slavedis.get())
   {
     int nummastermtreles = masterelements.size();
-    comm_->SumAll(&nummastermtreles, &eleoffset, 1);
+    Core::Communication::sum_all(&nummastermtreles, &eleoffset, 1, comm_);
   }
 
   //  if(slidingale==true)
@@ -518,7 +518,7 @@ void Adapter::CouplingNonLinMortar::complete_interface(
   {
     bool isFinalDistribution = false;
     if (parallelRedist == Inpar::Mortar::ParallelRedist::redist_none ||
-        Core::Communication::num_mpi_ranks(*comm_) == 1)
+        Core::Communication::num_mpi_ranks(comm_) == 1)
       isFinalDistribution = true;
     interface->fill_complete(Global::Problem::instance()->discretization_map(),
         Global::Problem::instance()->binning_strategy_params(),
@@ -542,7 +542,7 @@ void Adapter::CouplingNonLinMortar::complete_interface(
   // PARALLEL REDISTRIBUTION OF INTERFACE
   //**********************************************************************
   if (parallelRedist != Inpar::Mortar::ParallelRedist::redist_none &&
-      Core::Communication::num_mpi_ranks(*comm_) > 1)
+      Core::Communication::num_mpi_ranks(comm_) > 1)
   {
     // redistribute optimally among all procs
     interface->redistribute();
@@ -579,8 +579,7 @@ void Adapter::CouplingNonLinMortar::complete_interface(
 void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
     std::shared_ptr<Core::FE::Discretization> masterdis,
     std::shared_ptr<Core::FE::Discretization> slavedis,
-    std::shared_ptr<Core::Conditions::Condition> spring, const int coupling_id,
-    const Epetra_Comm& comm)
+    std::shared_ptr<Core::Conditions::Condition> spring, const int coupling_id, MPI_Comm comm)
 {
   if (Core::Communication::my_mpi_rank(comm) == 0)
     std::cout << "Generating CONTACT interface for spring dashpot condition...\n" << std::endl;
@@ -735,7 +734,7 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
         Global::Problem::instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
     if (Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(input, "PARALLEL_REDIST") ==
             Inpar::Mortar::ParallelRedist::redist_none or
-        Core::Communication::num_mpi_ranks(*comm_) == 1)
+        Core::Communication::num_mpi_ranks(comm_) == 1)
       isFinalDistribution = true;
 
     interface->fill_complete(Global::Problem::instance()->discretization_map(),
@@ -808,9 +807,9 @@ void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename
     if (!ele) FOUR_C_THROW("ERROR: Cannot find ele with gid %", gid);
     CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
-    CONTACT::Integrator integrator(interface_->interface_params(), cele->shape(), *comm_);
+    CONTACT::Integrator integrator(interface_->interface_params(), cele->shape(), comm_);
 
-    integrator.integrate_d(*cele, *comm_, true);
+    integrator.integrate_d(*cele, comm_, true);
   }
 
   // assemble routine

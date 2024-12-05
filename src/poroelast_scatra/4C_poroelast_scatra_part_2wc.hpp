@@ -21,7 +21,7 @@ namespace PoroElastScaTra
   {
    public:
     //! explicit constructor
-    explicit PoroScatraPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit PoroScatraPart2WC(MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
     //! full time loop
     void timeloop() override;

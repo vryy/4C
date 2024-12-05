@@ -49,9 +49,9 @@ namespace
    *
    * \note Currently limited to Linux systems
    *
-   * @param[in] global_comm Global Epetra_Comm object
+   * @param[in] comm Global MPI_Comm object
    */
-  void get_memory_high_water_mark(const Epetra_Comm &comm)
+  void get_memory_high_water_mark(MPI_Comm comm)
   {
 #if defined(__linux__)  // This works only on Linux systems
     const std::string status_match = "VmHWM";
@@ -228,8 +228,8 @@ int main(int argc, char *argv[])
   std::shared_ptr<Core::Communication::Communicators> communicators =
       Core::Communication::create_comm(std::vector<std::string>(argv, argv + argc));
   Global::Problem::instance()->set_communicators(communicators);
-  std::shared_ptr<Epetra_Comm> lcomm = communicators->local_comm();
-  std::shared_ptr<Epetra_Comm> gcomm = communicators->global_comm();
+  MPI_Comm lcomm = communicators->local_comm();
+  MPI_Comm gcomm = communicators->global_comm();
   int ngroups = communicators->num_groups();
 
   if (strcmp(argv[argc - 1], "--interactive") == 0)
@@ -237,8 +237,8 @@ int main(int argc, char *argv[])
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
     printf("Global rank %d with PID %d on %s is ready for attach\n",
-        Core::Communication::my_mpi_rank(*gcomm), getpid(), hostname);
-    if (Core::Communication::my_mpi_rank(*gcomm) == 0)
+        Core::Communication::my_mpi_rank(gcomm), getpid(), hostname);
+    if (Core::Communication::my_mpi_rank(gcomm) == 0)
     {
       printf("\n** Enter a character to continue > \n");
       fflush(stdout);
@@ -250,13 +250,13 @@ int main(int argc, char *argv[])
     }
   }
 
-  gcomm->Barrier();
+  Core::Communication::barrier(gcomm);
 
   global_legacy_module_callbacks().RegisterParObjectTypes();
 
   if ((argc == 2) && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)))
   {
-    if (Core::Communication::my_mpi_rank(*lcomm) == 0)
+    if (Core::Communication::my_mpi_rank(lcomm) == 0)
     {
       printf("\n\n");
       print_help_message();
@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
   }
   else if ((argc == 2) && ((strcmp(argv[1], "-p") == 0) || (strcmp(argv[1], "--parameters") == 0)))
   {
-    if (Core::Communication::my_mpi_rank(*lcomm) == 0)
+    if (Core::Communication::my_mpi_rank(lcomm) == 0)
     {
       auto valid_parameters = Input::valid_parameters();
       Core::IO::InputFileUtils::print_metadata_yaml(std::cout, *valid_parameters);
@@ -273,7 +273,7 @@ int main(int argc, char *argv[])
   }
   else if ((argc == 2) && ((strcmp(argv[1], "-d") == 0) || (strcmp(argv[1], "--datfile") == 0)))
   {
-    if (Core::Communication::my_mpi_rank(*lcomm) == 0)
+    if (Core::Communication::my_mpi_rank(lcomm) == 0)
     {
       printf("\n\n");
       print_default_dat_header();
@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    if (Core::Communication::my_mpi_rank(*gcomm) == 0)
+    if (Core::Communication::my_mpi_rank(gcomm) == 0)
     {
       printf(
           "\n"
@@ -312,7 +312,7 @@ int main(int argc, char *argv[])
           VersionControl::git_hash);
       printf(
           "Trilinos Version %s (git SHA1 %s)\n", TrilinosVersion.c_str(), TrilinosGitHash.c_str());
-      printf("Total number of processors: %d\n", Core::Communication::num_mpi_ranks(*gcomm));
+      printf("Total number of processors: %d\n", Core::Communication::num_mpi_ranks(gcomm));
     }
 
     /* Here we turn the NaN and INF numbers off. No need to calculate
@@ -358,8 +358,8 @@ int main(int argc, char *argv[])
       if (ngroups > 1)
       {
         printf("Global processor %d has thrown an error and is waiting for the remaining procs\n\n",
-            Core::Communication::my_mpi_rank(*gcomm));
-        gcomm->Barrier();
+            Core::Communication::my_mpi_rank(gcomm));
+        Core::Communication::barrier(gcomm);
       }
 
       MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
@@ -367,19 +367,19 @@ int main(int argc, char *argv[])
 #endif
     /*----------------------------------------------------------------------*/
 
-    get_memory_high_water_mark(*gcomm);
+    get_memory_high_water_mark(gcomm);
 
-    lcomm->Barrier();
+    Core::Communication::barrier(lcomm);
     if (ngroups > 1)
     {
       printf("Global processor %d with local rank %d finished normally\n",
-          Core::Communication::my_mpi_rank(*gcomm), Core::Communication::my_mpi_rank(*lcomm));
-      gcomm->Barrier();
+          Core::Communication::my_mpi_rank(gcomm), Core::Communication::my_mpi_rank(lcomm));
+      Core::Communication::barrier(gcomm);
     }
     else
     {
-      gcomm->Barrier();
-      printf("processor %d finished normally\n", Core::Communication::my_mpi_rank(*lcomm));
+      Core::Communication::barrier(gcomm);
+      printf("processor %d finished normally\n", Core::Communication::my_mpi_rank(lcomm));
     }
   }
 

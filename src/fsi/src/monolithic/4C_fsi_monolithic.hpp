@@ -102,8 +102,7 @@ namespace FSI
   class MonolithicBase : public Adapter::AlgorithmBase
   {
    public:
-    /// create using a Epetra_Comm
-    explicit MonolithicBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit MonolithicBase(MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
 
     /// read restart data
@@ -296,7 +295,7 @@ namespace FSI
     friend class FSI::Utils::MonolithicDebugWriter;
 
    public:
-    explicit Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit Monolithic(MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
     ///
     /*! do the setup for the monolithic system
@@ -987,7 +986,7 @@ namespace FSI
   class BlockMonolithic : public Monolithic
   {
    public:
-    explicit BlockMonolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit BlockMonolithic(MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
     //! @name NOX methods
     //@{

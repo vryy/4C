@@ -173,8 +173,8 @@ namespace Core::IO
     /// find control file entry to given time step
     void find_result_group(int step, MAP* file);
 
-    /// access the Epetra_Comm object
-    [[nodiscard]] const Epetra_Comm& get_comm() const;
+    /// access the MPI_Comm object
+    [[nodiscard]] MPI_Comm get_comm() const;
 
     MAP* restart_step_map() { return restart_step_; }
 
@@ -386,8 +386,8 @@ namespace Core::IO
     /// empty constructor (only used for the construction of derived classes)
     DiscretizationWriter();
 
-    /// access the Epetra_Comm object
-    [[nodiscard]] const Epetra_Comm& get_comm() const;
+    /// access the MPI_Comm object
+    [[nodiscard]] MPI_Comm get_comm() const;
 
     /*!
       \brief write a knotvector for a nurbs discretisation

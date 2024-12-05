@@ -20,8 +20,7 @@ namespace POROMULTIPHASE
   class PoroMultiPhasePartitioned : public PoroMultiPhaseBase
   {
    public:
-    /// create using a Epetra_Comm
-    PoroMultiPhasePartitioned(const Epetra_Comm& comm,
+    PoroMultiPhasePartitioned(MPI_Comm comm,
         const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
 

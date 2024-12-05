@@ -625,10 +625,10 @@ namespace ScaTra
 
     //! output performance statistics associated with nonlinear solver into *.csv file
     static void output_nonlin_solver_stats(
-        const int& iterations,   //!< iteration count of nonlinear solver
-        const double& time,      //!< solver time maximized over all processors
-        const int& step,         //!< time step
-        const Epetra_Comm& comm  //!< communicator
+        const int& iterations,  //!< iteration count of nonlinear solver
+        const double& time,     //!< solver time maximized over all processors
+        const int& step,        //!< time step
+        MPI_Comm comm           //!< communicator
     );
 
     /*========================================================================*/

@@ -282,9 +282,9 @@ namespace Immersed
     \param valuetowrite2  (in) : second set of values to wrtie to row
     \param valuetowrite3  (in) : third set of values to write to row
     */
-    void write_extra_output(const Epetra_Comm& comm, const double time,
-        const std::string filenameending, const std::vector<double> valuetowrite,
-        const std::vector<double> valuetowrite2, const std::vector<double> valuetowrite3);
+    void write_extra_output(MPI_Comm comm, const double time, const std::string filenameending,
+        const std::vector<double> valuetowrite, const std::vector<double> valuetowrite2,
+        const std::vector<double> valuetowrite3);
 
 
     /*!
@@ -293,7 +293,7 @@ namespace Immersed
     \author rauch
     \date 03/17
     */
-    std::vector<double> calc_global_resultantfrom_epetra_vector(const Epetra_Comm& comm,
+    std::vector<double> calc_global_resultantfrom_epetra_vector(MPI_Comm comm,
         const Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& vec_epetra);
 
    private:
@@ -370,7 +370,7 @@ namespace Immersed
     int err = 0;
 
     // get communicator
-    const Epetra_Comm& comm = sourcedis.get_comm();
+    MPI_Comm comm = sourcedis.get_comm();
 
     // get the global problem
     Global::Problem* problem = Global::Problem::instance();
@@ -865,7 +865,7 @@ namespace Immersed
     // error flag
     int err = 0;
     // get communicator
-    const Epetra_Comm& comm = sourcedis.get_comm();
+    MPI_Comm comm = sourcedis.get_comm();
     // get the global problem
     Global::Problem* problem = Global::Problem::instance();
     // dimension of global problem
@@ -1180,7 +1180,7 @@ namespace Immersed
     int err = 0;
 
     // get communicator
-    const Epetra_Comm& comm = structdis.get_comm();
+    MPI_Comm comm = structdis.get_comm();
 
     // get the global problem
     Global::Problem* problem = Global::Problem::instance();

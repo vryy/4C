@@ -82,7 +82,8 @@ const std::vector<std::string>& PostVtiWriter::writer_p_piece_tags() const
   tags.clear();
 
   std::vector<int> allextents(numproc_ * 6);
-  field_->problem()->get_comm()->GatherAll((int*)localextent_, allextents.data(), 6);
+  Core::Communication::gather_all(
+      (int*)localextent_, allextents.data(), 6, field_->problem()->get_comm());
 
   if (myrank_ == 0)
   {
@@ -408,10 +409,10 @@ void PostVtiWriter::writer_prep_timestep()
     lorigin[i] = *collected_coords[i].begin();
     lextent[i] = *collected_coords[i].rbegin();
   }
-  field_->discretization()->get_comm().MinAll(
-      lorigin, gorigin, sizeof(lorigin) / sizeof(lorigin[0]));
-  field_->discretization()->get_comm().MaxAll(
-      lextent, gextent, sizeof(lextent) / sizeof(lextent[0]));
+  Core::Communication::min_all(
+      lorigin, gorigin, sizeof(lorigin) / sizeof(lorigin[0]), field_->discretization()->get_comm());
+  Core::Communication::max_all(
+      lextent, gextent, sizeof(lextent) / sizeof(lextent[0]), field_->discretization()->get_comm());
 
   // determine spacing and check whether it is consistent for ImageData
   for (int i = 0; i < 3; ++i)

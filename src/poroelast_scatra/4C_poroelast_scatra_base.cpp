@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
 PoroElastScaTra::PoroScatraBase::PoroScatraBase(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& timeparams)
     : AlgorithmBase(comm, timeparams),
       matchinggrid_(
           Global::Problem::instance()->poro_scatra_control_params().get<bool>("MATCHINGGRID")),
@@ -94,7 +94,7 @@ void PoroElastScaTra::PoroScatraBase::setup_system() { poro_->setup_system(); }
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
-void PoroElastScaTra::PoroScatraBase::test_results(const Epetra_Comm& comm)
+void PoroElastScaTra::PoroScatraBase::test_results(MPI_Comm comm)
 {
   Global::Problem* problem = Global::Problem::instance();
 

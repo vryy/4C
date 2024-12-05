@@ -64,7 +64,7 @@ bool PoroElastScaTra::Utils::is_poro_p1_scatra_element(const Core::Elements::Ele
 
 std::shared_ptr<PoroElastScaTra::PoroScatraBase>
 PoroElastScaTra::Utils::create_poro_scatra_algorithm(
-    const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
+    const Teuchos::ParameterList& timeparams, MPI_Comm comm)
 {
   Global::Problem* problem = Global::Problem::instance();
 
@@ -190,7 +190,8 @@ void PoroElastScaTra::Utils::create_volume_ghosting(Core::FE::Discretization& id
     }
 
     // re-build element column map
-    Epetra_Map newelecolmap(-1, static_cast<int>(rdata.size()), rdata.data(), 0, voldi->get_comm());
+    Epetra_Map newelecolmap(-1, static_cast<int>(rdata.size()), rdata.data(), 0,
+        Core::Communication::as_epetra_comm(voldi->get_comm()));
     rdata.clear();
 
     // redistribute the volume discretization according to the

@@ -24,7 +24,7 @@ namespace FLD
   {
    public:
     /// constructor
-    explicit TurbulentFlowAlgorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& fdyn);
+    explicit TurbulentFlowAlgorithm(MPI_Comm comm, const Teuchos::ParameterList& fdyn);
 
     /// virtual destructor
     virtual ~TurbulentFlowAlgorithm() = default;

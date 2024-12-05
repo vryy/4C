@@ -29,7 +29,7 @@ namespace POROMULTIPHASE
   namespace Utils
   {
     /// setup discretizations and dofsets
-    std::map<int, std::set<int>> setup_discretizations_and_field_coupling(const Epetra_Comm& comm,
+    std::map<int, std::set<int>> setup_discretizations_and_field_coupling(MPI_Comm comm,
         const std::string& struct_disname, const std::string& fluid_disname, int& nds_disp,
         int& nds_vel, int& nds_solidpressure);
 
@@ -42,7 +42,7 @@ namespace POROMULTIPHASE
         Inpar::POROMULTIPHASE::SolutionSchemeOverFields
             solscheme,                             //!< solution scheme to build (i)
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
-        const Epetra_Comm& comm                    //!< communicator(i)
+        MPI_Comm comm                              //!< communicator(i)
     );
 
     //! Determine norm of vector

@@ -43,7 +43,7 @@ namespace Immersed
   {
    public:
     /// setup partitioned ImmersedFSI algorithm
-    explicit ImmersedPartitionedFSIDirichletNeumann(const Epetra_Comm& comm);
+    explicit ImmersedPartitionedFSIDirichletNeumann(MPI_Comm comm);
 
     /*! \brief Initialize this object
 

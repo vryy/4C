@@ -17,11 +17,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ScaTra::ScaTraAlgorithm::ScaTraAlgorithm(const Epetra_Comm& comm,  ///< communicator
-    const Teuchos::ParameterList& scatradyn,                       ///< scatra parameter list
-    const Teuchos::ParameterList& fdyn,                            ///< fluid parameter list
-    const std::string scatra_disname,                              ///< scatra discretization name
-    const Teuchos::ParameterList& solverparams                     ///< solver parameter list
+ScaTra::ScaTraAlgorithm::ScaTraAlgorithm(MPI_Comm comm,  ///< communicator
+    const Teuchos::ParameterList& scatradyn,             ///< scatra parameter list
+    const Teuchos::ParameterList& fdyn,                  ///< fluid parameter list
+    const std::string scatra_disname,                    ///< scatra discretization name
+    const Teuchos::ParameterList& solverparams           ///< solver parameter list
     )
     : ScaTraFluidCouplingAlgorithm(comm, scatradyn, false, scatra_disname, solverparams),
       natconv_(scatradyn.get<bool>("NATURAL_CONVECTION")),

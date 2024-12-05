@@ -18,8 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::GeometricSearch
 {
   GeometricSearchVisualization::GeometricSearchVisualization(
-      Core::IO::VisualizationParameters parameters, const Epetra_Comm& comm,
-      std::string base_output_name)
+      Core::IO::VisualizationParameters parameters, MPI_Comm comm, std::string base_output_name)
       : Core::IO::VisualizationManager(std::move(parameters), comm, std::move(base_output_name))
   {
     my_rank_ = Core::Communication::my_mpi_rank(comm);

@@ -1048,8 +1048,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_additional_dbc_for_vol_frac_press()
 
   // build map
   int nummydirichvals = mydirichdofs.size();
-  std::shared_ptr<Epetra_Map> dirichmap = std::make_shared<Epetra_Map>(
-      -1, nummydirichvals, mydirichdofs.data(), 0, discret_->get_comm());
+  std::shared_ptr<Epetra_Map> dirichmap = std::make_shared<Epetra_Map>(-1, nummydirichvals,
+      mydirichdofs.data(), 0, Core::Communication::as_epetra_comm(discret_->get_comm()));
 
   // build vector of maps
   std::vector<std::shared_ptr<const Epetra_Map>> condmaps;
@@ -1107,8 +1107,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_starting_dbc()
   }
 
   // build combined DBC map
-  std::shared_ptr<Epetra_Map> additional_map = std::make_shared<Epetra_Map>(
-      -1, dirichlet_dofs.size(), dirichlet_dofs.data(), 0, discret_->get_comm());
+  std::shared_ptr<Epetra_Map> additional_map =
+      std::make_shared<Epetra_Map>(-1, dirichlet_dofs.size(), dirichlet_dofs.data(), 0,
+          Core::Communication::as_epetra_comm(discret_->get_comm()));
 
   std::vector<std::shared_ptr<const Epetra_Map>> condition_maps;
   condition_maps.emplace_back(additional_map);

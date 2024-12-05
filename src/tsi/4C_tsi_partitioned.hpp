@@ -44,8 +44,7 @@ namespace TSI
   class Partitioned : public Algorithm
   {
    public:
-    //! create using a Epetra_Comm
-    explicit Partitioned(const Epetra_Comm& comm);
+    explicit Partitioned(MPI_Comm comm);
 
 
     //! outer level time loop (to be implemented by deriving classes)

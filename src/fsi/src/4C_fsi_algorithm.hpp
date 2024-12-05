@@ -15,8 +15,6 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -56,8 +54,7 @@ namespace FSI
   class Algorithm : public Adapter::AlgorithmBase
   {
    public:
-    /// create using a Epetra_Comm
-    explicit Algorithm(const Epetra_Comm& comm);
+    explicit Algorithm(MPI_Comm comm);
 
 
     /// setup this object

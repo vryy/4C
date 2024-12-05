@@ -136,7 +136,7 @@ void Core::Utils::ResultTestManager::add_field_test(std::shared_ptr<ResultTest> 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Utils::ResultTestManager::test_all(const Epetra_Comm& comm)
+void Core::Utils::ResultTestManager::test_all(MPI_Comm comm)
 {
   int nerr = 0;                      // number of tests with errors
   int test_count = 0;                // number of tests performed

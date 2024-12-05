@@ -31,7 +31,6 @@
 #include "4C_structure_aux.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Comm.h>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -39,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 FSI::MortarMonolithicFluidSplitSaddlePoint::MortarMonolithicFluidSplitSaddlePoint(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& timeparams)
     : BlockMonolithic(comm, timeparams), comm_(comm)
 {
   // ---------------------------------------------------------------------------
@@ -282,8 +281,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::create_lagrange_multiplier_dof_
   const int num_loc_elem_fluid_interface =
       fluid_field()->interface()->fsi_cond_map()->NumMyElements();
   const int max_gid_ale = ale_field()->dof_row_map()->MaxAllGID();
-  lag_mult_dof_map_ = std::make_shared<Epetra_Map>(
-      num_glob_elem_fluid_interface, num_loc_elem_fluid_interface, max_gid_ale + 1, comm_);
+  lag_mult_dof_map_ = std::make_shared<Epetra_Map>(num_glob_elem_fluid_interface,
+      num_loc_elem_fluid_interface, max_gid_ale + 1, Core::Communication::as_epetra_comm(comm_));
 }
 
 /*----------------------------------------------------------------------------*/

@@ -45,8 +45,7 @@ namespace PoroMultiPhaseScaTra
   class PoroMultiPhaseScaTraBase : public Adapter::AlgorithmBase
   {
    public:
-    //! create using a Epetra_Comm
-    PoroMultiPhaseScaTraBase(const Epetra_Comm& comm,
+    PoroMultiPhaseScaTraBase(MPI_Comm comm,
         const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
     //! initialization

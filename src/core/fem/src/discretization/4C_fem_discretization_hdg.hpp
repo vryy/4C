@@ -14,8 +14,6 @@
 #include "4C_fem_discretization_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <memory>
 #include <string>
 
@@ -45,8 +43,7 @@ namespace Core::FE
     \param comm : Epetra comm object associated with this discretization
     \param n_dim: number of space dimensions of this discretization
     */
-    DiscretizationHDG(
-        const std::string name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim);
+    DiscretizationHDG(const std::string name, MPI_Comm comm, unsigned int n_dim);
 
 
     /*!
@@ -99,7 +96,7 @@ namespace Core::FE
      *
      *  schoeder 06/14
      */
-    void assign_global_i_ds(const Epetra_Comm& comm,
+    void assign_global_i_ds(MPI_Comm comm,
         const std::map<std::vector<int>, std::shared_ptr<Core::Elements::Element>>& elementmap,
         std::map<int, std::shared_ptr<Core::Elements::Element>>& finalelements) override;
 

@@ -62,7 +62,7 @@ bool PoroElast::Utils::is_poro_p1_element(const Core::Elements::Element* actele)
 }
 
 std::shared_ptr<PoroElast::PoroBase> PoroElast::Utils::create_poro_algorithm(
-    const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm, bool setup_solver,
+    const Teuchos::ParameterList& timeparams, MPI_Comm comm, bool setup_solver,
     std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter)
 {
   Global::Problem* problem = Global::Problem::instance();
@@ -233,7 +233,8 @@ void PoroElast::Utils::create_volume_ghosting(Core::FE::Discretization& idiscret
     }
 
     // re-build element column map
-    Epetra_Map newelecolmap(-1, static_cast<int>(rdata.size()), rdata.data(), 0, voldi->get_comm());
+    Epetra_Map newelecolmap(-1, static_cast<int>(rdata.size()), rdata.data(), 0,
+        Core::Communication::as_epetra_comm(voldi->get_comm()));
     rdata.clear();
 
     // redistribute the volume discretization according to the

@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 ParticleInteraction::ParticleInteractionDEM::ParticleInteractionDEM(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    MPI_Comm comm, const Teuchos::ParameterList& params)
     : ParticleInteraction::ParticleInteractionBase(comm, params),
       params_dem_(params.sublist("DEM")),
       writeparticleenergy_(params_dem_.get<bool>("WRITE_PARTICLE_ENERGY"))

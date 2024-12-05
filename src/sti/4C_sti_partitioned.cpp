@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------------*
  | constructor                                                         fang 09/17 |
  *--------------------------------------------------------------------------------*/
-STI::Partitioned::Partitioned(const Epetra_Comm& comm,  //! communicator
-    const Teuchos::ParameterList& stidyn,  //! parameter list for scatra-thermo interaction
+STI::Partitioned::Partitioned(MPI_Comm comm,  //! communicator
+    const Teuchos::ParameterList& stidyn,     //! parameter list for scatra-thermo interaction
     const Teuchos::ParameterList&
         scatradyn,  //! scalar transport parameter list for scatra and thermo fields
     const Teuchos::ParameterList& solverparams_scatra,  //! solver parameter list for scatra field

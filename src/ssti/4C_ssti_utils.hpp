@@ -15,7 +15,6 @@
 #include "4C_sti_clonestrategy.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
 
 FOUR_C_NAMESPACE_OPEN
 

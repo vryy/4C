@@ -72,13 +72,14 @@ int Utils::Cardiovascular0DDofSet::assign_degrees_of_freedom(
     count = mor->get_red_dim();
 
   // dofrowmap with index base = count, which is undesired
-  Epetra_Map dofrowmap(ndofs, count, dis->get_comm());
+  Epetra_Map dofrowmap(ndofs, count, Core::Communication::as_epetra_comm(dis->get_comm()));
 
   std::vector<int> gids;
   for (int i = 0; i < dofrowmap.NumMyElements(); i++) gids.push_back(dofrowmap.GID(i));
 
   // dofrowmap with index base = 0
-  dofrowmap_ = std::make_shared<Epetra_Map>(-1, gids.size(), gids.data(), 0, dis->get_comm());
+  dofrowmap_ = std::make_shared<Epetra_Map>(
+      -1, gids.size(), gids.data(), 0, Core::Communication::as_epetra_comm(dis->get_comm()));
 
   return count;
 }

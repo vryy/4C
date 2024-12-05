@@ -47,8 +47,7 @@ namespace CONTACT
     */
     PenaltyStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<std::shared_ptr<CONTACT::Interface>> interface,
-        const int spatialDim, const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf,
-        const int maxdof);
+        const int spatialDim, const MPI_Comm& comm, const double alphaf, const int maxdof);
 
     /*!
     \brief Shared data constructor
@@ -66,7 +65,7 @@ namespace CONTACT
     PenaltyStrategy(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<std::shared_ptr<CONTACT::Interface>> interface, const int spatialDim,
-        const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
+        const MPI_Comm& comm, const double alphaf, const int maxdof);
 
     //! @name Access methods
 

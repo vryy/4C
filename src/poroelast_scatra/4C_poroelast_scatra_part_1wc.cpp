@@ -91,7 +91,7 @@ void PoroElastScaTra::PoroScatraPart1WC::output()
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 PoroElastScaTra::PoroScatraPart1WCPoroToScatra::PoroScatraPart1WCPoroToScatra(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraPart1WC(comm, timeparams)
 {
   if (Core::Communication::my_mpi_rank(comm) == 0)
@@ -171,7 +171,7 @@ void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::read_restart(int restart)
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 PoroElastScaTra::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    MPI_Comm comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraPart1WC(comm, timeparams)
 {
   if (Core::Communication::my_mpi_rank(comm) == 0)

@@ -17,7 +17,6 @@
 #include "4C_particle_engine_container.hpp"
 #include "4C_particle_engine_container_bundle.hpp"
 
-#include <Epetra_Comm.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -53,7 +52,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] comm communicator
      */
-    explicit ParticleRuntimeVtpWriter(const Epetra_Comm& comm);
+    explicit ParticleRuntimeVtpWriter(MPI_Comm comm);
 
     /*!
      * \brief init particle runtime vtp writer
@@ -96,7 +95,7 @@ namespace PARTICLEENGINE
 
    private:
     //! communicator
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! particle container bundle
     ParticleContainerBundleShrdPtr particlecontainerbundle_;

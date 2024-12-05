@@ -18,8 +18,6 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <memory>
 #include <string>
 #include <vector>
@@ -160,7 +158,7 @@ namespace XFEM
        *  \author  hiermeier \date 10/16 */
       std::shared_ptr<Core::Conditions::Condition> split_condition(
           const Core::Conditions::Condition* src_cond, const std::vector<int>& nodecolvec,
-          const Epetra_Comm& comm) const;
+          MPI_Comm comm) const;
     };  // class XFEMDiscretizationBuilder
   }     // namespace Utils
 
@@ -174,8 +172,7 @@ namespace XFEM
     \param comm: Epetra comm object associated with this discretization
     \param n_dim: number of space dimensions of this discretization
     */
-    DiscretizationXWall(
-        const std::string name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim);
+    DiscretizationXWall(const std::string name, MPI_Comm comm, unsigned int n_dim);
 
 
 

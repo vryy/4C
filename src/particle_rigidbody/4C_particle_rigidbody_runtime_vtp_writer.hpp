@@ -15,8 +15,6 @@
 
 #include "4C_io_visualization_manager.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -56,7 +54,7 @@ namespace ParticleRigidBody
      *
      * \param[in] comm communicator
      */
-    explicit RigidBodyRuntimeVtpWriter(const Epetra_Comm& comm);
+    explicit RigidBodyRuntimeVtpWriter(MPI_Comm comm);
 
     /*!
      * \brief init rigid body runtime vtp writer
@@ -94,7 +92,7 @@ namespace ParticleRigidBody
 
    private:
     //! communicator
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! setup time of runtime vtp writer
     double setuptime_;

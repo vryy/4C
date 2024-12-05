@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
 CONTACT::Integrator::Integrator(
-    Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm)
+    Teuchos::ParameterList& params, Core::FE::CellType eletype, MPI_Comm comm)
     : imortar_(params),
       Comm_(comm),
       dim_(imortar_.get<int>("DIMENSION")),
@@ -573,7 +573,7 @@ void CONTACT::Integrator::initialize_gp(Core::FE::CellType eletype)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_segment_2d(Mortar::Element& sele, double& sxia,
-    double& sxib, Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
+    double& sxib, Mortar::Element& mele, double& mxia, double& mxib, MPI_Comm comm,
     const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   std::shared_ptr<CONTACT::ParamsInterface> cparams_ptr = nullptr;
@@ -594,7 +594,7 @@ void CONTACT::Integrator::integrate_deriv_segment_2d(Mortar::Element& sele, doub
  |  Also wear is integrated.                                            |
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_segment_2d(Mortar::Element& sele, double& sxia,
-    double& sxib, Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
+    double& sxib, Mortar::Element& mele, double& mxia, double& mxib, MPI_Comm comm,
     const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // skip this segment, if too small
@@ -1419,7 +1419,7 @@ bool CONTACT::Integrator::boundary_segm_check_3d(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_ele_3d(Mortar::Element& sele,
-    std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
+    std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj_, MPI_Comm comm,
     const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   std::shared_ptr<CONTACT::ParamsInterface> cparams_ptr = nullptr;
@@ -1434,7 +1434,7 @@ void CONTACT::Integrator::integrate_deriv_ele_3d(Mortar::Element& sele,
  |  Integrate and linearize for lin and quad elements        farah 01/13|
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_ele_3d(Mortar::Element& sele,
-    std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
+    std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj_, MPI_Comm comm,
     const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // explicitly defined shape function type needed
@@ -1670,8 +1670,8 @@ void CONTACT::Integrator::integrate_deriv_ele_3d(Mortar::Element& sele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane(Mortar::Element& sele,
-    Mortar::Element& mele, std::shared_ptr<Mortar::IntCell> cell, double* auxn,
-    const Epetra_Comm& comm, const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
+    Mortar::Element& mele, std::shared_ptr<Mortar::IntCell> cell, double* auxn, MPI_Comm comm,
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   std::shared_ptr<CONTACT::ParamsInterface> cparams_ptr = nullptr;
   if (mparams_ptr)
@@ -1691,8 +1691,8 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane(Mortar::Element& sel
  |  This is the auxiliary plane coupling version!!!                     |
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane(Mortar::Element& sele,
-    Mortar::Element& mele, std::shared_ptr<Mortar::IntCell> cell, double* auxn,
-    const Epetra_Comm& comm, const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr)
+    Mortar::Element& mele, std::shared_ptr<Mortar::IntCell> cell, double* auxn, MPI_Comm comm,
+    const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // explicitly defined shape function type needed
   if (shape_fcn() == Inpar::Mortar::shape_undefined)
@@ -1929,7 +1929,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane(Mortar::Element& sel
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_stl(Mortar::Element& mele,
     Mortar::Element& lele, Mortar::Element& sele, std::shared_ptr<Mortar::IntCell> cell,
-    double* auxn, const Epetra_Comm& comm)
+    double* auxn, MPI_Comm comm)
 {
   // explicitly defined shape function type needed
   if (shape_fcn() == Inpar::Mortar::shape_undefined)
@@ -2677,7 +2677,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_stl(Mortar::Element&
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_lts(Mortar::Element& sele,
     Mortar::Element& lsele, Mortar::Element& mele, std::shared_ptr<Mortar::IntCell> cell,
-    double* auxn, const Epetra_Comm& comm)
+    double* auxn, MPI_Comm comm)
 {
   // explicitly defined shape function type needed
   if (shape_fcn() == Inpar::Mortar::shape_undefined)
@@ -4417,7 +4417,7 @@ void CONTACT::Integrator::integrate_deriv_ele_2d(Mortar::Element& sele,
 /*----------------------------------------------------------------------*
  |  Integrate D                                              farah 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::integrate_d(Mortar::Element& sele, const Epetra_Comm& comm, bool lin)
+void CONTACT::Integrator::integrate_d(Mortar::Element& sele, MPI_Comm comm, bool lin)
 {
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -9544,7 +9544,7 @@ void inline CONTACT::Integrator::gp_3d_dm_lin(Mortar::Element& sele, Mortar::Ele
  *----------------------------------------------------------------------*/
 void inline CONTACT::Integrator::gp_d2(Mortar::Element& sele, Mortar::Element& mele,
     Core::LinAlg::SerialDenseVector& lm2val, Core::LinAlg::SerialDenseVector& m2val, double& jac,
-    double& wgt, const Epetra_Comm& comm)
+    double& wgt, MPI_Comm comm)
 {
   int ncol = mele.num_node();
   int ndof = n_dim();
@@ -10459,8 +10459,7 @@ void inline CONTACT::Integrator::gp_te(Mortar::Element& sele,
  *----------------------------------------------------------------------*/
 void inline CONTACT::Integrator::gp_te_master(Mortar::Element& sele, Mortar::Element& mele,
     Core::LinAlg::SerialDenseVector& lmval, Core::LinAlg::SerialDenseVector& lm2val,
-    Core::LinAlg::SerialDenseVector& mval, double& jac, double& wgt, double* jumpval,
-    const Epetra_Comm& comm)
+    Core::LinAlg::SerialDenseVector& mval, double& jac, double& wgt, double* jumpval, MPI_Comm comm)
 {
   if (sele.owner() != Core::Communication::my_mpi_rank(comm)) return;
 
@@ -10553,8 +10552,7 @@ void inline CONTACT::Integrator::gp_2d_te_master_lin(int& iter,  // like k
     const Core::Gen::Pairedvector<int, double>& derivjac,
     const Core::Gen::Pairedvector<int, double>& dsliptmatrixgp,
     const std::vector<Core::Gen::Pairedvector<int, double>>& ximaps,
-    const Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dualmap,
-    const Epetra_Comm& comm)
+    const Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dualmap, MPI_Comm comm)
 {
   if (sele.owner() != Core::Communication::my_mpi_rank(comm)) return;
 
@@ -11133,8 +11131,7 @@ void inline CONTACT::Integrator::gp_3d_te_master_lin(int& iter, Mortar::Element&
     const Core::Gen::Pairedvector<int, double>& jacintcellmap,
     const Core::Gen::Pairedvector<int, double>& dsliptmatrixgp,
     const Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dualmap,
-    const Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dual2map,
-    const Epetra_Comm& comm)
+    const Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dual2map, MPI_Comm comm)
 {
   if (sele.owner() != Core::Communication::my_mpi_rank(comm)) return;
 

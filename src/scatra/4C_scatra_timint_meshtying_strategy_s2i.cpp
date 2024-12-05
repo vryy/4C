@@ -2188,18 +2188,18 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
       }
 
       // initialize empty interface maps
-      std::shared_ptr<Epetra_Map> imastermap =
-          std::make_shared<Epetra_Map>(0, 0, scatratimint_->discretization()->get_comm());
-      std::shared_ptr<Epetra_Map> islavemap =
-          std::make_shared<Epetra_Map>(0, 0, scatratimint_->discretization()->get_comm());
-      std::shared_ptr<Epetra_Map> ifullmap =
-          std::make_shared<Epetra_Map>(0, 0, scatratimint_->discretization()->get_comm());
+      std::shared_ptr<Epetra_Map> imastermap = std::make_shared<Epetra_Map>(
+          0, 0, Core::Communication::as_epetra_comm(scatratimint_->discretization()->get_comm()));
+      std::shared_ptr<Epetra_Map> islavemap = std::make_shared<Epetra_Map>(
+          0, 0, Core::Communication::as_epetra_comm(scatratimint_->discretization()->get_comm()));
+      std::shared_ptr<Epetra_Map> ifullmap = std::make_shared<Epetra_Map>(
+          0, 0, Core::Communication::as_epetra_comm(scatratimint_->discretization()->get_comm()));
       if (imortarredistribution_)
       {
-        imastermap_ =
-            std::make_shared<Epetra_Map>(0, 0, scatratimint_->discretization()->get_comm());
-        islavemap_ =
-            std::make_shared<Epetra_Map>(0, 0, scatratimint_->discretization()->get_comm());
+        imastermap_ = std::make_shared<Epetra_Map>(
+            0, 0, Core::Communication::as_epetra_comm(scatratimint_->discretization()->get_comm()));
+        islavemap_ = std::make_shared<Epetra_Map>(
+            0, 0, Core::Communication::as_epetra_comm(scatratimint_->discretization()->get_comm()));
       }
 
       // loop over all slave-side scatra-scatra interface coupling conditions
@@ -2641,7 +2641,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
             case Inpar::S2I::coupling_mortar_saddlepoint_bubnov:
             {
               // determine number of Lagrange multiplier dofs owned by each processor
-              const Epetra_Comm& comm(scatratimint_->discretization()->get_comm());
+              MPI_Comm comm(scatratimint_->discretization()->get_comm());
               const int numproc(Core::Communication::num_mpi_ranks(comm));
               const int mypid(Core::Communication::my_mpi_rank(comm));
               std::vector<int> localnumlmdof(numproc, 0);
@@ -2666,8 +2666,9 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
                     scatratimint_->dof_row_map()->MaxAllGID() + 1 + offset + lmdoflid;
 
               // build Lagrange multiplier dofrowmap
-              const std::shared_ptr<Epetra_Map> lmdofrowmap = std::make_shared<Epetra_Map>(
-                  -1, (int)lmdofgids.size(), lmdofgids.data(), 0, comm);
+              const std::shared_ptr<Epetra_Map> lmdofrowmap =
+                  std::make_shared<Epetra_Map>(-1, (int)lmdofgids.size(), lmdofgids.data(), 0,
+                      Core::Communication::as_epetra_comm(comm));
 
               // initialize vectors associated with Lagrange multiplier dofs
               lm_ = std::make_shared<Core::LinAlg::Vector<double>>(*lmdofrowmap);
@@ -4949,7 +4950,9 @@ void ScaTra::MortarCellAssemblyStrategy::assemble_cell_vector(
 
     case Inpar::S2I::side_master:
     {
-      if (assembler_pid_master == Core::Communication::my_mpi_rank(systemvector->Comm()))
+      if (assembler_pid_master ==
+          Core::Communication::my_mpi_rank(
+              Core::Communication::unpack_epetra_comm(systemvector->Comm())))
       {
         if (std::dynamic_pointer_cast<Epetra_FEVector>(systemvector)
                 ->SumIntoGlobalValues(static_cast<int>(la_master[nds_rows_].lm_.size()),

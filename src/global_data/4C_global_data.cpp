@@ -23,7 +23,6 @@
 #include "4C_rebalance_graph_based.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
-#include <Epetra_Comm.h>
 #include <Teuchos_ParameterListExceptions.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -120,7 +119,7 @@ std::shared_ptr<Core::Communication::Communicators> Global::Problem::get_communi
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::Problem::open_control_file(const Epetra_Comm& comm, const std::string& inputfile,
+void Global::Problem::open_control_file(MPI_Comm comm, const std::string& inputfile,
     std::string prefix, const std::string& restartkenner)
 {
   if (restart())

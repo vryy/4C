@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::DirichletNeumannDisp::DirichletNeumannDisp(const Epetra_Comm& comm) : DirichletNeumann(comm)
+FSI::DirichletNeumannDisp::DirichletNeumannDisp(MPI_Comm comm) : DirichletNeumann(comm)
 {
   // empty constructor
 }

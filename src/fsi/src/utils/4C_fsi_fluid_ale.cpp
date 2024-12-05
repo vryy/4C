@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::FluidAleAlgorithm::FluidAleAlgorithm(const Epetra_Comm& comm)
+FSI::FluidAleAlgorithm::FluidAleAlgorithm(MPI_Comm comm)
     : FluidMovingBoundaryBaseAlgorithm(
           Global::Problem::instance()->fsi_dynamic_params(), "FSICoupling"),
       comm_(comm)

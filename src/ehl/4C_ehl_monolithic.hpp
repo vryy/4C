@@ -88,7 +88,7 @@ namespace EHL
   class Monolithic : public Base
   {
    public:
-    explicit Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    explicit Monolithic(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& lubricationparams, const Teuchos::ParameterList& structparams,
         const std::string struct_disname, const std::string lubrication_disname);
 

@@ -17,7 +17,6 @@
 #include "4C_particle_engine_interface.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
 FOUR_C_NAMESPACE_OPEN
@@ -71,7 +70,7 @@ namespace PARTICLEENGINE
      * \param[in] comm   communicator
      * \param[in] params particle simulation parameter list
      */
-    explicit ParticleEngine(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit ParticleEngine(MPI_Comm comm, const Teuchos::ParameterList& params);
 
     /*!
      * \brief destructor
@@ -773,7 +772,7 @@ namespace PARTICLEENGINE
     void invalidate_particle_safety_flags();
 
     //! communicator
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! processor id
     const int myrank_;

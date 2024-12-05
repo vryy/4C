@@ -24,8 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PaSI::PasiPartTwoWayCoup::PasiPartTwoWayCoup(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+PaSI::PasiPartTwoWayCoup::PasiPartTwoWayCoup(MPI_Comm comm, const Teuchos::ParameterList& params)
     : PartitionedAlgo(comm, params),
       itmax_(params.get<int>("ITEMAX")),
       convtolrelativedisp_(params.get<double>("CONVTOLRELATIVEDISP")),
@@ -476,7 +475,7 @@ void PaSI::PasiPartTwoWayCoup::save_particle_states()
 }
 
 PaSI::PasiPartTwoWayCoupDispRelax::PasiPartTwoWayCoupDispRelax(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    MPI_Comm comm, const Teuchos::ParameterList& params)
     : PasiPartTwoWayCoup(comm, params), omega_(params.get<double>("STARTOMEGA"))
 {
   // empty constructor
@@ -590,7 +589,7 @@ void PaSI::PasiPartTwoWayCoupDispRelax::perform_relaxation_interface_states()
 }
 
 PaSI::PasiPartTwoWayCoupDispRelaxAitken::PasiPartTwoWayCoupDispRelaxAitken(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    MPI_Comm comm, const Teuchos::ParameterList& params)
     : PasiPartTwoWayCoupDispRelax(comm, params),
       maxomega_(params.get<double>("MAXOMEGA")),
       minomega_(params.get<double>("MINOMEGA"))

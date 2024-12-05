@@ -51,7 +51,7 @@ namespace
     void SetUp() override
     {
       create_material_in_global_problem();
-      comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD);
+      comm_ = MPI_COMM_WORLD;
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
       testdis_ = std::make_shared<Core::FE::Discretization>("dummy", comm_, 3);
     }
@@ -61,7 +61,7 @@ namespace
    public:
     Core::IO::GridGenerator::RectangularCuboidInputs inputData_{};
     std::shared_ptr<Core::FE::Discretization> testdis_;
-    std::shared_ptr<Epetra_Comm> comm_;
+    MPI_Comm comm_;
 
     Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };
@@ -79,7 +79,7 @@ namespace
     Core::Nodes::Node* lastNode = testdis_->l_row_node(testdis_->num_my_row_nodes() - 1);
     const auto nodePosition = lastNode->x();
 
-    if (Core::Communication::my_mpi_rank(*comm_) == 0)
+    if (Core::Communication::my_mpi_rank(comm_) == 0)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
@@ -90,7 +90,7 @@ namespace
       EXPECT_EQ(testdis_->num_my_col_elements(), 300);
       EXPECT_EQ(lastNode->id(), 2557);
     }
-    else if (Core::Communication::my_mpi_rank(*comm_) == 1)
+    else if (Core::Communication::my_mpi_rank(comm_) == 1)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
@@ -101,7 +101,7 @@ namespace
       EXPECT_EQ(testdis_->num_my_col_elements(), 300);
       EXPECT_EQ(lastNode->id(), 4867);
     }
-    else if (Core::Communication::my_mpi_rank(*comm_) == 2)
+    else if (Core::Communication::my_mpi_rank(comm_) == 2)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
@@ -128,7 +128,7 @@ namespace
     Core::Nodes::Node* lastNode = testdis_->l_row_node(testdis_->num_my_row_nodes() - 1);
     const auto nodePosition = lastNode->x();
 
-    if (Core::Communication::my_mpi_rank(*comm_) == 0)
+    if (Core::Communication::my_mpi_rank(comm_) == 0)
     {
       EXPECT_NEAR(nodePosition[0], -0.3, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
@@ -139,7 +139,7 @@ namespace
       EXPECT_EQ(testdis_->num_my_col_elements(), 596);
       EXPECT_EQ(lastNode->id(), 4859);
     }
-    else if (Core::Communication::my_mpi_rank(*comm_) == 1)
+    else if (Core::Communication::my_mpi_rank(comm_) == 1)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 0.75, 1e-14);
@@ -150,7 +150,7 @@ namespace
       EXPECT_EQ(testdis_->num_my_col_elements(), 590);
       EXPECT_EQ(lastNode->id(), 4757);
     }
-    else if (Core::Communication::my_mpi_rank(*comm_) == 2)
+    else if (Core::Communication::my_mpi_rank(comm_) == 2)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);

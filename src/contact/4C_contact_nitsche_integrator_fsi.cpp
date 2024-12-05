@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::IntegratorNitscheFsi::IntegratorNitscheFsi(
-    Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm)
+    Teuchos::ParameterList& params, Core::FE::CellType eletype, MPI_Comm comm)
     : IntegratorNitsche(params, eletype, comm), ele_contact_state_(-2)
 {
   if (fabs(theta_) > 1e-12)
@@ -36,7 +36,7 @@ CONTACT::IntegratorNitscheFsi::IntegratorNitscheFsi(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::IntegratorNitscheFsi::integrate_deriv_ele_3d(Mortar::Element& sele,
-    std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
+    std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj_, MPI_Comm comm,
     const std::shared_ptr<Mortar::ParamsInterface>& cparams_ptr)
 {
   auto* csele = dynamic_cast<CONTACT::Element*>(&sele);

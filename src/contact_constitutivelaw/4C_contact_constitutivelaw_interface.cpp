@@ -24,8 +24,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
     const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData, const int id,
-    const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-    bool selfcontact, const int contactconstitutivelawid)
+    MPI_Comm comm, const int dim, const Teuchos::ParameterList& icontact, bool selfcontact,
+    const int contactconstitutivelawid)
     : Interface(interfaceData, id, comm, dim, icontact, selfcontact)
 {
   std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw =

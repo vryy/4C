@@ -92,13 +92,12 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
       Global::Problem::instance(0)->get_dis("structure")->element_row_map()->MyGID(eleGID);
 
   // get sub communicator including the supporting procs
-  std::shared_ptr<Epetra_Comm> subcomm =
-      Global::Problem::instance(0)->get_communicators()->sub_comm();
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
 
   // tell the supporting procs that the micro material will be evaluated
   int task[2] = {
       static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::evaluate), eleGID};
-  subcomm->Broadcast(task, 2, 0);
+  Core::Communication::broadcast(task, 2, 0, subcomm);
 
   // container is filled with data for supporting procs
   std::map<int, std::shared_ptr<MultiScale::MicroStaticParObject>> condnamemap;
@@ -127,9 +126,9 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // maps are created and data is broadcast to the supporting procs
   int tag = 0;
-  Epetra_Map oldmap(1, 1, &tag, 0, *subcomm);
-  Epetra_Map newmap(1, 1, &tag, 0, *subcomm);
-  Core::Communication::Exporter exporter(oldmap, newmap, *subcomm);
+  Epetra_Map oldmap(1, 1, &tag, 0, Core::Communication::as_epetra_comm(subcomm));
+  Epetra_Map newmap(1, 1, &tag, 0, Core::Communication::as_epetra_comm(subcomm));
+  Core::Communication::Exporter exporter(oldmap, newmap, subcomm);
   exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
 
   // standard evaluation of the micro material
@@ -162,15 +161,14 @@ double Mat::MicroMaterial::density() const { return density_; }
 void Mat::MicroMaterial::post_setup()
 {
   // get sub communicator including the supporting procs
-  std::shared_ptr<Epetra_Comm> subcomm =
-      Global::Problem::instance(0)->get_communicators()->sub_comm();
-  if (Core::Communication::my_mpi_rank(*subcomm) == 0)
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  if (Core::Communication::my_mpi_rank(subcomm) == 0)
   {
     // tell the supporting procs that the micro material will call post_setup
     int eleID = matgp_.begin()->second->ele_id();
     int task[2] = {
         static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::post_setup), eleID};
-    subcomm->Broadcast(task, 2, 0);
+    Core::Communication::broadcast(task, 2, 0, subcomm);
   }
 
   for (const auto& micromatgp : matgp_)
@@ -206,16 +204,15 @@ void Mat::MicroMaterial::evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
 void Mat::MicroMaterial::update()
 {
   // get sub communicator including the supporting procs
-  std::shared_ptr<Epetra_Comm> subcomm =
-      Global::Problem::instance(0)->get_communicators()->sub_comm();
-  if (Core::Communication::my_mpi_rank(*subcomm) == 0)
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  if (Core::Communication::my_mpi_rank(subcomm) == 0)
   {
     // tell the supporting procs that the micro material will be evaluated for the element with id
     // eleID
     int eleID = matgp_.begin()->second->ele_id();
     int task[2] = {
         static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::update), eleID};
-    subcomm->Broadcast(task, 2, 0);
+    Core::Communication::broadcast(task, 2, 0, subcomm);
   }
 
   for (const auto& micromatgp : matgp_)
@@ -229,15 +226,14 @@ void Mat::MicroMaterial::update()
 void Mat::MicroMaterial::prepare_output()
 {
   // get sub communicator including the supporting procs
-  std::shared_ptr<Epetra_Comm> subcomm =
-      Global::Problem::instance(0)->get_communicators()->sub_comm();
-  if (Core::Communication::my_mpi_rank(*subcomm) == 0)
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  if (Core::Communication::my_mpi_rank(subcomm) == 0)
   {
     // tell the supporting procs that the micro material will be prepared for output
     int eleID = matgp_.begin()->second->ele_id();
     int task[2] = {
         static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::prepare_output), eleID};
-    subcomm->Broadcast(task, 2, 0);
+    Core::Communication::broadcast(task, 2, 0, subcomm);
   }
 
   for (const auto& micromatgp : matgp_)
@@ -251,16 +247,15 @@ void Mat::MicroMaterial::prepare_output()
 void Mat::MicroMaterial::output_step_state()
 {
   // get sub communicator including the supporting procs
-  std::shared_ptr<Epetra_Comm> subcomm =
-      Global::Problem::instance(0)->get_communicators()->sub_comm();
-  if (Core::Communication::my_mpi_rank(*subcomm) == 0)
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  if (Core::Communication::my_mpi_rank(subcomm) == 0)
   {
     // tell the supporting procs that the micro material will be output
     int eleID = matgp_.begin()->second->ele_id();
     int task[2] = {
         static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::output_step_state),
         eleID};
-    subcomm->Broadcast(task, 2, 0);
+    Core::Communication::broadcast(task, 2, 0, subcomm);
   }
 
   for (const auto& micromatgp : matgp_)
@@ -274,15 +269,14 @@ void Mat::MicroMaterial::output_step_state()
 void Mat::MicroMaterial::write_restart()
 {
   // get sub communicator including the supporting procs
-  std::shared_ptr<Epetra_Comm> subcomm =
-      Global::Problem::instance(0)->get_communicators()->sub_comm();
-  if (Core::Communication::my_mpi_rank(*subcomm) == 0)
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  if (Core::Communication::my_mpi_rank(subcomm) == 0)
   {
     // tell the supporting procs that the micro material will be output
     int eleID = matgp_.begin()->second->ele_id();
     int task[2] = {
         static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::write_restart), eleID};
-    subcomm->Broadcast(task, 2, 0);
+    Core::Communication::broadcast(task, 2, 0, subcomm);
   }
 
   for (const auto& micromatgp : matgp_)
@@ -299,13 +293,12 @@ void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
   double V0 = init_vol();
 
   // get sub communicator including the supporting procs
-  std::shared_ptr<Epetra_Comm> subcomm =
-      Global::Problem::instance(0)->get_communicators()->sub_comm();
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
 
   // tell the supporting procs that the micro material will restart
   int task[2] = {
       static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::read_restart), eleID};
-  subcomm->Broadcast(task, 2, 0);
+  Core::Communication::broadcast(task, 2, 0, subcomm);
 
   // container is filled with data for supporting procs
   std::map<int, std::shared_ptr<MultiScale::MicroStaticParObject>> condnamemap;
@@ -320,9 +313,9 @@ void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
 
   // maps are created and data is broadcast to the supporting procs
   int tag = 0;
-  Epetra_Map oldmap(1, 1, &tag, 0, *subcomm);
-  Epetra_Map newmap(1, 1, &tag, 0, *subcomm);
-  Core::Communication::Exporter exporter(oldmap, newmap, *subcomm);
+  Epetra_Map oldmap(1, 1, &tag, 0, Core::Communication::as_epetra_comm(subcomm));
+  Epetra_Map newmap(1, 1, &tag, 0, Core::Communication::as_epetra_comm(subcomm));
+  Core::Communication::Exporter exporter(oldmap, newmap, subcomm);
   exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
 
   if (matgp_.find(gp) == matgp_.end())

@@ -18,7 +18,6 @@
 #include "4C_utils_result_test.hpp"
 #include "4C_utils_std_cxx20_ranges.hpp"
 
-#include <Epetra_Comm.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 
 #include <memory>
@@ -180,8 +179,8 @@ namespace Global
     @param[in] prefix
     @param[in] restartkenner
     */
-    void open_control_file(const Epetra_Comm& comm, const std::string& inputfile,
-        std::string prefix, const std::string& restartkenner);
+    void open_control_file(MPI_Comm comm, const std::string& inputfile, std::string prefix,
+        const std::string& restartkenner);
 
     /// control file for restart read
     std::shared_ptr<Core::IO::InputControl> input_control_file() { return inputcontrol_; }
@@ -525,7 +524,7 @@ namespace Global
     /// @name Result Tests
 
     /// Do the testing
-    void test_all(const Epetra_Comm& comm) { resulttest_.test_all(comm); }
+    void test_all(MPI_Comm comm) { resulttest_.test_all(comm); }
 
     /// add field specific result test object
     void add_field_test(std::shared_ptr<Core::Utils::ResultTest> test)

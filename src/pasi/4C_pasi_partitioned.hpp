@@ -64,7 +64,7 @@ namespace PaSI
      * \param[in] comm   communicator
      * \param[in] params particle structure interaction parameter list
      */
-    explicit PartitionedAlgo(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit PartitionedAlgo(MPI_Comm comm, const Teuchos::ParameterList& params);
 
     /*!
      * \brief init pasi algorithm
@@ -103,7 +103,7 @@ namespace PaSI
      *
      * \param[in] comm communicator
      */
-    void test_results(const Epetra_Comm& comm);
+    void test_results(MPI_Comm comm);
 
     //! get initialization status
     bool is_init() { return isinit_; };

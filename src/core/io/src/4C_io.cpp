@@ -419,7 +419,7 @@ void Core::IO::DiscretizationReader::find_result_group(int step, MAP* file)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Comm& Core::IO::DiscretizationReader::get_comm() const { return dis_->get_comm(); }
+MPI_Comm Core::IO::DiscretizationReader::get_comm() const { return dis_->get_comm(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -597,7 +597,7 @@ Core::IO::DiscretizationWriter::~DiscretizationWriter()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Comm& Core::IO::DiscretizationWriter::get_comm() const { return dis_->get_comm(); }
+MPI_Comm Core::IO::DiscretizationWriter::get_comm() const { return dis_->get_comm(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

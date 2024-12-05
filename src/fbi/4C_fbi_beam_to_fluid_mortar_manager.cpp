@@ -109,8 +109,8 @@ void BeamInteraction::BeamToFluidMortarManager::setup()
   std::vector<int> lambda_dof_per_rank(
       Core::Communication::num_mpi_ranks(discretization_structure_->get_comm()), 0);
   int temp_my_n_lambda_dof = (int)n_lambda_dof;
-  discretization_structure_->get_comm().GatherAll(
-      &temp_my_n_lambda_dof, lambda_dof_per_rank.data(), 1);
+  Core::Communication::gather_all(
+      &temp_my_n_lambda_dof, lambda_dof_per_rank.data(), 1, discretization_structure_->get_comm());
 
   // Get the start GID for the lambda DOFs on this processor.
   int my_lambda_gid_start_value = start_value_lambda_gid_;
@@ -124,17 +124,17 @@ void BeamInteraction::BeamToFluidMortarManager::setup()
     my_lambda_gid[my_lid] = my_lambda_gid_start_value + my_lid;
 
   // Rowmap for the additional GIDs used by the mortar contact discretization.
-  lambda_dof_rowmap_ = std::make_shared<Epetra_Map>(
-      -1, my_lambda_gid.size(), my_lambda_gid.data(), 0, discretization_structure_->get_comm());
+  lambda_dof_rowmap_ = std::make_shared<Epetra_Map>(-1, my_lambda_gid.size(), my_lambda_gid.data(),
+      0, Core::Communication::as_epetra_comm(discretization_structure_->get_comm()));
 
 
   // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id
   // of a node or element. To do so, we 'abuse' the Core::LinAlg::MultiVector<double> as map between
   // the global node / element ids and the global Lagrange multiplier DOF ids.
-  Epetra_Map node_gid_rowmap(
-      -1, n_nodes, my_nodes_gid.data(), 0, discretization_structure_->get_comm());
-  Epetra_Map element_gid_rowmap(
-      -1, n_element, my_elements_gid.data(), 0, discretization_structure_->get_comm());
+  Epetra_Map node_gid_rowmap(-1, n_nodes, my_nodes_gid.data(), 0,
+      Core::Communication::as_epetra_comm(discretization_structure_->get_comm()));
+  Epetra_Map element_gid_rowmap(-1, n_element, my_elements_gid.data(), 0,
+      Core::Communication::as_epetra_comm(discretization_structure_->get_comm()));
 
   // Map from global node / element ids to global lagrange multiplier ids. Only create the
   // multivector if it hase one or more columns.
@@ -218,10 +218,10 @@ void BeamInteraction::BeamToFluidMortarManager::set_global_maps()
   }
 
   // Create the beam and fluid maps.
-  beam_dof_rowmap_ = std::make_shared<Epetra_Map>(
-      -1, field_dofs[0].size(), field_dofs[0].data(), 0, discretization_structure_->get_comm());
-  fluid_dof_rowmap_ = std::make_shared<Epetra_Map>(
-      -1, field_dofs[1].size(), field_dofs[1].data(), 0, discretization_fluid_->get_comm());
+  beam_dof_rowmap_ = std::make_shared<Epetra_Map>(-1, field_dofs[0].size(), field_dofs[0].data(), 0,
+      Core::Communication::as_epetra_comm(discretization_structure_->get_comm()));
+  fluid_dof_rowmap_ = std::make_shared<Epetra_Map>(-1, field_dofs[1].size(), field_dofs[1].data(),
+      0, Core::Communication::as_epetra_comm(discretization_fluid_->get_comm()));
 
   // Reset the local maps.
   node_gid_to_lambda_gid_map_.clear();
@@ -282,10 +282,10 @@ void BeamInteraction::BeamToFluidMortarManager::set_local_maps(
   element_gid_needed.resize(std::distance(element_gid_needed.begin(), it));
 
   // Create the maps for the extraction of the values.
-  Epetra_Map node_gid_needed_rowmap(
-      -1, node_gid_needed.size(), node_gid_needed.data(), 0, discretization_structure_->get_comm());
+  Epetra_Map node_gid_needed_rowmap(-1, node_gid_needed.size(), node_gid_needed.data(), 0,
+      Core::Communication::as_epetra_comm(discretization_structure_->get_comm()));
   Epetra_Map element_gid_needed_rowmap(-1, element_gid_needed.size(), element_gid_needed.data(), 0,
-      discretization_structure_->get_comm());
+      Core::Communication::as_epetra_comm(discretization_structure_->get_comm()));
 
   // Create the Multivectors that will be filled with all values needed on this rank.
   std::shared_ptr<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_copy = nullptr;
@@ -334,8 +334,9 @@ void BeamInteraction::BeamToFluidMortarManager::set_local_maps(
   }
 
   // Create the global lambda col map.
-  lambda_dof_colmap_ = std::make_shared<Epetra_Map>(-1, lambda_gid_for_col_map.size(),
-      lambda_gid_for_col_map.data(), 0, discretization_structure_->get_comm());
+  lambda_dof_colmap_ =
+      std::make_shared<Epetra_Map>(-1, lambda_gid_for_col_map.size(), lambda_gid_for_col_map.data(),
+          0, Core::Communication::as_epetra_comm(discretization_structure_->get_comm()));
 
   // Set flags for local maps.
   is_local_maps_build_ = true;

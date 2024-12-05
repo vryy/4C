@@ -195,7 +195,8 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Mortar::matrix_col_transform_gids(
 
   // mapping of column gids
   std::map<int, int> gidmap;
-  Core::Communication::Exporter ex(inmat.domain_map(), inmat.col_map(), inmat.Comm());
+  Core::Communication::Exporter ex(
+      inmat.domain_map(), inmat.col_map(), Core::Communication::unpack_epetra_comm(inmat.Comm()));
   for (int i = 0; i < inmat.domain_map().NumMyElements(); ++i)
     gidmap[inmat.domain_map().GID(i)] = newdomainmap.GID(i);
   ex.do_export(gidmap);
@@ -254,7 +255,8 @@ void Mortar::create_new_col_map(const Core::LinAlg::SparseMatrix& mat,
 
   // mapping of column gids
   std::map<int, int> gidmap;
-  Core::Communication::Exporter exDomain2Col(mat.domain_map(), mat.col_map(), mat.Comm());
+  Core::Communication::Exporter exDomain2Col(
+      mat.domain_map(), mat.col_map(), Core::Communication::unpack_epetra_comm(mat.Comm()));
 
   const int nummyelements = mat.domain_map().NumMyElements();
   if (nummyelements != newdomainmap.NumMyElements())
@@ -273,7 +275,7 @@ void Mortar::create_new_col_map(const Core::LinAlg::SparseMatrix& mat,
     const int lid = mat.col_map().LID(cit->first);
     if (lid == -1)
       FOUR_C_THROW("Couldn't find the GID %d in the old column map on proc %d.", cit->first,
-          Core::Communication::my_mpi_rank(mat.Comm()));
+          Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(mat.Comm())));
 
     my_col_gids[lid] = cit->second;
   }
@@ -320,7 +322,8 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Mortar::matrix_row_col_transform_gid
 
   // mapping of column gids
   std::map<int, int> gidmap;
-  Core::Communication::Exporter ex(inmat.domain_map(), inmat.col_map(), inmat.Comm());
+  Core::Communication::Exporter ex(
+      inmat.domain_map(), inmat.col_map(), Core::Communication::unpack_epetra_comm(inmat.Comm()));
   for (int i = 0; i < inmat.domain_map().NumMyElements(); ++i)
     gidmap[inmat.domain_map().GID(i)] = newdomainmap.GID(i);
   ex.do_export(gidmap);
@@ -757,7 +760,8 @@ void Mortar::Utils::create_volume_ghosting(const Core::FE::Discretization& dis_s
     }
 
     // re-build element column map
-    Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0, voldis[disidx]->get_comm());
+    Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0,
+        Core::Communication::as_epetra_comm(voldis[disidx]->get_comm()));
     rdata.clear();
 
     // redistribute the volume discretization according to the

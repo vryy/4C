@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 ParticleInteraction::InteractionWriter::InteractionWriter(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    MPI_Comm comm, const Teuchos::ParameterList& params)
     : comm_(comm), setuptime_(0.0), writeresultsthisstep_(true)
 {
   // empty constructor

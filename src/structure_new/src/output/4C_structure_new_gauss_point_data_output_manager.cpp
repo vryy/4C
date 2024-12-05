@@ -176,8 +176,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::post_evaluate()
   }
 }
 
-void Solid::ModelEvaluator::GaussPointDataOutputManager::distribute_quantities(
-    const Epetra_Comm& comm)
+void Solid::ModelEvaluator::GaussPointDataOutputManager::distribute_quantities(MPI_Comm comm)
 {
   const Core::Communication::Exporter exporter(comm);
 

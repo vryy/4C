@@ -22,7 +22,7 @@ namespace FS3I
   {
    public:
     //! constructor of one-way coupled FPS3I
-    PartFpS3I1Wc(const Epetra_Comm& comm);
+    PartFpS3I1Wc(MPI_Comm comm);
 
     //! initialize this class
     void init() override;

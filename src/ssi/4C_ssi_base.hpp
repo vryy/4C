@@ -69,8 +69,7 @@ namespace SSI
   class SSIBase : public Adapter::AlgorithmBase
   {
    public:
-    /// create using a Epetra_Comm
-    explicit SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    explicit SSIBase(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
     //! return counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)
@@ -105,7 +104,7 @@ namespace SSI
     \return void
     \date 08/16
     \author rauch  */
-    virtual void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    virtual void init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) = 0;
 
@@ -159,7 +158,7 @@ namespace SSI
 
     \date 08/16
     \author rauch  */
-    virtual void init_discretizations(const Epetra_Comm& comm, const std::string& struct_disname,
+    virtual void init_discretizations(MPI_Comm comm, const std::string& struct_disname,
         const std::string& scatra_disname, const bool redistribute_struct_dis);
 
     /// setup
@@ -169,7 +168,7 @@ namespace SSI
     virtual void timeloop() = 0;
 
     /// test results (if necessary)
-    virtual void test_results(const Epetra_Comm& comm) const;
+    virtual void test_results(MPI_Comm comm) const;
 
     /// read restart
     void read_restart(int restart) override;

@@ -17,7 +17,6 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_std_cxx20_ranges.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
@@ -172,7 +171,7 @@ namespace Core::FE
     \param comm: Epetra comm object associated with this discretization
     \param n_dim: number of space dimensions of this discretization
     */
-    Discretization(const std::string& name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim);
+    Discretization(const std::string& name, MPI_Comm comm, unsigned int n_dim);
 
     /**
      * Virtual destructor.
@@ -204,7 +203,7 @@ namespace Core::FE
     /*!
     \brief Get communicator associated with this class
     */
-    [[nodiscard]] virtual const Epetra_Comm& get_comm() const { return *comm_; }
+    [[nodiscard]] virtual MPI_Comm get_comm() const { return comm_; }
 
     /*!
     \brief Get output writer for this discretization
@@ -937,20 +936,6 @@ namespace Core::FE
     unsigned int n_dim() const { return n_dim_; }
 
     //@}
-
-    //! @name Construction methods
-
-    /*!
-    \brief Set an Epetra_Comm object which can be either
-           Epetra_SerialComm or Epetra_MpiComm (Filled()==true NOT prerequisite)
-
-    \note Sets Filled()=false
-    */
-    virtual void set_comm(std::shared_ptr<Epetra_Comm> comm)
-    {
-      filled_ = false;
-      comm_ = comm;
-    }
 
     /*!
     \brief Set a DiscretizationWriter
@@ -2209,7 +2194,7 @@ namespace Core::FE
      *
      *  \author h.kue
      *  \date 09/07    */
-    virtual void assign_global_i_ds(const Epetra_Comm& comm,
+    virtual void assign_global_i_ds(MPI_Comm comm,
         const std::map<std::vector<int>, std::shared_ptr<Core::Elements::Element>>& elementmap,
         std::map<int, std::shared_ptr<Core::Elements::Element>>& finalgeometry);
 
@@ -2218,7 +2203,7 @@ namespace Core::FE
     std::string name_;
 
     //! Epetra_comm
-    std::shared_ptr<Epetra_Comm> comm_;
+    MPI_Comm comm_;
 
     //! DiscretizationWriter
     std::shared_ptr<Core::IO::DiscretizationWriter> writer_;

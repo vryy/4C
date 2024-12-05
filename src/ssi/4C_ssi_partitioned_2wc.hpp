@@ -23,7 +23,7 @@ namespace SSI
   {
    public:
     //! constructor
-    SSIPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    SSIPart2WC(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
 
     /*! \brief Initialize this object
@@ -47,7 +47,7 @@ namespace SSI
     \return int
     \date 08/16
     \author rauch  */
-    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
@@ -139,8 +139,7 @@ namespace SSI
   {
    public:
     //! constructor
-    SSIPart2WCSolidToScatraRelax(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    SSIPart2WCSolidToScatraRelax(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
 
     /*!
@@ -156,7 +155,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
@@ -178,7 +177,7 @@ namespace SSI
    public:
     //! constructor
     SSIPart2WCSolidToScatraRelaxAitken(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+        MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
 
     /*!
@@ -216,8 +215,7 @@ namespace SSI
   {
    public:
     //! constructor
-    SSIPart2WCScatraToSolidRelax(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+    SSIPart2WCScatraToSolidRelax(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
 
     /*!
@@ -233,7 +231,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void init(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
@@ -255,7 +253,7 @@ namespace SSI
    public:
     //! constructor
     SSIPart2WCScatraToSolidRelaxAitken(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+        MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
 
 
     /*!

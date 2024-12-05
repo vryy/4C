@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 void loma_dyn(int restart)
 {
   // create a communicator
-  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("fluid")->get_comm();
+  MPI_Comm comm = Global::Problem::instance()->get_dis("fluid")->get_comm();
 
   // print warning to screen
   if (Core::Communication::my_mpi_rank(comm) == 0)

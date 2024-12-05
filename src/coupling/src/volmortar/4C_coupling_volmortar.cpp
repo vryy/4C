@@ -65,8 +65,8 @@ Coupling::VolMortar::VolMortarCoupl::VolMortarCoupl(int dim,
         "VolMortarCoupl");
 
   // its the same communicator for all discr.
-  comm_ = std::shared_ptr<Epetra_Comm>(dis1->get_comm().Clone());
-  myrank_ = Core::Communication::my_mpi_rank(*comm_);
+  comm_ = dis1->get_comm();
+  myrank_ = Core::Communication::my_mpi_rank(comm_);
 
   // define dof sets
   if (dofset21 == nullptr)
@@ -164,7 +164,8 @@ void Coupling::VolMortar::VolMortarCoupl::build_maps(std::shared_ptr<Core::FE::D
     }
   }
   // dof map is the original, unpermuted distribution of dofs
-  dofmap = std::make_shared<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, *comm_);
+  dofmap = std::make_shared<Epetra_Map>(
+      -1, dofmapvec.size(), dofmapvec.data(), 0, Core::Communication::as_epetra_comm(comm_));
 
   return;
 }
@@ -185,7 +186,7 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_volmortar()
   }
 
   // time measurement
-  comm_->Barrier();
+  Core::Communication::barrier(comm_);
   const double t_start = Teuchos::Time::wallTime();
 
   /***********************************************************
@@ -225,7 +226,7 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_volmortar()
   /**************************************************
    * Bye                                            *
    **************************************************/
-  comm_->Barrier();
+  Core::Communication::barrier(comm_);
   const double inttime = Teuchos::Time::wallTime() - t_start;
 
   if (myrank_ == 0)
@@ -1390,7 +1391,7 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     Teuchos::ParameterList solvparams;
     Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
         "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-    Core::LinAlg::Solver solver(solvparams, *comm_, nullptr, Core::IO::Verbositylevel::standard);
+    Core::LinAlg::Solver solver(solvparams, comm_, nullptr, Core::IO::Verbositylevel::standard);
 
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;

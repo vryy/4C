@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 Core::IO::VisualizationWriterBase::VisualizationWriterBase(
-    Core::IO::VisualizationParameters parameters, const Epetra_Comm& comm,
+    Core::IO::VisualizationParameters parameters, MPI_Comm comm,
     std::string visualization_data_name)
     : parameters_(std::move(parameters)),
       comm_(comm),

@@ -25,7 +25,7 @@ namespace Core::GeometricSearch
 {
   std::vector<GlobalCollisionSearchResult> global_collision_search(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
-      const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
+      const std::vector<std::pair<int, BoundingVolume>>& predicates, MPI_Comm comm,
       const Core::IO::Verbositylevel verbosity)
   {
 #ifndef FOUR_C_WITH_ARBORX
@@ -43,8 +43,7 @@ namespace Core::GeometricSearch
 
     // Build tree structure containting all primitives.
     ArborX::DistributedTree<memory_space> distributed_tree(
-        dynamic_cast<const Epetra_MpiComm*>(&comm)->Comm(), Kokkos::DefaultExecutionSpace{},
-        primitives);
+        comm, Kokkos::DefaultExecutionSpace{}, primitives);
 
     // TODO: Check for better data structure in Kokkos (something like a tuple)
     Kokkos::View<Kokkos::pair<int, Kokkos::pair<int, int>>*, Kokkos::HostSpace> indices_ranks_full(

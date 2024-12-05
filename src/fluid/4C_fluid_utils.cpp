@@ -517,16 +517,16 @@ void FLD::Utils::setup_fluid_fluid_vel_pres_split(const Core::FE::Discretization
   veldofmapvec.reserve(veldofset.size());
   veldofmapvec.assign(veldofset.begin(), veldofset.end());
   veldofset.clear();
-  std::shared_ptr<Epetra_Map> velrowmap = std::make_shared<Epetra_Map>(
-      -1, veldofmapvec.size(), veldofmapvec.data(), 0, fluiddis.get_comm());
+  std::shared_ptr<Epetra_Map> velrowmap = std::make_shared<Epetra_Map>(-1, veldofmapvec.size(),
+      veldofmapvec.data(), 0, Core::Communication::as_epetra_comm(fluiddis.get_comm()));
   veldofmapvec.clear();
 
   std::vector<int> presdofmapvec;
   presdofmapvec.reserve(presdofset.size());
   presdofmapvec.assign(presdofset.begin(), presdofset.end());
   presdofset.clear();
-  std::shared_ptr<Epetra_Map> presrowmap = std::make_shared<Epetra_Map>(
-      -1, presdofmapvec.size(), presdofmapvec.data(), 0, alefluiddis.get_comm());
+  std::shared_ptr<Epetra_Map> presrowmap = std::make_shared<Epetra_Map>(-1, presdofmapvec.size(),
+      presdofmapvec.data(), 0, Core::Communication::as_epetra_comm(alefluiddis.get_comm()));
   extractor.setup(*fullmap, presrowmap, velrowmap);
 }
 
@@ -858,7 +858,8 @@ std::map<int, double> FLD::Utils::compute_flow_rates(Core::FE::Discretization& d
     }
 
     double flowrate = 0.0;
-    Core::Communication::sum_all(&local_flowrate, &flowrate, 1, dofrowmap->Comm());
+    Core::Communication::sum_all(
+        &local_flowrate, &flowrate, 1, Core::Communication::unpack_epetra_comm(dofrowmap->Comm()));
 
     // if(dofrowmap->Comm().MyPID()==0)
     // std::cout << "gobal flow rate = " << flowrate << "\t condition ID = " << condID << std::endl;

@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-LowMach::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn,
-    const Teuchos::ParameterList& solverparams)
+LowMach::Algorithm::Algorithm(
+    MPI_Comm comm, const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& solverparams)
     : ScaTraFluidCouplingAlgorithm(comm, prbdyn, false, "scatra", solverparams),
       monolithic_(false),
       lomadbcmap_(nullptr),

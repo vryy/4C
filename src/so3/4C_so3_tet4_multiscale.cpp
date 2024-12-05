@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 void Discret::Elements::SoTet4::sotet4_homog(Teuchos::ParameterList& params)
 {
   if (Core::Communication::my_mpi_rank(
-          *Global::Problem::instance(0)->get_communicators()->sub_comm()) == owner())
+          Global::Problem::instance(0)->get_communicators()->sub_comm()) == owner())
   {
     double homogdens = 0.;
     const static std::vector<double> weights = so_tet4_1gp_weights();

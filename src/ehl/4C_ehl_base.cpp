@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                     (public) wirtz 12/15 |
  *----------------------------------------------------------------------*/
-EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+EHL::Base::Base(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& lubricationparams, const Teuchos::ParameterList& structparams,
     const std::string struct_disname, const std::string lubrication_disname)
     : AlgorithmBase(comm, globaltimeparams),
@@ -132,7 +132,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> EHL::Base::calc_velocity(
 /*----------------------------------------------------------------------*
  | test results (if necessary)                     (public) wirtz 12/15 |
  *----------------------------------------------------------------------*/
-void EHL::Base::test_results(const Epetra_Comm& comm)
+void EHL::Base::test_results(MPI_Comm comm)
 {
   Global::Problem* problem = Global::Problem::instance();
 
@@ -144,8 +144,8 @@ void EHL::Base::test_results(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                        wirtz 12/15 |
  *----------------------------------------------------------------------*/
-void EHL::Base::setup_discretizations(const Epetra_Comm& comm, const std::string struct_disname,
-    const std::string lubrication_disname)
+void EHL::Base::setup_discretizations(
+    MPI_Comm comm, const std::string struct_disname, const std::string lubrication_disname)
 {
   // Scheme   : the structure discretization is received from the input. Then, an ale-lubrication
   // disc. is cloned.

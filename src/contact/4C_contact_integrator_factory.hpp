@@ -14,7 +14,6 @@
 #include "4C_inpar_contact.hpp"
 
 // forward declaration
-class Epetra_Comm;
 #include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -33,13 +32,13 @@ namespace CONTACT
        * \author hiermeier */
       std::shared_ptr<CONTACT::Integrator> build_integrator(
           const Inpar::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
-          const Core::FE::CellType& slave_type, const Epetra_Comm& comm) const;
+          const Core::FE::CellType& slave_type, MPI_Comm comm) const;
     };  // class Factory
 
     // non-member function, please call this one from outside!
     std::shared_ptr<CONTACT::Integrator> build_integrator(
         const Inpar::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
-        const Core::FE::CellType& slave_type, const Epetra_Comm& comm);
+        const Core::FE::CellType& slave_type, MPI_Comm comm);
   }  // namespace INTEGRATOR
 }  // namespace CONTACT
 

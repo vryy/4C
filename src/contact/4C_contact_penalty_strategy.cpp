@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::PenaltyStrategy::PenaltyStrategy(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<std::shared_ptr<CONTACT::Interface>> interface, const int spatialDim,
-    const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    const MPI_Comm& comm, const double alphaf, const int maxdof)
     : AbstractStrategy(std::make_shared<CONTACT::AbstractStratDataContainer>(), dof_row_map,
           NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
@@ -52,7 +52,7 @@ CONTACT::PenaltyStrategy::PenaltyStrategy(
     const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<std::shared_ptr<CONTACT::Interface>> interface, const int spatialDim,
-    const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    const MPI_Comm& comm, const double alphaf, const int maxdof)
     : AbstractStrategy(data_ptr, dof_row_map, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       constrnorm_(0.0),

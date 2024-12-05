@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FS3I::PartFS3I2Wc::PartFS3I2Wc(const Epetra_Comm& comm)
+FS3I::PartFS3I2Wc::PartFS3I2Wc(MPI_Comm comm)
     : PartFS3I(comm),
       itmax_(Global::Problem::instance()
                  ->f_s3_i_dynamic_params()

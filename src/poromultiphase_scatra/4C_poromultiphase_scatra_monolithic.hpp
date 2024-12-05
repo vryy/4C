@@ -20,9 +20,7 @@ namespace PoroMultiPhaseScaTra
   class PoroMultiPhaseScaTraMonolithic : public PoroMultiPhaseScaTraBase
   {
    public:
-    /// create using a Epetra_Comm
-    PoroMultiPhaseScaTraMonolithic(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    PoroMultiPhaseScaTraMonolithic(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
         : PoroMultiPhaseScaTraBase(comm, globaltimeparams){};  // Problem builder
 
 

@@ -7,6 +7,7 @@
 
 #include "4C_pre_exodus_validate.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_global_data.hpp"
@@ -20,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::validate_input_file(const std::shared_ptr<Epetra_Comm> comm, const std::string datfile)
+void EXODUS::validate_input_file(const MPI_Comm comm, const std::string datfile)
 {
   using namespace FourC;
 
@@ -28,7 +29,7 @@ void EXODUS::validate_input_file(const std::shared_ptr<Epetra_Comm> comm, const 
   Global::Problem* problem = Global::Problem::instance();
 
   // create a InputFile
-  Core::IO::InputFile reader(datfile, *comm, 0);
+  Core::IO::InputFile reader(datfile, comm, 0);
 
   // read and validate dynamic and solver sections
   std::cout << "...Read parameters" << std::endl;
@@ -69,7 +70,7 @@ void EXODUS::validate_input_file(const std::shared_ptr<Epetra_Comm> comm, const 
   // we wait till all procs are here. Otherwise a hang up might occur where
   // one proc ended with FOUR_C_THROW but other procs were not finished and waited...
   // we also want to have the printing above being finished.
-  comm->Barrier();
+  Core::Communication::barrier(comm);
   FOUR_C_ASSERT_ALWAYS(all_ok,
       "Unknown sections detected. Correct this! Find hints on these unknown sections above.");
 

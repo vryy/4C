@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::GeometricSearch
 {
-  void print_geometric_search_details(const Epetra_Comm& comm, const GeometricSearchInfo info)
+  void print_geometric_search_details(MPI_Comm comm, const GeometricSearchInfo info)
   {
     const int numproc = Core::Communication::num_mpi_ranks(comm);
     const int myrank = Core::Communication::my_mpi_rank(comm);

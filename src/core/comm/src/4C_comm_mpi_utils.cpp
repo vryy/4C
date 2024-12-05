@@ -7,12 +7,40 @@
 
 #include "4C_comm_mpi_utils.hpp"
 
+#include "4C_utils_singleton_owner.hpp"
+
+#include <Epetra_MpiComm.h>
+
 FOUR_C_NAMESPACE_OPEN
 
-int Core::Communication::my_mpi_rank(const Epetra_Comm &comm) { return comm.MyPID(); }
+MPI_Comm Core::Communication::unpack_epetra_comm(const Epetra_Comm& comm)
+{
+  const Epetra_MpiComm& mpi_comm = dynamic_cast<const Epetra_MpiComm&>(comm);
+  return mpi_comm.Comm();
+}
 
-int Core::Communication::num_mpi_ranks(const Epetra_Comm &comm) { return comm.NumProc(); }
+const Epetra_Comm& Core::Communication::as_epetra_comm(MPI_Comm comm)
+{
+  static auto epetra_comm_cache = Core::Utils::make_singleton_map<MPI_Comm>(
+      [](MPI_Comm comm_in) { return std::unique_ptr<Epetra_Comm>(new Epetra_MpiComm(comm_in)); });
 
-void Core::Communication::barrier(const Epetra_Comm &comm) { comm.Barrier(); }
+  return *epetra_comm_cache[comm].instance(Core::Utils::SingletonAction::create, comm);
+}
+
+int Core::Communication::my_mpi_rank(MPI_Comm comm)
+{
+  int rank;
+  MPI_Comm_rank(comm, &rank);
+  return rank;
+}
+
+int Core::Communication::num_mpi_ranks(MPI_Comm comm)
+{
+  int size;
+  MPI_Comm_size(comm, &size);
+  return size;
+}
+
+void Core::Communication::barrier(MPI_Comm comm) { MPI_Barrier(comm); }
 
 FOUR_C_NAMESPACE_CLOSE

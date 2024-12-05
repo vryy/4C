@@ -10,8 +10,6 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_Comm.h>
-
 #include <memory>
 #include <string>
 
@@ -22,7 +20,6 @@ void ntainp_ccadiscret(std::string& inputfile_name,  //!< input file name
 );
 
 //> setup of parallel output as early as possible
-void setup_parallel_output(
-    std::string& outputfile_kenner, std::shared_ptr<Epetra_Comm> lcomm, int group);
+void setup_parallel_output(std::string& outputfile_kenner, MPI_Comm lcomm, int group);
 
 #endif

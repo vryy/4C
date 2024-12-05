@@ -38,15 +38,14 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    IntegratorNitscheFpi(
-        Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm);
+    IntegratorNitscheFpi(Teuchos::ParameterList& params, Core::FE::CellType eletype, MPI_Comm comm);
     //! @name Derived functions
     //! @{
 
     //! @name currently unsupported derived methods
     //! @{
     void integrate_deriv_segment_2d(Mortar::Element& sele, double& sxia, double& sxib,
-        Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
+        Mortar::Element& mele, double& mxia, double& mxib, MPI_Comm comm,
         const std::shared_ptr<Mortar::ParamsInterface>& cparams_ptr) override
     {
       FOUR_C_THROW("Segment based integration is currently unsupported!");
@@ -59,7 +58,7 @@ namespace CONTACT
     }
 
     void integrate_deriv_cell_3d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
-        std::shared_ptr<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm,
+        std::shared_ptr<Mortar::IntCell> cell, double* auxn, MPI_Comm comm,
         const std::shared_ptr<Mortar::ParamsInterface>& cparams_ptr) override
     {
       FOUR_C_THROW("The auxiliary plane 3-D coupling integration case is currently unsupported!");
@@ -72,7 +71,7 @@ namespace CONTACT
      (i.e. M, g, LinM, Ling and possibly D, LinD)
      */
     void integrate_deriv_ele_3d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
-        bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
+        bool* boundary_ele, bool* proj_, MPI_Comm comm,
         const std::shared_ptr<Mortar::ParamsInterface>& cparams_ptr) override;
 
     //! @}

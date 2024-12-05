@@ -14,7 +14,6 @@
 #include "4C_comm_mpi_utils.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
 #include <memory>
@@ -50,7 +49,7 @@ namespace Core::LinAlg
    */
   template <typename T>
   void gather(std::vector<T>& sdata, std::vector<T>& rdata, const int ntargetprocs,
-      const int* tprocs, const Epetra_Comm& comm)
+      const int* tprocs, MPI_Comm comm)
   {
     const int myrank = Core::Communication::my_mpi_rank(comm);
     const int numproc = Core::Communication::num_mpi_ranks(comm);
@@ -63,7 +62,7 @@ namespace Core::LinAlg
     std::map<int, std::vector<T>> datamap;
     datamap[myrank] = sdata;
     // build a source map
-    Epetra_Map source(numproc, 1, &myrank, 0, comm);
+    Epetra_Map source(numproc, 1, &myrank, 0, Core::Communication::as_epetra_comm(comm));
     // build a target map which is redundant on all target procs and zero everywhere else
     bool iamtarget = false;
     for (int i = 0; i < ntargetprocs; ++i)
@@ -79,7 +78,8 @@ namespace Core::LinAlg
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
+    Epetra_Map target(
+        -1, tnummyelements, targetvec.data(), 0, Core::Communication::as_epetra_comm(comm));
     // build an exporter and export data
     Core::Communication::Exporter exporter(source, target, comm);
     exporter.do_export(datamap);
@@ -125,7 +125,7 @@ namespace Core::LinAlg
    */
   template <typename T>
   void gather(std::set<T>& sdata, std::set<T>& rdata, const int ntargetprocs, const int* tprocs,
-      const Epetra_Comm& comm)
+      MPI_Comm comm)
   {
     const int myrank = Core::Communication::my_mpi_rank(comm);
     const int numproc = Core::Communication::num_mpi_ranks(comm);
@@ -138,7 +138,7 @@ namespace Core::LinAlg
     std::map<int, std::set<T>> datamap;
     datamap[myrank] = sdata;
     // build a source map
-    Epetra_Map source(numproc, 1, &myrank, 0, comm);
+    Epetra_Map source(numproc, 1, &myrank, 0, Core::Communication::as_epetra_comm(comm));
     // build a target map which is redundant on all target procs and zero everywhere else
     bool iamtarget = false;
     for (int i = 0; i < ntargetprocs; ++i)
@@ -154,7 +154,8 @@ namespace Core::LinAlg
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
+    Epetra_Map target(
+        -1, tnummyelements, targetvec.data(), 0, Core::Communication::as_epetra_comm(comm));
     // build an exporter and export data
     Core::Communication::Exporter exporter(source, target, comm);
     exporter.do_export(datamap);
@@ -200,7 +201,7 @@ namespace Core::LinAlg
    */
   template <typename T>
   void gather(std::map<int, std::set<T>>& sdata, std::map<int, std::set<T>>& rdata,
-      const int ntargetprocs, const int* tprocs, const Epetra_Comm& comm)
+      const int ntargetprocs, const int* tprocs, MPI_Comm comm)
   {
     const int myrank = Core::Communication::my_mpi_rank(comm);
     const int numproc = Core::Communication::num_mpi_ranks(comm);
@@ -213,7 +214,7 @@ namespace Core::LinAlg
     std::map<int, std::map<int, std::set<T>>> datamap;
     datamap[myrank] = sdata;
     // build a source map
-    Epetra_Map source(numproc, 1, &myrank, 0, comm);
+    Epetra_Map source(numproc, 1, &myrank, 0, Core::Communication::as_epetra_comm(comm));
     // build a target map which is redundant on all target procs and zero everywhere else
     bool iamtarget = false;
     for (int i = 0; i < ntargetprocs; ++i)
@@ -229,7 +230,8 @@ namespace Core::LinAlg
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
+    Epetra_Map target(
+        -1, tnummyelements, targetvec.data(), 0, Core::Communication::as_epetra_comm(comm));
     // build an exporter and export data
     Core::Communication::Exporter exporter(source, target, comm);
     exporter.do_export(datamap);
@@ -275,7 +277,7 @@ namespace Core::LinAlg
    */
   template <typename T>
   void gather(std::map<int, std::vector<T>>& sdata, std::map<int, std::vector<T>>& rdata,
-      const int ntargetprocs, const int* tprocs, const Epetra_Comm& comm)
+      const int ntargetprocs, const int* tprocs, MPI_Comm comm)
   {
     const int myrank = Core::Communication::my_mpi_rank(comm);
     const int numproc = Core::Communication::num_mpi_ranks(comm);
@@ -288,7 +290,7 @@ namespace Core::LinAlg
     std::map<int, std::map<int, std::vector<T>>> datamap;
     datamap[myrank] = sdata;
     // build a source map
-    Epetra_Map source(numproc, 1, &myrank, 0, comm);
+    Epetra_Map source(numproc, 1, &myrank, 0, Core::Communication::as_epetra_comm(comm));
     // build a target map which is redundant on all target procs and zero everywhere else
     bool iamtarget = false;
     for (int i = 0; i < ntargetprocs; ++i)
@@ -304,7 +306,8 @@ namespace Core::LinAlg
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
+    Epetra_Map target(
+        -1, tnummyelements, targetvec.data(), 0, Core::Communication::as_epetra_comm(comm));
     // build an exporter and export data
     Core::Communication::Exporter exporter(source, target, comm);
     exporter.do_export(datamap);
@@ -351,7 +354,7 @@ namespace Core::LinAlg
 
   template <typename T, typename U>
   void gather(std::map<T, U>& sdata, std::map<T, U>& rdata, const int ntargetprocs,
-      const int* tprocs, const Epetra_Comm& comm)
+      const int* tprocs, MPI_Comm comm)
   {
     const int myrank = Core::Communication::my_mpi_rank(comm);
     const int numproc = Core::Communication::num_mpi_ranks(comm);
@@ -366,7 +369,7 @@ namespace Core::LinAlg
     datamap[myrank] = sdata;
 
     // build a source map
-    Epetra_Map source(numproc, 1, &myrank, 0, comm);
+    Epetra_Map source(numproc, 1, &myrank, 0, Core::Communication::as_epetra_comm(comm));
     // build a target map which is redundant on all target procs and zero everywhere else
     bool iamtarget = false;
     for (int i = 0; i < ntargetprocs; ++i)
@@ -382,7 +385,8 @@ namespace Core::LinAlg
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
+    Epetra_Map target(
+        -1, tnummyelements, targetvec.data(), 0, Core::Communication::as_epetra_comm(comm));
     // build an exporter and export data
     Core::Communication::Exporter exporter(source, target, comm);
     exporter.do_export(datamap);
@@ -418,7 +422,7 @@ namespace Core::LinAlg
 
    */
   template <typename T>
-  void gather_all(std::set<T>& data, const Epetra_Comm& comm)
+  void gather_all(std::set<T>& data, MPI_Comm comm)
   {
     // ntargetprocs is equal to the total number of processors to make data redundant on all procs
     const int numprocs = Core::Communication::num_mpi_ranks(comm);
@@ -444,7 +448,7 @@ namespace Core::LinAlg
    */
 
   template <typename T, typename U>
-  void gather_all(std::map<T, U>& data, const Epetra_Comm& comm)
+  void gather_all(std::map<T, U>& data, MPI_Comm comm)
   {
     const int numprocs = Core::Communication::num_mpi_ranks(comm);
     std::vector<int> allproc(numprocs);
@@ -470,7 +474,7 @@ namespace Core::LinAlg
    */
 
   template <typename T>
-  void gather_all(std::map<int, std::vector<T>>& data, const Epetra_Comm& comm)
+  void gather_all(std::map<int, std::vector<T>>& data, MPI_Comm comm)
   {
     const int numprocs = Core::Communication::num_mpi_ranks(comm);
     std::vector<int> allproc(numprocs);
@@ -498,7 +502,7 @@ namespace Core::LinAlg
 
    */
   template <typename T>
-  void gather_all(std::vector<T>& data, const Epetra_Comm& comm)
+  void gather_all(std::vector<T>& data, MPI_Comm comm)
   {
     // ntargetprocs is equal to the total number of processors to make data redundant on all procs
     const int numprocs = Core::Communication::num_mpi_ranks(comm);
@@ -631,11 +635,10 @@ namespace Core::LinAlg
    \author u.kue
    \date 05/07
    */
-  int find_my_pos(int nummyelements, const Epetra_Comm& comm);
+  int find_my_pos(int nummyelements, MPI_Comm comm);
 
   /// create an allreduced sorted copy of the source vectors
-  void allreduce_vector(
-      const std::vector<int>& src, std::vector<int>& dest, const Epetra_Comm& comm);
+  void allreduce_vector(const std::vector<int>& src, std::vector<int>& dest, MPI_Comm comm);
 
   /*!
    \brief Communication between all pairs of processes, with distinct data for each.
@@ -652,7 +655,7 @@ namespace Core::LinAlg
    \author h.kue
    \date 09/07
    */
-  void all_to_all_communication(const Epetra_Comm& comm, const std::vector<std::vector<int>>& send,
+  void all_to_all_communication(MPI_Comm comm, const std::vector<std::vector<int>>& send,
       std::vector<std::vector<int>>& recv);
 
   /*!
@@ -668,7 +671,7 @@ namespace Core::LinAlg
    sending processor
    */
   void all_to_all_communication(
-      const Epetra_Comm& comm, const std::vector<std::vector<int>>& send, std::vector<int>& recv);
+      MPI_Comm comm, const std::vector<std::vector<int>>& send, std::vector<int>& recv);
 
 
 }  // namespace Core::LinAlg

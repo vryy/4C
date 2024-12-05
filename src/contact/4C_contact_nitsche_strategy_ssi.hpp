@@ -30,8 +30,8 @@ namespace CONTACT
     //! Standard constructor
     NitscheStrategySsi(const Epetra_Map* dofRowMap, const Epetra_Map* nodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
-        const std::shared_ptr<Epetra_Comm>& comm, double alphaf, int maxdof)
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, const MPI_Comm& comm,
+        double alphaf, int maxdof)
         : NitscheStrategy(
               dofRowMap, nodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof)
     {
@@ -41,8 +41,8 @@ namespace CONTACT
     NitscheStrategySsi(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dofRowMap, const Epetra_Map* nodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
-        const std::shared_ptr<const Epetra_Comm>& comm, double alphaf, int maxdof)
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, const MPI_Comm& comm,
+        double alphaf, int maxdof)
         : NitscheStrategy(data_ptr, dofRowMap, nodeRowMap, params, std::move(interface), dim, comm,
               alphaf, maxdof)
     {

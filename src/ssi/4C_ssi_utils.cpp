@@ -59,7 +59,7 @@ int SSI::Utils::check_time_stepping(double dt1, double dt2)
 /*                                                        AN,JH 10/2014 */
 // Modification of time parameter list for problem with different time step size
 
-void SSI::Utils::change_time_parameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
+void SSI::Utils::change_time_parameter(MPI_Comm comm, Teuchos::ParameterList& ssiparams,
     Teuchos::ParameterList& scatradyn, Teuchos::ParameterList& sdyn)
 {
   bool difftimestep = ssiparams.get<bool>("DIFFTIMESTEPSIZE");

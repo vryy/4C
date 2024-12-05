@@ -45,8 +45,7 @@ namespace CONTACT
      *                     mortar contact element for element based integration
      * @param [in] comm    contact interface communicator
      */
-    IntegratorNitsche(
-        Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm)
+    IntegratorNitsche(Teuchos::ParameterList& params, Core::FE::CellType eletype, MPI_Comm comm)
         : Integrator(params, eletype, comm),
           theta_(params.get<double>("NITSCHE_THETA")),
           theta_2_(params.get<double>("NITSCHE_THETA_2")),

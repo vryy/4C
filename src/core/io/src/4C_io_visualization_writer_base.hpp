@@ -14,7 +14,8 @@
 #include "4C_io_visualization_parameters.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
+
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -56,7 +57,7 @@ namespace Core::IO
     /**
      * @brief Default constructor
      */
-    VisualizationWriterBase(Core::IO::VisualizationParameters parameters, const Epetra_Comm& comm,
+    VisualizationWriterBase(Core::IO::VisualizationParameters parameters, MPI_Comm comm,
         std::string visualization_data_name);
 
     /**
@@ -143,7 +144,7 @@ namespace Core::IO
     Core::IO::VisualizationParameters parameters_;
 
     // MPI communicator
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     //! Specific name for the output data written by this object
     std::string visualization_data_name_;

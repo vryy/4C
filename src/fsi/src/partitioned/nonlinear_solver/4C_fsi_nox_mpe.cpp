@@ -13,7 +13,6 @@
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Epetra_Comm.h>
 #include <NOX_Abstract_Group.H>
 #include <NOX_Epetra_Group.H>
 #include <NOX_Epetra_Vector.H>

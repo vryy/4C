@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  |  overlap pair to the weighted gap of the adjacent slave nodes.       |
  *----------------------------------------------------------------------*/
 bool CONTACT::Integrator::assemble_g(
-    const Epetra_Comm& comm, Mortar::Element& sele, Core::LinAlg::SerialDenseVector& gseg)
+    MPI_Comm comm, Mortar::Element& sele, Core::LinAlg::SerialDenseVector& gseg)
 {
   // get adjacent slave nodes to assemble to
   Core::Nodes::Node** snodes = sele.nodes();
@@ -59,7 +59,7 @@ bool CONTACT::Integrator::assemble_g(
  |  PIECEWISE LINEAR LM INTERPOLATION VERSION                           |
  *----------------------------------------------------------------------*/
 bool CONTACT::Integrator::assemble_g(
-    const Epetra_Comm& comm, Mortar::IntElement& sintele, Core::LinAlg::SerialDenseVector& gseg)
+    MPI_Comm comm, Mortar::IntElement& sintele, Core::LinAlg::SerialDenseVector& gseg)
 {
   // get adjacent slave int nodes to assemble to
   Core::Nodes::Node** snodes = sintele.nodes();

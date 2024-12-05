@@ -52,15 +52,15 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
     {
       XFEM::DiscretizationXWall* xwall = dynamic_cast<XFEM::DiscretizationXWall*>(&*actdis);
       if (nullptr != xwall)
-        childdiscret_ = std::make_shared<XFEM::DiscretizationXWall>((std::string) "inflow",
-            std::shared_ptr<Epetra_Comm>(parentdiscret_->get_comm().Clone()), actdis->n_dim());
+        childdiscret_ = std::make_shared<XFEM::DiscretizationXWall>(
+            (std::string) "inflow", parentdiscret_->get_comm(), actdis->n_dim());
       else
-        childdiscret_ = std::make_shared<Core::FE::Discretization>((std::string) "inflow",
-            std::shared_ptr<Epetra_Comm>(parentdiscret_->get_comm().Clone()), actdis->n_dim());
+        childdiscret_ = std::make_shared<Core::FE::Discretization>(
+            (std::string) "inflow", parentdiscret_->get_comm(), actdis->n_dim());
     }
     else  // dummy discretization
-      childdiscret_ = std::make_shared<Core::FE::Discretization>((std::string) "none",
-          std::shared_ptr<Epetra_Comm>(parentdiscret_->get_comm().Clone()), actdis->n_dim());
+      childdiscret_ = std::make_shared<Core::FE::Discretization>(
+          (std::string) "none", parentdiscret_->get_comm(), actdis->n_dim());
 
     // get set of ids of all child nodes
     std::set<int> sepcondnodeset;
@@ -235,8 +235,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
       }
 
       // build noderowmap for new distribution of nodes
-      newrownodemap = std::make_shared<Epetra_Map>(
-          -1, rownodes.size(), rownodes.data(), 0, childdiscret_->get_comm());
+      newrownodemap = std::make_shared<Epetra_Map>(-1, rownodes.size(), rownodes.data(), 0,
+          Core::Communication::as_epetra_comm(childdiscret_->get_comm()));
 
       std::vector<int> colnodes;
 
@@ -246,8 +246,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
         colnodes.push_back(*id);
       }
       // build nodecolmap for new distribution of nodes
-      newcolnodemap = std::make_shared<Epetra_Map>(
-          -1, colnodes.size(), colnodes.data(), 0, childdiscret_->get_comm());
+      newcolnodemap = std::make_shared<Epetra_Map>(-1, colnodes.size(), colnodes.data(), 0,
+          Core::Communication::as_epetra_comm(childdiscret_->get_comm()));
     }
 
     if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
@@ -372,7 +372,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
     // this is the actual redistribution
     Epetra_Map sepcondelenodesmap(*childdiscret_->element_row_map());
     Teuchos::Time time("", true);
-    std::shared_ptr<Epetra_Comm> comm(parentdiscret_->get_comm().Clone());
+    MPI_Comm comm(parentdiscret_->get_comm());
 
     // Starting from the current partitioning of the discretization, compute nodal maps with a
     // hopefully better partitioning
@@ -381,7 +381,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>(
-        "num parts", std::to_string(Core::Communication::num_mpi_ranks(*comm)));
+        "num parts", std::to_string(Core::Communication::num_mpi_ranks(comm)));
 
     const auto& [sepcondrownodes, sepcondcolnodes] =
         Core::Rebalance::rebalance_node_maps(*sepcondnodemap, rebalanceParams);

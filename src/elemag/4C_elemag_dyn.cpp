@@ -63,7 +63,7 @@ void electromagnetics_drt()
 #endif
 
   // declare communicator and print module information to screen
-  const Epetra_Comm& comm = elemagdishdg->get_comm();
+  MPI_Comm comm = elemagdishdg->get_comm();
   if (Core::Communication::my_mpi_rank(comm) == 0)
   {
     std::cout << "---------------------------------------------------------------------------------"
@@ -179,7 +179,7 @@ void electromagnetics_drt()
         [[fallthrough]];
       case Inpar::EleMag::initfield_scatra:
       {
-        std::shared_ptr<Epetra_Comm> newcomm(elemagdishdg->get_comm().Clone());
+        MPI_Comm newcomm(elemagdishdg->get_comm());
 
         std::shared_ptr<Core::FE::Discretization> scatradis;
 

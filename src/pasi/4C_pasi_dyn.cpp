@@ -29,7 +29,7 @@ void pasi_dyn()
   Global::Problem* problem = Global::Problem::instance();
 
   // create a communicator
-  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
+  MPI_Comm comm = problem->get_dis("structure")->get_comm();
 
   // print pasi logo to screen
   if (Core::Communication::my_mpi_rank(comm) == 0) PaSI::Utils::logo();

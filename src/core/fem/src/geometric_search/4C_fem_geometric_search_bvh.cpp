@@ -25,7 +25,7 @@ namespace Core::GeometricSearch
 {
   std::pair<std::vector<int>, std::vector<int>> collision_search(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
-      const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
+      const std::vector<std::pair<int, BoundingVolume>>& predicates, MPI_Comm comm,
       const Core::IO::Verbositylevel verbosity)
   {
 #ifndef FOUR_C_WITH_ARBORX

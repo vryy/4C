@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  |  comm             (in)  a communicator object                        |
  *----------------------------------------------------------------------*/
 XFEM::DiscretizationXFEM::DiscretizationXFEM(
-    const std::string name, std::shared_ptr<Epetra_Comm> comm, const unsigned int n_dim)
+    const std::string name, MPI_Comm comm, const unsigned int n_dim)
     : Core::FE::DiscretizationFaces(name, comm, n_dim),
       initialized_(false),
       initialfulldofrowmap_(nullptr),

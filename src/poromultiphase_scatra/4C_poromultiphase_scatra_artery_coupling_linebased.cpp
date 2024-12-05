@@ -151,8 +151,8 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::get_additional_dbc_
 
   // build map
   int nummydirichvals = mydirichdofs.size();
-  std::shared_ptr<Epetra_Map> dirichmap = std::make_shared<Epetra_Map>(
-      -1, nummydirichvals, mydirichdofs.data(), 0, arterydis_->get_comm());
+  std::shared_ptr<Epetra_Map> dirichmap = std::make_shared<Epetra_Map>(-1, nummydirichvals,
+      mydirichdofs.data(), 0, Core::Communication::as_epetra_comm(arterydis_->get_comm()));
 
   // build vector of maps
   std::vector<std::shared_ptr<const Epetra_Map>> condmaps;

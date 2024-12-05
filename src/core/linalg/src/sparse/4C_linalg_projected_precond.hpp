@@ -11,7 +11,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
+
 #include <Epetra_Operator.h>
+#include <mpi.h>
 
 #include <memory>
 

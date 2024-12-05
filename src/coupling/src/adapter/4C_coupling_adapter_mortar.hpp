@@ -101,7 +101,7 @@ namespace Coupling::Adapter
         const std::shared_ptr<Core::FE::Discretization>& aledis,     ///< ALE discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
         const std::string& couplingcond,     ///< string for coupling condition
-        const Epetra_Comm& comm,             ///< communicator
+        MPI_Comm comm,                       ///< communicator
         const Core::Utils::FunctionManager& function_manager,  ///< function manager
         const Teuchos::ParameterList& binning_params,          ///< parameters for binning strategy
         const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
@@ -132,7 +132,7 @@ namespace Coupling::Adapter
             masterelements,  ///< master elements
         const std::map<int, std::shared_ptr<Core::Elements::Element>>&
             slaveelements,                             ///< slave elements
-        const Epetra_Comm& comm,                       ///< communicator
+        MPI_Comm comm,                                 ///< communicator
         const Teuchos::ParameterList& binning_params,  ///< parameters for binning strategy
         const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
         std::shared_ptr<Core::IO::OutputControl> output_control,
@@ -165,7 +165,7 @@ namespace Coupling::Adapter
         std::shared_ptr<Core::FE::Discretization> slavedis,    ///< slave discretization
         std::shared_ptr<Core::FE::Discretization> aledis,      ///< ALE discretization
         std::shared_ptr<Core::LinAlg::Vector<double>>& idisp,  ///< ALE displacements
-        const Epetra_Comm& comm,                               ///< communicator
+        MPI_Comm comm,                                         ///< communicator
         bool slavewithale                                      ///< flag defining if slave is ALE
     );
 
@@ -295,7 +295,7 @@ namespace Coupling::Adapter
      *      Engineering Computation, 20:305-319 (2003)
      */
     void check_slave_dirichlet_overlap(const std::shared_ptr<Core::FE::Discretization>& slavedis,
-        const Epetra_Comm& comm, const Core::Utils::FunctionManager& function_manager);
+        MPI_Comm comm, const Core::Utils::FunctionManager& function_manager);
 
     /// back transformation to initial parallel distribution
     void matrix_row_col_transform();
@@ -318,7 +318,7 @@ namespace Coupling::Adapter
         std::shared_ptr<const Epetra_Map>
             slavedofrowmap,  ///< [in] DOF row map of slave discretization
         std::shared_ptr<Core::LinAlg::Vector<double>>& idisp,  ///< [in] ALE displacements
-        const Epetra_Comm& comm,                               ///< [in] Communicator
+        MPI_Comm comm,                                         ///< [in] Communicator
         bool slavewithale  ///< [in] Flag defining if slave is ALE
     );
 

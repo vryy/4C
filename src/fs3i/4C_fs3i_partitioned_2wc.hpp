@@ -21,7 +21,7 @@ namespace FS3I
   class PartFS3I2Wc : public PartFS3I
   {
    public:
-    PartFS3I2Wc(const Epetra_Comm& comm);
+    PartFS3I2Wc(MPI_Comm comm);
 
     //! initialize this class
     void init() override;

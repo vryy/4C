@@ -12,7 +12,9 @@
 
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Comm.h>
+#include <mpi.h>
+
+#include <string>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -29,8 +31,7 @@ namespace Adapter
   class AlgorithmBase
   {
    public:
-    /// create using a Epetra_Comm
-    explicit AlgorithmBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit AlgorithmBase(MPI_Comm comm, const Teuchos::ParameterList& timeparams);
 
     /// virtual destruction
     virtual ~AlgorithmBase() = default;
@@ -38,7 +39,7 @@ namespace Adapter
     virtual void read_restart(int step) = 0;
 
     /// communicator
-    const Epetra_Comm& get_comm() const { return comm_; }
+    MPI_Comm get_comm() const { return comm_; }
 
     /// tests if there are more time steps to do
     bool not_finished() const { return step_ < nstep_ and time_ + 1e-8 * dt_ < maxtime_; }
@@ -98,7 +99,7 @@ namespace Adapter
 
    private:
     /// communication (mainly for screen output)
-    const Epetra_Comm& comm_;
+    MPI_Comm comm_;
 
     /// method name prepared for output
     std::string method_;

@@ -76,7 +76,7 @@ namespace TSI
   class Monolithic : public Algorithm
   {
    public:
-    explicit Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& sdynparams);
+    explicit Monolithic(MPI_Comm comm, const Teuchos::ParameterList& sdynparams);
 
 
 

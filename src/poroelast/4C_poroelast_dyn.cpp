@@ -22,7 +22,7 @@ void poroelast_drt()
   Global::Problem* problem = Global::Problem::instance();
 
   // create a communicator
-  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
+  MPI_Comm comm = problem->get_dis("structure")->get_comm();
 
   // print Logo to screen
   if (Core::Communication::my_mpi_rank(comm) == 0) PoroElast::print_logo();

@@ -199,7 +199,7 @@ CONSTRAINTS::EMBEDDEDMESH::get_information_background_and_interface_elements(
 
       // Check if the background element is owned by this processor, if this is not the case,
       // continue with the next element.
-      if (background_ele->owner() != discret.get_comm().MyPID()) continue;
+      if (background_ele->owner() != Core::Communication::my_mpi_rank(discret.get_comm())) continue;
 
       // Create a multimap of the global ids of interface elements and their corresponding
       // boundary cells for this background element

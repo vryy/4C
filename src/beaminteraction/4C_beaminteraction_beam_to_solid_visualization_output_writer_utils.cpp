@@ -45,9 +45,10 @@ void BeamInteraction::add_beam_interaction_nodal_forces(
     else
       for (unsigned int dim = 0; dim < 3; ++dim) gid_solid_dof.push_back(gid_node[dim]);
   }
-  Epetra_Map beam_dof_map(-1, gid_beam_dof.size(), gid_beam_dof.data(), 0, discret_ptr->get_comm());
-  Epetra_Map solid_dof_map(
-      -1, gid_solid_dof.size(), gid_solid_dof.data(), 0, discret_ptr->get_comm());
+  Epetra_Map beam_dof_map(-1, gid_beam_dof.size(), gid_beam_dof.data(), 0,
+      Core::Communication::as_epetra_comm(discret_ptr->get_comm()));
+  Epetra_Map solid_dof_map(-1, gid_solid_dof.size(), gid_solid_dof.data(), 0,
+      Core::Communication::as_epetra_comm(discret_ptr->get_comm()));
 
   // Extract the forces and add them to the discretization.
   std::shared_ptr<Core::LinAlg::Vector<double>> force_beam =

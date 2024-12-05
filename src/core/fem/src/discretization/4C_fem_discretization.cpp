@@ -27,8 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::FE::Discretization::Discretization(
-    const std::string& name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim)
+Core::FE::Discretization::Discretization(const std::string& name, MPI_Comm comm, unsigned int n_dim)
     : name_(name), comm_(comm), writer_(nullptr), filled_(false), havedof_(false), n_dim_(n_dim)
 {
   dofsets_.emplace_back(std::make_shared<Core::DOFSets::DofSet>());
@@ -703,7 +702,7 @@ void Core::FE::Discretization::unpack_my_elements(std::vector<char>& e)
     auto* ele = dynamic_cast<Core::Elements::Element*>(o);
     FOUR_C_ASSERT_ALWAYS(ele != nullptr,
         "Failed to build an element from the element data for discretization %s", name_.c_str());
-    ele->set_owner(Core::Communication::my_mpi_rank(*comm_));
+    ele->set_owner(Core::Communication::my_mpi_rank(comm_));
     add_element(std::shared_ptr<Core::Elements::Element>(ele));
   }
   // in case add_element forgets...
@@ -721,7 +720,7 @@ void Core::FE::Discretization::unpack_my_nodes(std::vector<char>& e)
     auto* node = dynamic_cast<Core::Nodes::Node*>(o);
     FOUR_C_ASSERT_ALWAYS(node != nullptr,
         "Failed to build a node from the node data for discretization %s", name_.c_str());
-    node->set_owner(Core::Communication::my_mpi_rank(*comm_));
+    node->set_owner(Core::Communication::my_mpi_rank(comm_));
     add_node(std::shared_ptr<Core::Nodes::Node>(node));
   }
   // in case add_node forgets...
