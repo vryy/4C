@@ -13,6 +13,7 @@
 #include "4C_comm_parobject.hpp"
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_mat_inelastic_defgrad_factors_service.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
@@ -117,13 +118,12 @@ namespace Mat
        * standard substepping, where also the update tensor \f$ \mathsymbol{E}^{\text{p}} \f$) is
        * required)
        * @param[out] err_status output variable: error of the terms considered in
-       * @note? (0: no errors, 1: negative plastic strain, 2: overflow error of plastic strain
-       * increment)
+       * @note?
        * @return Equivalent plastic strain rate \f$ \dot{\varepsilon}^{\text{p}} \f$
        */
       virtual double evaluate_plastic_strain_rate(const double equiv_stress,
           const double equiv_plastic_strain, const double dt, const bool log_substep,
-          int& err_status, const bool update_hist_var = true) = 0;
+          Mat::ViscoplastErrorType& err_status, const bool update_hist_var = true) = 0;
 
       /*!
        * @brief Evaluate the derivatives of the equivalent plastic strain rate \f$
@@ -138,14 +138,14 @@ namespace Mat
        * plastic strain increment \Delta t \dot{\varepsilon}^{\text{p}}) \f shall be numerically
        * evaluable? (as opposed to standard substepping, where also the derivatives of the update
        * tensor \f$ \mathsymbol{E}^{\text{p}} \f$) are required)
-       * @param[out] err_status output variable: error of the terms considered in @note? (0: no
-       * errors, 1: negative plastic strain, 2: overflow error of plastic strain increment)
+       * @param[out] err_status output variable: error of the terms considered in @note?
        * @return Derivatives of the equivalent plastic strain rate w.r.t. the equivalent stress
        *         (element 0 of matrix) and the plastic strain (element 1 of matrix)
        */
       virtual Core::LinAlg::Matrix<2, 1> evaluate_derivatives_of_plastic_strain_rate(
           const double equiv_stress, const double equiv_plastic_strain, const double dt,
-          const bool log_substep, int& err_status, const bool update_hist_var = true) = 0;
+          const bool log_substep, Mat::ViscoplastErrorType& err_status,
+          const bool update_hist_var = true) = 0;
 
       /// Return material parameters
       virtual Core::Mat::PAR::Parameter* parameter() const { return params_; }

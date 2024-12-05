@@ -106,11 +106,12 @@ namespace Mat
 
       double evaluate_plastic_strain_rate(const double equiv_stress,
           const double equiv_plastic_strain, const double dt, const bool log_substep,
-          int& err_status, const bool update_hist_var) override;
+          Mat::ViscoplastErrorType& err_status, const bool update_hist_var) override;
 
       Core::LinAlg::Matrix<2, 1> evaluate_derivatives_of_plastic_strain_rate(
           const double equiv_stress, const double equiv_plastic_strain, const double dt,
-          const bool log_substep, int& err_status, const bool update_hist_var) override;
+          const bool log_substep, Mat::ViscoplastErrorType& err_status,
+          const bool update_hist_var) override;
 
       void setup(const int numgp, const Core::IO::InputParameterContainer& container) override{};
 
@@ -129,28 +130,28 @@ namespace Mat
       struct ConstPars
       {
         /// prefactor \f$ P \f$ of the plastic strain rate
-        const double p;
+        double p;
 
         /// prefactor logarithm \f$ \log(P) \f$
-        const double log_p;
+        double log_p;
 
         /// exponent \f$ E \f$ of the plastic strain rate
-        const double e;
+        double e;
 
         /// \f$ \log(P*E) \f$
-        const double log_p_e;
+        double log_p_e;
 
         /// hardening prefactor \f$ B \f$
-        const double B;
+        double B;
 
         /// hardening exponent \f$ N \f$
-        const double N;
+        double N;
 
         /// logarithm \f$ \log(B N) \f$
-        const double log_B_N;
+        double log_B_N;
 
         /// initial yield strength
-        const double sigma_Y0;
+        double sigma_Y0;
 
 
         /// constructor
@@ -163,7 +164,9 @@ namespace Mat
               B(harden_prefac),
               N(harden_expon),
               log_B_N(std::log(harden_prefac * harden_expon)),
-              sigma_Y0(initial_yield_strength){};
+              sigma_Y0(initial_yield_strength)
+        {
+        }
       };
 
       /// instance of ConstPars struct

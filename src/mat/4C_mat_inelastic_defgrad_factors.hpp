@@ -1368,14 +1368,13 @@ namespace Mat
      * @param[in] iFinM inverse inelastic deformation gradient
      *                  \f[ \boldsymbol{F}_{\text{in}}^{-1} \f] in matrix form
      * @param[in] plastic_strain plastic strain  \f$ \varepsilon_{\text{p}} \f$
-     * @param[out] err_status error status (0: no errors, >0: various error types triggering
-     * substepping)
+     * @param[out] err_status error status
      * @param[in] int_dt time step (or substep) length used for time integration
      * @param[in] check_dt time step (or substep) length used for overflow checking
      */
     StateQuantities evaluate_state_quantities(const Core::LinAlg::Matrix<3, 3> &CM,
-        const Core::LinAlg::Matrix<3, 3> &iFinM, const double plastic_strain, int &err_status,
-        const double int_dt, const double check_dt);
+        const Core::LinAlg::Matrix<3, 3> &iFinM, const double plastic_strain,
+        Mat::ViscoplastErrorType &err_status, const double int_dt, const double check_dt);
 
     /*! @brief Evaluate the current state variable derivatives with respect to the right
      * Cauchy-Green deformation tensor, the inverse plastic deformation gradient and the equivalent
@@ -1385,17 +1384,17 @@ namespace Mat
      * @param[in] iFinM inverse inelastic deformation gradient \f$ \boldsymbol{F}_{\text{in}}^{-1}
      *                  \f$ in matrix form
      * @param[in] plastic_strain plastic strain  \f$ \varepsilon_{\text{p}} \f$
-     * @param[out] err_status error status (0: no errors, >0: various error types triggering
-     * substepping)
-     * @param[in] int_dt time step length  \f$ \Delta t \f$ (used for the integration)
+     * @param[out] err_status error status
+     * @param[in] int_dt time step length  \f$ \Delta t
+     * \f$ (used for the integration)
      * @param[in] check_dt time step (or substep) length used for overflow checking
      * @param[in] eval_state boolean: do we want to also evaluate the current state first (true)
      *                       or is this already available from the current state variables (false)
      */
     StateQuantityDerivatives evaluate_state_quantity_derivatives(
         const Core::LinAlg::Matrix<3, 3> &CM, const Core::LinAlg::Matrix<3, 3> &iFinM,
-        const double plastic_strain, int &err_status, const double int_dt, const double check_dt,
-        const bool eval_state = false);
+        const double plastic_strain, Mat::ViscoplastErrorType &err_status, const double int_dt,
+        const double check_dt, const bool eval_state = false);
 
     //! return the fiber direction of transverse isotropy for the considered element
     Core::LinAlg::Matrix<3, 1> get_fiber_direction() { return m_; }
@@ -1558,13 +1557,12 @@ namespace Mat
      * \bm{F}_{\text{in, pred}} \f$
      * @param[in] plastic_strain_pred predictor of the plastic strain \f$ \varepsilon_{\text{p,
      * pred}} \f$
-     * @param[out] err_status error status (0: no errors, >0: various error types triggering
-     * substepping)
+     * @param[out] err_status error status
      * @return boolean value: true (predictor = solution), or false (predictor != solution)
      */
     bool check_predictor(const Core::LinAlg::Matrix<3, 3> &CM,
         const Core::LinAlg::Matrix<3, 3> &iFinM_pred, const double plastic_strain_pred,
-        int &err_status);
+        Mat::ViscoplastErrorType &err_status);
 
     /*!
      * @brief Calculate the residual for the Local Newton Loop (LNL)
@@ -1578,14 +1576,13 @@ namespace Mat
      * @param[in] last_plastic_strain last plastic strain \f$ \varepsilon_{\text{p}, n}\f$
      * @param[in] int_dt time step (or substep) length used for time integration
      * @param[in] check_dt time step (or substep) length used for overflow checking
-     * @param[out] err_status error status (0: no errors, >0: various error types triggering
-     * substepping)
+     * @param[out] err_status error status
      * @return  residual of the LNL equations
      */
     Core::LinAlg::Matrix<10, 1> calculate_local_newton_loop_residual(
         const Core::LinAlg::Matrix<3, 3> &CM, const Core::LinAlg::Matrix<10, 1> &x,
         const Core::LinAlg::Matrix<3, 3> &last_iFinM, const double last_plastic_strain,
-        const double int_dt, const double check_dt, int &err_status);
+        const double int_dt, const double check_dt, Mat::ViscoplastErrorType &err_status);
 
 
     /*!
@@ -1602,15 +1599,14 @@ namespace Mat
      * @param[in] last_plastic_strain last plastic strain \f$ \varepsilon_{\text{p}, n}\f$
      * @param[in] int_dt time step (or substep) length used for time integration
      * @param[in] check_dt time step (or substep) length used for overflow checking
-     * @param[out] err_status error status (0: no errors, >0: various error types triggering
-     * substepping)
+     * @param[out] err_status error status
      * @return 10x10 jacobian matrix of the Local Newton Loop and of the linearization
      *         \f$ \boldsymbol{J} \f$
      */
     Core::LinAlg::Matrix<10, 10> calculate_jacobian(const Core::LinAlg::Matrix<3, 3> &CM,
         const Core::LinAlg::Matrix<10, 1> &x, const Core::LinAlg::Matrix<3, 3> &last_iFinM,
         const double last_plastic_strain, const double int_dt, const double check_dt,
-        int &err_status);
+        Mat::ViscoplastErrorType &err_status);
 
 
     /*!
@@ -1621,12 +1617,11 @@ namespace Mat
      * @param[in] x predictor of Local Newton Loop, composed of the components of the
      *              inverse inelastic deformation gradient \f$ \boldsymbol{F}_{\text{in}}^{-1} \f$
      *              and plastic strain \f$ \varepsilon_{\text{p}} \f$
-     * @param[out] err_status error status (0: no errors, >0: various error types triggering
-     * substepping)
+     * @param[out] err_status error status
      * @return solution vector of the Local Newton Loop, structured analogously to the predictor x
      */
     Core::LinAlg::Matrix<10, 1> local_newton_loop(const Core::LinAlg::Matrix<3, 3> &defgrad,
-        const Core::LinAlg::Matrix<10, 1> &x, int &err_status);
+        const Core::LinAlg::Matrix<10, 1> &x, Mat::ViscoplastErrorType &err_status);
 
 
     /*!

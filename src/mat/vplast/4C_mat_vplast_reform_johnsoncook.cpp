@@ -60,16 +60,16 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_stress_ratio(
  *--------------------------------------------------------------------*/
 double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
     const double equiv_stress, const double equiv_plastic_strain, const double dt,
-    const bool log_substep, int& err_status, const bool update_hist_var)
+    const bool log_substep, Mat::ViscoplastErrorType& err_status, const bool update_hist_var)
 {
-  // first set error status to 0 (no errors)
-  err_status = 0;
+  // first set error status to "no errors"
+  err_status = Mat::ViscoplastErrorType::NoErrors;
 
   // Check if plastic strain is negative and throw error (handled by the parent material,
   // substepping)
   if (equiv_plastic_strain < 0.0)
   {
-    err_status = 1;
+    err_status = Mat::ViscoplastErrorType::NegativePlasticStrain;
     return -1;
   }
 
@@ -90,7 +90,7 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
     if (((!log_substep) && (std::log(dt) + log_temp > std::log(10.0 + const_pars_.p * dt))) ||
         ((log_substep) && (std::log(dt) + log_temp > std::log(2.0e4 + const_pars_.p * dt))))
     {
-      err_status = 2;
+      err_status = Mat::ViscoplastErrorType::OverflowError;
       return -1;
     }
 
@@ -105,10 +105,10 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
 Core::LinAlg::Matrix<2, 1>
 Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_strain_rate(
     const double equiv_stress, const double equiv_plastic_strain, const double dt,
-    const bool log_substep, int& err_status, const bool update_hist_var)
+    const bool log_substep, Mat::ViscoplastErrorType& err_status, const bool update_hist_var)
 {
-  // first set error status to 0 (no errors)
-  err_status = 0;
+  // first set error status to "no errors"
+  err_status = Mat::ViscoplastErrorType::NoErrors;
 
   // used equivalent plastic strain
   double used_equiv_plastic_strain = equiv_plastic_strain;
@@ -124,7 +124,7 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
   // substepping)
   if (equiv_plastic_strain < 0.0)
   {
-    err_status = 1;
+    err_status = Mat::ViscoplastErrorType::NegativePlasticStrain;
     return Core::LinAlg::Matrix<2, 1>{true};
   }
 
@@ -132,6 +132,8 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
   const double yield_strength =
       const_pars_.sigma_Y0 + const_pars_.B * std::pow(used_equiv_plastic_strain, const_pars_.N);
   const double log_yield_strength = std::log(yield_strength);
+  const double inv_yield_strength = 1.0 / yield_strength;
+
 
   // logarithms of equivalent stress and plastic strain
   const double log_equiv_stress = std::log(equiv_stress);
@@ -150,10 +152,10 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
   {
     // compute first the logarithms of our derivatives (try to avoid overflow!)
     double log_deriv_sigma = const_pars_.log_p_e +
-                             const_pars_.e * (equiv_stress / yield_strength - 1.0) -
+                             const_pars_.e * (equiv_stress * inv_yield_strength - 1.0) -
                              log_yield_strength;
     double log_deriv_eps = const_pars_.log_p_e +
-                           const_pars_.e * (equiv_stress / yield_strength - 1.0) +
+                           const_pars_.e * (equiv_stress * inv_yield_strength - 1.0) +
                            log_equiv_stress - 2.0 * log_yield_strength + const_pars_.log_B_N +
                            (const_pars_.N - 1.0) * log_equiv_plastic_strain;
 
@@ -161,7 +163,7 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
     if ((!log_substep && (log_dt + log_deriv_sigma > 10.0) && (log_dt + log_deriv_eps > 10.0)) &&
         (log_substep && (log_dt + log_deriv_sigma > 2.0e4) && (log_dt + log_deriv_eps > 2.0e4)))
     {
-      err_status = 2;
+      err_status = Mat::ViscoplastErrorType::OverflowError;
       return Core::LinAlg::Matrix<2, 1>{true};
     }
 
