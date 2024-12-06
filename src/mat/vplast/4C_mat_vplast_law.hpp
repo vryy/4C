@@ -13,6 +13,7 @@
 #include "4C_comm_parobject.hpp"
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_mat_inelastic_defgrad_factors_service.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
@@ -79,41 +80,71 @@ namespace Mat
       virtual Core::Materials::MaterialType material_type() const = 0;
 
       /*!
-       * @brief Evaluate the ratio of the equivalent stress to the yield stress (or for flow rules
-       * without yield surface: ratio of the equivalent stress to the flow resistance)
+       * @brief Evaluate the ratio of the equivalent stress \f$ \overline{\sigma} \f$ to the yield
+       * stress \f$ \sigma_{\text{Y}} \f$ (or for flow rules without yield surface: ratio of the
+       * equivalent stress \f$ \overline{\sigma} \f$ to the flow resistance \f$ S \f$)
        *
-       * @param[in] equiv_stress Equivalent stress
-       * @param[in] equiv_plastic_strain Equivalent plastic strain
-       * @return Stress ratio: equiv_stress/yield_stress(equiv_plastic_strain)
+       * @param[in] equiv_stress Equivalent stress \f$ \overline{\sigma}  \f$
+       * @param[in] equiv_plastic_strain Equivalent plastic strain \f$ \varepsilon^{\text{p}}\f$
+       * @return Stress ratio: \f$ \frac{\overline{\sigma}}{\sigma_{\text{Y}}} \f$ (for flow rules
+       * with yield surface) or \f$ \frac{\overline{\sigma}}{S} \f$ (for flow rules
+       * without yield surface)
        */
       virtual double evaluate_stress_ratio(
           const double equiv_stress, const double equiv_plastic_strain) = 0;
 
       /*!
-       * @brief Evaluate the equivalent plastic strain rate for a given equivalent stress and a
-       * given plastic strain
+       * @brief Evaluate the equivalent plastic strain rate \f$ \dot{\varepsilon}^{\text{p}} \f$ for
+       * a given equivalent stress \f$ \overflow{\sigma} \f$ and a given plastic strain \f$
+       * \varepsilon^{\text{p}} \f$
        *
-       * @param[in] equiv_stress Equivalent stress
-       * @param[in] equiv_plastic_strain Equivalent plastic strain
-       * @param[in] dt Time step size (used solely for overflow checking purposes)
-       * @return Equivalent plastic strain rate
+       * @note To use the viscoplasticity components in the substepping schemes of
+       * InelasticDefgradTransvIsotropElastViscoplast, we have to check for eventual overflow errors
+       * within them. Specifically, we focus on the term  \f$ \Delta t \dot{\varepsilon}^{\text{p}}
+       * \f$, which shall be evaluable for both standard and logarithmic substepping, but also
+       * enable the numerical evaluation of the update tensor \f$ \mathsymbol{E}^{\text{p}} =
+       * \exp(-\Delta t \dot{\varepsilon}^{\text{p}} \mathsymbol{N}^{\text{p}}) \f$ required only in
+       * the standard substepping scheme. Moreover, for some viscoplasticity laws, we have to make
+       * sure that the given plastic strain is \f$ \varepsilon^{\text{p}} \ge 0 \f$, otherwise the
+       * evaluation of either flow rule or hardening model fails. This depends on the employed
+       * viscoplastic law.
+       *
+       *
+       * @param[in] equiv_stress Equivalent stress \f$ \overline{\sigma}  \f$
+       * @param[in] equiv_plastic_strain Equivalent plastic strain \f$ \varepsilon^{\text{p}}\f$
+       * @param[in] dt Time step size (used solely for overflow error checking, see @note)
+       * @param[in] log_substep Logarithmic substepping, for which only the plastic strain increment
+       * \Delta t \dot{\varepsilon}^{\text{p}}) \f shall be numerically evaluable? (as opposed to
+       * standard substepping, where also the update tensor \f$ \mathsymbol{E}^{\text{p}} \f$) is
+       * required)
+       * @param[out] err_status output variable: error of the terms considered in
+       * @note?
+       * @return Equivalent plastic strain rate \f$ \dot{\varepsilon}^{\text{p}} \f$
        */
       virtual double evaluate_plastic_strain_rate(const double equiv_stress,
-          const double equiv_plastic_strain, const double dt,
-          const bool update_hist_var = true) = 0;
+          const double equiv_plastic_strain, const double dt, const bool log_substep,
+          Mat::ViscoplastErrorType& err_status, const bool update_hist_var = true) = 0;
 
       /*!
-       * @brief Evaluate the derivatives of the equivalent plastic strain rate for a given
-       * equivalent stress and a given plastic strain
+       * @brief Evaluate the derivatives of the equivalent plastic strain rate \f$
+       * \dot{\varepsilon}^{\text{p}} \f$ for a given equivalent stress \f$ \overline{\sigma} \f$
+       * and a given plastic strain \f$ \varepsilon^{\text{p}} \f$
        *
-       * @param[in] equiv_stress Equivalent stress
-       * @param[in] equiv_plastic_strain Equivalent plastic strain
-       * @param[in] dt Time step size (used solely for overflow checking purposes)
+       * @param[in] equiv_stress Equivalent stress \f$ \overline{\sigma}  \f$
+       * @param[in] equiv_plastic_strain Equivalent plastic strain \f$ \varepsilon^{\text{p}}\f$
+       * @param[in] dt Time step size (used solely for overflow error checking, see @note of
+       * evaluate_plastic_strain_rate)
+       * @param[in] log_substep Logarithmic substepping, for which only the derivatives of the
+       * plastic strain increment \Delta t \dot{\varepsilon}^{\text{p}}) \f shall be numerically
+       * evaluable? (as opposed to standard substepping, where also the derivatives of the update
+       * tensor \f$ \mathsymbol{E}^{\text{p}} \f$) are required)
+       * @param[out] err_status output variable: error of the terms considered in @note?
        * @return Derivatives of the equivalent plastic strain rate w.r.t. the equivalent stress
        *         (element 0 of matrix) and the plastic strain (element 1 of matrix)
        */
       virtual Core::LinAlg::Matrix<2, 1> evaluate_derivatives_of_plastic_strain_rate(
           const double equiv_stress, const double equiv_plastic_strain, const double dt,
+          const bool log_substep, Mat::ViscoplastErrorType& err_status,
           const bool update_hist_var = true) = 0;
 
       /// Return material parameters
