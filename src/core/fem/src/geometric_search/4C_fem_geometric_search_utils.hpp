@@ -12,6 +12,8 @@
 
 #include "4C_fem_geometric_search_bounding_volume.hpp"
 
+#include <mpi.h>
+
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
