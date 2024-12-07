@@ -17,6 +17,7 @@
 #include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_electrode.hpp"
+#include "4C_mat_inelastic_defgrad_factors_service.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_vplast_law.hpp"
@@ -29,6 +30,7 @@
 #include <map>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 FOUR_C_NAMESPACE_OPEN
@@ -2466,8 +2468,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
 
     // throw error if the Local Newton Loop cannot be evaluated with the given substepping
     // settings
-    if (err_status != Mat::ViscoplastErrorType::NoErrors)
-      FOUR_C_THROW(ViscoplastErrorMessages[err_status]);
+    if (err_status != Mat::ViscoplastErrorType::NoErrors) FOUR_C_THROW(Mat::to_string(err_status));
 
     // extract the inverse inelastic defgrad from the LNL solution
     iFinM = extract_inverse_inelastic_defgrad(sol);
@@ -3131,31 +3132,6 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
   // reset boolean for the history update
   update_hist_var_ = true;
 }
-
-/// map: error types to error messages in InelasticDefgradTransvIsotropElastViscoplast
-std::map<Mat::ViscoplastErrorType, std::string> Mat::ViscoplastErrorMessages = {
-    {ViscoplastErrorType::NegativePlasticStrain,
-        "Error in InelasticDefgradTransvIsotropElastViscoplast: negative plastic strain!"},
-    {ViscoplastErrorType::OverflowError,
-        "Error in InelasticDefgradTransvIsotropElastViscoplast: overflow error related to the "
-        "evaluation of the plastic strain increment!"},
-    {ViscoplastErrorType::NoPlasticIncompressibility,
-        "Error in InelasticDefgradTransvIsotropElastViscoplast: plastic incompressibility not "
-        "satisfied!"},
-    {ViscoplastErrorType::FailedSolLinSystLNL,
-        "Error in InelasticDefgradTransvIsotropElastViscoplast: solution of the linear system in "
-        "the Local Newton Loop failed!"},
-    {ViscoplastErrorType::NoConvergenceLNL,
-        "Error in InelasticDefgradTransvIsotropElastViscoplast: Local Newton Loop did not "
-        "converge for the given loop settings!"},
-    {ViscoplastErrorType::SingularJacobian,
-        "Error in InelasticDefgradTransvIsotropElastViscoplast: singular Jacobian after "
-        "converged Local Newton Loop, which does not allow for the analytical evaluation of the "
-        "linearization!"},
-    {ViscoplastErrorType::FailedSolAnalytLinearization,
-        "Error in InelasticDefgradTransvIsotropElastViscoplast: solution of the linear system in "
-        "the analytical linearization failed"},
-};
 
 
 
