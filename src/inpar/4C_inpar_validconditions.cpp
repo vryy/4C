@@ -44,7 +44,7 @@ void Input::print_empty_condition_definitions(std::ostream& stream,
 {
   for (unsigned i = 0; i < condlist.size(); ++i)
   {
-    condlist[i]->print(stream, nullptr);
+    condlist[i]->print(stream);
   }
 }
 

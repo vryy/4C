@@ -496,16 +496,13 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
 
       return Core::IO::convert_lines<actMapType, actMapType>(file_stream, map_reduction_operation);
     };
-    const std::string print_string = std::string(
-        "map of activation values retrieved from pattern file with rows in the format \"eleid: "
-        "time_1, act_value_1; time_2, act_value_2; ...\"");
 
     std::vector<std::shared_ptr<Input::LineComponent>> activation_map;
     activation_map.emplace_back(std::make_shared<Input::SeparatorComponent>("MAPFILE",
         "pattern file containing a map of elementwise-defined discrete values for time- and "
         "space-dependency of muscle activation"));
     activation_map.emplace_back(
-        std::make_shared<Input::ProcessedComponent>("MAPFILE", operation, print_string, false));
+        std::make_shared<Input::ProcessedComponent>("MAPFILE", operation, false));
     activation_evaluation_choices.emplace(
         static_cast<int>(Inpar::Mat::ActivationType::map), std::make_pair("map", activation_map));
 
@@ -3803,13 +3800,10 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
 
       return Core::IO::convert_lines<mapType, mapType>(file_stream, map_reduction_operation);
     };
-    const std::string print_string = std::string(
-        "map of massfraction values retrieved from pattern file with rows in the format \"eleid: "
-        "massfrac_1, massfrac_2, ...\"");
 
     add_named_processed_component(m, "MASSFRACMAPFILE",
         "file path of pattern file defining the massfractions as discrete values", operation,
-        print_string, false);
+        false);
 
     Mat::append_material_definition(matlist, m);
   }
