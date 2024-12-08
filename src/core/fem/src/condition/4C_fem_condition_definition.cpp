@@ -133,8 +133,7 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::InputFile& input,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& Core::Conditions::ConditionDefinition::print(
-    std::ostream& stream, const Core::FE::Discretization* dis)
+std::ostream& Core::Conditions::ConditionDefinition::print(std::ostream& stream)
 {
   unsigned l = sectionname_.length();
   stream << "--";
@@ -162,19 +161,6 @@ std::ostream& Core::Conditions::ConditionDefinition::print(
   }
 
   int count = 0;
-  if (dis != nullptr)
-  {
-    std::vector<Core::Conditions::Condition*> conds;
-    dis->get_condition(conditionname_, conds);
-    for (auto& cond : conds)
-    {
-      if (cond->g_type() == gtype_)
-      {
-        count += 1;
-      }
-    }
-  }
-
   stream << name;
   l = name.length();
   for (int i = 0; i < std::max<int>(31 - l, 0); ++i) stream << ' ';
@@ -189,27 +175,6 @@ std::ostream& Core::Conditions::ConditionDefinition::print(
   }
 
   stream << "\n";
-
-  if (dis != nullptr)
-  {
-    std::vector<Core::Conditions::Condition*> conds;
-    dis->get_condition(conditionname_, conds);
-
-    for (auto& cond : conds)
-    {
-      if (cond->g_type() == gtype_)
-      {
-        stream << "E " << cond->id() << " - ";
-        for (auto& i : inputline_)
-        {
-          i->print(stream, cond->parameters());
-          stream << " ";
-        }
-        stream << "\n";
-      }
-    }
-  }
-
   return stream;
 }
 

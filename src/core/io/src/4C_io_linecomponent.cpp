@@ -127,12 +127,6 @@ namespace Input
 
   void SeparatorComponent::default_line(std::ostream& stream) { stream << separator_; }
 
-  void SeparatorComponent::print(
-      std::ostream& stream, const Core::IO::InputParameterContainer& container)
-  {
-    stream << separator_;
-  }
-
   void SeparatorComponent::describe(std::ostream& stream)
   {
     stream << "    " << std::setw(15) << std::left << separator_ << std::setw(15) << std::left
@@ -195,12 +189,6 @@ namespace Input
   }
 
   void StringComponent::default_line(std::ostream& stream) { stream << defaultvalue_; }
-
-  void StringComponent::print(
-      std::ostream& stream, const Core::IO::InputParameterContainer& container)
-  {
-    stream << container.get<std::string>(name());
-  }
 
   void StringComponent::describe(std::ostream& stream) {}
 
@@ -288,12 +276,6 @@ namespace Input
 
   Teuchos::Array<std::string> SelectionComponent::get_options() { return datfilevalues_; }
 
-  void SelectionComponent::print(
-      std::ostream& stream, const Core::IO::InputParameterContainer& container)
-  {
-    stream << container.get<std::string>(name());
-  }
-
   std::shared_ptr<std::stringstream> SelectionComponent::read(const std::string& section_name,
       std::shared_ptr<std::stringstream> condline, Core::IO::InputParameterContainer& container)
   {
@@ -345,18 +327,6 @@ namespace Input
       stream << "none";
     else
       stream << data_.default_value;
-  }
-
-  void IntComponent::print(std::ostream& stream, const Core::IO::InputParameterContainer& container)
-  {
-    int n = container.get<int>(name());
-    if (data_.none_allowed and n == -1)
-      stream << "none ";
-    else
-    {
-      if (data_.fortran_style) n += 1;
-      stream << n;
-    }
   }
 
   std::string IntComponent::write_read_the_docs()
@@ -463,19 +433,6 @@ namespace Input
     return parameterstring;
   }
 
-  void IntVectorComponent::print(
-      std::ostream& stream, const Core::IO::InputParameterContainer& container)
-  {
-    const auto& v = container.get<std::vector<int>>(name());
-    for (int i : v)
-    {
-      if (data_.none_allowed and i == -1)
-        stream << "none ";
-      else
-        stream << i + 1 << " ";
-    }
-  }
-
   namespace
   {
     struct LengthVisitor
@@ -558,12 +515,6 @@ namespace Input
 
   void RealComponent::default_line(std::ostream& stream) { stream << data_.default_value; }
 
-  void RealComponent::print(
-      std::ostream& stream, const Core::IO::InputParameterContainer& container)
-  {
-    stream << container.get<double>(name());
-  }
-
   void RealComponent::describe(std::ostream& stream) {}
 
   std::shared_ptr<std::stringstream> RealComponent::read(const std::string& section_name,
@@ -624,13 +575,6 @@ namespace Input
   }
 
   std::string RealVectorComponent::write_read_the_docs() { return "<real vec:" + name() + "> "; }
-
-  void RealVectorComponent::print(
-      std::ostream& stream, const Core::IO::InputParameterContainer& container)
-  {
-    const auto& v = container.get<std::vector<double>>(name());
-    for (double i : v) stream << i << " ";
-  }
 
   void RealVectorComponent::describe(std::ostream& stream) {}
 
@@ -693,13 +637,6 @@ namespace Input
   }
 
   void BoolComponent::default_line(std::ostream& stream) { print_yes_no(stream, defaultvalue_); }
-
-  void BoolComponent::print(
-      std::ostream& stream, const Core::IO::InputParameterContainer& container)
-  {
-    const bool value = (bool)container.get<int>(name());
-    print_yes_no(stream, value);
-  }
 
   void BoolComponent::print_yes_no(std::ostream& stream, const bool value) const
   {
@@ -819,23 +756,6 @@ namespace Input
     return component_for_key_->get_options();
   }
 
-  void SwitchComponent::print(
-      std::ostream& stream, const Core::IO::InputParameterContainer& container)
-  {
-    component_for_key_->print(stream, container);
-    stream << " ";
-
-    const KeyType selected_key =
-        static_cast<KeyType>(container.get<int>(component_for_key_->name()));
-
-    FOUR_C_ASSERT(choices_.count(selected_key) == 1, "Internal error.");
-    for (const auto& component : choices_[selected_key].second)
-    {
-      component->print(stream, container);
-      stream << " ";
-    }
-  }
-
   std::shared_ptr<std::stringstream> SwitchComponent::read(const std::string& section_name,
       std::shared_ptr<std::stringstream> condline, Core::IO::InputParameterContainer& container)
   {
@@ -854,12 +774,6 @@ namespace Input
 
 
   void ProcessedComponent::default_line(std::ostream& stream) { stream << "none"; }
-
-  void ProcessedComponent::print(
-      std::ostream& stream, const Core::IO::InputParameterContainer& container)
-  {
-    stream << print_string_;
-  }
 
   std::shared_ptr<std::stringstream> ProcessedComponent::read(const std::string& section_name,
       std::shared_ptr<std::stringstream> condline, Core::IO::InputParameterContainer& container)

@@ -45,10 +45,6 @@ namespace Input
     /// write my part of the default (comment) line of the condition
     virtual void default_line(std::ostream& stream) = 0;
 
-    /// Write whatever this LineComponent owns in the given @p container.
-    virtual void print(
-        std::ostream& stream, const Core::IO::InputParameterContainer& container) = 0;
-
     /// A human-readable description of this component used in help messages.
     virtual void describe(std::ostream& stream) {}
 
@@ -118,8 +114,6 @@ namespace Input
 
     void default_line(std::ostream& stream) override;
 
-    void print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
-
     void describe(std::ostream& stream) override;
 
     std::vector<std::string> write_read_the_docs_table_row() const;
@@ -148,8 +142,6 @@ namespace Input
     StringComponent(std::string name, std::string defaultvalue, bool optional = false);
 
     void default_line(std::ostream& stream) override;
-
-    void print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     void describe(std::ostream& stream) override;
 
@@ -182,8 +174,6 @@ namespace Input
     void default_line(std::ostream& stream) override;
 
     std::string write_read_the_docs() override;
-
-    void print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     Teuchos::Array<std::string> get_options() override;
 
@@ -222,8 +212,6 @@ namespace Input
 
     void default_line(std::ostream& stream) override;
 
-    void print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
-
     void describe(std::ostream& stream) override;
 
     std::shared_ptr<std::stringstream> read(const std::string& section_name,
@@ -251,8 +239,6 @@ namespace Input
     void default_line(std::ostream& stream) override;
 
     std::string write_read_the_docs() override;
-
-    void print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     void describe(std::ostream& stream) override;
 
@@ -290,8 +276,6 @@ namespace Input
 
     void default_line(std::ostream& stream) override;
 
-    void print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
-
     void describe(std::ostream& stream) override;
 
     std::shared_ptr<std::stringstream> read(const std::string& section_name,
@@ -320,8 +304,6 @@ namespace Input
 
     void set_length(int newlength);
 
-    void print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
-
     void describe(std::ostream& stream) override;
 
     std::shared_ptr<std::stringstream> read(const std::string& section_name,
@@ -344,8 +326,6 @@ namespace Input
         std::string name, const bool defaultvalue = false, bool optional = false);
 
     void default_line(std::ostream& stream) override;
-
-    void print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     void describe(std::ostream& stream) override;
 
@@ -398,8 +378,6 @@ namespace Input
 
     Teuchos::Array<std::string> get_options() override;
 
-    void print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
-
     std::shared_ptr<std::stringstream> read(const std::string& section_name,
         std::shared_ptr<std::stringstream> condline,
         Core::IO::InputParameterContainer& container) override;
@@ -437,17 +415,15 @@ namespace Input
      */
     template <typename T>
     ProcessedComponent(const std::string& name,
-        std::function<T(const std::string&)> process_operation, std::string print_string,
-        bool optional = false)
+        std::function<T(const std::string&)> process_operation, bool optional = false)
         : LineComponent(name, optional),
           insert_operation_([process_operation, name](const std::string& read_string,
                                 Core::IO::InputParameterContainer& container)
-              { container.add(name, process_operation(read_string)); }),
-          print_string_(std::move(print_string)){};
+              { container.add(name, process_operation(read_string)); })
+    {
+    }
 
     void default_line(std::ostream& stream) override;
-
-    void print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     std::shared_ptr<std::stringstream> read(const std::string& section_name,
         std::shared_ptr<std::stringstream> condline,
@@ -458,9 +434,6 @@ namespace Input
     std::function<void(
         const std::string& read_string, Core::IO::InputParameterContainer& container)>
         insert_operation_;
-
-    //! string defining print out for this component
-    std::string print_string_;
   };
 
 
@@ -624,13 +597,12 @@ namespace Input
   template <typename T, typename DefinitionType>
   inline void add_named_processed_component(const std::shared_ptr<DefinitionType>& definition,
       const std::string& name, const std::string& separator_description,
-      const std::function<T(const std::string&)>& process_operation,
-      const std::string& print_string, const bool optional = false)
+      const std::function<T(const std::string&)>& process_operation, const bool optional = false)
   {
     definition->add_component(
         std::make_shared<Input::SeparatorComponent>(name, separator_description, optional));
-    definition->add_component(std::make_shared<Input::ProcessedComponent>(
-        name, process_operation, print_string, optional));
+    definition->add_component(
+        std::make_shared<Input::ProcessedComponent>(name, process_operation, optional));
   }
 
 

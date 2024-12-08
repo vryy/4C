@@ -94,8 +94,8 @@ namespace Core::Conditions
     void read(Core::IO::InputFile& input,
         std::multimap<int, std::shared_ptr<Core::Conditions::Condition>>& cmap);
 
-    /// print my dat file section and possible conditions from the discretization
-    std::ostream& print(std::ostream& stream, const Core::FE::Discretization* dis = nullptr);
+    /// print my dat file section
+    std::ostream& print(std::ostream& stream);
 
     /// name of my section in input file
     std::string section_name() const { return sectionname_; }
