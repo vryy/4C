@@ -201,10 +201,9 @@ jobs:
     needs: [gcc9_build, gcc9_test_minimal, gcc13_assertions_test, gcc13_assertions_test_report, gcc13_assertions_build,
       clang18_build, clang18_test_minimal]
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && github.ref != 'refs/heads/main'
     steps:
       - name: Check for successful builds and tests
         uses: re-actors/alls-green@release/v1
         with:
-          allowed-skips: gcc13_assertions_test, gcc13_assertions_test_report
           jobs: ${{ toJSON(needs) }}
