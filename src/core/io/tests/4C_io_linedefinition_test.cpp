@@ -80,35 +80,6 @@ namespace
     EXPECT_FALSE(line_definition.read(input));
   }
 
-  // Int
-  TEST(LineDefinitionTest, add_int)
-  {
-    std::istringstream input("1");
-    auto line_definition = Input::LineDefinition::Builder().add_int("OMEGA").build();
-    EXPECT_TRUE(line_definition.read(input));
-  }
-
-  TEST(LineDefinitionTest, ReadFalseWhenIntRequiredButNothingGiven)
-  {
-    std::istringstream input("");
-    auto line_definition = Input::LineDefinition::Builder().add_int("OMEGA").build();
-    EXPECT_FALSE(line_definition.read(input));
-  }
-
-  TEST(LineDefinitionTest, ReadFalseWhenIntRequiredButDoubleGiven)
-  {
-    std::istringstream input("1.23");
-    auto line_definition = Input::LineDefinition::Builder().add_int("OMEGA").build();
-    EXPECT_ANY_THROW(line_definition.read(input));
-  }
-
-  TEST(LineDefinitionTest, ReadFalseWhenIntConcatenatedWithSomething)
-  {
-    std::istringstream input("1*8e+2");
-    auto line_definition = Input::LineDefinition::Builder().add_int("OMEGA").build();
-    EXPECT_ANY_THROW(line_definition.read(input));
-  }
-
   // Int Vector
   TEST(LineDefinitionTest, add_int_vector)
   {
@@ -136,28 +107,6 @@ namespace
     std::istringstream input("1.23 2.34 3.45");
     auto line_definition = Input::LineDefinition::Builder().add_int_vector("OMEGA", 3).build();
     EXPECT_ANY_THROW(line_definition.read(input));
-  }
-
-  // Double Vector
-  TEST(LineDefinitionTest, add_double_vector)
-  {
-    std::istringstream input("1 2 3");
-    auto line_definition = Input::LineDefinition::Builder().add_double_vector("OMEGA", 3).build();
-    EXPECT_TRUE(line_definition.read(input));
-  }
-
-  TEST(LineDefinitionTest, ReadFalseWhenDoubleVectorRequiredButTooFewVectorEntriesGiven)
-  {
-    std::istringstream input("1 2");
-    auto line_definition = Input::LineDefinition::Builder().add_double_vector("OMEGA", 3).build();
-    EXPECT_FALSE(line_definition.read(input));
-  }
-
-  TEST(LineDefinitionTest, ReadFalseWhenDoubleVectorRequiredButTooManyVectorEntriesGiven)
-  {
-    std::istringstream input("1 2 3 4");
-    auto line_definition = Input::LineDefinition::Builder().add_double_vector("OMEGA", 3).build();
-    EXPECT_FALSE(line_definition.read(input));
   }
 
   // Named String
@@ -405,7 +354,6 @@ namespace
     std::ostringstream out;
     Input::LineDefinition::Builder()
         .add_tag("abc")
-        .add_int("i")
         .add_named_double("d")
         .add_named_int_vector("iv", 3)
         .add_optional_named_string_vector("s", 2)
@@ -414,6 +362,6 @@ namespace
         .build()
         .print(out);
 
-    EXPECT_EQ(out.str(), "abc 0 d 0 iv 0 0 0  [ pairs [...] s '' ''  ] ");
+    EXPECT_EQ(out.str(), "abc d 0 iv 0 0 0  [ pairs [...] s '' ''  ] ");
   }
 }  // namespace

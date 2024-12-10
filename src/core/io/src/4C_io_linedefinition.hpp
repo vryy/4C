@@ -154,14 +154,8 @@ namespace Input
       /// Add a single string variable
       Builder& add_string(std::string name);
 
-      /// Add a single integer variable
-      Builder& add_int(std::string name);
-
       /// Add a vector of integer variables
       Builder& add_int_vector(std::string name, int length);
-
-      /// Add a vector of double variables
-      Builder& add_double_vector(std::string name, int length);
 
       /// Add a name followed by a variable string
       Builder& add_named_string(std::string name);
