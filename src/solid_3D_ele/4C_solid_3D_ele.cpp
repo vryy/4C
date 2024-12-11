@@ -30,7 +30,8 @@ namespace
   Input::LineDefinition::Builder get_default_line_definition_builder()
   {
     return Input::LineDefinition::Builder()
-        .add_int_vector(Core::FE::cell_type_to_string(celltype), Core::FE::num_nodes<celltype>)
+        .add_named_int_vector(
+            Core::FE::cell_type_to_string(celltype), Core::FE::num_nodes<celltype>)
         .add_named_int("MAT")
         .add_named_string("KINEM")
         .add_optional_named_string("PRESTRESS_TECH")
@@ -85,7 +86,7 @@ void Discret::Elements::SolidType::setup_element_definition(
 
 
   defsgeneral["NURBS27"] = Input::LineDefinition::Builder()
-                               .add_int_vector("NURBS27", 27)
+                               .add_named_int_vector("NURBS27", 27)
                                .add_named_int("MAT")
                                .add_named_string("KINEM")
                                .build();

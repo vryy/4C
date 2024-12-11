@@ -73,26 +73,36 @@ void Discret::Elements::LubricationType::setup_element_definition(
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["LUBRICATION"];
 
-  defs["QUAD4"] =
-      Input::LineDefinition::Builder().add_int_vector("QUAD4", 4).add_named_int("MAT").build();
+  defs["QUAD4"] = Input::LineDefinition::Builder()
+                      .add_named_int_vector("QUAD4", 4)
+                      .add_named_int("MAT")
+                      .build();
 
-  defs["QUAD8"] =
-      Input::LineDefinition::Builder().add_int_vector("QUAD8", 8).add_named_int("MAT").build();
+  defs["QUAD8"] = Input::LineDefinition::Builder()
+                      .add_named_int_vector("QUAD8", 8)
+                      .add_named_int("MAT")
+                      .build();
 
-  defs["QUAD9"] =
-      Input::LineDefinition::Builder().add_int_vector("QUAD9", 9).add_named_int("MAT").build();
+  defs["QUAD9"] = Input::LineDefinition::Builder()
+                      .add_named_int_vector("QUAD9", 9)
+                      .add_named_int("MAT")
+                      .build();
 
   defs["TRI3"] =
-      Input::LineDefinition::Builder().add_int_vector("TRI3", 3).add_named_int("MAT").build();
+      Input::LineDefinition::Builder().add_named_int_vector("TRI3", 3).add_named_int("MAT").build();
 
   defs["TRI6"] =
-      Input::LineDefinition::Builder().add_int_vector("TRI6", 6).add_named_int("MAT").build();
+      Input::LineDefinition::Builder().add_named_int_vector("TRI6", 6).add_named_int("MAT").build();
 
-  defs["LINE2"] =
-      Input::LineDefinition::Builder().add_int_vector("LINE2", 2).add_named_int("MAT").build();
+  defs["LINE2"] = Input::LineDefinition::Builder()
+                      .add_named_int_vector("LINE2", 2)
+                      .add_named_int("MAT")
+                      .build();
 
-  defs["LINE3"] =
-      Input::LineDefinition::Builder().add_int_vector("LINE3", 3).add_named_int("MAT").build();
+  defs["LINE3"] = Input::LineDefinition::Builder()
+                      .add_named_int_vector("LINE3", 3)
+                      .add_named_int("MAT")
+                      .build();
 }
 
 /*----------------------------------------------------------------------*

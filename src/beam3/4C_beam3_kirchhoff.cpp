@@ -97,7 +97,7 @@ void Discret::Elements::Beam3kType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["BEAM3K"];
 
   defs["LINE2"] = Input::LineDefinition::Builder()
-                      .add_int_vector("LINE2", 2)
+                      .add_named_int_vector("LINE2", 2)
                       .add_named_int("WK")
                       .add_named_int("ROTVEC")
                       .add_named_int("MAT")
@@ -106,7 +106,7 @@ void Discret::Elements::Beam3kType::setup_element_definition(
                       .build();
 
   defs["LINE3"] = Input::LineDefinition::Builder()
-                      .add_int_vector("LINE3", 3)
+                      .add_named_int_vector("LINE3", 3)
                       .add_named_int("WK")
                       .add_named_int("ROTVEC")
                       .add_named_int("MAT")
@@ -115,7 +115,7 @@ void Discret::Elements::Beam3kType::setup_element_definition(
                       .build();
 
   defs["LINE4"] = Input::LineDefinition::Builder()
-                      .add_int_vector("LINE4", 4)
+                      .add_named_int_vector("LINE4", 4)
                       .add_named_int("WK")
                       .add_named_int("ROTVEC")
                       .add_named_int("MAT")

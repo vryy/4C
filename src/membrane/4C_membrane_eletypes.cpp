@@ -72,7 +72,7 @@ void Discret::Elements::MembraneTri3Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["MEMBRANE3"];
 
   defs["TRI3"] = Input::LineDefinition::Builder()
-                     .add_int_vector("TRI3", 3)
+                     .add_named_int_vector("TRI3", 3)
                      .add_named_int("MAT")
                      .add_named_string("KINEM")
                      .add_named_double("THICK")
@@ -145,7 +145,7 @@ void Discret::Elements::MembraneTri6Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["MEMBRANE6"];
 
   defs["TRI6"] = Input::LineDefinition::Builder()
-                     .add_int_vector("TRI6", 6)
+                     .add_named_int_vector("TRI6", 6)
                      .add_named_int("MAT")
                      .add_named_string("KINEM")
                      .add_named_double("THICK")
@@ -218,7 +218,7 @@ void Discret::Elements::MembraneQuad4Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["MEMBRANE4"];
 
   defs["QUAD4"] = Input::LineDefinition::Builder()
-                      .add_int_vector("QUAD4", 4)
+                      .add_named_int_vector("QUAD4", 4)
                       .add_named_int("MAT")
                       .add_named_string("KINEM")
                       .add_named_double("THICK")
@@ -291,7 +291,7 @@ void Discret::Elements::MembraneQuad9Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["MEMBRANE9"];
 
   defs["QUAD9"] = Input::LineDefinition::Builder()
-                      .add_int_vector("QUAD9", 9)
+                      .add_named_int_vector("QUAD9", 9)
                       .add_named_int("MAT")
                       .add_named_string("KINEM")
                       .add_named_double("THICK")

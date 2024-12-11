@@ -80,7 +80,7 @@ void Discret::Elements::SoHex27Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX27"] = Input::LineDefinition::Builder()
-                      .add_int_vector("HEX27", 27)
+                      .add_named_int_vector("HEX27", 27)
                       .add_named_int("MAT")
                       .add_named_string("KINEM")
                       .add_optional_named_double_vector("RAD", 3)

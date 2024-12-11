@@ -72,7 +72,7 @@ void Discret::Elements::SoShw6Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["WEDGE6"] = Input::LineDefinition::Builder()
-                       .add_int_vector("WEDGE6", 6)
+                       .add_named_int_vector("WEDGE6", 6)
                        .add_named_int("MAT")
                        .add_named_string("KINEM")
                        .add_named_string("EAS")

@@ -209,8 +209,10 @@ void Discret::Elements::Beam3ebType::setup_element_definition(
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["BEAM3EB"];
 
-  defs["LINE2"] =
-      Input::LineDefinition::Builder().add_int_vector("LINE2", 2).add_named_int("MAT").build();
+  defs["LINE2"] = Input::LineDefinition::Builder()
+                      .add_named_int_vector("LINE2", 2)
+                      .add_named_int("MAT")
+                      .build();
 }
 
 /*----------------------------------------------------------------------*

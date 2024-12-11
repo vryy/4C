@@ -94,54 +94,54 @@ void Discret::Elements::Bele3Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs3 = definitions["BELE3_3"];
 
   defs3["TRI3"] = Input::LineDefinition::Builder()
-                      .add_int_vector("TRI3", 3)
+                      .add_named_int_vector("TRI3", 3)
                       .add_optional_named_int("MAT")
                       .build();
 
   defs3["TRI6"] = Input::LineDefinition::Builder()
-                      .add_int_vector("TRI6", 6)
+                      .add_named_int_vector("TRI6", 6)
                       .add_optional_named_int("MAT")
                       .build();
 
   defs3["QUAD4"] = Input::LineDefinition::Builder()
-                       .add_int_vector("QUAD4", 4)
+                       .add_named_int_vector("QUAD4", 4)
                        .add_optional_named_int("MAT")
                        .build();
 
   defs3["QUAD8"] = Input::LineDefinition::Builder()
-                       .add_int_vector("QUAD8", 8)
+                       .add_named_int_vector("QUAD8", 8)
                        .add_optional_named_int("MAT")
                        .build();
 
   defs3["QUAD9"] = Input::LineDefinition::Builder()
-                       .add_int_vector("QUAD9", 9)
+                       .add_named_int_vector("QUAD9", 9)
                        .add_optional_named_int("MAT")
                        .build();
 
   std::map<std::string, Input::LineDefinition>& defs4 = definitions["BELE3_4"];
 
   defs4["TRI3"] = Input::LineDefinition::Builder()
-                      .add_int_vector("TRI3", 3)
+                      .add_named_int_vector("TRI3", 3)
                       .add_optional_named_int("MAT")
                       .build();
 
   defs4["TRI6"] = Input::LineDefinition::Builder()
-                      .add_int_vector("TRI6", 6)
+                      .add_named_int_vector("TRI6", 6)
                       .add_optional_named_int("MAT")
                       .build();
 
   defs4["QUAD4"] = Input::LineDefinition::Builder()
-                       .add_int_vector("QUAD4", 4)
+                       .add_named_int_vector("QUAD4", 4)
                        .add_optional_named_int("MAT")
                        .build();
 
   defs4["QUAD8"] = Input::LineDefinition::Builder()
-                       .add_int_vector("QUAD8", 8)
+                       .add_named_int_vector("QUAD8", 8)
                        .add_optional_named_int("MAT")
                        .build();
 
   defs4["QUAD9"] = Input::LineDefinition::Builder()
-                       .add_int_vector("QUAD9", 9)
+                       .add_named_int_vector("QUAD9", 9)
                        .add_optional_named_int("MAT")
                        .build();
 }

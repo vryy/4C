@@ -77,7 +77,7 @@ void Discret::Elements::Shell7pScatraType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defsgeneral = definitions["SHELL7PSCATRA"];
 
   defsgeneral["QUAD4"] = Input::LineDefinition::Builder()
-                             .add_int_vector("QUAD4", 4)
+                             .add_named_int_vector("QUAD4", 4)
                              .add_named_int("MAT")
                              .add_named_double("THICK")
                              .add_named_string_vector("EAS", 5)
@@ -93,7 +93,7 @@ void Discret::Elements::Shell7pScatraType::setup_element_definition(
                              .build();
 
   defsgeneral["QUAD8"] = Input::LineDefinition::Builder()
-                             .add_int_vector("QUAD8", 8)
+                             .add_named_int_vector("QUAD8", 8)
                              .add_named_int("MAT")
                              .add_named_double("THICK")
                              .add_named_string_vector("EAS", 5)
@@ -109,7 +109,7 @@ void Discret::Elements::Shell7pScatraType::setup_element_definition(
                              .build();
 
   defsgeneral["QUAD9"] = Input::LineDefinition::Builder()
-                             .add_int_vector("QUAD9", 9)
+                             .add_named_int_vector("QUAD9", 9)
                              .add_named_int("MAT")
                              .add_named_double("THICK")
                              .add_named_string_vector("EAS", 5)
@@ -125,7 +125,7 @@ void Discret::Elements::Shell7pScatraType::setup_element_definition(
                              .build();
 
   defsgeneral["TRI3"] = Input::LineDefinition::Builder()
-                            .add_int_vector("TRI3", 3)
+                            .add_named_int_vector("TRI3", 3)
                             .add_named_int("MAT")
                             .add_named_double("THICK")
                             .add_named_double("SDC")
@@ -139,7 +139,7 @@ void Discret::Elements::Shell7pScatraType::setup_element_definition(
                             .build();
 
   defsgeneral["TRI6"] = Input::LineDefinition::Builder()
-                            .add_int_vector("TRI6", 6)
+                            .add_named_int_vector("TRI6", 6)
                             .add_named_int("MAT")
                             .add_named_double("THICK")
                             .add_named_double("SDC")

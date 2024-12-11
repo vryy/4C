@@ -64,7 +64,7 @@ void Discret::Elements::RedAirwayType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["RED_AIRWAY"];
 
   defs["LINE2"] = Input::LineDefinition::Builder()
-                      .add_int_vector("LINE2", 2)
+                      .add_named_int_vector("LINE2", 2)
                       .add_named_int("MAT")
                       .add_named_string("ElemSolvingType")
                       .add_named_string("TYPE")

@@ -65,35 +65,6 @@ namespace
     EXPECT_FALSE(line_definition.read(input));
   }
 
-  // Int Vector
-  TEST(LineDefinitionTest, add_int_vector)
-  {
-    std::istringstream input("1 2 3");
-    auto line_definition = Input::LineDefinition::Builder().add_int_vector("OMEGA", 3).build();
-    EXPECT_TRUE(line_definition.read(input));
-  }
-
-  TEST(LineDefinitionTest, ReadFalseWhenIntVectorRequiredButTooFewVectorEntriesGiven)
-  {
-    std::istringstream input("1 2");
-    auto line_definition = Input::LineDefinition::Builder().add_int_vector("OMEGA", 3).build();
-    EXPECT_FALSE(line_definition.read(input));
-  }
-
-  TEST(LineDefinitionTest, ReadFalseWhenIntVectorRequiredButTooManyVectorEntriesGiven)
-  {
-    std::istringstream input("1 2 3 4");
-    auto line_definition = Input::LineDefinition::Builder().add_int_vector("OMEGA", 3).build();
-    EXPECT_FALSE(line_definition.read(input));
-  }
-
-  TEST(LineDefinitionTest, ReadFalseWhenIntVectorRequiredButDoubleVectorEntriesGiven)
-  {
-    std::istringstream input("1.23 2.34 3.45");
-    auto line_definition = Input::LineDefinition::Builder().add_int_vector("OMEGA", 3).build();
-    EXPECT_ANY_THROW(line_definition.read(input));
-  }
-
   // Named String
   TEST(LineDefinitionTest, add_named_string)
   {

@@ -91,7 +91,7 @@ void Discret::Elements::SoTet4Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["TET4"] = Input::LineDefinition::Builder()
-                     .add_int_vector("TET4", 4)
+                     .add_named_int_vector("TET4", 4)
                      .add_named_int("MAT")
                      .add_named_string("KINEM")
                      .add_optional_named_double_vector("RAD", 3)

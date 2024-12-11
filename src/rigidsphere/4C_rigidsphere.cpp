@@ -95,7 +95,7 @@ void Discret::Elements::RigidsphereType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["RIGIDSPHERE"];
 
   defs["POINT1"] = Input::LineDefinition::Builder()
-                       .add_int_vector("POINT1", 1)
+                       .add_named_int_vector("POINT1", 1)
                        .add_named_double("RADIUS")
                        .add_named_double("DENSITY")
                        .build();

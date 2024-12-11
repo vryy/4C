@@ -70,7 +70,7 @@ void Discret::Elements::Wall1Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["WALL"];
 
   defs["QUAD4"] = Input::LineDefinition::Builder()
-                      .add_int_vector("QUAD4", 4)
+                      .add_named_int_vector("QUAD4", 4)
                       .add_named_int("MAT")
                       .add_named_string("KINEM")
                       .add_named_string("EAS")
@@ -80,7 +80,7 @@ void Discret::Elements::Wall1Type::setup_element_definition(
                       .build();
 
   defs["QUAD8"] = Input::LineDefinition::Builder()
-                      .add_int_vector("QUAD8", 8)
+                      .add_named_int_vector("QUAD8", 8)
                       .add_named_int("MAT")
                       .add_named_string("KINEM")
                       .add_named_string("EAS")
@@ -90,7 +90,7 @@ void Discret::Elements::Wall1Type::setup_element_definition(
                       .build();
 
   defs["QUAD9"] = Input::LineDefinition::Builder()
-                      .add_int_vector("QUAD9", 9)
+                      .add_named_int_vector("QUAD9", 9)
                       .add_named_int("MAT")
                       .add_named_string("KINEM")
                       .add_named_string("EAS")
@@ -100,7 +100,7 @@ void Discret::Elements::Wall1Type::setup_element_definition(
                       .build();
 
   defs["TRI3"] = Input::LineDefinition::Builder()
-                     .add_int_vector("TRI3", 3)
+                     .add_named_int_vector("TRI3", 3)
                      .add_named_int("MAT")
                      .add_named_string("KINEM")
                      .add_named_string("EAS")
@@ -110,7 +110,7 @@ void Discret::Elements::Wall1Type::setup_element_definition(
                      .build();
 
   defs["TRI6"] = Input::LineDefinition::Builder()
-                     .add_int_vector("TRI6", 6)
+                     .add_named_int_vector("TRI6", 6)
                      .add_named_int("MAT")
                      .add_named_string("KINEM")
                      .add_named_string("EAS")
@@ -120,7 +120,7 @@ void Discret::Elements::Wall1Type::setup_element_definition(
                      .build();
 
   defs["NURBS4"] = Input::LineDefinition::Builder()
-                       .add_int_vector("NURBS4", 4)
+                       .add_named_int_vector("NURBS4", 4)
                        .add_named_int("MAT")
                        .add_named_string("KINEM")
                        .add_named_string("EAS")
@@ -130,7 +130,7 @@ void Discret::Elements::Wall1Type::setup_element_definition(
                        .build();
 
   defs["NURBS9"] = Input::LineDefinition::Builder()
-                       .add_int_vector("NURBS9", 9)
+                       .add_named_int_vector("NURBS9", 9)
                        .add_named_int("MAT")
                        .add_named_string("KINEM")
                        .add_named_string("EAS")

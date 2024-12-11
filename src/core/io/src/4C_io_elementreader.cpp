@@ -12,6 +12,7 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_element_definition.hpp"
 #include "4C_io_input_file.hpp"
+#include "4C_io_value_parser.hpp"
 #include "4C_rebalance_print.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -179,14 +180,14 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
 
     for (const auto& element_line : input_.lines_in_section(sectionname_))
     {
-      std::istringstream t{std::string{element_line}};
-      int elenumber;
-      std::string eletype;
-      std::string distype;
-      // read element id type and distype
-      t >> elenumber >> eletype >> distype;
-      elenumber -= 1;
+      ValueParser parser{element_line, "While reading element line: "};
+      const int elenumber = parser.read<int>() - 1;
       gidlist.push_back(elenumber);
+
+      const auto eletype = parser.read<std::string>();
+
+      // Only peek at the distype since the elements later want to parse this value themselves.
+      const std::string distype = std::string(parser.peek());
 
       // only read registered element types or all elements if nothing is
       // registered
@@ -203,7 +204,10 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
         Input::LineDefinition* linedef = ed.element_lines(eletype, distype);
         if (linedef != nullptr)
         {
-          if (not linedef->read(t))
+          std::istringstream element_specific_remainder{
+              std::string(parser.get_unparsed_remainder())};
+
+          if (not linedef->read(element_specific_remainder))
           {
             std::cout << "\n" << elenumber << " " << eletype << " " << distype << " ";
             linedef->print(std::cout);
