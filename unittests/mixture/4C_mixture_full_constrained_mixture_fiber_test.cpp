@@ -239,7 +239,7 @@ namespace
 
       // compare
       ASSERT_NEAR(cm_fiber.evaluate_current_second_pk_stress(),
-          remodel_fiber.evaluate_current_fiber_p_k2_stress(), 1e-2);
+          remodel_fiber.evaluate_current_fiber_pk2_stress(), 1e-2);
 
       cm_fiber.update();
       remodel_fiber.update();
@@ -460,7 +460,7 @@ namespace
       const double lambda_f = lambda_f_0;
       cm_fiber.recompute_state(FADdouble(1, 0, lambda_f), time, dt);
 
-      EXPECT_NEAR(cm_fiber.evaluate_d_current_fiber_p_k2_stress_d_lambdafsq().val() * 2 * lambda_f,
+      EXPECT_NEAR(cm_fiber.evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq().val() * 2 * lambda_f,
           cm_fiber.evaluate_current_second_pk_stress().dx(0), 1e-7);
 
       // remove automatic differentiation type from history data
@@ -487,7 +487,7 @@ namespace
       const double lambda_f = lambda_f_0 + 0.001 * timestep;
       cm_fiber.recompute_state(FADdouble(1, 0, lambda_f), time, dt);
 
-      EXPECT_NEAR(cm_fiber.evaluate_d_current_fiber_p_k2_stress_d_lambdafsq().val() * 2 * lambda_f,
+      EXPECT_NEAR(cm_fiber.evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq().val() * 2 * lambda_f,
           cm_fiber.evaluate_current_second_pk_stress().dx(0), 1e-8);
 
       // remove automatic differentiation type from history data
@@ -509,7 +509,7 @@ namespace
     double lambda_f = 1.2;
     fiber.recompute_state(FADdouble(1, 0, lambda_f), 1.1, 1.0);
 
-    EXPECT_NEAR(fiber.evaluate_d_current_fiber_p_k2_stress_d_lambdafsq().val() * 2 * lambda_f,
+    EXPECT_NEAR(fiber.evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq().val() * 2 * lambda_f,
         fiber.evaluate_current_second_pk_stress().dx(0), 1e-8);
   }
 

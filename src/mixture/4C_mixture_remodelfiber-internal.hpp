@@ -148,9 +148,9 @@ namespace Mixture
       /// @{
       [[nodiscard]] T evaluate_current_homeostatic_fiber_cauchy_stress() const;
       [[nodiscard]] T evaluate_current_fiber_cauchy_stress() const;
-      [[nodiscard]] T evaluate_current_fiber_p_k2_stress() const;
-      [[nodiscard]] T evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const;
-      [[nodiscard]] T evaluate_d_current_fiber_p_k2_stress_d_lambdar() const;
+      [[nodiscard]] T evaluate_current_fiber_pk2_stress() const;
+      [[nodiscard]] T evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq() const;
+      [[nodiscard]] T evaluate_d_current_fiber_pk2_stress_d_lambda_r() const;
       [[nodiscard]] T
       evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambdafsq(
           T dt) const;

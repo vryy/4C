@@ -256,7 +256,7 @@ namespace Mixture
      *
      * @return Number
      */
-    [[nodiscard]] Number evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const;
+    [[nodiscard]] Number evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq() const;
 
     /// homeostatic quantities
     /// @{

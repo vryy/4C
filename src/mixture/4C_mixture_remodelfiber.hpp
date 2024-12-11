@@ -115,17 +115,20 @@ namespace Mixture
     /// @}
     [[nodiscard]] double evaluate_current_homeostatic_fiber_cauchy_stress() const;
     [[nodiscard]] double evaluate_current_fiber_cauchy_stress() const;
-    [[nodiscard]] double evaluate_current_fiber_p_k2_stress() const;
-    [[nodiscard]] double evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const;
-    [[nodiscard]] double evaluate_d_current_fiber_p_k2_stress_d_lambdar() const;
+    [[nodiscard]] double evaluate_current_fiber_pk2_stress() const;
+    [[nodiscard]] double evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq() const;
+    [[nodiscard]] double evaluate_d_current_fiber_pk2_stress_d_lambda_r() const;
     [[nodiscard]] double
-    evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambdafsq(
+    evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
         double dt) const;
     [[nodiscard]] double
-    evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambdafsq(
+    evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
         double dt) const;
     [[nodiscard]] double evaluate_current_growth_scalar() const;
-    [[nodiscard]] double evaluate_current_lambdar() const;
+    [[nodiscard]] double evaluate_current_lambda_r() const;
+    [[nodiscard]] double evaluate_d_current_growth_scalar_d_lambda_f_sq() const;
+    [[nodiscard]] double evaluate_d_current_lambda_r_d_lambda_f_sq() const;
+    [[nodiscard]] double evaluate_d_current_cauchy_stress_d_lambda_f_sq() const;
     /// @}
 
    private:
