@@ -117,12 +117,6 @@ namespace Mixture
 
     /// Handler for anisotropic input
     Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
-
-    /// temporary variables used within one evaluation
-    /// @{
-    std::vector<Core::LinAlg::Matrix<1, 6>> dgrowthscalard_c_;
-    std::vector<Core::LinAlg::Matrix<1, 6>> dlambdard_c_;
-    /// @}
   };
 }  // namespace Mixture
 

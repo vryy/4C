@@ -143,4 +143,111 @@ namespace
 
     EXPECT_FLOAT_EQ(y.dx(1), dFiberCauchyStressDRemodel.val());
   }
+
+  TEST_F(RemodelFiberTest, test_evaluate_d_current_lambda_r_d_lambda_f_sq)
+  {
+    Mixture::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
+        generate_fiber<FADdouble>();
+
+    const FADdouble lambda_f = FADdouble(1, 0, 1.05);
+    const FADdouble lambda_ext = FADdouble(1.014);
+
+    fiber.set_state(lambda_f, lambda_ext);
+    fiber.integrate_local_evolution_equations_implicit(0.1);
+
+    const FADdouble lambda_r = fiber.evaluate_current_lambda_r();
+    const FADdouble d_current_lambda_r_d_lambda_f_sq =
+        fiber.evaluate_d_current_lambda_r_d_lambda_f_sq();
+
+    EXPECT_FLOAT_EQ(lambda_r.dx(0), d_current_lambda_r_d_lambda_f_sq.val() * 2 * lambda_f.val());
+  }
+
+  TEST_F(RemodelFiberTest,
+      test_evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambda_f_sq)
+  {
+    Mixture::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
+        generate_fiber<FADdouble>();
+
+    const FADdouble lambda_f = FADdouble(1, 0, 1.05);
+    const FADdouble lambda_ext = FADdouble(1.014);
+
+    fiber.set_state(lambda_f, lambda_ext);
+
+    const Mixture::Implementation::IntegrationState<2, FADdouble> growth_state =
+        fiber.get_integration_state_growth_scalar();
+
+
+    const FADdouble residuum_growth =
+        Mixture::Implementation::ImplicitIntegration<2, FADdouble>::get_residuum(growth_state, 0.1);
+
+    const FADdouble d_residuum_growth_d_lambda_f_sq =
+        fiber.evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
+            0.1);
+
+    EXPECT_FLOAT_EQ(
+        residuum_growth.dx(0), d_residuum_growth_d_lambda_f_sq.val() * 2 * lambda_f.val());
+  }
+
+  TEST_F(RemodelFiberTest,
+      test_evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambda_f_sq)
+  {
+    Mixture::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
+        generate_fiber<FADdouble>();
+
+    const FADdouble lambda_f = FADdouble(1, 0, 1.05);
+    const FADdouble lambda_ext = FADdouble(1.014);
+
+    fiber.set_state(lambda_f, lambda_ext);
+
+    const Mixture::Implementation::IntegrationState<2, FADdouble> remodel_state =
+        fiber.get_integration_state_lambda_r();
+
+
+    const FADdouble residuum_growth =
+        Mixture::Implementation::ImplicitIntegration<2, FADdouble>::get_residuum(
+            remodel_state, 0.1);
+
+    const FADdouble d_residuum_remodel_d_lambda_f_sq =
+        fiber.evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
+            0.1);
+
+    EXPECT_FLOAT_EQ(
+        residuum_growth.dx(0), d_residuum_remodel_d_lambda_f_sq.val() * 2 * lambda_f.val());
+  }
+
+  TEST_F(RemodelFiberTest, test_evaluate_d_current_cauchy_stress_d_lambda_f_sq)
+  {
+    Mixture::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
+        generate_fiber<FADdouble>();
+
+    const FADdouble lambda_f = FADdouble(1, 0, 1.05);
+    const FADdouble lambda_ext = FADdouble(1.014);
+
+    fiber.set_state(lambda_f, lambda_ext);
+    fiber.integrate_local_evolution_equations_implicit(0.1);
+
+    const FADdouble cauchy_stress = fiber.evaluate_current_fiber_cauchy_stress();
+    const FADdouble d_cauchy_stress_d_lambda_f_sq =
+        fiber.evaluate_d_current_cauchy_stress_d_lambda_f_sq();
+
+    EXPECT_FLOAT_EQ(cauchy_stress.dx(0), d_cauchy_stress_d_lambda_f_sq.val() * 2 * lambda_f.val());
+  }
+
+  TEST_F(RemodelFiberTest, test_evaluate_d_current_growth_scalar_d_lambda_f_sq)
+  {
+    Mixture::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
+        generate_fiber<FADdouble>();
+
+    const FADdouble lambda_f = FADdouble(1, 0, 1.05);
+    const FADdouble lambda_ext = FADdouble(1.014);
+
+    fiber.set_state(lambda_f, lambda_ext);
+    fiber.integrate_local_evolution_equations_implicit(0.1);
+
+    const FADdouble growth_scalar = fiber.evaluate_current_growth_scalar();
+    const FADdouble d_growth_scalar_d_lambda_f_sq =
+        fiber.evaluate_d_current_growth_scalar_d_lambda_f_sq();
+
+    EXPECT_FLOAT_EQ(growth_scalar.dx(0), d_growth_scalar_d_lambda_f_sq.val() * 2 * lambda_f.val());
+  }
 }  // namespace

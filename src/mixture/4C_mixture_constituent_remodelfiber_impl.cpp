@@ -104,8 +104,6 @@ void Mixture::MixtureConstituentRemodelFiberImpl::register_anisotropy_extensions
 
 void Mixture::MixtureConstituentRemodelFiberImpl::initialize()
 {
-  dgrowthscalard_c_.resize(num_gp());
-  dlambdard_c_.resize(num_gp());
   remodel_fiber_.clear();
   std::shared_ptr<const RemodelFiberMaterial<double>> material =
       params_->fiber_material_->create_remodel_fiber_material();
@@ -223,9 +221,12 @@ Core::LinAlg::Matrix<6, 6> Mixture::MixtureConstituentRemodelFiberImpl::evaluate
   // additional linearization from implicit integration
   if (params_->enable_growth_)
   {
+    Core::LinAlg::Matrix<1, 6> d_lambda_r_d_cauchy_green = evaluate_d_lambdafsq_dc(gp, eleGID);
+    d_lambda_r_d_cauchy_green.scale(remodel_fiber_[gp].evaluate_d_current_lambda_r_d_lambda_f_sq());
+
     const double dpk2dlambdar = remodel_fiber_[gp].evaluate_d_current_fiber_pk2_stress_d_lambda_r();
     cmat.multiply_nn(2.0 * dpk2dlambdar, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
-        dlambdard_c_[gp], 1.0);
+        d_lambda_r_d_cauchy_green, 1.0);
   }
 
   return cmat;
@@ -241,48 +242,6 @@ void Mixture::MixtureConstituentRemodelFiberImpl::integrate_local_evolution_equa
   // Integrate local evolution equations
   Core::LinAlg::Matrix<2, 2> K =
       remodel_fiber_[gp].integrate_local_evolution_equations_implicit(dt);
-
-  // Compute increment w.r.t. C
-  const Core::LinAlg::Matrix<2, 6> dRdC = std::invoke(
-      [&]()
-      {
-        Core::LinAlg::Matrix<2, 6> dRdC;
-        Core::LinAlg::Matrix<1, 6> dgrowthC;
-        Core::LinAlg::Matrix<1, 6> dremodelC;
-
-        const double dRgrowthDLambdafsq =
-            remodel_fiber_[gp]
-                .evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambdafsq(
-                    dt);
-        const double dRremodelDLambdafsq =
-            remodel_fiber_[gp]
-                .evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambdafsq(
-                    dt);
-
-        dgrowthC.update(dRgrowthDLambdafsq, evaluate_d_lambdafsq_dc(gp, eleGID));
-        dremodelC.update(dRremodelDLambdafsq, evaluate_d_lambdafsq_dc(gp, eleGID));
-
-        for (std::size_t i = 0; i < 6; ++i)
-        {
-          dRdC(0, i) = dgrowthC(i);
-          dRdC(1, i) = dremodelC(i);
-        }
-
-        return dRdC;
-      });
-
-  K.invert();
-  Core::LinAlg::Matrix<1, 2> dgrowthscalardR(false);
-  Core::LinAlg::Matrix<1, 2> dlambdardR(false);
-
-  for (std::size_t i = 0; i < 2; ++i)
-  {
-    dgrowthscalardR(i) = K(0, i);
-    dlambdardR(i) = K(1, i);
-  }
-
-  dgrowthscalard_c_[gp].multiply(-1.0, dgrowthscalardR, dRdC);
-  dlambdard_c_[gp].multiply(-1.0, dlambdardR, dRdC);
 }
 
 void Mixture::MixtureConstituentRemodelFiberImpl::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
@@ -322,7 +281,10 @@ Core::LinAlg::Matrix<1, 6> Mixture::MixtureConstituentRemodelFiberImpl::get_d_gr
     int gp, int eleGID) const
 {
   if (!params_->enable_growth_) return Core::LinAlg::Matrix<1, 6>(true);
-  return dgrowthscalard_c_[gp];
+  Core::LinAlg::Matrix<1, 6> d_growth_scalar_d_cauchy_green = evaluate_d_lambdafsq_dc(gp, eleGID);
+  d_growth_scalar_d_cauchy_green.scale(
+      remodel_fiber_[gp].evaluate_d_current_growth_scalar_d_lambda_f_sq());
+  return d_growth_scalar_d_cauchy_green;
 }
 
 double Mixture::MixtureConstituentRemodelFiberImpl::evaluate_deposition_stretch(

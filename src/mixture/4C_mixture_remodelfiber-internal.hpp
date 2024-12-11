@@ -35,6 +35,42 @@ namespace Mixture
 
   namespace Implementation
   {
+    // Definition of the time integration routine
+    template <int numstates, typename T>
+    struct IntegrationState
+    {
+      std::array<T, numstates> x;
+      std::array<T, numstates> f;
+    };
+
+    template <int numstates, typename T>
+    class ImplicitIntegration;
+
+    // Corresponds to a one-step-theta method with theta=0.5 (trapezoidal rule)
+    template <typename T>
+    class ImplicitIntegration<2, T>
+    {
+     public:
+      static constexpr double theta = 0.5;
+      static inline T get_residuum(
+          const Mixture::Implementation::IntegrationState<2, T>& state, const T dt)
+      {
+        return state.x[1] - state.x[0] - dt * ((1.0 - theta) * state.f[0] + theta * state.f[1]);
+      }
+
+      static inline T get_partial_derivative_xnp(
+          const Mixture::Implementation::IntegrationState<2, T>& state, T dt)
+      {
+        return 1.0;
+      }
+
+      static inline T get_partial_derivative_fnp(
+          const Mixture::Implementation::IntegrationState<2, T>& state, T dt)
+      {
+        return -dt * theta;
+      }
+    };
+
     template <int numstates, typename T>
     class RemodelFiberImplementation
     {
@@ -122,6 +158,10 @@ namespace Mixture
       [[nodiscard]] T evaluate_d_fiber_cauchy_stress_d_remodel(
           T lambda_f, T lambda_r, T lambda_ext) const;
 
+      [[nodiscard]] IntegrationState<numstates, T> get_integration_state_growth_scalar() const;
+
+      [[nodiscard]] IntegrationState<numstates, T> get_integration_state_lambda_r() const;
+
       /// @name Methods for doing explicit or implicit time integration
       /// @{
       /*!
@@ -129,8 +169,8 @@ namespace Mixture
        *
        * @param dt (in) : timestep
        *
-       * @return Derivative of the residuum of the time integration scheme w.r.t. growth scalar and
-       * lambda_r
+       * @return Derivative of the residuum of the time integration scheme w.r.t. growth scalar
+       * and lambda_r
        */
       Core::LinAlg::Matrix<2, 2, T> integrate_local_evolution_equations_implicit(T dt);
 
@@ -152,17 +192,27 @@ namespace Mixture
       [[nodiscard]] T evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq() const;
       [[nodiscard]] T evaluate_d_current_fiber_pk2_stress_d_lambda_r() const;
       [[nodiscard]] T
-      evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambdafsq(
+      evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
           T dt) const;
       [[nodiscard]] T
-      evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambdafsq(
+      evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
           T dt) const;
       [[nodiscard]] T evaluate_current_growth_scalar() const;
-      [[nodiscard]] T evaluate_current_lambdar() const;
+      [[nodiscard]] T evaluate_current_lambda_r() const;
+
+      [[nodiscard]] T evaluate_d_current_growth_scalar_d_lambda_f_sq() const;
+      [[nodiscard]] T evaluate_d_current_lambda_r_d_lambda_f_sq() const;
+      [[nodiscard]] T evaluate_d_current_cauchy_stress_d_lambda_f_sq() const;
       /// @}
 
       /// array of G&R states (the last state in the array is the current state)
       std::array<GRState, numstates> states_;
+
+      /// current derivatives w.r.t. squared lambda_f
+      /// @{
+      T d_growth_scalar_d_lambda_f_sq_ = 0.0;
+      T d_lambda_r_d_lambda_f_sq_ = 0.0;
+      /// @}
 
       /// homeostatic quantities
       /// @{
