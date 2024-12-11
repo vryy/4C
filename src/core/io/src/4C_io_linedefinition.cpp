@@ -575,15 +575,6 @@ namespace Input
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::add_string(std::string name)
-  {
-    pimpl_->components_.emplace_back(Internal::GenericComponent<std::string>{
-        std::move(name), "''", Internal::Behavior::ignore_name});
-    return *this;
-  }
-
-
-
   LineDefinition::Builder& LineDefinition::Builder::add_int_vector(std::string name, int length)
   {
     pimpl_->components_.emplace_back(Internal::GenericComponent(
@@ -633,6 +624,16 @@ namespace Input
   {
     pimpl_->components_.emplace_back(
         Internal::GenericComponent(std::move(name), std::vector<double>(length)));
+    return *this;
+  }
+
+
+
+  LineDefinition::Builder& LineDefinition::Builder::add_named_string_vector(
+      std::string name, int length)
+  {
+    pimpl_->components_.emplace_back(
+        Internal::GenericComponent(std::move(name), std::vector<std::string>(length)));
     return *this;
   }
 

@@ -676,30 +676,22 @@ void Solid::Utils::Shell::ReadElement::read_and_set_locking_types(const Core::FE
   {
     case Core::FE::CellType::quad4:
     {
-      type = container.get<std::string>("EAS");
-      set_membrane_locking_size_quad4(locking_types.membrane, type);
-      type = container.get<std::string>("EAS2");
-      set_bending_locking_size_quad4(locking_types.bending, type);
-      type = container.get<std::string>("EAS3");
-      set_thickness_locking_size_quad4(locking_types.thickness, type);
-      type = container.get<std::string>("EAS4");
-      set_shear_strain_locking_size_quad4(locking_types.transverse_shear_strain_const, type);
-      type = container.get<std::string>("EAS5");
-      set_shear_strain_locking_size_quad4(locking_types.transverse_shear_strain_lin, type);
+      const auto& eas = container.get<std::vector<std::string>>("EAS");
+      set_membrane_locking_size_quad4(locking_types.membrane, eas[0]);
+      set_bending_locking_size_quad4(locking_types.bending, eas[1]);
+      set_thickness_locking_size_quad4(locking_types.thickness, eas[2]);
+      set_shear_strain_locking_size_quad4(locking_types.transverse_shear_strain_const, eas[3]);
+      set_shear_strain_locking_size_quad4(locking_types.transverse_shear_strain_lin, eas[4]);
       break;
     }
     case Core::FE::CellType::quad9:
     {
-      type = container.get<std::string>("EAS");
-      set_membrane_locking_size_quad9(locking_types.membrane, type);
-      type = container.get<std::string>("EAS2");
-      set_bending_locking_size_quad9(locking_types.bending, type);
-      type = container.get<std::string>("EAS3");
-      set_thickness_locking_size_quad9(locking_types.thickness, type);
-      type = container.get<std::string>("EAS4");
-      set_shear_strain_locking_size_quad9(locking_types.transverse_shear_strain_const, type);
-      type = container.get<std::string>("EAS5");
-      set_shear_strain_locking_size_quad9(locking_types.transverse_shear_strain_lin, type);
+      const auto& eas = container.get<std::vector<std::string>>("EAS");
+      set_membrane_locking_size_quad9(locking_types.membrane, eas[0]);
+      set_bending_locking_size_quad9(locking_types.bending, eas[1]);
+      set_thickness_locking_size_quad9(locking_types.thickness, eas[2]);
+      set_shear_strain_locking_size_quad9(locking_types.transverse_shear_strain_const, eas[3]);
+      set_shear_strain_locking_size_quad9(locking_types.transverse_shear_strain_lin, eas[4]);
       break;
     }
     default:

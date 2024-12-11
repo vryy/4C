@@ -65,21 +65,6 @@ namespace
     EXPECT_FALSE(line_definition.read(input));
   }
 
-  // String
-  TEST(LineDefinitionTest, add_string)
-  {
-    std::istringstream input("OMEGA");
-    auto line_definition = Input::LineDefinition::Builder().add_string("OMEGA").build();
-    EXPECT_TRUE(line_definition.read(input));
-  }
-
-  TEST(LineDefinitionTest, ReadFalseWhenStringRequiredButNothingGiven)
-  {
-    std::istringstream input("");
-    auto line_definition = Input::LineDefinition::Builder().add_string("OMEGA").build();
-    EXPECT_FALSE(line_definition.read(input));
-  }
-
   // Int Vector
   TEST(LineDefinitionTest, add_int_vector)
   {
@@ -157,6 +142,22 @@ namespace
   {
     std::istringstream input("1");
     auto line_definition = Input::LineDefinition::Builder().add_named_int("OMEGA").build();
+    EXPECT_FALSE(line_definition.read(input));
+  }
+
+  TEST(LineDefinitionTest, add_named_string_vector)
+  {
+    std::istringstream input("OMEGA TEST1 TEST2 TEST3 TEST4 TEST5");
+    auto line_definition =
+        Input::LineDefinition::Builder().add_named_string_vector("OMEGA", 5).build();
+    EXPECT_TRUE(line_definition.read(input));
+  }
+
+  TEST(LineDefinitionTest, ReadFalseWhenNamedStringVectorRequiredButTooFewVectorEntriesGiven)
+  {
+    std::istringstream input("OMEGA TEST1 TEST2 TEST3 TEST4");
+    auto line_definition =
+        Input::LineDefinition::Builder().add_named_string_vector("OMEGA", 5).build();
     EXPECT_FALSE(line_definition.read(input));
   }
 

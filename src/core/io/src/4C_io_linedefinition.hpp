@@ -151,9 +151,6 @@ namespace Input
       /// Add a single string definition without a value.
       Builder& add_tag(std::string name);
 
-      /// Add a single string variable
-      Builder& add_string(std::string name);
-
       /// Add a vector of integer variables
       Builder& add_int_vector(std::string name, int length);
 
@@ -171,6 +168,9 @@ namespace Input
 
       /// Add a name followed by a vector of double variables
       Builder& add_named_double_vector(std::string name, int length);
+
+      /// Add a name followed by a vector of double variables
+      Builder& add_named_string_vector(std::string name, int length);
 
       /*!
        * Add a name followed by a vector of double variables.
