@@ -277,25 +277,25 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
     mi_->clear();
     // read potential law parameters from input and check
     {
-      std::istringstream pot_law_exponents_stream(
+      std::string pot_law_exponents_in(
           Teuchos::getNumericStringParameter(sbeampotential_, "POT_LAW_EXPONENT"));
 
       Core::IO::ValueParser pot_law_exponents_parser(
-          pot_law_exponents_stream, "While reading potential law exponents: ");
+          pot_law_exponents_in, "While reading potential law exponents: ");
 
-      while (!pot_law_exponents_parser.eof())
+      while (!pot_law_exponents_parser.at_end())
       {
         mi_->push_back(pot_law_exponents_parser.read<double>());
       }
     }
     {
-      std::istringstream pot_law_prefactors_stream(
+      std::string pot_law_prefactors_in(
           Teuchos::getNumericStringParameter(sbeampotential_, "POT_LAW_PREFACTOR"));
 
       Core::IO::ValueParser pot_law_prefactors_parser(
-          pot_law_prefactors_stream, "While reading potential law prefactors: ");
+          pot_law_prefactors_in, "While reading potential law prefactors: ");
 
-      while (!pot_law_prefactors_parser.eof())
+      while (!pot_law_prefactors_parser.at_end())
       {
         ki_->push_back(pot_law_prefactors_parser.read<double>());
       }

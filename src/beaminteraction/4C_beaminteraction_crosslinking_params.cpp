@@ -113,13 +113,13 @@ void BeamInteraction::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // number of linker in simulation volume
   {
     numcrosslinkerpertype_.clear();
-    std::istringstream crosslinker_type_stream(
+    std::string crosslinker_type_in(
         Teuchos::getNumericStringParameter(crosslinking_params_list, "NUMCROSSLINKERPERTYPE"));
 
     Core::IO::ValueParser crosslinker_type_parser(
-        crosslinker_type_stream, "While reading crosslinker type: ");
+        crosslinker_type_in, "While reading crosslinker type: ");
 
-    while (!crosslinker_type_parser.eof())
+    while (!crosslinker_type_parser.at_end())
     {
       numcrosslinkerpertype_.push_back(crosslinker_type_parser.read<int>());
     }
@@ -133,13 +133,13 @@ void BeamInteraction::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // material numbers for crosslinker types
   {
     matcrosslinkerpertype_.clear();
-    std::istringstream crosslinker_material_stream(
+    std::string crosslinker_material_in(
         Teuchos::getNumericStringParameter(crosslinking_params_list, "MATCROSSLINKERPERTYPE"));
 
     Core::IO::ValueParser crosslinker_material_parser(
-        crosslinker_material_stream, "While reading crosslinker material: ");
+        crosslinker_material_in, "While reading crosslinker material: ");
 
-    while (!crosslinker_material_parser.eof())
+    while (!crosslinker_material_parser.at_end())
     {
       matcrosslinkerpertype_.push_back(crosslinker_material_parser.read<int>());
     }
@@ -171,13 +171,13 @@ void BeamInteraction::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   {
     maxnum_init_crosslinker_pertype_.clear();
     std::vector<int> maxnuminitcrosslinkerpertype;
-    std::istringstream num_crosslinker_per_type_stream(Teuchos::getNumericStringParameter(
+    std::string num_crosslinker_per_type_in(Teuchos::getNumericStringParameter(
         crosslinking_params_list, "MAXNUMINITCROSSLINKERPERTYPE"));
 
     Core::IO::ValueParser num_crosslinker_per_type_parser(
-        num_crosslinker_per_type_stream, "While reading number of initial crosslinker: ");
+        num_crosslinker_per_type_in, "While reading number of initial crosslinker: ");
 
-    while (!num_crosslinker_per_type_parser.eof())
+    while (!num_crosslinker_per_type_parser.at_end())
     {
       maxnuminitcrosslinkerpertype.push_back(num_crosslinker_per_type_parser.read<int>());
     }
@@ -201,15 +201,15 @@ void BeamInteraction::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // maximal number of bonds per filament binding spot
   {
     max_num_bonds_per_filament_bspot_.clear();
-    std::istringstream max_num_bonds_per_filament_bspot_stream(Teuchos::getNumericStringParameter(
+    std::string max_num_bonds_per_filament_bspot_in(Teuchos::getNumericStringParameter(
         crosslinking_params_list, "MAXNUMBONDSPERFILAMENTBSPOT"));
 
     Core::IO::ValueParser max_num_bonds_per_filament_bspot_parser(
-        max_num_bonds_per_filament_bspot_stream,
+        max_num_bonds_per_filament_bspot_in,
         "While reading max number of bonds per filament binding spot: ");
 
     int count = 0;
-    while (!max_num_bonds_per_filament_bspot_parser.eof())
+    while (!max_num_bonds_per_filament_bspot_parser.at_end())
     {
       max_num_bonds_per_filament_bspot_[linkertypes_[count]] =
           max_num_bonds_per_filament_bspot_parser.read<int>();
@@ -229,14 +229,14 @@ void BeamInteraction::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // distance between the two binding spots on each filament the same
   {
     filamentbspotintervalglobal_.clear();
-    std::istringstream filament_interval_bspot_stream(Teuchos::getNumericStringParameter(
+    std::string filament_interval_bspot_in(Teuchos::getNumericStringParameter(
         crosslinking_params_list, "FILAMENTBSPOTINTERVALGLOBAL"));
 
     Core::IO::ValueParser filament_interval_bspot_parser(
-        filament_interval_bspot_stream, "While reading filament binding spot interval global: ");
+        filament_interval_bspot_in, "While reading filament binding spot interval global: ");
 
     int count = 0;
-    while (!filament_interval_bspot_parser.eof())
+    while (!filament_interval_bspot_parser.at_end())
     {
       filamentbspotintervalglobal_[linkertypes_[count]] =
           filament_interval_bspot_parser.read<double>();
@@ -248,14 +248,14 @@ void BeamInteraction::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // reference length
   {
     filamentbspotintervallocal_.clear();
-    std::istringstream filament_bspot_interval_local_stream(
+    std::string filament_bspot_interval_local_in(
         Teuchos::getNumericStringParameter(crosslinking_params_list, "FILAMENTBSPOTINTERVALLOCAL"));
 
-    Core::IO::ValueParser filament_bspot_interval_local_parser(filament_bspot_interval_local_stream,
-        "While reading filament binding spot interval local: ");
+    Core::IO::ValueParser filament_bspot_interval_local_parser(
+        filament_bspot_interval_local_in, "While reading filament binding spot interval local: ");
 
     int count = 0;
-    while (!filament_bspot_interval_local_parser.eof())
+    while (!filament_bspot_interval_local_parser.at_end())
     {
       filamentbspotintervallocal_[linkertypes_[count]] =
           filament_bspot_interval_local_parser.read<double>();
@@ -286,18 +286,18 @@ void BeamInteraction::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // start and end arc parameter for binding spots on a filament
   {
     filamentbspotrangeglobal_.clear();
-    std::istringstream filament_bspot_range_global_stream(
+    std::string filament_bspot_range_global_in(
         Teuchos::getNumericStringParameter(crosslinking_params_list, "FILAMENTBSPOTRANGEGLOBAL"));
 
     Core::IO::ValueParser filament_bspot_range_global_parser(
-        filament_bspot_range_global_stream, "While reading filament binding spot range global: ");
+        filament_bspot_range_global_in, "While reading filament binding spot range global: ");
 
     int count = 0;
-    while (!filament_bspot_range_global_parser.eof())
+    while (!filament_bspot_range_global_parser.at_end())
     {
       std::pair<double, double> pair;
       pair.first = filament_bspot_range_global_parser.read<double>();
-      if (!filament_bspot_range_global_parser.eof())
+      if (!filament_bspot_range_global_parser.at_end())
         pair.second = filament_bspot_range_global_parser.read<double>();
       else
         FOUR_C_THROW("Filament binding spot range needs to be specified via two values");
@@ -313,18 +313,18 @@ void BeamInteraction::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // start and end arc parameter for binding spots on a filament
   {
     filamentbspotrangelocal_.clear();
-    std::istringstream filament_bspot_range_local_stream(
+    std::string filament_bspot_range_local_in(
         Teuchos::getNumericStringParameter(crosslinking_params_list, "FILAMENTBSPOTRANGELOCAL"));
 
     Core::IO::ValueParser filament_bspot_range_local_parser(
-        filament_bspot_range_local_stream, "While reading filament binding spot range local: ");
+        filament_bspot_range_local_in, "While reading filament binding spot range local: ");
 
     int count = 0;
-    while (!filament_bspot_range_local_parser.eof())
+    while (!filament_bspot_range_local_parser.at_end())
     {
       std::pair<double, double> pair;
       pair.first = filament_bspot_range_local_parser.read<double>();
-      if (!filament_bspot_range_local_parser.eof())
+      if (!filament_bspot_range_local_parser.at_end())
         pair.second = filament_bspot_range_local_parser.read<double>();
       else
         FOUR_C_THROW("Filament binding spot range needs to be specified via two values");

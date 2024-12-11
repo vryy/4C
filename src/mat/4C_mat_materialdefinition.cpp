@@ -49,28 +49,25 @@ std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefi
   std::vector<std::pair<int, Core::IO::InputParameterContainer>> found_materials;
   for (const auto& line : input.lines_in_section(name))
   {
-    std::shared_ptr<std::stringstream> condline =
-        std::make_shared<std::stringstream>(std::string(line));
-
-    // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
-    // reading the last entry inside This is required since the material parameters can be
-    // specified in an arbitrary order in the input file. So it might happen that the last entry
-    // is extracted before all of the previous ones are.
-    condline->seekp(0, condline->end);
-    *condline << " ";
-
-    Core::IO::ValueParser parser(*condline, "While reading 'MATERIALS' section: ");
+    Core::IO::ValueParser parser(line, "While reading 'MATERIALS' section: ");
 
     parser.consume("MAT");
     const int matid = parser.read<int>();
     const std::string name = parser.read<std::string>();
 
-    // Remove the parts that were already read.
-    condline->str(condline->str().erase(0, (size_t)condline->tellg()));
-
     if (name == materialname_)
     {
       if (matid <= -1) FOUR_C_THROW("Illegal negative ID provided");
+
+      std::shared_ptr<std::stringstream> condline =
+          std::make_shared<std::stringstream>(std::string(parser.get_unparsed_remainder()));
+
+      // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
+      // reading the last entry inside This is required since the material parameters can be
+      // specified in an arbitrary order in the input file. So it might happen that the last entry
+      // is extracted before all of the previous ones are.
+      condline->seekp(0, condline->end);
+      *condline << " ";
 
       Core::IO::InputParameterContainer input_data;
       for (auto& j : inputline_)
