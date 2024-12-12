@@ -232,7 +232,7 @@ bool Mixture::MixtureConstituentRemodelFiberExpl::evaluate_output_data(
   {
     for (int gp = 0; gp < num_gp(); ++gp)
     {
-      data(gp, 0) = remodel_fiber_[gp].evaluate_current_lambdar();
+      data(gp, 0) = remodel_fiber_[gp].evaluate_current_lambda_r();
     }
     return true;
   }
@@ -243,7 +243,7 @@ Core::LinAlg::Matrix<6, 1> Mixture::MixtureConstituentRemodelFiberExpl::evaluate
     int gp, int eleGID) const
 {
   Core::LinAlg::Matrix<6, 1> S_stress(false);
-  const double fiber_pk2 = remodel_fiber_[gp].evaluate_current_fiber_p_k2_stress();
+  const double fiber_pk2 = remodel_fiber_[gp].evaluate_current_fiber_pk2_stress();
 
   S_stress.update(fiber_pk2, anisotropy_extension_.get_structural_tensor_stress(gp, 0));
 
@@ -254,7 +254,7 @@ Core::LinAlg::Matrix<6, 6> Mixture::MixtureConstituentRemodelFiberExpl::evaluate
     const int gp, const int eleGID) const
 {
   const double dPK2dlambdafsq =
-      remodel_fiber_[gp].evaluate_d_current_fiber_p_k2_stress_d_lambdafsq();
+      remodel_fiber_[gp].evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq();
 
   Core::LinAlg::Matrix<6, 6> cmat(false);
   cmat.multiply_nt(2.0 * dPK2dlambdafsq, anisotropy_extension_.get_structural_tensor_stress(gp, 0),

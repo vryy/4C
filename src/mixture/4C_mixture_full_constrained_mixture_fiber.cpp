@@ -957,7 +957,7 @@ void Mixture::FullConstrainedMixtureFiber<Number>::set_deposition_stretch(double
 
 template <typename Number>
 Number Mixture::FullConstrainedMixtureFiber<
-    Number>::evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const
+    Number>::evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq() const
 {
   FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
   const Number lambda_f_sq = std::pow(current_state_.lambda_f, 2);

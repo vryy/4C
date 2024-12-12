@@ -25,39 +25,6 @@ FOUR_C_NAMESPACE_OPEN
 // anonymous namespace for helper functions and classes
 namespace
 {
-  // Definition of the time integration routine
-  template <int numstates, typename T>
-  struct IntegrationState
-  {
-    std::array<T, numstates> x;
-    std::array<T, numstates> f;
-  };
-
-  template <int numstates, typename T>
-  class ImplicitIntegration;
-
-  // Corresponds to a one-step-theta method with theta=0.5 (trapezoidal rule)
-  template <typename T>
-  class ImplicitIntegration<2, T>
-  {
-   public:
-    static constexpr double theta = 0.5;
-    static inline T get_residuum(const IntegrationState<2, T>& state, const T dt)
-    {
-      return state.x[1] - state.x[0] - dt * ((1.0 - theta) * state.f[0] + theta * state.f[1]);
-    }
-
-    static inline T get_partial_derivative_xnp(const IntegrationState<2, T>& state, T dt)
-    {
-      return 1.0;
-    }
-
-    static inline T get_partial_derivative_fnp(const IntegrationState<2, T>& state, T dt)
-    {
-      return -dt * theta;
-    }
-  };
-
   template <int numstates, typename T>
   class ExplicitIntegration;
 
@@ -66,7 +33,7 @@ namespace
   class ExplicitIntegration<2, T>
   {
    public:
-    static T integrate(const IntegrationState<2, T>& state, const T dt)
+    static T integrate(const Mixture::Implementation::IntegrationState<2, T>& state, const T dt)
     {
       return state.x[0] + dt * state.f[0];
     }
@@ -79,13 +46,13 @@ namespace
   }
 
   template <typename T>
-  [[nodiscard]] T evaluated_i4dlambdar(T lambda_f, T lambda_r, T lambda_ext)
+  [[nodiscard]] T evaluate_di4_dlambda_r(T lambda_f, T lambda_r, T lambda_ext)
   {
     return -2.0 * std::pow(lambda_f, 2) / (std::pow(lambda_r * lambda_ext, 2) * lambda_r);
   }
 
   template <typename T>
-  [[nodiscard]] T evaluatd_i4dlambdafsq(T lambda_f, T lambda_r, T lambda_ext)
+  [[nodiscard]] T evaluate_di4_dlambda_f_sq(T lambda_f, T lambda_r, T lambda_ext)
   {
     return 1.0 / std::pow(lambda_r * lambda_ext, 2);
   }
@@ -196,6 +163,48 @@ void Mixture::Implementation::RemodelFiberImplementation<numstates, T>::set_stat
 }
 
 template <int numstates, typename T>
+Mixture::Implementation::IntegrationState<numstates, T>
+Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::get_integration_state_growth_scalar() const
+{
+  return std::invoke(
+      [&]
+      {
+        IntegrationState<numstates, T> growth_state;
+        std::transform(states_.begin(), states_.end(), growth_state.x.begin(),
+            [&](const GRState& state) { return state.growth_scalar; });
+        std::transform(states_.begin(), states_.end(), growth_state.f.begin(),
+            [&](const GRState& state)
+            {
+              return evaluate_growth_evolution_equation_dt(
+                  state.lambda_f, state.lambda_r, state.lambda_ext, state.growth_scalar);
+            });
+        return growth_state;
+      });
+}
+
+template <int numstates, typename T>
+Mixture::Implementation::IntegrationState<numstates, T>
+Mixture::Implementation::RemodelFiberImplementation<numstates, T>::get_integration_state_lambda_r()
+    const
+{
+  return std::invoke(
+      [&]
+      {
+        IntegrationState<numstates, T> remodel_state;
+        std::transform(states_.begin(), states_.end(), remodel_state.x.begin(),
+            [&](const GRState& state) { return state.lambda_r; });
+        std::transform(states_.begin(), states_.end(), remodel_state.f.begin(),
+            [&](const GRState& state)
+            {
+              return evaluate_remodel_evolution_equation_dt(
+                  state.lambda_f, state.lambda_r, state.lambda_ext);
+            });
+        return remodel_state;
+      });
+}
+
+template <int numstates, typename T>
 Core::LinAlg::Matrix<2, 2, T> Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::integrate_local_evolution_equations_implicit(const T dt)
 {
@@ -204,35 +213,9 @@ Core::LinAlg::Matrix<2, 2, T> Mixture::Implementation::RemodelFiberImplementatio
   const T lambda_ext = states_.back().lambda_ext;
   const auto EvaluateLocalNewtonLinearSystem = [&]()
   {
-    const IntegrationState<numstates, T> growth_state = std::invoke(
-        [&]
-        {
-          IntegrationState<numstates, T> growth_state;
-          std::transform(states_.begin(), states_.end(), growth_state.x.begin(),
-              [&](const GRState& state) { return state.growth_scalar; });
-          std::transform(states_.begin(), states_.end(), growth_state.f.begin(),
-              [&](const GRState& state)
-              {
-                return evaluate_growth_evolution_equation_dt(
-                    state.lambda_f, state.lambda_r, state.lambda_ext, state.growth_scalar);
-              });
-          return growth_state;
-        });
+    const IntegrationState<numstates, T> growth_state = get_integration_state_growth_scalar();
 
-    const IntegrationState<numstates, T> remodel_state = std::invoke(
-        [&]
-        {
-          IntegrationState<numstates, T> remodel_state;
-          std::transform(states_.begin(), states_.end(), remodel_state.x.begin(),
-              [&](const GRState& state) { return state.lambda_r; });
-          std::transform(states_.begin(), states_.end(), remodel_state.f.begin(),
-              [&](const GRState& state)
-              {
-                return evaluate_remodel_evolution_equation_dt(
-                    state.lambda_f, state.lambda_r, state.lambda_ext);
-              });
-          return remodel_state;
-        });
+    const IntegrationState<numstates, T> remodel_state = get_integration_state_lambda_r();
 
     T residuum_growth = ImplicitIntegration<numstates, T>::get_residuum(growth_state, dt);
     T residuum_remodel = ImplicitIntegration<numstates, T>::get_residuum(remodel_state, dt);
@@ -289,6 +272,39 @@ Core::LinAlg::Matrix<2, 2, T> Mixture::Implementation::RemodelFiberImplementatio
     iteration += 1;
   }
 
+
+  // compute increment w.r.t. lambda_f_sq
+  const Core::LinAlg::Matrix<2, 1, T> d_residuum_d_lambda_f_sq = std::invoke(
+      [&]()
+      {
+        Core::LinAlg::Matrix<2, 1, T> d_residuum_d_lambfa_f_sq;
+
+        d_residuum_d_lambfa_f_sq(0, 0) =
+            evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
+                dt);
+        d_residuum_d_lambfa_f_sq(1, 0) =
+            evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
+                dt);
+
+        return d_residuum_d_lambfa_f_sq;
+      });
+
+
+
+  K.invert();
+  Core::LinAlg::Matrix<2, 1, T> d_growth_scalar_d_residuum(false);
+  Core::LinAlg::Matrix<2, 1, T> d_lambda_r_d_residuum(false);
+
+  for (std::size_t i = 0; i < 2; ++i)
+  {
+    d_growth_scalar_d_residuum(i) = K(0, i);
+    d_lambda_r_d_residuum(i) = K(1, i);
+  }
+
+  // store current derivative of lambda_r and growth_scalar w.r.t. lambda_f
+  d_growth_scalar_d_lambda_f_sq_ = -d_growth_scalar_d_residuum.dot(d_residuum_d_lambda_f_sq);
+  d_lambda_r_d_lambda_f_sq_ = -d_lambda_r_d_residuum.dot(d_residuum_d_lambda_f_sq);
+
   return K;
 }
 
@@ -298,40 +314,19 @@ template <int numstates, typename T>
 void Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::integrate_local_evolution_equations_explicit(const T dt)
 {
-  const IntegrationState<numstates, T> growth_state = std::invoke(
-      [&]
-      {
-        IntegrationState<numstates, T> growth_state;
-        std::transform(states_.begin(), states_.end(), growth_state.x.begin(),
-            [&](const GRState& state) { return state.growth_scalar; });
-        std::transform(states_.begin(), states_.end(), growth_state.f.begin(),
-            [&](const GRState& state)
-            {
-              return evaluate_growth_evolution_equation_dt(
-                  state.lambda_f, state.lambda_r, state.lambda_ext, state.growth_scalar);
-            });
-        return growth_state;
-      });
+  const IntegrationState<numstates, T> growth_state = get_integration_state_growth_scalar();
 
-  const IntegrationState<numstates, T> remodel_state = std::invoke(
-      [&]
-      {
-        IntegrationState<numstates, T> remodel_state;
-        std::transform(states_.begin(), states_.end(), remodel_state.x.begin(),
-            [&](const GRState& state) { return state.lambda_r; });
-        std::transform(states_.begin(), states_.end(), remodel_state.f.begin(),
-            [&](const GRState& state)
-            {
-              return evaluate_remodel_evolution_equation_dt(
-                  state.lambda_f, state.lambda_r, state.lambda_ext);
-            });
-        return remodel_state;
-      });
+  const IntegrationState<numstates, T> remodel_state = get_integration_state_lambda_r();
 
 
   // Update state
   states_.back().growth_scalar = ExplicitIntegration<numstates, T>::integrate(growth_state, dt);
   states_.back().lambda_r = ExplicitIntegration<numstates, T>::integrate(remodel_state, dt);
+
+  // reset current derivative of lambda_r and growth_scalar w.r.t. lambda_f (zero in explicit time
+  // integration)
+  d_growth_scalar_d_lambda_f_sq_ = 0.0;
+  d_lambda_r_d_lambda_f_sq_ = 0.0;
 }
 
 
@@ -490,7 +485,7 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
   return evaluate_d_remodel_evolution_equation_dt_partial_d_remodel(
              lambda_f, lambda_r, lambda_ext) +
          evaluate_d_remodel_evolution_equation_dt_d_i4(lambda_f, lambda_r, lambda_ext) *
-             evaluated_i4dlambdar(lambda_f, lambda_r, lambda_ext);
+             evaluate_di4_dlambda_r(lambda_f, lambda_r, lambda_ext);
 }
 
 template <int numstates, typename T>
@@ -522,7 +517,7 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
 
 template <int numstates, typename T>
 T Mixture::Implementation::RemodelFiberImplementation<numstates,
-    T>::evaluate_current_fiber_p_k2_stress() const
+    T>::evaluate_current_fiber_pk2_stress() const
 {
   FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
   const T lambda_f = states_.back().lambda_f;
@@ -535,7 +530,7 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
 
 template <int numstates, typename T>
 T Mixture::Implementation::RemodelFiberImplementation<numstates,
-    T>::evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const
+    T>::evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq() const
 {
   FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
   const T lambda_f = states_.back().lambda_f;
@@ -550,7 +545,7 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
 
 template <int numstates, typename T>
 T Mixture::Implementation::RemodelFiberImplementation<numstates,
-    T>::evaluate_d_current_fiber_p_k2_stress_d_lambdar() const
+    T>::evaluate_d_current_fiber_pk2_stress_d_lambda_r() const
 {
   FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
   const T lambda_f = states_.back().lambda_f;
@@ -558,31 +553,18 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
   const T lambda_ext = states_.back().lambda_ext;
   const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
 
-  const T dI4dlambdar = evaluated_i4dlambdar(lambda_f, lambda_r, lambda_ext);
+  const T dI4dlambdar = evaluate_di4_dlambda_r(lambda_f, lambda_r, lambda_ext);
 
   return fiber_material_->get_d_cauchy_stress_d_i4(I4) * dI4dlambdar / std::pow(lambda_f, 2);
 }
 
 template <int numstates, typename T>
 T Mixture::Implementation::RemodelFiberImplementation<numstates,
-    T>::evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambdafsq(T dt)
+    T>::evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambda_f_sq(T dt)
     const
 {
   FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
-  const IntegrationState<numstates, T> growth_state = std::invoke(
-      [&]
-      {
-        IntegrationState<numstates, T> growth_state;
-        std::transform(states_.begin(), states_.end(), growth_state.x.begin(),
-            [&](const GRState& state) { return state.growth_scalar; });
-        std::transform(states_.begin(), states_.end(), growth_state.f.begin(),
-            [&](const GRState& state)
-            {
-              return evaluate_growth_evolution_equation_dt(
-                  state.lambda_f, state.lambda_r, state.lambda_ext, state.growth_scalar);
-            });
-        return growth_state;
-      });
+  const IntegrationState<numstates, T> growth_state = get_integration_state_growth_scalar();
 
   const T lambda_f = states_.back().lambda_f;
   const T lambda_r = states_.back().lambda_r;
@@ -594,29 +576,17 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
          evaluate_d_growth_evolution_equation_dt_d_sig(
              lambda_f, lambda_r, lambda_ext, growth_scalar) *
          evaluate_d_fiber_cauchy_stress_partial_d_i4(lambda_f, lambda_r, lambda_ext) *
-         evaluatd_i4dlambdafsq<T>(lambda_f, lambda_r, lambda_ext);
+         evaluate_di4_dlambda_f_sq<T>(lambda_f, lambda_r, lambda_ext);
 }
 
 template <int numstates, typename T>
 T Mixture::Implementation::RemodelFiberImplementation<numstates,
-    T>::evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambdafsq(T dt)
+    T>::evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambda_f_sq(T dt)
     const
 {
   FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
-  const IntegrationState<numstates, T> remodel_state = std::invoke(
-      [&]
-      {
-        IntegrationState<numstates, T> remodel_state;
-        std::transform(states_.begin(), states_.end(), remodel_state.x.begin(),
-            [&](const GRState& state) { return state.lambda_r; });
-        std::transform(states_.begin(), states_.end(), remodel_state.f.begin(),
-            [&](const GRState& state)
-            {
-              return evaluate_remodel_evolution_equation_dt(
-                  state.lambda_f, state.lambda_r, state.lambda_ext);
-            });
-        return remodel_state;
-      });
+  const IntegrationState<numstates, T> remodel_state = get_integration_state_lambda_r();
+
   const T dRremodeldF =
       ImplicitIntegration<numstates, T>::get_partial_derivative_fnp(remodel_state, dt);
 
@@ -624,9 +594,8 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
   const T lambda_r = states_.back().lambda_r;
   const T lambda_ext = states_.back().lambda_ext;
   return dRremodeldF *
-         evaluate_d_remodel_evolution_equation_dt_d_sig(lambda_f, lambda_r, lambda_ext) *
-         evaluate_d_fiber_cauchy_stress_partial_d_i4(lambda_f, lambda_r, lambda_ext) *
-         evaluatd_i4dlambdafsq<T>(lambda_f, lambda_r, lambda_ext);
+         evaluate_d_remodel_evolution_equation_dt_d_i4(lambda_f, lambda_r, lambda_ext) *
+         evaluate_di4_dlambda_f_sq<T>(lambda_f, lambda_r, lambda_ext);
 }
 
 template <int numstates, typename T>
@@ -652,7 +621,7 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_fiber_cauchy_stress_d_remodel(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
-  const T dI4dremodel = evaluated_i4dlambdar(lambda_f, lambda_r, lambda_ext);
+  const T dI4dremodel = evaluate_di4_dlambda_r(lambda_f, lambda_r, lambda_ext);
   return evaluate_d_fiber_cauchy_stress_partial_d_i4(lambda_f, lambda_r, lambda_ext) * dI4dremodel;
 }
 
@@ -664,10 +633,41 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T Mixture::Implementation::RemodelFiberImplementation<numstates, T>::evaluate_current_lambdar()
+T Mixture::Implementation::RemodelFiberImplementation<numstates, T>::evaluate_current_lambda_r()
     const
 {
   return states_.back().lambda_r;
+}
+
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::evaluate_d_current_growth_scalar_d_lambda_f_sq() const
+{
+  return d_growth_scalar_d_lambda_f_sq_;
+}
+
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::evaluate_d_current_lambda_r_d_lambda_f_sq() const
+{
+  return d_lambda_r_d_lambda_f_sq_;
+}
+
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::evaluate_d_current_cauchy_stress_d_lambda_f_sq() const
+{
+  FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
+  const T lambda_f = states_.back().lambda_f;
+  const T lambda_r = states_.back().lambda_r;
+  const T lambda_ext = states_.back().lambda_ext;
+  const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
+
+  const T d_i4_d_lambda_f_sq = evaluate_di4_dlambda_f_sq(lambda_f, lambda_r, lambda_ext);
+  const T d_i4_d_lambda_r = evaluate_di4_dlambda_r(lambda_f, lambda_r, lambda_ext);
+
+  return fiber_material_->get_d_cauchy_stress_d_i4(I4) *
+         (d_i4_d_lambda_f_sq + d_i4_d_lambda_r * d_lambda_r_d_lambda_f_sq_);
 }
 
 
@@ -738,39 +738,39 @@ double Mixture::RemodelFiber<numstates>::evaluate_current_fiber_cauchy_stress() 
 }
 
 template <int numstates>
-double Mixture::RemodelFiber<numstates>::evaluate_current_fiber_p_k2_stress() const
+double Mixture::RemodelFiber<numstates>::evaluate_current_fiber_pk2_stress() const
 {
-  return impl_->evaluate_current_fiber_p_k2_stress();
+  return impl_->evaluate_current_fiber_pk2_stress();
 }
 
 template <int numstates>
-double Mixture::RemodelFiber<numstates>::evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const
+double Mixture::RemodelFiber<numstates>::evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq() const
 {
-  return impl_->evaluate_d_current_fiber_p_k2_stress_d_lambdafsq();
+  return impl_->evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq();
 };
 
 template <int numstates>
-double Mixture::RemodelFiber<numstates>::evaluate_d_current_fiber_p_k2_stress_d_lambdar() const
+double Mixture::RemodelFiber<numstates>::evaluate_d_current_fiber_pk2_stress_d_lambda_r() const
 {
-  return impl_->evaluate_d_current_fiber_p_k2_stress_d_lambdar();
+  return impl_->evaluate_d_current_fiber_pk2_stress_d_lambda_r();
 };
 
 template <int numstates>
 double Mixture::RemodelFiber<numstates>::
-    evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambdafsq(
+    evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
         double dt) const
 {
-  return impl_->evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambdafsq(
-      dt);
+  return impl_
+      ->evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambda_f_sq(dt);
 }
 
 template <int numstates>
 double Mixture::RemodelFiber<numstates>::
-    evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambdafsq(
+    evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
         double dt) const
 {
-  return impl_->evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambdafsq(
-      dt);
+  return impl_
+      ->evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambda_f_sq(dt);
 }
 
 template <int numstates>
@@ -780,9 +780,27 @@ double Mixture::RemodelFiber<numstates>::evaluate_current_growth_scalar() const
 }
 
 template <int numstates>
-double Mixture::RemodelFiber<numstates>::evaluate_current_lambdar() const
+double Mixture::RemodelFiber<numstates>::evaluate_current_lambda_r() const
 {
-  return impl_->evaluate_current_lambdar();
+  return impl_->evaluate_current_lambda_r();
+}
+
+template <int numstates>
+double Mixture::RemodelFiber<numstates>::evaluate_d_current_growth_scalar_d_lambda_f_sq() const
+{
+  return impl_->evaluate_d_current_growth_scalar_d_lambda_f_sq();
+}
+
+template <int numstates>
+double Mixture::RemodelFiber<numstates>::evaluate_d_current_lambda_r_d_lambda_f_sq() const
+{
+  return impl_->evaluate_d_current_lambda_r_d_lambda_f_sq();
+}
+
+template <int numstates>
+double Mixture::RemodelFiber<numstates>::evaluate_d_current_cauchy_stress_d_lambda_f_sq() const
+{
+  return impl_->evaluate_d_current_cauchy_stress_d_lambda_f_sq();
 }
 
 template class Mixture::RemodelFiber<2>;

@@ -295,7 +295,7 @@ Mixture::MixtureConstituentFullConstrainedMixtureFiber::evaluate_current_cmat(
     const int gp, const int eleGID) const
 {
   const double dPK2dlambdafsq =
-      full_constrained_mixture_fiber_[gp].evaluate_d_current_fiber_p_k2_stress_d_lambdafsq();
+      full_constrained_mixture_fiber_[gp].evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq();
 
   Core::LinAlg::Matrix<6, 6> cmat(false);
   cmat.multiply_nn(2.0 * dPK2dlambdafsq, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
