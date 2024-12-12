@@ -1,0 +1,162 @@
+name: coverage
+
+on:
+  schedule:
+    - cron: '0 1 * * *'
+
+jobs:
+  gcc13_coverage_build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:28cfb9d0
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      test-chunks: ${{ steps.set-matrix.outputs.chunk-array }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check docker hash
+        uses: ./.github/actions/compute-and-check-dependencies-hash
+      - uses: ./.github/actions/build_4C
+        with:
+          cmake-preset: docker_coverage
+          build-targets: full
+          build-directory: ${{ github.workspace }}/build
+          use-ccache: "false"
+      - uses: ./.github/actions/upload_4C_build
+        with:
+          build-directory: ${{ github.workspace }}/build
+          retention-days: 1
+      - uses: ./.github/actions/chunk_test_suite
+        id: set-matrix
+        # Note: We will not use previous runtimes for chunking to avoid running out of storage
+        with:
+          build-directory: ${{ github.workspace }}/build
+          source-directory: ${{ github.workspace }}
+          number-of-chunks: 40 # we need fine grained test chunks to avoid running out of storage
+
+  gcc13_coverage_test:
+    needs: gcc13_coverage_build
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:28cfb9d0
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    strategy:
+      matrix:
+        test-chunk: ${{fromJson(needs.gcc13_coverage_build.outputs.test-chunks)}}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get upgrade -y
+          apt-get install -y llvm
+      - uses: actions/checkout@v4
+      - name: Check docker hash
+        uses: ./.github/actions/compute-and-check-dependencies-hash
+      - uses: ./.github/actions/download_4C_build
+        with:
+          build-job: gcc13_coverage_build
+      - name: Run all tests and collect raw coverage data
+        run: | # Note: Collect raw coverage data in a file distict for each process
+          cd $GITHUB_WORKSPACE/build
+          export LLVM_PROFILE_FILE="$GITHUB_WORKSPACE/4C-coverage-%m-%p.profraw"
+          time ctest -I $TEST_CHUNK -j `nproc` --output-on-failure  --output-junit $GITHUB_WORKSPACE/gcc13_coverage_test_report-$TEST_CHUNK.xml
+        env:
+          TEST_CHUNK: ${{ matrix.test-chunk }}
+      - name: Collect coverage data
+        run: |
+          cd $GITHUB_WORKSPACE/build
+          llvm-profdata merge -sparse $GITHUB_WORKSPACE/*.profraw -o $GITHUB_WORKSPACE/4C-coverage-data-$TEST_CHUNK.profdata
+        env:
+          TEST_CHUNK: ${{ matrix.test-chunk }}
+      - name: Upload merged coverage data
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-4C-coverage-data-${{ matrix.test-chunk }}.profdata
+          path: |
+            ${{ github.workspace }}/4C-coverage-data-${{ matrix.test-chunk }}.profdata
+          retention-days: 1
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: gcc13_coverage_test_report-${{ matrix.test-chunk }}.xml
+          path: |
+            ${{ github.workspace }}/gcc13_coverage_test_report-${{ matrix.test-chunk }}.xml
+          retention-days: 1
+
+  gcc13_coverage_test_report:
+    needs: gcc13_coverage_test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+      - uses: ./.github/actions/merge_junit_report_artifacts
+        with:
+          junit-report-base-name: gcc13_coverage_test_report
+          retention-days: 2
+
+  report:
+    needs: [gcc13_coverage_test, gcc13_coverage_build]
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:28cfb9d0
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check docker hash
+        uses: ./.github/actions/compute-and-check-dependencies-hash
+      - name: Setup developer environment for testing
+        run: |
+          cd $GITHUB_WORKSPACE
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+      - uses: ./.github/actions/download_4C_build
+        with:
+          build-job: gcc13_coverage_build
+      - name: Setup developer environment for testing
+        run: |
+          cd $GITHUB_WORKSPACE
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          ./utilities/set_up_dev_env.sh
+      - name: Download reports
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ github.workspace }}
+          merge-multiple: true
+          pattern: gcc13_coverage_test-4C-coverage-data-*.profdata
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y llvm
+      - name: Merge coverage data
+        run: |
+          cd $GITHUB_WORKSPACE
+          llvm-profdata merge -sparse *.profdata -o 4C-coverage-data.profdata
+      - name: Print of coverage report summary
+        run: |
+          cd $GITHUB_WORKSPACE
+          llvm-cov report --object ./build/lib4C.so --use-color --format=text --instr-profile=4C-coverage-data.profdata --show-branch-summary --show-instantiation-summary --show-region-summary --ignore-filename-regex=".*/build/.*"
+      - name: Generate coverage report
+        run: |
+          cd $GITHUB_WORKSPACE
+          llvm-cov show --object ./build/lib4C.so --use-color --output-dir=coverage_report --format=html --instr-profile=4C-coverage-data.profdata --show-branches=percent --show-directory-coverage --show-line-counts-or-regions -Xdemangler c++filt --project-title=4C --show-expansions --show-instantiations --ignore-filename-regex=".*/build/.*" --show-instantiation-summary
+      - name: Create coverage badge
+        run: |
+          cd $GITHUB_WORKSPACE
+          python -m venv venv
+          . venv/bin/activate
+          pip install anybadge
+          COVERAGE_PERCENT=`llvm-cov export --object ./build/lib4C.so --format=text --instr-profile=4C-coverage-data.profdata --summary-only --ignore-filename-regex=".*/build/.*" | python -c 'import json, sys; print(json.load(sys.stdin)["data"][0]["totals"]["lines"]["percent"])'`
+          anybadge -l coverage --suffix=" %" --value=$COVERAGE_PERCENT -m "%.2f" 65=red 90=orange 100=green > coverage_report/badge_coverage.svg
+      - name: Upload coverage html report
+        uses: actions/upload-artifact@v4
+        with:
+          name: 4C_coverage_report
+          path: ${{ github.workspace }}/coverage_report
+          retention-days: 2
