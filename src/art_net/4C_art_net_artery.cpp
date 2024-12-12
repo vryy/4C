@@ -57,7 +57,7 @@ void Discret::Elements::ArteryType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["ART"];
 
   defs["LINE2"] = Input::LineDefinition::Builder()
-                      .add_int_vector("LINE2", 2)
+                      .add_named_int_vector("LINE2", 2)
                       .add_named_int("MAT")
                       .add_named_int("GP")
                       .add_named_string("TYPE")

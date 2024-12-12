@@ -306,13 +306,13 @@ double BeamInteraction::determine_searchbox_inc(Teuchos::ParameterList& beamcont
   double searchboxinc = 0.0;
 
   std::vector<double> extval(0);
-  std::istringstream extrusion_value_stream(
+  std::string extrusion_value_in(
       Teuchos::getNumericStringParameter(beamcontactparams, "BEAMS_EXTVAL"));
 
   Core::IO::ValueParser extrusionvalue_parser(
-      extrusion_value_stream, "While reading extrusion values: ");
+      extrusion_value_in, "While reading extrusion values: ");
 
-  while (!extrusionvalue_parser.eof())
+  while (!extrusionvalue_parser.at_end())
   {
     extval.push_back(extrusionvalue_parser.read<double>());
   }

@@ -139,7 +139,7 @@ void Core::Elements::ElementDefinition::print_element_lines(std::ostream& stream
     for (std::map<std::string, Input::LineDefinition>::iterator i = defs.begin(); i != defs.end();
          ++i)
     {
-      stream << "// 0 " << name << " " << i->first << " ";
+      stream << "// 0 " << name << " ";
       i->second.print(stream);
       stream << '\n';
     }

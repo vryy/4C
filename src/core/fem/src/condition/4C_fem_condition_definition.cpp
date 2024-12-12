@@ -66,10 +66,8 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::InputFile& input,
   //
   // ("DPOINT" | "DLINE" | "DSURF" | "DVOL" ) <number>
 
-  std::stringstream line(section_vec[0]);
-
   Core::IO::ValueParser parser_header(
-      line, "While reading header of condition section '" + sectionname_ + "': ");
+      section_vec[0], "While reading header of condition section '" + sectionname_ + "': ");
 
   const std::string expected_geometry_type = std::invoke(
       [this]()
@@ -100,17 +98,8 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::InputFile& input,
 
   for (auto i = section_vec.begin() + 1; i != section_vec.end(); ++i)
   {
-    std::shared_ptr<std::stringstream> condline = std::make_shared<std::stringstream>(*i);
-
-    // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
-    // reading the last entry inside This is required since the material parameters can be
-    // specified in an arbitrary order in the input file. So it might happen that the last entry
-    // is extracted before all of the previous ones are.
-    condline->seekp(0, condline->end);
-    *condline << " ";
-
     Core::IO::ValueParser parser_content(
-        *condline, "While reading content of condition section '" + sectionname_ + "': ");
+        *i, "While reading content of condition section '" + sectionname_ + "': ");
 
     parser_content.consume("E");
     // Read a one-based condition number but convert it to zero-based for internal use.
@@ -119,6 +108,15 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::InputFile& input,
 
     std::shared_ptr<Core::Conditions::Condition> condition =
         std::make_shared<Core::Conditions::Condition>(dobjid, condtype_, buildgeometry_, gtype_);
+
+    std::shared_ptr<std::stringstream> condline =
+        std::make_shared<std::stringstream>(std::string(parser_content.get_unparsed_remainder()));
+    // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
+    // reading the last entry inside This is required since the material parameters can be
+    // specified in an arbitrary order in the input file. So it might happen that the last entry
+    // is extracted before all of the previous ones are.
+    condline->seekp(0, condline->end);
+    *condline << " ";
 
     for (auto& j : inputline_)
     {

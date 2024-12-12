@@ -98,14 +98,14 @@ void Discret::Elements::ElemagDiffType::setup_element_definition(
 
   // 3D elements
   defs["HEX8"] = Input::LineDefinition::Builder()
-                     .add_int_vector("HEX8", 8)
+                     .add_named_int_vector("HEX8", 8)
                      .add_named_int("MAT")
                      .add_named_int("DEG")
                      .add_named_int("SPC")
                      .build();
 
   defs["TET4"] = Input::LineDefinition::Builder()
-                     .add_int_vector("TET4", 4)
+                     .add_named_int_vector("TET4", 4)
                      .add_named_int("MAT")
                      .add_named_int("DEG")
                      .add_named_int("SPC")
@@ -113,21 +113,21 @@ void Discret::Elements::ElemagDiffType::setup_element_definition(
 
   // 2D elements
   defs["QUAD4"] = Input::LineDefinition::Builder()
-                      .add_int_vector("QUAD4", 4)
+                      .add_named_int_vector("QUAD4", 4)
                       .add_named_int("MAT")
                       .add_named_int("DEG")
                       .add_named_int("SPC")
                       .build();
 
   defs["QUAD9"] = Input::LineDefinition::Builder()
-                      .add_int_vector("QUAD9", 9)
+                      .add_named_int_vector("QUAD9", 9)
                       .add_named_int("MAT")
                       .add_named_int("DEG")
                       .add_named_int("SPC")
                       .build();
 
   defs["TRI3"] = Input::LineDefinition::Builder()
-                     .add_int_vector("TRI3", 3)
+                     .add_named_int_vector("TRI3", 3)
                      .add_named_int("MAT")
                      .add_named_int("DEG")
                      .add_named_int("SPC")

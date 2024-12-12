@@ -69,7 +69,7 @@ void Discret::Elements::Nurbs::Wall1NurbsType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["WALLNURBS"];
 
   defs["NURBS4"] = Input::LineDefinition::Builder()
-                       .add_int_vector("NURBS4", 4)
+                       .add_named_int_vector("NURBS4", 4)
                        .add_named_int("MAT")
                        .add_named_string("KINEM")
                        .add_named_string("EAS")
@@ -79,7 +79,7 @@ void Discret::Elements::Nurbs::Wall1NurbsType::setup_element_definition(
                        .build();
 
   defs["NURBS9"] = Input::LineDefinition::Builder()
-                       .add_int_vector("NURBS9", 9)
+                       .add_named_int_vector("NURBS9", 9)
                        .add_named_int("MAT")
                        .add_named_string("KINEM")
                        .add_named_string("EAS")

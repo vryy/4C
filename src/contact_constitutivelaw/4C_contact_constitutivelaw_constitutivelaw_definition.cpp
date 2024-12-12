@@ -38,24 +38,11 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& proble
 {
   for (const auto& i : input.lines_in_section("CONTACT CONSTITUTIVE LAWS"))
   {
-    std::shared_ptr<std::stringstream> condline =
-        std::make_shared<std::stringstream>(std::string{i});
-
-    // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
-    // reading the last entry inside This is required since the material parameters can be
-    // specified in an arbitrary order in the input file. So it might happen that the last entry
-    // is extracted before all of the previous ones are.
-    condline->seekp(0, condline->end);
-    *condline << " ";
-
-    Core::IO::ValueParser parser(*condline, "While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
+    Core::IO::ValueParser parser(i, "While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
 
     parser.consume("LAW");
     const int id = parser.read<int>();
     const std::string name = parser.read<std::string>();
-
-    // Remove the parts that were already read.
-    condline->str(condline->str().erase(0, (size_t)condline->tellg()));
 
     if (name == coconstlawname_)
     {
@@ -70,6 +57,16 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& proble
           std::make_shared<CONTACT::CONSTITUTIVELAW::Container>(
               id, coconstlawtype_, coconstlawname_);
       // fill the latter
+
+      std::shared_ptr<std::stringstream> condline =
+          std::make_shared<std::stringstream>(std::string{parser.get_unparsed_remainder()});
+
+      // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
+      // reading the last entry inside This is required since the material parameters can be
+      // specified in an arbitrary order in the input file. So it might happen that the last entry
+      // is extracted before all of the previous ones are.
+      condline->seekp(0, condline->end);
+      *condline << " ";
 
       for (const auto& j : inputline_)
         condline = j->read(LawDefinition::name(), condline, *container);

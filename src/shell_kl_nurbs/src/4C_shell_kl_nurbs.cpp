@@ -95,7 +95,7 @@ void Discret::Elements::KirchhoffLoveShellNurbsType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["SHELL_KIRCHHOFF_LOVE_NURBS"];
 
   defs["NURBS9"] = Input::LineDefinition::Builder()
-                       .add_int_vector("NURBS9", 9)
+                       .add_named_int_vector("NURBS9", 9)
                        .add_named_int("MAT")
                        .add_named_int_vector("GP", 2)
                        .build();

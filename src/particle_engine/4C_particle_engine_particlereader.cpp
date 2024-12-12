@@ -36,12 +36,10 @@ void PARTICLEENGINE::read_particles(Core::IO::InputFile& input, const std::strin
 
     double t1 = time.totalElapsedTime(true);
     {
-      std::istringstream linestream{std::string{particle_line}};
-
       PARTICLEENGINE::TypeEnum particletype;
       PARTICLEENGINE::ParticleStates particlestates;
 
-      Core::IO::ValueParser parser{linestream, "While reading particle data: "};
+      Core::IO::ValueParser parser{particle_line, "While reading particle data: "};
       parser.consume("TYPE");
       auto type = parser.read<std::string>();
       parser.consume("POS");
@@ -61,6 +59,8 @@ void PARTICLEENGINE::read_particles(Core::IO::InputFile& input, const std::strin
         std::string statelabel;
         PARTICLEENGINE::StateEnum particlestate;
         std::vector<double> state;
+
+        std::istringstream linestream(std::string(parser.get_unparsed_remainder()));
 
         while (linestream >> statelabel)
         {

@@ -40,7 +40,7 @@ void Discret::Elements::FluidTypeImmersed::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defsimmersed = definitions["FLUIDIMMERSED"];
 
   defsimmersed["HEX8"] = Input::LineDefinition::Builder()
-                             .add_int_vector("HEX8", 8)
+                             .add_named_int_vector("HEX8", 8)
                              .add_named_int("MAT")
                              .add_named_string("NA")
                              .build();

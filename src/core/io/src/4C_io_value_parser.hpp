@@ -14,56 +14,54 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <array>
-#include <istream>
 #include <string>
+#include <string_view>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO
 {
+  namespace Internal
+  {
+    void parse(std::string_view string, int& value);
+    void parse(std::string_view string, double& value);
+    void parse(std::string_view string, std::string& value);
+  }  // namespace Internal
+
   /**
    * A helper to parse values as defined in the .dat file format into C++ data. This
-   * is a low-level class intended for use inside more user-friendly input mechanisms.
-   * The main reason why this is a class instead of a collection of functions, is to attach some
-   * context in the constructor. For instance, you can pass the section name for better error
-   * messages.
+   * is a low-level class intended for use inside more user-friendly input mechanisms. Based on a
+   * input string_view, it allows to read values of different types in sequence and validate that
+   * the format matches. Note that the whole class works on string_views, so the original data must
+   * outlive the parser.
    */
   class ValueParser
   {
    public:
     /**
-     * Set up the Parser and give an optional additional scope message. This information is
+     * Set up the ValueParser and give an optional additional scope message. This information is
      * prepended to all error messages. Example:
      *
      * @code
-     *   ValueParser parser(stream_in, "While reading section MY PARAMETERS: ");
+     *   ValueParser parser(line, "While reading section MY PARAMETERS: ");
      * @endcode
+     *
+     * The input @p line is a string_view onto the data to parse. The parser will not copy the data,
+     * so the original data must outlive the parser.
      */
-    ValueParser(std::istream& stream, std::string user_scope_message)
-        : stream_(stream), user_scope_(std::move(user_scope_message))
-    {
-    }
+    ValueParser(std::string_view line, std::string user_scope_message);
 
-    //! Read the next string in @p in and ensure it matches the expectation.
-    void consume(const std::string& expected)
-    {
-      std::string read_string;
-      stream_ >> read_string;
-      if (read_string != expected)
-        FOUR_C_THROW(
-            "%sCould not read expected string '%s'.", user_scope_.c_str(), expected.c_str());
-    }
+    //! Read the next string and ensure it matches the expectation.
+    void consume(const std::string& expected);
 
     //! Read a single value of given type.
     template <typename T>
     T read()
     {
+      std::string_view read_string = advance_token();
       T read_object;
-      stream_ >> read_object;
-
-      if (stream_.fail() || (!stream_.eof() && !std::isspace(stream_.peek())))
-        FOUR_C_THROW("%sCould not read expected value of type '%s'.", user_scope_.c_str(),
-            Core::Utils::get_type_name<T>().c_str());
+      Internal::parse(read_string, read_object);
       return read_object;
     }
 
@@ -77,12 +75,33 @@ namespace Core::IO
       return array;
     }
 
-    //! Check if end of file is reached for stream.
-    bool eof() const { return stream_.eof(); }
+    /**
+     * Return the next token without consuming it. The return token may be empty if the parser has
+     * reached the end of the input string.
+     */
+    [[nodiscard]] std::string_view peek() const;
+
+    //! Check if this parser reached the end of the input string.
+    [[nodiscard]] bool at_end() const;
+
+    /**
+     * Get anything that hasn't been parsed by previous calls to consume() or read(). Note that
+     * the returned string_view is a view into the original input string, so it is only valid as
+     * long as the original string is valid. The returned string_view is empty if the parser has
+     * reached the end of the input string.
+     *
+     * @note The returned string_view might contain leading whitespace.
+     */
+    [[nodiscard]] std::string_view get_unparsed_remainder() const;
 
    private:
-    //! The stream to read from.
-    std::istream& stream_;
+    std::string_view advance_token();
+
+    //! The data to parse from.
+    std::string_view line_;
+
+    //! The current position in the line_.
+    std::size_t current_index_{0};
 
     //! Prepend a user message for better error messages.
     std::string user_scope_{};

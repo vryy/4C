@@ -72,7 +72,7 @@ void Discret::Elements::Torsion3Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["TORSION3"];
 
   defs["LINE3"] = Input::LineDefinition::Builder()
-                      .add_int_vector("LINE3", 3)
+                      .add_named_int_vector("LINE3", 3)
                       .add_named_int("MAT")
                       .add_named_string("BENDINGPOTENTIAL")
                       .build();

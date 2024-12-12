@@ -109,7 +109,7 @@ void Discret::Elements::Beam3rType::setup_element_definition(
 
   // note: LINE2 refers to linear Lagrange interpolation of centerline AND triad field
   defs["LINE2"] = Input::LineDefinition::Builder()
-                      .add_int_vector("LINE2", 2)
+                      .add_named_int_vector("LINE2", 2)
                       .add_named_int("MAT")
                       .add_named_double_vector("TRIADS", 6)
                       .add_optional_tag("FAD")
@@ -117,7 +117,7 @@ void Discret::Elements::Beam3rType::setup_element_definition(
 
   // note: LINE3 refers to quadratic Lagrange interpolation of centerline AND triad field
   defs["LINE3"] = Input::LineDefinition::Builder()
-                      .add_int_vector("LINE3", 3)
+                      .add_named_int_vector("LINE3", 3)
                       .add_named_int("MAT")
                       .add_named_double_vector("TRIADS", 9)
                       .add_optional_tag("FAD")
@@ -125,7 +125,7 @@ void Discret::Elements::Beam3rType::setup_element_definition(
 
   // note: LINE4 refers to cubic Lagrange interpolation of centerline AND triad field
   defs["LINE4"] = Input::LineDefinition::Builder()
-                      .add_int_vector("LINE4", 4)
+                      .add_named_int_vector("LINE4", 4)
                       .add_named_int("MAT")
                       .add_named_double_vector("TRIADS", 12)
                       .add_optional_tag("FAD")
@@ -133,7 +133,7 @@ void Discret::Elements::Beam3rType::setup_element_definition(
 
   // note: LINE5 refers to quartic Lagrange interpolation of centerline AND triad field
   defs["LINE5"] = Input::LineDefinition::Builder()
-                      .add_int_vector("LINE5", 5)
+                      .add_named_int_vector("LINE5", 5)
                       .add_named_int("MAT")
                       .add_named_double_vector("TRIADS", 15)
                       .add_optional_tag("FAD")
@@ -142,7 +142,7 @@ void Discret::Elements::Beam3rType::setup_element_definition(
   /* note: HERM2 refers to cubic Hermite interpolation of centerline (2 nodes)
    *       LINE2 refers to linear Lagrange interpolation of the triad field*/
   defs["HERM2LINE2"] = Input::LineDefinition::Builder()
-                           .add_int_vector("HERM2LINE2", 2)
+                           .add_named_int_vector("HERM2LINE2", 2)
                            .add_named_int("MAT")
                            .add_named_double_vector("TRIADS", 6)
                            .add_optional_tag("FAD")
@@ -151,7 +151,7 @@ void Discret::Elements::Beam3rType::setup_element_definition(
   /* note: HERM2 refers to cubic order Hermite interpolation of centerline (2 nodes)
    *       LINE3 refers to quadratic Lagrange interpolation of the triad field*/
   defs["HERM2LINE3"] = Input::LineDefinition::Builder()
-                           .add_int_vector("HERM2LINE3", 3)
+                           .add_named_int_vector("HERM2LINE3", 3)
                            .add_named_int("MAT")
                            .add_named_double_vector("TRIADS", 9)
                            .add_optional_tag("FAD")
@@ -160,7 +160,7 @@ void Discret::Elements::Beam3rType::setup_element_definition(
   /* note: HERM2 refers to cubic Hermite interpolation of centerline (2 nodes)
    *       LINE4 refers to cubic Lagrange interpolation of the triad field*/
   defs["HERM2LINE4"] = Input::LineDefinition::Builder()
-                           .add_int_vector("HERM2LINE4", 4)
+                           .add_named_int_vector("HERM2LINE4", 4)
                            .add_named_int("MAT")
                            .add_named_double_vector("TRIADS", 12)
                            .add_optional_tag("FAD")
@@ -169,7 +169,7 @@ void Discret::Elements::Beam3rType::setup_element_definition(
   /* note: HERM2 refers to cubic Hermite interpolation of centerline (2 nodes)
    *       LINE5 refers to quartic Lagrange interpolation of the triad field*/
   defs["HERM2LINE5"] = Input::LineDefinition::Builder()
-                           .add_int_vector("HERM2LINE5", 5)
+                           .add_named_int_vector("HERM2LINE5", 5)
                            .add_named_int("MAT")
                            .add_named_double_vector("TRIADS", 15)
                            .add_optional_tag("FAD")

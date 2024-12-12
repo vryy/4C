@@ -158,7 +158,8 @@ namespace Core::IO::GridGenerator
     const std::string argument_line = std::invoke(
         [&]()
         {
-          std::stringstream eleargstream(inputData.distype_);
+          std::ostringstream eleargstream;
+          eleargstream << inputData.distype_;
           const int num_nodes = Core::FE::cell_type_switch(
               distype_enum, [](auto cell_type_t) { return Core::FE::num_nodes<cell_type_t()>; });
           for (int i = 0; i < num_nodes; ++i)
@@ -185,9 +186,7 @@ namespace Core::IO::GridGenerator
       std::istringstream eleargstream(argument_line);
       if (not linedef->read(eleargstream))
       {
-        Core::IO::cout << "\n"
-                       << eleid << " " << inputData.elementtype_ << " " << inputData.distype_
-                       << " ";
+        Core::IO::cout << "\n" << eleid << " " << inputData.elementtype_ << " ";
         linedef->print(Core::IO::cout.cout_replacement());
         Core::IO::cout << "\n";
         FOUR_C_THROW("failed to read element %d %s %s", eleid, inputData.elementtype_.c_str(),

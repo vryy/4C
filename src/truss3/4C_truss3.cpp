@@ -73,7 +73,7 @@ void Discret::Elements::Truss3Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["TRUSS3"];
 
   defs["LINE2"] = Input::LineDefinition::Builder()
-                      .add_int_vector("LINE2", 2)
+                      .add_named_int_vector("LINE2", 2)
                       .add_named_int("MAT")
                       .add_named_double("CROSS")
                       .add_named_string("KINEM")

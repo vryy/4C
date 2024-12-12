@@ -74,13 +74,12 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
     // COBB: 1. value for axial extrusion, 2. value for radial extrusion
     // SPBB: one value for radial extrusion
 
-    std::istringstream extrusion_value_stream(
-        Teuchos::getNumericStringParameter(params, "BEAMS_EXTVAL"));
+    std::string extrusion_value_in(Teuchos::getNumericStringParameter(params, "BEAMS_EXTVAL"));
 
     Core::IO::ValueParser extrusionvalue_parser(
-        extrusion_value_stream, "While reading extrusion values: ");
+        extrusion_value_in, "While reading extrusion values: ");
 
-    while (!extrusionvalue_parser.eof())
+    while (!extrusionvalue_parser.at_end())
     {
       extrusionvalue_->push_back(extrusionvalue_parser.read<double>());
     }

@@ -66,13 +66,13 @@ void BeamInteraction::SphereBeamLinkingParams::init(
   // number of linker in simulation volume
   {
     maxnumlinkerpertype_.clear();
-    std::istringstream max_num_linker_per_type_stream(
+    std::string max_num_linker_per_type_in(
         Teuchos::getNumericStringParameter(spherebeamlink_params_list, "MAXNUMLINKERPERTYPE"));
 
     Core::IO::ValueParser max_num_linker_per_type_parser(
-        max_num_linker_per_type_stream, "While reading max number of linker per type: ");
+        max_num_linker_per_type_in, "While reading max number of linker per type: ");
 
-    while (!max_num_linker_per_type_parser.eof())
+    while (!max_num_linker_per_type_parser.at_end())
     {
       maxnumlinkerpertype_.push_back(max_num_linker_per_type_parser.read<int>());
     }
@@ -86,13 +86,13 @@ void BeamInteraction::SphereBeamLinkingParams::init(
   // material numbers for crosslinker types
   {
     matlinkerpertype_.clear();
-    std::istringstream material_linker_per_type_stream(
+    std::string material_linker_per_type_in(
         Teuchos::getNumericStringParameter(spherebeamlink_params_list, "MATLINKERPERTYPE"));
 
     Core::IO::ValueParser material_linker_per_type_parser(
-        material_linker_per_type_stream, "While reading material number for linker type: ");
+        material_linker_per_type_in, "While reading material number for linker type: ");
 
-    while (!material_linker_per_type_parser.eof())
+    while (!material_linker_per_type_parser.at_end())
     {
       matlinkerpertype_.push_back(material_linker_per_type_parser.read<int>());
     }
@@ -129,14 +129,14 @@ void BeamInteraction::SphereBeamLinkingParams::init(
   // store contraction rate, each linker type (not material) can have its own
   {
     contractionrate_.clear();
-    std::istringstream contraction_rate_stream(
+    std::string contraction_rate_in(
         Teuchos::getNumericStringParameter(spherebeamlink_params_list, "CONTRACTIONRATE"));
 
     Core::IO::ValueParser contraction_rate_parser(
-        contraction_rate_stream, "While reading contraction rate: ");
+        contraction_rate_in, "While reading contraction rate: ");
 
     int count = 0;
-    while (!contraction_rate_parser.eof())
+    while (!contraction_rate_parser.at_end())
     {
       contractionrate_[linkertypes_[count]] = contraction_rate_parser.read<double>();
       ++count;
@@ -149,15 +149,14 @@ void BeamInteraction::SphereBeamLinkingParams::init(
   // distance between the two binding spots on each filament the same
   {
     filamentbspotintervalglobal_.clear();
-    std::istringstream filament_bspot_interval_global_stream(Teuchos::getNumericStringParameter(
+    std::string filament_bspot_interval_global_in(Teuchos::getNumericStringParameter(
         spherebeamlink_params_list, "FILAMENTBSPOTINTERVALGLOBAL"));
 
     Core::IO::ValueParser filament_bspot_interval_global_parser(
-        filament_bspot_interval_global_stream,
-        "While reading filament binding spot interval global: ");
+        filament_bspot_interval_global_in, "While reading filament binding spot interval global: ");
 
     int count = 0;
-    while (!filament_bspot_interval_global_parser.eof())
+    while (!filament_bspot_interval_global_parser.at_end())
     {
       filamentbspotintervalglobal_[linkertypes_[count]] =
           filament_bspot_interval_global_parser.read<double>();
@@ -169,14 +168,14 @@ void BeamInteraction::SphereBeamLinkingParams::init(
   // reference length
   {
     filamentbspotintervallocal_.clear();
-    std::istringstream filament_bspot_interval_local_stream(Teuchos::getNumericStringParameter(
+    std::string filament_bspot_interval_local_in(Teuchos::getNumericStringParameter(
         spherebeamlink_params_list, "FILAMENTBSPOTINTERVALLOCAL"));
 
-    Core::IO::ValueParser filament_bspot_interval_local_parser(filament_bspot_interval_local_stream,
-        "While reading filament binding spot interval local: ");
+    Core::IO::ValueParser filament_bspot_interval_local_parser(
+        filament_bspot_interval_local_in, "While reading filament binding spot interval local: ");
 
     int count = 0;
-    while (!filament_bspot_interval_local_parser.eof())
+    while (!filament_bspot_interval_local_parser.at_end())
     {
       filamentbspotintervallocal_[linkertypes_[count]] =
           filament_bspot_interval_local_parser.read<double>();
@@ -207,18 +206,18 @@ void BeamInteraction::SphereBeamLinkingParams::init(
   // start and end arc parameter for binding spots on a filament
   {
     filamentbspotrangeglobal_.clear();
-    std::istringstream filament_bspot_range_global_stream(
+    std::string filament_bspot_range_global_in(
         Teuchos::getNumericStringParameter(spherebeamlink_params_list, "FILAMENTBSPOTRANGEGLOBAL"));
 
     Core::IO::ValueParser filament_bspot_range_global_parser(
-        filament_bspot_range_global_stream, "While reading filament binding spot range global: ");
+        filament_bspot_range_global_in, "While reading filament binding spot range global: ");
 
     int count = 0;
-    while (!filament_bspot_range_global_parser.eof())
+    while (!filament_bspot_range_global_parser.at_end())
     {
       std::pair<double, double> pair;
       pair.first = filament_bspot_range_global_parser.read<double>();
-      if (!filament_bspot_range_global_parser.eof())
+      if (!filament_bspot_range_global_parser.at_end())
         pair.second = filament_bspot_range_global_parser.read<double>();
       else
         FOUR_C_THROW("Filament binding spot range needs to be specified via two values");
@@ -236,18 +235,18 @@ void BeamInteraction::SphereBeamLinkingParams::init(
   // start and end arc parameter for binding spots on a filament
   {
     filamentbspotrangelocal_.clear();
-    std::istringstream filament_bspot_range_local_stream(
+    std::string filament_bspot_range_local_in(
         Teuchos::getNumericStringParameter(spherebeamlink_params_list, "FILAMENTBSPOTRANGELOCAL"));
 
     Core::IO::ValueParser filament_bspot_range_local_parser(
-        filament_bspot_range_local_stream, "While reading filament binding spot range local: ");
+        filament_bspot_range_local_in, "While reading filament binding spot range local: ");
 
     int count = 0;
-    while (!filament_bspot_range_local_parser.eof())
+    while (!filament_bspot_range_local_parser.at_end())
     {
       std::pair<double, double> pair;
       pair.first = filament_bspot_range_local_parser.read<double>();
-      if (!filament_bspot_range_local_parser.eof())
+      if (!filament_bspot_range_local_parser.at_end())
         pair.second = filament_bspot_range_local_parser.read<double>();
       else
         FOUR_C_THROW("Filament binding spot range needs to be specified via two values");

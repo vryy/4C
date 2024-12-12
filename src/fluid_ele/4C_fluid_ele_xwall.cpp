@@ -69,12 +69,12 @@ void Discret::Elements::FluidXWallType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defsxwall = definitions["FLUIDXW"];
 
   defsxwall["HEX8"] = Input::LineDefinition::Builder()
-                          .add_int_vector("HEX8", 8)
+                          .add_named_int_vector("HEX8", 8)
                           .add_named_int("MAT")
                           .add_named_string("NA")
                           .build();
   defsxwall["TET4"] = Input::LineDefinition::Builder()
-                          .add_int_vector("TET4", 4)
+                          .add_named_int_vector("TET4", 4)
                           .add_named_int("MAT")
                           .add_named_string("NA")
                           .build();

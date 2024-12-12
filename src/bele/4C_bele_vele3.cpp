@@ -68,7 +68,7 @@ void Discret::Elements::Vele3Type::setup_element_definition(
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["VELE3"];
 
-  defs["HEX8"] = Input::LineDefinition::Builder().add_int_vector("HEX8", 8).build();
+  defs["HEX8"] = Input::LineDefinition::Builder().add_named_int_vector("HEX8", 8).build();
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::Vele3SurfaceType::create(

@@ -81,14 +81,10 @@ void Discret::Elements::Shell7pType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defsgeneral = definitions["SHELL7P"];
 
   defsgeneral["QUAD4"] = Input::LineDefinition::Builder()
-                             .add_int_vector("QUAD4", 4)
+                             .add_named_int_vector("QUAD4", 4)
                              .add_named_int("MAT")
                              .add_named_double("THICK")
-                             .add_named_string("EAS")
-                             .add_string("EAS2")
-                             .add_string("EAS3")
-                             .add_string("EAS4")
-                             .add_string("EAS5")
+                             .add_named_string_vector("EAS", 5)
                              .add_named_double("SDC")
                              .add_optional_tag("ANS")
                              .add_optional_named_double_vector("RAD", 3)
@@ -100,14 +96,10 @@ void Discret::Elements::Shell7pType::setup_element_definition(
                              .build();
 
   defsgeneral["QUAD8"] = Input::LineDefinition::Builder()
-                             .add_int_vector("QUAD8", 8)
+                             .add_named_int_vector("QUAD8", 8)
                              .add_named_int("MAT")
                              .add_named_double("THICK")
-                             .add_named_string("EAS")
-                             .add_string("EAS2")
-                             .add_string("EAS3")
-                             .add_string("EAS4")
-                             .add_string("EAS5")
+                             .add_named_string_vector("EAS", 5)
                              .add_named_double("SDC")
                              .add_optional_tag("ANS")
                              .add_optional_named_double_vector("RAD", 3)
@@ -119,14 +111,10 @@ void Discret::Elements::Shell7pType::setup_element_definition(
                              .build();
 
   defsgeneral["QUAD9"] = Input::LineDefinition::Builder()
-                             .add_int_vector("QUAD9", 9)
+                             .add_named_int_vector("QUAD9", 9)
                              .add_named_int("MAT")
                              .add_named_double("THICK")
-                             .add_named_string("EAS")
-                             .add_string("EAS2")
-                             .add_string("EAS3")
-                             .add_string("EAS4")
-                             .add_string("EAS5")
+                             .add_named_string_vector("EAS", 5)
                              .add_named_double("SDC")
                              .add_optional_tag("ANS")
                              .add_optional_named_double_vector("RAD", 3)
@@ -138,7 +126,7 @@ void Discret::Elements::Shell7pType::setup_element_definition(
                              .build();
 
   defsgeneral["TRI3"] = Input::LineDefinition::Builder()
-                            .add_int_vector("TRI3", 3)
+                            .add_named_int_vector("TRI3", 3)
                             .add_named_int("MAT")
                             .add_named_double("THICK")
                             .add_named_double("SDC")
@@ -151,7 +139,7 @@ void Discret::Elements::Shell7pType::setup_element_definition(
                             .build();
 
   defsgeneral["TRI6"] = Input::LineDefinition::Builder()
-                            .add_int_vector("TRI6", 6)
+                            .add_named_int_vector("TRI6", 6)
                             .add_named_int("MAT")
                             .add_named_double("THICK")
                             .add_named_double("SDC")
@@ -338,7 +326,7 @@ bool Discret::Elements::Shell7p::read_element(const std::string& eletype,
 
   // extract number of EAS parameters for different locking types
   Solid::Elements::ShellLockingTypes locking_types = {};
-  if (container.get_if<std::string>("EAS") != nullptr)
+  if (container.get_if<std::vector<std::string>>("EAS") != nullptr)
   {
     eletech_.insert(Inpar::Solid::EleTech::eas);
     Solid::Utils::Shell::ReadElement::read_and_set_locking_types(
