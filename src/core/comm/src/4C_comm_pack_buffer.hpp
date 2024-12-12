@@ -47,17 +47,12 @@ namespace Core::Communication
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       // Write the type into the buffer
       const std::size_t hash = typeid(T).hash_code();
-      scratch_buffer_.resize(sizeof(hash));
-      std::memcpy(scratch_buffer_.data(), &hash, sizeof(hash));
-      buf_.insert(buf_.end(), scratch_buffer_.begin(), scratch_buffer_.end());
+      buf_.resize(buf_.size() + sizeof(hash));
+      std::memcpy(buf_.data() + buf_.size() - sizeof(hash), &hash, sizeof(hash));
 #endif
 
-      // Convert stuff into a vector of chars via a separate buffer.
-      scratch_buffer_.resize(sizeof(T));
-      std::memcpy(scratch_buffer_.data(), &stuff, sizeof(T));
-
-      // Append the data to the actual buffer using insert() to get amortized constant complexity.
-      buf_.insert(buf_.end(), scratch_buffer_.begin(), scratch_buffer_.end());
+      buf_.resize(buf_.size() + sizeof(T));
+      std::memcpy(buf_.data() + buf_.size() - sizeof(T), &stuff, sizeof(T));
     }
 
     /// Add an array of trivially copyable objects, i.e., objects of a type that can be copied with
@@ -70,25 +65,17 @@ namespace Core::Communication
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       // Write the type into the buffer
       const std::size_t hash = typeid(T).hash_code();
-      scratch_buffer_.resize(sizeof(hash));
-      std::memcpy(scratch_buffer_.data(), &hash, sizeof(hash));
-      buf_.insert(buf_.end(), scratch_buffer_.begin(), scratch_buffer_.end());
+      buf_.resize(buf_.size() + sizeof(hash));
+      std::memcpy(buf_.data() + buf_.size() - sizeof(hash), &hash, sizeof(hash));
 #endif
 
-      // Convert stuff into a vector of chars via a separate buffer.
-      scratch_buffer_.resize(stuff_size);
-      std::memcpy(scratch_buffer_.data(), stuff, stuff_size);
-
-      // Append the data to the actual buffer using insert() to get amortized constant complexity.
-      buf_.insert(buf_.end(), scratch_buffer_.begin(), scratch_buffer_.end());
+      buf_.resize(buf_.size() + stuff_size);
+      std::memcpy(buf_.data() + buf_.size() - stuff_size, stuff, stuff_size);
     }
 
    private:
     //! The actual buffer containing the packed data.
     std::vector<char> buf_;
-
-    //! Scratch buffer used during packing to avoid reallocations.
-    std::vector<char> scratch_buffer_;
 
     friend class PotentiallyUnusedBufferScope;
   };
