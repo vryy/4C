@@ -35,7 +35,7 @@ jobs:
         with:
           build-directory: ${{ github.workspace }}/build
           source-directory: ${{ github.workspace }}
-          number-of-chunks: 40 # we need fine grained test chunks to avoid running out of storage
+          number-of-chunks: 60 # we need fine grained test chunks to avoid running out of storage
 
   gcc13_coverage_test:
     needs: gcc13_coverage_build
