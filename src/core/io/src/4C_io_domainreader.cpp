@@ -87,7 +87,7 @@ namespace Core::IO
 
     Teuchos::Time time("", true);
 
-    if (!input_.my_output_flag() && myrank == 0)
+    if (myrank == 0)
       Core::IO::cout << "Entering domain generation mode for " << name_
                      << " discretization ...\nCreate and partition elements      in...."
                      << Core::IO::endl;
@@ -96,10 +96,9 @@ namespace Core::IO
         DomainReader::read_rectangular_cuboid_input_data();
     inputData.node_gid_of_first_new_node_ = nodeGIdOfFirstNewNode;
 
-    Core::IO::GridGenerator::create_rectangular_cuboid_discretization(
-        *dis_, inputData, static_cast<bool>(input_.my_output_flag()));
+    Core::IO::GridGenerator::create_rectangular_cuboid_discretization(*dis_, inputData, false);
 
-    if (!myrank && input_.my_output_flag() == 0)
+    if (!myrank)
       Core::IO::cout << "............................................... " << std::setw(10)
                      << std::setprecision(5) << std::scientific << time.totalElapsedTime(true)
                      << " secs" << Core::IO::endl;
@@ -182,15 +181,14 @@ namespace Core::IO
 
     Teuchos::Time time("", true);
 
-    if (!myrank && !input_.my_output_flag())
+    if (!myrank)
       Core::IO::cout << "Complete discretization " << std::left << std::setw(16) << name_
                      << " in...." << Core::IO::flush;
 
     int err = dis_->fill_complete(false, false, false);
     if (err) FOUR_C_THROW("dis_->fill_complete() returned %d", err);
 
-    if (!myrank && !input_.my_output_flag())
-      Core::IO::cout << time.totalElapsedTime(true) << " secs" << Core::IO::endl;
+    if (!myrank) Core::IO::cout << time.totalElapsedTime(true) << " secs" << Core::IO::endl;
 
     Core::Rebalance::Utils::print_parallel_distribution(*dis_);
   }

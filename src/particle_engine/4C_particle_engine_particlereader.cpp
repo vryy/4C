@@ -30,8 +30,7 @@ void PARTICLEENGINE::read_particles(Core::IO::InputFile& input, const std::strin
   bool any_particles_read = false;
   for (const auto& particle_line : input.lines_in_section(section_name))
   {
-    if (!any_particles_read && !input.my_output_flag())
-      Core::IO::cout << "Read and create particles\n" << Core::IO::flush;
+    if (!any_particles_read) Core::IO::cout << "Read and create particles\n" << Core::IO::flush;
     any_particles_read = true;
 
     double t1 = time.totalElapsedTime(true);
@@ -100,14 +99,14 @@ void PARTICLEENGINE::read_particles(Core::IO::InputFile& input, const std::strin
     }
 
     double t2 = time.totalElapsedTime(true);
-    if (!myrank && !input.my_output_flag())
+    if (!myrank)
     {
       printf("reading %10.5e secs\n", t2 - t1);
       fflush(stdout);
     }
   }
 
-  if (any_particles_read && !input.my_output_flag())
+  if (any_particles_read)
     printf("in............................................. %10.5e secs\n",
         time.totalElapsedTime(true));
 }

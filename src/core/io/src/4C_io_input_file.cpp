@@ -520,8 +520,8 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  InputFile::InputFile(std::string filename, MPI_Comm comm, int outflag)
-      : top_level_file_(std::move(filename)), comm_(std::move(comm)), outflag_(outflag)
+  InputFile::InputFile(std::string filename, MPI_Comm comm)
+      : top_level_file_(std::move(filename)), comm_(std::move(comm))
   {
     read_generic();
   }
@@ -530,11 +530,6 @@ namespace Core::IO
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   std::string InputFile::my_inputfile_name() const { return top_level_file_.string(); }
-
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  int InputFile::my_output_flag() const { return outflag_; }
 
 
   /*----------------------------------------------------------------------*/
@@ -826,11 +821,8 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!input.my_output_flag())
-      {
-        Core::IO::cout << "Reading knot vectors for " << name << " discretization :\n";
-        fflush(stdout);
-      }
+      Core::IO::cout << "Reading knot vectors for " << name << " discretization :\n";
+      fflush(stdout);
     }
 
     // number of patches to be determined
@@ -885,11 +877,8 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!input.my_output_flag())
-      {
-        printf("                        %8d patches", npatches);
-        fflush(stdout);
-      }
+      printf("                        %8d patches", npatches);
+      fflush(stdout);
     }
 
 
@@ -1087,13 +1076,10 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!input.my_output_flag())
-      {
-        Core::IO::cout << " in...." << time.totalElapsedTime(true) << " secs\n";
+      Core::IO::cout << " in...." << time.totalElapsedTime(true) << " secs\n";
 
-        time.reset();
-        fflush(stdout);
-      }
+      time.reset();
+      fflush(stdout);
     }
   }
 

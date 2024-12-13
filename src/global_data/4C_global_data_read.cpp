@@ -1565,7 +1565,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
             (const_cast<char*>(micro_inputfile_name.c_str())), length, 0, subgroupcomm);
 
         // start with actual reading
-        Core::IO::InputFile micro_reader(micro_inputfile_name, subgroupcomm, 1);
+        Core::IO::InputFile micro_reader(micro_inputfile_name, subgroupcomm);
 
         std::shared_ptr<Core::FE::Discretization> dis_micro =
             std::make_shared<Core::FE::Discretization>(
@@ -1707,7 +1707,7 @@ void Global::read_microfields_np_support(Global::Problem& problem)
         (const_cast<char*>(micro_inputfile_name.c_str())), length, 0, subgroupcomm);
 
     // start with actual reading
-    Core::IO::InputFile micro_reader(micro_inputfile_name, subgroupcomm, 1);
+    Core::IO::InputFile micro_reader(micro_inputfile_name, subgroupcomm);
 
     std::shared_ptr<Core::FE::Discretization> structdis_micro =
         std::make_shared<Core::FE::Discretization>("structure", subgroupcomm, problem.n_dim());

@@ -201,13 +201,10 @@ namespace Core::IO
     };
 
     /// construct a reader for a given file
-    InputFile(std::string filename, MPI_Comm comm, int outflag = 0);
+    InputFile(std::string filename, MPI_Comm comm);
 
     /// return my inputfile name
     [[nodiscard]] std::string my_inputfile_name() const;
-
-    /// return my output flag
-    [[nodiscard]] int my_output_flag() const;
 
     /**
      * Get a a range of lines inside a section that have actual content, i.e., they contain
@@ -271,9 +268,6 @@ namespace Core::IO
 
     /// The communicator associated with this object.
     MPI_Comm comm_;
-
-    /// Flag for output (default: output should be written)
-    int outflag_{};
 
     /// The whole input file.
     std::vector<char> inputfile_;
