@@ -97,7 +97,7 @@ namespace
       // parameter list to be passed to pre_evaluate
       Teuchos::ParameterList params_lin;
       // set up a dummy concentration vector and store it to the parameter list
-      auto gpconc_lin = std::shared_ptr<std::vector<double>>(new std::vector<double>({44327.362}));
+      auto gpconc_lin = std::make_shared<std::vector<double>>(std::vector<double>({44327.362}));
       params_lin.set<std::shared_ptr<std::vector<double>>>("scalars", gpconc_lin);
 
       // create InelasticDefgradLinScalarIso object initialize container for material parameters
@@ -163,13 +163,17 @@ namespace
       electrode_data.add("COND_TEMP_SCALE_FUNCT", 0);
       electrode_data.add("COND_TEMP_SCALE_FUNCT_PARA_NUM", 0);
       electrode_data.add("COND_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
-      electrode_data.add("OCP_MODEL", std::string("Polynomial"));
-      electrode_data.add("X_MIN", -1.0);
-      electrode_data.add("X_MAX", -1.0);
-      electrode_data.add("OCP_PARA_NUM", 1);
-      std::vector<double> ocp_para(1, 0.0);
-      electrode_data.add("OCP_PARA", ocp_para);
-      electrode_data.add("OCP_CSV", std::string(""));
+      // create and add the ocp model
+      auto& ocp_model = electrode_data.group("OCP_MODEL");
+      // choose the ocp model
+      ocp_model.add("OCP_MODEL", Mat::PAR::OCPModels::function);
+      // create the chosen ocp model 'Function'
+      auto& ocp_function = ocp_model.group("Function");
+      ocp_function.add("OCP_FUNCT_NUM", 1);
+      ocp_model.add("X_MIN", -1.0);
+      ocp_model.add("X_MAX", -1.0);
+      // add the ocp model
+      electrode_data.add("OCP_MODEL", ocp_model);
 
       // make sure that the default parameters exist in the problem
       Global::Problem::instance()->set_parameter_list(std::make_shared<Teuchos::ParameterList>());
@@ -187,7 +191,7 @@ namespace
       // parameter list to be passed to pre_evaluate
       Teuchos::ParameterList params_poly;
       // set up a dummy concentration vector and store it to the parameter list
-      auto gpconc_poly = std::shared_ptr<std::vector<double>>(new std::vector<double>({22641.893}));
+      auto gpconc_poly = std::make_shared<std::vector<double>>(std::vector<double>({22641.893}));
       params_poly.set<std::shared_ptr<std::vector<double>>>("scalars", gpconc_poly);
 
       // initialize container for material parameters

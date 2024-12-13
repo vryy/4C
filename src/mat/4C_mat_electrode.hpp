@@ -12,6 +12,7 @@
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_elchsinglemat.hpp"
+#include "4C_utils_function_of_scalar.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -20,13 +21,11 @@ namespace Mat
   namespace PAR
   {
     //! models for half cell open circuit potential of electrode
-    enum OCPModels
+    enum class OCPModels
     {
-      ocp_undefined,
-      ocp_csv,
-      ocp_polynomial,
-      ocp_redlichkister,
-      ocp_taralov
+      function,
+      redlichkister,
+      taralov
     };
 
     //! parameters for electrode material
@@ -35,7 +34,6 @@ namespace Mat
      public:
       //! constructor
       explicit Electrode(const Core::Mat::PAR::Parameter::Data& matdata);
-
 
       //! create instance of electrode material
       std::shared_ptr<Core::Mat::Material> create_material() override;
@@ -52,23 +50,11 @@ namespace Mat
       //! model for half cell open circuit potential
       const OCPModels ocpmodel_;
 
-      //! number of parameters underlying half cell open circuit potential model
-      const int ocpparanum_;
+      //! number of function defining the open circuit potential
+      int ocpfunctnum_;
 
       //! parameters underlying half cell open circuit potential model
-      const std::vector<double> ocppara_;
-
-      //! sampling points for cubic spline interpolation
-      std::vector<double> X_;
-
-      //! zeroth-order coefficients for cubic spline interpolation
-      std::vector<double> b_;
-
-      //! first-order coefficients for cubic spline interpolation
-      std::vector<double> a_;
-
-      //! third-order coefficients for cubic spline interpolation
-      std::vector<double> m_;
+      std::vector<double> ocppara_;
 
       //! lower bound of validity (as a fraction of c_max) for prescribed open circuit potential
       //! calculation model
@@ -78,10 +64,6 @@ namespace Mat
       //! calculation model
       const double xmax_;
       //! @}
-
-     private:
-      //! convert string to model for half cell open circuit potential
-      [[nodiscard]] OCPModels string_to_ocp_model(const std::string& ocpmodelstring) const;
     };  // class Mat::PAR::Electrode
   }  // namespace PAR
 
@@ -164,10 +146,10 @@ namespace Mat
 
     //! return lithiation value corresponding to saturation value of intercalated Lithium
     //! concentration
-    [[nodiscard]] double chi_max() const { return params_->chimax_; };
+    [[nodiscard]] double chi_max() const { return params_->chimax_; }
 
     //! return saturation value of intercalated Lithium concentration
-    [[nodiscard]] double c_max() const { return params_->cmax_; };
+    [[nodiscard]] double c_max() const { return params_->cmax_; }
 
     /*!
      * @brief compute the current lithiation

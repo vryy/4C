@@ -65,7 +65,7 @@ CONVTOL                         5.0e-06
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
-MAT 1 MAT_electrode DIFF_COEF_CONC_DEP_FUNCT -1 DIFF_COEF_TEMP_SCALE_FUNCT 0 COND_CONC_DEP_FUNCT -1 COND_TEMP_SCALE_FUNCT 0 DIFF_PARA_NUM 1 DIFF_PARA 1.0e0 COND_PARA_NUM 1 COND_PARA 1.17e10 C_MAX 1.0e6 CHI_MAX 1.0 OCP_MODEL Polynomial X_MIN -1.0 X_MAX -1.0 OCP_PARA_NUM 1 OCP_PARA 0.0 // anode
+MAT 1 MAT_electrode DIFF_COEF_CONC_DEP_FUNCT -1 DIFF_COEF_TEMP_SCALE_FUNCT 0 COND_CONC_DEP_FUNCT -1 COND_TEMP_SCALE_FUNCT 0 DIFF_PARA_NUM 1 DIFF_PARA 1.0e0 COND_PARA_NUM 1 COND_PARA 1.17e10 C_MAX 1.0e6 CHI_MAX 1.0 OCP_MODEL Function OCP_FUNCT_NUM 6 X_MIN -1.0 X_MAX -1.0 // anode
 MAT 2 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 LOCAL Yes PHASEIDS 5 // electrolyte
 MAT 3 MAT_elchmat NUMDOF 3 NUMSCAL 1 NUMPHASE 1 LOCAL Yes PHASEIDS 6 // cathode
 MAT 5 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 LOCAL Yes MATIDS 8 // electrolyte
@@ -93,6 +93,10 @@ COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 3.65
 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.2e3
 ------------------------------------------------------------FUNCT5
 SYMBOLIC_FUNCTION_OF_TIME 0.5*(1.0-cos(pi*t))*heaviside(1.01-t)+heaviside(t-1.01)
+------------------------------------------------------------FUNCT6
+FASTPOLYNOMIAL NUMCOEFF 1 COEFF 0.0
+------------------------------------------------------------FUNCT7
+CUBIC_SPLINE_FROM_CSV CSV ssi_mono_3D_tet4_batt_with_anode_plate_elch_s2i_butlervolmer.csv
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 2 QUANTITY phi1 VALUE  9.99996741931946303e+02 TOLERANCE 1.0e-05
 SCATRA DIS scatra NODE 2 QUANTITY phi2 VALUE -6.18495746282374539e-10 TOLERANCE 1.0e-16

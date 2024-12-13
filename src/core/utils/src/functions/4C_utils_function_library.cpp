@@ -11,7 +11,6 @@
 #include "4C_io_file_reader.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_utils_cubic_spline_interpolation.hpp"
-#include "4C_utils_function.hpp"
 #include "4C_utils_function_manager.hpp"
 
 #include <filesystem>
@@ -50,7 +49,9 @@ namespace
       return std::make_shared<Core::Utils::CubicSplineFromCSV>(csv_file.string());
     }
     else
+    {
       return {nullptr};
+    }
   }
 }  // namespace
 

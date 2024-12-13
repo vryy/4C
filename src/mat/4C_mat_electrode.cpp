@@ -11,8 +11,7 @@
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_mat_par_bundle.hpp"
-
-#include <Teuchos_SerialDenseSolver.hpp>
+#include "4C_utils_function_of_scalar.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -22,26 +21,30 @@ Mat::PAR::Electrode::Electrode(const Core::Mat::PAR::Parameter::Data& matdata)
     : ElchSingleMat(matdata),
       cmax_(matdata.parameters.get<double>("C_MAX")),
       chimax_(matdata.parameters.get<double>("CHI_MAX")),
-      ocpmodel_(string_to_ocp_model(matdata.parameters.get<std::string>("OCP_MODEL"))),
-      ocpparanum_(matdata.parameters.get<int>("OCP_PARA_NUM")),
-      ocppara_(matdata.parameters.get_or<std::vector<double>>(
-          "OCP_PARA", std::vector<double>(ocpparanum_, 0.0))),
-      X_(0, 0.0),
-      b_(0, 0.0),
-      a_(0, 0.0),
-      m_(0, 0.0),
-      xmin_(matdata.parameters.get<double>("X_MIN")),
-      xmax_(matdata.parameters.get<double>("X_MAX"))
+      ocpmodel_(matdata.parameters.group("OCP_MODEL").get<OCPModels>("OCP_MODEL")),
+      xmin_(matdata.parameters.group("OCP_MODEL").get<double>("X_MIN")),
+      xmax_(matdata.parameters.group("OCP_MODEL").get<double>("X_MAX"))
 {
+  const auto& ocpmodel = matdata.parameters.group("OCP_MODEL");
+
+  switch (ocpmodel_)
+  {
+    case OCPModels::function:
+      ocpfunctnum_ = ocpmodel.group("Function").get<int>("OCP_FUNCT_NUM");
+      break;
+    case OCPModels::redlichkister:
+      ocppara_ = ocpmodel.group("Redlich-Kister").get<std::vector<double>>("OCP_PARA");
+      break;
+    case OCPModels::taralov:
+      ocppara_ = ocpmodel.group("Taralov").get<std::vector<double>>("OCP_PARA");
+      break;
+    default:
+      FOUR_C_THROW("Unknown OCPModel");
+  }
+
   // safety checks
   if (cmax_ < 1.0e-12)
     FOUR_C_THROW("Saturation value c_max of intercalated Lithium concentration is too small!");
-  if (static_cast<int>(ocppara_.size()) != ocpparanum_)
-  {
-    FOUR_C_THROW(
-        "Length of coefficient vector for electrode half cell open circuit potential doesn't match "
-        "prescribed number of coefficients!");
-  }
   if ((xmin_ > 1.0) or (xmax_ > 1.0))
   {
     FOUR_C_THROW(
@@ -52,147 +55,6 @@ Mat::PAR::Electrode::Electrode(const Core::Mat::PAR::Parameter::Data& matdata)
         "the screen if bounds are violated throughout the simulation time!");
   }
   if (xmin_ > xmax_) FOUR_C_THROW("X_MIN cannot be larger than X_MAX!");
-
-  // additional preparations
-  std::string ocpcsv(matdata.parameters.get<std::string>("OCP_CSV"));
-  switch (ocpmodel_)
-  {
-    case ocp_csv:
-    {
-      // safety checks
-      if (ocpcsv.length() == 0)
-        FOUR_C_THROW(
-            "You forgot to specify the *.csv file for the half cell open circuit potential!");
-      if (ocpparanum_)
-      {
-        FOUR_C_THROW(
-            "Must not specify any parameters in case half-cell open-circuit potential is to be "
-            "determined via a *.csv file!");
-      }
-
-      // parse *.csv file
-      if (ocpcsv[0] != '/')
-      {
-        if (Global::Problem::instance()->output_control_file() == nullptr)
-        {
-          std::cout << "WARNING: could not check, if OCP .csv file in MAT_electrode is correct."
-                    << std::endl;
-
-          break;
-        }
-        std::string ocpcsvpath =
-            Global::Problem::instance()->output_control_file()->input_file_name();
-        ocpcsvpath = ocpcsvpath.substr(0, ocpcsvpath.rfind('/') + 1);
-        ocpcsv.insert(ocpcsv.begin(), ocpcsvpath.begin(), ocpcsvpath.end());
-      }
-      std::ifstream file(ocpcsv);
-      if (!file.good()) FOUR_C_THROW("Invalid file!");
-      std::string line, value;
-      std::vector<double> ocp(0, 0.0);
-      while (getline(file, line))
-      {
-        std::istringstream linestream(line);
-        std::getline(linestream, value, ',');
-        try
-        {
-          X_.push_back(std::stod(value));
-        }
-        catch (...)
-        {
-          continue;
-        }
-
-        std::getline(linestream, value);
-
-        try
-        {
-          ocp.push_back(std::stod(value));
-        }
-        catch (...)
-        {
-          FOUR_C_THROW("Invalid *.csv file!");
-        }
-      }
-      file.close();
-
-      // safety checks
-      if (X_.size() != ocp.size()) FOUR_C_THROW("Internal error! Vector lengths have to match!");
-      if (X_.size() < 2)
-        FOUR_C_THROW("Need at least two data points for cubic spline interpolation!");
-      for (unsigned i = 0; i < X_.size() - 1; ++i)
-        if (X_[i + 1] <= X_[i]) FOUR_C_THROW("Data points must be sorted in ascending order!");
-
-      // build coefficient matrix and right-hand side
-      const unsigned N = X_.size() - 2;
-      Core::LinAlg::SerialDenseMatrix A(N, N);
-      Core::LinAlg::SerialDenseVector M(N), B(N);
-      for (unsigned i = 0; i < N; ++i)
-      {
-        const double Xm = X_[i + 1] - X_[i], Xp = X_[i + 2] - X_[i + 1], ocpm = ocp[i + 1] - ocp[i],
-                     ocpp = ocp[i + 2] - ocp[i + 1];
-        if (i > 0) A(i, i - 1) = Xm;
-        A(i, i) = 2.0 * (Xm + Xp);
-        if (i < N - 1) A(i, i + 1) = Xp;
-        B(i) = -ocpm / Xm + ocpp / Xp;
-      }
-
-      // solve for third-order coefficients for cubic spline interpolation
-      using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
-      using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
-      Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
-      solver.setMatrix(Teuchos::rcpFromRef(A));
-      solver.setVectors(Teuchos::rcpFromRef(M), Teuchos::rcpFromRef(B));
-      solver.factorWithEquilibration(true);
-      solver.solveToRefinedSolution(true);
-      if (solver.factor() or solver.solve())
-        FOUR_C_THROW("Solution of linear system of equations failed!");
-
-      // fill coefficient vectors
-      m_.resize(X_.size(), 0.0);
-      for (unsigned i = 1; i < m_.size() - 1; ++i) m_[i] = M(i - 1);
-      b_.resize(X_.size() - 1, 0.0);
-      a_.resize(X_.size() - 1, 0.0);
-      for (unsigned i = 0; i < b_.size(); ++i)
-      {
-        const double Xm = X_[i + 1] - X_[i];
-        b_[i] = ocp[i] - Xm * Xm * m_[i];
-        a_[i] = (ocp[i + 1] - ocp[i]) / Xm - Xm * (m_[i + 1] - m_[i]);
-      }
-
-      break;
-    }
-
-    case ocp_polynomial:
-    case ocp_redlichkister:
-    case ocp_taralov:
-    {
-      // safety checks
-      if (ocpparanum_ < 1)
-        FOUR_C_THROW("No parameters found for electrode half cell open circuit potential!");
-      if (ocpcsv.length())
-      {
-        FOUR_C_THROW(
-            "Must not specify *.csv file with data points for chosen half cell open circuit "
-            "potential model!");
-      }
-      if (ocpmodel_ == ocp_taralov and ocpparanum_ != 13)
-      {
-        FOUR_C_THROW(
-            "Electrode half cell open circuit potential according to Taralov, Taralova, Popov, "
-            "Iliev, Latz, and Zausch (2012) needs to be specified by exactly 13 coefficients!");
-      }
-
-      break;
-    }
-
-    default:
-    {
-      // safety check
-      FOUR_C_THROW("Invalid model for half-cell open-circuit potential!");
-
-      break;
-    }
-  }
 }
 
 /*----------------------------------------------------------------------*
@@ -200,42 +62,6 @@ Mat::PAR::Electrode::Electrode(const Core::Mat::PAR::Parameter::Data& matdata)
 std::shared_ptr<Core::Mat::Material> Mat::PAR::Electrode::create_material()
 {
   return std::make_shared<Mat::Electrode>(this);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Mat::PAR::OCPModels Mat::PAR::Electrode::string_to_ocp_model(
-    const std::string& ocpmodelstring) const
-{
-  OCPModels ocpmodelenum(ocp_undefined);
-
-  // Redlich-Kister expansion
-  if (ocpmodelstring == "Redlich-Kister")
-  {
-    ocpmodelenum = ocp_redlichkister;
-  }
-  // empirical correlation given in Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
-  else if (ocpmodelstring == "Taralov")
-  {
-    ocpmodelenum = ocp_taralov;
-  }
-  // polynomial
-  else if (ocpmodelstring == "Polynomial")
-  {
-    ocpmodelenum = ocp_polynomial;
-  }
-  // *.csv file
-  else if (ocpmodelstring == "csv")
-  {
-    ocpmodelenum = ocp_csv;
-  }
-  // unknown model
-  else
-  {
-    ocpmodelenum = ocp_undefined;
-  }
-
-  return ocpmodelenum;
 }
 
 
@@ -310,10 +136,10 @@ double Mat::Electrode::compute_open_circuit_potential(
   {
     std::cout << "WARNING: intercalation fraction X = c/c_max is violating prescribed bounds of "
                  "ocp calculation model. Calculated values might therefore not be reasonable!"
-              << std::endl;
+              << '\n';
     std::cout << "X: " << X << " lower bound is: " << params_->xmin_
-              << " upper bound is: " << params_->xmax_ << std::endl
-              << std::endl;
+              << " upper bound is: " << params_->xmax_ << '\n'
+              << '\n';
   }
 
   // physically reasonable intercalation fraction
@@ -323,30 +149,18 @@ double Mat::Electrode::compute_open_circuit_potential(
     {
       // half cell open circuit potential obtained from cubic spline interpolation of *.csv data
       // points
-      case Mat::PAR::ocp_csv:
+      case Mat::PAR::OCPModels::function:
       {
-        // safety check
-        if (X < params_->X_.front() or X > params_->X_.back())
-          FOUR_C_THROW("Intercalation fraction X = %lf lies outside sampling point range!", X);
-
-        // evaluate cubic spline interpolation
-        for (unsigned i = 0; i < params_->m_.size() - 1; ++i)
-        {
-          if (X <= params_->X_[i + 1])
-          {
-            const double invdX = 1.0 / (params_->X_[i + 1] - params_->X_[i]);
-            ocp = params_->m_[i] * invdX * std::pow(params_->X_[i + 1] - X, 3) +
-                  params_->m_[i + 1] * invdX * std::pow(X - params_->X_[i], 3) +
-                  params_->a_[i] * (X - params_->X_[i]) + params_->b_[i];
-            break;
-          }
-        }
+        const int ocp_function_number = params_->ocpfunctnum_ - 1;
+        ocp = Global::Problem::instance()
+                  ->function_by_id<Core::Utils::FunctionOfScalar>(ocp_function_number)
+                  .evaluate(X);
 
         break;
       }
 
       // half cell open circuit potential according to Redlich-Kister expansion
-      case Mat::PAR::ocp_redlichkister:
+      case Mat::PAR::OCPModels::redlichkister:
       {
         // cf. Colclasure and Kee, Electrochimica Acta 55 (2010) 8960:
         // ocppara_[0]         = DeltaG
@@ -362,7 +176,7 @@ double Mat::Electrode::compute_open_circuit_potential(
                params_->ocppara_[2] * (6.0 * X * X - 6.0 * X + 1.0);
 
         // terms associated with remaining Redlich-Kister coefficients
-        for (int i = 2; i < params_->ocpparanum_ - 1; ++i)
+        for (unsigned int i = 2; i < params_->ocppara_.size() - 1; ++i)
         {
           ocp += params_->ocppara_[i + 1] *
                  (std::pow(2.0 * X - 1.0, i + 1) -
@@ -375,7 +189,7 @@ double Mat::Electrode::compute_open_circuit_potential(
         break;
       }
 
-      case Mat::PAR::ocp_taralov:
+      case Mat::PAR::OCPModels::taralov:
       {
         // cf. Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
         ocp = params_->ocppara_[0] +
@@ -389,29 +203,18 @@ double Mat::Electrode::compute_open_circuit_potential(
         break;
       }
 
-      // polynomial ocp
-      case Mat::PAR::ocp_polynomial:
-      {
-        // add constant
-        ocp = params_->ocppara_[0];
-
-        // add higher polynomial order terms
-        for (int i = 1; i < params_->ocpparanum_; ++i) ocp += params_->ocppara_[i] * std::pow(X, i);
-
-        break;
-      }
-
       default:
       {
         FOUR_C_THROW("Model for half cell open circuit potential not recognized!");
-        break;
       }
     }
   }
 
   // non-physical intercalation fraction
   else
+  {
     ocp = std::numeric_limits<double>::infinity();
+  }
 
   return ocp;
 }  // Mat::Electrode::compute_open_circuit_potential
@@ -419,7 +222,7 @@ double Mat::Electrode::compute_open_circuit_potential(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double Mat::Electrode::compute_d_open_circuit_potential_d_concentration(
-    double concentration, double faraday, double frt, double detF) const
+    const double concentration, const double faraday, const double frt, const double detF) const
 {
   const double X = compute_intercalation_fraction(concentration, chi_max(), c_max(), detF);
   const double d_ocp_dX =
@@ -432,7 +235,7 @@ double Mat::Electrode::compute_d_open_circuit_potential_d_concentration(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double Mat::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction(
-    double X, double faraday, double frt) const
+    const double X, const double faraday, const double frt) const
 
 {
   double d_ocp_dX(0.0);
@@ -444,31 +247,19 @@ double Mat::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction
     {
       // derivative of half cell open circuit potential w.r.t. concentration, obtained from cubic
       // spline interpolation of *.csv data points
-      case Mat::PAR::ocp_csv:
+      case Mat::PAR::OCPModels::function:
       {
-        // safety check
-        if (X < params_->X_.front() or X > params_->X_.back())
-          FOUR_C_THROW("Intercalation fraction X = %lf lies outside sampling point range!", X);
-
-        // evaluate derivative of cubic spline interpolation w.r.t. concentration
-        for (unsigned i = 0; i < params_->m_.size() - 1; ++i)
-        {
-          if (X <= params_->X_[i + 1])
-          {
-            const double invdX = 1.0 / (params_->X_[i + 1] - params_->X_[i]);
-            d_ocp_dX = -3.0 * params_->m_[i] * invdX * std::pow(params_->X_[i + 1] - X, 2) +
-                       3.0 * params_->m_[i + 1] * invdX * std::pow(X - params_->X_[i], 2) +
-                       params_->a_[i];
-            break;
-          }
-        }
+        const int ocp_function_number = params_->ocpfunctnum_ - 1;
+        d_ocp_dX = Global::Problem::instance()
+                       ->function_by_id<Core::Utils::FunctionOfScalar>(ocp_function_number)
+                       .evaluate_derivative(X, 1);
 
         break;
       }
 
       // derivative of half cell open circuit potential w.r.t. concentration according to
       // Redlich-Kister expansion
-      case Mat::PAR::ocp_redlichkister:
+      case Mat::PAR::OCPModels::redlichkister:
       {
         // cf. Colclasure and Kee, Electrochimica Acta 55 (2010) 8960:
         // ocppara_[0]         = DeltaG
@@ -484,7 +275,7 @@ double Mat::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction
                     params_->ocppara_[3] * (24.0 * X * X - 24.0 * X + 5.0);
 
         // terms associated with remaining Redlich-Kister coefficients
-        for (int i = 3; i < params_->ocpparanum_ - 1; ++i)
+        for (unsigned int i = 3; i < params_->ocppara_.size() - 1; ++i)
         {
           d_ocp_dX += params_->ocppara_[i + 1] *
                       ((2.0 * i + 1.0) * std::pow(2.0 * X - 1.0, i) +
@@ -499,7 +290,7 @@ double Mat::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction
 
       // derivative of half cell open circuit potential w.r.t. concentration according to Taralov,
       // Taralova, Popov, Iliev, Latz, and Zausch (2012)
-      case Mat::PAR::ocp_taralov:
+      case Mat::PAR::OCPModels::taralov:
       {
         d_ocp_dX = params_->ocppara_[1] * params_->ocppara_[2] /
                        std::pow(std::cosh(params_->ocppara_[2] * X + params_->ocppara_[3]), 2) +
@@ -513,15 +304,6 @@ double Mat::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction
         break;
       }
 
-      // derivative of polynomial half cell open circuit potential w.r.t. concentration
-      case Mat::PAR::ocp_polynomial:
-      {
-        for (int i = 1; i < params_->ocpparanum_; ++i)
-          d_ocp_dX += i * params_->ocppara_[i] * std::pow(X, i - 1);
-
-        break;
-      }
-
       default:
       {
         FOUR_C_THROW("Model for half cell open circuit potential not recognized!");
@@ -531,7 +313,9 @@ double Mat::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction
 
   // non-physical intercalation fraction
   else
+  {
     d_ocp_dX = std::numeric_limits<double>::infinity();
+  }
 
   return d_ocp_dX;
 }
@@ -553,7 +337,7 @@ double Mat::Electrode::compute_d_open_circuit_potential_d_det_f(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double Mat::Electrode::compute_d2_open_circuit_potential_d_concentration_d_concentration(
-    double concentration, double faraday, double frt, double detF) const
+    const double concentration, const double faraday, const double frt, const double detF) const
 {
   double d2_ocp_dX2(0.0), d2_ocp_dc2(0.0);
 
@@ -568,30 +352,19 @@ double Mat::Electrode::compute_d2_open_circuit_potential_d_concentration_d_conce
     {
       // second derivative of half cell open circuit potential w.r.t. concentration, obtained from
       // cubic spline interpolation of *.csv data points
-      case Mat::PAR::ocp_csv:
+      case Mat::PAR::OCPModels::function:
       {
-        // safety check
-        if (X < params_->X_.front() or X > params_->X_.back())
-          FOUR_C_THROW("Intercalation fraction X = %lf lies outside sampling point range!", X);
-
-        // evaluate second derivative of cubic spline interpolation w.r.t. concentration
-        for (unsigned i = 0; i < params_->m_.size() - 1; ++i)
-        {
-          if (X <= params_->X_[i + 1])
-          {
-            const double invdX = 1.0 / (params_->X_[i + 1] - params_->X_[i]);
-            d2_ocp_dX2 = 6.0 * params_->m_[i] * invdX * (params_->X_[i + 1] - X) +
-                         6.0 * params_->m_[i + 1] * invdX * (X - params_->X_[i]);
-            break;
-          }
-        }
+        const int ocp_function_number = params_->ocpfunctnum_ - 1;
+        d2_ocp_dX2 = Global::Problem::instance()
+                         ->function_by_id<Core::Utils::FunctionOfScalar>(ocp_function_number)
+                         .evaluate_derivative(X, 2);
 
         break;
       }
 
       // second derivative of half cell open circuit potential w.r.t. concentration according to
       // Redlich-Kister expansion
-      case Mat::PAR::ocp_redlichkister:
+      case Mat::PAR::OCPModels::redlichkister:
       {
         // cf. Colclasure and Kee, Electrochimica Acta 55 (2010) 8960:
         // ocppara_[0]         = DeltaG
@@ -609,7 +382,7 @@ double Mat::Electrode::compute_d2_open_circuit_potential_d_concentration_d_conce
                       params_->ocppara_[4] * (120.0 * X * X - 120.0 * X + 27.0);
 
         // terms associated with remaining Redlich-Kister coefficients
-        for (int i = 4; i < params_->ocpparanum_ - 1; ++i)
+        for (unsigned int i = 4; i < params_->ocppara_.size() - 1; ++i)
         {
           d2_ocp_dX2 +=
               params_->ocppara_[i + 1] *
@@ -625,7 +398,7 @@ double Mat::Electrode::compute_d2_open_circuit_potential_d_concentration_d_conce
 
       // second derivative of half cell open circuit potential w.r.t. concentration according to
       // Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
-      case Mat::PAR::ocp_taralov:
+      case Mat::PAR::OCPModels::taralov:
       {
         d2_ocp_dX2 = -2.0 * params_->ocppara_[1] * std::pow(params_->ocppara_[2], 2) /
                          std::pow(std::cosh(params_->ocppara_[2] * X + params_->ocppara_[3]), 2) *
@@ -641,19 +414,9 @@ double Mat::Electrode::compute_d2_open_circuit_potential_d_concentration_d_conce
         break;
       }
 
-      // second derivative of polynomial half cell open circuit potential w.r.t. concentration
-      case Mat::PAR::ocp_polynomial:
-      {
-        for (int i = 2; i < params_->ocpparanum_; ++i)
-          d2_ocp_dX2 += i * (i - 1) * params_->ocppara_[i] * std::pow(X, i - 2);
-
-        break;
-      }
-
       default:
       {
         FOUR_C_THROW("Model for half cell open circuit potential not recognized!");
-        break;
       }
     }
 
@@ -662,7 +425,9 @@ double Mat::Electrode::compute_d2_open_circuit_potential_d_concentration_d_conce
 
   // non-physical intercalation fraction
   else
+  {
     d2_ocp_dc2 = std::numeric_limits<double>::infinity();
+  }
 
   return d2_ocp_dc2;
 }
@@ -675,14 +440,13 @@ double Mat::Electrode::compute_d_open_circuit_potential_d_temperature(
   double ocpderiv = 0.0;
   switch (params_->ocpmodel_)
   {
-    case Mat::PAR::ocp_csv:
-    case Mat::PAR::ocp_taralov:
-    case Mat::PAR::ocp_polynomial:
+    case Mat::PAR::OCPModels::function:
+    case Mat::PAR::OCPModels::taralov:
     {
       ocpderiv = 0.0;
       break;
     }
-    case Mat::PAR::ocp_redlichkister:
+    case Mat::PAR::OCPModels::redlichkister:
     {
       const double X = compute_intercalation_fraction(concentration, chi_max(), c_max(), 1.0);
 
@@ -692,7 +456,6 @@ double Mat::Electrode::compute_d_open_circuit_potential_d_temperature(
     default:
     {
       FOUR_C_THROW("Model for half cell open circuit potential not recognized!");
-      break;
     }
   }
   return ocpderiv;
