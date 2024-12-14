@@ -67,9 +67,19 @@ namespace Core::Communication
   /**
    * Broadcast the value @p value from the MPI rank @p root to all other ranks in the communicator
    * @p comm. The array @p value is assumed to have @p count elements.
+   *
+   * @note Prefer the overload of this function that takes a reference to a single value.
    */
   template <typename T>
   void broadcast(T* value, int count, int root, MPI_Comm comm);
+
+  /**
+   * Broadcast the value @p value from the MPI rank @p root to all other ranks in the communicator.
+   * On rank @p root, the value must be initialized. On all other ranks in @p comm, the value is
+   * overwritten with the broadcast value from rank @p root.
+   */
+  template <typename T>
+  void broadcast(T& value, int root, MPI_Comm comm);
 
   /**
    * Compute the sum of all values in the array @p partial on all MPI ranks and store the result in
@@ -185,11 +195,22 @@ namespace Core::Communication::Internal
     }
   }
 
+  template <typename T, typename... Others>
+  constexpr bool is_same_as_any_of()
+  {
+    return (std::is_same_v<T, Others> || ...);
+  }
 
+  template <typename T>
+  constexpr bool is_mpi_type()
+  {
+    return is_same_as_any_of<T, int, unsigned, long, unsigned long, long long, unsigned long long,
+        float, double, long double, char, unsigned char, short, unsigned short>();
+  }
 
   //! MPI datatype for type T
   template <typename T>
-  MPI_Datatype mpi_type()
+  MPI_Datatype to_mpi_type()
   {
     if constexpr (std::is_same_v<T, int>)
       return MPI_INT;
@@ -218,39 +239,78 @@ namespace Core::Communication::Internal
     else if constexpr (std::is_same_v<T, unsigned short>)
       return MPI_UNSIGNED_SHORT;
     else
-      FOUR_C_THROW("Unsupported type for MPI datatype.");
+      return MPI_DATATYPE_NULL;
   }
 }  // namespace Core::Communication::Internal
 
 template <typename T>
 void Core::Communication::broadcast(T* value, int count, int root, MPI_Comm comm)
 {
-  MPI_Bcast(value, count, Internal::mpi_type<T>(), root, comm);
+  MPI_Bcast(value, count, Internal::to_mpi_type<T>(), root, comm);
+}
+
+template <typename T>
+void Core::Communication::broadcast(T& value, int root, MPI_Comm comm)
+{
+  // Shortcut when T is natively supported by MPI.
+  if constexpr (Internal::is_mpi_type<T>())
+  {
+    broadcast(&value, 1, root, comm);
+  }
+  // Otherwise, we need to pack and unpack the data.
+  else
+  {
+    if (Core::Communication::my_mpi_rank(comm) == root)
+    {
+      PackBuffer buffer;
+      Core::Communication::add_to_pack(buffer, value);
+
+      // Send the size.
+      auto size = buffer().size();
+      Core::Communication::broadcast(&size, 1, root, comm);
+
+      // Send the data.
+      Core::Communication::broadcast(buffer().data(), static_cast<int>(size), root, comm);
+    }
+    else
+    {
+      // Receive the size.
+      std::size_t size;
+      Core::Communication::broadcast(&size, 1, root, comm);
+
+      // Receive the data.
+      std::vector<char> buffer(size);
+      Core::Communication::broadcast(buffer.data(), static_cast<int>(size), root, comm);
+
+      UnpackBuffer unpack_buffer(buffer);
+      Core::Communication::extract_from_pack(unpack_buffer, value);
+    }
+  }
 }
 
 template <typename T>
 void Core::Communication::sum_all(T* partial, T* global, int count, MPI_Comm comm)
 {
-  MPI_Allreduce(partial, global, count, Internal::mpi_type<T>(), MPI_SUM, comm);
+  MPI_Allreduce(partial, global, count, Internal::to_mpi_type<T>(), MPI_SUM, comm);
 }
 
 template <typename T>
 void Core::Communication::max_all(T* partial, T* global, int count, MPI_Comm comm)
 {
-  MPI_Allreduce(partial, global, count, Internal::mpi_type<T>(), MPI_MAX, comm);
+  MPI_Allreduce(partial, global, count, Internal::to_mpi_type<T>(), MPI_MAX, comm);
 }
 
 template <typename T>
 void Core::Communication::min_all(T* partial, T* global, int count, MPI_Comm comm)
 {
-  MPI_Allreduce(partial, global, count, Internal::mpi_type<T>(), MPI_MIN, comm);
+  MPI_Allreduce(partial, global, count, Internal::to_mpi_type<T>(), MPI_MIN, comm);
 }
 
 template <typename T>
 void Core::Communication::gather_all(T* my_values, T* all_values, int count, MPI_Comm comm)
 {
-  MPI_Allgather(
-      my_values, count, Internal::mpi_type<T>(), all_values, count, Internal::mpi_type<T>(), comm);
+  MPI_Allgather(my_values, count, Internal::to_mpi_type<T>(), all_values, count,
+      Internal::to_mpi_type<T>(), comm);
 }
 
 /*----------------------------------------------------------------------*/

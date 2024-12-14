@@ -245,5 +245,28 @@ namespace
     EXPECT_EQ(reduced_map, expected);
   }
 
+  TEST(Broadcast, Vector)
+  {
+    MPI_Comm comm(MPI_COMM_WORLD);
+
+    // at least two procs required
+    ASSERT_GT(Core::Communication::num_mpi_ranks(comm), 1);
+
+    const int myPID = Core::Communication::my_mpi_rank(comm);
+    std::vector<double> vec;
+    if (myPID == 0)
+    {
+      vec = {1.0, 2.0, 3.0};
+    }
+    else
+    {
+      vec.resize(3);
+    }
+
+    Core::Communication::broadcast(vec, 0, comm);
+
+    EXPECT_EQ(vec, std::vector<double>({1.0, 2.0, 3.0}));
+  }
+
 
 }  // namespace
