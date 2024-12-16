@@ -153,7 +153,7 @@ jobs:
           . venv/bin/activate
           pip install anybadge
           COVERAGE_PERCENT=`llvm-cov export --object ./build/lib4C.so --format=text --instr-profile=4C-coverage-data.profdata --summary-only --ignore-filename-regex=".*/build/.*" | python -c 'import json, sys; print(json.load(sys.stdin)["data"][0]["totals"]["lines"]["percent"])'`
-          anybadge -l coverage --suffix=" %" --value=$COVERAGE_PERCENT -m "%.2f" 65=red 90=orange 100=green > coverage_report/badge_coverage.svg
+          anybadge -l coverage --suffix=" %" --value=$COVERAGE_PERCENT -m "%.2f" 75=red 90=orange 100=green > coverage_report/badge_coverage.svg
       - name: Upload coverage html report
         uses: actions/upload-artifact@v4
         with:

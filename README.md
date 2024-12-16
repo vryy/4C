@@ -7,6 +7,7 @@
 [![website](./utilities/assets/badges/website_badge.svg)](https://4C-multiphysics.org)
 [![docs/rtd](./utilities/assets/badges/documentation_readthedocs.svg)](https://4c-multiphysics.github.io/4C/readthedocs/)
 [![docs/doxygen](./utilities/assets/badges/documentation_doxygen.svg)](https://4c-multiphysics.github.io/4C/doxygen/)
+[![coverage report](https://4c-multiphysics.github.io/4C/coverage_report/badge_coverage.svg)](https://4c-multiphysics.github.io/4C/coverage_report)
 
 </div>
 
@@ -16,6 +17,7 @@
 [![workflows/buildtest](https://github.com/4C-multiphysics/4C/actions/workflows/buildtest.yml/badge.svg?branch=main)](https://github.com/4C-multiphysics/4C/actions/workflows/buildtest.yml?query=branch%3Amain)
 [![workflows/nightly_tests](https://github.com/4C-multiphysics/4C/actions/workflows/nightly_tests.yml/badge.svg?branch=main)](https://github.com/4C-multiphysics/4C/actions/workflows/nightly_tests.yml?query=branch%3Amain)
 [![workflows/documentation](https://github.com/4C-multiphysics/4C/actions/workflows/documentation.yml/badge.svg?branch=main)](https://github.com/4C-multiphysics/4C/actions/workflows/documentation.yml?query=branch%3Amain)
+[![workflows/coverage](https://github.com/4C-multiphysics/4C/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/4C-multiphysics/4C/actions/workflows/coverage.yml?query=branch%3Amain)
 
 </div>
 
