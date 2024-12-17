@@ -77,7 +77,7 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
           .geometric_search_parameters = Problem::instance()->geometric_search_params(),
           .io_parameters = Problem::instance()->io_params()});
 
-  const auto comm = problem.get_communicators()->local_comm();
+  MPI_Comm comm = problem.get_communicators()->local_comm();
   switch (problem.get_problem_type())
   {
     case Core::ProblemType::fsi:
@@ -1337,7 +1337,7 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
       {
         // read microscale fields from second, third, ... input file if necessary
         // (in case of multi-scale material models)
-        read_micro_fields(problem, std::filesystem::path(input.my_inputfile_name()).parent_path());
+        read_micro_fields(problem, input.file_for_section("MATERIALS").parent_path());
         break;
       }
       case Core::ProblemType::np_support:
@@ -1565,7 +1565,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
             (const_cast<char*>(micro_inputfile_name.c_str())), length, 0, subgroupcomm);
 
         // start with actual reading
-        Core::IO::InputFile micro_reader(micro_inputfile_name, subgroupcomm, 1);
+        Core::IO::InputFile micro_reader(micro_inputfile_name, subgroupcomm);
 
         std::shared_ptr<Core::FE::Discretization> dis_micro =
             std::make_shared<Core::FE::Discretization>(
@@ -1707,7 +1707,7 @@ void Global::read_microfields_np_support(Global::Problem& problem)
         (const_cast<char*>(micro_inputfile_name.c_str())), length, 0, subgroupcomm);
 
     // start with actual reading
-    Core::IO::InputFile micro_reader(micro_inputfile_name, subgroupcomm, 1);
+    Core::IO::InputFile micro_reader(micro_inputfile_name, subgroupcomm);
 
     std::shared_ptr<Core::FE::Discretization> structdis_micro =
         std::make_shared<Core::FE::Discretization>("structure", subgroupcomm, problem.n_dim());
@@ -1955,13 +1955,8 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::InputFile& input
         // make path relative to input file path if it is not an absolute path
         if ((*xml_filename)[0] != '/')
         {
-          std::string filename = input.my_inputfile_name();
-          std::string::size_type pos = filename.rfind('/');
-          if (pos != std::string::npos)
-          {
-            std::string tmp = filename.substr(0, pos + 1);
-            xml_filename->insert(xml_filename->begin(), tmp.begin(), tmp.end());
-          }
+          auto input_filename = input.file_for_section(ss.str());
+          *xml_filename = input_filename.parent_path() / *xml_filename;
         }
       }
     }
@@ -1977,13 +1972,9 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::InputFile& input
     // make path relative to input file path if it is not an absolute path
     if (((*statustest_xmlfile)[0] != '/') and ((*statustest_xmlfile) != "none"))
     {
-      std::string filename = input.my_inputfile_name();
-      std::string::size_type pos = filename.rfind('/');
-      if (pos != std::string::npos)
-      {
-        std::string tmp = filename.substr(0, pos + 1);
-        statustest_xmlfile->insert(statustest_xmlfile->begin(), tmp.begin(), tmp.end());
-      }
+      auto input_filename = input.file_for_section("STRUCT NOX/Status Test");
+      *statustest_xmlfile = input_filename.parent_path() / *statustest_xmlfile;
+      std::cout << "XML file for NOX status test: " << *statustest_xmlfile << std::endl;
     }
   }  // STRUCT NOX/Status Test
 

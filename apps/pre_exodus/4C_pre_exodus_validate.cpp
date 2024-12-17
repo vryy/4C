@@ -29,7 +29,7 @@ void EXODUS::validate_input_file(const MPI_Comm comm, const std::string datfile)
   Global::Problem* problem = Global::Problem::instance();
 
   // create a InputFile
-  Core::IO::InputFile reader(datfile, comm, 0);
+  Core::IO::InputFile reader(datfile, comm);
 
   // read and validate dynamic and solver sections
   std::cout << "...Read parameters" << std::endl;

@@ -381,7 +381,7 @@ Core::IO::InputFileUtils::read_matching_lines_in_section(Core::IO::InputFile& in
   std::vector<std::string> unparsed_lines;
   std::vector<Input::LineDefinition> parsed_lines;
 
-  Input::LineDefinition::ReadContext context{.input_file = input.my_inputfile_name()};
+  Input::LineDefinition::ReadContext context{.input_file = input.file_for_section(section)};
 
   const auto process_line = [&](const std::string& input_line)
   {

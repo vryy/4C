@@ -173,6 +173,9 @@ namespace
     MPI_Comm comm(MPI_COMM_WORLD);
     Core::IO::InputFile input{input_file_name, comm};
 
+    EXPECT_EQ(input.file_for_section("INCLUDED SECTION 1a").filename(), "include1a.dat");
+    EXPECT_EQ(input.file_for_section("SECTION 1").filename(), "main.dat");
+
     check_section(input, "INCLUDED SECTION 1a", std::vector<std::string>(2, "line"));
     check_section(input, "INCLUDED SECTION 1b", std::vector<std::string>(2, "line"));
     check_section(input, "INCLUDED SECTION 2", std::vector<std::string>(2, "line"));
@@ -213,6 +216,8 @@ namespace
     Core::IO::InputFile input{input_file_name, comm};
 
     check_section(input, "INCLUDED SECTION 1", std::vector<std::string>(2, "line"));
+
+    EXPECT_EQ(input.file_for_section("INCLUDED SECTION 2").filename(), "included.yaml");
 
     Teuchos::ParameterList pl;
     Core::IO::read_parameters_in_section(input, "INCLUDED SECTION 2", pl);

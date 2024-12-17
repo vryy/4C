@@ -176,44 +176,40 @@ namespace Core::IO
 
     std::vector<std::filesystem::path> read_dat_content(const std::filesystem::path& file_path,
         std::list<std::string>& content,
-        std::map<std::string, Internal::SectionPosition>& exclude_information)
+        std::map<std::string, Internal::SectionPosition>& exclude_information,
+        std::unordered_map<std::string, std::string>& section_to_file_mapping)
     {
-      std::vector<std::string> exclude;
+      std::set<std::string> exclude;
 
-      exclude.emplace_back("NODE COORDS");
-      exclude.emplace_back("STRUCTURE ELEMENTS");
-      exclude.emplace_back("STRUCTURE DOMAIN");
-      exclude.emplace_back("FLUID ELEMENTS");
-      exclude.emplace_back("FLUID DOMAIN");
-      exclude.emplace_back("ALE ELEMENTS");
-      exclude.emplace_back("ALE DOMAIN");
-      exclude.emplace_back("ARTERY ELEMENTS");
-      exclude.emplace_back("REDUCED D AIRWAYS ELEMENTS");
-      exclude.emplace_back("LUBRICATION ELEMENTS");
-      exclude.emplace_back("LUBRICATION DOMAIN");
-      exclude.emplace_back("TRANSPORT ELEMENTS");
-      exclude.emplace_back("TRANSPORT2 ELEMENTS");
-      exclude.emplace_back("TRANSPORT DOMAIN");
-      exclude.emplace_back("THERMO ELEMENTS");
-      exclude.emplace_back("THERMO DOMAIN");
-      exclude.emplace_back("ELECTROMAGNETIC ELEMENTS");
-      exclude.emplace_back("PERIODIC BOUNDINGBOX ELEMENTS");
-      exclude.emplace_back("CELL ELEMENTS");
-      exclude.emplace_back("CELL DOMAIN");
-      exclude.emplace_back("CELLSCATRA ELEMENTS");
-      exclude.emplace_back("CELLSCATRA DOMAIN");
-      exclude.emplace_back("PARTICLES");
+      exclude.emplace("NODE COORDS");
+      exclude.emplace("STRUCTURE ELEMENTS");
+      exclude.emplace("STRUCTURE DOMAIN");
+      exclude.emplace("FLUID ELEMENTS");
+      exclude.emplace("FLUID DOMAIN");
+      exclude.emplace("ALE ELEMENTS");
+      exclude.emplace("ALE DOMAIN");
+      exclude.emplace("ARTERY ELEMENTS");
+      exclude.emplace("REDUCED D AIRWAYS ELEMENTS");
+      exclude.emplace("LUBRICATION ELEMENTS");
+      exclude.emplace("LUBRICATION DOMAIN");
+      exclude.emplace("TRANSPORT ELEMENTS");
+      exclude.emplace("TRANSPORT2 ELEMENTS");
+      exclude.emplace("TRANSPORT DOMAIN");
+      exclude.emplace("THERMO ELEMENTS");
+      exclude.emplace("THERMO DOMAIN");
+      exclude.emplace("ELECTROMAGNETIC ELEMENTS");
+      exclude.emplace("PERIODIC BOUNDINGBOX ELEMENTS");
+      exclude.emplace("CELL ELEMENTS");
+      exclude.emplace("CELL DOMAIN");
+      exclude.emplace("CELLSCATRA ELEMENTS");
+      exclude.emplace("CELLSCATRA DOMAIN");
+      exclude.emplace("PARTICLES");
 
-      const auto name_of_excluded_section = [&exclude](const std::string& section_header)
+      const auto name_of_section = [](const std::string& section_header)
       {
-        auto it = std::find_if(exclude.begin(), exclude.end(),
-            [&section_header](const std::string& section)
-            { return section_header.find(section) != std::string::npos; });
-
-        if (it != exclude.end())
-          return *it;
-        else
-          return std::string{};
+        auto pos = section_header.rfind("--");
+        if (pos == std::string::npos) return std::string{};
+        return Core::Utils::trim(section_header.substr(pos + 2));
       };
 
       std::ifstream file(file_path);
@@ -238,14 +234,15 @@ namespace Core::IO
         current_section_linecount = 0;
 
         // Determine what kind of new section we started.
-        const auto maybe_excluded_section = name_of_excluded_section(line);
-        if (!maybe_excluded_section.empty())
+        const auto name = name_of_section(line);
+        section_to_file_mapping[name] = file_path.string();
+        if (exclude.count(name) > 0)
         {
           // Start a new excluded section. This starts at the next line. The correct length
           // will be set when the section ends.
-          exclude_information.emplace(maybe_excluded_section,
-              Internal::SectionPosition{.file = file_path, .pos = file.tellg(), .length = 0});
-          current_excluded_section_name = maybe_excluded_section;
+          exclude_information.emplace(
+              name, Internal::SectionPosition{.file = file_path, .pos = file.tellg(), .length = 0});
+          current_excluded_section_name = name;
           current_section_type = SectionType::on_the_fly;
         }
         else if (line.rfind("--INCLUDES") != std::string::npos)
@@ -322,8 +319,9 @@ namespace Core::IO
       return included_files;
     }
 
-    std::vector<std::filesystem::path> read_yaml_content(
-        const std::filesystem::path& file_path, std::list<std::string>& content)
+    std::vector<std::filesystem::path> read_yaml_content(const std::filesystem::path& file_path,
+        std::list<std::string>& content,
+        std::unordered_map<std::string, std::string>& section_to_file_mapping)
     {
       std::vector<std::filesystem::path> included_files;
 
@@ -359,6 +357,7 @@ namespace Core::IO
         }
 
         content.emplace_back("--" + section_name);
+        section_to_file_mapping[section_name] = file_path.string();
 
         const auto read_flat_sequence = [&](const YAML::Node& node)
         {
@@ -520,21 +519,23 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  InputFile::InputFile(std::string filename, MPI_Comm comm, int outflag)
-      : top_level_file_(std::move(filename)), comm_(std::move(comm)), outflag_(outflag)
+  InputFile::InputFile(std::string filename, MPI_Comm comm) : comm_(comm)
   {
-    read_generic();
+    read_generic(filename);
   }
 
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  std::string InputFile::my_inputfile_name() const { return top_level_file_.string(); }
-
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  int InputFile::my_output_flag() const { return outflag_; }
+  std::filesystem::path InputFile::file_for_section(const std::string& section_name) const
+  {
+    auto entry_it = section_to_file_mapping_.find(section_name);
+    if (entry_it != section_to_file_mapping_.end())
+    {
+      return entry_it->second;
+    }
+    return {};
+  }
 
 
   /*----------------------------------------------------------------------*/
@@ -826,11 +827,8 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!input.my_output_flag())
-      {
-        Core::IO::cout << "Reading knot vectors for " << name << " discretization :\n";
-        fflush(stdout);
-      }
+      Core::IO::cout << "Reading knot vectors for " << name << " discretization :\n";
+      fflush(stdout);
     }
 
     // number of patches to be determined
@@ -885,11 +883,8 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!input.my_output_flag())
-      {
-        printf("                        %8d patches", npatches);
-        fflush(stdout);
-      }
+      printf("                        %8d patches", npatches);
+      fflush(stdout);
     }
 
 
@@ -1087,13 +1082,10 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!input.my_output_flag())
-      {
-        Core::IO::cout << " in...." << time.totalElapsedTime(true) << " secs\n";
+      Core::IO::cout << " in...." << time.totalElapsedTime(true) << " secs\n";
 
-        time.reset();
-        fflush(stdout);
-      }
+      time.reset();
+      fflush(stdout);
     }
   }
 
@@ -1101,7 +1093,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void InputFile::read_generic()
+  void InputFile::read_generic(const std::filesystem::path& top_level_file)
   {
     if (Core::Communication::my_mpi_rank(comm_) == 0)
     {
@@ -1109,7 +1101,7 @@ namespace Core::IO
       std::list<std::string> content;
 
       // Start by "including" the top-level file.
-      std::list<std::filesystem::path> included_files{top_level_file_};
+      std::list<std::filesystem::path> included_files{top_level_file};
 
       // We use a hand-rolled loop here because the list keeps growing; thus we need to
       // continuously re-evaluate where the end of the list is.
@@ -1123,11 +1115,12 @@ namespace Core::IO
               if (file_extension == ".yaml" || file_extension == ".yml" ||
                   file_extension == ".json")
               {
-                return read_yaml_content(*file_it, content);
+                return read_yaml_content(*file_it, content, section_to_file_mapping_);
               }
               else
               {
-                return read_dat_content(*file_it, content, excludepositions_);
+                return read_dat_content(
+                    *file_it, content, excludepositions_, section_to_file_mapping_);
               }
             });
 
@@ -1167,10 +1160,8 @@ namespace Core::IO
         lines_.reserve(num_lines);
       }
 
-      // There are no char based functions available! Do it by hand!
-      // Core::Communication::broadcast(inputfile_.data(),arraysize,0, comm_);
-
-      MPI_Bcast(inputfile_.data(), arraysize, MPI_CHAR, 0, comm_);
+      // Broadcast the input file to all processors.
+      Core::Communication::broadcast(inputfile_.data(), arraysize, 0, comm_);
 
       if (Core::Communication::my_mpi_rank(comm_) > 0)
       {
@@ -1194,7 +1185,6 @@ namespace Core::IO
       FOUR_C_ASSERT((Core::Communication::my_mpi_rank(comm_) == 0 || excludepositions_.empty()),
           "Internal error.");
 
-      // All-gather does the correct thing becuase the maps are empty on all ranks > 0
       excludepositions_ = Core::Communication::all_reduce(excludepositions_, comm_);
     }
 
@@ -1233,6 +1223,8 @@ namespace Core::IO
       // Remember the section name to later check if it was ever queried.
       knownsections_[name] = false;
     }
+
+    Core::Communication::broadcast(section_to_file_mapping_, 0, comm_);
 
     // the following section names are always regarded as valid
     record_section_used("TITLE");
