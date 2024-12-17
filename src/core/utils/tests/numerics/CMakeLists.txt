@@ -5,14 +5,4 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-set(TESTNAME unittests_numerics)
-
-set(SOURCE_LIST
-    # cmake-format: sortable
-    4C_cubic_spline_interpolation_test.cpp
-    4C_utils_local_integration_test.cpp
-    4C_utils_local_newton_test.cpp
-    4C_utils_local_numeric_methods_test.cpp
-    )
-
-four_c_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
+four_c_auto_define_tests()

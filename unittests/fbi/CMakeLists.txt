@@ -5,11 +5,4 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-set(TESTNAME unittests_fbi)
-
-set(SOURCE_LIST
-    # cmake-format: sortable
-    4C_beam_to_fluid_meshtying_pair_gauss_point_test.cpp
-    )
-
-four_c_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
+four_c_auto_define_tests(fbi)

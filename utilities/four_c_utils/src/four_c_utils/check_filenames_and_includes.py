@@ -58,9 +58,7 @@ def has_valid_filename(path, module_roots):
     my_module_root = most_specific_module_root(abs_path, module_roots)
 
     if "tests" in abs_path.split("/") or "unittests" in abs_path.split("/"):
-        return (
-            file.endswith("_test.cpp") or file.endswith("_test.hpp")
-        ) and file.startswith("4C_")
+        return ("_test." in file) and file.startswith("4C_")
 
     # If the file is not in a module, we do not require a specific prefix and return true.
     if my_module_root is None:

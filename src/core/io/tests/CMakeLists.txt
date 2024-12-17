@@ -5,26 +5,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-set(TESTNAME unittests_core_io)
-
-set(SOURCE_LIST
-    4C_io_file_reader_test.cpp
-    4C_io_input_file_test.cpp
-    4C_io_input_file_utils_test.cpp
-    4C_io_linedefinition_test.cpp
-    4C_io_value_parser_test.cpp
-    4C_io_pstream_test.cpp
-    4C_io_string_converter_test.cpp
-    )
+four_c_auto_define_tests()
 
 file(GLOB_RECURSE SUPPORT_FILES CONFIGURE_DEPENDS test_files/*)
-
-four_c_add_google_test_executable(
-  ${TESTNAME}
-  NP
-  1
-  SOURCE
-  ${SOURCE_LIST}
-  SUPPORT_FILES
-  ${SUPPORT_FILES}
-  )
+four_c_add_support_files_to_test(${AUTO_DEFINED_TEST_NAME} SUPPORT_FILES ${SUPPORT_FILES})
