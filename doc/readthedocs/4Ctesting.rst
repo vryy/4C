@@ -85,7 +85,7 @@ Tests fall into these categories:
 
 |FOURC| tests can be triggered through various mechanisms:
 
-- On Gitlab, we use GitLab's CI pipelines. We run those pipelines every night, on every merge request, and on every change in main. In addition, they can be triggered manually.
+- On Github, we use Github actions on every pull request and run additional tests every night.
 - Locally, one can trigger ctest to run all or some tests.
 
     - filter tests by adding ``-R <regex>``. Only tests including ``<regex>`` in their names are performed
@@ -96,15 +96,6 @@ Tests fall into these categories:
 - Particularly, if you want to run ctest on a single input file, simply run ``ctest -R <input_file>``,
   where ``<input_file>`` is the input filename without the ``.dat`` suffix. A ctest with that name should exist.
 
-GitLab CI testing
------------------
-
-Pipelines
-~~~~~~~~~
-
-Details on the pipeline configuration can be found in our
-`README on test configurations <https://gitlab.lrz.de/baci/baci/blob/main/tests/testconfig/README.md>`_.
-In GitLab CI Pipeline Settings you find information on how to start tailored pipelines.
 
 Guidelines for |FOURC| input files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -122,17 +113,6 @@ In general a "clean" format of the file is demanded (alignment of parameters/val
 
 Accompanying ``*.xml``-files will be formatted by ``pre-commit``. Check ``.pre-commit-config.yaml`` for details.
 
-
-How to deal with failing tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-- Merge request testing:
-  If pipelines fail during merge request testing, just address the error.
-  Note that you can only merge to the main branch if the pipeline succeeds.
-- Nightly tests:
-  If nightly tests on the main branch fail, open a `new issue <https://gitlab.lrz.de/baci/baci/issues/new>`_
-  based on the issue template ``TEST_FAILING.md`` to report the failing pipeline
-  and test and to provide a forum to discuss possible fixed and track progress.
 
 .. _unittesting:
 
@@ -172,17 +152,13 @@ Good practices
 - choose descriptive test names inside test suite
 - do not use static members in a test class
 
-.. note::
-
-    concerning static members/singeltons refer to `Issue #186 (closed) <https://gitlab.lrz.de/baci/baci/-/issues/186>`_
-
 Also refer to the :ref:`F.I.R.S.T. principles for writing clean tests <firstprinciples>`.
 
 
 Executing |FOURC| unit tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Configure and build |FOURC| as described in `README <https://gitlab.lrz.de/baci/baci/blob/main/README.md>`_.
+Configure and build |FOURC| as described in `README <https://github.com/4C-multiphysics/4C/blob/main/README.md>`_.
 In the |FOURC| build directory ``<builddir>`` a subfolder ``unittests`` with executable unittests inside is generated.
 
     Note: in order to execute the following commands, change to build directory <builddir>
@@ -204,7 +180,8 @@ How to add unit tests to |FOURC|
 
 |FOURC| uses `GoogleTest <https://github.com/google/googletest>`_ for unit testing. If you are new to this framework,
 read the `primer <https://google.github.io/googletest/primer.html>`_.
+In general, we recommended to look through existing unit tests directories first to get an idea on how the tests are organized and how GoogleTest can be used.
 
 Unit tests reside close to the module containing the tested functionality, namely in the ``tests`` directory next to a module's ``src`` directory.
-It can be a good idea to have one unit test file per source file. Conventionally, this test file is named as the source file with the suffix ``_test``. The new file needs to be added to the directory-local ``CMakeLists.txt``
-(create it if not present). In general, we recommended to look through existing unit tests directories first to get an idea on how the tests are organized and how GoogleTest can be used.
+It can be a good idea to have one unit test file per source file. Conventionally, this test file is named as the source file with the suffix ``_test``.
+Unit tests are picked up automatically by CMake through ``four_c_auto_define_tests()``.
