@@ -15,7 +15,6 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
-#include "4C_so3_plast_ssn.hpp"
 
 #include <Epetra_FEVector.h>
 #include <Epetra_Operator.h>
@@ -24,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
 
 CONTACT::NitscheStrategyPoroScatra::NitscheStrategyPoroScatra(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
-    std::shared_ptr<Epetra_Comm> comm, double alphaf, int maxdof)
+    std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, MPI_Comm comm,
+    double alphaf, int maxdof)
     : CONTACT::NitscheStrategySsi(
           dof_row_map, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
       no_penetration_(
@@ -36,8 +35,8 @@ CONTACT::NitscheStrategyPoroScatra::NitscheStrategyPoroScatra(const Epetra_Map* 
 CONTACT::NitscheStrategyPoroScatra::NitscheStrategyPoroScatra(
     const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
-    std::shared_ptr<const Epetra_Comm> comm, double alphaf, int maxdof)
+    std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, MPI_Comm comm,
+    double alphaf, int maxdof)
     : CONTACT::NitscheStrategySsi(data_ptr, dof_row_map, NodeRowMap, params, std::move(interface),
           dim, comm, alphaf, maxdof),
       no_penetration_(

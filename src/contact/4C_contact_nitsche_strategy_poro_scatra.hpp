@@ -36,13 +36,13 @@ namespace CONTACT
     //! Standard constructor
     NitscheStrategyPoroScatra(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<std::shared_ptr<CONTACT::Interface>> interface,
-        int dim, std::shared_ptr<Epetra_Comm> comm, double alphaf, int maxdof);
+        int dim, MPI_Comm comm, double alphaf, int maxdof);
 
     //! Shared data constructor
     NitscheStrategyPoroScatra(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
-        std::shared_ptr<const Epetra_Comm> comm, double alphaf, int maxdof);
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, MPI_Comm comm,
+        double alphaf, int maxdof);
 
     void apply_force_stiff_cmt(std::shared_ptr<Core::LinAlg::Vector<double>> dis,
         std::shared_ptr<Core::LinAlg::SparseOperator>& kt,

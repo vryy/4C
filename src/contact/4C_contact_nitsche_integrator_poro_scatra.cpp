@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::IntegratorNitschePoroScatra::IntegratorNitschePoroScatra(
-    Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm)
+    Teuchos::ParameterList& params, Core::FE::CellType eletype, MPI_Comm comm)
     : IntegratorNitsche(params, eletype, comm),
       no_penetration_(params.get<bool>("CONTACTNOPEN")),
       dv_dd_(params.get<double>("porotimefac")),
@@ -99,7 +99,7 @@ void CONTACT::IntegratorNitschePoroScatra::gpts_forces(Mortar::Element& sele, Mo
     const Core::Gen::Pairedvector<int, double>& dgapgp, const double* gpn,
     std::vector<Core::Gen::Pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
 {
-  if (sele.owner() != Comm_.MyPID()) return;
+  if (sele.owner() != Core::Communication::my_mpi_rank(Comm_)) return;
 
   static const bool do_fast_checks = true;
   // first rough check
