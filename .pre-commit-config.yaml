@@ -113,12 +113,6 @@ repos:
         types_or: [c++, c]
         entry: utilities/python-venv/bin/check-preprocessor
 
-      - id: codeowners
-        name: Inclusion in CODEOWNERS file
-        description: 'Check that files are listed in CODEOWNERS file'
-        language: python
-        entry: utilities/python-venv/bin/check-codeowners
-
       - id: input-files
         name: Test input files
         description: 'Check input files conform to expectations'

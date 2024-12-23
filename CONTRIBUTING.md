@@ -303,8 +303,7 @@ To merge changes into `main`, a feature branch needs to satisfy the following co
 * Passing code check, e.g. no trailing white spaces, proper Doxygen style, ...
 * No build errors and warnings
 * All tests are passing.
-* Approval of the changes by at least one respective code owner (
-  cf. `<path/to/four-c-source-code>/.gitlab/CODEOWNERS.md`)
+* Two approvals are given.
 
 Before the merge is performed, consider a rebase of your branch into a final clean state.
 For instance, if you added small
