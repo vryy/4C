@@ -8,7 +8,6 @@ name = "four_c_utils"
 version = "0.0.1"
 description = "Common utilities to work on the 4C code base"
 requires-python = ">=3.7"
-dependencies = ["codeowners==0.6.0"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -22,7 +21,6 @@ include = ["four_c_utils"]
 check-file-header = "four_c_utils.check_file_header:main"
 check-filenames-and-includes = "four_c_utils.check_filenames_and_includes:main"
 check-header-guards = "four_c_utils.check_header_guards:main"
-check-codeowners = "four_c_utils.check_codeowners:main"
 check-test-files = "four_c_utils.check_test_files:main"
 check-preprocessor = "four_c_utils.check_preprocessor:main"
 check-workflow-dependencies-hash = "four_c_utils.check_workflow_dependencies_hash:main"
