@@ -764,7 +764,6 @@ void Core::IO::InputSpecBuilders::Internal::BasicSpec<DataType>::parse(
     };
 
     std::size_t size = std::visit(SizeVisitor{container}, data.size);
-    FOUR_C_ASSERT(size > 0, "Size must be greater than 0.");
     auto parsed = parser.read<typename DataType::StoredType>(size);
     container.add(name, parsed);
   }
