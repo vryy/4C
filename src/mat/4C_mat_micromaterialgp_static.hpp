@@ -93,11 +93,6 @@ namespace Mat
     /// corresponding microstructure discretization number
     const int microdisnum_;
 
-    /// microstructure "time integration" classes (one for each micro-discretization)
-    static std::map<int, std::shared_ptr<MultiScale::MicroStatic>> microstaticmap_;
-
-    static std::map<int, int> microstaticcounter_;
-
     /// microstructure discretization writer
     std::shared_ptr<Core::IO::DiscretizationWriter> micro_output_;
 

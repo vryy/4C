@@ -21,7 +21,7 @@ ELEMENT_OWNER                   yes
 STRESS_STRAIN                   yes
 -----------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Superlu
+SOLVER                          UMFPACK
 -------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      Statics

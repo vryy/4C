@@ -17,6 +17,7 @@
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_shw6.hpp"
 #include "4C_stru_multi_microstatic.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -24,10 +25,28 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace
+{
+  struct GlobalMicroState
+  {
+    //! map between number of micro-scale discretization and micro-scale time integrator
+    std::map<int, std::shared_ptr<MultiScale::MicroStatic>> microstaticmap_;
 
-std::map<int, std::shared_ptr<MultiScale::MicroStatic>> Mat::MicroMaterialGP::microstaticmap_;
-std::map<int, int> Mat::MicroMaterialGP::microstaticcounter_;
+    //! map between number of micro-scale discretization and number of associated macro-scale
+    //! Gauss points
+    std::map<int, int> microstaticcounter_;
+  };
 
+  // Manage a global state within a singleton
+  GlobalMicroState& global_micro_state()
+  {
+    static auto global_micro_state =
+        Core::Utils::make_singleton_owner([]() { return std::make_unique<GlobalMicroState>(); });
+
+    return *global_micro_state.instance(Core::Utils::SingletonAction::create);
+  }
+
+}  // namespace
 
 /// construct an instance of MicroMaterial for a given Gauss point and
 /// microscale discretization
@@ -61,18 +80,20 @@ Mat::MicroMaterialGP::MicroMaterialGP(
   // if class handling microscale simulations is not yet initialized
   // -> set up
 
-  if (microstaticmap_.find(microdisnum_) == microstaticmap_.end() or
-      microstaticmap_[microdisnum_] == nullptr)
+  if (global_micro_state().microstaticmap_.find(microdisnum_) ==
+          global_micro_state().microstaticmap_.end() or
+      global_micro_state().microstaticmap_[microdisnum_] == nullptr)
   {
     // create "time integration" class for this microstructure
-    microstaticmap_[microdisnum_] = std::make_shared<MultiScale::MicroStatic>(microdisnum_, V0);
+    global_micro_state().microstaticmap_[microdisnum_] =
+        std::make_shared<MultiScale::MicroStatic>(microdisnum_, V0);
     // create a counter of macroscale GP associated with this "time integration" class
     // note that the counter is immediately updated afterwards!
-    microstaticcounter_[microdisnum_] = 0;
+    global_micro_state().microstaticcounter_[microdisnum_] = 0;
   }
 
-  microstaticcounter_[microdisnum] += 1;
-  density_ = (microstaticmap_[microdisnum_])->density();
+  global_micro_state().microstaticcounter_[microdisnum] += 1;
+  density_ = (global_micro_state().microstaticmap_[microdisnum_])->density();
 
   // create and initialize "empty" EAS history map (if necessary)
   eas_init();
@@ -95,8 +116,9 @@ Mat::MicroMaterialGP::MicroMaterialGP(
 
 Mat::MicroMaterialGP::~MicroMaterialGP()
 {
-  microstaticcounter_[microdisnum_] -= 1;
-  if (microstaticcounter_[microdisnum_] == 0) microstaticmap_[microdisnum_] = nullptr;
+  global_micro_state().microstaticcounter_[microdisnum_] -= 1;
+  if (global_micro_state().microstaticcounter_[microdisnum_] == 0)
+    global_micro_state().microstaticmap_[microdisnum_] = nullptr;
 }
 
 
@@ -105,7 +127,8 @@ Mat::MicroMaterialGP::~MicroMaterialGP()
 void Mat::MicroMaterialGP::read_restart()
 {
   step_ = Global::Problem::instance()->restart();
-  microstaticmap_[microdisnum_]->read_restart(step_, dis_, lastalpha_, restartname_);
+  global_micro_state().microstaticmap_[microdisnum_]->read_restart(
+      step_, dis_, lastalpha_, restartname_);
 
   *oldalpha_ = *lastalpha_;
 
@@ -266,7 +289,8 @@ void Mat::MicroMaterialGP::post_setup()
     step_ = Global::Problem::instance()->restart();
     if (step_ > 0)
     {
-      std::shared_ptr<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+      std::shared_ptr<MultiScale::MicroStatic> microstatic =
+          global_micro_state().microstaticmap_[microdisnum_];
       time_ = microstatic->get_time_to_step(step_, restartname_);
     }
     else
@@ -287,7 +311,8 @@ void Mat::MicroMaterialGP::perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* 
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat)
 {
   // select corresponding "time integration class" for this microstructure
-  std::shared_ptr<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+  std::shared_ptr<MultiScale::MicroStatic> microstatic =
+      global_micro_state().microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
   microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
@@ -312,7 +337,8 @@ void Mat::MicroMaterialGP::perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* 
 void Mat::MicroMaterialGP::update()
 {
   // select corresponding "time integration class" for this microstructure
-  std::shared_ptr<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+  std::shared_ptr<MultiScale::MicroStatic> microstatic =
+      global_micro_state().microstaticmap_[microdisnum_];
 
   time_ = timen_;
   timen_ += dt_;
@@ -336,7 +362,8 @@ void Mat::MicroMaterialGP::update()
 void Mat::MicroMaterialGP::prepare_output()
 {
   // select corresponding "time integration class" for this microstructure
-  std::shared_ptr<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+  std::shared_ptr<MultiScale::MicroStatic> microstatic =
+      global_micro_state().microstaticmap_[microdisnum_];
 
   stress_ = std::make_shared<std::vector<char>>();
   strain_ = std::make_shared<std::vector<char>>();
@@ -352,7 +379,8 @@ void Mat::MicroMaterialGP::prepare_output()
 void Mat::MicroMaterialGP::output_step_state_microscale()
 {
   // select corresponding "time integration class" for this microstructure
-  std::shared_ptr<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+  std::shared_ptr<MultiScale::MicroStatic> microstatic =
+      global_micro_state().microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
   microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
@@ -368,7 +396,8 @@ void Mat::MicroMaterialGP::output_step_state_microscale()
 void Mat::MicroMaterialGP::write_restart()
 {
   // select corresponding "time integration class" for this microstructure
-  std::shared_ptr<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+  std::shared_ptr<MultiScale::MicroStatic> microstatic =
+      global_micro_state().microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
   microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
