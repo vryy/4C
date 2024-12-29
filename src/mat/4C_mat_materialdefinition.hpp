@@ -74,11 +74,6 @@ namespace Mat
     /// Add new components to the input line. One at a time.
     void add_component(Core::IO::InputSpec&& c);
 
-    /// Try to read all lines that fit the current material definition.
-    std::vector<std::pair<int, Core::IO::InputParameterContainer>> read(
-        Core::IO::InputFile& input  ///< the actual dat file reader that has access to the dat file
-    );
-
     /// print my DAT file section and possible materials from the discretization
     std::ostream& print(std::ostream& stream,  ///< the output stream
         const Core::FE::Discretization* dis = nullptr);

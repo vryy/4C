@@ -41,40 +41,6 @@ void Mat::MaterialDefinition::add_component(Core::IO::InputSpec&& c)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefinition::read(
-    Core::IO::InputFile& input)
-{
-  std::string name = "MATERIALS";
-
-  std::vector<std::pair<int, Core::IO::InputParameterContainer>> found_materials;
-  auto input_line = Core::IO::InputSpecBuilders::group(components_);
-  for (const auto& line : input.lines_in_section(name))
-  {
-    Core::IO::ValueParser parser(
-        line, {.user_scope_message = "While reading 'MATERIALS' section: ",
-                  .base_path = input.file_for_section(name).parent_path()});
-
-    parser.consume("MAT");
-    const int matid = parser.read<int>();
-    const std::string name = parser.read<std::string>();
-
-    if (name == materialname_)
-    {
-      if (matid <= -1) FOUR_C_THROW("Illegal negative ID provided");
-
-      Core::IO::InputParameterContainer input_data;
-      Core::IO::fully_parse(parser, input_line, input_data);
-
-      found_materials.emplace_back(matid, std::move(input_data));
-    }
-  }
-
-  return found_materials;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 std::ostream& Mat::MaterialDefinition::print(
     std::ostream& stream, const Core::FE::Discretization* dis)
 {
