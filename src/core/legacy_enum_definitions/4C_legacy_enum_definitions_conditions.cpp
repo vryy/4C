@@ -91,8 +91,6 @@ std::string_view Core::Conditions::to_string(const Core::Conditions::ConditionTy
       return "XFEM Surface Neumann boundary condition";
     case Core::Conditions::XFEM_Surf_Navier_Slip:
       return "XFEM Surface Navier Slip boundary condition";
-    case Core::Conditions::XFEM_Surf_Navier_Slip_Twophase:
-      return "XFEM Surface Navier Slip Two-phase boundary condition";
     case Core::Conditions::XFEM_Robin_Dirichlet_Surf:
       return "XFEM Mesh Navier Slip Robin(Dirichlet)-Volume Condition";
     case Core::Conditions::XFEM_Robin_Neumann_Surf:
@@ -211,16 +209,12 @@ std::string_view Core::Conditions::to_string(const Core::Conditions::ConditionTy
       return "Monitor flow rate through an line interface";
     case Core::Conditions::FlowRateThroughSurface_3D:
       return "Monitor flow rate through a surface interface";
-    case Core::Conditions::ImpulsRateThroughSurface_3D:
-      return "Monitor impuls rate through a interface";
     case Core::Conditions::FluidNeumannInflow:
       return "Fluid Neumann inflow";
     case Core::Conditions::ElchBoundaryKinetics:
       return "Electrode kinetics as boundary condition";
     case Core::Conditions::ArtJunctionCond:
       return "Artery junction boundary condition";
-    case Core::Conditions::ArtWriteGnuplotCond:
-      return "Artery write gnuplot format condition";
     case Core::Conditions::ArtPrescribedCond:
       return "Artery prescribed boundary condition";
     case Core::Conditions::ArtPorofluidCouplingCondNodebased:
@@ -235,8 +229,6 @@ std::string_view Core::Conditions::to_string(const Core::Conditions::ConditionTy
       return "Artery-Scatra node-to-point coupling condition non-conforming";
     case Core::Conditions::ArtRfCond:
       return "Artery reflective boundary condition";
-    case Core::Conditions::ArtWkCond:
-      return "Artery windkessel boundary condition";
     case Core::Conditions::StructAleCoupling:
       return "Structure - ALE coupling condition";
     case Core::Conditions::StructFluidSurfCoupling:
@@ -267,8 +259,6 @@ std::string_view Core::Conditions::to_string(const Core::Conditions::ConditionTy
       return "Transport ThermoConvections boundary condition";
     case Core::Conditions::FSICouplingCenterDisp:
       return "Sliding ALE Center Disp condition";
-    case Core::Conditions::FSICouplingNoSlide:
-      return "Do not consider these nodes for sliding ALE";
     case Core::Conditions::RobinSpringDashpot:
       return "Robin Spring Dashpot Condition";
     case Core::Conditions::RobinSpringDashpotCoupling:
@@ -279,8 +269,6 @@ std::string_view Core::Conditions::to_string(const Core::Conditions::ConditionTy
       return "No Penetration Condition";
     case Core::Conditions::TotalTractionCorrectionBorderNodes:
       return "Total traction correction border nodes condition";
-    case Core::Conditions::RedAirwayVentilatorCond:
-      return "Reduced d airway prescribed ventilator condition";
     case Core::Conditions::RedAirwayTissue:
       return "tissue RedAirway coupling surface condition";
     case Core::Conditions::RedAirwayNodeTissue:
@@ -301,20 +289,6 @@ std::string_view Core::Conditions::to_string(const Core::Conditions::ConditionTy
       return "Scalar transport flux calculation boundary condition";
     case Core::Conditions::ScaTraCoupling:
       return "scatra coupling condition";
-    case Core::Conditions::RedAirwayPrescribedScatraCond:
-      return "Reduced d airway prescribed scatra boundary condition";
-    case Core::Conditions::ArtPrescribedScatraCond:
-      return "one-D Arterial prescribed scatra boundary condition";
-    case Core::Conditions::RedAirwayInitialScatraCond:
-      return "Reduced d airway initial scatra boundary condition";
-    case Core::Conditions::RedAirwayScatraExchangeCond:
-      return "Reduced d airway scatra exchange condition";
-    case Core::Conditions::RedAirwayScatraHemoglobinCond:
-      return "Reduced d airway scatra hemoglobin condition";
-    case Core::Conditions::RedAirwayScatraAirCond:
-      return "Reduced d airway scatra air condition";
-    case Core::Conditions::RedAirwayScatraCapillaryCond:
-      return "Reduced d airway scatra capillary condition";
     case Core::Conditions::ParticleWall:
       return "particle wall condition";
     case Core::Conditions::SurfaceModeKrylovProjection:

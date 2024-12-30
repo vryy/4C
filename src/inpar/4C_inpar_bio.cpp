@@ -152,30 +152,6 @@ void Inpar::ArteryNetwork::set_valid_conditions(
 
   condlist.push_back(art_rf_bc);
 
-  /*--------------------------------------------------------------------*/
-  // 1D artery windkessel BC
-  std::shared_ptr<Core::Conditions::ConditionDefinition> art_wk_bc =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN NODE 1D ARTERY WINDKESSEL CONDITIONS", "ArtWkCond", "Artery windkessel condition",
-          Core::Conditions::ArtWkCond, true, Core::Conditions::geometry_type_point);
-
-  std::vector<std::shared_ptr<Input::LineComponent>> artwkcomponents;
-
-  art_wk_bc->add_component(std::make_shared<Input::SelectionComponent>("intigrationType",
-      "ExplicitWindkessel", Teuchos::tuple<std::string>("ExplicitWindkessel", "ImpedaceWindkessel"),
-      Teuchos::tuple<std::string>("ExplicitWindkessel", "ImpedaceWindkessel"), true));
-
-  art_wk_bc->add_component(std::make_shared<Input::SelectionComponent>("windkesselType", "RCR",
-      Teuchos::tuple<std::string>("R", "RC", "RCR", "RCRL", "none"),
-      Teuchos::tuple<std::string>("R", "RC", "RCR", "RCRL", "none"), true));
-
-  artwkcomponents.push_back(std::make_shared<Input::RealVectorComponent>("VAL", 5));
-  artwkcomponents.push_back(
-      std::make_shared<Input::IntVectorComponent>("curve", 5, IntComponentData{0, true, true}));
-  for (unsigned i = 0; i < artwkcomponents.size(); ++i)
-    art_wk_bc->add_component(artwkcomponents[i]);
-
-  condlist.push_back(art_wk_bc);
 
   /*--------------------------------------------------------------------*/
   // 1D artery in/out condition
@@ -191,22 +167,6 @@ void Inpar::ArteryNetwork::set_valid_conditions(
       Teuchos::tuple<std::string>("inlet", "outlet"), true));
 
   condlist.push_back(art_in_outlet_bc);
-  /*--------------------------------------------------------------------*/
-  // 1D artery scalar transport condition
-  std::shared_ptr<Core::Conditions::ConditionDefinition> art_scatra_bc =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN NODE 1D ARTERY SCATRA PRESCRIBED CONDITIONS", "ArtPrescribedScatraCond",
-          "Artery prescribed scatra boundary condition", Core::Conditions::ArtPrescribedScatraCond,
-          true, Core::Conditions::geometry_type_point);
-
-  std::vector<std::shared_ptr<Input::LineComponent>> artscatracomponents;
-  artscatracomponents.push_back(std::make_shared<Input::RealComponent>("VAL"));
-  artscatracomponents.push_back(
-      std::make_shared<Input::IntComponent>("curve", IntComponentData{0, true, true, false}));
-  for (unsigned i = 0; i < artscatracomponents.size(); ++i)
-    art_scatra_bc->add_component(artscatracomponents[i]);
-
-  condlist.push_back(art_scatra_bc);
 
   /*--------------------------------------------------------------------*/
   // 1D artery-to-porofluid coupling BC
@@ -525,126 +485,6 @@ void Inpar::ReducedLung::set_valid_conditions(
       "funct", 1, IntComponentData{0, false, false, true}));
 
   condlist.push_back(raw_pext_bc);
-
-
-  /*--------------------------------------------------------------------*/
-  // Prescribed BC for reduced dimensional scalar transport in airways
-
-  std::shared_ptr<Core::Conditions::ConditionDefinition> raw_in_scatra_bc =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN NODE Reduced D AIRWAYS PRESCRIBED SCATRA CONDITIONS",
-          "RedAirwayPrescribedScatraCond", "Reduced d airway prescribed scatra boundary condition",
-          Core::Conditions::RedAirwayPrescribedScatraCond, true,
-          Core::Conditions::geometry_type_point);
-
-  // reduced airway inlet scatra components
-  raw_in_scatra_bc->add_component(std::make_shared<Input::RealVectorComponent>("VAL", 1));
-  raw_in_scatra_bc->add_component(
-      std::make_shared<Input::IntVectorComponent>("curve", 1, IntComponentData{0, true, true}));
-  raw_in_scatra_bc->add_component(std::make_shared<Input::IntVectorComponent>(
-      "funct", 1, IntComponentData{0, false, false, true}));
-
-  condlist.push_back(raw_in_scatra_bc);
-
-  /*--------------------------------------------------------------------*/
-  // Prescribed BC for initial values of the scalar transport in reduced dimensional airways
-
-  std::shared_ptr<Core::Conditions::ConditionDefinition> raw_int_scatra_bc =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN LINE Reduced D AIRWAYS INITIAL SCATRA CONDITIONS", "RedAirwayInitialScatraCond",
-          "Reduced d airway initial scatra boundary condition",
-          Core::Conditions::RedAirwayInitialScatraCond, true, Core::Conditions::geometry_type_line);
-
-  raw_int_scatra_bc->add_component(std::make_shared<Input::SelectionComponent>("scalar", "O2",
-      Teuchos::tuple<std::string>("O2", "CO2"), Teuchos::tuple<std::string>("O2", "CO2"), true));
-  Input::add_named_real(raw_int_scatra_bc, "CONCENTRATION");
-
-  condlist.push_back(raw_int_scatra_bc);
-
-  /*--------------------------------------------------------------------*/
-  // Reduced D airway Scatra condition for regions of scatra exchange
-  std::shared_ptr<Core::Conditions::ConditionDefinition> scatra_exchange_cond =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN LINE Reduced D AIRWAYS SCATRA EXCHANGE CONDITIONS", "RedAirwayScatraExchangeCond",
-          "scatra exchange condition", Core::Conditions::RedAirwayScatraExchangeCond, true,
-          Core::Conditions::geometry_type_line);
-
-  scatra_exchange_cond->add_component(std::make_shared<Input::IntComponent>("ConditionID"));
-
-  condlist.push_back(scatra_exchange_cond);
-
-  /*--------------------------------------------------------------------*/
-  // Reduced D airway Scatra condition for regions with hemoglobin
-  std::shared_ptr<Core::Conditions::ConditionDefinition> scatra_hemoglobin_cond =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN LINE Reduced D AIRWAYS HEMOGLOBIN CONDITIONS", "RedAirwayScatraHemoglobinCond",
-          "scatra hemoglobin condition", Core::Conditions::RedAirwayScatraHemoglobinCond, false,
-          Core::Conditions::geometry_type_line);
-
-  Input::add_named_real(scatra_hemoglobin_cond, "INITIAL_CONCENTRATION");
-
-  condlist.push_back(scatra_hemoglobin_cond);
-
-  /*--------------------------------------------------------------------*/
-  // Reduced D airway Scatra condition for regions with hemoglobin
-  std::shared_ptr<Core::Conditions::ConditionDefinition> scatra_air_cond =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN LINE Reduced D AIRWAYS AIR CONDITIONS", "RedAirwayScatraAirCond",
-          "scatra air condition", Core::Conditions::RedAirwayScatraAirCond, false,
-          Core::Conditions::geometry_type_line);
-
-  Input::add_named_real(scatra_air_cond, "INITIAL_CONCENTRATION");
-
-  condlist.push_back(scatra_air_cond);
-
-  /*--------------------------------------------------------------------*/
-  // Reduced D airway Scatra condition for regions with hemoglobin
-  std::shared_ptr<Core::Conditions::ConditionDefinition> scatra_capillary_cond =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN LINE Reduced D AIRWAYS CAPILLARY CONDITIONS", "RedAirwayScatraCapillaryCond",
-          "scatra capillary condition", Core::Conditions::RedAirwayScatraCapillaryCond, false,
-          Core::Conditions::geometry_type_line);
-
-  condlist.push_back(scatra_capillary_cond);
-
-  /*--------------------------------------------------------------------*/
-  // Prescribed Ventilator BC for reduced dimensional airways
-
-  std::shared_ptr<Core::Conditions::ConditionDefinition> raw_vent_bc =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN NODE Reduced D AIRWAYS VENTILATOR CONDITIONS", "RedAirwayVentilatorCond",
-          "Reduced d airway prescribed ventilator condition",
-          Core::Conditions::RedAirwayVentilatorCond, true, Core::Conditions::geometry_type_point);
-
-  raw_vent_bc->add_component(std::make_shared<Input::SelectionComponent>("phase1", "flow",
-      Teuchos::tuple<std::string>("flow", "volume", "pressure"),
-      Teuchos::tuple<std::string>("flow", "volume", "pressure"), true));
-
-  raw_vent_bc->add_component(std::make_shared<Input::SelectionComponent>("Phase1Smoothness",
-      "smooth", Teuchos::tuple<std::string>("smooth", "discontinous"),
-      Teuchos::tuple<std::string>("smooth", "discontinous"), true));
-
-  raw_vent_bc->add_component(std::make_shared<Input::SelectionComponent>("phase2", "pressure",
-      Teuchos::tuple<std::string>("pressure", "flow", "volume"),
-      Teuchos::tuple<std::string>("pressure", "flow", "volume"), true));
-
-  raw_vent_bc->add_component(std::make_shared<Input::SelectionComponent>("Phase2Smoothness",
-      "smooth", Teuchos::tuple<std::string>("smooth", "discontinous"),
-      Teuchos::tuple<std::string>("smooth", "discontinous"), true));
-
-  Input::add_named_real(raw_vent_bc, "period");
-  Input::add_named_real(raw_vent_bc, "phase1_period");
-  Input::add_named_real(raw_vent_bc, "smoothness_period1");
-  Input::add_named_real(raw_vent_bc, "smoothness_period2");
-
-  // reduced airway ventilation components
-  raw_vent_bc->add_component(std::make_shared<Input::RealVectorComponent>("VAL", 2));
-  raw_vent_bc->add_component(
-      std::make_shared<Input::IntVectorComponent>("curve", 2, IntComponentData{0, true, true}));
-
-  condlist.push_back(raw_vent_bc);
-
-
 
   /*--------------------------------------------------------------------*/
   // Prescribed volume dependent pleural pressure for reduced dimensional airways
