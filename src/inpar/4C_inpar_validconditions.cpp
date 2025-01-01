@@ -514,27 +514,8 @@ Input::valid_conditions()
           "Locsys", "Volume local coordinate system", Core::Conditions::VolumeLocsys, true,
           Core::Conditions::geometry_type_volume);
 
-  // Ale
-  std::shared_ptr<Core::Conditions::ConditionDefinition> pointalelocsys =
-      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN POINT ALE LOCSYS CONDITIONS",
-          "AleLocsys", "Point local coordinate system", Core::Conditions::PointLocsys, true,
-          Core::Conditions::geometry_type_point);
-  std::shared_ptr<Core::Conditions::ConditionDefinition> linealelocsys =
-      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN LINE ALE LOCSYS CONDITIONS",
-          "AleLocsys", "Line local coordinate system", Core::Conditions::LineLocsys, true,
-          Core::Conditions::geometry_type_line);
-  std::shared_ptr<Core::Conditions::ConditionDefinition> surfalelocsys =
-      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURF ALE LOCSYS CONDITIONS",
-          "AleLocsys", "Surface local coordinate system", Core::Conditions::SurfaceLocsys, true,
-          Core::Conditions::geometry_type_surface);
-  std::shared_ptr<Core::Conditions::ConditionDefinition> volalelocsys =
-      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN VOL ALE LOCSYS CONDITIONS",
-          "AleLocsys", "Volume local coordinate system", Core::Conditions::VolumeLocsys, true,
-          Core::Conditions::geometry_type_volume);
-
   // add components to condition definitions
-  for (const auto& cond : {pointlocsys, linelocsys, surflocsys, vollocsys, pointalelocsys,
-           linealelocsys, surfalelocsys, volalelocsys})
+  for (const auto& cond : {pointlocsys, linelocsys, surflocsys, vollocsys})
   {
     add_named_real_vector(cond, "ROTANGLE", "", 3);
     add_named_int_vector(cond, "FUNCT", "", 3);
@@ -542,14 +523,13 @@ Input::valid_conditions()
   }
 
   // add node normal system option only for lines and surfaces
-  for (const auto& cond : {linelocsys, surflocsys, linealelocsys, surfalelocsys})
+  for (const auto& cond : {linelocsys, surflocsys})
   {
     add_named_int(cond, "USECONSISTENTNODENORMAL");
   }
 
   // add conditions to global list of conditions
-  for (const auto& cond : {pointlocsys, linelocsys, surflocsys, vollocsys, pointalelocsys,
-           linealelocsys, surfalelocsys, volalelocsys})
+  for (const auto& cond : {pointlocsys, linelocsys, surflocsys, vollocsys})
   {
     condlist.push_back(cond);
   }
@@ -710,27 +690,6 @@ Input::valid_conditions()
   areaconstraint->add_component(std::make_shared<RealComponent>("activTime"));
 
   condlist.push_back(areaconstraint);
-
-  /*--------------------------------------------------------------------*/
-  // area constraint penalty
-
-  std::shared_ptr<Core::Conditions::ConditionDefinition> areaconstraintpen =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN SURFACE AREA CONSTRAINT 3D PEN", "AreaConstraint_3D_Pen",
-          "Surface Area Constraint Penalty", Core::Conditions::AreaConstraint_3D_pen, true,
-          Core::Conditions::geometry_type_surface);
-
-  areaconstraintpen->add_component(std::make_shared<IntComponent>("ConditionID"));
-  areaconstraintpen->add_component(
-      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  areaconstraintpen->add_component(std::make_shared<RealComponent>("activTime"));
-  areaconstraintpen->add_component(std::make_shared<RealComponent>("penalty"));
-  areaconstraintpen->add_component(std::make_shared<RealComponent>("rho"));
-  areaconstraintpen->add_component(std::make_shared<SelectionComponent>("projection", "none",
-      Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
-      Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true));
-
-  condlist.push_back(areaconstraintpen);
 
 
   /*--------------------------------------------------------------------*/

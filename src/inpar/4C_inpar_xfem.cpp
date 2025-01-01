@@ -813,37 +813,6 @@ void Inpar::XFEM::set_valid_conditions(
 
   condlist.push_back(xfem_surf_navier_slip);
 
-  //*----------------*/
-  // Surface Navier Slip conditions
-
-  std::shared_ptr<Core::Conditions::ConditionDefinition> xfem_surf_navier_slip_tpf =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN XFEM NAVIER SLIP TWO PHASE SURF CONDITIONS", "XFEMSurfNavierSlipTwoPhase",
-          "XFEM Surf Navier Slip", Core::Conditions::XFEM_Surf_Navier_Slip_Twophase, true,
-          Core::Conditions::geometry_type_surface);
-
-  add_named_int(xfem_surf_navier_slip_tpf, "COUPLINGID");
-  add_named_selection_component(xfem_surf_navier_slip_tpf, "EVALTYPE", "", "funct_interpolated",
-      Teuchos::tuple<std::string>("zero", "funct_interpolated", "funct_gausspoint",
-          "displacement_1storder_wo_initfunct", "displacement_2ndorder_wo_initfunct",
-          "displacement_1storder_with_initfunct", "displacement_2ndorder_with_initfunct"),
-      Teuchos::tuple<std::string>("zero", "funct_interpolated", "funct_gausspoint",
-          "displacement_1storder_wo_initfunct", "displacement_2ndorder_wo_initfunct",
-          "displacement_1storder_with_initfunct", "displacement_2ndorder_with_initfunct"),
-      true);
-  add_named_int(xfem_surf_navier_slip_tpf, "ROBIN_DIRICHLET_ID", "", 0, false, true, true);
-  add_named_int(xfem_surf_navier_slip_tpf, "ROBIN_NEUMANN_ID", "", 0, false, true, true);
-  add_named_real(xfem_surf_navier_slip_tpf, "SLIP_SMEAR", "", 0.0, true);
-  add_named_real(xfem_surf_navier_slip_tpf, "NORMAL_PENALTY_SCALING", "", 0.0, true);
-  add_named_real(xfem_surf_navier_slip_tpf, "SLIPCOEFFICIENT");
-  xfem_surf_navier_slip_tpf->add_component(
-      std::make_shared<Input::SeparatorComponent>("SLIP_FUNCT", "", true));
-  xfem_surf_navier_slip_tpf->add_component(
-      std::make_shared<Input::IntComponent>("FUNCT", IntComponentData{0, false, false, true}));
-  add_named_int(xfem_surf_navier_slip_tpf, "FORCE_ONLY_TANG_VEL", "", 0, true, false);
-
-  condlist.push_back(xfem_surf_navier_slip_tpf);
-
   std::shared_ptr<Core::Conditions::ConditionDefinition> xfem_navier_slip_robin_dirch_surf =
       std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN XFEM ROBIN DIRICHLET SURF CONDITIONS", "XFEMRobinDirichletSurf",

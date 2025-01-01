@@ -1645,18 +1645,6 @@ void Inpar::FLUID::set_valid_conditions(
   condlist.push_back(surfflowrate);
 
   /*--------------------------------------------------------------------*/
-  // impuls rate through surface
-
-  std::shared_ptr<Core::Conditions::ConditionDefinition> surfimpulsrate =
-      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN IMPULS RATE SURF CONDITIONS",
-          "SurfImpulsRate", "Surface Impuls Rate", Core::Conditions::ImpulsRateThroughSurface_3D,
-          true, Core::Conditions::geometry_type_surface);
-
-  surfimpulsrate->add_component(std::make_shared<Input::IntComponent>("ConditionID"));
-
-  condlist.push_back(surfimpulsrate);
-
-  /*--------------------------------------------------------------------*/
   // Volumetric surface flow profile condition
   std::shared_ptr<Core::Conditions::ConditionDefinition> volumetric_surface_flow_cond =
       std::make_shared<Core::Conditions::ConditionDefinition>(
@@ -1878,40 +1866,6 @@ void Inpar::FLUID::set_valid_conditions(
           Core::Conditions::PoroPresInt, true, Core::Conditions::geometry_type_line);
 
   condlist.push_back(poropresint_line);
-
-  /*--------------------------------------------------------------------*/
-  // Fluctuating Hydrodynamics Statistics on a surface
-
-  std::shared_ptr<Core::Conditions::ConditionDefinition> fluctHydro_statisticsSurf =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN FLUCTHYDRO STATISTICS SURF CONDITIONS", "FluctHydroStatisticsSurf",
-          "FluctHydro_StatisticsSurf", Core::Conditions::FluctHydro_StatisticsSurf, true,
-          Core::Conditions::geometry_type_surface);
-
-  fluctHydro_statisticsSurf->add_component(std::make_shared<Input::IntComponent>("ConditionID"));
-  fluctHydro_statisticsSurf->add_component(
-      std::make_shared<Input::SelectionComponent>("evaluation type", "nodalbased",
-          Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"),
-          Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased")));
-
-  condlist.push_back(fluctHydro_statisticsSurf);
-
-  /*--------------------------------------------------------------------*/
-  // Fluctuating Hydrodynamics Statistics on a line
-
-  std::shared_ptr<Core::Conditions::ConditionDefinition> fluctHydro_statisticsLine =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN FLUCTHYDRO STATISTICS LINE CONDITIONS", "FluctHydroStatisticsLine",
-          "FluctHydro_StatisticsLine", Core::Conditions::FluctHydro_StatisticsLine, true,
-          Core::Conditions::geometry_type_line);
-
-  fluctHydro_statisticsLine->add_component(std::make_shared<Input::IntComponent>("ConditionID"));
-  fluctHydro_statisticsLine->add_component(
-      std::make_shared<Input::SelectionComponent>("evaluation type", "nodalbased",
-          Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"),
-          Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased")));
-
-  condlist.push_back(fluctHydro_statisticsLine);
 }
 
 FOUR_C_NAMESPACE_CLOSE

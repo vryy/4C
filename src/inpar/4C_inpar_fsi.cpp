@@ -435,23 +435,6 @@ void Inpar::FSI::set_valid_conditions(
   condlist.push_back(surffsi);
 
   /*--------------------------------------------------------------------*/
-  // FSI without sliding
-
-  std::shared_ptr<Core::Conditions::ConditionDefinition> linefsins =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN FSI COUPLING NO SLIDE LINE CONDITIONS", "FSICouplingNoSlide",
-          "FSI Coupling No Slide", Core::Conditions::FSICouplingNoSlide, true,
-          Core::Conditions::geometry_type_line);
-  std::shared_ptr<Core::Conditions::ConditionDefinition> surffsins =
-      std::make_shared<Core::Conditions::ConditionDefinition>(
-          "DESIGN FSI COUPLING NO SLIDE SURF CONDITIONS", "FSICouplingNoSlide",
-          "FSI Coupling No Slide", Core::Conditions::FSICouplingNoSlide, true,
-          Core::Conditions::geometry_type_surface);
-
-  condlist.push_back(linefsins);
-  condlist.push_back(surffsins);
-
-  /*--------------------------------------------------------------------*/
   // FSI define centerdisp for sliding interfaces
 
   std::shared_ptr<Core::Conditions::ConditionDefinition> linefsicd =
