@@ -32,11 +32,7 @@ namespace CONTACT
       /** \brief standard constructor
        * \param[in] container containing the law parameter from the input file
        */
-      MircoConstitutiveLawParams(
-          const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container);
-
-      /// create constitutive law instance of matching type with my parameters
-      std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> create_constitutive_law() override;
+      MircoConstitutiveLawParams(const Core::IO::InputParameterContainer& container);
 
       /// @name get-functions for the Constitutive Law parameters of a mirco function
       //@{
@@ -92,7 +88,7 @@ namespace CONTACT
     {
      public:
       /// construct the constitutive law object given a set of parameters
-      explicit MircoConstitutiveLaw(CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams* params);
+      explicit MircoConstitutiveLaw(CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams params);
 
       //! @name Access methods
 
@@ -103,7 +99,7 @@ namespace CONTACT
       }
 
       /// Return quick accessible contact constitutive law parameter data
-      CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return params_; }
+      const CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return &params_; }
 
       //! @name Evaluation methods
       //@{
@@ -131,7 +127,7 @@ namespace CONTACT
 
      private:
       /// my constitutive law parameters
-      CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams* params_;
+      CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams params_;
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT

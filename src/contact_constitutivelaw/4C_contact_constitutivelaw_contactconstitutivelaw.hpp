@@ -36,7 +36,7 @@ namespace CONTACT
       virtual Inpar::CONTACT::ConstitutiveLawType get_constitutive_law_type() const = 0;
 
       /// Return quick accessible Contact Constitutive Law parameter data
-      virtual CONTACT::CONSTITUTIVELAW::Parameter* parameter() const = 0;
+      virtual const CONTACT::CONSTITUTIVELAW::Parameter* parameter() const = 0;
 
       virtual double evaluate(double gap, CONTACT::Node* cnode) = 0;
       virtual double evaluate_deriv(double gap, CONTACT::Node* cnode) = 0;
@@ -44,14 +44,7 @@ namespace CONTACT
       /* \brief create Contact ConstitutiveLaw object given the id of the constitutive law in the
        * input file
        */
-      static std::shared_ptr<ConstitutiveLaw> factory(const int id);
-
-      /* \brief create Contact Constitutivelaw object given input information for the constitutive
-       * law \param[in] Container holding the Coefficients for the Contact ConstitutiveLaw
-       */
-      static std::shared_ptr<ConstitutiveLaw> factory(
-          const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container>
-              contactconstitutivelawdata);
+      static std::unique_ptr<ConstitutiveLaw> factory(const int id);
 
       virtual ~ConstitutiveLaw() = default;
     };

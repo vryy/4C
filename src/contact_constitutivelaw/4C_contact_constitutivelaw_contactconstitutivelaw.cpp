@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
+std::unique_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
 CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(const int id)
 {
   const int probinst =
@@ -37,51 +37,44 @@ CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(const int id)
     FOUR_C_THROW("Cannot find any contact constitutive law!");
 
   // retrieve validated input line of material ID in question
-  std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container> coconstlawdata =
+  auto& coconstlawdata =
       Global::Problem::instance(probinst)->contact_constitutive_laws()->by_id(id);
-  return CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(coconstlawdata);
-}
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
-CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(
-    const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> contactconstitutivelawdata)
-{
-  switch (contactconstitutivelawdata->type())
+  const auto type = coconstlawdata.get<Inpar::CONTACT::ConstitutiveLawType>("LAW_TYPE");
+
+  switch (type)
   {
     case Inpar::CONTACT::ConstitutiveLawType::colaw_cubic:
     {
-      CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams* params =
-          new CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams(contactconstitutivelawdata);
-      return params->create_constitutive_law();
+      CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams params(
+          coconstlawdata.group("CoConstLaw_cubic"));
+      return std::make_unique<CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw>(params);
     }
     case Inpar::CONTACT::ConstitutiveLawType::colaw_brokenrational:
     {
-      CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams* params =
-          new CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams(
-              contactconstitutivelawdata);
-      return params->create_constitutive_law();
+      CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams params(
+          coconstlawdata.group("CoConstLaw_brokenrational"));
+      return std::make_unique<CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw>(params);
     }
 
     case Inpar::CONTACT::ConstitutiveLawType::colaw_linear:
     {
-      CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams* params =
-          new CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams(contactconstitutivelawdata);
-      return params->create_constitutive_law();
+      CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams params(
+          coconstlawdata.group("CoConstLaw_linear"));
+      return std::make_unique<CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw>(params);
     }
     case Inpar::CONTACT::ConstitutiveLawType::colaw_power:
     {
-      CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams* params =
-          new CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams(contactconstitutivelawdata);
-      return params->create_constitutive_law();
+      CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams params(
+          coconstlawdata.group("CoConstLaw_power"));
+      return std::make_unique<CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw>(params);
     }
     case Inpar::CONTACT::ConstitutiveLawType::colaw_mirco:
     {
 #ifdef FOUR_C_WITH_MIRCO
-      CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams* params =
-          new CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams(contactconstitutivelawdata);
-      return params->create_constitutive_law();
+      CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams params(
+          coconstlawdata.group("CoConstLaw_mirco"));
+      return std::make_unique<CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw>(params);
 #else
       FOUR_C_THROW(
           "You are trying to use MIRCO contact consitutive law with FOUR_C_WITH_MIRCO flag turned "
@@ -91,15 +84,10 @@ CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(
     case Inpar::CONTACT::ConstitutiveLawType::colaw_none:
     {
       FOUR_C_THROW("No contact constitutive law found\n");
-      break;
     }
     default:
-      FOUR_C_THROW(
-          "unknown type of contact constitutive law %d\n", contactconstitutivelawdata->type());
-      break;
+      FOUR_C_THROW("unknown type of contact constitutive law %d\n", type);
   }
-
-  return nullptr;
 }
 
 FOUR_C_NAMESPACE_CLOSE

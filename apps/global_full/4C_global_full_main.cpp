@@ -10,12 +10,12 @@
 #include "4C_config_trilinos_version.hpp"
 
 #include "4C_comm_utils.hpp"
+#include "4C_contact_constitutivelaw_valid_laws.hpp"
 #include "4C_fem_general_element_definition.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_validconditions.hpp"
-#include "4C_inpar_validcontactconstitutivelaw.hpp"
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_input_file_utils.hpp"
@@ -279,7 +279,14 @@ int main(int argc, char* argv[])
       print_default_dat_header();
       print_condition_dat_header();
       print_material_dat_header();
-      print_contact_constitutive_law_dat_header();
+
+      {
+        auto valid_co_laws = CONTACT::CONSTITUTIVELAW::valid_contact_constitutive_laws();
+        Core::IO::InputFileUtils::print_section_header(std::cout, "CONTACT CONSTITUTIVE LAWS");
+        std::cout << "//";
+        valid_co_laws.print(std::cout, Core::IO::InputParameterContainer{});
+        std::cout << '\n';
+      }
 
       const auto lines = Core::FE::valid_cloning_material_map_lines();
       Core::IO::InputFileUtils::print_section(std::cout, "CLONING MATERIAL MAP", lines);

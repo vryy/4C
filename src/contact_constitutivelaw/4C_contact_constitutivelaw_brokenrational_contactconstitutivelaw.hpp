@@ -29,12 +29,7 @@ namespace CONTACT
     {
      public:
       /// standard constructor
-      BrokenRationalConstitutiveLawParams(
-          const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container);
-
-
-      /// create constitutive law instance of matching type with my parameters
-      std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> create_constitutive_law() override;
+      BrokenRationalConstitutiveLawParams(const Core::IO::InputParameterContainer& container);
 
       /// @name get-functions for the Constitutive Law parameters of a broken rational function
       //@{
@@ -67,7 +62,7 @@ namespace CONTACT
      public:
       /// construct the constitutive law object given a set of parameters
       explicit BrokenRationalConstitutiveLaw(
-          CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams* params);
+          CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams params);
 
       //! @name Access methods
 
@@ -78,14 +73,14 @@ namespace CONTACT
       }
 
       /// Get scaling factor of the broken rational function
-      double getdata() { return params_->getdata(); }
+      double getdata() { return params_.getdata(); }
       /// Get asymptote of the broken rational function
-      double get_b() { return params_->get_b(); }
+      double get_b() { return params_.get_b(); }
       /// Get Y intercept of the broken rational function
-      double get_c() { return params_->get_c(); }
+      double get_c() { return params_.get_c(); }
 
       /// Return quick accessible mcontact constitutive law parameter data
-      CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return params_; }
+      const CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return &params_; }
 
       //@}
 
@@ -99,7 +94,7 @@ namespace CONTACT
 
      private:
       /// my constitutive law parameters
-      CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams* params_;
+      CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams params_;
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT

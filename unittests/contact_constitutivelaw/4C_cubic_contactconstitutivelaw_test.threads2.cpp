@@ -19,21 +19,16 @@ namespace
    public:
     CubicConstitutiveLawTest()
     {
-      // initialize container for material parameters
-      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container> container =
-          std::make_shared<CONTACT::CONSTITUTIVELAW::Container>(
-              1, Inpar::CONTACT::ConstitutiveLawType::colaw_cubic, "Cubic Constitutivelaw");
-
+      Core::IO::InputParameterContainer container;
       // add parameters to container
-      container->add("A", 1.5);
-      container->add("B", 2.0);
-      container->add("C", 3.0);
-      container->add("D", 0.0);
-      container->add("Offset", 0.5);
+      container.add("A", 1.5);
+      container.add("B", 2.0);
+      container.add("C", 3.0);
+      container.add("D", 0.0);
+      container.add("Offset", 0.5);
 
-      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> cubiccoconstlaw =
-          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(container);
-      coconstlaw_ = cubiccoconstlaw;
+      CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams params(container);
+      coconstlaw_ = std::make_shared<CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw>(params);
     }
 
     std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;

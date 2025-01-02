@@ -613,8 +613,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_contact_law_reference(std::ostream& stream,
-      const std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist)
+  void write_contact_law_reference(std::ostream& stream, const Core::IO::InputSpec& specs)
   {
     write_linktarget(stream, "contactconstitutivelawreference");
     write_header(stream, 0, "Contact Constitutive Law Reference");
@@ -624,77 +623,11 @@ namespace RTD
         std::string(43, '-') + "CONTACT CONSTITUTIVE LAW"};
     write_code(stream, contactlawsectionstring);
 
-    for (auto& contactlaw : coconstlawlist)
-    {
-      write_single_contact_law_read_the_docs(stream, contactlaw);
-    }
+    std::stringstream specs_string;
+    specs.print(specs_string, Core::IO::InputParameterContainer{});
+    write_code(stream, {specs_string.str()});
   }
 
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  void write_single_contact_law_read_the_docs(std::ostream& stream,
-      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition> contactlaw)
-  {
-    /* Each entry consists of a number of fields:
-    - header
-    - description
-    - code line
-    - parameter description */
-
-    // the Law title
-    write_linktarget(stream, contactlaw->name());
-    write_header(stream, 1, contactlaw->name());
-
-    // the description of the contact law
-    std::string contactDescription = contactlaw->description();
-    write_paragraph(stream, contactDescription);
-
-    // the material line as it occurs in the dat file
-    std::string parameter = "LAW <lawID>   " + contactlaw->name();
-    std::vector<std::string> contactlawCode;
-    //
-    // Also: create the table from the parameter descriptions (based on the so-called
-    // separatorComponents) table header
-    const unsigned tablesize = 3;
-    Table parametertable(tablesize);
-    std::vector<std::string> tablerow(tablesize);
-    tablerow = {"Parameter", "optional", "Description"};
-    parametertable.add_row(tablerow);
-
-    for (auto& parameterterm : contactlaw->inputline())
-    {
-      if (auto* separator = dynamic_cast<Input::SeparatorComponent*>(parameterterm.get()))
-      {
-        parametertable.add_row(separator->write_read_the_docs_table_row());
-
-        if (parameter.length() > 60)
-        {
-          parameter += " \\";
-          contactlawCode.push_back(parameter);
-          parameter = "   ";
-        }
-      }
-      std::ostringstream parameterstream;
-      parameterterm->default_line(parameterstream);
-      parameter += " " + parameterstream.str();
-    }
-    contactlawCode.push_back(parameter);
-    write_code(stream, contactlawCode);
-    //
-    // Now printing the parameter table
-    parametertable.set_widths({10, 10, 50});
-    parametertable.add_directive("header-rows", "1");
-
-    if (parametertable.get_rows() == 1)
-    {
-      tablerow = {"no parameters", "", ""};
-      parametertable.add_row(tablerow);
-    }
-    parametertable.print(stream);
-
-    return;
-  }
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/

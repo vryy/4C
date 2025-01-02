@@ -32,12 +32,8 @@ namespace CONTACT
       /** \brief standard constructor
        * \param[in] container containing the law parameter from the input file
        */
-      LinearConstitutiveLawParams(
-          const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container);
+      LinearConstitutiveLawParams(const Core::IO::InputParameterContainer& container);
 
-
-      /// create constitutive law instance of matching type with my parameters
-      std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> create_constitutive_law() override;
 
       /// @name get-functions for the Constitutive Law parameters of a broken rational function
       //@{
@@ -65,7 +61,7 @@ namespace CONTACT
     {
      public:
       /// construct the constitutive law object given a set of parameters
-      explicit LinearConstitutiveLaw(CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams* params);
+      explicit LinearConstitutiveLaw(CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams params);
 
       //! @name Access methods
 
@@ -76,12 +72,12 @@ namespace CONTACT
       }
 
       /// Get slope of linear polynomial
-      double getdata() { return params_->getdata(); }
+      double getdata() { return params_.getdata(); }
       /// Get y intercept of linear polynomial
-      double get_b() { return params_->get_b(); }
+      double get_b() { return params_.get_b(); }
 
       /// Return quick accessible contact constitutive law parameter data
-      CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return params_; }
+      const CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return &params_; }
 
       //! @name Evaluation methods
       //@{
@@ -94,7 +90,7 @@ namespace CONTACT
 
      private:
       /// my constitutive law parameters
-      CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams* params_;
+      CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams params_;
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT

@@ -32,12 +32,7 @@ namespace CONTACT
       /** \brief standard constructor
        * \param[in] container containing the law parameter from the input file
        */
-      PowerConstitutiveLawParams(
-          const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container);
-
-
-      /// create constitutive law instance of matching type with my parameters
-      std::shared_ptr<ConstitutiveLaw> create_constitutive_law() override;
+      PowerConstitutiveLawParams(const Core::IO::InputParameterContainer& container);
 
       /// @name get-functions for the Constitutive Law parameters of a power law function
       //@{
@@ -66,7 +61,7 @@ namespace CONTACT
     {
      public:
       /// construct the constitutive law object given a set of parameters
-      explicit PowerConstitutiveLaw(CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams* params);
+      explicit PowerConstitutiveLaw(CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams params);
 
       //! @name Access methods
 
@@ -77,12 +72,12 @@ namespace CONTACT
       }
 
       /// Get scaling factor of power law
-      double getdata() { return params_->getdata(); }
+      double getdata() { return params_.getdata(); }
       /// Get power coefficient of power law
-      double get_b() { return params_->get_b(); }
+      double get_b() { return params_.get_b(); }
 
       /// Return quick accessible contact constitutive law parameter data
-      CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return params_; }
+      const CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return &params_; }
 
       //! @name Evaluation methods
       //@{
@@ -94,7 +89,7 @@ namespace CONTACT
 
      private:
       /// my constitutive law parameters
-      CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams* params_;
+      CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams params_;
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT

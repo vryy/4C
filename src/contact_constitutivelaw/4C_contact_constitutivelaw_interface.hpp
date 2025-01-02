@@ -14,12 +14,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Mortar
-{
-  class InterfacedataContainer;
-}
-
 namespace CONTACT
 {
   namespace CONSTITUTIVELAW

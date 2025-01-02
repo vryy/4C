@@ -7,30 +7,14 @@
 
 #include "4C_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 
-#include <memory>
-
 FOUR_C_NAMESPACE_OPEN
 
 
-CONTACT::CONSTITUTIVELAW::Parameter::Parameter(
-    const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container>
+CONTACT::CONSTITUTIVELAW::Parameter::Parameter(const Core::IO::InputParameterContainer&
         coconstlawdata  ///< read and validate contactconstitutivelaw data (of 'slow' access)
     )
-    : offset_(coconstlawdata->get<double>("Offset")) {};
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::Container::Container(
-    const int id, const Inpar::CONTACT::ConstitutiveLawType type, const std::string name)
-    : Core::IO::InputParameterContainer(), id_(id), type_(type), name_(name), params_(nullptr)
+    : offset_(coconstlawdata.get<double>("Offset"))
 {
-}
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::Container::print(std::ostream& os) const
-{
-  os << "ContactConstitutiveLaw " << id() << " " << name() << " :: ";
-
-  Core::IO::InputParameterContainer::print(os);
 }
 
 FOUR_C_NAMESPACE_CLOSE

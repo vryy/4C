@@ -16,9 +16,9 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::CONSTITUTIVELAW::Bundle::Bundle() : readfromproblem_(0) {}
 /*----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::Bundle::insert(
-    int matid, std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container> mat)
+    int matid, Core::IO::InputParameterContainer container)
 {
-  map_.insert(std::pair<int, std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container>>(matid, mat));
+  map_.emplace(matid, std::move(container));
 }
 
 /*----------------------------------------------------------------------*/
@@ -33,42 +33,24 @@ int CONTACT::CONSTITUTIVELAW::Bundle::find(const int id) const
 /*----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::Bundle::make_parameters()
 {
-  for (std::map<int, std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container>>::iterator m =
-           map_.begin();
-      m != map_.end(); ++m)
+  for (const auto& [id, law] : map_)
   {
-    int lawid = m->first;
-
-    // 1st try
-    {
-      // indirectly add quick access parameter members
-      std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> law =
-          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(lawid);
-      // check if allocation was successful
-      std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container> lawpar = m->second;
-      if (law != nullptr) continue;
-    }
-    FOUR_C_THROW(
-        "Allocation of quick access parameters failed for contact constitutivelaw %d", lawid);
+    // indirectly add quick access parameter members as a side effect of construction
+    [[maybe_unused]] auto _ = CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(id);
   }
 }
 
 /*----------------------------------------------------------------------*/
-std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container> CONTACT::CONSTITUTIVELAW::Bundle::by_id(
-    const int id) const
+Core::IO::InputParameterContainer& CONTACT::CONSTITUTIVELAW::Bundle::by_id(const int id)
 {
-  std::map<int, std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container>>::const_iterator m =
-      map_.find(id);
-
   if (map_.size() == 0) FOUR_C_THROW("No contact constitutivelaws available, num=%d", id);
+
+  auto m = map_.find(id);
 
   if (m == map_.end())
     FOUR_C_THROW("Contact Constitutive Law 'Law %d' could not be found", id);
   else
     return m->second;
-
-  // catch up
-  return nullptr;
 }
 
 FOUR_C_NAMESPACE_CLOSE
