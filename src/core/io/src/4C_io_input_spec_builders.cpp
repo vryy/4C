@@ -9,6 +9,7 @@
 
 #include <set>
 #include <unordered_map>
+#include <utility>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -197,7 +198,10 @@ void Core::IO::InputSpecBuilders::Internal::GroupSpec::print(
 {
   if (!name.empty()) stream << name;
 
-  const auto& subcontainer = (name.empty()) ? container : container.group(name);
+  const auto& subcontainer =
+      (name.empty()) ? container
+                     : (container.has_group(name) ? container.group(name)
+                                                  : Core::IO::InputParameterContainer{});
   for (const auto& component : specs)
   {
     component.print(stream, subcontainer);
@@ -358,7 +362,7 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::one_of(std::vector<InputSpec> s
 
   return InputSpec(Internal::OneOfSpec{.data = std::move(group_data),
                        .specs = std::move(specs),
-                       .on_parse_callback = on_parse_callback},
+                       .on_parse_callback = std::move(on_parse_callback)},
       std::move(common_data));
 }
 

@@ -86,6 +86,11 @@ const Core::IO::InputParameterContainer& Core::IO::InputParameterContainer::grou
   return groups_.at(name);
 }
 
+bool Core::IO::InputParameterContainer::has_group(const std::string& name) const
+{
+  return groups_.count(name) > 0;
+}
+
 void Core::IO::InputParameterContainer::merge(const Core::IO::InputParameterContainer& other)
 {
   const auto combine_maps = [](auto& map1, const auto& map2)

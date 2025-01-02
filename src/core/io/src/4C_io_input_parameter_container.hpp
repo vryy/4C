@@ -108,6 +108,10 @@ namespace Core::IO
      */
     [[nodiscard]] const InputParameterContainer& group(const std::string& name) const;
 
+    /**
+     * Check if a group with the name @p name exists.
+     */
+    [[nodiscard]] bool has_group(const std::string& name) const;
 
     /**
      * Combine the data from another container with this one. Conflicting data will throw an error.
