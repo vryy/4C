@@ -1213,7 +1213,7 @@ namespace Discret
           const int nlayer, const bool isowned, Teuchos::ParameterList& turbmodelparams);
 
       /*!
-       * \brief fill elment matrix and vectors with the global values
+       * \brief fill element matrix and vectors with the global values
        */
       void extract_values_from_global_vector(
           const Core::FE::Discretization& discretization,  ///< discretization
@@ -1440,7 +1440,7 @@ namespace Discret
       Core::LinAlg::Matrix<nsd_, 1> bodyforce_;
       // New One Step Theta variables
       //======================================================
-      //! denisty multiplied with instationary term for OST implementations
+      //! density multiplied with instationary term for OST implementations
       double dens_theta_;
       //! bodyforce in gausspoint (n)
       Core::LinAlg::Matrix<nsd_, 1> bodyforcen_;

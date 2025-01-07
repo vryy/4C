@@ -98,7 +98,7 @@ namespace GEOMETRYPAIR
      * @param point (in) Point in space.
      * @param element_data_surface (in) Degrees of freedom for the surface.
      * @param xi (in/out) Parameter coordinates on the surface (the first two are in the surface
-     * parameter coordiantes, the third one is in the normal direction). The given values are the
+     * parameter coordinates, the third one is in the normal direction). The given values are the
      * start values for the Newton iteration.
      * @param projection_result (out) Flag for the result of the projection.
      * @param min_one_iteration (in) Flag if at least one NR iteration should be performed, even if
@@ -256,7 +256,7 @@ namespace GEOMETRYPAIR
      * \brief Wrap the pre_evaluate call.
      *
      * The segments will be evaluated as double segments and only the converged projections /
-     * intersections will be revaluated to contain the correct FAD derivatives. This process
+     * intersections will be reevaluated to contain the correct FAD derivatives. This process
      * reduces the performance bottleneck introduced by using the FAD types.
      *
      * @param element_data_line (in) Degrees of freedom for the line.
@@ -283,7 +283,7 @@ namespace GEOMETRYPAIR
    * @param xi (in) Parameter coordinate
    * @param normal_influence_direction (in) Threshold value for influence distance in normal
    * direction. If this is negative no threshold will be applied and the only check performed, is if
-   * the projection lies withing the governing 2D parameter space.
+   * the projection lies within the governing 2D parameter space.
    * @return True if normal distance is in a reasonable range, false otherwise.
    */
   template <typename ScalarType, typename Surface>

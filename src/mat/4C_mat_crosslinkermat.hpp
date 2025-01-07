@@ -156,7 +156,7 @@ namespace Mat
     /// number of beam elasthyper material
     virtual double beam_elast_hyper_mat_num() const { return params_->link_element_matnum_; }
 
-    /// force depedent off rate according to bells equation
+    /// force dependent off rate according to bells equation
     virtual Inpar::BeamInteraction::JointType joint_type() const { return params_->jointtype_; };
 
     /// distance between the two binding domains of a linker
@@ -177,13 +177,13 @@ namespace Mat
     /// chemical dissociation rate
     virtual double k_off() const { return params_->k_off_; }
 
-    /// force depedent off rate according to bells equation
+    /// force dependent off rate according to bells equation
     virtual double delta_bell_eq() const { return params_->deltabelleq_; };
 
     /// distance to sphere elements in which no double bonded beam to beam linker is allowed
     virtual double no_bond_dist_sphere() const { return params_->nobonddistsphere; };
 
-    /// force depedent off rate according to bells equation
+    /// force dependent off rate according to bells equation
     virtual Inpar::BeamInteraction::CrosslinkerType linker_type() const
     {
       return params_->linkertype_;

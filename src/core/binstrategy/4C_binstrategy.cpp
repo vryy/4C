@@ -1064,9 +1064,9 @@ std::shared_ptr<Epetra_Map> Core::Binstrategy::BinningStrategy::
     // ghosts all elements whose XAABB cuts a bin that is next to a bin that is
     // owned by a proc an not empty. All associated nodes are ghosted as well
     // ----------------------------------------------------------------------
-    // here each proc assignes his owned elements in the means of a XAABB to
+    // here each proc assigns his owned elements in the means of a XAABB to
     // the global binids that do not need be owned by this proc.
-    // binelemap on each proc than contains all bins (not neccesarily owned by
+    // binelemap on each proc than contains all bins (not necessarily owned by
     // this proc) that are cut by the procs row elements
     std::map<int, std::set<int>> bintoelemap;
     distribute_elements_to_bins_using_ele_aabb(
@@ -1518,7 +1518,7 @@ void Core::Binstrategy::BinningStrategy::
       // now each procs checks if row nodes lie in bins of iproc ...
       if (mynodesinbins.find(binids[i]) != mynodesinbins.end())
       {
-        // ... if so, each proc assignes its node gids to iprocs bins
+        // ... if so, each proc assigns its node gids to iprocs bins
         sdata[binids[i]].insert(sdata[binids[i]].begin(), mynodesinbins[binids[i]].begin(),
             mynodesinbins[binids[i]].end());
       }

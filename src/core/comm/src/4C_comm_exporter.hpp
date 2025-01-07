@@ -47,7 +47,7 @@ namespace Core::Communication
     \brief Standard Constructor
 
     this ctor constructs an exporter with no maps. It can than be used to do
-    point-to-point communication only, map based exportes are not possible!
+    point-to-point communication only, map based exports are not possible!
 
     \param comm    (in): Communicator that shall be used in exports
     */
@@ -74,7 +74,7 @@ namespace Core::Communication
     virtual ~Exporter() = default;
 
 
-    //! @name Acess methods
+    //! @name Access methods
 
     /*!
     \brief Get communicator
@@ -222,12 +222,12 @@ namespace Core::Communication
     \brief Send data from one processor to another (nonblocking)
 
     The method will send an array of chars in a nonblocking way meaning that this method will return
-    immediately on the calling processor - even if communcation has not finished yet. The char array
-    must not be altered or destroyed as long as the communication might still be in progress. This
-    can be tested for using Exporter::Wait and the request handle returned. The receiving processor
-    should call Exporter::ReceiveAny to receive the message. Note that messages from one explicit
-    proc to another explicit proc are non-overtaking meaning they will arrive in the order they have
-    been sent.
+    immediately on the calling processor - even if communication has not finished yet. The char
+    array must not be altered or destroyed as long as the communication might still be in progress.
+    This can be tested for using Exporter::Wait and the request handle returned. The receiving
+    processor should call Exporter::ReceiveAny to receive the message. Note that messages from one
+    explicit proc to another explicit proc are non-overtaking meaning they will arrive in the order
+    they have been sent.
 
     \note This is an individual call.
 
@@ -238,7 +238,7 @@ namespace Core::Communication
     \param tag (in)      : tag to be used with message
     \param request (out) : mpi request handle to be used for testing completion of the
                            communication. data may not be altered or destroyed before
-                           communcation finalized! One can use Exporter::Wait for this.
+                           communication finalized! One can use Exporter::Wait for this.
 
     \note This is an individual call
     */
@@ -249,7 +249,7 @@ namespace Core::Communication
     \brief Send data from one processor to another (nonblocking)
 
     The method will send an array of ints in a nonblocking way meaning that this method will return
-   immediately on the calling processor - even if communcation has not finished yet. The int array
+   immediately on the calling processor - even if communication has not finished yet. The int array
    must not be altered or destroyed as long as the communication might still be in progress. This
    can be tested for using Exporter::Wait and the request handle returned. The receiving processor
    should call Exporter::ReceiveAny to receive the message. Note that messages from one explicit
@@ -265,7 +265,7 @@ namespace Core::Communication
     \param tag (in)      : tag to be used with message
     \param request (out) : mpi request handle to be used for testing completion of the
                            communication. data may not be altered or destroyed before
-                           communcation finalized! One can use Exporter::Wait for this.
+                           communication finalized! One can use Exporter::Wait for this.
 
     \note This is an individual call
     */
@@ -276,7 +276,7 @@ namespace Core::Communication
     \brief Send data from one processor to another (nonblocking)
 
     The method will send an array of doubles in a nonblocking way meaning that this method will
-    return immediately on the calling processor - even if communcation has not finished yet. The
+    return immediately on the calling processor - even if communication has not finished yet. The
     double array must not be altered or destroyed as long as the communication might still be in
     progress. This can be tested for using Exporter::Wait and the request handle returned. The
     receiving processor should call Discret::Exporter::ReceiveAny to receive the message. Note that
@@ -292,7 +292,7 @@ namespace Core::Communication
     \param tag (in)      : tag to be used with message
     \param request (out) : mpi request handle to be used for testing completion of the
                            communication. data may not be altered or destroyed before
-                           communcation finalized! One can use Exporter::Wait for this.
+                           communication finalized! One can use Exporter::Wait for this.
 
     \note This is an individual call
     */

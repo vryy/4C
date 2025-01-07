@@ -138,7 +138,7 @@ void XFEM::XfsCouplingManager::add_coupling_matrix(
 
   Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
 
-  // Todo: Need to eighter split fluid matrixes in the fsi algo or change the maps of the coupling
+  // Todo: Need to either split fluid matrixes in the fsi algo or change the maps of the coupling
   // matrixes(merged)
   bool is_xfluidfluid = std::dynamic_pointer_cast<FLD::XFluidFluid>(xfluid_) != nullptr;
 
@@ -204,9 +204,8 @@ void XFEM::XfsCouplingManager::add_coupling_rhs(std::shared_ptr<Core::LinAlg::Ve
   }
 
   Core::LinAlg::Vector<double> coup_rhs(*me.Map(idx_[0]), true);
-  Core::LinAlg::export_to(
-      coup_rhs_sum, coup_rhs);  // use this command as long as poro ist not split
-                                // into two bocks in the monolithic algorithm!
+  Core::LinAlg::export_to(coup_rhs_sum, coup_rhs);  // use this command as long as poro is not split
+                                                    // into two bocks in the monolithic algorithm!
   // insert_vector(0,coup_rhs_sum,0,coup_rhs,Coupling_Comm_Manager::partial_to_full);
   me.add_vector(coup_rhs, idx_[0], *rhs);
 }

@@ -574,7 +574,7 @@ namespace Cut
         Core::FE::CellType distype = Core::FE::CellType::dis_none,
         CutFloatType floattype = floattype_double) const;
 
-    /// \brief specify general floattype for all geometric operations in Cut::POSITON
+    /// \brief specify general floattype for all geometric operations in Cut::POSITION
     static void specify_general_pos_floattype(CutFloatType floattype)
     {
       general_pos_floattype_ = floattype;
@@ -1018,11 +1018,11 @@ namespace Cut
 
     /// @}
 
-    /*! \brief get general floattype for all geometric operations in Cut::POSITON*/
+    /*! \brief get general floattype for all geometric operations in Cut::POSITION*/
     static CutFloatType use_pos_floattype(CutFloatType floattype);
     static CutFloatType use_dist_floattype(CutFloatType floattype);
 
-    /*! \brief general floattype for all geometric operations in Cut::POSITON*/
+    /*! \brief general floattype for all geometric operations in Cut::POSITION*/
     static CutFloatType general_pos_floattype_;
     static CutFloatType general_dist_floattype_;
 

@@ -87,7 +87,7 @@ namespace XFEM
     //! compute transformation factor for surface integration, normal, local and global gp
     //! coordinates
     void compute_surface_transformation(double& drs,  ///< surface transformation factor
-        Core::LinAlg::Matrix<3, 1>& x_gp_lin,         ///< global coordiantes of gaussian point
+        Core::LinAlg::Matrix<3, 1>& x_gp_lin,         ///< global coordinates of gaussian point
         Core::LinAlg::Matrix<3, 1>& normal,           ///< normal vector on boundary cell
         Cut::BoundaryCell* bc,                        ///< boundary cell
         const Core::LinAlg::Matrix<2, 1>&
@@ -182,7 +182,7 @@ namespace XFEM
         const Core::LinAlg::Matrix<3, 1>& vel_m, const Core::LinAlg::Matrix<3, 1>& vel_s,
         const Core::LinAlg::Matrix<3, 1>& elenormal, const Core::LinAlg::Matrix<3, 1>& normal);
 
-    void evalute_stateat_gp(const Core::Elements::Element* sele,
+    void evaluate_stateat_gp(const Core::Elements::Element* sele,
         const Core::LinAlg::Matrix<3, 1>& selexsi, const Core::FE::Discretization& discret,
         const std::string& state, Core::LinAlg::Matrix<3, 1>& vel_s);
 

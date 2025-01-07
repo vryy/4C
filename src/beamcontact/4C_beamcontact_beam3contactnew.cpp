@@ -118,8 +118,8 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   // for tangent smoothing but also in order to determine the vector normalold_ of the neighbor,
   // which is needed to perform sliding contact (with changing active pairs) for slender beams.
   {
-    neighbors1_ = BeamInteraction::Beam3TangentSmoothing::determine_neigbors(element1);
-    neighbors2_ = BeamInteraction::Beam3TangentSmoothing::determine_neigbors(element2);
+    neighbors1_ = BeamInteraction::Beam3TangentSmoothing::determine_neighbors(element1);
+    neighbors2_ = BeamInteraction::Beam3TangentSmoothing::determine_neighbors(element2);
   }
 
   // Calculate initial length of beam elements (approximation for initially curved elements!)
@@ -281,7 +281,7 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate(
         Core::FADUtils::norm(Core::FADUtils::scalar_product(r1_xi, r2_xi)) /
         (Core::FADUtils::vector_norm<3>(r1_xi) * Core::FADUtils::vector_norm<3>(r2_xi));
 
-    // In Case, the contact happend on the neighbor element pair in the last time step, we have not
+    // In Case, the contact happened on the neighbor element pair in the last time step, we have not
     // calculated normal_old for this element in the last time step. In this case, we take
     // normal_old from the neighbor element!
     if (fabs(xi1_old_) > 1.0 + XIETATOL or fabs(xi2_old_) > 1.0 + XIETATOL)
@@ -2306,7 +2306,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::closest_point_projectio
     // std::cout << "norm_delta_r: " << norm_delta_r << std::endl;
     if (norm_delta_r < NORMTOL)
     {
-      // this exludes pairs with IDs i and i+2, i.e. contact with the next but one element
+      // this excludes pairs with IDs i and i+2, i.e. contact with the next but one element
       if (Core::FADUtils::cast_to_double(Core::FADUtils::norm(eta1)) +
               Core::FADUtils::cast_to_double(Core::FADUtils::norm(eta2)) <
           NEIGHBORTOL)
@@ -2391,7 +2391,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::closest_point_projectio
       std::cout << "eta2: " << eta2 << std::endl;
       FOUR_C_THROW(
           "Relative CPP residual norm is smaller than 1.0e-08 but Newton is not converged. Adapt "
-          "your absolut CPP residual norm!");
+          "your absolute CPP residual norm!");
     }
 
 
@@ -2477,7 +2477,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_penalty_law()
 
         break;
       }
-      case Inpar::BeamContact::pl_lpqp:  // quadratic regularization for positiv gaps
+      case Inpar::BeamContact::pl_lpqp:  // quadratic regularization for positive gaps
       {
         if (g0 == -1.0)
           FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
@@ -2512,7 +2512,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_penalty_law()
           FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
 
         // k \in ~[1;3] delivers sensible results representing a parable without turning point
-        // k \in ~[3;6] delivers a parable with turning point and consequentely also small negative
+        // k \in ~[3;6] delivers a parable with turning point and consequently also small negative
         // contact forces ~0.1*f0 k=2.0 is  identical to the quadratic regularization for positive
         // gaps!
         double k = c0;
@@ -2536,7 +2536,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_penalty_law()
 
         break;
       }
-      case Inpar::BeamContact::pl_lpdqp:  // double quadratic regularization for positiv gaps
+      case Inpar::BeamContact::pl_lpdqp:  // double quadratic regularization for positive gaps
       {
         if (g0 == -1.0)
           FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
@@ -2582,7 +2582,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_penalty_law()
 
         break;
       }
-      case Inpar::BeamContact::pl_lpep:  // exponential regularization for positiv gaps. Here g0
+      case Inpar::BeamContact::pl_lpep:  // exponential regularization for positive gaps. Here g0
                                          // represents the cut off radius!
       {
         if (g0 == -1.0)
@@ -2629,7 +2629,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_penalty_law()
   {
     std::cout << "Maximal force reached: penalty force has been regularized!" << std::endl;
     fp_ = MAXFORCE;
-    // Uncomment one of the followin two options:
+    // Uncomment one of the following two options:
     // 1)
     dfp_ = -pp_;  // original penalty parameter
     // 2)
@@ -2952,7 +2952,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_old_coords_and_
   r2_xi_old.clear();
 
   // compute old position vectors
-  // important: in order to compute the derivatives correctely, the current parameter coordinates xi
+  // important: in order to compute the derivatives correctly, the current parameter coordinates xi
   // and eta of the contact points have to be applied!
   for (int i = 0; i < 3; i++)
   {
@@ -3121,7 +3121,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_normal(
   // vector normal_old_ is zero, since no valid normal vector was available in the last time step).
   // In case of "sliding contact", i.e. when normal_old_ has already been calculated out of the
   // neighbor element (get_neighbor_normal_old), this is not allowed. Otherwise we would overwrite
-  // the vector normal_old_ which has already been calcualted via the neighbor element. (For this
+  // the vector normal_old_ which has already been calculated via the neighbor element. (For this
   // reason we check with the norm of normal_old_ and not with the variable firstcall_).
   if (Core::FADUtils::cast_to_double(Core::FADUtils::norm(
           Core::FADUtils::scalar_product(normal_old_, normal_old_))) < NORMALTOL)
@@ -3153,7 +3153,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_normal(
   gap_ = gap;
 
   // for comparison reasons we calculate in each case additionally the original gap function
-  // definition, thus gap_original==gap_ if the origianl gap function definition is applied
+  // definition, thus gap_original==gap_ if the original gap function definition is applied
   gap_original_ = norm_delta_r - radius1_ - radius2_;
 
   return;
@@ -3255,7 +3255,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::check_contact_status(co
   return;
 }
 /*----------------------------------------------------------------------*
- |  end: Check if conact is active or inactive
+ |  end: Check if contact is active or inactive
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -3487,7 +3487,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::set_class_variables(
     }
   }
 
-  // initialize positions of last iteration (needed for algortihmic damping)
+  // initialize positions of last iteration (needed for algorithmic damping)
   if (firstcallofstep_)
   {
     for (int i = 0; i < 3 * numnodes * numnodalvalues; i++)

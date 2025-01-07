@@ -223,7 +223,7 @@ void Solid::TimIntStatics::evaluate_force_stiff_residual(Teuchos::ParameterList&
   apply_force_stiff_spring_dashpot(stiff_, fintn_, disn_, veln_, predict, psprdash);
 
   // ************************** (3) INERTIAL FORCES ***************************
-  // This is statics, so there are no intertial forces.
+  // This is statics, so there are no inertial forces.
 
   // ************************** (4) DAMPING FORCES ****************************
   // This is statics, so there are no viscous damping forces.

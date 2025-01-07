@@ -200,7 +200,7 @@ void EHL::Base::set_struct_solution(std::shared_ptr<const Core::LinAlg::Vector<d
   // 1. Update the Mortar Coupling
   //---------------------------------------------------------
 
-  // Reevalute the mortar martices D and M
+  // Reevaluate the mortar martices D and M
   mortaradapter_->integrate(disp, dt());
 
   // Displace the mesh of the lubrication field in accordance with the slave-side interface
@@ -583,8 +583,8 @@ void EHL::Base::setup_field_coupling(
 
   // A mortar coupling adapter, using the "EHL Coupling Condition" is set up. The Coupling is
   // between the slave- and the master-side interface of the structure. Dofs, which, need to be
-  // transfered from the master-side to the lubrication field, need to be mortar-projected to the
-  // slave-side interface and then transfered by a matching-node coupling,  and vice versa. The
+  // transferred from the master-side to the lubrication field, need to be mortar-projected to the
+  // slave-side interface and then transferred by a matching-node coupling,  and vice versa. The
   // matching node coupling is defined below.
 
   std::vector<int> coupleddof(ndim, 1);
@@ -760,7 +760,7 @@ void EHL::Base::output(bool forced_writerestart)
   // ============================
   mortaradapter_->write_restart(*lubrication_->lubrication_field()->disc_writer());
 
-  // Addtitional output on the lubrication field
+  // Additional output on the lubrication field
   {
     std::shared_ptr<Core::LinAlg::Vector<double>> discretegap =
         Core::LinAlg::create_vector(*(slaverowmapextr_->Map(0)), true);

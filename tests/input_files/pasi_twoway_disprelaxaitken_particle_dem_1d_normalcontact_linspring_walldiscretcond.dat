@@ -1,14 +1,14 @@
 -----------------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Particle_Structure_Interaction
 --------------------------------------------------------------------------IO
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 VERBOSITY                       standard
 ------------------------------------------------------------BINNING STRATEGY
 BIN_SIZE_LOWER_BOUND            1.0
 DOMAINBOUNDINGBOX               -1.0 -1.0 -1.0 1.0 1.0 1.0
 ----------------------------------------------------------------PASI DYNAMIC
-RESULTSEVRY                     10
-RESTARTEVRY                     25
+RESULTSEVERY                     10
+RESTARTEVERY                     25
 TIMESTEP                        5.0e-4
 NUMSTEP                         50
 MAXTIME                         0.025

@@ -23,11 +23,11 @@ void Inpar::PoroMultiPhaseScaTra::set_valid_parameters(Teuchos::ParameterList& l
   // ----------------------------------------------------------------------
   // (1) general control parameters
   Teuchos::ParameterList& poromultiphasescatradyn = list.sublist("POROMULTIPHASESCATRA DYNAMIC",
-      false, "Control paramters for scatra porous multiphase media coupling");
+      false, "Control parameters for scatra porous multiphase media coupling");
 
   // Output type
-  Core::Utils::int_parameter("RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps",
-      &poromultiphasescatradyn);
+  Core::Utils::int_parameter("RESTARTEVERY", 1,
+      "write restart possibility every RESTARTEVERY steps", &poromultiphasescatradyn);
   // Time loop control
   Core::Utils::int_parameter(
       "NUMSTEP", 200, "maximum number of Timesteps", &poromultiphasescatradyn);
@@ -35,7 +35,7 @@ void Inpar::PoroMultiPhaseScaTra::set_valid_parameters(Teuchos::ParameterList& l
       "MAXTIME", 1000.0, "total simulation time", &poromultiphasescatradyn);
   Core::Utils::double_parameter("TIMESTEP", 0.05, "time step size dt", &poromultiphasescatradyn);
   Core::Utils::int_parameter(
-      "RESULTSEVRY", 1, "increment for writing solution", &poromultiphasescatradyn);
+      "RESULTSEVERY", 1, "increment for writing solution", &poromultiphasescatradyn);
   Core::Utils::int_parameter(
       "ITEMAX", 10, "maximum number of iterations over fields", &poromultiphasescatradyn);
   Core::Utils::int_parameter(

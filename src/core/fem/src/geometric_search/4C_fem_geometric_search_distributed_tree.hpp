@@ -48,7 +48,7 @@ namespace Core::GeometricSearch
    * @param primitives Bounding volumes to search for intersections
    * @param predicates Bounding volumes to intersect with
    * @param comm Communicator object of the discretization
-   * @param verbosity Enabeling printout of the geometric search information
+   * @param verbosity Enabling printout of the geometric search information
    * @return Collision pairs found with their global and local IDs
    */
   std::vector<GlobalCollisionSearchResult> global_collision_search(

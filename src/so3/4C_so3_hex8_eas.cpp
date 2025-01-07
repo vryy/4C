@@ -24,7 +24,7 @@ void Discret::Elements::SoHex8::soh8_easinit()
   Core::LinAlg::SerialDenseMatrix alpha(neas_, 1);
   // EAS enhanced strain parameters of last converged load/time step
   Core::LinAlg::SerialDenseMatrix alphao(neas_, 1);
-  // EAS portion of internal forces, also called enhacement vector s or Rtilde
+  // EAS portion of internal forces, also called enhancement vector s or Rtilde
   Core::LinAlg::SerialDenseMatrix feas(neas_, 1);
   // EAS matrix K_{alpha alpha}, also called Dtilde
   Core::LinAlg::SerialDenseMatrix invKaa(neas_, neas_);
@@ -219,8 +219,8 @@ void Discret::Elements::SoHex8::soh8_eassetup(
       M_mild_eval = true;  // now the array is filled statically
     }
 
-    // return adress of just evaluated matrix
-    *M_GP = &M_mild;  // return adress of static object to target of pointer
+    // return address of just evaluated matrix
+    *M_GP = &M_mild;  // return address of static object to target of pointer
   }
   else if (eastype_ == soh8_easfull)
   {
@@ -270,8 +270,8 @@ void Discret::Elements::SoHex8::soh8_eassetup(
       }
       M_full_eval = true;  // now the array is filled statically
     }
-    // return adress of just evaluated matrix
-    *M_GP = &M_full;  // return adress of static object to target of pointer
+    // return address of just evaluated matrix
+    *M_GP = &M_full;  // return address of static object to target of pointer
   }
   else if (eastype_ == soh8_eassosh8)
   {
@@ -308,8 +308,8 @@ void Discret::Elements::SoHex8::soh8_eassetup(
       }
       M_sosh8_eval = true;  // now the array is filled statically
     }
-    // return adress of just evaluated matrix
-    *M_GP = &M_sosh8;  // return adress of static object to target of pointer
+    // return address of just evaluated matrix
+    *M_GP = &M_sosh8;  // return address of static object to target of pointer
   }
   else
   {

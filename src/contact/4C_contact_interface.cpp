@@ -224,7 +224,7 @@ void CONTACT::Interface::update_master_slave_sets()
   // DOFS
   //********************************************************************
   // do the same business for dofs
-  // (get row and column maps of slave and master dofs seperately)
+  // (get row and column maps of slave and master dofs separately)
   if (nonSmoothContact_)
   {
     std::vector<int> sVc;  // slave column map
@@ -1156,7 +1156,7 @@ void CONTACT::Interface::create_search_tree()
     //*****SELF CONTACT*****
     if (self_contact())
     {
-      // set state in interface to intialize all kinds of quantities
+      // set state in interface to initialize all kinds of quantities
       Core::LinAlg::Vector<double> zero(*idiscret_->dof_row_map());
       set_state(Mortar::state_new_displacement, zero);
 
@@ -3982,7 +3982,7 @@ void CONTACT::Interface::evaluate_cpp_normals()
     // Now, calculate distance between node and master line
     double dist = compute_cpp_normal(*mrtrnode, meles, normaltoline, normaltolineLin);
 
-    // if no projection was posible
+    // if no projection was possible
     if (dist > 1e11)
     {
       Node* cnode = dynamic_cast<Node*>(mrtrnode);
@@ -4544,7 +4544,7 @@ double CONTACT::Interface::compute_cpp_normal_3d(Mortar::Node& mrtrnode,
   //******************************************************
   if (mrtrnode.is_on_corner_edge())  // only for edge or corner nodes possible
   {
-    // guarantee uniquness
+    // guarantee uniqueness
     std::set<std::pair<int, int>> donebefore;
 
     // calc
@@ -5395,7 +5395,7 @@ void CONTACT::Interface::evaluate_stl()
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     auto* selement = dynamic_cast<Element*>(ele1);
 
-    // guarantee uniquness
+    // guarantee uniqueness
     std::set<std::pair<int, int>> donebefore;
 
     // loop over found meles
@@ -5502,7 +5502,7 @@ void CONTACT::Interface::evaluate_lts()
   // check
   if (n_dim() == 2) FOUR_C_THROW("LTS algorithm only for 3D simulations!");
 
-  // guarantee uniquness
+  // guarantee uniqueness
   std::set<std::pair<int, int>> donebefore;
 
   // loop over slave elements
@@ -5731,7 +5731,7 @@ void CONTACT::Interface::evaluate_ltl()
   // check
   if (n_dim() == 2) FOUR_C_THROW("LTL algorithm only for 3D simulations!");
 
-  // guarantee uniquness of slave edges
+  // guarantee uniqueness of slave edges
   std::set<std::pair<int, int>> donebeforeS;
 
   // loop over slave elements
@@ -5898,7 +5898,7 @@ void CONTACT::Interface::evaluate_ltl()
       FOUR_C_THROW("LTL only for quad4 and tri3!");
     }
 
-    // guarantee uniquness of master edges
+    // guarantee uniqueness of master edges
     std::set<std::pair<int, int>> donebeforeM;
 
     // empty vector of slave element pointers
@@ -6262,7 +6262,7 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
 
     else if (lmtype == Inpar::Mortar::lagmult_pwlin)
     {
-      // integrate each int element seperately
+      // integrate each int element separately
       for (auto& sauxelement : sauxelements)
       {
         // do the int element integration of kappa and store into gap
@@ -6329,7 +6329,7 @@ void CONTACT::Interface::evaluate_relative_movement(
     auto* cnode = dynamic_cast<FriNode*>(node);
     double cn = get_cn_ref()[get_cn_ref().Map().LID(cnode->id())];
 
-    // get some informatiom form the node
+    // get some information form the node
     double gap = cnode->data().getg();
 
     const int dim = cnode->num_dof();
@@ -6804,7 +6804,7 @@ void CONTACT::Interface::evaluate_distances(
         }
         else
         {
-          FOUR_C_THROW("ERORR: wrong node LID");
+          FOUR_C_THROW("ERROR: wrong node LID");
         }
       }
       else if (selement->shape() == Core::FE::CellType::tri3 or
@@ -6842,7 +6842,7 @@ void CONTACT::Interface::evaluate_distances(
         }
         else
         {
-          FOUR_C_THROW("ERORR: wrong node LID");
+          FOUR_C_THROW("ERROR: wrong node LID");
         }
       }
       else
@@ -6906,7 +6906,7 @@ void CONTACT::Interface::evaluate_distances(
           double gpn[3] = {0.0, 0.0, 0.0};
           //**************************************************************
 
-          // evalute the GP slave coordinate derivatives --> no entries
+          // evaluate the GP slave coordinate derivatives --> no entries
           std::vector<Core::Gen::Pairedvector<int, double>> dsxi(2, 0);
           std::vector<Core::Gen::Pairedvector<int, double>> dmxi(2, 4 * linsize + ncol * ndof);
 
@@ -6928,7 +6928,7 @@ void CONTACT::Interface::evaluate_distances(
 
       if (gap_vec.size() > 0)
       {
-        // find projection with smallest absoluate value of gap
+        // find projection with smallest absolute value of gap
         auto iter_min = std::min_element(gap_vec.begin(), gap_vec.end(), abs_compare);
         const int i_min = std::distance(gap_vec.begin(), iter_min);
 

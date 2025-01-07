@@ -57,31 +57,31 @@ Mat::PAR::MuscleWeickenmeier::MuscleWeickenmeier(const Core::Mat::PAR::Parameter
   // stimulation frequency dependent parameters
   if (Na_ < 0.0)
   {
-    FOUR_C_THROW("Material parameter ACTMUNUM must be postive or zero");
+    FOUR_C_THROW("Material parameter ACTMUNUM must be positive or zero");
   }
 
   double sumrho = 0.0;
   for (int iMU = 0; iMU < muTypesNum_; ++iMU)
   {
-    if (I_[iMU] < 0.0) FOUR_C_THROW("Material parameter INTERSTIM must be postive or zero");
-    if (rho_[iMU] < 0.0) FOUR_C_THROW("Material parameter FRACACTMU must be postive or zero");
+    if (I_[iMU] < 0.0) FOUR_C_THROW("Material parameter INTERSTIM must be positive or zero");
+    if (rho_[iMU] < 0.0) FOUR_C_THROW("Material parameter FRACACTMU must be positive or zero");
 
     sumrho += rho_[iMU];
-    if (F_[iMU] < 0.0) FOUR_C_THROW("Material parameter FTWITCH must be postive or zero");
-    if (T_[iMU] < 0.0) FOUR_C_THROW("Material parameter TTWITCH must be postive or zero");
+    if (F_[iMU] < 0.0) FOUR_C_THROW("Material parameter FTWITCH must be positive or zero");
+    if (T_[iMU] < 0.0) FOUR_C_THROW("Material parameter TTWITCH must be positive or zero");
   }
 
   if (muTypesNum_ > 1 && sumrho != 1.0) FOUR_C_THROW("Sum of fractions of MU types must equal one");
 
   // stretch dependent parameters
-  if (lambdaMin_ <= 0.0) FOUR_C_THROW("Material parameter LAMBDAMIN must be postive");
-  if (lambdaOpt_ <= 0.0) FOUR_C_THROW("Material parameter LAMBDAOPT must be postive");
+  if (lambdaMin_ <= 0.0) FOUR_C_THROW("Material parameter LAMBDAMIN must be positive");
+  if (lambdaOpt_ <= 0.0) FOUR_C_THROW("Material parameter LAMBDAOPT must be positive");
 
   // velocity dependent parameters
-  if (ke_ < 0.0) FOUR_C_THROW("Material parameter KE should be postive or zero");
-  if (kc_ < 0.0) FOUR_C_THROW("Material parameter KC should be postive or zero");
-  if (de_ < 0.0) FOUR_C_THROW("Material parameter DE should be postive or zero");
-  if (dc_ < 0.0) FOUR_C_THROW("Material parameter DC should be postive or zero");
+  if (ke_ < 0.0) FOUR_C_THROW("Material parameter KE should be positive or zero");
+  if (kc_ < 0.0) FOUR_C_THROW("Material parameter KC should be positive or zero");
+  if (de_ < 0.0) FOUR_C_THROW("Material parameter DE should be positive or zero");
+  if (dc_ < 0.0) FOUR_C_THROW("Material parameter DC should be positive or zero");
 
   // prescribed activation in time intervals
   if (actTimesNum_ != int(actTimes_.size()))
@@ -401,18 +401,18 @@ void Mat::MuscleWeickenmeier::evaluate_active_nominal_stress(
 
   // compute derivative of force-stretch dependency fxi and of force-velocity dependency fv
   // w.r.t. lambdaM
-  double dFxidLamdaM = 0.0;
+  double dFxidLambdaM = 0.0;
   double dFvdLambdaM = 0.0;
   if (Pa != 0)
   {
-    dFxidLamdaM = Mat::Utils::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
+    dFxidLambdaM = Mat::Utils::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
         lambdaM, lambdaMin, lambdaOpt);
     dFvdLambdaM = Mat::Utils::Muscle::evaluate_derivative_force_velocity_dependency_boel(
         dotLambdaM, dDotLambdaMdLambdaM, dotLambdaMMin, de, dc, ke, kc);
   }
 
   // compute derivative of active nominal stress Pa w.r.t. lambdaM
-  derivPa = Poptft * (fv * dFxidLamdaM + fxi * dFvdLambdaM);
+  derivPa = Poptft * (fv * dFxidLambdaM + fxi * dFvdLambdaM);
 }
 
 void Mat::MuscleWeickenmeier::evaluate_activation_level(const double lambdaM, const double Pa,

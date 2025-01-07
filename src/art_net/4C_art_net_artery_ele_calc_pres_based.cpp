@@ -96,7 +96,7 @@ int Discret::Elements::ArteryEleCalcPresBased<distype>::evaluate_service(Artery*
       evaluate_flow(ele, discretization, la, elevec1_epetra, mat);
       break;
     default:
-      FOUR_C_THROW("Unkown type of action %d for Artery (PressureBased formulation)", action);
+      FOUR_C_THROW("Unknown type of action %d for Artery (PressureBased formulation)", action);
   }
 
   return 0;

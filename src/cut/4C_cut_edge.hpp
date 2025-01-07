@@ -253,8 +253,8 @@ namespace Cut
     void remove_point(Point* p) { cut_points_.erase(p); };
 
     /*!
-     \brief Add all topological connections of interesection of this edge and other edge ( all
-     necessery pairs, etc)
+     \brief Add all topological connections of intersection of this edge and other edge ( all
+     necessary pairs, etc)
      */
     void add_connections(Edge* other, const std::pair<Side*, Edge*>& original_cut_pair);
 

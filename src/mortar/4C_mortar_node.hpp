@@ -655,7 +655,7 @@ namespace Mortar
      */
     virtual void reset_data_container();
 
-    // return dirichlet satus at node
+    // return dirichlet status at node
     bool* dbc_dofs() { return dbcdofs_; }
 
     /*!

@@ -53,7 +53,7 @@ namespace FLD
         std::shared_ptr<Core::LinAlg::Vector<double>> velnp, const double time);
 
    protected:
-    //! there are two types of tranfer conditions. values are transferred
+    //! there are two types of transfer conditions. values are transferred
     //! from master to slave conditions
     enum ToggleType
     {
@@ -62,7 +62,7 @@ namespace FLD
       slave
     };
 
-    //! get all data from condtion
+    //! get all data from condition
     void get_data(int& id, int& direction, ToggleType& type, const Core::Conditions::Condition*);
 
     //! receive a block in the round robin communication pattern
@@ -81,7 +81,7 @@ namespace FLD
     void pack_local_master_values(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vel, Core::Communication::PackBuffer& sblock);
 
-    //! for all values avaible on the processor, do the final setting of the value
+    //! for all values available on the processor, do the final setting of the value
     virtual void set_values_available_on_this_proc(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vel,
         std::shared_ptr<Core::LinAlg::Vector<double>> velnp);
@@ -128,7 +128,7 @@ namespace FLD
         std::shared_ptr<Core::LinAlg::Vector<double>> velnp, const double time) override;
 
    private:
-    //! for all values avaible on the processor, do the final setting of the value
+    //! for all values available on the processor, do the final setting of the value
     void set_values_available_on_this_proc(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vel,
         std::shared_ptr<Core::LinAlg::Vector<double>> velnp) override;
@@ -161,7 +161,7 @@ namespace FLD
     bool is_active() { return active_; }
 
    private:
-    //! for all values avaible on the processor, do the final setting of the value
+    //! for all values available on the processor, do the final setting of the value
     void set_values_available_on_this_proc(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vec,
         std::shared_ptr<Core::LinAlg::Vector<double>> outvec) override;

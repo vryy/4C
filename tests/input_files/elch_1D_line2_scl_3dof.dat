@@ -18,7 +18,7 @@ INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 MAXTIME                         1000000
 NUMSTEP                         100
-RESTARTEVRY                     10
+RESTARTEVERY                     10
 TIMESTEP                        1.0
 VELOCITYFIELD                   zero
 SKIPINITDER                     No

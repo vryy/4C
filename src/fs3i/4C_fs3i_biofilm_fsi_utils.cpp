@@ -21,10 +21,10 @@ void FS3I::BioFilm::Utils::scatra_change_config(Core::FE::Discretization& scatra
 {
   const int numnode = (scatradis.node_col_map())->NumMyElements();
 
-  // Create Vector which holds all col-displacments of processor
+  // Create Vector which holds all col-displacements of processor
   Core::LinAlg::Vector<double> coldisp(*(dis.dof_col_map()));
 
-  // Export row-displacments to col-displacements
+  // Export row-displacements to col-displacements
   Core::LinAlg::export_to(disp, coldisp);
 
 

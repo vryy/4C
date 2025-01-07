@@ -51,11 +51,11 @@ THETA                           0.66
 COUPALGO                        iter_mortar_monolithicfluidsplit
 MAXTIME                         15.0
 NUMSTEP                         5
-RESTARTEVRY                     2
+RESTARTEVERY                     2
 SECONDORDER                     Yes
 SLIDEALEPROJ                    Curr
 TIMESTEP                        3.0
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 BASETOL                         1.0E-12
 LINEARBLOCKSOLVER               LinalgSolver

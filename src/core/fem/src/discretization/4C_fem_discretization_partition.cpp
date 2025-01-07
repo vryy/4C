@@ -375,7 +375,7 @@ std::shared_ptr<Epetra_CrsGraph> Core::FE::Discretization::build_node_graph() co
 
   // iterate all elements on this proc including ghosted ones
   // Note:
-  // if a proc stores the appropiate ghosted elements, the resulting
+  // if a proc stores the appropriate ghosted elements, the resulting
   // graph will be the correct and complete graph of the distributed
   // discretization even if nodes are not ghosted.
   std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator curr;

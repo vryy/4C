@@ -18,7 +18,7 @@ FILESTEPS                       1000
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      yes
 PREFIX_GROUP_ID                 No
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 STRUCT_COUPLING_STRESS          2PK
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
@@ -62,9 +62,9 @@ PREDICT                         ConstDis
 PRESTRESS                       none
 PRESTRESSTIME                   0
 PTCDT                           0.1
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTSEVRY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     1
+RESULTSEVERY                     1
 STC_LAYER                       1
 STC_SCALING                     no
 TIMESTEP                        1
@@ -93,9 +93,9 @@ NORM_RESF                       Rel
 NORM_TEMP                       Abs
 NUMSTEP                         200
 PREDICT                         ConstTemp
-RESEVRYERGY                     0
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESEVERYERGY                     0
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        0.05
 TOLRES                          1e-08
 TOLTEMP                         1e-10
@@ -113,9 +113,9 @@ ITEMIN                          1
 MAXTIME                         5.0
 NORM_INC                        Abs
 NUMSTEP                         200
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 TIMESTEP                        1.0
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 ---------------------------------------------TSI DYNAMIC/MONOLITHIC
 CALC_NECKING_TSI_VALUES         No
 CONVTOL                         1e-06
@@ -123,7 +123,7 @@ INFNORMSCALING                  yes
 ITERNORM                        Rms
 LINEAR_SOLVER                   2
 MERGE_TSI_BLOCK_MATRIX          No
-NORMCOMBI_RESFINC               Coupl_And_Singl
+NORMCOMBI_RESFINC               Coupl_And_Single
 NORM_RESF                       Rel
 TOLINC                          1e-06
 --------------------------------------------------------------------SOLVER 1
@@ -136,7 +136,7 @@ AZPREC                          Teko
 TEKO_XML_FILE                   xml/block_preconditioner/thermo_solid.xml
 AZREUSE                         10
 ----------------------------------------------------------MATERIALS
-MAT 1   MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e11 NUE 0.3 DENS 7850 THEXPANS 1.2e-05 CAPA 3297000 CONDUCT 52 INITTEMP 293
+MAT 1   MAT_Struct_ThermoStVenantK YOUNGNUM 1 YOUNG 2.1e11 NUE 0.3 DENS 7850 THEXPANS 1.2e-05 CAPA 3297000 CONDUCT 52 INITTEMP 293
 // CAPA = C_V* rho = 420*7850 = 3297000 kg/(ms^2 K)
 MAT 2   THERM_FourierIso   CAPA 3297000 CONDUCT 52
 -----------------------------------------------CLONING MATERIAL MAP

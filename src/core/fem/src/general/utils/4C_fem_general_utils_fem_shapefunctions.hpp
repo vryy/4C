@@ -149,7 +149,7 @@ namespace Core::FE
          * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k)
          *           (r^k r + s^k s + t^k t - 2)
          * with r^k,s^k,t^k = -1,+1
-         * [Zienkiewicz, Methode der Finiten Elemente, Hanser, 1975]
+         * [Zienkiewicz, Method der Finiten Elemente, Hanser, 1975]
          * However, here the slightly different notation is used
          * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k)
          *           ( (1 + r^k r) + (1 + s^k s) + (1 + t^k t) - 2 - 3)
@@ -979,7 +979,7 @@ namespace Core::FE
         }
 
         // NOTE: shape functions used to be linearized wrong,
-        // but since they were obivously wrong and their source
+        // but since they were obviously wrong and their source
         // is unknown it's unclear, if there was maybe reason behind.
         // So: keep your eyes open (Thon, 17.06.16)
         deriv1(0, 0) = Q14 * (-1.0 * (1.0 - s) + rationdr);

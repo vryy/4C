@@ -186,7 +186,7 @@ void FPSI::MonolithicPlain::setup_system()
   // switch fluid to interface split block matrix
   fluid_field()->use_block_matrix(true, fpsi_coupl()->fluid_fsi_fpsi_extractor());
 
-  // build ale system matrix in splitted system
+  // build ale system matrix in split system
   ale_field()->create_system_matrix(ale_field()->interface());
 
   // initialize FPSI-systemmatrix_
@@ -377,7 +377,7 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
     (*aigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1.,
         Coupling::Adapter::CouplingSlaveConverter(coupsa_fsi),
         mat.matrix(ale_i_block_, structure_block_),
-        true);  // as just fsi part is transfered
+        true);  // as just fsi part is transferred
   }
 
   //////////////////////////////////////////////
@@ -878,7 +878,7 @@ void FPSI::MonolithicPlain::extract_field_vectors(
   // Ale().apply_interface_displacements() ale_field()->Interface()->insert_fsi_cond_vector(acx_fsi,
   // a);
   // //Already done by Ale().apply_interface_displacements()
-  ax = a;  // displacement on the interace is zero!!!
+  ax = a;  // displacement on the interface is zero!!!
 
   // ---------------------------------------------------------------------------
   // process fluid unknowns

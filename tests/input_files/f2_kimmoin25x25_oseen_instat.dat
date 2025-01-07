@@ -29,8 +29,8 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      fixed_point_like
 ITEMAX                          2 // crucial! Oseen problem has to be linear!
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           1
-RESTARTEVRY                     0
+RESULTSEVERY                           1
+RESTARTEVERY                     0
 NUMSTEP                         3
 NUMSTASTEPS                     0
 MAXTIME                         1.0

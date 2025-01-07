@@ -24,7 +24,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- |  Constructor (public)                                      als 01/18 |    // TODO als fix
+ |  Constructor (public)                                      also 01/18 |    // TODO also fix
  fluid_timint_stat_hdg because it is not working
  *----------------------------------------------------------------------*/
 FLD::TimIntStationaryHDG::TimIntStationaryHDG(
@@ -40,7 +40,7 @@ FLD::TimIntStationaryHDG::TimIntStationaryHDG(
 
 
 /*----------------------------------------------------------------------*
- |  initialize algorithm                                      als 01/18 |
+ |  initialize algorithm                                      also 01/18 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntStationaryHDG::init()
 {
@@ -105,7 +105,7 @@ void FLD::TimIntStationaryHDG::reset(bool completeReset, int numsteps, int iter)
 }
 
 /*----------------------------------------------------------------------*
-| set integration-scheme-specific state                       als 01/18 |
+| set integration-scheme-specific state                       also 01/18 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntStationaryHDG::set_custom_ele_params_assemble_mat_and_rhs(
     Teuchos::ParameterList& eleparams)
@@ -115,7 +115,7 @@ void FLD::TimIntStationaryHDG::set_custom_ele_params_assemble_mat_and_rhs(
 
 
 /*----------------------------------------------------------------------*
-| set old part of right hand side                             als 01/18 |
+| set old part of right hand side                             also 01/18 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntStationaryHDG::set_old_part_of_righthandside()
 {
@@ -135,7 +135,7 @@ void FLD::TimIntStationaryHDG::set_old_part_of_righthandside()
 }
 
 /*----------------------------------------------------------------------*
-| set integration-scheme-specific state                       als 01/18 |
+| set integration-scheme-specific state                       also 01/18 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntStationaryHDG::set_state_tim_int()
 {
@@ -144,13 +144,13 @@ void FLD::TimIntStationaryHDG::set_state_tim_int()
       Core::LinAlg::create_vector(*intdofrowmap, true);
 
   discret_->set_state(0, "velaf", velnp_);
-  discret_->set_state(1, "intvelaf", intvelnp_);  // TODO als fill in intvelnp_!
+  discret_->set_state(1, "intvelaf", intvelnp_);  // TODO also fill in intvelnp_!
   discret_->set_state(1, "intaccam", zerovec);
   discret_->set_state(1, "intvelnp", intvelnp_);
 }
 
 /*----------------------------------------------------------------------*
-| set integration-scheme-specific state                       als 01/18 |
+| set integration-scheme-specific state                       also 01/18 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntStationaryHDG::clear_state_assemble_mat_and_rhs()
 {

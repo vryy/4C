@@ -11,8 +11,8 @@ RANDSEED                        -1
 DYNAMICTYPE                      GenAlpha
 PRESTRESS                       none
 PRESTRESSTIME                   0
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        0.01
 NUMSTEP                         1
 MAXTIME                         5

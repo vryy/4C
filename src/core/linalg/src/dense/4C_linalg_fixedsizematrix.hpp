@@ -626,7 +626,7 @@ namespace Core::LinAlg
 
     /// Divide element-wise, \e out(m,n) = \e out(m,n)/\e in(m,n)
     /*!
-      Devide \e out by \e in, storing the result in \e out.
+      Divide \e out by \e in, storing the result in \e out.
       This function takes two template parameters, unsigned ints \c i and \c j
       denoting the size of the matrices.
       \param out
@@ -752,7 +752,7 @@ namespace Core::LinAlg
     template <class ValueType, unsigned int i, unsigned int j>
     inline void put_scalar(const ValueType scalar, ValueType* mat);
 
-    /// Calculate absolut values of a matrix
+    /// Calculate absolute values of a matrix
     /*!
       Fill \e out with the absolute values from \e in. This function takes two
       template parameters \c i and \c j denoting the sizes of the matrices.
@@ -2136,7 +2136,7 @@ namespace Core::LinAlg
     /// Set copy
     /*!
       Set this matrix to be a copy of \e data. The difference to update(\e data)
-      is that this funcion will allocate it's own memory when it was a
+      is that this function will allocate it's own memory when it was a
       view before, Update would copy the data into the view.
 
       \param data
@@ -2148,7 +2148,7 @@ namespace Core::LinAlg
     /*!
       Set this matrix to be a copy of source. Only the value_type array
       will be copied, the \e isview_ flag is ignored (this is equivalent to
-      set_copy(source.values()). The difference to update(\e source) is that this funcion will
+      set_copy(source.values()). The difference to update(\e source) is that this function will
       allocate it's own memory when it was a view before, Update would copy the data into the view.
 
       \param source

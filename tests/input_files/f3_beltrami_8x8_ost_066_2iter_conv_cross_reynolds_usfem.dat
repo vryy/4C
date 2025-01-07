@@ -27,13 +27,13 @@ MAXTIME                         0.1
 NONLINITER Newton
 NUMSTEP                         4
 PREDICTOR                       steady_state
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 STARTFUNCNO                     -1
 START_THETA                     0.66
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.00625
-RESULTSEVRY                           4
+RESULTSEVERY                           4
 MESHTYING                       no
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow

@@ -381,7 +381,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::Nln::StatusTest::Factory::build_no
     // ------------------------------------------
     // get BDF multiplier
     // ------------------------------------------
-    BDFMultiplier.push_back(ql->get("BDF Muliplier", 1.0));
+    BDFMultiplier.push_back(ql->get("BDF Multiplier", 1.0));
 
     // ------------------------------------------
     // get Disable Implicit Weighting

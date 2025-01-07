@@ -121,7 +121,7 @@ namespace FBI
      * @return Pointer to visualization output parameters.
      */
     std::shared_ptr<const FBI::BeamToFluidMeshtyingVtkOutputParams>
-    get_visualization_ouput_params_ptr() const
+    get_visualization_output_params_ptr() const
     {
       return output_params_;
     }

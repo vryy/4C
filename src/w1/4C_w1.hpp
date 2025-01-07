@@ -102,8 +102,8 @@ namespace Discret
      * - [2] S Glaser and F Armero, On the formulation of enhanced strain finite
      *   elements in finite deformations, Engineering Computations, 14:759-791,
      *   1997.
-     * - [3] P Wriggers, Nichtlineare Finite-Element-Methoden, Springer, 2001.
-     * - [4] WA Wall and B Bornemann, Nichtlineare Finite-Element-Methoden,
+     * - [3] P Wriggers, Nichtlineare Finite-Element-Methods, Springer, 2001.
+     * - [4] WA Wall and B Bornemann, Nichtlineare Finite-Element-Methods,
      *   Vorlesungsskript, Lehrstuhl fuer Numerische Mechanik, SS 2007.
      */
     class Wall1 : public SoBase
@@ -193,7 +193,7 @@ namespace Discret
 
       //@}
 
-      /// @name Acess methods
+      /// @name Access methods
       //@{
       /*!
       \brief Does this element use EAS?
@@ -247,10 +247,10 @@ namespace Discret
               discretization,    ///< A reference to the underlying discretization
           std::vector<int>& lm,  ///< location vector of this element
           Core::LinAlg::SerialDenseMatrix& elemat1,  ///< matrix to be filled by element. If nullptr
-                                                     ///< on input, the controling method does not
+                                                     ///< on input, the controlling method does not
                                                      ///< epxect the element to fill this matrix.
           Core::LinAlg::SerialDenseMatrix& elemat2,  ///< matrix to be filled by element. If nullptr
-                                                     ///< on input, the controling method does not
+                                                     ///< on input, the controlling method does not
                                                      ///< epxect the element to fill this matrix.
           Core::LinAlg::SerialDenseVector& elevec1,  ///< vector to be filled by element. If nullptr
                                                      ///< on input, the controlling method does not
@@ -845,7 +845,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
           Core::LinAlg::SerialDenseVector& elevector3) override;
 
-      //! Evaluate method on mutliple dofsets for wall element
+      //! Evaluate method on multiple dofsets for wall element
       int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elematrix1,
           Core::LinAlg::SerialDenseMatrix& elematrix2, Core::LinAlg::SerialDenseVector& elevector1,
@@ -876,7 +876,7 @@ namespace Discret
       void compute_area_constr_deriv(
           Core::LinAlg::SerialDenseMatrix xscurr, Core::LinAlg::SerialDenseVector& elevector);
 
-      /// compute infintesimal line element dr for integration along the line
+      /// compute infinitesimal line element dr for integration along the line
       double w1_substitution(const Core::LinAlg::SerialDenseMatrix& xyze,
           const Core::LinAlg::SerialDenseMatrix& deriv, std::vector<double>* unrm, const int iel);
 

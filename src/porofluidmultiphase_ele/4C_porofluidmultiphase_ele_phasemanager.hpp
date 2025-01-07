@@ -609,7 +609,7 @@ namespace Discret
         //! get derivative of relative permeability of phase
         double rel_permeability_deriv(int phasenum) const override
         {
-          FOUR_C_THROW("Derivativ of relativ permeability not available for this phase manager!");
+          FOUR_C_THROW("Derivative of relative permeability not available for this phase manager!");
           return 0.0;
         };
 

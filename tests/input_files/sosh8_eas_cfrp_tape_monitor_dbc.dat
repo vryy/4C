@@ -30,13 +30,13 @@ WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              0
 VERBOSITY                       debug
 RESTARTWALLTIMEINTERVAL         -1
-RESTARTEVRY                     -1
+RESTARTEVERY                     -1
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     0
+RESULTSEVERY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     0
 TIMESTEP                        0.2
 NUMSTEP                         5
 TIMEINIT                        0

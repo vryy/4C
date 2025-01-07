@@ -29,7 +29,7 @@ BeamInteraction::B3CNeighbor::B3CNeighbor(const Core::Elements::Element* left_ne
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::shared_ptr<BeamInteraction::B3CNeighbor>
-BeamInteraction::Beam3TangentSmoothing::determine_neigbors(const Core::Elements::Element* element1)
+BeamInteraction::Beam3TangentSmoothing::determine_neighbors(const Core::Elements::Element* element1)
 {
   const Core::Elements::Element* left_neighbor = nullptr;
   const Core::Elements::Element* right_neighbor = nullptr;
@@ -40,7 +40,7 @@ BeamInteraction::Beam3TangentSmoothing::determine_neigbors(const Core::Elements:
   int numnode = element1->num_node();
 
   // n_right is the local node-ID of the elements right node (at xi = 1) whereas the elements left
-  // node (at xi = -1) allways has the local ID 1
+  // node (at xi = -1) always has the local ID 1
   int n_right;
   if (numnode == 2)
     n_right = 1;

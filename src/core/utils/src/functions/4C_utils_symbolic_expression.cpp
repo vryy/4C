@@ -107,7 +107,7 @@ namespace Core::Utils::SymbolicExpressionDetails
 
   /*----------------------------------------------------------------------*/
   /*!
-  \brief Class holds auxiliar variables for Lexan method which steps through
+  \brief Class holds auxiliary variables for Lexan method which steps through
          the string destilling the function tokens
   */
   class Lexer
@@ -176,7 +176,7 @@ namespace Core::Utils::SymbolicExpressionDetails
     //! destructor
     ~Parser() = default;
 
-    //! copy constuctor
+    //! copy constructor
     Parser(const Parser& other)
         : symbolicexpression_{other.symbolicexpression_},
           expr_{std::make_unique<SyntaxTreeNode<T>>(*other.expr_)},

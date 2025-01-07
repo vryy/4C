@@ -92,7 +92,7 @@ void Mixture::MapMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
   Core::LinAlg::Matrix<6, 1> cstress;
   Core::LinAlg::Matrix<6, 6> ccmat;
 
-  // evaluate the mass fractions at the given element id (one based entires in the csv file)
+  // evaluate the mass fractions at the given element id (one based entries in the csv file)
   auto massfracs =
       get_validate_mass_fractions(params_->mass_fractions_map_, eleGID + 1, constituents().size());
 

@@ -24,9 +24,9 @@ STRUCT_STRAIN                   Yes
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     0
+RESULTSEVERY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     0
 TIMESTEP                        0.01
 NUMSTEP                         10
 MAXTIME                         5

@@ -100,7 +100,7 @@ TSI::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& sdynpar
 
   blockrowdofmap_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();
 
-  // initialise internal varible with new velocities V_{n+1} at t_{n+1}
+  // initialise internal variable with new velocities V_{n+1} at t_{n+1}
   vel_ = Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
 
   // --------------------------------- TSI solver: create a linear solver
@@ -363,10 +363,10 @@ void TSI::Monolithic::time_loop()
     output();
 
 #ifdef TSIMONOLITHASOUTPUT
-    printf("Ende Timeloop ThermoField()->Tempnp[0] %12.8f\n", (*ThermoField()->Tempnp())[0]);
-    printf("Ende Timeloop ThermoField()->Tempn[0] %12.8f\n", (*ThermoField()->Tempn())[0]);
+    printf("End Timeloop ThermoField()->Tempnp[0] %12.8f\n", (*ThermoField()->Tempnp())[0]);
+    printf("End Timeloop ThermoField()->Tempn[0] %12.8f\n", (*ThermoField()->Tempn())[0]);
 
-    printf("Ende Timeloop disp %12.8f\n", (*structure_field()->Dispn())[0]);
+    printf("End Timeloop disp %12.8f\n", (*structure_field()->Dispn())[0]);
     std::cout << "dispn\n" << *(structure_field()->Dispn()) << std::endl;
 #endif  // TSIMONOLITHASOUTPUT
 
@@ -912,7 +912,7 @@ void TSI::Monolithic::evaluate(std::shared_ptr<Core::LinAlg::Vector<double>> ste
   // structure Evaluate (builds tangent, residual and applies DBC)
   Teuchos::Time timerstructure("", true);
 
-#ifndef MonTSIwithoutTHR
+#ifndef MonTSWithoutTHERMO
   // apply current temperature to structure
   apply_thermo_coupling_state(thermo_field()->tempnp(), tx);
 #endif
@@ -971,7 +971,7 @@ void TSI::Monolithic::evaluate(std::shared_ptr<Core::LinAlg::Vector<double>> ste
   else
     vel_ = structure_field()->velnp();
 
-#ifndef MonTSIwithoutSTR
+#ifndef MonTSWithoutSTR
   // pass the structural values to the thermo field
   apply_struct_coupling_state(structure_field()->dispnp(), vel_);
 #endif
@@ -1118,9 +1118,9 @@ void TSI::Monolithic::setup_system_matrix()
 
   k_st_->reset();
   // call the element and calculate the matrix block
-#ifndef MonTSIwithoutTHR
+#ifndef MonTSWithoutTHERMO
   apply_str_coupl_matrix(k_st_);
-#endif  // MonTSIwithoutTHR
+#endif  // MonTSWithoutTHERMO
 
   k_st_->complete(*(structure_field()->discretization()->dof_row_map(1)),
       *(structure_field()->discretization()->dof_row_map(0)));
@@ -1152,9 +1152,9 @@ void TSI::Monolithic::setup_system_matrix()
   k_ts_->reset();
 
   // call the element and calculate the matrix block
-#if ((!defined(MonTSIwithoutSTR)) and (!defined(COUPLEINITTEMPERATURE)))
-  apply_thr_coupl_matrix(k_ts_);
-  apply_thr_coupl_matrix_conv_bc(k_ts_);
+#if ((!defined(MonTSWithoutSTR)) and (!defined(COUPLEINITTEMPERATURE)))
+  apply_thermo_coupl_matrix(k_ts_);
+  apply_thermo_coupl_matrix_conv_bc(k_ts_);
 #endif
 
   k_ts_->complete(*(thermo_field()->discretization()->dof_row_map(1)),
@@ -1299,7 +1299,7 @@ void TSI::Monolithic::initial_guess(std::shared_ptr<Core::LinAlg::Vector<double>
 {
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::initial_guess");
 
-  // InitalGuess() is called of the single fields and results are put in TSI
+  // InitialGuess() is called of the single fields and results are put in TSI
   // increment vector ig
   setup_vector(*ig,
       // returns residual displacements \f$\Delta D_{n+1}^{<k>}\f$ - disi_
@@ -1455,13 +1455,13 @@ bool TSI::Monolithic::converged()
     conv = convinc and convrhs;
   else if (combincrhs_ == Inpar::TSI::bop_or)
     conv = convinc or convrhs;
-  else if (combincrhs_ == Inpar::TSI::bop_coupl_and_singl)
+  else if (combincrhs_ == Inpar::TSI::bop_coupl_and_single)
     conv = convinc and convrhs and convdisp and convstrrhs and convtemp and convthrrhs;
-  else if (combincrhs_ == Inpar::TSI::bop_coupl_or_singl)
+  else if (combincrhs_ == Inpar::TSI::bop_coupl_or_single)
     conv = (convinc and convrhs) or (convdisp and convstrrhs and convtemp and convthrrhs);
-  else if (combincrhs_ == Inpar::TSI::bop_and_singl)
+  else if (combincrhs_ == Inpar::TSI::bop_and_single)
     conv = convdisp and convstrrhs and convtemp and convthrrhs;
-  else if (combincrhs_ == Inpar::TSI::bop_or_singl)
+  else if (combincrhs_ == Inpar::TSI::bop_or_single)
     conv = (convdisp or convstrrhs or convtemp or convthrrhs);
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -1490,8 +1490,8 @@ void TSI::Monolithic::print_newton_iter()
 {
   // print to standard out
   // replace myrank_ here general by Core::Communication::my_mpi_rank(Comm())
-  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-      (step() % print_screen_evry() == 0) and printiter_)
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+      (step() % print_screen_every() == 0) and printiter_)
   {
     if (iter_ == 0) print_newton_iter_header(stdout);
     print_newton_iter_text(stdout);
@@ -1585,13 +1585,13 @@ void TSI::Monolithic::print_newton_iter_header(FILE* ofile)
   switch (normtypethrrhs_)
   {
     case Inpar::Thermo::convnorm_rel:
-      oss << std::setw(18) << "rel-thr-res-norm";
+      oss << std::setw(18) << "rel-thermo-res-norm";
       break;
     case Inpar::Thermo::convnorm_abs:
-      oss << std::setw(18) << "abs-thr-res-norm";
+      oss << std::setw(18) << "abs-thermo-res-norm";
       break;
     case Inpar::Thermo::convnorm_mix:
-      oss << std::setw(18) << "mix-thr-res-norm";
+      oss << std::setw(18) << "mix-thermo-res-norm";
       break;
     default:
       FOUR_C_THROW("You should not turn up here.");
@@ -1791,7 +1791,7 @@ void TSI::Monolithic::print_newton_iter_text(FILE* ofile)
     oss << std::setw(16) << std::setprecision(5) << std::scientific
         << contact_strategy_lagrange_->mech_contact_incr_;
     oss << std::setw(16) << std::setprecision(5) << std::scientific
-        << contact_strategy_lagrange_->thr_contact_incr_;
+        << contact_strategy_lagrange_->thermo_contact_incr_;
   }
 
   if (soltech_ == Inpar::TSI::soltech_ptc)
@@ -1831,7 +1831,7 @@ void TSI::Monolithic::print_newton_iter_text(FILE* ofile)
 
 /*----------------------------------------------------------------------*
  | print statistics of converged NRI                         dano 11/10 |
- | orignially by bborn 08/09                                            |
+ | originally by bborn 08/09                                            |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::print_newton_conv()
 {
@@ -1861,7 +1861,7 @@ void TSI::Monolithic::apply_str_coupl_matrix(
   std::shared_ptr<Core::Elements::ParamsMinimal> EvalData =
       std::make_shared<Core::Elements::ParamsMinimal>();
 
-  // set parameters needed for element evalutation
+  // set parameters needed for element evaluation
   EvalData->set_action_type(Core::Elements::struct_calc_stifftemp);
   EvalData->set_total_time(time());
   EvalData->set_delta_time(dt());
@@ -1929,14 +1929,14 @@ void TSI::Monolithic::apply_str_coupl_matrix(
 /*----------------------------------------------------------------------*
  | evaluate thermal-mechanical system matrix at state        dano 03/11 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::apply_thr_coupl_matrix(
+void TSI::Monolithic::apply_thermo_coupl_matrix(
     std::shared_ptr<Core::LinAlg::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
 )
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
   if (Core::Communication::my_mpi_rank(Comm()) == 0)
-    std::cout << " TSI::Monolithic::ApplyThrCouplMatrix()" << std::endl;
+    std::cout << " TSI::Monolithic::ApplyThermoCouplMatrix()" << std::endl;
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
@@ -2032,20 +2032,20 @@ void TSI::Monolithic::apply_thr_coupl_matrix(
   // evaluate the thermal-mechanical system matrix on the thermal element
   thermo_field()->discretization()->evaluate(tparams, thermostrategy);
   thermo_field()->discretization()->clear_state(true);
-}  // ApplyThrCouplMatrix()
+}  // ApplyThermoCouplMatrix()
 
 
 /*----------------------------------------------------------------------*
  | evaluate thermal-mechanical system matrix at state        dano 12/12 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
+void TSI::Monolithic::apply_thermo_coupl_matrix_conv_bc(
     std::shared_ptr<Core::LinAlg::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
 )
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
   if (Core::Communication::my_mpi_rank(Comm()) == 0)
-    std::cout << " TSI::Monolithic::apply_thr_coupl_matrix_conv_bc()" << std::endl;
+    std::cout << " TSI::Monolithic::apply_thermo_coupl_matrix_conv_bc()" << std::endl;
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
@@ -2125,7 +2125,7 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
     thermo_field()->discretization()->clear_state(true);
   }  // cond.size()>0
 
-}  // ApplyThrCouplMatrix()
+}  // ApplyThermoCouplMatrix()
 
 
 /*----------------------------------------------------------------------*
@@ -2358,31 +2358,32 @@ void TSI::Monolithic::set_default_parameters()
         std::cout << "Convergence test of TSI:\n res, inc with 'OR'." << std::endl;
       break;
     }
-    case Inpar::TSI::bop_coupl_and_singl:
+    case Inpar::TSI::bop_coupl_and_single:
     {
       if (Core::Communication::my_mpi_rank(get_comm()) == 0)
-        std::cout << "Convergence test of TSI:\n res, inc, str-res, thr-res, dis, temp with 'AND'."
+        std::cout
+            << "Convergence test of TSI:\n res, inc, str-res, thermo-res, dis, temp with 'AND'."
+            << std::endl;
+      break;
+    }
+    case Inpar::TSI::bop_coupl_or_single:
+    {
+      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+        std::cout << "Convergence test of TSI:\n (res, inc) or (str-res, thermo-res, dis, temp)."
                   << std::endl;
       break;
     }
-    case Inpar::TSI::bop_coupl_or_singl:
+    case Inpar::TSI::bop_and_single:
     {
       if (Core::Communication::my_mpi_rank(get_comm()) == 0)
-        std::cout << "Convergence test of TSI:\n (res, inc) or (str-res, thr-res, dis, temp)."
+        std::cout << "Convergence test of TSI:\n str-res, thermo-res, dis, temp with 'AND'."
                   << std::endl;
       break;
     }
-    case Inpar::TSI::bop_and_singl:
+    case Inpar::TSI::bop_or_single:
     {
       if (Core::Communication::my_mpi_rank(get_comm()) == 0)
-        std::cout << "Convergence test of TSI:\n str-res, thr-res, dis, temp with 'AND'."
-                  << std::endl;
-      break;
-    }
-    case Inpar::TSI::bop_or_singl:
-    {
-      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
-        std::cout << "Convergence test of TSI:\n str-res, thr-res, dis, temp with 'OR'."
+        std::cout << "Convergence test of TSI:\n str-res, thermo-res, dis, temp with 'OR'."
                   << std::endl;
       break;
     }
@@ -2441,8 +2442,8 @@ void TSI::Monolithic::set_default_parameters()
 
   // if scaled L1-norm is wished to be used
   if ((iternorm_ == Inpar::TSI::norm_l1_scaled) and
-      ((combincrhs_ == Inpar::TSI::bop_coupl_and_singl) or
-          (combincrhs_ == Inpar::TSI::bop_coupl_or_singl)))
+      ((combincrhs_ == Inpar::TSI::bop_coupl_and_single) or
+          (combincrhs_ == Inpar::TSI::bop_coupl_or_single)))
   {
     iternormstr_ = Inpar::TSI::norm_l1_scaled;
     iternormthr_ = Inpar::TSI::norm_l1_scaled;
@@ -2511,7 +2512,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   std::vector<Core::Conditions::Condition*> dbc(0);
   structure_field()->discretization()->get_condition("Dirichlet", dbc);
 
-  // initialise a vector contatining all DBC in a special direction (here: in z)
+  // initialise a vector containing all DBC in a special direction (here: in z)
   std::vector<int> one_dof_in_dbc(1);
   one_dof_in_dbc.at(0) = -1;
 
@@ -2561,7 +2562,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
       Core::Communication::as_epetra_comm(structure_field()->discretization()->get_comm()));
 
   //---------------------------------------------------------------------------
-  // ------------------------------------ initialse STRUCTURAL output variables
+  // ------------------------------------ initialise STRUCTURAL output variables
   //---------------------------------------------------------------------------
 
   // ---------------------------------------------------------------- top force
@@ -2608,7 +2609,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
         *(structure_field()->dispnp()), top_disp_local, one_dof_in_dbc_global);
   }
 
-  // initialse the top displacement
+  // initialise the top displacement
   double top_disp_global = 0.0;
   // sum all nodal displacements (top_disp_local) in one global vector (top_disp_global)
   Core::Communication::sum_all(

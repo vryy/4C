@@ -212,7 +212,7 @@ void Inpar::S2I::set_valid_conditions(
         // slave side
         std::vector<std::shared_ptr<Input::LineComponent>> slaveside;
 
-        // Collect the diffent model selection choices in a map.
+        // Collect the different model selection choices in a map.
         std::map<int, std::pair<std::string, std::vector<std::shared_ptr<Input::LineComponent>>>>
             kinetic_model_choices;
         {

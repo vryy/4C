@@ -248,7 +248,7 @@ namespace Core::LinAlg
       to handle the assembly of nonlocal values.
       It sets the doGlobalAssemble-flag to true and causes the
       GlobalAssemble -method() to redistribute the non-local
-      values to their owning procs, such that fill_complete can be savely
+      values to their owning procs, such that fill_complete can be safely
       called on this matrix.
      */
     void fe_assemble(double val, int rgid, int cgid);

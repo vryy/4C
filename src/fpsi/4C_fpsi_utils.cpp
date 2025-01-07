@@ -436,7 +436,7 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
   if (abs(globalslavegeomsize - globalmatchedelements) < 1e-6 and
       Core::Communication::my_mpi_rank(mastercomm) == 0)
   {
-    std::cout << "Setting up local interfacefacingelementmaps was successfull. \n" << std::endl;
+    std::cout << "Setting up local interfacefacingelementmaps was successful. \n" << std::endl;
   }
   else if (abs(globalslavegeomsize - globalmatchedelements) > 1e-3 and
            Core::Communication::my_mpi_rank(mastercomm) == 0)

@@ -45,7 +45,7 @@ namespace Coupling::VolMortar
      of the overlapping elements of the other discretization.
 
      The default strategy will just assign the material of the first element in the vector to the
-     other element. This is fine for constant material properties, for instance. If there is furhter
+     other element. This is fine for constant material properties, for instance. If there is further
      work to be done it is meant to derive from this class (see e.g. TSIMaterialStrategy).
 
      \author vuong 10/14

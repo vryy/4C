@@ -50,16 +50,16 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       dbcmaps_(std::make_shared<Core::LinAlg::MapExtractor>()),
       output_(output),
       printlogo_(true),  // DON'T EVEN DARE TO SET THIS TO FALSE
-      printscreen_(ioparams.get<int>("STDOUTEVRY")),
+      printscreen_(ioparams.get<int>("STDOUTEVERY")),
       printiter_(true),  // ADD INPUT PARAMETER
-      writerestartevery_(tdynparams.get<int>("RESTARTEVRY")),
+      writerestartevery_(tdynparams.get<int>("RESTARTEVERY")),
       writeglob_(ioparams.get<bool>("THERM_TEMPERATURE")),
-      writeglobevery_(tdynparams.get<int>("RESULTSEVRY")),
+      writeglobevery_(tdynparams.get<int>("RESULTSEVERY")),
       writeheatflux_(
           Teuchos::getIntegralValue<Inpar::Thermo::HeatFluxType>(ioparams, "THERM_HEATFLUX")),
       writetempgrad_(
           Teuchos::getIntegralValue<Inpar::Thermo::TempGradType>(ioparams, "THERM_TEMPGRAD")),
-      writeenergyevery_(tdynparams.get<int>("RESEVRYERGY")),
+      writeenergyevery_(tdynparams.get<int>("RESEVERYERGY")),
       energyfile_(nullptr),
       calcerror_(Teuchos::getIntegralValue<Inpar::Thermo::CalcError>(tdynparams, "CALCERROR")),
       errorfunctno_(tdynparams.get<int>("CALCERRORFUNCNO")),
@@ -86,7 +86,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
     logo();
   }
 
-  // check wether discretisation has been completed
+  // check whether discretisation has been completed
   if (not discret_->filled())
   {
     FOUR_C_THROW("Discretisation is not complete!");
@@ -954,7 +954,7 @@ std::shared_ptr<std::vector<double>> Thermo::TimInt::evaluate_error_compared_to_
           std::cout << "H1 temperature scaling  " << sqrt((*errors)[3]) << std::endl;
         }
 
-        // print last error in a seperate file
+        // print last error in a separate file
 
         // append error of the last time step to the error file
         if ((step_ == stepmax_) or ((*time_)[0] == timemax_))  // write results to file

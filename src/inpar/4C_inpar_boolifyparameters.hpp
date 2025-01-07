@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Input
 {
-  /// Auxiliar routine to boolify integral Yes/No data
+  /// Auxiliary routine to boolify integral Yes/No data
   ///
   /// Parameters consisting integral values for Yes/No tuples
   /// are removed and replaced by a bool parameter holding true/false

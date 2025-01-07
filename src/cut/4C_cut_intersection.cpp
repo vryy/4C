@@ -61,7 +61,7 @@ void Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
   for (std::vector<int>::const_iterator i = touched_edges_ids.begin(); i != touched_edges_ids.end();
       ++i)
   {
-    // mapping indeces to real edges
+    // mapping indices to real edges
     Edge* e = side_edges[*i];
 
     // if this edge cuts other edge in this point, this edge cuts all sides of the edge there
@@ -98,7 +98,7 @@ void Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
   for (std::vector<int>::const_iterator i = touched_edges_ids.begin(); i != touched_edges_ids.end();
       ++i)
   {
-    // mapping indeces to real edges
+    // mapping indices to real edges
     Edge* e = side_edges[*i];
     touched_edges.insert(e);
 
@@ -232,7 +232,7 @@ bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
   Cut::eval_derivs_in_parameter_space<probdim, sidetype, double>(xyze_surfaceElement_,
       rst_side_center, side_deriv1, xjm, nullptr, &normal_center, nullptr, true);
 
-  // calcualte the direction vector of the edge element
+  // calculate the direction vector of the edge element
   Core::LinAlg::Matrix<probdim, 1> dedge(&xyze_lineElement_(0, 0), false);
   const Core::LinAlg::Matrix<probdim, 1> e_endpoint(&xyze_lineElement_(0, 1), true);
   dedge.update(-1.0, e_endpoint, 1.0);
@@ -576,7 +576,7 @@ Cut::ParallelIntersectionStatus Cut::Intersection<probdim, edgetype, sidetype, d
         else
         {
           // first check if it is not close to the common edge of two triangles and we missed it
-          // if the point is parellel to both tri, we needle to handle extreme case of point being
+          // if the point is parallel to both tri, we needle to handle extreme case of point being
           // close to shared edge of both tri (diagonal of the quad)
           if ((tri_location_kernel[0].on_side()) and (tri_location_kernel[1].on_side()))
           {
@@ -590,9 +590,9 @@ Cut::ParallelIntersectionStatus Cut::Intersection<probdim, edgetype, sidetype, d
             }
           }
 
-          // basically we can take any triangle now as a refernce, since point is outside of both
+          // basically we can take any triangle now as a reference, since point is outside of both
 
-          // reset to previous sucessfull value
+          // reset to previous successful value
           if (on_side[0])
             tri = 0;
           else
@@ -704,12 +704,12 @@ Cut::ParallelIntersectionStatus Cut::Intersection<probdim, edgetype, sidetype, d
 
         PointSet cut_points;
         get_edge().get_cut_points(e, cut_points);
-        // cut point obtained e.g. from other neigboring edge (e.g. it is end point) or from the
+        // cut point obtained e.g. from other neighboring edge (e.g. it is end point) or from the
         // other intersection
 
         std::stringstream msg;
 #if CUT_CREATION_INFO
-        msg << "// Edge-edge intersection was happenning in intersection between edge "
+        msg << "// Edge-edge intersection was happening in intersection between edge "
             << get_edge().Id() << " and "
             << "edges of the side" << get_side().Id() << "( edge " << e->Id() << ")" << std::endl;
 #endif
@@ -722,7 +722,7 @@ Cut::ParallelIntersectionStatus Cut::Intersection<probdim, edgetype, sidetype, d
                 << " was already cut by connecting edge" << std::endl;
 #endif
             /* Then in order for proper cut we need to add all the necessary connectivity
-             * infromation */
+             * information */
             /* NOTE: Here it might be possible to better transfer original intersection from the
              * another pair */
             (*cut_points.begin())
@@ -797,7 +797,7 @@ Cut::ParallelIntersectionStatus Cut::Intersection<probdim, edgetype, sidetype, d
       else
       {
         // if both nodes of the edge are on the side and there was no intersection till now, it
-        // means that they lie outside and paralell to the side --> Newton method for the
+        // means that they lie outside and parallel to the side --> Newton method for the
         // intersection of cut_side x cut_edge  will not converge so we don't want to continue from
         // here
         /* both points outside the plane on the same side --> no intersection
@@ -816,7 +816,7 @@ Cut::ParallelIntersectionStatus Cut::Intersection<probdim, edgetype, sidetype, d
           // == 2 )
           // 2. One is inside and parallel to one tri3 split, one is outside and parallel to another
           // tri3
-          //    only in such case no edge-edge intersection would hapen. The quad4 is need to be
+          //    only in such case no edge-edge intersection would happen. The quad4 is need to be
           //    slightly distorted (e.g. even 1e-16) Otherwise there would be cut point from edge
           //    edge intersection
           else

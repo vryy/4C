@@ -36,7 +36,7 @@ void Inpar::TSI::set_valid_parameters(Teuchos::ParameterList& list)
 
   // output type
   Core::Utils::int_parameter(
-      "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &tsidyn);
+      "RESTARTEVERY", 1, "write restart possibility every RESTARTEVERY steps", &tsidyn);
 
   // time loop control
   Core::Utils::int_parameter("NUMSTEP", 200, "maximum number of Timesteps", &tsidyn);
@@ -44,7 +44,7 @@ void Inpar::TSI::set_valid_parameters(Teuchos::ParameterList& list)
   Core::Utils::double_parameter("TIMESTEP", 0.05, "time step size dt", &tsidyn);
   Core::Utils::int_parameter("ITEMAX", 10, "maximum number of iterations over fields", &tsidyn);
   Core::Utils::int_parameter("ITEMIN", 1, "minimal number of iterations over fields", &tsidyn);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "increment for writing solution", &tsidyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "increment for writing solution", &tsidyn);
 
   setStringToIntegralParameter<ConvNorm>("NORM_INC", "Abs",
       "type of norm for convergence check of primary variables in TSI",
@@ -68,11 +68,12 @@ void Inpar::TSI::set_valid_parameters(Teuchos::ParameterList& list)
       "type of norm for residual convergence check", tuple<std::string>("Abs", "Rel", "Mix"),
       tuple<ConvNorm>(convnorm_abs, convnorm_rel, convnorm_mix), &tsidynmono);
 
-  setStringToIntegralParameter<BinaryOp>("NORMCOMBI_RESFINC", "Coupl_And_Singl",
+  setStringToIntegralParameter<BinaryOp>("NORMCOMBI_RESFINC", "Coupl_And_Single",
       "binary operator to combine primary variables and residual force values",
-      tuple<std::string>("And", "Or", "Coupl_Or_Singl", "Coupl_And_Singl", "And_Singl", "Or_Singl"),
-      tuple<BinaryOp>(
-          bop_and, bop_or, bop_coupl_or_singl, bop_coupl_and_singl, bop_and_singl, bop_or_singl),
+      tuple<std::string>(
+          "And", "Or", "Coupl_Or_Single", "Coupl_And_Single", "And_Single", "Or_Single"),
+      tuple<BinaryOp>(bop_and, bop_or, bop_coupl_or_single, bop_coupl_and_single, bop_and_single,
+          bop_or_single),
       &tsidynmono);
 
   setStringToIntegralParameter<VectorNorm>("ITERNORM", "Rms",
@@ -142,9 +143,9 @@ void Inpar::TSI::set_valid_parameters(Teuchos::ParameterList& list)
   Core::Utils::double_parameter(
       "HEATTRANSMASTER", 0.0, "Heat transfer parameter for master side in thermal contact", &tsic);
   Core::Utils::double_parameter("TEMP_DAMAGE", 1.0e12,
-      "damage temperatue at contact interface: friction coefficient zero there", &tsic);
+      "damage temperature at contact interface: friction coefficient zero there", &tsic);
   Core::Utils::double_parameter("TEMP_REF", 0.0,
-      "reference temperatue at contact interface: friction coefficient equals the given value",
+      "reference temperature at contact interface: friction coefficient equals the given value",
       &tsic);
 
   Core::Utils::double_parameter(
@@ -155,7 +156,7 @@ void Inpar::TSI::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<std::string>("slave", "master", "harmonic", "physical"),
       tuple<Inpar::CONTACT::NitscheWeighting>(Inpar::CONTACT::NitWgt_slave,
           Inpar::CONTACT::NitWgt_master, Inpar::CONTACT::NitWgt_harmonic,
-          Inpar::CONTACT::NitWgt_phyiscal),
+          Inpar::CONTACT::NitWgt_physical),
       &tsic);
 
   Core::Utils::bool_parameter("NITSCHE_PENALTY_ADAPTIVE_TSI", "yes",
@@ -169,7 +170,7 @@ void Inpar::TSI::set_valid_parameters(Teuchos::ParameterList& list)
       "interface conditions",
       tuple<std::string>("nitsche", "substitution"),
       tuple<Inpar::CONTACT::NitscheThermoMethod>(
-          Inpar::CONTACT::NitThr_nitsche, Inpar::CONTACT::NitThr_substitution),
+          Inpar::CONTACT::NitThermo_nitsche, Inpar::CONTACT::NitThermo_substitution),
       &tsic);
 
   setStringToIntegralParameter<LineSearch>("TSI_LINE_SEARCH", "none", "line-search strategy",

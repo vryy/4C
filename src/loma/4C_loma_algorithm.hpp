@@ -136,7 +136,7 @@ namespace LowMach
     /// flag for monolithic solver
     bool monolithic_;
 
-    /// dof row map splitted in (field) blocks for monolithic solver
+    /// dof row map split in (field) blocks for monolithic solver
     Core::LinAlg::MultiMapExtractor lomablockdofrowmap_;
 
     /// combined Dirichlet boundary condition map for monolithic solver

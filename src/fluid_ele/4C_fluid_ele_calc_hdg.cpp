@@ -224,7 +224,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::update_secondary_solution(
   double valfac;
   double accfac;
   if (local_solver_->fldparatimint_
-          ->is_stationary())  // TODO als this distinction shouldn't be here. The problem is that
+          ->is_stationary())  // TODO also this distinction shouldn't be here. The problem is that
                               // the HDG approach was meant for the GenAlpha Time integration scheme
   {
     valfac = 1.;
@@ -427,7 +427,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_field(Discret::Elements
   double avgpre = 0., vol = 0.;
   if (elevec2.numRows() > 0)
   {
-    // Create the local matrix from starting at the addres where elevec2 is with the right shape
+    // Create the local matrix from starting at the address where elevec2 is with the right shape
     Core::LinAlg::SerialDenseMatrix localMat(
         Teuchos::View, elevec2.values(), shapes_->ndofs_, shapes_->ndofs_, nsd_ * nsd_ + nsd_ + 1);
     // Initialize matrix to zeros
@@ -439,7 +439,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_field(Discret::Elements
     {
       // jfac is a vector containing the jacobian times the weight of the quadrature points
       const double fac = shapes_->jfac(q);
-      // xyz is a vector containing the coordiantes of the quadrature points in real coordinates
+      // xyz is a vector containing the coordinates of the quadrature points in real coordinates
       Core::LinAlg::Matrix<nsd_, 1> xyz(false);
       // Filling xyz with the values take from the element xyzreal matrix
       for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_->xyzreal(d, q);
@@ -464,7 +464,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_field(Discret::Elements
         // mass matrix part
         // The two mass part are needed because of the presence of two shape
         // functions in the integral and therefore we create one massPart that
-        // only contains the evaluation of the shape fucntion and one, massPartW,
+        // only contains the evaluation of the shape function and one, massPartW,
         // that contains also the contribution of quadrature weights.
 
         // It has to be noticed that the mass matrix for the projection is the same for
@@ -484,7 +484,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_field(Discret::Elements
         // q for the quadrature points
         // i cycles the shape functions
         // RHS grad(u)
-        // for the gradient we have to cycle thrugh the spatial dimensions twice
+        // for the gradient we have to cycle through the spatial dimensions twice
         for (unsigned int d = 0; d < nsd_; ++d)
           for (unsigned int e = 0; e < nsd_; ++e)
             localMat(i, d * nsd_ + e) += shapes_->shfunct(i, q) * grad(d, e) * fac;
@@ -497,7 +497,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_field(Discret::Elements
         localMat(i, nsd_ * nsd_ + nsd_) += shapes_->shfunct(i, q) * p * fac;
       }
 
-      // avgpre is a varible used to store the overall value of the pressure over
+      // avgpre is a variable used to store the overall value of the pressure over
       // the domain while vol is used to measure the domain itself
       avgpre += p * fac;
       vol += fac;
@@ -681,7 +681,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
       Core::FE::get_ele_node_numbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
-  // certain coordinate. In fact the lenght of the vector is given by the number
+  // certain coordinate. In fact the length of the vector is given by the number
   // of shape functions, that is the same of the number of degrees of freedom of
   // an element.
   Core::LinAlg::SerialDenseVector values(shapes_->ndofs_);
@@ -755,9 +755,9 @@ int Discret::Elements::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
 
   // Storing the number of nodes for each face of the element as vector
   // NumberCornerNodes
-  std::vector<int> ncn = Core::FE::get_number_of_face_element_corner_nodes(distype);
+  std::vector<int> n_corner_nodes = Core::FE::get_number_of_face_element_corner_nodes(distype);
   // NumberInternalNodes
-  std::vector<int> nin = Core::FE::get_number_of_face_element_internal_nodes(distype);
+  std::vector<int> n_internal_nodes = Core::FE::get_number_of_face_element_internal_nodes(distype);
 
   // Now the vector "matrix_state" contains the trace velocity values following
   // the local id numbers
@@ -785,7 +785,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
     // times the number of nodes in the face.
     Core::LinAlg::Matrix<nsd_ - 1, nfn> xsishuffle(true);
 
-    // Cycling throught the nodes of the face to store the node positions in the
+    // Cycling through the nodes of the face to store the node positions in the
     // correct order using xsishuffle as a temporary vector
     for (int i = 0; i < nfn; ++i)
     {
@@ -825,11 +825,11 @@ int Discret::Elements::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
                  solvalues[1 + f * nsd_ * shapesface_->nfdofs_ + d * shapesface_->nfdofs_ + k];
         // Ordering the results of the interpolation in the vector being careful
         // about the ordering of the nodes in the faces.
-        if (i < ncn[f])
+        if (i < n_corner_nodes[f])
         {
           elevec1((nsd_ + 1 + d) * nen_ + shapesface_->faceNodeOrder[f][i]) += sum / nsd_;
         }
-        else if (i < nfn - nin[f])
+        else if (i < nfn - n_internal_nodes[f])
         {
           elevec1((nsd_ + 1 + d) * nen_ + shapesface_->faceNodeOrder[f][i]) += sum / (nsd_ - 1);
         }
@@ -1742,7 +1742,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_
         if (!evaluateOnlyNonlinear)
         {
           // saves the derivative of the shapes functions
-          // Carefull about how the values are stored (the indices)
+          // careful about how the values are stored (the indices)
           const double vald = shapes_.shderxy(i * nsd_ + d, q);
           gradPart(d * ndofs_ + i, q) = vald;
         }

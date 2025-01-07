@@ -95,13 +95,13 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::init()
       *(arterydis_->dof_row_map()), 27, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
   kappa_inv_ = std::make_shared<Epetra_FEVector>(*arterydis_->dof_row_map(), true);
 
-  // full map of continous and artery dofs
+  // full map of continuous and artery dofs
   std::vector<std::shared_ptr<const Epetra_Map>> maps;
   maps.push_back(std::make_shared<Epetra_Map>(*contdis_->dof_row_map()));
   maps.push_back(std::make_shared<Epetra_Map>(*arterydis_->dof_row_map()));
 
   fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
-  /// dof row map of coupled problem splitted in (field) blocks
+  /// dof row map of coupled problem split in (field) blocks
   globalex_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();
   globalex_->setup(*fullmap_, maps);
 
@@ -491,7 +491,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_c
           coupl_elepairs_[i]->ele1_gid(), coupl_elepairs_[i]->ele2_gid(), D_ele, M_ele, Kappa_ele);
   }
 
-  // set artery diameter in material to be able to evalute the 1D elements with varying diameter
+  // set artery diameter in material to be able to evaluate the 1D elements with varying diameter
   // and evaluate additional linearization of (integrated) element diameters
   if (contdis_->name() == "porofluid" && has_varying_diam_)
   {

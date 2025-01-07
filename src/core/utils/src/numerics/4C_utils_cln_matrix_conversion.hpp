@@ -57,7 +57,7 @@ namespace Core::CLN
   //! convert LINALG matrix with CLN values to a new LINALG matrix with CLN values with different
   //! precision
   template <unsigned int num_row, unsigned int num_col>
-  void update_presicion(const LinAlg::Matrix<num_row, num_col, ClnWrapper>& in,
+  void update_precision(const LinAlg::Matrix<num_row, num_col, ClnWrapper>& in,
       LinAlg::Matrix<num_row, num_col, ClnWrapper>& out, const int precision = 20)
   {
     for (unsigned int idx = 0; idx < in.num_rows() * in.num_cols(); ++idx)

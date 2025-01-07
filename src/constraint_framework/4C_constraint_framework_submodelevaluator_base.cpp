@@ -34,14 +34,14 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
     if (!(Q_Ld_->filled() && Q_dd_->filled() && Q_dL_->filled()))
       FOUR_C_THROW("Call evaluate_coupling_terms() first.");
 
-    // evaluate the stiffness contribution of this sme:
-    auto sme_stiff_ptr = Core::LinAlg::matrix_multiply(*Q_dL_, false, *Q_Ld_, false, false);
-    sme_stiff_ptr->scale(penalty_parameter_);
-    sme_stiff_ptr->add(*Q_dd_, false, 1.0, 1.0);
-    sme_stiff_ptr->complete();
+    // evaluate the stiffness contribution of this some:
+    auto some_stiff_ptr = Core::LinAlg::matrix_multiply(*Q_dL_, false, *Q_Ld_, false, false);
+    some_stiff_ptr->scale(penalty_parameter_);
+    some_stiff_ptr->add(*Q_dd_, false, 1.0, 1.0);
+    some_stiff_ptr->complete();
 
     // add it to the modelevaluator stiffness
-    me_stiff_ptr->add(*sme_stiff_ptr, false, 1., 1.);
+    me_stiff_ptr->add(*some_stiff_ptr, false, 1., 1.);
   }
 
   if (me_force_ptr != nullptr)
@@ -61,7 +61,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_coupling_terms(
   int ncon_ = 0;
   for (const auto& mpc : listMPCs_) ncon_ += mpc->get_number_of_mp_cs();
 
-  // ToDo: Add an offset to the contraint dof map.
+  // ToDo: Add an offset to the constraint dof map.
   n_condition_map_ = std::make_shared<Epetra_Map>(ncon_, 0, stiff_ptr_->Comm());
 
   // initialise all global coupling objects

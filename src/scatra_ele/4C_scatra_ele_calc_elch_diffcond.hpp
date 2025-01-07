@@ -176,7 +176,7 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double invf,        //!< 1/F
-          const Core::LinAlg::Matrix<nsd_, 1>& gradpot  //!< gradient of potenial at GP
+          const Core::LinAlg::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
       );
 
       //! CalcMat: Current equation concentration overpotential
@@ -199,7 +199,7 @@ namespace Discret
           const int k,                            //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invfval,                         //!< 1/(F z_k)
-          const Core::LinAlg::Matrix<nsd_, 1>& gradpot  //!< gradient of potenial at GP
+          const Core::LinAlg::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
       );
 
       //! CalcRhs: Conduction term with inserted current - conc. overpotential
@@ -267,7 +267,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to be filled
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invf,    //!< 1/F
-          const Core::LinAlg::Matrix<nsd_, 1>& gradpot  //!< gradient of potenial at GP
+          const Core::LinAlg::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
       );
 
       //! Current equation - concentration overpotential
@@ -361,13 +361,13 @@ namespace Discret
 
       //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
       void calculate_flux(Core::LinAlg::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const Inpar::ScaTra::FluxType fluxtype,            //!< type fo flux
+          const Inpar::ScaTra::FluxType fluxtype,            //!< type of flux
           const int k                                        //!< index of current scalar
           ) override;
 
       //!  calculate weighted current flux (no reactive flux so far) -> elch-specific implementation
       void calculate_current(Core::LinAlg::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const Inpar::ScaTra::FluxType fluxtype,               //!< type fo flux
+          const Inpar::ScaTra::FluxType fluxtype,               //!< type of flux
           const double fac                                      //!< integration factor
           ) override;
 

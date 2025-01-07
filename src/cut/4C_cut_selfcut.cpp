@@ -67,7 +67,7 @@ bool Cut::SelfCut::collision_detection()
 }
 
 /*-------------------------------------------------------------------------------------*
- * replaces cutted sides by creating new nodes, edges and sides             wirtz 05/13
+ * replaces cut sides by creating new nodes, edges and sides             wirtz 05/13
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::mesh_intersection()
 {
@@ -77,8 +77,8 @@ void Cut::SelfCut::mesh_intersection()
   create_self_cut_edges();
   find_self_cut_triangulation();
   create_self_cut_sides();
-  erase_cutted_sides();
-  erase_cutted_edges();
+  erase_cut_sides();
+  erase_cut_edges();
 }
 
 /*-------------------------------------------------------------------------------------*
@@ -115,9 +115,9 @@ void Cut::SelfCut::mesh_correction()
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::status_inspection()
 {
-  cutted_side_status_text();
+  cut_side_status_text();
   cut_mesh_status_text();
-  cutted_side_status_gmsh("selfcut.pos");
+  cut_side_status_gmsh("selfcut.pos");
   s_cmgm_gmsh("SCmgmGmsh.pos");
 }
 
@@ -198,12 +198,12 @@ void Cut::SelfCut::find_cutting_sides()
 /*-------------------------------------------------------------------------------------*
  * If two nodes are at the same position, then this function will carry out
  * equivalent operations such that only one node is available at this place
- * Connectivity informations are incorporated accordingly                       sudhakar 10/13
+ * Connectivity information are incorporated accordingly                       sudhakar 10/13
  *
  * In the following, nodes 4-5 and 3-6 are at the same position, and the two
  * Quads are not connected. In order to avoid many complicated routines of handling such
  * coinciding nodes in self-cut libraries, we delete one corresponding node and ensure
- * connectivity betweent the Quads. The cut library can easily handle this modified confi.
+ * connectivity between the Quads. The cut library can easily handle this modified confi.
  *
  *   1     4,5     8               1      4      8
  *    +-----+-----+                 +-----+-----+
@@ -213,7 +213,7 @@ void Cut::SelfCut::find_cutting_sides()
  *    +-----+-----+                 +-----+-----+
  *   2     3,6     7               2      6     7
  *
- *   Rememeber : Which one of the nodes is considered among the coinciding nodes is
+ *   Remember : Which one of the nodes is considered among the coinciding nodes is
  *   not reproducible (just like many operations in cut libraries)
  *-------------------------------------------------------------------------------------*/
 bool Cut::SelfCut::merge_coinciding_nodes(Side* keep, Side* replace)
@@ -227,9 +227,9 @@ bool Cut::SelfCut::merge_coinciding_nodes(Side* keep, Side* replace)
   // store the nodes that should be replaced with other ids
   std::vector<std::pair<const Node*, const Node*>> ids_replace;
 
-  for (std::vector<Node*>::const_iterator noit = scnodes.begin(); noit != scnodes.end(); noit++)
+  for (std::vector<Node*>::const_iterator no_it = scnodes.begin(); no_it != scnodes.end(); no_it++)
   {
-    const Node* scnod = *noit;
+    const Node* scnod = *no_it;
 
     for (std::vector<Node*>::const_iterator cutit = cutnodes.begin(); cutit != cutnodes.end();
         cutit++)
@@ -261,7 +261,7 @@ bool Cut::SelfCut::merge_coinciding_nodes(Side* keep, Side* replace)
         FOUR_C_THROW("not implemented yet");
       }
 
-      // now that we have all the informations about coinciding nodes
+      // now that we have all the information about coinciding nodes
       // Do the necessary operations in the mesh to consider only one node
       if (ids_replace.size() > 0)
       {
@@ -275,14 +275,14 @@ bool Cut::SelfCut::merge_coinciding_nodes(Side* keep, Side* replace)
 }
 
 /*-----------------------------------------------------------------------------------------*
- * After all informations about coinciding nodes are available, perform the       sudhakar 10/13
+ * After all information about coinciding nodes are available, perform the       sudhakar 10/13
  * operations in our data structure such that only one node is available and
  * ensure connectivity between the corresponding elements
  *-----------------------------------------------------------------------------------------*/
 void Cut::SelfCut::operations_for_node_merging(
     std::vector<std::pair<const Node*, const Node*>> repl, bool initial)
 {
-  // The following "edge" and "side" data structure has to be modified accodingly
+  // The following "edge" and "side" data structure has to be modified accordingly
   // the node numbers has to be set accordingly
   std::map<plain_int_set, std::shared_ptr<Edge>>& edges =
       const_cast<std::map<plain_int_set, std::shared_ptr<Edge>>&>(mesh_.edges());
@@ -421,7 +421,7 @@ void Cut::SelfCut::find_self_cut_points()
 }
 
 /*-------------------------------------------------------------------------------------*
- * gets all cutted sides and their nodes and edges to store them as
+ * gets all cut sides and their nodes and edges to store them as
  * private variables                                                         wirtz 05/13
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::get_self_cut_objects()
@@ -466,12 +466,12 @@ void Cut::SelfCut::get_self_cut_objects()
  *-------------------------------------------------------------------------------------*/
 void Cut::SelfCut::create_self_cut_nodes()
 {
-  std::vector<Node*> cuttedsidesnodes;
+  std::vector<Node*> cutsidesnodes;
   for (std::map<int, std::shared_ptr<Node>>::iterator i = selfcut_nodes_.begin();
       i != selfcut_nodes_.end(); ++i)
   {
-    Node* cuttedsidesnode = &*i->second;
-    cuttedsidesnodes.push_back(cuttedsidesnode);
+    Node* cutsidesnode = &*i->second;
+    cutsidesnodes.push_back(cutsidesnode);
   }
 
   // we take all selfcut points of each side
@@ -489,16 +489,15 @@ void Cut::SelfCut::create_self_cut_nodes()
         ++i)
     {
       Point* cutsideselfcutpoint = *i;
-      if (cutsideselfcutpoint->nodal_point(cuttedsidesnodes))
+      if (cutsideselfcutpoint->nodal_point(cutsidesnodes))
       {
-        for (std::vector<Node*>::iterator i = cuttedsidesnodes.begin(); i != cuttedsidesnodes.end();
-            ++i)
+        for (std::vector<Node*>::iterator i = cutsidesnodes.begin(); i != cutsidesnodes.end(); ++i)
         {
-          Node* cuttedsidesnode = *i;
-          if (cuttedsidesnode->point() == cutsideselfcutpoint)
+          Node* cutsidesnode = *i;
+          if (cutsidesnode->point() == cutsideselfcutpoint)
           {
-            cuttedsidesnode->self_cut_position(Point::oncutsurface);
-            cutside->get_self_cut_node(cuttedsidesnode);
+            cutsidesnode->self_cut_position(Point::oncutsurface);
+            cutside->get_self_cut_node(cutsidesnode);
             break;
           }
         }
@@ -515,7 +514,7 @@ void Cut::SelfCut::create_self_cut_nodes()
             selfcutnodercp.find(selfcutnodeid);
         selfcut_nodes_[selfcutnodeid] = nodeiterator->second;
         cutside->get_self_cut_node(selfcutnode);
-        cuttedsidesnodes.push_back(selfcutnode);
+        cutsidesnodes.push_back(selfcutnode);
       }
     }
   }
@@ -796,7 +795,7 @@ void Cut::SelfCut::create_self_cut_sides()
 /*-------------------------------------------------------------------------------------*
  * erases all cutsides which are cut by another side                        wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void Cut::SelfCut::erase_cutted_sides()
+void Cut::SelfCut::erase_cut_sides()
 {
   std::vector<plain_int_set> cutsideids;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
@@ -815,7 +814,7 @@ void Cut::SelfCut::erase_cutted_sides()
 /*-------------------------------------------------------------------------------------*
  * erases all edges which are cut by a cutside                              wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void Cut::SelfCut::erase_cutted_edges()
+void Cut::SelfCut::erase_cut_edges()
 {
   std::vector<plain_int_set> cutsideedgeids;
   for (std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = selfcut_edges_.begin();
@@ -1076,7 +1075,7 @@ void Cut::SelfCut::propagate_self_cut_position()
               case Point::undecided:
                 if (undecidedsides.count(siblingside))
                 {
-                  FOUR_C_THROW("SelfCut: uncomplete set of undecided cutsides");
+                  FOUR_C_THROW("SelfCut: incomplete set of undecided cutsides");
                 }
                 break;
               case Point::oncutsurface:
@@ -1147,7 +1146,7 @@ void Cut::SelfCut::erase_inside_sides()
   erase_inside_side(cutsideids);
   if (mesh_.sides().size() == 0)
     FOUR_C_THROW(
-        "All self-cut positions are undecided\n. The inital number of cutsides is %d, the number "
+        "All self-cut positions are undecided\n. The initial number of cutsides is %d, the number "
         "of erased cutsides is %d",
         initial_cutsides, final_cutsides);
 }
@@ -1338,9 +1337,9 @@ void Cut::SelfCut::next_sides(Side* cutside, std::shared_ptr<Cut::BoundingBox>& 
 }
 
 /*-------------------------------------------------------------------------------------*
- * Status of the cutted sides for text viewer                               wirtz 05/13
+ * Status of the cut sides for text viewer                               wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void Cut::SelfCut::cutted_side_status_text()
+void Cut::SelfCut::cut_side_status_text()
 {
   int selfcutsidesize = selfcut_sides_.size();
   int j = 1;
@@ -1516,9 +1515,9 @@ void Cut::SelfCut::error_status_text(Side& cutside)
 }
 
 /*-------------------------------------------------------------------------------------*
- * Status of the cutted sides for gmsh                                      wirtz 05/13
+ * Status of the cut sides for gmsh                                      wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void Cut::SelfCut::cutted_side_status_gmsh(const std::string& name)
+void Cut::SelfCut::cut_side_status_gmsh(const std::string& name)
 {
   std::ofstream file(name.c_str());
   const std::map<plain_int_set, std::shared_ptr<Side>>& cutsides = mesh_.sides();

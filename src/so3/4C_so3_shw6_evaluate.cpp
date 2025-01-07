@@ -304,7 +304,7 @@ void Discret::Elements::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
   }
 
   /*
-  ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
+  ** EAS Technology: declare, initialize, set up, and alpha history -------- EAS
   */
   // in any case declare variables, sizes etc. only in eascase
   Core::LinAlg::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
@@ -379,7 +379,7 @@ void Discret::Elements::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
     }
     /* end of EAS Update ******************/
 
-    // EAS portion of internal forces, also called enhacement vector s or Rtilde
+    // EAS portion of internal forces, also called enhancement vector s or Rtilde
     feas.size(neas_);
 
     // EAS matrix K_{alpha alpha}, also called Dtilde
@@ -590,7 +590,7 @@ void Discret::Elements::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ == soshw6_easpoisthick)
     {
-      // map local M to global, also enhancement is refered to element origin
+      // map local M to global, also enhancement is referred to element origin
       // M = detJ0/detJ T0^{-T} . M
       Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
           soshw6_easpoisthick>(M.data(), detJ0 / detJ, T0invT.data(), M_GP->at(gp).values());
@@ -727,7 +727,7 @@ void Discret::Elements::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
           (*stiffmatrix)(NUMDIM_WEG6* inod + 1, NUMDIM_WEG6 * jnod + 1) += Gij;
           (*stiffmatrix)(NUMDIM_WEG6* inod + 2, NUMDIM_WEG6 * jnod + 2) += Gij;
         }
-      }  // end of intergrate `geometric' stiffness ******************************
+      }  // end of integrate `geometric' stiffness ******************************
 
       // EAS technology: integrate matrices --------------------------------- EAS
       if (eastype_ == soshw6_easpoisthick)
@@ -836,7 +836,7 @@ void Discret::Elements::SoShw6::soshw6_anssetup(
 
   if (dfsp_eval != 0)
   {                      // if true f,df already evaluated
-    *deriv_sp = &df_sp;  // return adress of static object to target of pointer
+    *deriv_sp = &df_sp;  // return address of static object to target of pointer
   }
   else
   {
@@ -877,8 +877,8 @@ void Discret::Elements::SoShw6::soshw6_anssetup(
       Core::FE::shape_function_3d_deriv1(df_sp[i], r[i], s[i], t[i], Core::FE::CellType::wedge6);
     }
 
-    // return adresses of just evaluated matrices
-    *deriv_sp = &df_sp;  // return adress of static object to target of pointer
+    // return addresses of just evaluated matrices
+    *deriv_sp = &df_sp;  // return address of static object to target of pointer
     dfsp_eval = true;    // now all arrays are filled statically
   }
 
@@ -1000,7 +1000,7 @@ void Discret::Elements::SoShw6::soshw6_easinit()
   Core::LinAlg::SerialDenseMatrix alpha(neas_, 1);
   // EAS enhanced strain parameters of last converged load/time step
   Core::LinAlg::SerialDenseMatrix alphao(neas_, 1);
-  // EAS portion of internal forces, also called enhacement vector s or Rtilde
+  // EAS portion of internal forces, also called enhancement vector s or Rtilde
   Core::LinAlg::SerialDenseMatrix feas(neas_, 1);
   // EAS matrix K_{alpha alpha}, also called Dtilde
   Core::LinAlg::SerialDenseMatrix invKaa(neas_, neas_);
@@ -1050,7 +1050,7 @@ void Discret::Elements::SoShw6::soshw6_eassetup(
 
   if (M_eval == true)
   {              // if true M already evaluated
-    *M_GP = &M;  // return adress of static object to target of pointer
+    *M_GP = &M;  // return address of static object to target of pointer
     return;
   }
   else
@@ -1078,8 +1078,8 @@ void Discret::Elements::SoShw6::soshw6_eassetup(
         // activated at all due to tri
       }
 
-      // return adress of just evaluated matrix
-      *M_GP = &M;     // return adress of static object to target of pointer
+      // return address of just evaluated matrix
+      *M_GP = &M;     // return address of static object to target of pointer
       M_eval = true;  // now the array is filled statically
     }
     else

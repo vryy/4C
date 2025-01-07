@@ -601,7 +601,7 @@ std::vector<double> Immersed::ImmersedBase::calc_global_resultantfrom_epetra_vec
   double summyrowentriesy = 0.0;
   double summyrowentriesz = 0.0;
   double result_globalx = 0.0;
-  double result_globaly = 0.0;
+  double result_globally = 0.0;
   double result_globalz = 0.0;
   double result_L2norm = 0.0;
 
@@ -621,13 +621,13 @@ std::vector<double> Immersed::ImmersedBase::calc_global_resultantfrom_epetra_vec
 
   Core::Communication::barrier(comm);
   Core::Communication::sum_all(&summyrowentriesx, &result_globalx, 1, comm);
-  Core::Communication::sum_all(&summyrowentriesy, &result_globaly, 1, comm);
+  Core::Communication::sum_all(&summyrowentriesy, &result_globally, 1, comm);
   Core::Communication::sum_all(&summyrowentriesz, &result_globalz, 1, comm);
 
-  result_L2norm = sqrt(pow(result_globalx, 2) + pow(result_globaly, 2) + pow(result_globalz, 2));
+  result_L2norm = sqrt(pow(result_globalx, 2) + pow(result_globally, 2) + pow(result_globalz, 2));
 
   result.push_back(result_globalx);
-  result.push_back(result_globaly);
+  result.push_back(result_globally);
   result.push_back(result_globalz);
   result.push_back(result_L2norm);
 

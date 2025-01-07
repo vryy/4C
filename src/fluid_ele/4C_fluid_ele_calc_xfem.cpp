@@ -560,19 +560,19 @@ namespace Discret
         case Inpar::FLUID::shear_flow:
         {
           const double maxvel = 1.0;
-          const double hight = 1.0;
+          const double height = 1.0;
 
           // y=0 is located in the middle of the domain
           if (nsd_ == 2)
           {
             p = 1.0;
-            u(0) = xyzint(1) * maxvel + hight / 2 * maxvel;
+            u(0) = xyzint(1) * maxvel + height / 2 * maxvel;
             u(1) = 0.0;
           }
           if (nsd_ == 3)
           {
             p = 0.0;
-            u(0) = xyzint(1) * maxvel + hight / 2 * maxvel;
+            u(0) = xyzint(1) * maxvel + height / 2 * maxvel;
             u(1) = 0.0;
             u(2) = 0.0;
           }
@@ -582,20 +582,20 @@ namespace Discret
         case Inpar::FLUID::gravitation:
         {
           const double gravity = 10.0;
-          const double hight = 1.0;
+          const double height = 1.0;
 
           // 2D: rectangle 1.0x1.0
           // 3D: cube 1.0x1.0x1.0
           // y=0 is located in the middle of the domain
           if (nsd_ == 2)
           {
-            p = -xyzint(1) * gravity + hight / 2 * gravity;
+            p = -xyzint(1) * gravity + height / 2 * gravity;
             u(0) = 0.0;
             u(1) = 0.0;
           }
           if (nsd_ == 3)
           {
-            p = -xyzint(1) * gravity + hight / 2 * gravity;
+            p = -xyzint(1) * gravity + height / 2 * gravity;
             u(0) = 0.0;
             u(1) = 0.0;
             u(2) = 0.0;
@@ -606,7 +606,7 @@ namespace Discret
         case Inpar::FLUID::channel2D:
         {
           const double maxvel = 1.25;
-          const double hight = 1.0;
+          const double height = 1.0;
           const double visc = 1.0;
           const double pressure_gradient = 10.0;
 
@@ -616,8 +616,8 @@ namespace Discret
           {
             p = 1.0;
             // p = -10*xyzint(0)+20;
-            u(0) = maxvel - ((hight * hight) / (2.0 * visc) * pressure_gradient *
-                                (xyzint(1) / hight) * (xyzint(1) / hight));
+            u(0) = maxvel - ((height * height) / (2.0 * visc) * pressure_gradient *
+                                (xyzint(1) / height) * (xyzint(1) / height));
             u(1) = 0.0;
           }
           else
@@ -1046,7 +1046,7 @@ namespace Discret
 
             Core::LinAlg::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
-            // compute transformation factor, normal vector and global Gauss point coordiantes
+            // compute transformation factor, normal vector and global Gauss point coordinates
             if (bc->shape() != Core::FE::CellType::dis_none)  // Tessellation approach
             {
               XFEM::Utils::compute_surface_transformation(drs, x_gp_lin, normal, bc, eta);
@@ -1687,7 +1687,7 @@ namespace Discret
                 "Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
 
           // coupling matrices between background element and one! side
-          Core::LinAlg::SerialDenseMatrix& C_uiu = side_matrices[0];
+          Core::LinAlg::SerialDenseMatrix& C_you = side_matrices[0];
           Core::LinAlg::SerialDenseMatrix& C_uui = side_matrices[1];
           Core::LinAlg::SerialDenseMatrix& rhC_ui = side_matrices[2];
 
@@ -1703,7 +1703,7 @@ namespace Discret
             FOUR_C_THROW("embedded or two-sided coupling not supported");
 
           ci[coup_sid] = Discret::Elements::XFLUID::HybridLMInterface<
-              distype>::create_hybrid_lm_coupling_x_fluid_sided(coupl_ele, coupl_xyze, C_uiu, C_uui,
+              distype>::create_hybrid_lm_coupling_x_fluid_sided(coupl_ele, coupl_xyze, C_you, C_uui,
               rhC_ui, eleGsui, eleGuis, fldparaxfem_->is_viscous_adjoint_symmetric());
         }
 
@@ -1750,14 +1750,14 @@ namespace Discret
               std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::iterator c =
                   side_coupling_extra.find(coup_sid);
               std::vector<Core::LinAlg::SerialDenseMatrix>& side_matrices_extra = c->second;
-              Core::LinAlg::SerialDenseMatrix& C_uiu = side_matrices_extra[0];
+              Core::LinAlg::SerialDenseMatrix& C_you = side_matrices_extra[0];
               Core::LinAlg::SerialDenseMatrix& C_uui = side_matrices_extra[1];
               Core::LinAlg::SerialDenseMatrix& rhC_ui = side_matrices_extra[2];
               Core::LinAlg::SerialDenseMatrix& C_uiui = side_matrices_extra[3];
 
               si_nit[coup_sid] = Discret::Elements::XFLUID::NitscheInterface<
                   distype>::create_nitsche_coupling_x_fluid_sided(side, side_xyze, elemat1_epetra,
-                  C_uiu, C_uui, C_uiui, elevec1_epetra, rhC_ui, *fldparaxfem_);
+                  C_you, C_uui, C_uiui, elevec1_epetra, rhC_ui, *fldparaxfem_);
             }
             else
             {
@@ -1826,7 +1826,7 @@ namespace Discret
 
             Core::LinAlg::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
-            // compute transformation factor, normal vector and global Gauss point coordiantes
+            // compute transformation factor, normal vector and global Gauss point coordinates
             if (bc->shape() != Core::FE::CellType::dis_none)  // Tessellation approach
             {
               XFEM::Utils::compute_surface_transformation(drs, x_gp_lin, normal, bc, eta);
@@ -3508,7 +3508,7 @@ namespace Discret
           std::vector<Core::LinAlg::SerialDenseMatrix>& side_matrices = c->second;
 
           // coupling matrices between background element and one! side
-          Core::LinAlg::SerialDenseMatrix& C_uiu = side_matrices[0];
+          Core::LinAlg::SerialDenseMatrix& C_you = side_matrices[0];
           Core::LinAlg::SerialDenseMatrix& C_uui = side_matrices[1];
           Core::LinAlg::SerialDenseMatrix& rhC_ui = side_matrices[2];
 
@@ -3523,13 +3523,13 @@ namespace Discret
             // create interface for the embedded element and the associated side
             ci = Discret::Elements::XFLUID::NitscheInterface<
                 distype>::create_nitsche_coupling_two_sided(coupl_ele, coupl_xyze, elemat1_epetra,
-                C_uiu, C_uui, eleCuiui, elevec1_epetra, rhC_ui, *fldparaxfem_);
+                C_you, C_uui, eleCuiui, elevec1_epetra, rhC_ui, *fldparaxfem_);
           }
           else  // ... for xfluid-sided coupling
           {
             ci = Discret::Elements::XFLUID::NitscheInterface<
                 distype>::create_nitsche_coupling_x_fluid_sided(coupl_ele, coupl_xyze,
-                elemat1_epetra, C_uiu, C_uui, eleCuiui, elevec1_epetra, rhC_ui, *fldparaxfem_);
+                elemat1_epetra, C_you, C_uui, eleCuiui, elevec1_epetra, rhC_ui, *fldparaxfem_);
           }
         }
 
@@ -3639,7 +3639,7 @@ namespace Discret
             {
               TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::Cut::Position");
 
-              if (!evaluated_cut)  // compute the local coordiante based on the reference position
+              if (!evaluated_cut)  // compute the local coordinate based on the reference position
                                    // (first time the cut was frozen)
               {
                 Core::LinAlg::Matrix<3, 1> x_ref = x_gp_lin_;
@@ -3657,7 +3657,7 @@ namespace Discret
                 pos->compute();
                 pos->local_coordinates(rst_);
               }
-              else  // compute the local coordiante based on the current position
+              else  // compute the local coordinate based on the current position
               {
                 // find element local position of gauss point
                 std::shared_ptr<Cut::Position> pos =
@@ -3781,10 +3781,10 @@ namespace Discret
                 double porosity = mc_fpi->calc_porosity(side, rst_slave, J);
                 static Core::LinAlg::Matrix<3, 1> vel_s(true);
                 static Core::LinAlg::Matrix<3, 1> velpf_s(true);
-                XFEM::Utils::evalute_stateat_gp(side, rst_slave,
+                XFEM::Utils::evaluate_stateat_gp(side, rst_slave,
                     *cond_manager->get_mesh_coupling("XFEMSurfFPIMono_ps_ps")->get_cutter_dis(),
                     "ivelnp", vel_s);
-                XFEM::Utils::evalute_stateat_gp(side, rst_slave,
+                XFEM::Utils::evaluate_stateat_gp(side, rst_slave,
                     *cond_manager->get_mesh_coupling("XFEMSurfFPIMono_pf_pf")->get_cutter_dis(),
                     "ivelnp", velpf_s);
                 fulltraction =
@@ -4523,12 +4523,10 @@ namespace Discret
         // evaluate shape functions and derivatives at integration point
         my::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
 
-        // Summe ueber alle Knoten
         for (int ui = 0; ui < nen_; ++ui)
         {
           for (int idim = 0; idim < nsd_; ++idim)
           {
-            // Bloecke ueber Knoten
             const int fui = numdofpernode_ * ui;
             /* continuity term */
             /*

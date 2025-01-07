@@ -53,7 +53,7 @@ void FS3I::PartFS3I1Wc::timeloop()
   fsi_->prepare_timeloop();
   set_fsi_solution();
 
-  // calculate inital time derivative, when restart was done from a part. FSI simulation
+  // calculate initial time derivative, when restart was done from a part. FSI simulation
   if (static_cast<bool>(Global::Problem::instance()->restart()) and
       Global::Problem::instance()->f_s3_i_dynamic_params().get<bool>("RESTART_FROM_PART_FSI"))
   {

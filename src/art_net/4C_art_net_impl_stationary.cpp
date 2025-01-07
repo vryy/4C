@@ -451,7 +451,7 @@ void Arteries::ArtNetImplStationary::prepare_time_loop()
   // provide information about initial field (do not do for restarts!)
   if (step_ == 0)
   {
-    // set artery diameter of previous time step to intial artery diameter
+    // set artery diameter of previous time step to initial artery diameter
     reset_artery_diam_previous_time_step();
     // write out initial state
     output(false, nullptr);

@@ -30,11 +30,12 @@ void Inpar::Thermo::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<DynamicType>(dyna_statics, dyna_onesteptheta, dyna_genalpha, dyna_expleuler), &tdyn);
 
   // output type
-  Core::Utils::int_parameter("RESULTSEVRY", 1,
-      "save temperature and other global quantities every RESULTSEVRY steps", &tdyn);
-  Core::Utils::int_parameter("RESEVRYERGY", 0, "write system energies every requested step", &tdyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1,
+      "save temperature and other global quantities every RESULTSEVERY steps", &tdyn);
   Core::Utils::int_parameter(
-      "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &tdyn);
+      "RESEVERYERGY", 0, "write system energies every requested step", &tdyn);
+  Core::Utils::int_parameter(
+      "RESTARTEVERY", 1, "write restart possibility every RESTARTEVERY steps", &tdyn);
 
   setStringToIntegralParameter<InitialField>("INITIALFIELD", "zero_field",
       "Initial Field for thermal problem",

@@ -28,8 +28,8 @@ FDCHECKEPS                      1e-7
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 ITEMAX                          50
-RESTARTEVRY                     2
-RESULTSEVRY                     2
+RESTARTEVERY                     2
+RESULTSEVERY                     2
 NUMSTEP                         15
 MAXTIME                         2.0
 TIMESTEP                        0.1
@@ -46,8 +46,8 @@ LINEAR_SOLVER                   1
 DYNAMICTYPE                      Stationary
 NUMSTEP                         10
 TIMESTEP                        0.1
-RESTARTEVRY                     20
-RESULTSEVRY                     20
+RESTARTEVERY                     20
+RESULTSEVERY                     20
 SOLVESCATRA                     no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Solver

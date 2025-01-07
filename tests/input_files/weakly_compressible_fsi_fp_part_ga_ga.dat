@@ -49,9 +49,9 @@ TIMESTEP              0.0125
 NUMSTEP               40
 MAXTIME               0.5
 COUPALGO              iter_stagg_AITKEN_rel_param
-RESTARTEVRY           2
+RESTARTEVERY           2
 SECONDORDER           yes
-RESULTSEVRY           1
+RESULTSEVERY           1
 MATCHGRID_FLUIDALE    no
 MATCHGRID_STRUCTALE   no
 ------------------------------------FSI DYNAMIC/PARTITIONED SOLVER

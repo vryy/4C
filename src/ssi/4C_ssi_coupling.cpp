@@ -517,12 +517,12 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
 
       for (int couplingid : couplingids)
       {
-        std::set<int> tempset;
-        tempset.insert(couplingid);
+        std::set<int> tempest;
+        tempest.insert(couplingid);
 
         std::shared_ptr<Core::DOFSets::DofSetDefinedMappingWrapper> newdofset_struct =
             std::make_shared<Core::DOFSets::DofSetDefinedMappingWrapper>(
-                scatragidmatchingdofset, scatradis, "SSICouplingScatraToSolid", tempset);
+                scatragidmatchingdofset, scatradis, "SSICouplingScatraToSolid", tempest);
 
         structdis->add_dof_set(newdofset_struct);
       }

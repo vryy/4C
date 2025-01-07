@@ -48,19 +48,19 @@ namespace Inpar
     enum ConvNorm
     {
       convnorm_abs,  //!< absolute norm
-      convnorm_rel,  //!< relative norm of EHL problem with inital EHL rhs
+      convnorm_rel,  //!< relative norm of EHL problem with initial EHL rhs
       convnorm_mix   //!< mixed absolute-relative norm
     };
 
     //! type of norm to check for convergence
     enum BinaryOp
     {
-      bop_and,              //!< and
-      bop_or,               //!< or
-      bop_coupl_or_singl,   //!< either EHL problem or single field problems converged
-      bop_coupl_and_singl,  //!< either EHL problem or single field problems converged
-      bop_and_singl,        //!< and in single field problems
-      bop_or_singl          //!< or in single field problems
+      bop_and,               //!< and
+      bop_or,                //!< or
+      bop_coupl_or_single,   //!< either EHL problem or single field problems converged
+      bop_coupl_and_single,  //!< either EHL problem or single field problems converged
+      bop_and_single,        //!< and in single field problems
+      bop_or_single          //!< or in single field problems
     };
 
     //! type of solution techniques

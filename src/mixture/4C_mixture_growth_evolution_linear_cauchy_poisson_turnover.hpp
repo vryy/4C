@@ -75,7 +75,7 @@ namespace Mixture
     /// decay time controlling the speed of turnover
     double decay_time_;
 
-    /// a swtich to enable the basal mass production rate
+    /// a switch to enable the basal mass production rate
     bool enable_basal_mass_production_;
   };
 }  // namespace Mixture

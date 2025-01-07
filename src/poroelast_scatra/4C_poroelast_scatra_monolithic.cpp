@@ -48,7 +48,7 @@ PoroElastScaTra::PoroScatraMono::PoroScatraMono(
   const Teuchos::ParameterList& sdynparams =
       Global::Problem::instance()->structural_dynamic_params();
 
-  // some solver paramaters are red form the structure dynamic list (this is not the best way to do
+  // some solver parameters are red form the structure dynamic list (this is not the best way to do
   // it ...)
   solveradapttol_ = (sdynparams.get<bool>("ADAPTCONV"));
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
@@ -914,7 +914,7 @@ void PoroElastScaTra::PoroScatraMono::print_newton_iter_text(FILE* ofile)
 
 /*----------------------------------------------------------------------*
  | print statistics of converged NRI                      vuong 08/13    |
- | orignially by bborn 08/09                                            |
+ | originally by bborn 08/09                                            |
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraMono::print_newton_conv()
 {
@@ -1308,7 +1308,7 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
                   << std::endl;
 
         std::cout << "value(" << zeilennr << "," << spaltenr << "): " << value << std::endl;
-        std::cout << "\n******************" << zeilennr + 1 << ". Zeile Ende!!***************"
+        std::cout << "\n******************" << zeilennr + 1 << ". Zeile End!!***************"
                   << std::endl;
                   */
       }
@@ -1321,7 +1321,7 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
     if (i != dofs - 1) iterinc->ReplaceGlobalValue(i + 1, 0, delta);
 
     if (i == spaltenr)
-      std::cout << "\n******************" << spaltenr + 1 << ". Spalte Ende!!***************"
+      std::cout << "\n******************" << spaltenr + 1 << ". Spalte End!!***************"
                 << std::endl;
   }
 

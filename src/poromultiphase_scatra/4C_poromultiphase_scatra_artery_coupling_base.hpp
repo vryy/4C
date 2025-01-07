@@ -127,19 +127,19 @@ namespace PoroMultiPhaseScaTra
     //! artery (1D) discretization
     std::shared_ptr<Core::FE::Discretization> arterydis_;
 
-    //! continous field (2D, 3D) discretization
+    //! continuous field (2D, 3D) discretization
     std::shared_ptr<Core::FE::Discretization> contdis_;
 
     //! coupled dofs of artery field
     std::vector<int> coupleddofs_art_;
 
-    //! coupled dofs of continous field
+    //! coupled dofs of continuous field
     std::vector<int> coupleddofs_cont_;
 
     //! number of coupled dofs
     int num_coupled_dofs_;
 
-    //! dof row map (not splitted)
+    //! dof row map (not split)
     std::shared_ptr<Epetra_Map> fullmap_;
 
     //! global extractor

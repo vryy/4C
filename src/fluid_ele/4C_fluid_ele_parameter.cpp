@@ -93,7 +93,7 @@ void Discret::Elements::FluidEleParameter::set_element_general_fluid_parameter(
   if (set_general_fluid_parameter_ == false) set_general_fluid_parameter_ = true;
   // For turbulent inflow generation,
   // this function is indeed two times called.
-  // In this sepcial case, calling this function twice
+  // In this special case, calling this function twice
   // is ok!
   else
   {
@@ -546,7 +546,7 @@ void Discret::Elements::FluidEleParameter::set_element_turbulence_parameters(
         FOUR_C_THROW("van_Driest_damping only for channel_flow_of_height_2\n");
 
       // for the Smagorinsky model with van Driest damping, we need
-      // a viscous length to determine the y+ (heigth in wall units)
+      // a viscous length to determine the y+ (height in wall units)
       turb_mod_action_ = Inpar::FLUID::smagorinsky_with_van_Driest_damping;
 
       // get parameters of model

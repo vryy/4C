@@ -44,8 +44,8 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         1
 PREDICT                         ConstTemp
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        1.0
 TOLRES                          1e-08
 TOLTEMP                         1e-10
@@ -75,9 +75,9 @@ ITEMIN                          1
 MAXTIME                         100
 NORM_INC                        Abs
 NUMSTEP                         1
-RESTARTEVRY                     0
+RESTARTEVERY                     0
 TIMESTEP                        100
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-10
 TOLINC                          1e-10
@@ -90,7 +90,7 @@ MERGE_TSI_BLOCK_MATRIX          yes
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1 NUE 0.2 DENS 0.1 THEXPANS 0.002 INITTEMP 0 CAPA 0.1 CONDUCT 1
+MAT 1 MAT_Struct_ThermoStVenantK YOUNGNUM 1 YOUNG 1 NUE 0.2 DENS 0.1 THEXPANS 0.002 INITTEMP 0 CAPA 0.1 CONDUCT 1
 MAT 3 THERM_FourierIso CAPA 0.1 CONDUCT 1
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 3

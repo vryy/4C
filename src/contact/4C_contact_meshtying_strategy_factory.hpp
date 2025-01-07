@@ -29,7 +29,7 @@ namespace Mortar
   class MortarAbstractStrategy;
   class Element;
   class Interface;
-  class StratDataContainer;
+  class StrategyDataContainer;
 
   namespace STRATEGY
   {
@@ -112,7 +112,7 @@ namespace Mortar
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<std::shared_ptr<Mortar::Interface>>& interfaces,
           const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map, const int dim,
-          const MPI_Comm& comm_ptr, Mortar::StratDataContainer& data_ptr);
+          const MPI_Comm& comm_ptr, Mortar::StrategyDataContainer& data_ptr);
 
      protected:
      private:

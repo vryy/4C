@@ -55,8 +55,8 @@ ALE_TYPE                        solid
 MAXTIME                         20.0
 TIMESTEP                        0.1
 NUMSTEP                         200
-RESULTSEVRY                     1
-RESTARTEVRY                     2
+RESULTSEVERY                     1
+RESTARTEVERY                     2
 COUPALGO                        iter_stagg_fixed_rel_param
 MATCHGRID_FLUIDALE              no
 -------------------------------------------------------------CONTACT DYNAMIC

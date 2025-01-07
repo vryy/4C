@@ -164,7 +164,7 @@ namespace Discret::Elements
      * @return double
      *
      * @note @p scalars is an optional since it might not be set in the very initial call of the
-     * stucture. Once the structure does not evaluate itself after setup, this optional parameter
+     * structure. Once the structure does not evaluate itself after setup, this optional parameter
      * can be made mandatory.
      */
     double get_normal_cauchy_stress_at_xi(const std::vector<double>& disp,

@@ -92,7 +92,7 @@ namespace NOX
             std::map<std::string, Teuchos::RCP<::NOX::StatusTest::Generic>>* tagged_tests) const;
 
        private:
-        //! Throws formated error
+        //! Throws formatted error
         void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
        private:

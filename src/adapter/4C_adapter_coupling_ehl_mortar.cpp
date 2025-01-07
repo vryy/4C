@@ -261,12 +261,12 @@ void Adapter::CouplingEhlMortar::condense_contact(
   fcsa->Norm2(&contact_rhs_norm_);
 
   // complete all the new matrix blocks
-  // Note: since the contact interace assemled them, they are all based
+  // Note: since the contact interface assemled them, they are all based
   //       on displacement row and col maps. Hence, some still need to be transformed
   dcsdd->complete(*s_mdof_map(), *interface_->active_dofs());
   dcsdLMc->complete(*interface_->active_dofs(), *interface_->active_dofs());
 
-  // get the seperate blocks of the 2x2 TSI block system
+  // get the separate blocks of the 2x2 TSI block system
   // View mode!!! Since we actually want to add things there
   std::shared_ptr<Core::LinAlg::SparseMatrix> kss =
       std::make_shared<Core::LinAlg::SparseMatrix>(sysmat->matrix(0, 0), Core::LinAlg::Copy);
@@ -294,7 +294,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
 
   // add last time step contact forces to rhs
   if (fscn_ != nullptr)  // in the first time step, we don't have any history of the
-                         // contact force, after that, fscn_ should be initialized propperly
+                         // contact force, after that, fscn_ should be initialized properly
   {
     Core::LinAlg::Vector<double> tmp(kss->row_map());
     Core::LinAlg::export_to(*fscn_, tmp);
@@ -347,7 +347,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   Core::LinAlg::split_matrix2x2(
       kss, str_gni_dofs, dummy_map1, gdisp_DofRowMap, dummy_map2, kss_ni, dummy1, tmp, dummy2);
 
-  // this shoud be a split in rows, so that two blocks should have zero columns
+  // this should be a split in rows, so that two blocks should have zero columns
   if (dummy1->domain_map().NumGlobalElements() != 0 ||
       dummy2->domain_map().NumGlobalElements() != 0)
     FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
@@ -362,7 +362,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   Core::LinAlg::split_matrix2x2(
       tmp, gmdof, dummy_map1, gdisp_DofRowMap, dummy_map2, kss_m, dummy1, kss_a, dummy2);
 
-  // this shoud be a split in rows, so that two blocks should have zero columns
+  // this should be a split in rows, so that two blocks should have zero columns
   if (dummy1->domain_map().NumGlobalElements() != 0 ||
       dummy2->domain_map().NumGlobalElements() != 0)
     FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
@@ -384,7 +384,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   Core::LinAlg::split_matrix2x2(
       kst, str_gni_dofs, dummy_map1, gpres_DofRowMap, dummy_map2, kst_ni, dummy1, tmp, dummy2);
 
-  // this shoud be a split in rows, so that two blocks should have zero columns
+  // this should be a split in rows, so that two blocks should have zero columns
   if (dummy1->domain_map().NumGlobalElements() != 0 ||
       dummy2->domain_map().NumGlobalElements() != 0)
     FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
@@ -399,7 +399,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   Core::LinAlg::split_matrix2x2(
       tmp, gmdof, dummy_map1, gpres_DofRowMap, dummy_map2, kst_m, dummy1, kst_a, dummy2);
 
-  // this shoud be a split in rows, so that two blocks should have zero columns
+  // this should be a split in rows, so that two blocks should have zero columns
   if (dummy1->domain_map().NumGlobalElements() != 0 ||
       dummy2->domain_map().NumGlobalElements() != 0)
     FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");

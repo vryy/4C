@@ -23,17 +23,17 @@ void Inpar::POROMULTIPHASE::set_valid_parameters(Teuchos::ParameterList& list)
   // ----------------------------------------------------------------------
   // (1) general control parameters
   Teuchos::ParameterList& poromultiphasedyn = list.sublist(
-      "POROMULTIPHASE DYNAMIC", false, "Control paramters for multiphase porous medium");
+      "POROMULTIPHASE DYNAMIC", false, "Control parameters for multiphase porous medium");
 
   // Output type
   Core::Utils::int_parameter(
-      "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &poromultiphasedyn);
+      "RESTARTEVERY", 1, "write restart possibility every RESTARTEVERY steps", &poromultiphasedyn);
   // Time loop control
   Core::Utils::int_parameter("NUMSTEP", 200, "maximum number of Timesteps", &poromultiphasedyn);
   Core::Utils::double_parameter("MAXTIME", 1000.0, "total simulation time", &poromultiphasedyn);
   Core::Utils::double_parameter("TIMESTEP", -1, "time step size dt", &poromultiphasedyn);
   Core::Utils::int_parameter(
-      "RESULTSEVRY", 1, "increment for writing solution", &poromultiphasedyn);
+      "RESULTSEVERY", 1, "increment for writing solution", &poromultiphasedyn);
   Core::Utils::int_parameter(
       "ITEMAX", 10, "maximum number of iterations over fields", &poromultiphasedyn);
 

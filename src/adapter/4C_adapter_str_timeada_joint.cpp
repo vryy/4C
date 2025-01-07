@@ -31,12 +31,12 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::StructureTimeAdaJoint::StructureTimeAdaJoint(std::shared_ptr<Structure> structure)
     : StructureTimeAda(structure), sta_(nullptr), sta_wrapper_(nullptr)
 {
-  if (stm_->is_setup()) setup_auxiliar();
+  if (stm_->is_setup()) setup_auxiliary();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::StructureTimeAdaJoint::setup_auxiliar()
+void Adapter::StructureTimeAdaJoint::setup_auxiliary()
 {
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   const Teuchos::ParameterList& jep = sdyn.sublist("TIMEADAPTIVITY").sublist("JOINT EXPLICIT");
@@ -54,7 +54,7 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   //
   std::shared_ptr<Teuchos::ParameterList> ioflags =
       std::make_shared<Teuchos::ParameterList>(problem->io_params());
-  ioflags->set("STDOUTEVRY", 0);
+  ioflags->set("STDOUTEVERY", 0);
   //
   std::shared_ptr<Teuchos::ParameterList> xparams = std::make_shared<Teuchos::ParameterList>();
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
@@ -174,7 +174,7 @@ enum Adapter::StructureTimeAda::AdaEnum Adapter::StructureTimeAdaJoint::method_a
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::StructureTimeAdaJoint::integrate_step_auxiliar()
+void Adapter::StructureTimeAdaJoint::integrate_step_auxiliary()
 {
   // set current step size
   sta_->set_delta_time(stepsize_);
@@ -196,7 +196,7 @@ void Adapter::StructureTimeAdaJoint::integrate_step_auxiliar()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::StructureTimeAdaJoint::update_auxiliar()
+void Adapter::StructureTimeAdaJoint::update_auxiliary()
 {
   // copy the data from main integrator to the auxiliary one
   // for reference: the vector map of the global state vectors may need to be checked to ensure they

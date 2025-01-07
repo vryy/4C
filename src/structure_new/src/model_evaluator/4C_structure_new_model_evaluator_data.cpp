@@ -369,7 +369,7 @@ bool Solid::ModelEvaluator::Data::get_wrms_tolerances(
   iter = atol_wrms_.find(qtype);
   if (iter == atol_wrms_.end()) return false;
 
-  // we found the corrsponding type
+  // we found the corresponding type
   atol = iter->second;
   rtol = rtol_wrms_.at(qtype);
 

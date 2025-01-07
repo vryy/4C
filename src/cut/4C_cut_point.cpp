@@ -276,13 +276,13 @@ double Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& coord)
     int prec_old = Core::CLN::ClnWrapper::precision_;
     Core::CLN::ClnWrapper::precision_ = 50;
     int prec = Core::CLN::ClnWrapper::GetPrecision();
-    ConvDoulbeCLN(x, x_cln., prec);
+    ConvDoubleCLN(x, x_cln., prec);
 
     Core::LinAlg::Matrix<3, 1, Core::CLN::ClnWrapper> x1_cln;
     Core::LinAlg::Matrix<3, 1, Core::CLN::ClnWrapper> x2_cln;
 
-    ConvDoulbeCLN(x1, x1_cln., prec);
-    ConvDoulbeCLN(x2, x2_cln., prec);
+    ConvDoubleCLN(x1, x1_cln., prec);
+    ConvDoubleCLN(x2, x2_cln., prec);
 
     x_cln.update(-1.0, x1_cln, 1.0);
     x2_cln.update(-1.0, x1_cln, 1.0);
@@ -360,8 +360,8 @@ double Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& coord)
       if ((*it)->t(edge) == t)
       {
         // if the local coordinate of the point corresponds to the end node of the edge (possible
-        // due to precision), we shift endpoint a bit outside to preseve correct order and make them
-        // distinguishable
+        // due to precision), we shift endpoint a bit outside to preserve correct order and make
+        // them distinguishable
         if ((*it)->nodal_point(edge->nodes()) and ((t == 1.0 || t == -1.0)))
         {
           if (edge->begin_node()->point() == (*it))

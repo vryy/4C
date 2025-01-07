@@ -60,7 +60,7 @@ namespace Core::LinAlg
 
 
 
-    //! @name Atribute set methods required to support the Epetra_Operator interface
+    //! @name Attribute set methods required to support the Epetra_Operator interface
 
     int SetUseTranspose(bool UseTranspose) override
     {
@@ -78,7 +78,7 @@ namespace Core::LinAlg
     double NormInf() const override { return (precond_->NormInf()); }
     //! @}
 
-    //! @name Atribute access functions required to support the Epetra_Operator interface
+    //! @name Attribute access functions required to support the Epetra_Operator interface
     const char* Label() const override { return (precond_->Label()); }
 
     bool UseTranspose() const override { return (precond_->UseTranspose()); }

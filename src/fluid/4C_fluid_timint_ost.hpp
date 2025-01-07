@@ -138,7 +138,7 @@ namespace FLD
     }
 
     /*!
-    \brief velocity required for evaluation of related quantites required on element level
+    \brief velocity required for evaluation of related quantities required on element level
 
     */
     std::shared_ptr<const Core::LinAlg::Vector<double>> evaluation_vel() override

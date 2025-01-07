@@ -53,7 +53,8 @@ Core::LinAlg::SerialDenseVector Cut::VolumeIntegration::compute_rhs_moment()
     if (fnc == 1)
     {
       if (rhs_mom.normInf() > 1e-5 && rhs_mom(0) < 0.0)
-        FOUR_C_THROW("negaive volume in base function integration. is ordering of vertices right?");
+        FOUR_C_THROW(
+            "negative volume in base function integration. is ordering of vertices right?");
     }
   }
 
@@ -130,7 +131,7 @@ bool Cut::VolumeIntegration::compute_gaussian_points(int numeach)
     area = is_contain_area(minn, maxx, zmin, InPlane, zcoord, ycoord, 0.01, numeach);
     if (area)
     {
-      gaus_pts_.insert(gaus_pts_.end(), InPlane.begin(), InPlane.end());
+      gauss_pts_.insert(gauss_pts_.end(), InPlane.begin(), InPlane.end());
       break;
     }
     zmin += 0.01 * (maxx[2] - minn[2]);
@@ -145,7 +146,7 @@ bool Cut::VolumeIntegration::compute_gaussian_points(int numeach)
     area = is_contain_area(minn, maxx, zmax, InPlane, zcoord, ycoord, 0.01, numeach);
     if (area)
     {
-      gaus_pts_.insert(gaus_pts_.end(), InPlane.begin(), InPlane.end());
+      gauss_pts_.insert(gauss_pts_.end(), InPlane.begin(), InPlane.end());
       break;
     }
     zmax -= 0.01 * (maxx[2] - minn[2]);
@@ -165,7 +166,7 @@ bool Cut::VolumeIntegration::compute_gaussian_points(int numeach)
       area = is_contain_area(minn, maxx, zmin, InPlane, zcoord, ycoord, 0.001, numeach);
       if (area)
       {
-        gaus_pts_.insert(gaus_pts_.end(), InPlane.begin(), InPlane.end());
+        gauss_pts_.insert(gauss_pts_.end(), InPlane.begin(), InPlane.end());
         break;
       }
       zmin += 0.001 * (maxx[2] - minn[2]);
@@ -178,14 +179,14 @@ bool Cut::VolumeIntegration::compute_gaussian_points(int numeach)
       area = is_contain_area(minn, maxx, zmax, InPlane, zcoord, ycoord, 0.001, numeach);
       if (area)
       {
-        gaus_pts_.insert(gaus_pts_.end(), InPlane.begin(), InPlane.end());
+        gauss_pts_.insert(gauss_pts_.end(), InPlane.begin(), InPlane.end());
         break;
       }
       zmax -= 0.001 * (maxx[2] - minn[2]);
       if ((zmax - zmin) < 0.001 * (maxx[2] - minn[2])) break;
     }
 
-    if (gaus_pts_.size() == 0)
+    if (gauss_pts_.size() == 0)
       wei = false;
     else
       wei = true;
@@ -207,7 +208,7 @@ bool Cut::VolumeIntegration::compute_gaussian_points(int numeach)
       area = is_contain_area(minn, maxx, zplane[i], InPlane, zcoord, ycoord, 0.01, numeach);
       if (area)
       {
-        gaus_pts_.insert(gaus_pts_.end(), InPlane.begin(), InPlane.end());
+        gauss_pts_.insert(gauss_pts_.end(), InPlane.begin(), InPlane.end());
         InPlane.clear();
         previous = true;
         continue;
@@ -227,7 +228,7 @@ bool Cut::VolumeIntegration::compute_gaussian_points(int numeach)
           innerarea = is_contain_area(minn, maxx, zz, InPlane, zcoord, ycoord, 0.01, numeach);
           if (innerarea)
           {
-            gaus_pts_.insert(gaus_pts_.end(), InPlane.begin(), InPlane.end());
+            gauss_pts_.insert(gauss_pts_.end(), InPlane.begin(), InPlane.end());
             InPlane.clear();
             break;
           }
@@ -409,7 +410,7 @@ bool Cut::VolumeIntegration::is_intersect(double* pt, double* mini, double* maxi
       std::vector<double> inter2 = i->first;
       i--;
 
-      // Among two consequetive facets which are cut by the line, one must be the cut surface
+      // Among two consecutive facets which are cut by the line, one must be the cut surface
       if (facet1->on_cut_side())
       {
         if (eqn_facets_[face1][0] < 0.0) ptsInside = true;

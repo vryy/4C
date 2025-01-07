@@ -46,7 +46,7 @@ namespace Thermo
   class TimIntGenAlpha : public TimIntImpl
   {
    public:
-    //! verify if given coefficients are in admissable range
+    //! verify if given coefficients are in admissible range
     //! prints also info to STDOUT
     void verify_coeff();
 

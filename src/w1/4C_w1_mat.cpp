@@ -163,7 +163,7 @@ void Discret::Elements::Wall1::w1_call_matgeononl(
       break;
     }
 
-    case Core::Materials::m_elasthyper:  // general hyperelastic matrial (bborn, 06/09)
+    case Core::Materials::m_elasthyper:  // general hyperelastic material (bborn, 06/09)
                                          // case Core::Materials::m_stvenant:  //
                                          // st.venant-kirchhoff-material
     {

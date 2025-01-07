@@ -222,7 +222,7 @@ void ScaTra::LevelSetAlgorithm::time_loop_reinit()
  *----------------------------------------------------------------------*/
 void ScaTra::LevelSetAlgorithm::finish_time_loop_reinit()
 {
-  // reset quantites that may have been overwritten
+  // reset quantities that may have been overwritten
   // reset internal step counter
   pseudostep_ = 0;
 
@@ -315,8 +315,6 @@ void ScaTra::LevelSetAlgorithm::prepare_time_step_reinit()
   // -------------------------------------------------------------------
   // compute node-based velocity field
   // -------------------------------------------------------------------
-  // TODO phin oder phinp: fuer phinp in add_problem_specific_parameters_and_vectors
-  //     muss vor oder gleich zu Beginn von assemble_mat_and_rhs gerufen werden
 #ifdef USE_PHIN_FOR_VEL
   if (useprojectedreinitvel_ == Inpar::ScaTra::vel_reinit_node_based) calc_node_based_reinit_vel();
 #endif
@@ -948,7 +946,7 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
         // this removes the item from the front and inserts it where insertiter points to
         eledistance.splice(insertiter, eledistance, eledistance.begin());
 
-        // if item was inserted at the beginnig of the list, it must be the shortest distance
+        // if item was inserted at the beginning of the list, it must be the shortest distance
         // possible and we can stop checking the other elements' distances
         if (loopcount == 0) break;
 
@@ -1121,7 +1119,7 @@ void ScaTra::LevelSetAlgorithm::compute_distance_to_edge(const Core::LinAlg::Mat
 
     // compute distance vector from node to current first
     vertex1tonode.update(1.0, node, -1.0, vertex1);
-    // compute distance vector from current second first vertex to current frist vertex (edge)
+    // compute distance vector from current second first vertex to current first vertex (edge)
     vertex1tovertex2.update(1.0, vertex2, -1.0, vertex1);
     double normvertex1tovertex2 = vertex1tovertex2.norm2();
     // normalize vector
@@ -1312,7 +1310,7 @@ bool ScaTra::LevelSetAlgorithm::project_node_on_patch(const Core::LinAlg::Matrix
     //---------------------------------------------------
     // build system of equations F and its gradient gradF
     //---------------------------------------------------
-    // TODO documentaton missing
+    // TODO documentation missing
     f.clear();
     gradf.clear();
     incr.clear();

@@ -161,7 +161,7 @@ namespace FSI
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
     //! structure) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
-    // lambda lives at the slave side (here at stucture)
+    // lambda lives at the slave side (here at structure)
     std::shared_ptr<Core::LinAlg::Vector<double>> lambda_;
 
     //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current iteration

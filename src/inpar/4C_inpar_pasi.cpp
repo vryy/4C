@@ -23,8 +23,8 @@ void Inpar::PaSI::set_valid_parameters(Teuchos::ParameterList& list)
       "general control parameters for particle structure interaction problems");
 
   // time loop control
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &pasidyn);
-  Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &pasidyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "Increment for writing solution", &pasidyn);
+  Core::Utils::int_parameter("RESTARTEVERY", 1, "Increment for writing restart", &pasidyn);
   Core::Utils::double_parameter("TIMESTEP", 0.01, "Time increment dt", &pasidyn);
   Core::Utils::int_parameter("NUMSTEP", 100, "Total number of Timesteps", &pasidyn);
   Core::Utils::double_parameter("MAXTIME", 1.0, "Total simulation time", &pasidyn);

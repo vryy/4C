@@ -600,7 +600,7 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
     std::shared_ptr<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
 )
 {
-  // If Saftey check is passed, both elements contain the same material and with the same settings
+  // If Safety check is passed, both elements contain the same material and with the same settings
   XFEM::Utils::safety_check_materials(material_m, material_s);
 
   //======================================================================================
@@ -612,7 +612,7 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
   // TODO: set here the right stab-type LPS or EOS
   eleparams.set<FLD::IntFaceAction>("action", FLD::EOS_and_GhostPenalty_stabilization);
 
-  // call the egde-based assemble and evaluate routine
+  // call the edge-based assemble and evaluate routine
   Discret::Elements::FluidIntFaceImplInterface::impl(intface)
       ->assemble_internal_faces_using_neighbor_data(intface, material_m, nds_master, nds_slave,
           face_type, eleparams, xdiscret, systemmatrix, systemvector);

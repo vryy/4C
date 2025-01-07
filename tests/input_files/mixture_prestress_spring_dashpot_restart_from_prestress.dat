@@ -26,8 +26,8 @@ SOLVER                          Superlu
 -------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     5
-RESTARTEVRY                     5
+RESULTSEVERY                     5
+RESTARTEVERY                     5
 TIMESTEP                        0.1
 NUMSTEP                         50
 MAXTIME                         100

@@ -52,7 +52,7 @@ namespace CONTACT
     /*!
     \brief Shared data constructor
 
-    \param[in] stratData Data container object
+    \param[in] strategyData Data container object
     \param[in] dof_row_map Dof row map of underlying problem
     \param[in] NodeRowMap Node row map of underlying problem
     \param[in] params List of contact/parameters
@@ -62,7 +62,7 @@ namespace CONTACT
     \param[in] alphaf Mid-point for Generalized-alpha time integration
     \param[in] maxdof Highest DOF number in global problem
     */
-    PenaltyStrategy(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    PenaltyStrategy(const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<std::shared_ptr<CONTACT::Interface>> interface, const int spatialDim,
         const MPI_Comm& comm, const double alphaf, const int maxdof);
@@ -151,7 +151,7 @@ namespace CONTACT
         std::shared_ptr<Core::LinAlg::Vector<double>>& feff) override;
 
     /*!
-    \brief Reset penalty parameter to intial value
+    \brief Reset penalty parameter to initial value
 
     When applying an Uzawa Augmented Lagrangian version of the penalty approach,
     the penalty parameter is sometimes updated during the Uzawa steps in

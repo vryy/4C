@@ -27,7 +27,7 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | constructor                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  HomIsoTurbInitialScalarField::HomIsoTurbInitialScalarField(
+  HomoIsoTurbInitialScalarField::HomoIsoTurbInitialScalarField(
       ScaTraTimIntImpl& timeint, const Inpar::ScaTra::InitialField initfield)
       : discret_(timeint.discret_), phinp_(timeint.phinp_), phin_(timeint.phin_), type_(initfield)
   {
@@ -179,7 +179,7 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | calculate initial field using fft            rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbInitialScalarField::calculate_initial_field()
+  void HomoIsoTurbInitialScalarField::calculate_initial_field()
   {
 #ifdef FOUR_C_WITH_FFTW
     // set and initialize working arrays
@@ -448,7 +448,7 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | get energy for given wave number             rasthofer 05/13 |
    *--------------------------------------------------------------*/
-  double HomIsoTurbInitialScalarField::calculate_energy_from_spectrum(double k)
+  double HomoIsoTurbInitialScalarField::calculate_energy_from_spectrum(double k)
   {
     // remark: k > 0 here
     double energy = 0.0;
@@ -468,7 +468,7 @@ namespace ScaTra
         energy = 0.1 * 1.0;
     }
     else
-      FOUR_C_THROW("Unkown initial field!");
+      FOUR_C_THROW("Unknown initial field!");
 
     return energy;
   }

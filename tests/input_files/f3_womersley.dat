@@ -26,8 +26,8 @@ FILESTEPS                       50
 DYNAMICTYPE                      GenAlpha
 PRESTRESS                       mulf
 PRESTRESSTIME                   2.1395
-RESULTSEVRY                     5
-RESTARTEVRY                     10
+RESULTSEVERY                     5
+RESTARTEVERY                     10
 NLNSOL                          fullnewton
 TIMESTEP                        0.0005
 NUMSTEP                         500000
@@ -63,8 +63,8 @@ LIFTDRAG                        No
 TIMESTEP                        0.01
 MAXTIME                         0.5
 NUMSTEP       122
-RESTARTEVRY                     1
-RESULTSEVRY                           1
+RESTARTEVERY                     1
+RESULTSEVERY                           1
 NONLINITER                      Newton
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.01
@@ -79,13 +79,13 @@ TOL_PRES_RES	  1e-04
 TOL_PRES_INC	  1e-04
 -----------------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        solid
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 DYNAMICTYPE                      OneStepTheta
 NUMSTEP                         100
 TIMESTEP                        1.0e-2
-RESTARTEVRY                     5
-RESULTSEVRY                           5
+RESTARTEVERY                     5
+RESULTSEVERY                           5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Belos

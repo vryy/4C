@@ -85,7 +85,7 @@ namespace Cut
     const std::vector<Point*>& points() const;
 
     /*!
-    \brief Get the coodinates of the corner points of boundarycell
+    \brief Get the coordinates of the corner points of boundarycell
      */
     const Core::LinAlg::SerialDenseMatrix& coordinates() const { return xyz_; }
 
@@ -99,7 +99,7 @@ namespace Cut
       for (unsigned int n = 0; n < Core::FE::num_nodes<celldistype>; ++n) xyz_mat(idx, n) += offset;
     }
 
-    /*! \brief Get the coodinates of the corner points of boundarycell
+    /*! \brief Get the coordinates of the corner points of boundarycell
      *
      *  To make it easier with DD data structures (should be removed at some point)
      *

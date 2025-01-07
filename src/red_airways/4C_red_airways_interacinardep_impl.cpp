@@ -96,7 +96,7 @@ int Discret::Elements::InterAcinarDepImpl<distype>::evaluate(RedInterAcinarDep* 
 template <Core::FE::CellType distype>
 void Discret::Elements::InterAcinarDepImpl<distype>::initial(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Core::LinAlg::SerialDenseVector& n_intr_acn_l,
+    Core::LinAlg::SerialDenseVector& n_inter_acinar_l,
     std::shared_ptr<const Core::Mat::Material> material)
 {
   Discret::ReducedLung::EvaluationData& evaluation_data =
@@ -110,8 +110,8 @@ void Discret::Elements::InterAcinarDepImpl<distype>::initial(RedInterAcinarDep* 
   // In this element, each node of an inter-acinar linker element has
   // one linker. The final sum of linkers for each node is automatically
   // evaluated during the assembly process.
-  n_intr_acn_l(0) = 1.0;
-  n_intr_acn_l(1) = 1.0;
+  n_inter_acinar_l(0) = 1.0;
+  n_inter_acinar_l(1) = 1.0;
 
 }  // InterAcinarDepImpl::Initial
 

@@ -102,7 +102,7 @@ namespace Core::FE
   /// specific collected gauss points for xfem usage
   ///
   /// This is meant to be an inverted collection, where the first set of gauss
-  /// points integrates a whole element and all following sets substract from
+  /// points integrates a whole element and all following sets subtract from
   /// the element.
   class GaussPointsComposite : public GaussPoints
   {

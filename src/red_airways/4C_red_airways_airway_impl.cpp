@@ -466,7 +466,7 @@ namespace
       pextnp += pextVal / double(ele->num_node());
     }
 
-    // Routine to compute pextnp andd pextn from neighbourung acinus pressure
+    // Routine to compute pextnp and pextn from neighbourung acinus pressure
     // ComputePext() analog zu EvaluateCollapse()
     // bool compute_awacinter = params.get<bool>("compute_awacinter");
     if (compute_awacinter)
@@ -488,7 +488,7 @@ namespace
       Rconv = 0.0;
       Rvis = 0.0;
     }
-    else if (ele->type() == "ComplientResistive")
+    else if (ele->type() == "CompliantResistive")
     {
       I = 0.0;
       Rconv = 0.0;
@@ -604,11 +604,11 @@ int Discret::Elements::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
   // ---------------------------------------------------------------------
 
   std::shared_ptr<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
-  std::shared_ptr<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> on = discretization.get_state("on");
   std::shared_ptr<const Core::LinAlg::Vector<double>> pnm = discretization.get_state("pnm");
 
-  if (pnp == nullptr || pn == nullptr || pnm == nullptr)
-    FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
+  if (pnp == nullptr || on == nullptr || pnm == nullptr)
+    FOUR_C_THROW("Cannot get state vectors 'pnp', 'on', and/or 'pnm''");
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -616,7 +616,7 @@ int Discret::Elements::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  Core::FE::extract_my_values(*pn, mypn, lm);
+  Core::FE::extract_my_values(*on, mypn, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
@@ -662,7 +662,7 @@ int Discret::Elements::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
   // Routine for computing pextn and pextnp
   if (evaluation_data.compute_awacinter)
   {
-    compute_pext(ele, *pn, *pnp, params);
+    compute_pext(ele, *on, *pnp, params);
     elem_params.p_extn = (*evaluation_data.p_extn)[ele->lid()];
     elem_params.p_extnp = (*evaluation_data.p_extnp)[ele->lid()];
   }
@@ -825,7 +825,7 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_collapse(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::AirwayImpl<distype>::compute_pext(RedAirway* ele,
-    const Core::LinAlg::Vector<double>& pn, const Core::LinAlg::Vector<double>& pnp,
+    const Core::LinAlg::Vector<double>& on, const Core::LinAlg::Vector<double>& pnp,
     Teuchos::ParameterList& params)
 {
   Discret::ReducedLung::EvaluationData& evaluation_data =
@@ -836,7 +836,7 @@ void Discret::Elements::AirwayImpl<distype>::compute_pext(RedAirway* ele,
 
   // Set pextn and pextnp
   double pextnp = (pnp)[node_id];
-  double pextn = (pn)[node_id];
+  double pextn = (on)[node_id];
 
 
   int gid = ele->id();
@@ -867,13 +867,13 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
   // the number of nodes
   const int numnode = lm.size();
 
-  std::shared_ptr<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> on = discretization.get_state("on");
 
-  if (pn == nullptr) FOUR_C_THROW("Cannot get state vectors 'pn'");
+  if (on == nullptr) FOUR_C_THROW("Cannot get state vectors 'on'");
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  Core::FE::extract_my_values(*pn, mypn, lm);
+  Core::FE::extract_my_values(*on, mypn, lm);
 
   // create objects for element arrays
   Core::LinAlg::SerialDenseVector epn(numnode);
@@ -998,7 +998,7 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
             BCin = (*vals)[0] * curvefac(0) + functfac * curvefac(1);
           }
           // -----------------------------------------------------------------------------
-          // get the local id of the node to whome the bc is prescribed
+          // get the local id of the node to whom the bc is prescribed
           // -----------------------------------------------------------------------------
           int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
           if (local_id < 0)
@@ -1177,7 +1177,7 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
           }
 
           // -----------------------------------------------------------------------------
-          // get the local id of the node to whome the bc is prescribed
+          // get the local id of the node to whom the bc is prescribed
           // -----------------------------------------------------------------------------
           int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
           if (local_id < 0)
@@ -1210,7 +1210,7 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
           // ----------------------------------------------------------
           // Since a node might belong to multiple elements then the
           // flow might be added to the rhs multiple time.
-          // To fix this the flow is devided by the number of elements
+          // To fix this the flow is divided by the number of elements
           // (which is the number of branches). Thus the sum of the
           // final added values is the actual prescribed flow.
           // ----------------------------------------------------------
@@ -1234,7 +1234,7 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
         if (ele->nodes()[i]->num_element() == 1)
         {
           // -------------------------------------------------------------
-          // get the local id of the node to whome the bc is prescribed
+          // get the local id of the node to whom the bc is prescribed
           // -------------------------------------------------------------
 
           int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
@@ -1292,11 +1292,11 @@ void Discret::Elements::AirwayImpl<distype>::calc_flow_rates(RedAirway* ele,
   // ---------------------------------------------------------------------
 
   std::shared_ptr<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
-  std::shared_ptr<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> on = discretization.get_state("on");
   std::shared_ptr<const Core::LinAlg::Vector<double>> pnm = discretization.get_state("pnm");
 
-  if (pnp == nullptr || pn == nullptr || pnm == nullptr)
-    FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
+  if (pnp == nullptr || on == nullptr || pnm == nullptr)
+    FOUR_C_THROW("Cannot get state vectors 'pnp', 'on', and/or 'pnm''");
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -1304,7 +1304,7 @@ void Discret::Elements::AirwayImpl<distype>::calc_flow_rates(RedAirway* ele,
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  Core::FE::extract_my_values(*pn, mypn, lm);
+  Core::FE::extract_my_values(*on, mypn, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
@@ -1546,7 +1546,7 @@ void Discret::Elements::AirwayImpl<distype>::get_coupled_values(RedAirway* ele,
         else
         {
           std::string str = (condition->parameters().get<std::string>("ReturnedVariable"));
-          FOUR_C_THROW("%s, is an unimplimented type of coupling", str.c_str());
+          FOUR_C_THROW("%s, is an unimplemented type of coupling", str.c_str());
           exit(1);
         }
         std::stringstream returnedBCwithId;

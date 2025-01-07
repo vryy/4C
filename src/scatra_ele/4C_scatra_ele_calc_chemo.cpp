@@ -93,7 +93,7 @@ void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::calc_mat_chemo(
       const int partner = get_partner(pair);  // Get attracting partner ID
 
       const Core::LinAlg::Matrix<nsd_, 1> gradattractant =
-          varmanager->grad_phi(partner);  // Gradient of attracting parnter
+          varmanager->grad_phi(partner);  // Gradient of attracting partner
 
       bigterm.multiply_tn(my::derxy_, gradattractant);
       gradgradmatrix.multiply_tn(

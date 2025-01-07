@@ -75,7 +75,7 @@ namespace Immersed
     coupling + relaxation invokes a FOUR_C_THROW. NOX relaxes the vector x which is supposed to be
     the vector that is handed over to the other field. Since x in our case is the boundary
     displacement (in displacement coupled scheme) of the immersed structure but the vector applied
-    to the fluid field is the volume Dirichlet stored in the vector fluid_artifical_velocity_,
+    to the fluid field is the volume Dirichlet stored in the vector fluid_artificial_velocity_,
     relaxation of x has no effect. That is why we get the factory from the fsi partitioned base
     class to extract the relaxation parameter from there. Now we are able to relax our artificial
     velocity in this class. This does not seem to work properly. For force coupled immersed fsi,
@@ -213,7 +213,7 @@ namespace Immersed
                                  //!< check of partitioned scheme.
     bool multibodysimulation_;   //!< true if more than one body is present. Each body needs to be
                                  //!< labeled with "ImmersedSearchbox" condition.
-    bool output_evry_nlniter_;   //!< true if output after every iteration of the outer fsi loop.
+    bool output_every_nlniter_;  //!< true if output after every iteration of the outer fsi loop.
                                  //!< Useful for debugging.
     bool is_relaxation_;         //!< true if relaxation is used
     int correct_boundary_velocities_;  //!< true if interface accuracy correction is requested

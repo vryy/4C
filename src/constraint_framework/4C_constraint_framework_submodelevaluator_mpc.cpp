@@ -84,7 +84,7 @@ CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointCon
       }
       Core::IO::cout(Core::IO::verbose) << Core::IO::endl;
 
-      // calculate the Reference vectors between Ref. poitns
+      // calculate the Reference vectors between Ref. points
       r_xmxp_[0] = rve_ref_node_map_["N2"]->x()[0] - rve_ref_node_map_["N1L"]->x()[0];
       r_xmxp_[1] = rve_ref_node_map_["N2"]->x()[1] - rve_ref_node_map_["N1L"]->x()[1];
       Core::IO::cout(Core::IO::verbose) << "RVE reference vector (X- ---> X+ ) : [" << r_xmxp_[0]
@@ -133,7 +133,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::check_input
   switch (strategy_)
   {
     case Inpar::RveMpc::EnforcementStrategy::lagrangeMultiplier:
-      FOUR_C_THROW("Constraint Enforcement via Lagrange Multiplier Methode is not impl.");
+      FOUR_C_THROW("Constraint Enforcement via Lagrange Multiplier Method is not impl.");
 
     case Inpar::RveMpc::EnforcementStrategy::penalty:
     {
@@ -168,7 +168,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::check_input
   }
   else
   {
-    FOUR_C_THROW("Periodic rve edge condition cannot be combinded with peridodic rve surf cond. ");
+    FOUR_C_THROW("Periodic rve edge condition cannot be combined with peridodic rve surf cond. ");
   }
 
   // Input Checks
@@ -239,7 +239,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::find_opposit
     }
     default:
     {
-      FOUR_C_THROW("Specifiy the negative edge, 3D not implemented");
+      FOUR_C_THROW("Specify the negative edge, 3D not implemented");
     }
   }
 
@@ -409,7 +409,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_perio
       /* Loop over X- Edge */
       for (auto nodeXm : *rveBoundaryNodeIdMap["x-"])
       {
-        if (nodeXm != rve_ref_node_map_["N1L"]->id())  // exlude N1 - N2 = N1 - N2
+        if (nodeXm != rve_ref_node_map_["N1L"]->id())  // exclude N1 - N2 = N1 - N2
         {
           PBC.push_back(discret_ptr_->g_node(nodeXm));
           PBC.push_back(discret_ptr_->g_node(find_opposite_edge_node(
@@ -554,7 +554,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_linear
   Core::IO::cout(Core::IO::verbose)
       << "Reading linear coupled eq. from .dat file" << Core::IO::endl;
   Core::IO::cout(Core::IO::verbose)
-      << "linear MPC codition count: " << point_linear_coupled_equation_conditions_.size()
+      << "linear MPC condition count: " << point_linear_coupled_equation_conditions_.size()
       << Core::IO::endl;
 
 

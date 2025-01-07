@@ -58,7 +58,7 @@ namespace FBI
      */
     void set_binning(std::shared_ptr<Core::Binstrategy::BinningStrategy> binning) override;
 
-    /** \brief Setup the Geoemtry object
+    /** \brief Setup the Geometry object
      *
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement

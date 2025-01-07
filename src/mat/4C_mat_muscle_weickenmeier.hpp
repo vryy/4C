@@ -63,7 +63,7 @@ namespace Mat
       //! @name stretch dependent activation contribution
       const double lambdaMin_;  ///< minimal active fiber stretch
       const double
-          lambdaOpt_;  ///< optimal active fiber stretch related active nominal stress maximimum
+          lambdaOpt_;  ///< optimal active fiber stretch related active nominal stress maximum
       //! @}
 
       //! @name velocity dependent activation contribution: slight modification of original function
@@ -124,7 +124,7 @@ namespace Mat
    *
    * Amongst others, the Weickenmeier material accounts for the velocity dependence of the active
    * force production. However, the given function produces unsuitable values - in the sense that it
-   * fails to reproduce experimetally observerd force-velocity curves. Thus, a slight modification
+   * fails to reproduce experimentally observed force-velocity curves. Thus, a slight modification
    * of the velocity dependence in the style of Boel et al.. is introduced here. Boel et al.. scale
    * and shift the eccentric branch of the velocity dependency using the parameter d. To be able to
    * turn the velocity dependency on and off, this concept is adopted for the concentric branch as

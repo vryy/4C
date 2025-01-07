@@ -434,7 +434,7 @@ namespace Wear
     /*!
     \brief initialize node and element data container
 
-    Derived verision!
+    Derived version!
 
     */
     void initialize_data_container() final;

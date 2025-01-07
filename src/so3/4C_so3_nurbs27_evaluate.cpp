@@ -573,7 +573,7 @@ int Discret::Elements::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList
   {
     if ((*onoff)[checkdof] != 0)
       FOUR_C_THROW(
-          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+          "Number of Dimensions in Neumann_Evaluation is 3. Further DoFs are not considered.");
   }
 
   // (SPATIAL) FUNCTION BUSINESS

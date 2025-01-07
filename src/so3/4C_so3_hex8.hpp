@@ -209,7 +209,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
       /*!
       \brief Does this element use EAS?
       */
@@ -320,10 +320,10 @@ namespace Discret
       \param discretization : pointer to discretization for de-assembly
       \param lm (in)        : location matrix for de-assembly
       \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If nullptr on input,
-                              the controling method does not expect the element to fill
+                              the controlling method does not expect the element to fill
                               this matrix.
       \param elemat2 (out)  : (mass-)matrix to be filled by element. If nullptr on input,
-                              the controling method does not expect the element to fill
+                              the controlling method does not expect the element to fill
                               this matrix.
       \param elevec1 (out)  : (internal force-)vector to be filled by element. If nullptr on input,
                               the controlling method does not expect the element
@@ -451,7 +451,7 @@ namespace Discret
        *
        * Solid Hex8 has EAS enhancement of GL-strains to avoid locking.
        */
-      enum EASType  // with meaningfull value for matrix size info
+      enum EASType  // with meaningful value for matrix size info
       {
         soh8_easnone = 0,   //!< no EAS i.e. displacement based with tremendous locking
         soh8_eassosh8 = 7,  //!< related to Solid-Shell, 7 parameters to alleviate
@@ -702,7 +702,7 @@ namespace Discret
           Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,
           const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& stress,
           std::vector<double>& disp,  ///< current displacements
-          double detJ_w,              ///< jacobian determinant times gauss weigth
+          double detJ_w,              ///< jacobian determinant times gauss weight
           double detJ, double detJ0, double charelelength,
           const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH8>& bop,
           const Core::LinAlg::Matrix<6, NUMDOF_SOH8>& cb,

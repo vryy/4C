@@ -125,7 +125,7 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void run_pre_compute_fand_jacobian(Core::LinAlg::Vector<double>& rhs,
+        virtual void run_pre_compute_f_and_jacobian(Core::LinAlg::Vector<double>& rhs,
             Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector<double>& x,
             const NOX::Nln::LinearSystem& linsys);
 
@@ -137,7 +137,7 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void run_post_compute_fand_jacobian(Core::LinAlg::Vector<double>& rhs,
+        virtual void run_post_compute_f_and_jacobian(Core::LinAlg::Vector<double>& rhs,
             Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector<double>& x,
             const NOX::Nln::LinearSystem& linsys);
 
@@ -208,7 +208,7 @@ inline void NOX::Nln::LinSystem::PrePostOperator::run_post_compute_jacobian(
   }
 }
 
-inline void NOX::Nln::LinSystem::PrePostOperator::run_pre_compute_fand_jacobian(
+inline void NOX::Nln::LinSystem::PrePostOperator::run_pre_compute_f_and_jacobian(
     Core::LinAlg::Vector<double>& rhs, Core::LinAlg::SparseOperator& jac,
     const Core::LinAlg::Vector<double>& x, const NOX::Nln::LinearSystem& linsys)
 {
@@ -216,11 +216,11 @@ inline void NOX::Nln::LinSystem::PrePostOperator::run_pre_compute_fand_jacobian(
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->run_pre_compute_fand_jacobian(rhs, jac, x, linsys);
+      it->second->run_pre_compute_f_and_jacobian(rhs, jac, x, linsys);
   }
 }
 
-inline void NOX::Nln::LinSystem::PrePostOperator::run_post_compute_fand_jacobian(
+inline void NOX::Nln::LinSystem::PrePostOperator::run_post_compute_f_and_jacobian(
     Core::LinAlg::Vector<double>& rhs, Core::LinAlg::SparseOperator& jac,
     const Core::LinAlg::Vector<double>& x, const NOX::Nln::LinearSystem& linsys)
 {
@@ -228,7 +228,7 @@ inline void NOX::Nln::LinSystem::PrePostOperator::run_post_compute_fand_jacobian
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->run_post_compute_fand_jacobian(rhs, jac, x, linsys);
+      it->second->run_post_compute_f_and_jacobian(rhs, jac, x, linsys);
   }
 }
 

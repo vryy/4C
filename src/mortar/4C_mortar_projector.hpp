@@ -100,7 +100,7 @@ namespace Mortar
 
     This method will compute the coordinates of a projection of a node in
     the local coordinate system of an element. The projection point will
-    not neccesarily fall inside the element. However, if the projection
+    not necessarily fall inside the element. However, if the projection
     point is far outside the segment's boundaries, problems with the
     internal nonlinear iteration might occur and a warning is issued when
     convergence can not be achieved in a limited number of iterations.
@@ -121,7 +121,7 @@ namespace Mortar
 
     This method will compute the coordinates of a projection of a node in
     the local coordinate system of an element. The projection point will
-    not neccesarily fall inside the element. However, if the projection
+    not necessarily fall inside the element. However, if the projection
     point is far outside the segment's boundaries, problems with the
     internal nonlinear iteration might occur and a warning is issued when
     convergence can not be achieved in a limited number of iterations.
@@ -312,7 +312,7 @@ namespace Mortar
 
     This method will compute the coordinates of a projection of a node in
     the local coordinate system of an element. The projection point will
-    not neccesarily fall inside the element. However, if the projection
+    not necessarily fall inside the element. However, if the projection
     point is far outside the segment's boundaries, problems with the
     internal nonlinear iteration might occur and a warning is issued when
     convergence can not be achieved in a limited number of iterations.
@@ -337,7 +337,7 @@ namespace Mortar
 
     This method will compute the coordinates of a projection of a node in
     the local coordinate system of an element. The projection point will
-    not neccesarily fall inside the element. However, if the projection
+    not necessarily fall inside the element. However, if the projection
     point is far outside the segment's boundaries, problems with the
     internal nonlinear iteration might occur and a warning is issued when
     convergence can not be achieved in a limited number of iterations.

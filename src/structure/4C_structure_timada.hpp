@@ -138,7 +138,7 @@ namespace Solid
      *  - \f$D_{n+1}^{AUX}\f$ in #locdiserrn_
      *  - \f$V_{n+1}^{AUX}\f$ in #locvelerrn_
      */
-    virtual void integrate_step_auxiliar() = 0;
+    virtual void integrate_step_auxiliary() = 0;
 
     //! Indicate error and determine new step size
     void indicate(bool& accepted,  //!< true=accepted, false=not accepted

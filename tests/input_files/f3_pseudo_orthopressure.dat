@@ -36,8 +36,8 @@ LIFTDRAG                        No
 TIMESTEP                        0.01
 MAXTIME                         0.3
 NUMSTEP                         1000
-RESTARTEVRY                     1
-RESULTSEVRY                           1
+RESTARTEVERY                     1
+RESULTSEVERY                           1
 NONLINITER                      Newton
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.01
@@ -52,7 +52,7 @@ TOL_PRES_RES	  1e-10
 TOL_PRES_INC	  1e-10
 -----------------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        solid
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Belos

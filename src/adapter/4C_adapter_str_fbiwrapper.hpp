@@ -86,7 +86,7 @@ namespace Adapter
     virtual std::shared_ptr<const Solid::TimeInt::ParamsRuntimeOutput> get_io_data();
 
    private:
-    /// Map extractor seperating the beam elements from the structure elements
+    /// Map extractor separating the beam elements from the structure elements
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> eletypeextractor_;
 
   };  // class FSIStructureWrapper

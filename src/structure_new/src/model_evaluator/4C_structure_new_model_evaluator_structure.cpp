@@ -1161,8 +1161,8 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_beams(
     beam_vtu_writer_ptr_->append_element_filament_id_and_type();
 
   // append filament id and type if desired
-  if (beam_output_params.is_write_orientation_paramter())
-    beam_vtu_writer_ptr_->append_element_orientation_paramater(displacement_state_vector);
+  if (beam_output_params.is_write_orientation_parameter())
+    beam_vtu_writer_ptr_->append_element_orientation_parameter(displacement_state_vector);
 
   // append reference length if desired.
   if (beam_output_params.is_write_ref_length()) beam_vtu_writer_ptr_->append_ref_length();

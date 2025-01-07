@@ -42,7 +42,7 @@ namespace Cut
     /// detects cutsides which cut each other by finding the respective cutpoints
     bool collision_detection();
 
-    /// replaces cutted sides by creating new nodes, edges and sides
+    /// replaces cut sides by creating new nodes, edges and sides
     void mesh_intersection();
 
     /// erases nodes, edges and sides which lies inside a structure body by locating there
@@ -65,7 +65,7 @@ namespace Cut
     /// if there are two nodes from cut sides are at the same position, we merge it into one node
     bool merge_coinciding_nodes(Side* keep, Side* replace);
 
-    /// opearations to modify the nodal ids of sides and corresponding edges are performed
+    /// operations to modify the nodal ids of sides and corresponding edges are performed
     void operations_for_node_merging(
         std::vector<std::pair<const Node*, const Node*>> repl, bool initial);
 
@@ -77,7 +77,7 @@ namespace Cut
     /// side and vice versa
     void find_self_cut_points();
 
-    /// gets all cutted sides and there nodes and edges to store them as privat variables
+    /// gets all cut sides and there nodes and edges to store them as privat variables
     void get_self_cut_objects();
 
     /*========================================================================*/
@@ -98,15 +98,15 @@ namespace Cut
     void create_self_cut_sides();
 
     /// erases all cutsides which are cut by another side
-    void erase_cutted_sides();
+    void erase_cut_sides();
 
     /// erases all edges which are cut by a cutside
-    void erase_cutted_edges();
+    void erase_cut_edges();
 
-    /// Is this edge connected to the backgound mesh
+    /// Is this edge connected to the background mesh
     bool connectedto_background(Edge* edge);
 
-    /// Is this node connected to the backgound mesh
+    /// Is this node connected to the background mesh
     bool connectedto_background(Node* node);
 
     /*========================================================================*/
@@ -129,7 +129,7 @@ namespace Cut
     /// erases nodes which lies inside a structure body by locating there position
     void erase_inside_nodes();
 
-    /// construct the connectivity of the nodes toi find potential islands in the cut mesh
+    /// construct the connectivity of the nodes to find potential islands in the cut mesh
     void construct_connectivity();
 
     /// find the next node for the construction of the connectivity
@@ -147,8 +147,8 @@ namespace Cut
     //! @name Basic routines to run the status inspection
     /*========================================================================*/
 
-    /// Status of the cutted sides for text viewer
-    void cutted_side_status_text();
+    /// Status of the cut sides for text viewer
+    void cut_side_status_text();
 
     /// Status of the cutmesh for text viewer
     void cut_mesh_status_text();
@@ -156,8 +156,8 @@ namespace Cut
     /// Status of one problematic side for text viewer
     void error_status_text(Side& cutside);
 
-    /// Status of the cutted sides for gmsh
-    void cutted_side_status_gmsh(const std::string& name);
+    /// Status of the cut sides for gmsh
+    void cut_side_status_gmsh(const std::string& name);
 
     /// Status of the cutmesh in gmsh
     void wall_gmsh(const std::string& name);

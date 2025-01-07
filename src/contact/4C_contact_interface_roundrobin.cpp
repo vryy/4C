@@ -163,7 +163,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   int from = -1;
   exporter.receive_any(from, tag, rdataeles, length);
   if (tag != 1234 or from != fromrank)
-    FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank,
+    FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) is(%i -> %i)", fromrank, myrank,
         from, myrank);
 
   // ---- unpack ----
@@ -275,7 +275,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   int fromn = -1;
   exportern.receive_any(fromn, tagn, rdatanodes, lengthn);
   if (tagn != 1234 or fromn != fromrank)
-    FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank,
+    FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) is(%i -> %i)", fromrank, myrank,
         fromn, myrank);
 
   // ---- unpack ----

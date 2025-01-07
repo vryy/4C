@@ -136,14 +136,14 @@ int Discret::Elements::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
 
   // Get all general state vectors: flow, pressure,
   std::shared_ptr<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
-  std::shared_ptr<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> on = discretization.get_state("on");
   std::shared_ptr<const Core::LinAlg::Vector<double>> pnm = discretization.get_state("pnm");
 
   std::shared_ptr<const Core::LinAlg::Vector<double>> ial =
       discretization.get_state("intr_ac_link");
 
-  if (pnp == nullptr || pn == nullptr || pnm == nullptr)
-    FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
+  if (pnp == nullptr || on == nullptr || pnm == nullptr)
+    FOUR_C_THROW("Cannot get state vectors 'pnp', 'on', and/or 'pnm''");
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -151,7 +151,7 @@ int Discret::Elements::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
 
   // Extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  Core::FE::extract_my_values(*pn, mypn, lm);
+  Core::FE::extract_my_values(*on, mypn, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
@@ -646,7 +646,7 @@ void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
       {
         if (ele->nodes()[i]->num_element() == 1)
         {
-          // Get the local id of the node to whome the bc is prescribed
+          // Get the local id of the node to whom the bc is prescribed
           int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
           if (local_id < 0)
           {
@@ -679,7 +679,7 @@ void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
 
 /*----------------------------------------------------------------------*
  |  Calculate flowrate at current iteration step and the    ismail 01/10|
- |  correponding acinus volume via dV = 0.5*(qnp+qn)*dt                 |
+ |  corresponding acinus volume via dV = 0.5*(qnp+qn)*dt                 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
@@ -701,11 +701,11 @@ void Discret::Elements::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
 
   // Get all general state vectors: flow, pressure,
   std::shared_ptr<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
-  std::shared_ptr<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> on = discretization.get_state("on");
   std::shared_ptr<const Core::LinAlg::Vector<double>> pnm = discretization.get_state("pnm");
 
-  if (pnp == nullptr || pn == nullptr || pnm == nullptr)
-    FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
+  if (pnp == nullptr || on == nullptr || pnm == nullptr)
+    FOUR_C_THROW("Cannot get state vectors 'pnp', 'on', and/or 'pnm''");
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -713,7 +713,7 @@ void Discret::Elements::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
 
   // Extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  Core::FE::extract_my_values(*pn, mypn, lm);
+  Core::FE::extract_my_values(*on, mypn, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
@@ -773,7 +773,7 @@ void Discret::Elements::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
     acinus_volume += 0.5 * (qnp + qn) * dt;
     evaluation_data.acinar_vnp->ReplaceGlobalValues(1, &acinus_volume, &gid);
 
-    // Calculate correponding acinar strain
+    // Calculate corresponding acinar strain
     const double vo = acinus_params.volume_relaxed;
     double avs_np = (acinus_volume - vo) / vo;
     evaluation_data.acinar_vnp_strain->ReplaceGlobalValues(1, &avs_np, &gid);
@@ -905,7 +905,7 @@ void Discret::Elements::AcinusImpl<distype>::get_coupled_values(RedAcinus* ele,
         else
         {
           std::string str = (condition->parameters().get<std::string>("ReturnedVariable"));
-          FOUR_C_THROW("%s, is an unimplimented type of coupling", str.c_str());
+          FOUR_C_THROW("%s, is an unimplemented type of coupling", str.c_str());
           exit(1);
         }
         std::stringstream returnedBCwithId;

@@ -389,19 +389,19 @@ namespace Mat
     ///< Indicator for isotropic principal formulation
     bool isoprinc = false;
 
-    ///< Indicator for isotropic splitted formulation
+    ///< Indicator for isotropic split formulation
     bool isomod = false;
 
     ///< Indicator for anisotropic principal formulation
     bool anisoprinc = false;
 
-    ///< Indicator for anisotropic splitted formulation
+    ///< Indicator for anisotropic split formulation
     bool anisomod = false;
 
     ///< Indicator for coefficient stretches principal formulation
     bool coeffStretchesPrinc = false;
 
-    ///< Indicator for coefficient stretches splitted formulation
+    ///< Indicator for coefficient stretches split formulation
     bool coeffStretchesMod = false;
 
     ///< Indicator for general viscoelastic behavior

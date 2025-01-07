@@ -155,7 +155,7 @@ namespace FS3I
     /// scatra increment vector
     std::shared_ptr<Core::LinAlg::Vector<double>> scatraincrement_;
 
-    /// dof row map of scatra problems splitted in (field) blocks
+    /// dof row map of scatra problems split in (field) blocks
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> scatraglobalex_;
 
     /// vector of scatra field map extractors (coupled vs. uncoupled dofs)

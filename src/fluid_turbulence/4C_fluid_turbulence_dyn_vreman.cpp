@@ -211,7 +211,7 @@ void FLD::Vreman::dyn_vreman_compute_dt(Teuchos::ParameterList& extraparams)
     Dt = 1.0 / diffus * dt_numerator_volumeav / dt_denominator_volumeav;
 
   // remark:
-  // Dt does not contain Cv, since Cv cancells out during the calculation of the subgrid diffusivity
+  // Dt does not contain Cv, since Cv cancels out during the calculation of the subgrid diffusivity
 
   Teuchos::ParameterList* modelparams_scatra = &(extraparams.sublist("TURBULENCE MODEL"));
 

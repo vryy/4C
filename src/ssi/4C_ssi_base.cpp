@@ -770,7 +770,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
           "Unknown time integration requested!\n"
           "Set parameter INT_STRATEGY to Standard in ---STRUCTURAL DYNAMIC section!\n"
           "If you want to use yet unsupported elements or algorithms,\n"
-          "set INT_STRATEGY to Old in ---STRUCUTRAL DYNAMIC section!");
+          "set INT_STRATEGY to Old in ---STRUCTURAL DYNAMIC section!");
     }
   }
 
@@ -863,12 +863,12 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
 
   auto structdis = Global::Problem::instance()->get_dis(struct_disname);
   // get all s2i kinetics conditions
-  std::vector<Core::Conditions::Condition*> s2ikinetics_conditons(0, nullptr);
-  structdis->get_condition("S2IKinetics", s2ikinetics_conditons);
+  std::vector<Core::Conditions::Condition*> s2ikinetics_conditions(0, nullptr);
+  structdis->get_condition("S2IKinetics", s2ikinetics_conditions);
   // get all ssi contact conditions
   std::vector<Core::Conditions::Condition*> ssi_contact_conditions;
   structdis->get_condition("SSIInterfaceContact", ssi_contact_conditions);
-  for (auto* s2ikinetics_cond : s2ikinetics_conditons)
+  for (auto* s2ikinetics_cond : s2ikinetics_conditions)
   {
     if ((s2ikinetics_cond->parameters().get<int>("interface side") == Inpar::S2I::side_slave) and
         (s2ikinetics_cond->parameters().get<int>("KINETIC_MODEL") !=
@@ -898,7 +898,7 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
   if (is_s2i_kinetic_with_pseudo_contact and !do_output_cauchy_stress)
   {
     FOUR_C_THROW(
-        "Consideration fo pseudo contact with 'S2IKinetics' condition only possible when Cauchy "
+        "Consideration of pseudo contact with 'S2IKinetics' condition only possible when Cauchy "
         "stress output is written.");
   }
 

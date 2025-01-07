@@ -91,7 +91,7 @@ namespace Discret
         bool calc_init_time_deriv() const { return inittimederiv_; };
 
        private:
-        // do we calculate the inital time derivative?
+        // do we calculate the initial time derivative?
         const bool inittimederiv_;
       };
 

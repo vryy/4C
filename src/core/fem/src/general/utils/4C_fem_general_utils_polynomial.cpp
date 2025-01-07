@@ -735,7 +735,7 @@ namespace Core::FE
   }
 
 
-  // explicit instantations
+  // explicit instantiations
   template class PolynomialSpaceTensor<1, LagrangePolynomial>;
   template class PolynomialSpaceTensor<2, LagrangePolynomial>;
   template class PolynomialSpaceTensor<3, LagrangePolynomial>;

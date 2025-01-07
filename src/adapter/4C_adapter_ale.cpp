@@ -102,8 +102,8 @@ void Adapter::AleBaseAlgorithm::setup_ale(
   adyn->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   adyn->set<double>("MAXTIME", prbdyn.get<double>("MAXTIME"));
   adyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
-  adyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
-  adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
+  adyn->set<int>("RESTARTEVERY", prbdyn.get<int>("RESTARTEVERY"));
+  adyn->set<int>("RESULTSEVERY", prbdyn.get<int>("RESULTSEVERY"));
 
   if (probtype == Core::ProblemType::fpsi)
   {

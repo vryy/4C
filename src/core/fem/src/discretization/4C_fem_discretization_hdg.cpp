@@ -32,7 +32,7 @@ Core::FE::DiscretizationHDG::DiscretizationHDG(
 int Core::FE::DiscretizationHDG::fill_complete(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
-  // call FillComleteFaces of base class with create_faces set to true
+  // call FillCompleteFaces of base class with create_faces set to true
   this->fill_complete_faces(assigndegreesoffreedom, initelements, doboundaryconditions, true);
 
   // get the correct face orientation from the owner. since the elements in general do not allow
@@ -445,7 +445,7 @@ void Core::FE::Utils::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
   // and first existent system vector to apply DBC to
   unsigned deg = 0;  // highest degree of requested time derivative
   std::shared_ptr<Core::LinAlg::Vector<double>> systemvectoraux =
-      nullptr;  // auxiliar system vector
+      nullptr;  // auxiliary system vector
   if (systemvectors[0] != nullptr)
   {
     deg = 0;

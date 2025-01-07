@@ -259,7 +259,7 @@ void Mat::CrystalPlasticity::unpack(Core::Communication::UnpackBuffer& buffer)
   int histsize;
   extract_from_pack(buffer, histsize);
 
-  // if system is not yet initialised, the history vectors have to be intialized
+  // if system is not yet initialised, the history vectors have to be initialized
   if (histsize == 0) isinit_ = false;
 
   if (params_ != nullptr)
@@ -571,7 +571,7 @@ void Mat::CrystalPlasticity::setup_lattice_vectors()
   // extract lattice type from user input
   lattice_type_ = params_->lattice_;
 
-  // extract number of slip and twinning systems from user imput
+  // extract number of slip and twinning systems from user input
   slip_system_count_ = params_->num_slip_sys_;
 
   // check user input whether or not twinning is to be considered
@@ -1426,10 +1426,10 @@ void Mat::CrystalPlasticity::setup_flow_rule(Core::LinAlg::Matrix<3, 3> deform_g
   // determine trial defect densities that would result from delta_gamma_trial
   //--------------------------------------------------------------------------
   // total dislocation density and twinned volume fraction based on last time steps results
-  double total_dislocation_densitiy_last = 0.0;
+  double total_dislocation_density_last = 0.0;
 
   for (int i = 0; i < slip_system_count_; i++)
-    total_dislocation_densitiy_last += (*defect_densities_last_)[gp_][i];
+    total_dislocation_density_last += (*defect_densities_last_)[gp_][i];
 
   // current total defect densities
   double total_twinned_volume_curr = 0.0;
@@ -1445,7 +1445,7 @@ void Mat::CrystalPlasticity::setup_flow_rule(Core::LinAlg::Matrix<3, 3> deform_g
     defect_densities_trial[i] =
         (*defect_densities_last_)[gp_][i] +
         (1.0 / (slip_burgers_mag_[i] * dislocation_generation_coeff_[ind])) *
-            std::sqrt(total_dislocation_densitiy_last) * std::abs(delta_gamma_trial[i]);
+            std::sqrt(total_dislocation_density_last) * std::abs(delta_gamma_trial[i]);
 
     // dynamic recovery
     defect_densities_trial[i] -= dislocation_dyn_recovery_coeff_[ind] *

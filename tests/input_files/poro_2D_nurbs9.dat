@@ -47,11 +47,11 @@ NORMCOMBI_RESFINC               And
 NORM_INC                        AbsGlobal
 NORM_RESF                       AbsGlobal
 NUMSTEP                         10
-RESTARTEVRY                     100
+RESTARTEVERY                     100
 TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-06
 TIMESTEP                        0.01
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 LINEAR_SOLVER                   3
 SECONDORDER                     no
 CONTIPARTINT                    yes

@@ -25,7 +25,7 @@ DIM           3
 -------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
-STDOUTEVRY                      0
+STDOUTEVERY                      0
 ELEMENT_MAT_ID                  yes
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYPE                      GenAlpha

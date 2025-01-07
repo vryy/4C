@@ -352,8 +352,8 @@ namespace XFEM
         std::shared_ptr<XFEM::XFEMDofSet> dofset_new,  /// XFEM dofset w.r.t. new interface position
         std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>
             oldVectors,  /// vector of col-vectors w.r.t. old interface position
-        std::shared_ptr<Core::LinAlg::Vector<double>> dispn,   /// displacment n
-        std::shared_ptr<Core::LinAlg::Vector<double>> dispnp,  /// displacment n +1
+        std::shared_ptr<Core::LinAlg::Vector<double>> dispn,   /// displacement n
+        std::shared_ptr<Core::LinAlg::Vector<double>> dispnp,  /// displacement n +1
         const Epetra_Map& olddofcolmap,  /// dofcolmap w.r.t. old interface position
         const Epetra_Map& newdofrowmap,  /// dofcolmap w.r.t. new interface position
         const std::shared_ptr<std::map<int, std::vector<int>>>
@@ -559,7 +559,7 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 3>& xji,             /// inverse of jacobian
         Core::LinAlg::Matrix<numnode, 1>& shapeFcn,  /// shape functions at point
         Core::LinAlg::Matrix<3, numnode>&
-            shapeFcnDerivXY,  /// derivatives of shape function w.r.t global coordiantes xyz
+            shapeFcnDerivXY,  /// derivatives of shape function w.r.t global coordinates xyz
         bool compute_deriv    /// shall derivatives and jacobian be computed
     ) const;
 
@@ -660,7 +660,7 @@ namespace XFEM
     //! identify an element containing a point and additional data
     void element_search(
         Core::Elements::Element*& ele,   ///< pointer to element if point lies in a found element
-        Core::LinAlg::Matrix<3, 1>& x,   ///< global coordiantes of point
+        Core::LinAlg::Matrix<3, 1>& x,   ///< global coordinates of point
         Core::LinAlg::Matrix<3, 1>& xi,  ///< determined local coordinates w.r.t ele
         bool& found                      ///< is element found?
     ) const;

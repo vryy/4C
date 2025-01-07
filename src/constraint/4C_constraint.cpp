@@ -41,7 +41,7 @@ CONSTRAINTS::Constraint::Constraint(std::shared_ptr<Core::FE::Discretization> di
         minID = condID;
       }
 
-      auto* const myinittime = i->parameters().get_if<double>("activTime");
+      auto* const myinittime = i->parameters().get_if<double>("activeTime");
       if (myinittime)
       {
         inittimes_.insert(std::pair<int, double>(condID, *myinittime));
@@ -76,7 +76,7 @@ CONSTRAINTS::Constraint::Constraint(
     for (auto& i : constrcond_)
     {
       int condID = i->parameters().get<int>("ConditionID");
-      auto* const myinittime = i->parameters().get_if<double>("activTime");
+      auto* const myinittime = i->parameters().get_if<double>("activeTime");
       if (myinittime)
       {
         inittimes_.insert(std::pair<int, double>(condID, *myinittime));

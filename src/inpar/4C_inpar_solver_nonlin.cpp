@@ -123,7 +123,7 @@ void Inpar::NlnSol::set_valid_parameters(Teuchos::ParameterList& list)
     Core::Utils::double_parameter("deltaMin", 1.0e-5, "Minimum step size.", &ptc);
     Core::Utils::int_parameter(
         "Max Number of PTC Iterations", std::numeric_limits<int>::max(), "", &ptc);
-    Core::Utils::double_parameter("SER_alpha", 1.0, "Exponent of SER.", &ptc);
+    Core::Utils::double_parameter("SER_alpha", 1.0, "Exponent of SET.", &ptc);
     Core::Utils::double_parameter("ScalingFactor", 1.0, "Scaling Factor for ptc matrix.", &ptc);
 
     std::vector<std::string> time_step_control_valid_input = {"SER",
@@ -245,7 +245,7 @@ void Inpar::NlnSol::set_valid_parameters(Teuchos::ParameterList& list)
         "criteria",
         &polynomial);
     Core::Utils::bool_parameter("Use Counters", "Yes",
-        "Set to true if we should use counters and then output the result to the paramter list as "
+        "Set to true if we should use counters and then output the result to the parameter list as "
         "described in Output Parameters",
         &polynomial);
     Core::Utils::int_parameter("Maximum Iteration for Increase", 0,

@@ -58,7 +58,7 @@ namespace FSI
     //@}
 
    private:
-    /// comunication (mainly for screen output)
+    /// communication (mainly for screen output)
     MPI_Comm comm_;
 
     //! @name Time stepping variables

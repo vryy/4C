@@ -67,9 +67,9 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         40000
 PREDICT                         TangTemp
-RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     10
+RESULTSEVERY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     10
 TIMESTEP                        0.05
 TOLRES                          1e-05
 TOLTEMP                         1e-07
@@ -82,16 +82,16 @@ ITEMIN                          1
 MAXTIME                         1200
 NORM_INC                        Abs
 NUMSTEP                         40000
-RESTARTEVRY                     10
+RESTARTEVERY                     10
 TIMESTEP                        400
-RESULTSEVRY                           2
+RESULTSEVERY                           2
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-05
 TOLINC                          1e-05
 CALC_NECKING_TSI_VALUES         yes
 ITERNORM                        Rms
 LINEAR_SOLVER                   2
-NORMCOMBI_RESFINC               Coupl_And_Singl
+NORMCOMBI_RESFINC               Coupl_And_Single
 NORM_RESF                       Rel
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
@@ -107,7 +107,7 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 293.0
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 7.80e-06 CTE 1e-5 INITTEMP 293 YIELD 0.45e15 ISOHARD 0.12924 SATHARDENING 0.715e15 HARDEXPO 16.93 YIELDSOFT 0.0 HARDSOFT 0.0 TOL 1.0e-06
+MAT 1 MAT_Struct_ThermoPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 7.80e-06 CTE 1e-5 INITTEMP 293 YIELD 0.45e15 ISOHARD 0.12924 SATHARDENING 0.715e15 HARDEXPO 16.93 YIELDSOFT 0.0 HARDSOFT 0.0 TOL 1.0e-06
 MAT 2 THERM_FourierIso CAPA 3.588e-3 CONDUCT 4.5e-5
 -------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t*8/8000

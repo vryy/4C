@@ -216,7 +216,7 @@ void CONTACT::Integrator::initialize_gp(Core::FE::CellType eletype)
   // For element-based integration, we choose the Gauss rules according
   // to the user's wish (i.e. according to the parameter NUMGP_PER_DIM).
   //
-  // possibilites for integrals on 1D lines:
+  // possibilities for integrals on 1D lines:
   // --> 1,2,3,4,5,6,7,8,9,10,16,20,32 GPs
   //
   // possibilities for integrals on 2D triangles:
@@ -787,7 +787,7 @@ void CONTACT::Integrator::integrate_deriv_segment_2d(Mortar::Element& sele, doub
     dynamic_cast<CONTACT::Element&>(sele).d_jac_d_xi(djacdxi, sxi, ssecderiv);
     double dxdsxidsxi = djacdxi[0];  // only 2D here
 
-    // evalute the GP slave coordinate derivatives
+    // evaluate the GP slave coordinate derivatives
     std::vector<Core::Gen::Pairedvector<int, double>> dsxigp(
         1, Core::Gen::Pairedvector<int, double>(linsize + ndof * ncol));
     for (_CI p = ximaps[0].begin(); p != ximaps[0].end(); ++p)
@@ -795,7 +795,7 @@ void CONTACT::Integrator::integrate_deriv_segment_2d(Mortar::Element& sele, doub
     for (_CI p = ximaps[1].begin(); p != ximaps[1].end(); ++p)
       dsxigp[0][p->first] += 0.5 * (1.0 + eta[0]) * (p->second);
 
-    // evalute the GP master coordinate derivatives
+    // evaluate the GP master coordinate derivatives
     std::vector<Core::Gen::Pairedvector<int, double>> dmxigp(
         1, Core::Gen::Pairedvector<int, double>(linsize + ndof * ncol));
     deriv_xi_gp_2d(sele, mele, sxi[0], mxi[0], dsxigp[0], dmxigp[0], linsize);
@@ -1879,12 +1879,12 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane(Mortar::Element& sel
             p != (cell->get_deriv_vertex(v))[d].end(); ++p)
           lingp[p->first](d) += svalcell(v) * (p->second);
 
-    // evalute the GP slave coordinate derivatives
+    // evaluate the GP slave coordinate derivatives
     std::vector<Core::Gen::Pairedvector<int, double>> dsxigp(2, (nrow + ncol) * ndof);
     deriv_xi_gp_3d_aux_plane(
         sele, sxi, cell->auxn(), dsxigp, sprojalpha, cell->get_deriv_auxn(), lingp);
 
-    // evalute the GP master coordinate derivatives
+    // evaluate the GP master coordinate derivatives
     std::vector<Core::Gen::Pairedvector<int, double>> dmxigp(2, (nrow + ncol) * ndof);
     deriv_xi_gp_3d_aux_plane(
         mele, mxi, cell->auxn(), dmxigp, mprojalpha, cell->get_deriv_auxn(), lingp);
@@ -2126,12 +2126,12 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_stl(Mortar::Element&
             p != (cell->get_deriv_vertex(v))[d].end(); ++p)
           lingp[p->first](d) += svalcell(v) * (p->second);
 
-    // evalute the GP slave coordinate derivatives
+    // evaluate the GP slave coordinate derivatives
     std::vector<Core::Gen::Pairedvector<int, double>> dsxigp(2, (nrow + ncolP) * ndof);
     deriv_xi_gp_3d_aux_plane(
         sele, sxi, cell->auxn(), dsxigp, sprojalpha, cell->get_deriv_auxn(), lingp);
 
-    // evalute the GP master coordinate derivatives
+    // evaluate the GP master coordinate derivatives
     std::vector<Core::Gen::Pairedvector<int, double>> dmxigp(2, (nrow + ncolP) * 100 * ndof);
     deriv_xi_gp_3d_aux_plane(
         mele, mxi, cell->auxn(), dmxigp, mprojalpha, cell->get_deriv_auxn(), lingp);
@@ -2706,7 +2706,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_lts(Mortar::Element&
 
   // get slave element nodes themselves for normal evaluation
   Core::Nodes::Node** mynodes = lsele.nodes();
-  if (!mynodes) FOUR_C_THROW("Cannot access slave ndoes. Null pointer!");
+  if (!mynodes) FOUR_C_THROW("Cannot access slave nodes. Null pointer!");
   Core::Nodes::Node** mnodes = mele.nodes();
   if (!mnodes) FOUR_C_THROW("Cannot access master nodes. Null pointer!");
 
@@ -2897,12 +2897,12 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_lts(Mortar::Element&
             p != (cell->get_deriv_vertex(v))[d].end(); ++p)
           lingp[p->first](d) += svalcell(v) * (p->second);
 
-    // evalute the GP slave coordinate derivatives
+    // evaluate the GP slave coordinate derivatives
     std::vector<Core::Gen::Pairedvector<int, double>> dsxigp(2, (nrowS + ncol) * ndof + linsize);
     deriv_xi_gp_3d_aux_plane(
         sele, sxi, cell->auxn(), dsxigp, sprojalpha, cell->get_deriv_auxn(), lingp);
 
-    // evalute the GP master coordinate derivatives
+    // evaluate the GP master coordinate derivatives
     std::vector<Core::Gen::Pairedvector<int, double>> dmxigp(2, (nrowS + ncol) * ndof + linsize);
     deriv_xi_gp_3d_aux_plane(
         mele, mxi, cell->auxn(), dmxigp, mprojalpha, cell->get_deriv_auxn(), lingp);
@@ -3763,7 +3763,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_quad(Mortar::Element
   Core::LinAlg::SerialDenseMatrix mcoord(3, mele.num_node());
   mele.get_nodal_coords(mcoord);
 
-  // nodal coords from previous time step and lagrange mulitplier
+  // nodal coords from previous time step and lagrange multiplier
   std::shared_ptr<Core::LinAlg::SerialDenseMatrix> scoordold;
   std::shared_ptr<Core::LinAlg::SerialDenseMatrix> mcoordold;
   std::shared_ptr<Core::LinAlg::SerialDenseMatrix> lagmult;
@@ -4029,12 +4029,12 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_quad(Mortar::Element
             p != (cell->get_deriv_vertex(v))[d].end(); ++p)
           lingp[p->first](d) += svalcell(v) * (p->second);
 
-    // evalute the GP slave coordinate derivatives
+    // evaluate the GP slave coordinate derivatives
     std::vector<Core::Gen::Pairedvector<int, double>> dsxigp(2, (nrow + ncol) * ndof);
     deriv_xi_gp_3d_aux_plane(
         sintele, sxi, cell->auxn(), dsxigp, sprojalpha, cell->get_deriv_auxn(), lingp);
 
-    // evalute the GP master coordinate derivatives
+    // evaluate the GP master coordinate derivatives
     std::vector<Core::Gen::Pairedvector<int, double>> dmxigp(2, (nrow + ncol) * ndof);
     deriv_xi_gp_3d_aux_plane(
         mintele, mxi, cell->auxn(), dmxigp, mprojalpha, cell->get_deriv_auxn(), lingp);
@@ -4239,7 +4239,7 @@ void CONTACT::Integrator::integrate_deriv_ele_2d(Mortar::Element& sele,
   Core::LinAlg::SerialDenseMatrix scoord(3, nrow);
   sele.get_nodal_coords(scoord);
 
-  // nodal coords from previous time step and lagrange mulitplier
+  // nodal coords from previous time step and lagrange multiplier
   std::shared_ptr<Core::LinAlg::SerialDenseMatrix> scoordold;
   std::shared_ptr<Core::LinAlg::SerialDenseMatrix> mcoordold;
   std::shared_ptr<Core::LinAlg::SerialDenseMatrix> lagmult;
@@ -4362,12 +4362,12 @@ void CONTACT::Integrator::integrate_deriv_ele_2d(Mortar::Element& sele,
           deriv_xi_a_b_2d(sele, sxia, sxib, *meles[nummaster], mxia, mxib, ximaps, startslave,
               endslave, linsize);
 
-          // evalute the GP slave coordinate derivatives --> no entries
+          // evaluate the GP slave coordinate derivatives --> no entries
           std::vector<Core::Gen::Pairedvector<int, double>> dsxigp(
               1, Core::Gen::Pairedvector<int, double>(linsize + ndof * ncol));
           for (_CI p = ximaps[0].begin(); p != ximaps[0].end(); ++p) dsxigp[0][p->first] = 0.0;
 
-          // evalute the GP master coordinate derivatives
+          // evaluate the GP master coordinate derivatives
           std::vector<Core::Gen::Pairedvector<int, double>> dmxigp(
               1, Core::Gen::Pairedvector<int, double>(linsize + ndof * ncol));
           deriv_xi_gp_2d(sele, *meles[nummaster], sxi[0], mxi[0], dsxigp[0], dmxigp[0], linsize);
@@ -5958,7 +5958,7 @@ void CONTACT::Integrator::integrate_gp_2d(Mortar::Element& sele, Mortar::Element
       // wear specific stuff
       if (wearlaw_ != Inpar::Wear::wear_none)
       {
-        // nodal Lagrange mulitplier
+        // nodal Lagrange multiplier
         Core::LinAlg::SerialDenseMatrix lagmult(3, sele.num_node());
         sele.get_nodal_lag_mult(lagmult);
 
@@ -8165,7 +8165,7 @@ void CONTACT::Integrator::gp_3d_dm_lin_bound(Mortar::Element& sele, Mortar::Elem
     }
   }
   else
-    FOUR_C_THROW("unknwon shape function type!");
+    FOUR_C_THROW("unknown shape function type!");
 }
 
 /*----------------------------------------------------------------------*
@@ -8481,7 +8481,7 @@ void inline CONTACT::Integrator::gp_2d_dm_lin_bound(Mortar::Element& sele, Morta
     }
   }
   else
-    FOUR_C_THROW("unknwon shape function type!");
+    FOUR_C_THROW("unknown shape function type!");
 }
 
 
@@ -9108,7 +9108,7 @@ void inline CONTACT::Integrator::gp_3d_dm_quad_lin(bool& duallin, Mortar::Elemen
 
   // CASE 2: Standard LM shape functions and linear interpolation
   // CASE 5: dual LM shape functions and linear interpolation
-  // (this has to be treated seperately here for LinDM because of bound)
+  // (this has to be treated separately here for LinDM because of bound)
   else if ((shape_fcn() == Inpar::Mortar::shape_standard ||
                shape_fcn() == Inpar::Mortar::shape_dual ||
                shape_fcn() == Inpar::Mortar::shape_petrovgalerkin) &&
@@ -11114,7 +11114,7 @@ void inline CONTACT::Integrator::gp_3d_te_lin(int& iter, Mortar::Element& sele,
     }  // end integrate linE
   }
   else
-    FOUR_C_THROW("Choosen shapefunctions not supported!");
+    FOUR_C_THROW("Chosen shapefunctions not supported!");
 }
 
 /*----------------------------------------------------------------------*

@@ -244,7 +244,7 @@ std::shared_ptr<const Epetra_CrsGraph> Core::Rebalance::build_graph(
     }
   }
 
-  // run through locals and remotes to find the max bandwith
+  // run through locals and remotes to find the max bandwidth
   int maxband = 0;
   {
     int smaxband = 0;

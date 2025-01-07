@@ -24,8 +24,8 @@ TIMEINTEGR                      Af_Gen_Alpha
 NONLINITER                      fixed_point_like
 ITEMAX                          1
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           50000
-RESTARTEVRY                     5
+RESULTSEVERY                           50000
+RESTARTEVERY                     5
 NUMSTEP                         8
 NUMSTASTEPS                     0
 MAXTIME                         100000.0
@@ -94,7 +94,7 @@ INITFUNCNO                      -1
 INITIALFIELD                    zero_field
 MAXTIME                         100000.0
 NUMSTEP                         8
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 THETA                           0.50
 ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
@@ -104,7 +104,7 @@ TIMESTEP                        0.004
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 CALCFLUX_BOUNDARY               diffusive
-RESULTSEVRY                     50000
+RESULTSEVERY                     50000
 CONVFORM                        convective
 MATID                           2
 OUTPUTSCALARS                   entire_domain

@@ -199,7 +199,7 @@ namespace BeamInteraction
     // With the following formula we would get the exact interval Ids when inserting the coordinate
     // of the left bound of the interval. By inserting any double value lying within the interval,
     // we get as result a double value that is larger than the sought-after interval ID but smaller
-    // than the next highter ID, i.e. we have to round down the solution.
+    // than the next higher ID, i.e. we have to round down the solution.
     unrounded_id = (point + 1.0) / 2.0 * numberofintervals;
     interval_id = floor(unrounded_id);
 
@@ -227,7 +227,7 @@ namespace BeamInteraction
   }
 
   /*
-  \brief Get segment-id out of numberofsegments segmenets, in which the given point lies
+  \brief Get segment-id out of numberofsegments segments, in which the given point lies
   */
   inline int get_segment_id(double& point, int numberofsegments)
   {
@@ -238,7 +238,7 @@ namespace BeamInteraction
     // quantity and it does does not influence algorithmic quantities such as the integration
     // interval length, we don't need a Size Check such as the method GetIntervalId() above. By
     // inserting any double value lying within the segment, we get as result a double value that is
-    // larger than the sought-after segment ID but smaller than the next highter ID, i.e. we have to
+    // larger than the sought-after segment ID but smaller than the next higher ID, i.e. we have to
     // round down the solution.
     unrounded_id = (point + 1.0) / 2.0 * numberofsegments;
     segment_id = floor(unrounded_id);

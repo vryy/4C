@@ -521,7 +521,7 @@ void Cut::TetMesh::call_q_hull(
 #endif
   }
 
-  // debug output to be read by qhull_test programm
+  // debug output to be read by qhull_test program
   FILE* debug_f = fopen("qhull.debug", "w");
   for (int i = 0; i < n; ++i)
   {
@@ -549,7 +549,7 @@ void Cut::TetMesh::call_q_hull(
                                                       if no  -> TET IS INVALID.
 
   + This was the way envisioned by Kuettler. However, it makes little sense accepting a TET
- completely on a cut-side. A simplification by me (Magnus) is to remove TETS whos points are all
+ completely on a cut-side. A simplification by me (Magnus) is to remove TETS whose points are all
  on a cut-side or more than one cut-side (A case not uncommon for MeshIntersection, however this
  works? Would it imply a TET is on a line?).
   + The change proposed does not change any existing test-case or any cut-test. However, the
@@ -738,7 +738,7 @@ void Cut::TetMesh::fix_broken_tets()
 
     // This is to scale the tolerance, it determines our maximum precision (i.e. machine
     // precision)
-    double max_dist_to_orgin = temp.norm_inf();
+    double max_dist_to_origin = temp.norm_inf();
 
     Core::LinAlg::Matrix<3, 1> v04;
     v04.update(1, p1, -1, p2, 0);
@@ -752,7 +752,7 @@ void Cut::TetMesh::fix_broken_tets()
     // This is the smallest distance between the base points in the tet and the height.
     double min_dist_in_tet = temp.min_value();
     // We want to test with this one I think... But might lead to problems.
-    double tolerance = LINSOLVETOL * max_dist_to_orgin;
+    double tolerance = LINSOLVETOL * max_dist_to_origin;
 #else
     double vol_tet = distance / 6.0;
 #endif

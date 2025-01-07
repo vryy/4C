@@ -162,7 +162,6 @@ void Discret::Elements::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_b
     pot0 *= curvefac;
   }
 
-  // TODO: Ist es besser ueber parameter?
   if (!(params.get<bool>("calc_status", false)))
   {
     if (not is_stationary)

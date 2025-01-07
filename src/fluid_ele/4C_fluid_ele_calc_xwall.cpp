@@ -264,7 +264,7 @@ int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::evaluate(Discret::El
   }
   else
     FOUR_C_THROW(
-        "this should not have happended: some nodes have too many dofs in the LM vector, because "
+        "this should not have happened: some nodes have too many dofs in the LM vector, because "
         "they are dof-blending nodes and the wrong LocationVector() function is called");
 
 
@@ -1329,7 +1329,7 @@ void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::get_grid_disp_ale(
 
   // add displacement when fluid nodes move in the ALE case
   // xyze_ does only know 8 nodes
-  // edispnp also knows the virtual ones but doens't do anything with them
+  // edispnp also knows the virtual ones but doesn't do anything with them
   for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
     for (int sdm = 0; sdm < nsd_; ++sdm) my::xyze_(sdm, inode) += edispnp(sdm, inode * 2);
 }

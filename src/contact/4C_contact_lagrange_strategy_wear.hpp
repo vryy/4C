@@ -32,7 +32,7 @@ namespace Wear
     \brief Standard Constructor
 
     */
-    LagrangeStrategyWear(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    LagrangeStrategyWear(const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<std::shared_ptr<CONTACT::Interface>> interfaces, int dim, MPI_Comm comm,
         double alphaf, int maxdof);
@@ -319,7 +319,7 @@ namespace Wear
     the interface slave and master sets if so. Then it resets the global
     Mortar matrices D and M and the global gap vector g accordingly.
 
-    The nodal quantites computed in initialize_and_evaluate_interface() are then assembled
+    The nodal quantities computed in initialize_and_evaluate_interface() are then assembled
     to global matrices and vectors respectively. No setup of the global system
     is to be done here yet, so there is no need to pass in the effective
     stiffness K or the effective load vector f.
@@ -367,7 +367,7 @@ namespace Wear
 
     // basic data
     bool weightedwear_;  // flag for contact with wear (is) --> weighted wear
-    bool wbothpv_;       // flag for both sided wear disrete
+    bool wbothpv_;       // flag for both sided wear discrete
     std::shared_ptr<Core::LinAlg::Vector<double>> w_;  // current vector of pv wear at t_n+1 (slave)
     std::shared_ptr<Core::LinAlg::Vector<double>>
         wincr_;  // Wear variables vector increment within SaddlePointSolve (this is NOT the

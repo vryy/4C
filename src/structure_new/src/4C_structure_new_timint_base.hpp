@@ -490,7 +490,7 @@ namespace Solid
       void output(bool forced_writerestart) override;
 
       /// Write Gmsh output for structural field
-      void write_gmsh_struc_output_step() override;
+      void write_gmsh_struct_output_step() override;
 
       /// create result test for encapsulated structure algorithm
       std::shared_ptr<Core::Utils::ResultTest> create_field_test() override;
@@ -591,7 +591,7 @@ namespace Solid
         return *dataio_;
       }
 
-      /// Get TimIntBase data or struct dynamics quantitites (read access)
+      /// Get TimIntBase data or struct dynamics quantities (read access)
       [[nodiscard]] std::shared_ptr<const BaseDataSDyn> get_data_sdyn_ptr() const
       {
         check_init();

@@ -115,7 +115,7 @@ void Cut::FacetIntegration::is_clockwise(
       Core::LinAlg::Matrix<3, 1> coord;
 
       // First entry is midpoint of triangulation!!
-      // Third entry could possibly be a concave poin (take care of in Triangulation of Facet).
+      // Third entry could possibly be a concave point (take care of in Triangulation of Facet).
       // Thus-> Choose second entry, which should be "safe".
       coord(0, 0) = cornersLocal[1][0];
       coord(1, 0) = cornersLocal[1][1];
@@ -199,8 +199,8 @@ void Cut::FacetIntegration::is_clockwise(
     for (std::vector<std::vector<double>>::const_iterator fit = cornersLocal.begin();
         fit != cornersLocal.end(); fit++)
     {
-      const std::vector<double>& fpt = *fit;
-      for (unsigned dim = 0; dim < 3; dim++) facecen(dim, 0) += fpt[dim];
+      const std::vector<double>& ftp = *fit;
+      for (unsigned dim = 0; dim < 3; dim++) facecen(dim, 0) += ftp[dim];
     }
 
     for (unsigned dim = 0; dim < 3; dim++) facecen(dim, 0) = facecen(dim, 0) / npts;
@@ -637,7 +637,7 @@ void Cut::FacetIntegration::divergence_integration_rule(
 }
 
 /*-----------------------------------------------------------------------------------------------------*
-      Split the facet into auxillary divergence cells which is either Tri or Quad         Sudhakar
+      Split the facet into auxiliary divergence cells which is either Tri or Quad         Sudhakar
 03/12
 *------------------------------------------------------------------------------------------------------*/
 void Cut::FacetIntegration::generate_divergence_cells(
@@ -680,7 +680,7 @@ void Cut::FacetIntegration::generate_divergence_cells(
     {
       temporary_tri3(corners, divCells);
     }
-    else  // split the aribtrary noded facet into cells
+    else  // split the arbitrary noded facet into cells
     {
       std::string splitMethod;
 
@@ -1019,7 +1019,7 @@ void Cut::FacetIntegration::generate_divergence_cells_new(bool divergenceRule, M
     {
       temporary_tri3(corners, divCells);
     }
-    else  // split the aribtrary noded facet into cells
+    else  // split the arbitrary noded facet into cells
     {
       std::string splitMethod;
 

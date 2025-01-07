@@ -1849,7 +1849,7 @@ void ScaTra::ScaTraTimIntElch::init_nernst_bc()
             std::vector<int> nodedofs = discret_->dof(0, node);
 
             // define electrode kinetics toggle
-            // later on this toggle is used to blanck the sysmat and rhs
+            // later on this toggle is used to blank the sysmat and rhs
             ektoggle_->ReplaceGlobalValues(1, &one, &nodedofs[num_scal()]);
           }
         }
@@ -2325,7 +2325,7 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
 
       // cell voltage loss = V_A - V_C
       // potdiffcell=(*electrodepot)[condid_anode]-(*electrodepot)[condid_cathode];
-      // tanget at anode and cathode
+      // tangent at anode and cathode
       currtangent_anode = (currtangent)[condid_anode];
       currtangent_cathode = (currtangent)[condid_cathode];
 
@@ -2340,7 +2340,7 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
       // The linearization of potential increment is always based on the cathode side!!
 
       // Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first
-      // residual is calculated residual := (I - timefacrhs *I_target) I_target is alway negative,
+      // residual is calculated residual := (I - timefacrhs *I_target) I_target is always negative,
       // since the reference electrode is the cathode
       residual = (currresidual)[condid_cathode] -
                  (timefacrhs * targetcurrent);  // residual is stored only from cathode!
@@ -2420,7 +2420,7 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
       {
         // update applied electric potential
         // potential drop ButlerVolmer conditions (surface ovepotential) and in the electrolyte
-        // (ohmic overpotential) are conected in parallel:
+        // (ohmic overpotential) are connected in parallel:
 
         // 3 different versions:
         // I_0 = I_BV1 = I_ohmic = I_BV2

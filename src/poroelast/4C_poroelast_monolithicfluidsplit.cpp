@@ -367,7 +367,7 @@ void PoroElast::MonolithicFluidSplit::recover_lagrange_multiplier_after_time_ste
     // compute the above mentioned product
     fggcur_->multiply(false, *duginc_, *sggddg);
 
-    // store the prodcut C_{\Gamma\Gamma} \Delta d_\Gamma^{n+1} in here
+    // store the product C_{\Gamma\Gamma} \Delta d_\Gamma^{n+1} in here
     std::shared_ptr<Core::LinAlg::Vector<double>> cggddg =
         Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map(), true);
     // compute the above mentioned product

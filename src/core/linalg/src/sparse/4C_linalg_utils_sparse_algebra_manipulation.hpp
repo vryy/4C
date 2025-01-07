@@ -313,7 +313,7 @@ namespace Core::LinAlg
 
   /*! \brief Write values from a std::vector to a Core::LinAlg::MultiVector<double>
    *
-   *  The data layout in the std::vector is consecutivly ordered. The
+   *  The data layout in the std::vector is consecutively ordered. The
    * Core::LinAlg::MultiVector<double> consists of several single vectors put together after each
    * other.
    *
@@ -326,7 +326,7 @@ namespace Core::LinAlg
 
   /*! \brief Write values from a std::vector to a Core::LinAlg::MultiVector<double>
    *
-   *  The data layout in the std::vector is consecutivly ordered. The
+   *  The data layout in the std::vector is consecutively ordered. The
    * Core::LinAlg::MultiVector<double> consists of several single vectors put together after each
    * other.
    *

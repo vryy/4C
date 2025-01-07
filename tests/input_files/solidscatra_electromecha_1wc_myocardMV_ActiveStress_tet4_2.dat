@@ -28,8 +28,8 @@ M_DAMP                          0.0
 NLNSOL                          fullnewton
 NUMSTEP                         10000000
 PREDICT                         ConstDisVelAcc
-RESTARTEVRY                     1
-RESULTSEVRY                     1
+RESTARTEVERY                     1
+RESULTSEVERY                     1
 TIMESTEP                        0.1
 TOLCONSTR                       1e-03
 TOLDISP                         1e-03
@@ -42,8 +42,8 @@ THETA                           1.0
 LINEAR_SOLVER                   2
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 NUMSTEP                         9000
 MAXTIME                         5
 TIMESTEP                        0.1
@@ -63,8 +63,8 @@ DEFINITION_TAU                  Zero
 EVALUATION_MAT                  element_center
 EVALUATION_TAU                  integration_point
 -----------------------------------------------------------------SSI CONTROL
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 NUMSTEP                         10000
 MAXTIME                         0.5
 TIMESTEP                        0.1
@@ -82,9 +82,9 @@ SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 201
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 20 DENS 0.001
 MAT 10 ELAST_CoupMooneyRivlin C1 1.0E-2 C2 0.0 C3 1.0E1
 MAT 20 ELAST_AnisoActiveStress_Evolution SIGMA 1.0E-1 TAUC0 0.0 MAX_ACTIVATION 0.02 MIN_ACTIVATION -0.03 SOURCE_ACTIVATION -1 ACTIVATION_THRES 1.0 STR_TENS_ID 100
-MAT 101 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
-MAT 102 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL TNNP TISSUE M TIME_SCALE 1.0
-MAT 103 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL FHN TISSUE M TIME_SCALE 1.0
+MAT 101 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTURBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
+MAT 102 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTURBATION_DERIV 1e-6 MODEL TNNP TISSUE M TIME_SCALE 1.0
+MAT 103 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTURBATION_DERIV 1e-6 MODEL FHN TISSUE M TIME_SCALE 1.0
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 10 DENS 0.001
 MAT 201 MAT_scatra DIFFUSIVITY 1.0e-10

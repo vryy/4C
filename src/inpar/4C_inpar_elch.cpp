@@ -96,7 +96,7 @@ void Inpar::ElCh::set_valid_parameters(Teuchos::ParameterList& list)
       "CYCLING_TIMESTEP", -1., "modified time step size for CCCV cell cycling", &elchcontrol);
   Core::Utils::bool_parameter("ELECTRODE_INFO_EVERY_STEP", "No",
       "the cell voltage, SOC, and C-Rate will be written to the csv file every step, even if "
-      "RESULTSEVRY is not 1",
+      "RESULTSEVERY is not 1",
       &elchcontrol);
 
   /*----------------------------------------------------------------------*/
@@ -135,7 +135,7 @@ void Inpar::ElCh::set_valid_parameters(Teuchos::ParameterList& list)
   /*----------------------------------------------------------------------*/
   // sublist for space-charge layers
   auto& sclcontrol = elchcontrol.sublist(
-      "SCL", false, "control parameters for coupled probelms with space-charge layer formation\n");
+      "SCL", false, "control parameters for coupled problems with space-charge layer formation\n");
 
   Core::Utils::bool_parameter(
       "ADD_MICRO_MACRO_COUPLING", "No", "flag for micro macro coupling with scls", &sclcontrol);

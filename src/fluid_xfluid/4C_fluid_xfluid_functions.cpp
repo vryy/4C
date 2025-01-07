@@ -636,21 +636,21 @@ double Discret::Utils::MovingLevelSetTorus::evaluate(
   //                *(std::sqrt( (xp[0]-x0_t)*(xp[0]-x0_t) + (xp[1]-x1_t)*(xp[1]-x1_t) )-radius_)
   //                + (xp[2]-x2_t)*(xp[2]-x2_t)
   //                     ) - radius_tube_ ;
-  double ortogonal_val = orientvec_torus_t[0] * x_rot_based_traject[0] +
-                         orientvec_torus_t[1] * x_rot_based_traject[1] +
-                         orientvec_torus_t[2] * x_rot_based_traject[2];
+  double orthogonal_val = orientvec_torus_t[0] * x_rot_based_traject[0] +
+                          orientvec_torus_t[1] * x_rot_based_traject[1] +
+                          orientvec_torus_t[2] * x_rot_based_traject[2];
 
   std::vector<double> base_vec(3);
-  base_vec[0] = x_rot_based_traject[0] - ortogonal_val * orientvec_torus_t[0];
-  base_vec[1] = x_rot_based_traject[1] - ortogonal_val * orientvec_torus_t[1];
-  base_vec[2] = x_rot_based_traject[2] - ortogonal_val * orientvec_torus_t[2];
+  base_vec[0] = x_rot_based_traject[0] - orthogonal_val * orientvec_torus_t[0];
+  base_vec[1] = x_rot_based_traject[1] - orthogonal_val * orientvec_torus_t[1];
+  base_vec[2] = x_rot_based_traject[2] - orthogonal_val * orientvec_torus_t[2];
 
   // double lsvalue = 0.0;
 
   double r_base =
       std::sqrt(base_vec[0] * base_vec[0] + base_vec[1] * base_vec[1] + base_vec[2] * base_vec[2]);
   double lsvalue =
-      std::sqrt((radius_ - r_base) * (radius_ - r_base) + ortogonal_val * ortogonal_val) -
+      std::sqrt((radius_ - r_base) * (radius_ - r_base) + orthogonal_val * orthogonal_val) -
       radius_tube_;
 
   //  if(abs(lsvalue)<0.1)
@@ -873,14 +873,14 @@ double Discret::Utils::MovingLevelSetTorusSliplength::evaluate(
   //                *(std::sqrt( (xp[0]-x0_t)*(xp[0]-x0_t) + (xp[1]-x1_t)*(xp[1]-x1_t) )-radius_)
   //                + (xp[2]-x2_t)*(xp[2]-x2_t)
   //                     ) - radius_tube_ ;
-  double ortogonal_val = orientvec_torus_t[0] * x_rot_based_traject[0] +
-                         orientvec_torus_t[1] * x_rot_based_traject[1] +
-                         orientvec_torus_t[2] * x_rot_based_traject[2];
+  double orthogonal_val = orientvec_torus_t[0] * x_rot_based_traject[0] +
+                          orientvec_torus_t[1] * x_rot_based_traject[1] +
+                          orientvec_torus_t[2] * x_rot_based_traject[2];
 
   std::vector<double> base_vec(3);
-  base_vec[0] = x_rot_based_traject[0] - ortogonal_val * orientvec_torus_t[0];
-  base_vec[1] = x_rot_based_traject[1] - ortogonal_val * orientvec_torus_t[1];
-  base_vec[2] = x_rot_based_traject[2] - ortogonal_val * orientvec_torus_t[2];
+  base_vec[0] = x_rot_based_traject[0] - orthogonal_val * orientvec_torus_t[0];
+  base_vec[1] = x_rot_based_traject[1] - orthogonal_val * orientvec_torus_t[1];
+  base_vec[2] = x_rot_based_traject[2] - orthogonal_val * orientvec_torus_t[2];
 
   double r_base =
       std::sqrt(base_vec[0] * base_vec[0] + base_vec[1] * base_vec[1] + base_vec[2] * base_vec[2]);
@@ -1033,23 +1033,23 @@ std::vector<double> Discret::Utils::TaylorCouetteFlow::evaluate_spatial_derivati
   std::vector<double> res(3, 0.0);
   res.reserve(3);
 
-  double r_sqaured = (xp[0] * xp[0] + xp[1] * xp[1]);  //(x^2+y^2)
-  double r_sqaured2 =
+  double r_squared = (xp[0] * xp[0] + xp[1] * xp[1]);  //(x^2+y^2)
+  double r_squared2 =
       (xp[0] * xp[0] + xp[1] * xp[1]) * (xp[0] * xp[0] + xp[1] * xp[1]);  //(x^2+y^2)^2
 
   switch (component)
   {
     case 0:
     {
-      res[0] = c2_ * 2.0 * xp[0] * xp[1] / (r_sqaured2);
-      res[1] = -c1_ - c2_ * (1 / r_sqaured - 2.0 * xp[1] * xp[1] / (r_sqaured2));
+      res[0] = c2_ * 2.0 * xp[0] * xp[1] / (r_squared2);
+      res[1] = -c1_ - c2_ * (1 / r_squared - 2.0 * xp[1] * xp[1] / (r_squared2));
       res[2] = 0.0;
       break;
     }
     case 1:
     {
-      res[0] = c1_ + c2_ * (1 / (r_sqaured)-2.0 * xp[0] * xp[0] / (r_sqaured2));
-      res[1] = -c2_ * 2.0 * xp[1] * xp[0] / (r_sqaured2);
+      res[0] = c1_ + c2_ * (1 / (r_squared)-2.0 * xp[0] * xp[0] / (r_squared2));
+      res[1] = -c2_ * 2.0 * xp[1] * xp[0] / (r_squared2);
       res[2] = 0.0;
       break;
     }

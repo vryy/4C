@@ -22,8 +22,8 @@ RESTART                         0
 ------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      OneStepTheta
-RESULTSEVRY                     200
-RESTARTEVRY                     200
+RESULTSEVERY                     200
+RESTARTEVERY                     200
 TIMESTEP                        0.025
 NUMSTEP                         260
 MAXTIME                         6.5

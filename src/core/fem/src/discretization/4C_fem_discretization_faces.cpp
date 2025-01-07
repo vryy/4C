@@ -35,7 +35,7 @@ int Core::FE::DiscretizationFaces::fill_complete_faces(bool assigndegreesoffreed
     bool initelements, bool doboundaryconditions, bool createinternalfaces)
 
 {
-  // call standard FillComlete of base class
+  // call standard FillComplete of base class
   Core::FE::Discretization::fill_complete(
       assigndegreesoffreedom, initelements, doboundaryconditions);
 

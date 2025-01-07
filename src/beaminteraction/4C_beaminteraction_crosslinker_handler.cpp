@@ -116,7 +116,7 @@ void BeamInteraction::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
     int from = -1;
     exporter.receive_any(from, tag, rdata, length);
     if (tag != 1234 or from != fromrank)
-      FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
+      FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) is(%i -> %i)", fromrank,
           myrank, from, myrank);
 
 

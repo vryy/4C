@@ -93,7 +93,7 @@ namespace PoroElastScaTra
      Here we additionally ghost volume elements and their nodes
      (required if an evaluation of gradients is required)!
 
-     Prerequisites of this funtion:
+     Prerequisites of this function:
      All Contact Elements need a set parent_id_ (member of faceelement!) before
      calling CreateInterfaceGhosting as this id will be communicated to all
      processors! Otherwise any information which connects face and volume

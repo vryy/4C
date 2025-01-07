@@ -253,7 +253,7 @@ void POROMULTIPHASE::print_logo()
   std::cout << "" << std::endl;
   std::cout << "              +----------+" << std::endl;
   std::cout << "              |  Krebs-  |" << std::endl;
-  std::cout << "              |  Modell  |" << std::endl;
+  std::cout << "              |  Model  |" << std::endl;
   std::cout << "              +----------+" << std::endl;
   std::cout << "              |          |" << std::endl;
   std::cout << "              |          |" << std::endl;

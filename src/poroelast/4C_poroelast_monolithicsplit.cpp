@@ -77,7 +77,7 @@ void PoroElast::MonolithicSplit::prepare_time_step()
 
     if (fsibcmap_->NumGlobalElements())
     {
-      // if there are DBCs on FSI conditioned nodes, they have to be treated seperately
+      // if there are DBCs on FSI conditioned nodes, they have to be treated separately
 
       std::shared_ptr<Core::LinAlg::Vector<double>> ibcveln =
           fsibcextractor_->extract_cond_vector(*structure_to_fluid_at_interface(*ivelnp));

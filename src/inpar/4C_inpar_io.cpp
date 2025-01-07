@@ -90,7 +90,7 @@ void Inpar::IO::set_valid_parameters(Teuchos::ParameterList& list)
       &io);
   Core::Utils::bool_parameter("FLUID_STRESS", "No", "", &io);
   Core::Utils::bool_parameter("FLUID_WALL_SHEAR_STRESS", "No", "", &io);
-  Core::Utils::bool_parameter("FLUID_ELEDATA_EVRY_STEP", "No", "", &io);
+  Core::Utils::bool_parameter("FLUID_ELEDATA_EVERY_STEP", "No", "", &io);
   Core::Utils::bool_parameter("FLUID_NODEDATA_FIRST_STEP", "No", "", &io);
   Core::Utils::bool_parameter("THERM_TEMPERATURE", "No", "", &io);
   setStringToIntegralParameter<Inpar::Thermo::HeatFluxType>("THERM_HEATFLUX", "None", "",
@@ -108,7 +108,7 @@ void Inpar::IO::set_valid_parameters(Teuchos::ParameterList& list)
 
   Core::Utils::int_parameter(
       "FILESTEPS", 1000, "Amount of timesteps written to a single result file", &io);
-  Core::Utils::int_parameter("STDOUTEVRY", 1, "Print to screen every n step", &io);
+  Core::Utils::int_parameter("STDOUTEVERY", 1, "Print to screen every n step", &io);
 
   Core::Utils::bool_parameter("WRITE_TO_SCREEN", "Yes", "Write screen output", &io);
   Core::Utils::bool_parameter("WRITE_TO_FILE", "No", "Write the output into a file", &io);
@@ -134,7 +134,7 @@ void Inpar::IO::set_valid_parameters(Teuchos::ParameterList& list)
 
   Core::Utils::double_parameter("RESTARTWALLTIMEINTERVAL", -1.0,
       "Enforce restart after this walltime interval (in seconds), smaller zero to disable", &io);
-  Core::Utils::int_parameter("RESTARTEVRY", -1, "write restart every RESTARTEVRY steps", &io);
+  Core::Utils::int_parameter("RESTARTEVERY", -1, "write restart every RESTARTEVERY steps", &io);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& io_every_iter = io.sublist("EVERY ITERATION", false, "");

@@ -53,11 +53,11 @@ namespace FLD
     virtual void time_update_forcing() = 0;
   };
 
-  class HomIsoTurbForcing : public ForcingInterface
+  class HomoIsoTurbForcing : public ForcingInterface
   {
    public:
     //! constructor
-    HomIsoTurbForcing(FluidImplicitTimeInt& timeint);
+    HomoIsoTurbForcing(FluidImplicitTimeInt& timeint);
 
     //! initialize with initial spectrum
     void set_initial_spectrum(Inpar::FLUID::InitialField init_field_type) override;
@@ -159,11 +159,11 @@ namespace FLD
 
   // there are quite some differences for the HDG case
   // author: bk 03/15
-  class HomIsoTurbForcingHDG : public HomIsoTurbForcing
+  class HomoIsoTurbForcingHDG : public HomoIsoTurbForcing
   {
    public:
     //! constructor
-    HomIsoTurbForcingHDG(FluidImplicitTimeInt& timeint);
+    HomoIsoTurbForcingHDG(FluidImplicitTimeInt& timeint);
 
     //! initialize with initial spectrum
     void set_initial_spectrum(Inpar::FLUID::InitialField init_field_type) override;

@@ -108,7 +108,7 @@ namespace Core::LinAlg
    *
    *  For further information, refer to:
    *    -# Ortiz et al., The computation of the exponential and logarithmic mappings and their first
-   * and second linearizations, Int. J. Numer. Meth. Engng 52, 2001
+   * and second linearizations, Int. J. Number. Meth. Engng 52, 2001
    *
    * @param[in] input input 3x3 matrix
    * @param[out] exp exponential of the input matrix

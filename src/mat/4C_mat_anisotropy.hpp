@@ -196,7 +196,7 @@ namespace Mat
 
     /*!
      * \brief Returns the a vector of all Gauss point fibers. The first index is the GP, the second
-     * index is the zero pased fiber id
+     * index is the zero-based fiber id
      *
      * \return const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>&
      */

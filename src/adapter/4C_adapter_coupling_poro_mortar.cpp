@@ -330,7 +330,7 @@ void Adapter::CouplingPoroMortar::create_strategy(
   const Teuchos::ParameterList& stru = Global::Problem::instance()->structural_dynamic_params();
   double theta = stru.sublist("ONESTEPTHETA").get<double>("THETA");
   // what if problem is static ? there should be an error for previous line called in a dyna_statics
-  // problem and not a value of 0.5 a proper disctinction is necessary if poro meshtying is expanded
+  // problem and not a value of 0.5 a proper distinction is necessary if poro meshtying is expanded
   // to other time integration strategies
 
   if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(stru, "DYNAMICTYPE") ==
@@ -343,8 +343,8 @@ void Adapter::CouplingPoroMortar::create_strategy(
   double alphaf = 1.0 - theta;
 
   // build the correct data container
-  std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr =
-      std::make_shared<CONTACT::AbstractStratDataContainer>();
+  std::shared_ptr<CONTACT::AbstractStrategyDataContainer> data_ptr =
+      std::make_shared<CONTACT::AbstractStrategyDataContainer>();
   // create contact poro lagrange strategy for mesh tying
   porolagstrategy_ = std::make_shared<CONTACT::LagrangeStrategyPoro>(data_ptr,
       masterdis->dof_row_map(), masterdis->node_row_map(), input, interfaces, dim, comm_, alphaf,

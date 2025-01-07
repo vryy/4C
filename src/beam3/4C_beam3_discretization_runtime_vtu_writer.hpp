@@ -106,7 +106,7 @@ class BeamDiscretizationRuntimeOutputWriter
   void append_element_owning_processor();
 
   /**
-   * \brief Append the 4C interal GIDs to all beam elements.
+   * \brief Append the 4C internal GIDs to all beam elements.
    */
   void append_element_gid();
 
@@ -184,7 +184,7 @@ class BeamDiscretizationRuntimeOutputWriter
    *
    *  \author eichinger
    *  \date 08/17 */
-  void append_element_orientation_paramater(
+  void append_element_orientation_parameter(
       const Core::LinAlg::Vector<double>& displacement_state_vector);
 
   /** \brief append sum of all element (node 0) internal energy cut in direction cut_dim

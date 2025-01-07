@@ -214,7 +214,7 @@ void Discret::Elements::Wall1::w1_call_defgrad_enh(Core::LinAlg::SerialDenseMatr
 
   Core::LinAlg::multiply(W0, A_big, boplin0);
 
-  // calculation operators G and Z, therfore matrices A are needed
+  // calculation operators G and Z, therefore matrices A are needed
   // without alphas
 
   // vector M_ges, includes the matrices M1 to M4

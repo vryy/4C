@@ -1049,13 +1049,13 @@ bool Cut::ConcreteElement<probdim, elementtype, num_nodes_element, dim>::local_c
 
 
 /*----------------------------------------------------------------------------*
- * Find local coodinates of given point w.r. to the parent Quad element
+ * Find local coordinates of given point w.r. to the parent Quad element
  *                                                      sudhakar 11/13
  *----------------------------------------------------------------------------*/
 void Cut::Element::local_coordinates_quad(
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst)
 {
-  if (not is_shadow_) FOUR_C_THROW("This is not a shadow elemenet\n");
+  if (not is_shadow_) FOUR_C_THROW("This is not a shadow element\n");
 
   std::shared_ptr<Position> pos = Position::create(quad_corners_, xyz, get_quad_shape());
 
@@ -1113,7 +1113,7 @@ void Cut::Element::debug_dump()
   gmsh_failure_element_dump();
 
   {
-    // Write Elemement Cut Test!!!
+    // Write Element Cut Test!!!
     std::stringstream str;
     str << "cut_test_generated_" << id() << ".cpp";
     std::ofstream file(str.str().c_str());

@@ -205,7 +205,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-    // get some informatiom form the node
+    // get some information form the node
     double gap = cnode->data().getg();
     int numdof = cnode->num_dof();
     double kappa = cnode->data().kappa();
@@ -561,7 +561,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-    // get some informatiom form the node
+    // get some information form the node
     double gap = cnode->data().getg();
     int dim = cnode->num_dof();
     double kappa = cnode->data().kappa();
@@ -2684,7 +2684,7 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
         }
       }
 
-      // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+      // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
       std::vector<double> sum1(Interface::n_dim() - 1, 0);
       sum1[0] = ztxi + ct * jumptxi;
       if (Interface::n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
@@ -4442,7 +4442,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
       //      std::cout << "node: " << cnode->Id() << " wgap: " << wgap << " dval*gLM: " << dval*gLM
       //      << std::endl;
 
-      // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+      // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
       std::vector<double> sum1(Interface::n_dim() - 1, 0);
       sum1[0] = ztxi + ct * jumptxi;
       if (Interface::n_dim() == 3) sum1[1] = zteta + ct * jumpteta;

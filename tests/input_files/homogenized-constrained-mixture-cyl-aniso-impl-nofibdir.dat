@@ -17,12 +17,12 @@ STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No
 FLUID_STRESS                    No
 FLUID_WALL_SHEAR_STRESS         No
-FLUID_ELEDATA_EVRY_STEP         No
+FLUID_ELEDATA_EVERY_STEP         No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  None
 THERM_TEMPGRAD                  None
 FILESTEPS                       1000
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
@@ -32,9 +32,9 @@ WRITE_INITIAL_STATE             No
 DYNAMICTYPE                      Statics
 PRESTRESS                       None
 PRESTRESSTIME                   40.0
-RESULTSEVRY                     3
-RESEVRYERGY                     0
-RESTARTEVRY                     3
+RESULTSEVERY                     3
+RESEVERYERGY                     0
+RESTARTEVERY                     3
 TIMESTEP                        10.0
 NUMSTEP                         6
 MAXTIME                         2500000

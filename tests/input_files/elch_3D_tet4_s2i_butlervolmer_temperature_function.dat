@@ -22,8 +22,8 @@ MAXTIME                         20
 TIMESTEP                        1.0
 INITIALFIELD                    field_by_condition
 LINEAR_SOLVER                   1
-RESULTSEVRY                     2
-RESTARTEVRY                     5
+RESULTSEVERY                     2
+RESTARTEVERY                     5
 EQUILIBRATION                   rowsandcolumns_maindiag
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization

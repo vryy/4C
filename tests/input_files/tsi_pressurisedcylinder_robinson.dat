@@ -47,9 +47,9 @@ NORM_DISP                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
 PREDICT                         ConstDis
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTSEVRY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     1
+RESULTSEVERY                     1
 TIMESTEP                        0.05
 TOLDISP                         1e-10
 TOLRES                          1e-08
@@ -72,8 +72,8 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
 PREDICT                         ConstTemp
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        0.05
 TOLRES                          1e-08
 TOLTEMP                         1e-10
@@ -86,9 +86,9 @@ ITEMIN                          1
 MAXTIME                         1980.0
 NORM_INC                        Abs
 NUMSTEP                         6
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 TIMESTEP                        0.5
-RESULTSEVRY                           2
+RESULTSEVERY                           2
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-06
 TOLINC                          1e-06
@@ -109,9 +109,9 @@ AZREUSE                         10
 MAT 1 MAT_Struct_Robinson KIND arya_narloyz YOUNGNUM 1 YOUNG 1.395e8 NUE 0.296 DENS 7.850e-6 THEXPANS 0 INITTEMP 699.81667 HRDN_FACT 2.468e-13 HRDN_EXPO 4 SHRTHRSHLDNUM 1 SHRTHRSHLD 3.196e7 RCVRY 6.37e-11 ACTV_ERGY 0 ACTV_TMPR 0 G0 0.14 M_EXPO 7.73 BETANUM 1 BETA 1.5 H_FACT 6.82e7
 MAT 2 THERM_FourierIso CAPA 3.375e3 CONDUCT 5.2e4
 //
-//MAT 11 MAT_Struct_ThrPlasticLinElast YOUNG 0 NUE 0 DENS 0 THEXPANS 0 INITTEMP 699.81667 YIELD 0 ISOHARD 0 KINHARD 0 TOL 0
+//MAT 11 MAT_Struct_ThermoPlasticLinElast YOUNG 0 NUE 0 DENS 0 THEXPANS 0 INITTEMP 699.81667 YIELD 0 ISOHARD 0 KINHARD 0 TOL 0
 //MAT 12 MAT_Struct_PlasticLinElast YOUNG 0 NUE 0 DENS 0 YIELD 0 ISOHARD 0 KINHARD 0 TOL 0
-//MAT 13 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.395e8 NUE 0.296 DENS 7.850e-6 THEXPANS 0 CAPA 3.375e3 CONDUCT 5.2e4 INITTEMP 699.81667
+//MAT 13 MAT_Struct_ThermoStVenantK YOUNGNUM 1 YOUNG 1.395e8 NUE 0.296 DENS 7.850e-6 THEXPANS 0 CAPA 3.375e3 CONDUCT 5.2e4 INITTEMP 699.81667
 //
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2

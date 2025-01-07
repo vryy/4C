@@ -171,7 +171,7 @@ namespace Discret
 
       //! calculate weighted current density
       void calculate_current(Core::LinAlg::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const Inpar::ScaTra::FluxType fluxtype,               //!< type fo flux
+          const Inpar::ScaTra::FluxType fluxtype,               //!< type of flux
           const double fac                                      //!< integration factor
           ) override;
 
@@ -220,7 +220,7 @@ namespace Discret
 
       //! calculate weighted mass flux (no reactive flux so far)
       void calculate_flux(Core::LinAlg::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const Inpar::ScaTra::FluxType fluxtype,            //!< type fo flux
+          const Inpar::ScaTra::FluxType fluxtype,            //!< type of flux
           const int k                                        //!< index of current scalar
           ) override;
 

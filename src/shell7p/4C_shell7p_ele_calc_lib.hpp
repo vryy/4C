@@ -69,7 +69,7 @@ namespace Discret::Elements::Shell
    * @tparam distype :  The discretization type known at compile time
    * @param nodes (in)  : Nodal coords in reference frame
    * @param disp (in)  : Displacements
-   * @param thicknesss (int)  : Nodal thickness values in refernce frame
+   * @param thicknesss (int)  : Nodal thickness values in reference frame
    * @param a3_reference (int)  : Nodal directors in reference frame
    * @param factor (int)  : Scaling factor due to SDC
    */
@@ -420,7 +420,7 @@ namespace Discret::Elements::Shell
   }
 
   /*!
-   * @brief Modifiy the strain gradient (B-Operator) of the specified element due to transverse
+   * @brief Modify the strain gradient (B-Operator) of the specified element due to transverse
    * shear strain ANS  (B-Bar method)
    *
    * @tparam distype : The discretization type known at compile time
@@ -506,7 +506,7 @@ namespace Discret::Elements::Shell
    * @brief Updates the current thickness of an element at a gaussian point
    *
    * @tparam distype : The discretization type known at compile time
-   * qparam a3current (in) : Nodal directors in spatial configuraton
+   * qparam a3current (in) : Nodal directors in spatial configuration
    * @param shape_functions (in) : Shape functions and derivatives evaluated at the respective point
    * in the parameter space
    */
@@ -652,7 +652,7 @@ namespace Discret::Elements::Shell
    * @param zeta (in) : Thickness coordinate of gaussian point (scaled via SDC)
    */
   template <Core::FE::CellType distype>
-  void modify_kovariant_metrics_standart(
+  void modify_kovariant_metrics_standard(
       Discret::Elements::Shell::BasisVectorsAndMetrics<distype>& g_reference,
       Discret::Elements::Shell::BasisVectorsAndMetrics<distype>& g_current,
       const Discret::Elements::Shell::BasisVectorsAndMetrics<distype>& a_reference,
@@ -870,7 +870,7 @@ namespace Discret::Elements::Shell
         {
           if (numansq == 0)
           {
-            modify_kovariant_metrics_standart(g_reference, g_current, a_reference, a_current, zeta);
+            modify_kovariant_metrics_standard(g_reference, g_current, a_reference, a_current, zeta);
           }
           else
           {
@@ -918,7 +918,7 @@ namespace Discret::Elements::Shell
    * \f]
    * GL strain vector glstrain = [E_{11},E_{22}, E_{33}, 2*E_{12}, 2*E_{23}, 2*E_{31}]^T
    * @tparam distype : The discretization type known at compile time
-   * @param strains (in/out) : Strain measures (deformation graident tensor, Green-Lagrange strain
+   * @param strains (in/out) : Strain measures (deformation gradient tensor, Green-Lagrange strain
    * tensor)
    * @param g_reference (in) : An object holding the reference basis vectors and metric
    * tensors of the shell body
@@ -1319,7 +1319,7 @@ namespace Discret::Elements::Shell
   }
 
   /*!
-   * @brief This function perfoms the preintegration of the the 2. Piola-Kirchhoff stresses and
+   * @brief This function performs the preintegration of the the 2. Piola-Kirchhoff stresses and
    * the material tensor through the shell thickness.
    *
    * @tparam distype : The discretization type known at compile time

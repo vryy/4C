@@ -258,7 +258,7 @@ void FLD::TransferTurbulentInflowCondition::transfer(
       }
     }
 
-    // create an exporter for point to point comunication
+    // create an exporter for point to point communication
     Core::Communication::Exporter exporter(dis_->get_comm());
 
     // necessary variables
@@ -622,7 +622,7 @@ void FLD::TransferTurbulentInflowCondition::pack_local_master_values(std::vector
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | for all values avaible on the processor, do the final setting of the |
+ | for all values available on the processor, do the final setting of the |
  | value                          (private)                 gammi 03/10 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -791,7 +791,7 @@ void FLD::TransferTurbulentInflowConditionXW::transfer(
       }
     }
 
-    // create an exporter for point to point comunication
+    // create an exporter for point to point communication
     Core::Communication::Exporter exporter(dis_->get_comm());
 
     // necessary variables
@@ -841,7 +841,7 @@ void FLD::TransferTurbulentInflowConditionXW::transfer(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | for all values avaible on the processor, do the final setting of the |
+ | for all values available on the processor, do the final setting of the |
  | value                          (private)                    bk 09/14 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -981,7 +981,7 @@ void FLD::TransferTurbulentInflowConditionNodal::transfer(
       }
     }
 
-    // create an exporter for point to point comunication
+    // create an exporter for point to point communication
     Core::Communication::Exporter exporter(dis_->get_comm());
 
     // necessary variables
@@ -1031,7 +1031,7 @@ void FLD::TransferTurbulentInflowConditionNodal::transfer(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | for all values avaible on the processor, do the final setting of the |
+ | for all values available on the processor, do the final setting of the |
  | value                          (private)                    bk 09/14 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

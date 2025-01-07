@@ -819,7 +819,7 @@ void Cut::CutWizard::run_cut(
       Core::IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << Core::IO::endl;
   }
 
-  is_cut_perfomed_ = true;
+  is_cut_performed_ = true;
 }
 
 
@@ -1141,7 +1141,7 @@ std::shared_ptr<Cut::CombIntersection> Cut::CutWizard::get_intersection()
 
 void Cut::CutWizard::check_if_mesh_intersection_and_cut()
 {
-  if (!do_mesh_intersection_ or !is_cut_perfomed_)
+  if (!do_mesh_intersection_ or !is_cut_performed_)
   {
     FOUR_C_THROW(
         "Not possible to create coupling pairs, first perform cut using a mesh intersection.");

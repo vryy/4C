@@ -45,7 +45,7 @@ Discret::Elements::ScaTraEleParameterStd::ScaTraEleParameterStd(
       nds_pres_(-1),
       nds_scatra_(-1),
       nds_thermo_(-1),
-      nds_two_tensor_quantitiy_(-1),
+      nds_two_tensor_quantity_(-1),
       nds_vel_(-1),
       nds_wss_(-1),
       probnum_(0),
@@ -81,7 +81,7 @@ void Discret::Elements::ScaTraEleParameterStd::set_nodeset_parameters(
   nds_pres_ = parameters.get<int>("ndspres", -1);
   nds_scatra_ = parameters.get<int>("ndsscatra", -1);
   nds_thermo_ = parameters.get<int>("ndsthermo", -1);
-  nds_two_tensor_quantitiy_ = parameters.get<int>("ndsTwoTensorQuantity", -1);
+  nds_two_tensor_quantity_ = parameters.get<int>("ndsTwoTensorQuantity", -1);
   nds_vel_ = parameters.get<int>("ndsvel", -1);
   nds_wss_ = parameters.get<int>("ndswss", -1);
 }
@@ -281,10 +281,10 @@ int Discret::Elements::ScaTraEleParameterStd::nds_thermo() const
 
 int Discret::Elements::ScaTraEleParameterStd::nds_two_tensor_quantity() const
 {
-  FOUR_C_ASSERT(nds_two_tensor_quantitiy_ != -1,
+  FOUR_C_ASSERT(nds_two_tensor_quantity_ != -1,
       "You try to access the number of dofset associated with two-tensor quantity dofs without "
       "having set it!");
-  return nds_two_tensor_quantitiy_;
+  return nds_two_tensor_quantity_;
 }
 
 int Discret::Elements::ScaTraEleParameterStd::nds_vel() const

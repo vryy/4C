@@ -41,7 +41,7 @@ namespace Core::Nodes
    * inner of the element
    *
    * @tparam distype type of the element used
-   * @tparam dim dimension of the elemenet
+   * @tparam dim dimension of the element
    * @param quantity array of arrays to be projected with the shape functions. The first index
    * are the points, the second index the dimension of the quantity
    * @param shapefcts Shape functions

@@ -151,7 +151,7 @@ void NTS::Interpolator::interpolate_2d(Mortar::Node& snode, std::vector<Mortar::
       sele->get_nodal_coords(scoord);
       meles[nummaster]->get_nodal_coords(mcoord);
 
-      // nodal coords from previous time step and lagrange mulitplier
+      // nodal coords from previous time step and lagrange multiplier
       std::shared_ptr<Core::LinAlg::SerialDenseMatrix> scoordold;
       std::shared_ptr<Core::LinAlg::SerialDenseMatrix> mcoordold;
       std::shared_ptr<Core::LinAlg::SerialDenseMatrix> lagmult;
@@ -190,10 +190,10 @@ void NTS::Interpolator::interpolate_2d(Mortar::Node& snode, std::vector<Mortar::
       }
       //**************************************************************
 
-      // evalute the GP slave coordinate derivatives --> no entries
+      // evaluate the GP slave coordinate derivatives --> no entries
       Core::Gen::Pairedvector<int, double> dsxi(linsize + ndof * ncol);
 
-      // evalute the GP master coordinate derivatives
+      // evaluate the GP master coordinate derivatives
       Core::Gen::Pairedvector<int, double> dmxi(linsize + ndof * ncol);
       deriv_xi_gp_2d(*sele, *meles[nummaster], sxi[0], mxi[0], dsxi, dmxi, linsize);
 
@@ -312,7 +312,7 @@ bool NTS::Interpolator::interpolate_3d(Mortar::Node& snode, std::vector<Mortar::
       sxi[1] = 0;
     }
     else
-      FOUR_C_THROW("ERORR: wrong node LID");
+      FOUR_C_THROW("ERROR: wrong node LID");
   }
   else if (sele->shape() == Core::FE::CellType::tri3 or sele->shape() == Core::FE::CellType::tri6)
   {
@@ -347,7 +347,7 @@ bool NTS::Interpolator::interpolate_3d(Mortar::Node& snode, std::vector<Mortar::
       sxi[1] = 0.5;
     }
     else
-      FOUR_C_THROW("ERORR: wrong node LID");
+      FOUR_C_THROW("ERROR: wrong node LID");
   }
   else
   {
@@ -406,7 +406,7 @@ bool NTS::Interpolator::interpolate_3d(Mortar::Node& snode, std::vector<Mortar::
       sele->get_nodal_coords(scoord);
       meles[nummaster]->get_nodal_coords(mcoord);
 
-      // nodal coords from previous time step and lagrange mulitplier
+      // nodal coords from previous time step and lagrange multiplier
       std::shared_ptr<Core::LinAlg::SerialDenseMatrix> scoordold;
       std::shared_ptr<Core::LinAlg::SerialDenseMatrix> mcoordold;
       std::shared_ptr<Core::LinAlg::SerialDenseMatrix> lagmult;
@@ -423,7 +423,7 @@ bool NTS::Interpolator::interpolate_3d(Mortar::Node& snode, std::vector<Mortar::
       //**************************************************************
 
       linsize *= 100;
-      // evalute the GP slave coordinate derivatives --> no entries
+      // evaluate the GP slave coordinate derivatives --> no entries
       std::vector<Core::Gen::Pairedvector<int, double>> dsxi(2, 0);
       std::vector<Core::Gen::Pairedvector<int, double>> dmxi(2, 4 * linsize + ncol * ndof);
       deriv_xi_gp_3d(*sele, *meles[nummaster], sxi, mxi, dsxi, dmxi, projalpha);
@@ -520,7 +520,7 @@ void NTS::Interpolator::interpolate_master_temp_3d(
         sxi[1] = 0;
       }
       else
-        FOUR_C_THROW("ERORR: wrong node LID");
+        FOUR_C_THROW("ERROR: wrong node LID");
     }
     else if (sele.shape() == Core::FE::CellType::tri3 or sele.shape() == Core::FE::CellType::tri6)
     {
@@ -555,7 +555,7 @@ void NTS::Interpolator::interpolate_master_temp_3d(
         sxi[1] = 0.5;
       }
       else
-        FOUR_C_THROW("ERORR: wrong node LID");
+        FOUR_C_THROW("ERROR: wrong node LID");
     }
     else
     {
@@ -615,7 +615,7 @@ void NTS::Interpolator::interpolate_master_temp_3d(
         int linsize = mynode->get_linsize();
         //**************************************************************
 
-        // evalute the GP slave coordinate derivatives --> no entries
+        // evaluate the GP slave coordinate derivatives --> no entries
         std::vector<Core::Gen::Pairedvector<int, double>> dsxi(2, 0);
         std::vector<Core::Gen::Pairedvector<int, double>> dmxi(2, 4 * linsize + ncol * ndof);
         deriv_xi_gp_3d(sele, *meles[nummaster], sxi, mxi, dsxi, dmxi, projalpha);
@@ -1958,7 +1958,7 @@ void NTS::MTInterpolatorCalc<distype_m>::interpolate_3d(
       sxi[1] = 0;
     }
     else
-      FOUR_C_THROW("ERORR: wrong node LID");
+      FOUR_C_THROW("ERROR: wrong node LID");
   }
   else if (sele->shape() == Core::FE::CellType::tri3 or sele->shape() == Core::FE::CellType::tri6)
   {
@@ -1993,7 +1993,7 @@ void NTS::MTInterpolatorCalc<distype_m>::interpolate_3d(
       sxi[1] = 0.5;
     }
     else
-      FOUR_C_THROW("ERORR: wrong node LID");
+      FOUR_C_THROW("ERROR: wrong node LID");
   }
   else
   {

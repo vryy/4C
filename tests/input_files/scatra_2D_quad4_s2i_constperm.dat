@@ -22,7 +22,7 @@ TIMESTEP                        0.1
 ALPHA_M                         0.5
 ALPHA_F                         0.5
 GAMMA                           0.5
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 VELOCITYFIELD                   zero
 INITIALFIELD                    field_by_condition
 CALCFLUX_BOUNDARY               total

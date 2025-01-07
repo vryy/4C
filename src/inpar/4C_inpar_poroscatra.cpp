@@ -21,16 +21,16 @@ void Inpar::PoroScaTra::set_valid_parameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
 
   Teuchos::ParameterList& poroscatradyn = list.sublist(
-      "POROSCATRA CONTROL", false, "Control paramters for scatra porous media coupling");
+      "POROSCATRA CONTROL", false, "Control parameters for scatra porous media coupling");
 
   // Output type
   Core::Utils::int_parameter(
-      "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &poroscatradyn);
+      "RESTARTEVERY", 1, "write restart possibility every RESTARTEVERY steps", &poroscatradyn);
   // Time loop control
   Core::Utils::int_parameter("NUMSTEP", 200, "maximum number of Timesteps", &poroscatradyn);
   Core::Utils::double_parameter("MAXTIME", 1000.0, "total simulation time", &poroscatradyn);
   Core::Utils::double_parameter("TIMESTEP", 0.05, "time step size dt", &poroscatradyn);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "increment for writing solution", &poroscatradyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "increment for writing solution", &poroscatradyn);
   Core::Utils::int_parameter(
       "ITEMAX", 10, "maximum number of iterations over fields", &poroscatradyn);
   Core::Utils::int_parameter(

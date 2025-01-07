@@ -83,7 +83,7 @@ namespace Mat
         /// global fiber id number (1,2,3,...) used later as FIBER1,FIBER2,FIBER3,...
         int fiber_gid_ = 0;
 
-        /// fiber initalization status
+        /// fiber initialization status
         int init_ = 0;
 
         /// print parameters
@@ -199,9 +199,9 @@ namespace Mat
        * \brief Indicator for formulation
        *
        * \param[out] isoprinc     global indicator for isotropic principal formulation
-       * \param[out] isomod       global indicator for isotropic splitted formulation
+       * \param[out] isomod       global indicator for isotropic split formulation
        * \param[out] anisoprinc   global indicator for anisotropic principal formulation
-       * \param[out] anisomod     global indicator for anisotropic splitted formulation
+       * \param[out] anisomod     global indicator for anisotropic split formulation
        * \param[out] viscogeneral global indicator, if one viscoelastic formulation is used
        */
       void specify_formulation(bool& isoprinc, bool& isomod, bool& anisoprinc, bool& anisomod,

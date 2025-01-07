@@ -31,8 +31,8 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 NUMSTASTEPS                     0
 THETA                           1.0
 START_THETA                     1.0

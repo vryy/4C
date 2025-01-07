@@ -75,7 +75,7 @@ namespace Global
    * global nature of the singleton instance. This behavior makes it very difficult to follow the
    * flow of data in the code and introduces hidden dependencies between different modules.
    * Nowadays, we know better and do not like to write new code that uses this class. Instead, try
-   * to pass whatever data is needed direclty to a class or function. We work on removing
+   * to pass whatever data is needed directly to a class or function. We work on removing
    * functionality from this class.
    *
    * Nevertheless, here is the old documentation, for as long as we'll be using this class:
@@ -386,7 +386,7 @@ namespace Global
     {
       return parameters_->sublist("STRUCT NOX");
     }
-    const Teuchos::ParameterList& loca_params() const { return parameters_->sublist("LOCA"); }
+    const Teuchos::ParameterList& local_params() const { return parameters_->sublist("LOCAL"); }
     const Teuchos::ParameterList& particle_params() const
     {
       return parameters_->sublist("PARTICLE DYNAMIC");
@@ -603,7 +603,7 @@ namespace Global
     /// handles restart
     Core::IO::RestartManager restartmanager_;
 
-    //! The central list of all paramters read from input.
+    //! The central list of all parameters read from input.
     std::shared_ptr<Teuchos::ParameterList> parameters_;
   };
 

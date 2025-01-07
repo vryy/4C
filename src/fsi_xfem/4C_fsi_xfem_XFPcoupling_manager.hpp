@@ -84,7 +84,7 @@ namespace XFEM
     std::string cond_name_pf_ps_;
     std::string cond_name_pf_pf_;
 
-    // Global Index in the blockmatrix of the coupled sytem [0] = structure-, [1] = fluid- block,
+    // Global Index in the blockmatrix of the coupled system [0] = structure-, [1] = fluid- block,
     // [2] = porofluid-block
     std::vector<int> idx_;
 

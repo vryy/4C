@@ -72,7 +72,7 @@ Core::LinAlg::KrylovProjector::get_non_const_weights()
   if ((*weighttype_) == "pointvalues")
     FOUR_C_THROW(
         "For weight type 'pointvalues' weight vector equals kernel vector and can thus only be "
-        "changed implicitely by changing the kernel.");
+        "changed implicitly by changing the kernel.");
 
   // since w_ will be changed, need to call fill_complete() to recompute invwTc_
   complete_ = false;

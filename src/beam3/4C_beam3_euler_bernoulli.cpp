@@ -409,19 +409,20 @@ std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Beam3eb
  | sets up geometric data from current nodal position as reference
  | position; this method can be used by the register class or when ever
  | a new beam element is generated for which some reference configuration
- | has to be stored; prerequesite for applying this method is that the
+ | has to be stored; prerequisite for applying this method is that the
  | element nodes are already known
  *----------------------------------------------------------------------*/
 void Discret::Elements::Beam3eb::set_up_reference_geometry(
     const std::vector<double>& xrefe, const bool secondinit)
 {
-  /*this method initializes geometric variables of the element; the initilization can usually be
-   *applied to elements only once; therefore after the first initilization the flag isinit is set to
-   *true and from then on this method does not take any action when called again unless it is called
-   *on purpose with the additional parameter secondinit. If this parameter is passed into the method
-   *and is true the element is initialized another time with respective xrefe and rotrefe; note: the
-   *isinit_ flag is important for avoiding reinitialization upon restart. However, it should be
-   *possible to conduct a second initilization in principle (e.g. for periodic boundary conditions*/
+  /*this method initializes geometric variables of the element; the initialization can usually be
+   *applied to elements only once; therefore after the first initialization the flag isinit is set
+   *to true and from then on this method does not take any action when called again unless it is
+   *called on purpose with the additional parameter secondinit. If this parameter is passed into the
+   *method and is true the element is initialized another time with respective xrefe and rotrefe;
+   *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it
+   *should be possible to conduct a second initialization in principle (e.g. for periodic boundary
+   *conditions*/
 
   const int nnode = 2;
 

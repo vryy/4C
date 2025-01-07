@@ -209,8 +209,8 @@ void TSI::Algorithm::output(bool forced_writerestart)
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn = Global::Problem::instance()->tsi_dynamic_params();
   // Get the parameters for the Newton iteration
-  int upres = tsidyn.get<int>("RESULTSEVRY");
-  int uprestart = tsidyn.get<int>("RESTARTEVRY");
+  int upres = tsidyn.get<int>("RESULTSEVERY");
+  int uprestart = tsidyn.get<int>("RESTARTEVERY");
 
   //========================
   // output for thermofield:
@@ -230,7 +230,8 @@ void TSI::Algorithm::output(bool forced_writerestart)
   {
     if (matchinggrid_)
     {
-      output_deformation_in_thr(structure_field()->dispn(), *structure_field()->discretization());
+      output_deformation_in_thermo(
+          structure_field()->dispn(), *structure_field()->discretization());
 
       thermo_field()->disc_writer()->write_multi_vector(
           "displacement", *dispnp_, Core::IO::nodevector);
@@ -252,7 +253,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
         Core::Nodes::Node* thermnode = thermo_field()->discretization()->l_row_node(lnodeid);
         std::vector<int> thermnodedofs_1 = thermo_field()->discretization()->dof(1, thermnode);
 
-        // now we transfer displacment dofs only
+        // now we transfer displacement dofs only
         for (int index = 0; index < numdim; ++index)
         {
           // global and processor's local fluid dof ID
@@ -330,7 +331,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
  | communicate the displacement vector to Thermo field          dano 12/11 |
  | enable visualisation of thermal variables on deformed body           |
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::output_deformation_in_thr(
+void TSI::Algorithm::output_deformation_in_thermo(
     std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp, Core::FE::Discretization& structdis)
 {
   if (dispnp == nullptr) FOUR_C_THROW("Got null pointer for displacements");
@@ -355,7 +356,7 @@ void TSI::Algorithm::output_deformation_in_thr(
     // determine number of space dimensions
     const int numdim = Global::Problem::instance()->n_dim();
 
-    // now we transfer displacment dofs only
+    // now we transfer displacement dofs only
     for (int index = 0; index < numdim; ++index)
     {
       // global and processor's local fluid dof ID
@@ -381,7 +382,7 @@ void TSI::Algorithm::output_deformation_in_thr(
 
   return;
 
-}  // output_deformation_in_thr()
+}  // output_deformation_in_thermo()
 
 
 /*----------------------------------------------------------------------*

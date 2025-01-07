@@ -163,7 +163,7 @@ double Adapter::FluidFSI::time_scaling() const
 void Adapter::FluidFSI::update()
 {
   if (Global::Problem::instance()->spatial_approximation_type() !=
-      Core::FE::ShapeFunctionType::hdg)  // TODO als fix this!
+      Core::FE::ShapeFunctionType::hdg)  // TODO also fix this!
   {
     std::shared_ptr<Core::LinAlg::Vector<double>> interfaceforcem =
         interface()->extract_fsi_cond_vector(*true_residual());
@@ -538,7 +538,7 @@ void Adapter::FluidFSI::calculate_error()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Adapter::FluidFSI::time_step_auxiliar()
+void Adapter::FluidFSI::time_step_auxiliary()
 {
   // current state
   const Core::LinAlg::Vector<double> veln_vector(*veln());

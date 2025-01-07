@@ -107,7 +107,7 @@ namespace Mat
     void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
     void update() override;
     /**
-     * \brief Evaulate the stresses from the strains in the material
+     * \brief Evaluate the stresses from the strains in the material
      *
      * \param defgrad :deformation gradient
      * \param linstrain :linear total strains

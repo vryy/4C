@@ -52,7 +52,7 @@ namespace Mixture
         double lambda_pre);
 
     /*!
-     * @brief Pack all internal data into tha #data
+     * @brief Pack all internal data into the #data
      *
      * @param data (out) : buffer to serialize data to.
      */

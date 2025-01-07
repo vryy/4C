@@ -207,7 +207,7 @@ void Thermo::TimIntImpl::predict()
 }
 
 /*----------------------------------------------------------------------*
- | prepare partiton step                                     dano 12/10 |
+ | prepare partition step                                     dano 12/10 |
  | like Predict() but without predict the unknown variables T,R         |
  *----------------------------------------------------------------------*/
 void Thermo::TimIntImpl::prepare_partition_step()
@@ -234,7 +234,7 @@ void Thermo::TimIntImpl::prepare_partition_step()
   normfres_ = Thermo::Aux::calculate_vector_norm(iternorm_, *fres_);
 
   // determine characteristic norms
-  // we set the minumum of calc_ref_norm_force() and #tolfres_, because
+  // we set the minimum of calc_ref_norm_force() and #tolfres_, because
   // we want to prevent the case of a zero characteristic fnorm
   normcharforce_ = calc_ref_norm_force();
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
@@ -551,7 +551,7 @@ void Thermo::TimIntImpl::blank_dirichlet_and_calc_norms()
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
-  // copie the dbc onto freact_,
+  // copy the dbc onto freact_,
   // everything that is not DBC node ("OtherVector") is blanked
   dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
 

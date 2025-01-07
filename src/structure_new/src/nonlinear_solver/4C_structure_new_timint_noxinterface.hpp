@@ -68,7 +68,7 @@ namespace Solid
       bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override;
 
       /*! compute jacobian
-       *  ( derived from ::NOX::Epetra::Inteface::Jacobian) */
+       *  ( derived from ::NOX::Epetra::Interface::Jacobian) */
       bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac) override;
 
       /*! compute right hand side and jacobian

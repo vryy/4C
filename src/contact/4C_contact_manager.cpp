@@ -192,7 +192,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
       }
     }
 
-    // find out which sides are initialized as In/Active and other initalization data
+    // find out which sides are initialized as In/Active and other initialization data
     std::vector<bool> isactive(currentgroup.size());
     bool Two_half_pass(false);
     bool Check_nonsmooth_selfcontactsurface(false);
@@ -441,7 +441,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
 
           // note that we do not have to worry about double entries
           // as the add_node function can deal with this case!
-          // the only problem would have occured for the initial active nodes,
+          // the only problem would have occurred for the initial active nodes,
           // as their status could have been overwritten, but is prevented
           // by the "foundinitialactive" block above!
           interface->add_node(cnode);
@@ -544,8 +544,8 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
   }
 
   // build the correct data container
-  std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr =
-      std::make_shared<CONTACT::AbstractStratDataContainer>();
+  std::shared_ptr<CONTACT::AbstractStrategyDataContainer> data_ptr =
+      std::make_shared<CONTACT::AbstractStrategyDataContainer>();
 
   // create LagrangeStrategyWear for wear as non-distinct quantity
   if (stype == Inpar::CONTACT::solution_lagmult && wearLaw != Inpar::Wear::wear_none &&

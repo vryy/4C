@@ -62,7 +62,7 @@ NOX::Nln::StatusTest::ActiveSet::ActiveSet(
       status_ = cnlngrp->get_active_set_info(qtype_, activesetsize_);
       // check for cycling of the active set
       /* NOTE: This is just working, if you use Epetra_Map s to store your
-       * active set informations! */
+       * active set information! */
       if (max_cycle_size_ > 0)
       {
         // get the current active set

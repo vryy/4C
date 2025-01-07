@@ -49,7 +49,7 @@ namespace Mixture
 
   /*!
    * \brief Mixture rule to be used in homogenized constrained mixture models. It scales the mass
-   * fractions of the individual constitutents by functions of space and time.
+   * fractions of the individual constituents by functions of space and time.
    */
   class FunctionMixtureRule : public Mixture::MixtureRule
   {

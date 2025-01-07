@@ -20,9 +20,9 @@ void Cut::Options::init_by_paramlist(const Teuchos::ParameterList& cutparams)
   geomdistance_floattype_ =
       Teuchos::getIntegralValue<CutFloatType>(cutparams, "KERNEL_DISTANCE_FLOATTYPE");
   general_position_dist_floattype_ =
-      Teuchos::getIntegralValue<CutFloatType>(cutparams, "GENERAL_POSITON_DISTANCE_FLOATTYPE");
+      Teuchos::getIntegralValue<CutFloatType>(cutparams, "GENERAL_POSITION_DISTANCE_FLOATTYPE");
   general_position_pos_floattype_ =
-      Teuchos::getIntegralValue<CutFloatType>(cutparams, "GENERAL_POSITON_POSITION_FLOATTYPE");
+      Teuchos::getIntegralValue<CutFloatType>(cutparams, "GENERAL_POSITION_POSITION_FLOATTYPE");
   direct_divergence_refplane_ = Teuchos::getIntegralValue<CutDirectDivergenceRefplane>(
       cutparams, "DIRECT_DIVERGENCE_REFPLANE");
   Cut::PositionFactory::specify_general_dist_floattype(general_position_dist_floattype_);

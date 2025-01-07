@@ -172,7 +172,7 @@ namespace Adapter
      *
      *  \author mayr.mt \date 12/2013
      */
-    void time_step_auxiliar() override;
+    void time_step_auxiliary() override;
 
     /*! \brief Indicate norms of temporal discretization error
      *

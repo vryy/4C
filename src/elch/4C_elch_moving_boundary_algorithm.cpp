@@ -100,7 +100,7 @@ void ElCh::MovingBoundaryAlgorithm::time_loop()
   if (step() == 0)
   {
     fluid_field()->statistics_and_output();
-    if (algo_parameters().get<int>("RESTARTEVRY") != 0)
+    if (algo_parameters().get<int>("RESTARTEVERY") != 0)
       fluid_field()->disc_writer()->write_vector("idispn", idispnp_);
     ale_field()->output();
   }
@@ -309,13 +309,13 @@ void ElCh::MovingBoundaryAlgorithm::output()
   // discretizations.
   fluid_field()->statistics_and_output();
   // additional vector needed for restarts:
-  int uprestart = algo_parameters().get<int>("RESTARTEVRY");
+  int uprestart = algo_parameters().get<int>("RESTARTEVERY");
   if ((uprestart != 0) && (fluid_field()->step() % uprestart == 0))
   {
     fluid_field()->disc_writer()->write_vector("idispn", idispnp_);
   }
 
-  // now the other physical fiels
+  // now the other physical fields
   scatra_field()->check_and_write_output_and_restart();
   ale_field()->output();
 }

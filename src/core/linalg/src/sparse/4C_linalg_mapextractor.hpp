@@ -71,7 +71,7 @@ namespace Core::LinAlg
       unique
 
       \note hidden calls to redistribute() may render maps in maps_ obsolete.
-      This function is intendend to simplify debugging for these cases.
+      This function is intended to simplify debugging for these cases.
     */
     void check_for_valid_map_extractor() const;
 

@@ -650,7 +650,7 @@ void CONTACT::IntegratorNitscheSsiElch::assign_electrode_and_electrolyte_quantit
     const Core::LinAlg::SerialDenseMatrix& master_shape_deriv,
     const Core::LinAlg::Matrix<dim, 1>& master_normal,
     const std::vector<Core::Gen::Pairedvector<int, double>>& d_master_xi_dd,
-    bool& slave_is_electrode, ElementDataBundle<dim>& electrode_quantitites,
+    bool& slave_is_electrode, ElementDataBundle<dim>& electrode_quantities,
     ElementDataBundle<dim>& electrolyte_quantities)
 {
   std::shared_ptr<const Mat::Electrode> electrode_material =
@@ -678,12 +678,12 @@ void CONTACT::IntegratorNitscheSsiElch::assign_electrode_and_electrolyte_quantit
 
   if (slave_is_electrode)
   {
-    electrode_quantitites.element = &slave_ele;
-    electrode_quantitites.xi = slave_xi;
-    electrode_quantitites.gp_normal = &slave_normal;
-    electrode_quantitites.shape_funct = &slave_shape;
-    electrode_quantitites.shape_deriv = &slave_shape_deriv;
-    electrode_quantitites.d_xi_dd = &d_slave_xi_dd;
+    electrode_quantities.element = &slave_ele;
+    electrode_quantities.xi = slave_xi;
+    electrode_quantities.gp_normal = &slave_normal;
+    electrode_quantities.shape_funct = &slave_shape;
+    electrode_quantities.shape_deriv = &slave_shape_deriv;
+    electrode_quantities.d_xi_dd = &d_slave_xi_dd;
 
     electrolyte_quantities.element = &master_ele;
     electrolyte_quantities.xi = master_xi;
@@ -701,12 +701,12 @@ void CONTACT::IntegratorNitscheSsiElch::assign_electrode_and_electrolyte_quantit
     electrolyte_quantities.shape_deriv = &slave_shape_deriv;
     electrolyte_quantities.d_xi_dd = &d_slave_xi_dd;
 
-    electrode_quantitites.element = &master_ele;
-    electrode_quantitites.xi = master_xi;
-    electrode_quantitites.gp_normal = &master_normal;
-    electrode_quantitites.shape_funct = &master_shape;
-    electrode_quantitites.shape_deriv = &master_shape_deriv;
-    electrode_quantitites.d_xi_dd = &d_master_xi_dd;
+    electrode_quantities.element = &master_ele;
+    electrode_quantities.xi = master_xi;
+    electrode_quantities.gp_normal = &master_normal;
+    electrode_quantities.shape_funct = &master_shape;
+    electrode_quantities.shape_deriv = &master_shape_deriv;
+    electrode_quantities.d_xi_dd = &d_master_xi_dd;
   }
 }
 FOUR_C_NAMESPACE_CLOSE

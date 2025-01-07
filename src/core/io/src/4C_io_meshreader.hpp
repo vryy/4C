@@ -40,7 +40,7 @@ namespace Core::IO
       /**
        * How to partition then mesh among processes.
        */
-      Teuchos::ParameterList mesh_paritioning_parameters;
+      Teuchos::ParameterList mesh_partitioning_parameters;
 
       /**
        * Geometric search parameters for certain partitiong methods.
@@ -151,7 +151,7 @@ namespace Core::IO
     /// The name of the section under which we will read the nodes.
     std::string node_section_name_;
 
-    /// Additional paramters for reading meshes.
+    /// Additional parameters for reading meshes.
     MeshReaderParameters parameters_;
   };
 }  // namespace Core::IO

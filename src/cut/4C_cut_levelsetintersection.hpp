@@ -39,7 +39,7 @@ namespace Cut
    public:
     LevelSetIntersection(MPI_Comm comm, bool create_side = true);
 
-    /// constructur for LevelSetIntersecton class
+    /// constructor for LevelSetIntersection class
     LevelSetIntersection(int myrank = -1, bool create_side = true);
 
     /** \brief add a side of the cut mesh and return the side-handle

@@ -268,7 +268,7 @@ namespace Discret
        protected:
         //! number of DOFs per node
         const int numdofpernode_;
-        //! flag if ExtracElementAndNodeValues was called
+        //! flag if ExtractElementAndNodeValues was called
         bool isextracted_;
         //! flag if evaluate_gp_variables was called
         bool isevaluated_;
@@ -460,7 +460,7 @@ namespace Discret
       /*!
       \brief  decorator/wrapper class for variable manager, extensions to time derivatives
 
-      This class entends a wraped variable manager by the instationary variables
+      This class extends a wrapped variable manager by the instationary variables
       (time derivatives, and 'history'-vector)
 
       \author vuong
@@ -528,7 +528,7 @@ namespace Discret
       /*!
       \brief  decorator/wrapper class for variable manager, extensions to moving domain variables
 
-      This class entends a wraped variable manager by the  variables needed for an ALE
+      This class extends a wrapped variable manager by the  variables needed for an ALE
       formulation, i.e. mesh displacements and convective velocity.
 
       \author vuong
@@ -617,7 +617,7 @@ namespace Discret
       /*!
       \brief  decorator/wrapper class for variable manager, extensions to ScaTra coupling
 
-      This class entends a wraped variable manager by the  variables needed for a ScaTra
+      This class extends a wrapped variable manager by the  variables needed for a ScaTra
       coupling, i.e. the scalar values.
 
       \author vuong

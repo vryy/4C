@@ -1,7 +1,7 @@
 -----------------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Particle_Structure_Interaction
 --------------------------------------------------------------------------IO
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 VERBOSITY                       standard
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 INTERVAL_STEPS                  25
@@ -14,8 +14,8 @@ BIN_SIZE_LOWER_BOUND            0.33
 PERIODICONOFF                   1 1 0
 DOMAINBOUNDINGBOX               -0.5 -0.5 -0.0001 0.5 0.5 2.2001
 ----------------------------------------------------------------PASI DYNAMIC
-RESULTSEVRY                     25
-RESTARTEVRY                     80
+RESULTSEVERY                     25
+RESTARTEVERY                     80
 TIMESTEP                        2.5e-3
 NUMSTEP                         100
 MAXTIME                         0.25

@@ -25,9 +25,9 @@ void Inpar::POROFLUIDMULTIPHASE::set_valid_parameters(Teuchos::ParameterList& li
   Core::Utils::int_parameter("NUMSTEP", 20, "Total number of time steps", &porofluidmultiphasedyn);
   Core::Utils::double_parameter("TIMESTEP", 0.1, "Time increment dt", &porofluidmultiphasedyn);
   Core::Utils::int_parameter(
-      "RESULTSEVRY", 1, "Increment for writing solution", &porofluidmultiphasedyn);
+      "RESULTSEVERY", 1, "Increment for writing solution", &porofluidmultiphasedyn);
   Core::Utils::int_parameter(
-      "RESTARTEVRY", 1, "Increment for writing restart", &porofluidmultiphasedyn);
+      "RESTARTEVERY", 1, "Increment for writing restart", &porofluidmultiphasedyn);
 
   Core::Utils::double_parameter(
       "THETA", 0.5, "One-step-theta time integration factor", &porofluidmultiphasedyn);

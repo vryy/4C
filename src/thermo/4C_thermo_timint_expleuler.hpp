@@ -69,7 +69,7 @@ namespace Thermo
     //! Update configuration after time step
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
-    //! becomes impossible. We are ready and keen awating the next time step.
+    //! becomes impossible. We are ready and keen awaiting the next time step.
     void update_step_state() override;
 
     //! Update Element

@@ -494,7 +494,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
 
       /*!
@@ -533,10 +533,10 @@ namespace Discret
       \param params (in/out): ParameterList for communication between control routine
                               and elements
       \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
@@ -581,7 +581,7 @@ namespace Discret
       /*!
       \brief Return the location vector of this element
 
-      The method computes degrees of freedom this element adresses.
+      The method computes degrees of freedom this element addresses.
       Degree of freedom ordering is as follows:<br>
       First all degrees of freedom of adjacent nodes are numbered in
       local nodal order, then the element internal degrees of freedom are
@@ -595,10 +595,10 @@ namespace Discret
       This version is intended to fill the LocationArray with the dofs
       the element will assemble into. In the standard case these dofs are
       the dofs of the element itself. For some special conditions (e.g.
-      the weak dirichlet boundary condtion) a surface element will assemble
+      the weak dirichlet boundary condition) a surface element will assemble
       into the dofs of a volume element.<br>
 
-      \note The degrees of freedom returned are not neccessarily only nodal dofs.
+      \note The degrees of freedom returned are not necessarily only nodal dofs.
             Depending on the element implementation, output might also include
             element dofs.
 
@@ -615,7 +615,7 @@ namespace Discret
       /*!
       \brief Return the location vector of this element
 
-      The method computes degrees of freedom this element adresses.
+      The method computes degrees of freedom this element addresses.
       Degree of freedom ordering is as follows:<br>
       First all degrees of freedom of adjacent nodes are numbered in
       local nodal order, then the element internal degrees of freedom are
@@ -627,12 +627,12 @@ namespace Discret
       Length of the output vector matches number of degrees of freedom
       exactly.<br>
 
-      \note The degrees of freedom returned are not neccessarily only nodal dofs.
+      \note The degrees of freedom returned are not necessarily only nodal dofs.
             Depending on the element implementation, output might also include
             element dofs.
 
       \param dis (in)      : the discretization this element belongs to
-      \param lm (out)      : vector of degrees of freedom adressed by this element
+      \param lm (out)      : vector of degrees of freedom addressed by this element
       \param lmowner (out) : vector of proc numbers indicating which dofs are owned
                              by which procs in a dof row map. Ordering
                              matches dofs in lm.
@@ -780,7 +780,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -869,10 +869,10 @@ namespace Discret
       \param params (in/out): ParameterList for communication between control routine
                               and elements
       \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element

@@ -86,7 +86,7 @@ namespace Mat
         /// fiber params for the compressible case
         double k1comp_;
         double k2comp_;
-        /// fiber initalization status
+        /// fiber initialization status
         int init_;
 
         //@}
@@ -246,9 +246,9 @@ namespace Mat
       /// Indicator for formulation
       void specify_formulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
-          bool& isomod,       ///< global indicator for isotropic splitted formulation
+          bool& isomod,       ///< global indicator for isotropic split formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
-          bool& anisomod,     ///< global indicator for anisotropic splitted formulation
+          bool& anisomod,     ///< global indicator for anisotropic split formulation
           bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
           ) override
       {

@@ -48,9 +48,9 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         20000
 PREDICT                         ConstTemp
-RESEVRYERGY                     0
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESEVERYERGY                     0
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        0.05
 TOLRES                          1e-08
 TOLTEMP                         1e-10

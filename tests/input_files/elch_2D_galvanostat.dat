@@ -14,13 +14,13 @@ THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.5
 VELOCITYFIELD                   zero
-RESULTSEVRY                     10
+RESULTSEVERY                     10
 MATID                           1
 CALCFLUX_BOUNDARY               total
 OUTPUTSCALARS                   entire_domain
 MAXTIME                         10
 NUMSTEP                         20
-RESTARTEVRY                     10
+RESTARTEVERY                     10
 SKIPINITDER                     yes
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09

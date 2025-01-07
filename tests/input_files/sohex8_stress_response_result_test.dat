@@ -25,8 +25,8 @@ SOLVER                          UMFPACK
 -------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        0.5
 NUMSTEP                         2
 MAXTIME                         2

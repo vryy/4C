@@ -38,7 +38,7 @@ int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
     const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
   // temporarily store the slave node set
-  std::shared_ptr<std::set<int>> tempset = slavenodeids_;
+  std::shared_ptr<std::set<int>> tempest = slavenodeids_;
   slavenodeids_ = std::make_shared<std::set<int>>();
 
   // assign dofs using the empty slave node set. This way the dofrowmap_
@@ -51,7 +51,7 @@ int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
   myMinGID_ = DofSet::min_all_gid();
 
   // restore the slave node set
-  slavenodeids_ = tempset;
+  slavenodeids_ = tempest;
 
   // assign dofs for the standard dofset, that is without periodic boundary
   // conditions and with the slave node set back in place

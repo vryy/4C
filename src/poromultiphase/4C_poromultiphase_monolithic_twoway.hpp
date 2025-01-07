@@ -216,7 +216,7 @@ namespace POROMULTIPHASE
     std::shared_ptr<Core::LinAlg::Vector<double>> rhs_;  //!< rhs of Poroelasticity system
 
     std::shared_ptr<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
-    double solveradaptolbetter_;                    //!< tolerance to which is adpated ?
+    double solveradaptolbetter_;                    //!< tolerance to which is adapted ?
     bool solveradapttol_;                           //!< adapt solver tolerance
 
 
@@ -234,10 +234,10 @@ namespace POROMULTIPHASE
 
     //@}
 
-    //! dof row map (not splitted)
+    //! dof row map (not split)
     std::shared_ptr<Epetra_Map> fullmap_;
 
-    //! dof row map splitted in (field) blocks
+    //! dof row map split in (field) blocks
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! all equilibration of global system matrix and RHS is done in here
@@ -331,10 +331,10 @@ namespace POROMULTIPHASE
     void build_artery_block_null_space(
         std::shared_ptr<Core::LinAlg::Solver>& solver, const int& arteryblocknum) override;
 
-    //! dof row map (not splitted)
+    //! dof row map (not split)
     std::shared_ptr<Epetra_Map> fullmap_artporo_;
 
-    //! dof row map splitted in (field) blocks
+    //! dof row map split in (field) blocks
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_artporo_;
   };
 

@@ -171,7 +171,7 @@ namespace CONTACT
     \brief write restart
 
     @param[in] output Output writer to be used for writing outpu
-    @oaram[in] forcedrestart Force to write restart data
+    @param[in] forcedrestart Force to write restart data
 
     */
     void write_restart(Core::IO::DiscretizationWriter& output, bool forcedrestart = false);

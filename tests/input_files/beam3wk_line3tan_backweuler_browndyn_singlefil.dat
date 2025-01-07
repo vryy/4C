@@ -12,7 +12,7 @@ NUMTHERMDIS            0
 OUTPUT_BIN             Yes
 STRUCT_DISP            Yes
 FILESTEPS              1000000
-STDOUTEVRY             100
+STDOUTEVERY             100
 VERBOSITY              standard
 // ----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 // OUTPUT_DATA_FORMAT              binary
@@ -32,8 +32,8 @@ VERBOSITY              standard
 LINEAR_SOLVER          1
 INT_STRATEGY           Standard
 DYNAMICTYPE             OneStepTheta
-RESULTSEVRY            1
-RESTARTEVRY            10
+RESULTSEVERY            1
+RESTARTEVERY            10
 NLNSOL                 fullnewton
 DIVERCONT              stop
 TIMESTEP               0.001

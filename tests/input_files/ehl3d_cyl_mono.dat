@@ -22,8 +22,8 @@ FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 NLNSOL                          fullnewton
 MAXTIME                         1.0
 NUMSTEP                         3
@@ -61,8 +61,8 @@ PARALLEL_REDIST                 none
 MAXTIME                         1.0
 NUMSTEP                         3000
 TIMESTEP                        0.001
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 CALCERROR                       No
 CALCERRORNO                     2
 OUTMEAN                         No
@@ -77,14 +77,14 @@ ROUGHNESS_STD_DEVIATION         0.002
 MODIFIED_REYNOLDS_EQU           no
 ADD_SQUEEZE_TERM                yes
 -----------------------------------------------ELASTO HYDRO DYNAMIC
-RESTARTEVRYTIME                 0
-RESTARTEVRY                     1
+RESTARTEVERYTIME                 0
+RESTARTEVERY                     1
 NUMSTEP                         5000000
 MAXTIME                         1.5
 TIMESTEP                        0.1
 DIFFTIMESTEPSIZE                No
-RESULTSEVRYTIME                 0
-RESULTSEVRY                     1
+RESULTSEVERYTIME                 0
+RESULTSEVERY                     1
 ITEMAX                          200
 ITEMIN                          5
 FIELDCOUPLING                   none

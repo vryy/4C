@@ -31,8 +31,8 @@ TIMEINTEGR                      Stationary
 NONLINITER                      Newton
 ITEMAX                          15
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           1
-RESTARTEVRY                     20
+RESULTSEVERY                           1
+RESTARTEVERY                     20
 NUMSTEP                         4
 NUMSTASTEPS                     0
 MAXTIME                         10000.0

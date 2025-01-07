@@ -664,8 +664,8 @@ void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
 
   // overrule certain parameters
   sdyn_->set<int>("NUMSTEP", prbdyn_->get<int>("NUMSTEP"));
-  sdyn_->set<int>("RESTARTEVRY", prbdyn_->get<int>("RESTARTEVRY"));
-  sdyn_->set<int>("RESULTSEVRY", prbdyn_->get<int>("RESULTSEVRY"));
+  sdyn_->set<int>("RESTARTEVERY", prbdyn_->get<int>("RESTARTEVERY"));
+  sdyn_->set<int>("RESULTSEVERY", prbdyn_->get<int>("RESULTSEVERY"));
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the .dat
   // file

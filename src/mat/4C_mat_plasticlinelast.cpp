@@ -140,7 +140,7 @@ void Mat::PlasticLinElast::unpack(Core::Communication::UnpackBuffer& buffer)
   int histsize;
   extract_from_pack(buffer, histsize);
 
-  // if system is not yet initialised, the history vectors have to be intialized
+  // if system is not yet initialised, the history vectors have to be initialized
   if (histsize == 0) isinit_ = false;
 
   // unpack plastic history vectors
@@ -296,7 +296,7 @@ void Mat::PlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   for (int i = 0; i < 3; i++) id2(i) = 1.0;
 
   // linstrain (in): independent variable passed from the element
-  //  strain^p: evolution is determined by the flow rule, history varible
+  //  strain^p: evolution is determined by the flow rule, history variable
   //  strain^e: definition of additive decomposition:
   //  strain^e = strain - strain^p
   // REMARK: stress-like 6-Voigt vector
@@ -691,7 +691,7 @@ void Mat::PlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   std::cout << " qbar " << qbar << std::endl;
   std::cout << " unit flow vector" << Nbar << std::endl;
   std::cout << " heaviside " << heaviside << std::endl;
-  std::cout << " Kinematic hardening modul " << Hkin << std::endl;
+  std::cout << " Kinematic hardening module " << Hkin << std::endl;
 
   // build the elasto-plastic tangent modulus
   Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatFD(true);
@@ -917,7 +917,7 @@ void Mat::PlasticLinElast::setup_cmat_elasto_plastic(
 #ifdef DEBUGMATERIAL
   if (Dgamma != 0)
   {
-    std::cout << "Ende SetupCmatElastPlast" << std::endl;
+    std::cout << "End SetupCmatElastPlast" << std::endl;
     std::cout << "Cep\n"
               << " Dgamma " << Dgamma << std::endl;
     std::cout << " G " << G << std::endl;

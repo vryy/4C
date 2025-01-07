@@ -419,17 +419,17 @@ namespace Discret
 
       Core::LinAlg::Matrix<nsd_, nen_>
           evelaf_;  ///< element velocity at time t^n+af, implemented also in base class, not
-                    ///< accessable via extract_values_from_global_vector
+                    ///< accessible via extract_values_from_global_vector
       Core::LinAlg::Matrix<nen_, 1>
           epreaf_;  ///< element pressure at time t^n+af, implemented also in base class, not
-                    ///< accessable via extract_values_from_global_vector
+                    ///< accessible via extract_values_from_global_vector
 
       Core::LinAlg::Matrix<nsd_, nen_>
-          eveln_;  ///< element velocity at time t^n, implemented also in base class, not accessable
+          eveln_;  ///< element velocity at time t^n, implemented also in base class, not accessible
                    ///< via extract_values_from_global_vector
       Core::LinAlg::Matrix<nen_, 1>
           epren_;  ///< element velocity at time t^n, implemented also in base
-                   ///< class, not accessable via extract_values_from_global_vector
+                   ///< class, not accessible via extract_values_from_global_vector
 
       Core::LinAlg::Matrix<nsd_, 1> ivelint_jump_;        ///< interface velocity jump at t^n+1
       Core::LinAlg::Matrix<nsd_, 1> itraction_jump_;      ///< interface traction jump at t^n+1

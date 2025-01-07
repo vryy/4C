@@ -34,13 +34,13 @@ MAXTIME                         0.1
 NONLINITER Newton
 NUMSTEP                         4
 PREDICTOR                       steady_state
-RESTARTEVRY                     2
+RESTARTEVERY                     2
 STARTFUNCNO                     -1
 START_THETA                     0.66
 THETA                           0.66
 TIMEINTEGR                      Af_Gen_Alpha
 TIMESTEP                        0.00625
-RESULTSEVRY                           4
+RESULTSEVERY                           4
 MESHTYING                       no
 INITIALFIELD                    BELTRAMI-FLOW
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES

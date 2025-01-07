@@ -68,7 +68,7 @@ int Discret::Elements::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
   {
     if ((*onoff)[checkdof] != 0)
       FOUR_C_THROW(
-          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+          "Number of Dimensions in Neumann_Evaluation is 3. Further DoFs are not considered.");
   }
 
   // element geometry update - currently only material configuration

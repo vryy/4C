@@ -123,7 +123,7 @@ void Discret::Elements::FluidBoundaryImpl<distype>::evaluate_action(
       d_qdu(ele1, params, discretization, lm, elevec1);
       break;
     }
-    case FLD::ba_calc_node_normal:
+    case FLD::boundary_calc_node_normal:
     {
       std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp;
       std::vector<double> mydispnp;
@@ -882,7 +882,7 @@ void Discret::Elements::FluidBoundaryImpl<distype>::element_mean_curvature(
     // Core::LinAlg::SerialDenseMatrix      metrictensor(nsd_,nsd_);
     Core::LinAlg::Matrix<bdrynsd_, bdrynsd_> metrictensor(true);
 
-    // Addionally, compute metric tensor
+    // Additionally, compute metric tensor
     Core::FE::compute_metric_tensor_for_boundary_ele<distype>(xyze_, deriv_, metrictensor, drs_);
 
     dxyzdrs.multiply_nt(deriv_, xyze_);
@@ -910,7 +910,7 @@ void Discret::Elements::FluidBoundaryImpl<distype>::element_mean_curvature(
     }
     else
       FOUR_C_THROW(
-          "Calcualtion of the mean curvature is only implemented for a 2D surface element");
+          "Calculation of the mean curvature is only implemented for a 2D surface element");
 
 
     // get the number of elements adjacent to this node. Find out how many
@@ -1209,7 +1209,7 @@ void Discret::Elements::FluidBoundaryImpl<distype>::center_of_mass_calculation(
       // determine coordinates of current Gauss point
       coordgp.multiply(xyze_, funct_);
 
-      // Compute elment center of gravity
+      // Compute element center of gravity
       xyzGe(i) += intpoints.ip().qwgt[gpid] * coordgp(i) * drs_;
 
     }  // end Gauss loop
@@ -1318,7 +1318,7 @@ void Discret::Elements::FluidBoundaryImpl<distype>::compute_flow_rate(
     const double flowrate = velint_.dot(unitnormal_);
 
     // store flowrate at first dof of each node
-    // use negative value so that inflow is positiv
+    // use negative value so that inflow is positive
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
       // see "A better consistency for low order stabilized finite element methods"

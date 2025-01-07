@@ -56,7 +56,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
    * (although in most cases the Lagrange multiplier has 3 component for each nodal value).
    *
    * By defining the Lagrange multipliers like described above, each additional DOF can be
-   * identified by either the global id of the physical node it is deined on or by the global id
+   * identified by either the global id of the physical node it is defined on or by the global id
    * of the element it is defined on
    *
    * The start value for the Lagrange multiplier global IDs can be explicitly given. This is
@@ -191,7 +191,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
 
    private:
     /**
-     * \brief Calculate the maps for the solid boundary layer and background dofs. The calcualted
+     * \brief Calculate the maps for the solid boundary layer and background dofs. The calculated
      * maps are used to complete the mortar matrices.
      */
     void set_global_maps();

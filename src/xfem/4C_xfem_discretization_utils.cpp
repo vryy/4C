@@ -435,7 +435,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::split_discretization(
       src_conds[i] = split_condition(conds[i], othernodecolvec, sourcedis.get_comm());
     sourcedis.replace_conditions(*conditername, src_conds);
   }
-  // re-partioning
+  // re-partitioning
   redistribute(sourcedis, othernoderowvec, othernodecolvec);
 
 

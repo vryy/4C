@@ -26,8 +26,8 @@ TIMESTEP                        1.0
 THETA                           0.5
 INITIALFIELD                    field_by_condition
 LINEAR_SOLVER                   1
-RESULTSEVRY                     100
-RESTARTEVRY                     100
+RESULTSEVERY                     100
+RESTARTEVERY                     100
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       0.0
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

@@ -19,8 +19,8 @@ LINEAR_SOLVER                   1
 DYNAMICTYPE                      OneStepTheta
 NUMSTEP                         5000
 TIMESTEP                        0.01
-RESULTSEVRY                     10000
-RESTARTEVRY                     10000
+RESULTSEVERY                     10000
+RESTARTEVERY                     10000
 SOLVERTYPE                      Nonlinear
 MAXITERATIONS                   40
 TOLERANCE                       1E-7

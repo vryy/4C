@@ -174,7 +174,7 @@ void test_hex8_quad4_qhull1()
   intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
-// INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fullfill the
+// INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fulfill the
 // restrictions of this method!
 void test_hex8_quad4_alex1()
 {
@@ -4488,7 +4488,7 @@ void test_hex8_quad4_shadan1()
   intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
-// INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fullfill the
+// INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fulfill the
 // restrictions of this method!
 void test_hex8_quad4_mesh_many()
 {
@@ -4634,7 +4634,7 @@ void test_hex8_quad4_mesh_many()
   intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
-// INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fullfill the
+// INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fulfill the
 // restrictions of this method!
 void test_hex8_quad4_mesh_edgecut()
 {
@@ -4740,7 +4740,7 @@ void test_hex8_quad4_mesh_edgecut()
   intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
-// INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fullfill the
+// INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fulfill the
 // restrictions of this method!
 void test_hex8_quad4_mesh_edgecut2()
 {

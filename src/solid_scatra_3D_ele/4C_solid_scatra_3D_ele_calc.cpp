@@ -156,15 +156,14 @@ namespace
     FOUR_C_ASSERT(
         !is_scalar || num_scalars == 1, "numscalars must be 1 if result type is not a vector!");
 
-    // get quantitiy from discretization
-    std::shared_ptr<const Core::LinAlg::Vector<double>> quantitites_np =
+    // get quantity from discretization
+    std::shared_ptr<const Core::LinAlg::Vector<double>> quantities_np =
         discretization.get_state(*field_index, field_name);
 
-    if (quantitites_np == nullptr)
-      FOUR_C_THROW("Cannot get state vector '%s' ", field_name.c_str());
+    if (quantities_np == nullptr) FOUR_C_THROW("Cannot get state vector '%s' ", field_name.c_str());
 
     auto my_quantities = std::vector<double>(la[*field_index].lm_.size(), 0.0);
-    Core::FE::extract_my_values(*quantitites_np, my_quantities, la[*field_index].lm_);
+    Core::FE::extract_my_values(*quantities_np, my_quantities, la[*field_index].lm_);
 
     return get_element_quantities<celltype, is_scalar>(num_scalars, my_quantities);
   }
@@ -463,7 +462,7 @@ void Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
               Core::LinAlg::Matrix<6, 1> dSdc = evaluate_d_material_stress_d_scalar<celltype>(
                   solid_material, deformation_gradient, gl_strain, params, gp, ele.id());
 
-              // linear B-opeartor
+              // linear B-operator
               const Core::LinAlg::Matrix<Internal::num_str<celltype>,
                   Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
                   bop = SolidFormulation::get_linear_b_operator(linearization);

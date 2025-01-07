@@ -268,7 +268,7 @@ namespace Discret
       //!  calculate weighted mass flux (no reactive flux so far)
       virtual void calculate_flux(Core::LinAlg::Matrix<3, nen_>& flux,  //!< flux to be computed
           const Core::Elements::Element* ele,      //!< the element we are dealing with
-          const Inpar::ScaTra::FluxType fluxtype,  //!< type fo flux
+          const Inpar::ScaTra::FluxType fluxtype,  //!< type of flux
           const int k                              //!< index of current scalar
       );
 
@@ -497,7 +497,7 @@ namespace Discret
       /*========================================================================*/
 
       //! calculate mean turbulent Prandtl number
-      void get_mean_prt_of_homogenous_direction(
+      void get_mean_prt_of_homogeneous_direction(
           Teuchos::ParameterList& turbmodelparams,  //!< turbulence parameter list
           int& nlayer                               //!< layer of homogeneous plane
       );
@@ -608,7 +608,7 @@ namespace Discret
       //! calculate rate of strain of (fine-scale) velocity
       inline double get_strain_rate(const Core::LinAlg::Matrix<nsd_, nen_>& evel)
       {
-        // evel is tranferred here since the evaluation of the strain rate can be performed
+        // evel is transferred here since the evaluation of the strain rate can be performed
         // for various velocities such as velint_, fsvel_, ...
 
         double rateofstrain = 0;
@@ -880,7 +880,7 @@ namespace Discret
           const int k,                                           //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double sgdiff,  //!< subgrid-scale diffusivity
-          const Core::LinAlg::Matrix<nsd_, 1> fsgradphi  //!< gardient of fine-scale velocity
+          const Core::LinAlg::Matrix<nsd_, 1> fsgradphi  //!< gradient of fine-scale velocity
       );
 
       //! multifractal subgrid-scale modeling on right hand side only rasthofer 11/13  |

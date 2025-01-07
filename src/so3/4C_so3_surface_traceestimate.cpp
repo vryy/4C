@@ -510,9 +510,9 @@ void Discret::Elements::StructuralSurface::trace_estimate_vol_matrix_tsi(
   Core::FE::IntPointsAndWeights<dim> ip(Discret::Elements::DisTypeToOptGaussRule<dt_vol>::rule);
 
   if (parent_element()->num_material() < 2) FOUR_C_THROW("where's my second material");
-  std::shared_ptr<Mat::FourierIso> mat_thr =
+  std::shared_ptr<Mat::FourierIso> mat_thermo =
       std::dynamic_pointer_cast<Mat::FourierIso>(parent_element()->material(1));
-  const double k0 = mat_thr->conductivity();
+  const double k0 = mat_thermo->conductivity();
 
   for (int gp = 0; gp < ip.ip().nquad; ++gp)
   {
@@ -561,9 +561,9 @@ void Discret::Elements::StructuralSurface::trace_estimate_surf_matrix_tsi(
   Core::LinAlg::SerialDenseMatrix deriv_surf(2, Core::FE::num_nodes<dt_surf>);
 
   if (parent_element()->num_material() < 2) FOUR_C_THROW("where's my second material");
-  std::shared_ptr<Mat::FourierIso> mat_thr =
+  std::shared_ptr<Mat::FourierIso> mat_thermo =
       std::dynamic_pointer_cast<Mat::FourierIso>(parent_element()->material(1));
-  const double k0 = mat_thr->conductivity();
+  const double k0 = mat_thermo->conductivity();
 
   for (int gp = 0; gp < ip.ip().nquad; ++gp)
   {

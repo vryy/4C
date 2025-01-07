@@ -35,7 +35,7 @@ int Discret::Elements::FluidBoundary::evaluate(Teuchos::ParameterList& params,
     case FLD::flowratederiv:
     case FLD::Outletimpedance:
     case FLD::dQdu:
-    case FLD::ba_calc_node_normal:
+    case FLD::boundary_calc_node_normal:
     case FLD::calc_node_curvature:
     case FLD::calc_Neumann_inflow:
     case FLD::calc_pressure_bou_int:
@@ -142,7 +142,7 @@ void Discret::Elements::FluidBoundary::location_vector(const Core::FE::Discretiz
       //       as input in the respective evaluate routines
       parent_element()->location_vector(dis, la, doDirichlet);
       break;
-    case FLD::ba_none:
+    case FLD::boundary_none:
       FOUR_C_THROW("No action supplied");
       break;
     default:

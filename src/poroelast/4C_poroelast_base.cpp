@@ -556,7 +556,7 @@ void PoroElast::PoroBase::check_for_poro_conditions()
   if (poroPresInt.size()) pres_int_cond_ = true;
 }
 
-void PoroElast::NoPenetrationConditionHandle::buid_no_penetration_map(
+void PoroElast::NoPenetrationConditionHandle::build_no_penetration_map(
     MPI_Comm comm, std::shared_ptr<const Epetra_Map> dofRowMap)
 {
   std::vector<int> condIDs;

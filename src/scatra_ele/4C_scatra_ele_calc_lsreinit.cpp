@@ -133,7 +133,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
     Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {
-  // distinguish reinitalization
+  // distinguish reinitialization
   switch (lsreinitparams_->reinit_type())
   {
     case Inpar::ScaTra::reinitaction_ellipticeq:
@@ -349,7 +349,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
     Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {
-  // distinguish reinitalization
+  // distinguish reinitialization
   switch (lsreinitparams_->reinit_type())
   {
     case Inpar::ScaTra::reinitaction_sussman:
@@ -813,7 +813,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_ellipti
     //    if (std::abs(gradphinp(2,0))>1.0e-8)
     //    {
     //        std::cout << gradphinp << std::setprecision(8) << my::ephinp_[0] << std::endl;
-    //        FOUR_C_THROW("ENDE");
+    //        FOUR_C_THROW("END");
     //    }
 
     double normgradphi = gradphinp.norm2();
@@ -1003,7 +1003,7 @@ double Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_char_el
         gradphi_scaled.update(1.0 / gradphi_norm, gradphizero);
       else
       {
-        // TODO: clearify this
+        // TODO: clarify this
         FOUR_C_THROW("gradphi_norm=0: cannot compute characteristic element length");
         gradphi_scaled.update(1.0, gradphizero);
         // gradphi_scaled.clear();
@@ -1033,7 +1033,7 @@ double Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_char_el
     // b) cubic/square root of element volume/area or element length (3-/2-/1-D)
     case Inpar::ScaTra::root_of_volume_reinit:
     {
-      // cast dimension to a double varibale -> pow()
+      // cast dimension to a double variable -> pow()
       const double dim = static_cast<double>(nsd_);
       h = std::pow(vol, 1.0 / dim);
     }

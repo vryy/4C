@@ -60,7 +60,7 @@ namespace Mat::Utils::Muscle
    * @param[in]     lambdaM Fiber stretch
    * @param[in]     lambdaMin Minimal fiber stretch
    * @param[in]     lambdaOpt Optimal fiber stretch
-   * @param[out]    dFxidLamdaM Derivative of the force-stretch function w.r.t. the fiber
+   * @param[out]    dFxidLambdaM Derivative of the force-stretch function w.r.t. the fiber
    *                            stretch
    */
   double evaluate_derivative_force_stretch_dependency_ehret(
@@ -85,7 +85,7 @@ namespace Mat::Utils::Muscle
   /*!
    * @brief Evaluate the force-velocity dependency in the style of Boel et al.
    *
-   * Force-velocity dependecy according to Boel et al. with some slight modifications. Boel et.
+   * Force-velocity dependency according to Boel et al. with some slight modifications. Boel et.
    * al. scale and shift the eccentric branch of the velocity dependency using the parameter d.
    * To be able to turn the velocity dependency on and off, this concept is adopted for the
    * concentric branch as well. Choosing de=dc=0 leads to a neglection of the velocity
@@ -111,7 +111,7 @@ namespace Mat::Utils::Muscle
    * @brief Evaluate the derivative of the force-velocity dependency in the style of Boel et al.
    *        w.r.t. the fiber stretch
    *
-   * Force-velocity dependecy according to Boel et al. with some slight modifications. Boel et.
+   * Force-velocity dependency according to Boel et al. with some slight modifications. Boel et.
    * al. scale and shift the eccentric branch of the velocity dependency using the parameter d.
    * To be able to turn the velocity dependency on and off, this concept is adopted for the
    * concentric branch as well. Choosing de=dc=0 leads to a neglection of the velocity
@@ -129,7 +129,7 @@ namespace Mat::Utils::Muscle
    * @param[in]     dc Amplitude of the concentric velocity dependency function
    * @param[in]     ke Curvature of the eccentric velocity dependency function
    * @param[in]     kc Curvature of the concentric velocity dependency function
-   * @param[out]    dFvdLamdaM Derivative of the force-velocity function w.r.t. the fiber
+   * @param[out]    dFvdLambdaM Derivative of the force-velocity function w.r.t. the fiber
    *                           stretch
    */
   double evaluate_derivative_force_velocity_dependency_boel(const double dotLambdaM,
@@ -186,7 +186,7 @@ namespace Mat::Utils::Muscle
    *
    * @param[in]     lambdaM Fiber stretch
    * @param[in]     lambdaOpt Optimal fiber stretch
-   * @param[out]    dFxidLamdaM Derivative of the force-stretch function w.r.t. the fiber
+   * @param[out]    dFxidLambdaM Derivative of the force-stretch function w.r.t. the fiber
    *                            stretch
    */
   double evaluate_derivative_active_force_stretch_dependency_blemker(
@@ -201,7 +201,7 @@ namespace Mat::Utils::Muscle
    *
    * @param[in]     lambdaM Fiber stretch
    * @param[in]     lambdaOpt Optimal fiber stretch
-   * @param[in]     lambdaStar Fiber strech where normalized passive fiber force becomes linear
+   * @param[in]     lambdaStar Fiber stretch where normalized passive fiber force becomes linear
    * @param[in]     P1 Linear material parameter for along-fiber response
    * @param[in]     P2 Exponential material parameter for along-fiber response
    * @param[out]    fxi Force-stretch function result between zero and one
@@ -219,10 +219,10 @@ namespace Mat::Utils::Muscle
    *
    * @param[in]     lambdaM Fiber stretch
    * @param[in]     lambdaOpt Optimal fiber stretch
-   * @param[in]     lambdaStar Fiber strech where normalized passive fiber force becomes linear
+   * @param[in]     lambdaStar Fiber stretch where normalized passive fiber force becomes linear
    * @param[in]     P1 Linear material parameter for along-fiber response
    * @param[in]     P2 Exponential material parameter for along-fiber response
-   * @param[out]    dFxidLamdaM Derivative of the force-stretch function w.r.t. the fiber
+   * @param[out]    dFxidLambdaM Derivative of the force-stretch function w.r.t. the fiber
    *                            stretch
    */
   double evaluate_derivative_passive_force_stretch_dependency_blemker(const double lambdaM,

@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
  | ctor (public)                                              ager 08/14|
  *----------------------------------------------------------------------*/
 CONTACT::LagrangeStrategyPoro::LagrangeStrategyPoro(
-    const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, MPI_Comm comm,
     double alphaf, int maxdof, bool poroslave, bool poromaster)
@@ -90,7 +90,7 @@ void CONTACT::LagrangeStrategyPoro::setup_no_penetration_condition()
     FOUR_C_THROW("poroelastic meshtying/contact method needs the slave side to be poroelastic");
   /*
    *  The first error may also occur when there is no single element on the interface (it is empty)
-   * but POROELASTICITY DYNAMIC coupling algorithmus (COUPALGO) is chosen as
+   * but POROELASTICITY DYNAMIC coupling algorithms (COUPALGO) is chosen as
    * poro_monolithicmeshtying that means that the method creates an interface but has nothing to
    * fill in
    *
@@ -243,7 +243,7 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
   {
     // transform matrices coming from contact to fluid maps, as they are all in structure maps!
     //
-    // A generell problem here is that we would need to update coupling objects in everey newton
+    // A general problem here is that we would need to update coupling objects in everey newton
     // step if the active set changes. To avoid this, a 'bigger' coupling object is used - but
     // therefore now the Row-Maps of the created Sparse Matrixes are to big! --- Leads to problems
     // for Matrix - Multiplications where the Row - Map is used!
@@ -1185,7 +1185,7 @@ void CONTACT::LagrangeStrategyPoro::recover_poro_no_pen(Core::LinAlg::Vector<dou
     // condensation has been performed for active LM only,
     // thus we construct a modified invd matrix here which
     // only contains the active diagonal block
-    // (this automatically renders the incative LM to be zero)
+    // (this automatically renders the inactive LM to be zero)
     std::shared_ptr<Core::LinAlg::SparseMatrix> finvda;
     std::shared_ptr<Epetra_Map> tempmap1, tempmap2;
     std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
@@ -1258,7 +1258,7 @@ void CONTACT::LagrangeStrategyPoro::update_poro_contact()
 }
 
 /*------------------------------------------------------------------------*
- | Assign generell poro contact state!                          ager 08/14|
+ | Assign general poro contact state!                          ager 08/14|
  *------------------------------------------------------------------------*/
 void CONTACT::LagrangeStrategyPoro::set_state(
     const enum Mortar::StateType& statetype, const Core::LinAlg::Vector<double>& vec)
@@ -1389,7 +1389,7 @@ void CONTACT::LagrangeStrategyPoro::set_state(
 // datacontainer...
 //...and it should additionally add the dof IDs to its Data container
 /*------------------------------------------------------------------------*
- | Assign generell poro contact state!                          ager 10/14|
+ | Assign general poro contact state!                          ager 10/14|
  *------------------------------------------------------------------------*/
 void CONTACT::LagrangeStrategyPoro::set_parent_state(const enum Mortar::StateType& statetype,
     const Core::LinAlg::Vector<double>& vec, const Core::FE::Discretization& dis)

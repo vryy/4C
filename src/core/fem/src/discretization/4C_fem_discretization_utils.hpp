@@ -131,7 +131,7 @@ namespace Core::FE
     /*!
     \brief Evaluate a specified initial field (scalar or vector field)
 
-    Loop all intial field conditions attached to the discretization @p discret and evaluate them to
+    Loop all initial field conditions attached to the discretization @p discret and evaluate them to
     @p fieldvector if their names match the user-provided string @p fieldstring. Information on
     which local DOFs ids are addressed by the condition MUST be pre-defined and is represented by
     the @p locids vector. As an example, if we provide an initial velocity for a 3D structural
@@ -254,7 +254,7 @@ namespace Core::FE
        *  them. This method considers all conditions in condition_ with the names
        *  "PointDirichlet", "LineDirichlet", "SurfaceDirichlet" and "VolumeDirichlet".
        *  It takes a current time from the parameter list params named "total time"
-       *  and evaluates the appropiate time curves at that time for each
+       *  and evaluates the appropriate time curves at that time for each
        *  Dirichlet condition separately. If "total time" is not included
        *  in the parameters, no time curves are used.
        *
@@ -341,7 +341,7 @@ namespace Core::FE
        *  \param discret  (in)  :  discretization corresponding to the input
        *                           system vectors
        *  \param cond     (in)  :  The condition object
-       *  \param toggle   (out) :  Its i-th compononent is set 1 if it has a
+       *  \param toggle   (out) :  Its i-th component is set 1 if it has a
        *                           DBC, otherwise this component remains untouched
        *  \param dbcgids  (out) :  Map containing DOFs subjected to Dirichlet
        *                           boundary conditions (row and optional column)
@@ -400,7 +400,7 @@ namespace Core::FE
        *                               structure, vel. in fluids)
        *  \param systemvectord  (out): First time derivative of DBCs
        *  \param systemvectordd (out): Second time derivative of DBCs
-       *  \param toggle          (in): Its i-th compononent is set 1 if it has
+       *  \param toggle          (in): Its i-th component is set 1 if it has
        *                               a DBC, otherwise this component remains
        *                               untouched
        *

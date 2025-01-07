@@ -374,7 +374,7 @@ void Discret::Elements::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, i
   // these are the 3d-vectors that span this plane
   Core::LinAlg::Matrix<3, 1> local_y;
 
-  // the point p relativ to the point (0,0) in the triangle plane
+  // the point p relative to the point (0,0) in the triangle plane
   // transformed into 3d space
   Core::LinAlg::Matrix<3, 1> p;
 
@@ -543,7 +543,7 @@ void Discret::Elements::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, i
     const double area_double =
         0.5 * sqrt(2.0 * l_ij_sq * l_jk_sq + 2.0 * l_jk_sq * l_ki_sq + 2.0 * l_ki_sq * l_ij_sq -
                    l_ij_sq * l_ij_sq - l_jk_sq * l_jk_sq - l_ki_sq * l_ki_sq);
-    const double area_double_sqare = area_double * area_double;
+    const double area_double_square = area_double * area_double;
 
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS /*---------------------------------- check edge lengths ---*/
@@ -554,9 +554,9 @@ void Discret::Elements::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, i
 
     /*---------------------------------- determine torsional stiffnesses ---*/
     // instead of the whole matrix only the non-zero diagonal is stored
-    const double C0 = l_ij_sq * l_ki_sq / area_double_sqare;
-    const double C1 = l_ij_sq * l_jk_sq / area_double_sqare;
-    const double C2 = l_ki_sq * l_jk_sq / area_double_sqare;
+    const double C0 = l_ij_sq * l_ki_sq / area_double_square;
+    const double C1 = l_ij_sq * l_jk_sq / area_double_square;
+    const double C2 = l_ki_sq * l_jk_sq / area_double_square;
 
     /*--------------------------------------- fill transformation matrix ---*/
     // This corresponds to (R(sjq) x r(sjq) x S^T)^T from Farhat et al.

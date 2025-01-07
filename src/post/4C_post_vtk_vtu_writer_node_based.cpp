@@ -444,7 +444,7 @@ void PostVtuWriterNode::write_geo_beam_ele(const Discret::Elements::Beam3Base* b
   FOUR_C_THROW("VTU node based filter cannot handle beam elements");
 }
 
-void PostVtuWriterNode::wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele,
+void PostVtuWriterNode::write_dof_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
     std::shared_ptr<Core::LinAlg::Vector<double>> ghostedData, const int from, const bool fillzeros)
 {

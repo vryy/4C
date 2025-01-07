@@ -31,7 +31,7 @@ Solid::ModelEvaluator::GaussPointDataOutputManager::GaussPointDataOutputManager(
 {
 }
 
-void Solid::ModelEvaluator::GaussPointDataOutputManager::add_quantity_if_not_existant(
+void Solid::ModelEvaluator::GaussPointDataOutputManager::add_quantity_if_not_existent(
     const std::string& name, int size)
 {
   const auto item = quantities_.find(name);
@@ -66,7 +66,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::merge_quantities(
     const std::string& name = name_and_size.first;
     const int size = name_and_size.second;
 
-    add_quantity_if_not_existant(name, size);
+    add_quantity_if_not_existent(name, size);
   }
 }
 
@@ -210,7 +210,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::distribute_quantities(M
   }
 
   // Broadcast merged quantities to every proc
-  broadcast_my_quantitites(exporter);
+  broadcast_my_quantities(exporter);
 }
 
 void Solid::ModelEvaluator::GaussPointDataOutputManager::send_my_quantities_to_proc(
@@ -243,7 +243,7 @@ Solid::ModelEvaluator::GaussPointDataOutputManager::receive_quantities_from_proc
   return quantities;
 }
 
-void Solid::ModelEvaluator::GaussPointDataOutputManager::broadcast_my_quantitites(
+void Solid::ModelEvaluator::GaussPointDataOutputManager::broadcast_my_quantities(
     const Core::Communication::Exporter& exporter)
 {
   std::vector<char> data(0);

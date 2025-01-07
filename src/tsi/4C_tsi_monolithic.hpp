@@ -132,12 +132,12 @@ namespace TSI
     );
 
     //! Evaluate thermal-mechanical system matrix
-    void apply_thr_coupl_matrix(
+    void apply_thermo_coupl_matrix(
         std::shared_ptr<Core::LinAlg::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
     );
 
     //! Evaluate thermal-mechanical system matrix for geonln + heat convection BC
-    void apply_thr_coupl_matrix_conv_bc(
+    void apply_thermo_coupl_matrix_conv_bc(
         std::shared_ptr<Core::LinAlg::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
     );
 
@@ -265,7 +265,7 @@ namespace TSI
     //@{
 
     bool solveradapttol_;                           //!< adapt solver tolerance
-    double solveradaptolbetter_;                    //!< tolerance to which is adpated ????
+    double solveradaptolbetter_;                    //!< tolerance to which is adapted ????
     std::shared_ptr<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
 
     //@}
@@ -301,7 +301,7 @@ namespace TSI
     const Teuchos::ParameterList& tsidyn_;      //!< TSI dynamic parameter list
     const Teuchos::ParameterList& tsidynmono_;  //!< monolithic TSI dynamic parameter list
 
-    //! dofrowmap splitted in (field) blocks
+    //! dofrowmap split in (field) blocks
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector

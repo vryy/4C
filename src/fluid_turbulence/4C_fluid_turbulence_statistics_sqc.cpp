@@ -170,7 +170,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
     std::vector<char> sblock;
     std::vector<char> rblock;
 
-    // create an exporter for point to point comunication
+    // create an exporter for point to point communication
     Core::Communication::Exporter exporter(discret_->get_comm());
 
     // first, communicate coordinates in x1-centerline-direction

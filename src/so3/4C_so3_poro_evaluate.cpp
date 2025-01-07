@@ -906,8 +906,8 @@ void Discret::Elements::So3Poro<So3Ele, distype>::gauss_point_loop_od(
   // in case of prestressing, build defgrd wrt to last stored configuration
   // CAUTION: defgrd(true): filled with zeros!
   static Core::LinAlg::Matrix<numdim_, numdim_> defgrd(
-      true);  //  deformation gradiant evaluated at gauss point
-  static Core::LinAlg::Matrix<numnod_, 1> shapefct;  //  shape functions evalulated at gauss point
+      true);  //  deformation gradient evaluated at gauss point
+  static Core::LinAlg::Matrix<numnod_, 1> shapefct;  //  shape functions evaluated at gauss point
   static Core::LinAlg::Matrix<numdim_, numnod_> deriv(
       true);  //  first derivatives at gausspoint w.r.t. r,s,t
 
@@ -964,7 +964,7 @@ void Discret::Elements::So3Poro<So3Ele, distype>::gauss_point_loop_od(
     static Core::LinAlg::Matrix<numdim_, 1> velint;
     velint.multiply(nodalvel, shapefct);
 
-    //**************************************************+auxilary variables for computing the
+    //**************************************************+auxiliary variables for computing the
     // porosity and linearization
     double dphi_dp = 0.0;
     double porosity = 0.0;
@@ -1000,8 +1000,8 @@ void Discret::Elements::So3Poro<So3Ele, distype>::gauss_point_loop_od_pressure_b
   // in case of prestressing, build defgrd wrt to last stored configuration
   // CAUTION: defgrd(true): filled with zeros!
   Core::LinAlg::Matrix<numdim_, numdim_> defgrd(
-      true);                                  //  deformation gradiant evaluated at gauss point
-  Core::LinAlg::Matrix<numnod_, 1> shapefct;  //  shape functions evalulated at gauss point
+      true);                                  //  deformation gradient evaluated at gauss point
+  Core::LinAlg::Matrix<numnod_, 1> shapefct;  //  shape functions evaluated at gauss point
   Core::LinAlg::Matrix<numdim_, numnod_> deriv(
       true);  //  first derivatives at gausspoint w.r.t. r,s,t
 
@@ -1871,7 +1871,7 @@ inline void Discret::Elements::So3Poro<So3Ele, distype>::compute_linearization_o
       N_X(8, 3 * i + 2) = N_XYZ(2, i);
     }
 
-    //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) =
+    //------linearization of jacobi determinant detF=J w.r.t. structure displacement   dJ/d(us) =
     // dJ/dF : dF/dus = J * F^-T * N,X
     dJ_dus.multiply_tn(J, defgrd_inv_vec, N_X);
   }

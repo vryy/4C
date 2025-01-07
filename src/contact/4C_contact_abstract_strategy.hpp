@@ -55,7 +55,7 @@ namespace CONTACT
    * more abstract framework for any solution strategies involving mortar coupling.
    *
    * \remark Please add no new member variables to the abstract strategy! Use
-   * the corresponding data container instead (--> CONTACT::AbstractStratDataContainer).
+   * the corresponding data container instead (--> CONTACT::AbstractStrategyDataContainer).
    *
    * Refer also to the Semesterarbeit of Bernd Budich, 2009
    *
@@ -81,7 +81,7 @@ namespace CONTACT
     Creates the strategy base object and initializes all global variables.
 
 
-    \param[in] stratData Data container object
+    \param[in] strategyData Data container object
     \param[in] dof_row_map Dof row map of underlying problem
     \param[in] NodeRowMap Node row map of underlying problem
     \param[in] params_in List of contact/parameters
@@ -90,7 +90,7 @@ namespace CONTACT
     \param[in] alphaf Mid-point for Generalized-alpha time integration
     \param[in] maxdof Highest DOF number in global problem
     */
-    AbstractStrategy(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    AbstractStrategy(const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params_in, const int spatialDim, const MPI_Comm& comm,
         const double alphaf, int const maxdof);
@@ -574,7 +574,7 @@ namespace CONTACT
     \brief Get dual quadratic 3d slave element flag
 
     Returns TRUE if at least one higher-order 3d slave element with
-    dual Lagrange mutliplier shape functions in any interface.
+    dual Lagrange multiplier shape functions in any interface.
     */
     virtual bool is_dual_quad_slave_trafo() const { return data().is_dual_quad_slave_trafo(); };
 
@@ -794,7 +794,7 @@ namespace CONTACT
      The enum input parameter defines, which quantity is be updated.
      Currently the possibilities "lmold", "lmcurrent", "lmupdate" and
      "lmuzawa" exist. Note that "lmold" means the converged value LM_n
-     of the last time / load step, whereas "lmcurrent" adresses the current
+     of the last time / load step, whereas "lmcurrent" addresses the current
      (not necessarily converged) value of the LM_n+1. "lmupdate" is a special
      option called only in recover() after the update of the Lagr. multipliers.
      It basically does the same as "lmcurrent", but also checks for D.B.C.
@@ -1044,7 +1044,7 @@ namespace CONTACT
      *  \author hiermeier \date 12/17 */
     virtual void evaluate_static_constraint_rhs(CONTACT::ParamsInterface& cparams);
 
-    /** \brief Run at the very beginning of a call to Solid::ModelEvaluatorManager::Evalute*
+    /** \brief Run at the very beginning of a call to Solid::ModelEvaluatorManager::Evaluate*
      *
      *  \param cparams (in): parameter interface between the contact objects and
      *                       the structural time integration
@@ -1310,7 +1310,7 @@ namespace CONTACT
     /*!
     \brief Compute and reset indicators for necessity of parallel rebalancing
 
-    Unbalance is measured as the max-to-min ratio of eveluation time / number of row slave elements
+    Unbalance is measured as the max-to-min ratio of evaluation time / number of row slave elements
     over all processes.
 
     We average the unbalance of interface evaluation time and interface element count over all
@@ -1321,9 +1321,9 @@ namespace CONTACT
     \sa check_parallel_distribution(), is_rebalancing_necessary(),
     update_parallel_distribution_status()
 
-    @param[in/out] time_average Average max-to-min ratio of evlation time accross procs over all
+    @param[in/out] time_average Average max-to-min ratio of evlation time across procs over all
                                 evaluations of previous time step
-    @param[in/out] elements_average Average max-to-min ratio of row slave elements accross procs
+    @param[in/out] elements_average Average max-to-min ratio of row slave elements across procs
                                     over all evaluations of previous time step
     @param[in] Flag to indicate first time step after start/restart of simulation
     */
@@ -1335,9 +1335,9 @@ namespace CONTACT
 
     Indicators will be printed to screen on proc 0.
 
-    @param[in/out] time_average Average max-to-min ratio of evlation time accross procs over all
+    @param[in/out] time_average Average max-to-min ratio of evlation time across procs over all
                                 evaluations of previous time step
-    @param[in/out] elements_average Average max-to-min ratio of row slave elements accross procs
+    @param[in/out] elements_average Average max-to-min ratio of row slave elements across procs
                                     over all evaluations of previous time step
     @param[in] max_time_unbalance Upper bound for imbalance in evaluation time given in input file
     */
@@ -1446,9 +1446,9 @@ namespace CONTACT
      *
      * \author hiermeier
      * \date 05/16 */
-    CONTACT::AbstractStratDataContainer& data()
+    CONTACT::AbstractStrategyDataContainer& data()
     {
-      if (!data_ptr_) FOUR_C_THROW("The AbstractStratDataContainer is not initialized!");
+      if (!data_ptr_) FOUR_C_THROW("The AbstractStrategyDataContainer is not initialized!");
       return *data_ptr_;
     };
 
@@ -1459,9 +1459,9 @@ namespace CONTACT
      *
      * \author hiermeier
      * \date 05/16 */
-    const CONTACT::AbstractStratDataContainer& data() const
+    const CONTACT::AbstractStrategyDataContainer& data() const
     {
-      if (!data_ptr_) FOUR_C_THROW("The AbstractStratDataContainer is not initialized!");
+      if (!data_ptr_) FOUR_C_THROW("The AbstractStrategyDataContainer is not initialized!");
       return *data_ptr_;
     };
 
@@ -1760,7 +1760,7 @@ namespace CONTACT
     AbstractStrategy(const AbstractStrategy& old) = delete;
 
     //! pointer to the data container object
-    std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr_;
+    std::shared_ptr<CONTACT::AbstractStrategyDataContainer> data_ptr_;
 
     //! pointer to the NOX::Nln::CONSTRAINT::Interface::Required object
     std::shared_ptr<CONTACT::NoxInterface> noxinterface_ptr_;

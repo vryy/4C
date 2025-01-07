@@ -280,7 +280,7 @@ void Mat::PlasticNlnLogNeoHooke::unpack(Core::Communication::UnpackBuffer& buffe
   int histsize;
   extract_from_pack(buffer, histsize);
 
-  // if system is not yet initialized, the history vectors have to be intialized
+  // if system is not yet initialized, the history vectors have to be initialized
   if (histsize == 0) isinit_ = false;
 
   for (int var = 0; var < histsize; ++var)

@@ -392,7 +392,7 @@ bool NOX::Nln::LinearSystem::compute_f_and_jacobian(
 {
   {
     Core::LinAlg::VectorView rhs_view(rhs.getEpetraVector());
-    prePostOperatorPtr_->run_pre_compute_fand_jacobian(
+    prePostOperatorPtr_->run_pre_compute_f_and_jacobian(
         rhs_view, jacobian(), Core::LinAlg::Vector<double>(x.getEpetraVector()), *this);
   }
 
@@ -402,7 +402,7 @@ bool NOX::Nln::LinearSystem::compute_f_and_jacobian(
 
   {
     Core::LinAlg::VectorView rhs_view(rhs.getEpetraVector());
-    prePostOperatorPtr_->run_post_compute_fand_jacobian(
+    prePostOperatorPtr_->run_post_compute_f_and_jacobian(
         rhs_view, jacobian(), Core::LinAlg::Vector<double>(x.getEpetraVector()), *this);
   }
   return success;
@@ -415,7 +415,7 @@ bool NOX::Nln::LinearSystem::compute_correction_system(const enum CorrectionType
 {
   {
     Core::LinAlg::VectorView rhs_view(rhs.getEpetraVector());
-    prePostOperatorPtr_->run_pre_compute_fand_jacobian(
+    prePostOperatorPtr_->run_pre_compute_f_and_jacobian(
         rhs_view, jacobian(), Core::LinAlg::Vector<double>(x.getEpetraVector()), *this);
   }
 
@@ -426,7 +426,7 @@ bool NOX::Nln::LinearSystem::compute_correction_system(const enum CorrectionType
 
   {
     Core::LinAlg::VectorView rhs_view(rhs.getEpetraVector());
-    prePostOperatorPtr_->run_post_compute_fand_jacobian(
+    prePostOperatorPtr_->run_post_compute_f_and_jacobian(
         rhs_view, jacobian(), Core::LinAlg::Vector<double>(x.getEpetraVector()), *this);
   }
   return success;

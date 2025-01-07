@@ -38,7 +38,7 @@ namespace Cardiovascular0D
         const std::string& pod_matrix_file_name, const std::string& absolute_path_to_input_file);
 
     //! M_red = V^T * M * V
-    std::shared_ptr<Core::LinAlg::SparseMatrix> reduce_diagnoal(Core::LinAlg::SparseMatrix& M);
+    std::shared_ptr<Core::LinAlg::SparseMatrix> reduce_diagonal(Core::LinAlg::SparseMatrix& M);
 
     //! M_red = V^T * M
     std::shared_ptr<Core::LinAlg::SparseMatrix> reduce_off_diagonal(Core::LinAlg::SparseMatrix& M);

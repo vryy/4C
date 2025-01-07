@@ -77,15 +77,15 @@ void EHL::Utils::change_time_parameter(MPI_Comm comm, Teuchos::ParameterList& eh
     sdyn.set<int>("NUMSTEP", ehlparams.get<int>("NUMSTEP"));
   }
 
-  // Check correct input of restart. Code relies that both time value RESTARTEVRYTIME and
-  // RESULTSEVRYTIME are given if restart from time is applied
-  double restarttime = ehlparams.get<double>("RESTARTEVRYTIME");
-  double updatetime = ehlparams.get<double>("RESULTSEVRYTIME");
+  // Check correct input of restart. Code relies that both time value RESTARTEVERYTIME and
+  // RESULTSEVERYTIME are given if restart from time is applied
+  double restarttime = ehlparams.get<double>("RESTARTEVERYTIME");
+  double updatetime = ehlparams.get<double>("RESULTSEVERYTIME");
   if ((updatetime > 0.0) or (restarttime > 0.0))
     if (!(updatetime > 0.0) and !(restarttime > 0.0))
       FOUR_C_THROW(
-          "If time controlled output and restart is desired, both parameters RESTARTEVRYTIME and "
-          "RESULTSEVRYTIME has to be set");
+          "If time controlled output and restart is desired, both parameters RESTARTEVERYTIME and "
+          "RESULTSEVERYTIME has to be set");
 
   // set restart params
   int lubricationrestart;
@@ -98,7 +98,7 @@ void EHL::Utils::change_time_parameter(MPI_Comm comm, Teuchos::ParameterList& eh
   }
   else
   {
-    int restart = ehlparams.get<int>("RESTARTEVRY");
+    int restart = ehlparams.get<int>("RESTARTEVERY");
     lubricationrestart = restart;
     structurerestart = restart;
   }
@@ -114,17 +114,17 @@ void EHL::Utils::change_time_parameter(MPI_Comm comm, Teuchos::ParameterList& eh
   }
   else
   {
-    int update = ehlparams.get<int>("RESULTSEVRY");
+    int update = ehlparams.get<int>("RESULTSEVERY");
     lubricationupres = update;
     structureupres = update;
   }
 
   // restart
-  lubricationdyn.set<int>("RESTARTEVRY", lubricationrestart);
-  sdyn.set<int>("RESTARTEVRY", structurerestart);
+  lubricationdyn.set<int>("RESTARTEVERY", lubricationrestart);
+  sdyn.set<int>("RESTARTEVERY", structurerestart);
   // solution output
-  lubricationdyn.set<int>("RESULTSEVRY", lubricationupres);
-  sdyn.set<int>("RESULTSEVRY", structureupres);
+  lubricationdyn.set<int>("RESULTSEVERY", lubricationupres);
+  sdyn.set<int>("RESULTSEVERY", structureupres);
 
   if (Core::Communication::my_mpi_rank(comm) == 0)
   {
@@ -133,12 +133,12 @@ void EHL::Utils::change_time_parameter(MPI_Comm comm, Teuchos::ParameterList& eh
               << "\t Timestep lubrication:           " << lubricationdyn.get<double>("TIMESTEP")
               << "\n"
               << "\t Timestep structure:        " << sdyn.get<double>("TIMESTEP") << "\n"
-              << "\t Result step lubrication:        " << lubricationdyn.get<int>("RESULTSEVRY")
+              << "\t Result step lubrication:        " << lubricationdyn.get<int>("RESULTSEVERY")
               << "\n"
-              << "\t Result step structure:     " << sdyn.get<int>("RESULTSEVRY") << "\n"
-              << "\t Restart step lubrication:       " << lubricationdyn.get<int>("RESTARTEVRY")
+              << "\t Result step structure:     " << sdyn.get<int>("RESULTSEVERY") << "\n"
+              << "\t Restart step lubrication:       " << lubricationdyn.get<int>("RESTARTEVERY")
               << "\n"
-              << "\t Restart step structure:    " << sdyn.get<int>("RESTARTEVRY") << "\n"
+              << "\t Restart step structure:    " << sdyn.get<int>("RESTARTEVERY") << "\n"
               << "================================================================================="
                  "=======\n \n";
   }

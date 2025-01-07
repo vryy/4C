@@ -587,7 +587,7 @@ bool Coupling::VolMortar::vol_mortar_ele_based_gp(Core::Elements::Element& sele,
     }
     else
     {
-      FOUR_C_THROW("ERROR: Uknown shape!");
+      FOUR_C_THROW("ERROR: Unknown shape!");
     }
   }
 
@@ -818,7 +818,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
     Utils::shape_function<distype_s>(sval, sxi);
     Utils::shape_function<distype_m>(mval, mxi);
 
-    // evaluate Lagrange mutliplier shape functions (on slave element)
+    // evaluate Lagrange multiplier shape functions (on slave element)
     Utils::dual_shape_function<distype_s>(lmval, sxi, sele);
 
     // evaluate the integration cell Jacobian
@@ -948,7 +948,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
     const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int sdofset_A,
     int mdofset_A, int sdofset_B, int mdofset_B)
 {
-  if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
+  if (shape_ == shape_std) FOUR_C_THROW("ERROR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   Core::LinAlg::Matrix<ns_, 1> sval_A;
@@ -1088,7 +1088,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s,
     const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int sdofset_A,
     int mdofset_A, int sdofset_B, int mdofset_B)
 {
-  if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
+  if (shape_ == shape_std) FOUR_C_THROW("ERROR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   Core::LinAlg::Matrix<ns_, 1> sval_A;
@@ -1234,7 +1234,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int dofsetA,
     int dofsetB)
 {
-  if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
+  if (shape_ == shape_std) FOUR_C_THROW("ERROR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   Core::LinAlg::Matrix<ns_, 1> sval_A;
@@ -1360,7 +1360,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int dofsetA,
     int dofsetB)
 {
-  if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
+  if (shape_ == shape_std) FOUR_C_THROW("ERROR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   Core::LinAlg::Matrix<ns_, 1> mval_A;
@@ -1488,7 +1488,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int sdofset_A,
     int mdofset_A, int sdofset_B, int mdofset_B)
 {
-  if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
+  if (shape_ == shape_std) FOUR_C_THROW("ERROR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   Core::LinAlg::Matrix<ns_, 1> sval_A;

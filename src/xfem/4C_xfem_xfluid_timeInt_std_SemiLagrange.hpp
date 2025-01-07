@@ -155,8 +155,9 @@ namespace XFEM
         Core::Nodes::Node* node,  ///< node at which we reconstruct the gradients
         std::vector<Core::Elements::Element*>&
             eles,  ///< elements around node used for the reconstruction
-        std::vector<std::vector<int>>& ele_nds,  ///< corresonding elements nodal dofset information
-        XFEM::XFEMDofSet& dofset,                ///< XFEM dofset
+        std::vector<std::vector<int>>&
+            ele_nds,               ///< corresponding elements nodal dofset information
+        XFEM::XFEMDofSet& dofset,  ///< XFEM dofset
         std::vector<Core::LinAlg::Matrix<3, 3>>&
             velDeriv_avg,  ///< velocity/acc component derivatives for several vectors
         std::vector<Core::LinAlg::Matrix<1, 3>>&

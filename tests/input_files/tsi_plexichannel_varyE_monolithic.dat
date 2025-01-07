@@ -30,7 +30,7 @@ FILESTEPS                       1000
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
 PREFIX_GROUP_ID                 No
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_STRAIN                   EA
@@ -66,9 +66,9 @@ NORM_RESF                       Abs
 NUMSTEP                         200
 PREDICT                         ConstDis
 PTCDT                           0.1
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTSEVRY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     1
+RESULTSEVERY                     1
 STC_LAYER                       1
 STC_SCALING                     no
 TIMESTEP                        0.5
@@ -100,9 +100,9 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
 PREDICT                         TangTemp
-RESEVRYERGY                     0
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESEVERYERGY                     0
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        0.05
 TOLRES                          1e-06
 TOLTEMP                         1e-08
@@ -115,15 +115,15 @@ ITEMIN                          1
 MAXTIME                         5000.0
 NORM_INC                        Abs
 NUMSTEP                         5
-RESTARTEVRY                     4
+RESTARTEVERY                     4
 TIMESTEP                        200.0
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-06
 TOLINC                          1e-07
 ITERNORM                        Rms
 LINEAR_SOLVER                   2
-NORMCOMBI_RESFINC               Coupl_Or_Singl
+NORMCOMBI_RESFINC               Coupl_Or_Single
 NORM_RESF                       Rel
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
@@ -135,7 +135,7 @@ AZPREC                          Teko
 TEKO_XML_FILE                   xml/block_preconditioner/thermo_solid.xml
 AZREUSE                         10
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 6 YOUNG 1.30406e+11 -1.09895e+10 3.64935e+08 -5.88115e+06 45945.7 -139.619 NUE 0.35 DENS 1185 THEXPANS 7.0e-05 CAPA 1737210 CONDUCT 0.2 INITTEMP 50.0
+MAT 1 MAT_Struct_ThermoStVenantK YOUNGNUM 6 YOUNG 1.30406e+11 -1.09895e+10 3.64935e+08 -5.88115e+06 45945.7 -139.619 NUE 0.35 DENS 1185 THEXPANS 7.0e-05 CAPA 1737210 CONDUCT 0.2 INITTEMP 50.0
 MAT 2 THERM_FourierIso CAPA 1737210 CONDUCT 0.2
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2

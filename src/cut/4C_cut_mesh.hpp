@@ -131,7 +131,7 @@ namespace Cut
     /*========================================================================*/
 
     /// creates a new point, optional information about cut-edge and cut-side, and whether this is
-    /// hapenning during
+    /// happening during
     // loading of the mesh
     Point* new_point(
         const double* x, Edge* cut_edge, Side* cut_side, double tolerance, double tol_scale = 1.0);
@@ -369,7 +369,7 @@ namespace Cut
     /// ?
     void dump_gmsh_integration_cells(std::string name);
 
-    /* writre boundary cells belonging to a volume cell with "pos" position
+    /* writer boundary cells belonging to a volume cell with "pos" position
      * and their normals to the given file */
     void dump_gmsh_boundary_cells(std::ofstream& file, Point::PointPosition pos);
 

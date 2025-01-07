@@ -246,7 +246,7 @@ bool Cut::ComputeEmbeddedPosition<probdim, eletype, num_nodes_element, dim, floa
     {
       // Check the l2-norm of the actual reached residual. If it is smaller than 1.0,
       // we will trust the distance value
-      // --> this is quite critical as we cannot guarantee that the precicion of the distance
+      // --> this is quite critical as we cannot guarantee that the precision of the distance
       // anymore (but only option to get a signed distance)
       double res_nrm2 = cd.get_residual_l2_norm();
       if (res_nrm2 < 1.0)

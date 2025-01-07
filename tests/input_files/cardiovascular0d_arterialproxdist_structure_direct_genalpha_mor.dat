@@ -28,7 +28,7 @@ MAXITER                         200
 MAXTIME                         0.54
 NLNSOL                          newtonlinuzawa
 NUMSTEP                         9999999
-RESULTSEVRY                     10
+RESULTSEVERY                     10
 TIMESTEP                        0.009
 TOLDISP                         1e-08
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA

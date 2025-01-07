@@ -274,7 +274,7 @@ namespace FPSI
     //! set conductivity (for fps3i)
     void set_conductivity(double conduct);
 
-    //! external acces to rhs vector (used by xfpsi)
+    //! external access to rhs vector (used by xfpsi)
     std::shared_ptr<Core::LinAlg::Vector<double>>& rhs()
     {
       return rhs_;
@@ -283,9 +283,9 @@ namespace FPSI
    protected:
     //! block systemmatrix
     std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
-    //! dof row map splitted in (field) blocks
+    //! dof row map split in (field) blocks
     Core::LinAlg::MultiMapExtractor blockrowdofmap_;
-    //! dof row map (not splitted)
+    //! dof row map (not split)
     std::shared_ptr<Epetra_Map> fullmap_;
     //! increment between Newton steps k and k+1
     std::shared_ptr<Core::LinAlg::Vector<double>> iterinc_;
@@ -379,7 +379,7 @@ namespace FPSI
     double normofiterincfluidinterface_;
     double normofiterincporointerface_;
 
-    double sqrtnall_;  //!< squareroot of lenght of all dofs
+    double sqrtnall_;  //!< squareroot of length of all dofs
     double sqrtnfv_;   //!< squareroot of length of fluid velocity dofs
     double sqrtnfp_;   //!< squareroot of length of fluid pressure dofs
     double sqrtnpfv_;  //!< squareroot of length of porofluid velocity dofs

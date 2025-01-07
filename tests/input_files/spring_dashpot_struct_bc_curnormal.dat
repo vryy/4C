@@ -16,7 +16,7 @@ PROBLEMTYPE                      Structure
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-RESTARTEVRY                     2
+RESTARTEVERY                     2
 MAXTIME                         1.0
 NUMSTEP                         2
 TIMESTEP                        0.5

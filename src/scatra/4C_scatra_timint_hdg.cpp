@@ -188,8 +188,8 @@ void ScaTra::TimIntHDG::set_theta()
           // Dt is therefore to 1.0
           dta_ = 1.0;
           // Set time equal -dta, this way the steady state is given as the solution at t=0.0.
-          // This is necessary otherwhise the solver would recognise that we are at the end of a
-          // simulation and skip the solution altogheter.
+          // This is necessary otherwise the solver would recognise that we are at the end of a
+          // simulation and skip the solution altogether.
           time_ = -dta_;
           maxtime_ = dta_;
           // stepmax is 1 to avoid waste computation (it's stationary after all)
@@ -865,7 +865,7 @@ void ScaTra::TimIntHDG::fd_check()
     {
       std::cout << std::endl << "FINITE DIFFERENCE CHECK FOR SCATRA HDG SYSTEM MATRIX" << std::endl;
       std::cout << "EPS:        " << eps << std::endl;
-      std::cout << "ABSOLUT: " << maxabserr << std::endl;
+      std::cout << "ABSOLUTE: " << maxabserr << std::endl;
       std::cout << "RELATIVE: " << maxrelerr << std::endl;
     }
   }
@@ -895,7 +895,7 @@ void ScaTra::TimIntHDG::evaluate_error_compared_to_analytical_sol()
         (*relerrors_)[1] = std::sqrt((*errors)[2]) / std::sqrt((*errors)[3]);
       else
         FOUR_C_THROW(
-            "Can't compute grandient's relative L2 error due to numerical roundoff sensitivity!");
+            "Can't compute gradient's relative L2 error due to numerical roundoff sensitivity!");
 
       if (myrank_ == 0)
       {
@@ -1060,7 +1060,7 @@ void ScaTra::TimIntHDG::calc_mat_initial()
   }
 
   return;
-}  // ScaTra::TimIntHDG::CalcMatIntitial
+}  // ScaTra::TimIntHDG::CalcMatInitial
 
 
 /*----------------------------------------------------------------------*

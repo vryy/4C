@@ -123,7 +123,7 @@ void FLD::TDSEleData::update_svelnp_in_one_direction(const double fac1, const do
 }
 
 /*----------------------------------------------------------------------*
- |  activate time dependend subgrid scales (public)           gjb 12/12 |
+ |  activate time-dependent subgrid scales (public)           gjb 12/12 |
  *----------------------------------------------------------------------*/
 void FLD::TDSEleData::update_svelnp_in_one_direction(const double fac1, const double fac2,
     const double fac3, const double resM, const double alphaF, const int dim, const int iquad,

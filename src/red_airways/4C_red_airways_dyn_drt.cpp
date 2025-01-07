@@ -93,9 +93,9 @@ std::shared_ptr<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool Coupl
   airwaystimeparams.set<int>("max number timesteps", rawdyn.get<int>("NUMSTEP"));
 
   // Restart
-  airwaystimeparams.set("write restart every", rawdyn.get<int>("RESTARTEVRY"));
+  airwaystimeparams.set("write restart every", rawdyn.get<int>("RESTARTEVERY"));
   // Solution output
-  airwaystimeparams.set("write solution every", rawdyn.get<int>("RESULTSEVRY"));
+  airwaystimeparams.set("write solution every", rawdyn.get<int>("RESULTSEVERY"));
 
   // Solver type
   airwaystimeparams.set("solver type", rawdyn.get<RedAirwaysDyntype>("SOLVERTYPE"));

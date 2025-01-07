@@ -9,8 +9,8 @@ PROBLEMTYPE                      Structure
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        1.0
 NUMSTEP                         1
 MAXTIME                         1.0

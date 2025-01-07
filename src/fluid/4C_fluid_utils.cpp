@@ -297,7 +297,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::calc_wa
 
   Teuchos::ParameterList eleparams;
   // set action for elements
-  eleparams.set<FLD::BoundaryAction>("action", FLD::ba_calc_node_normal);
+  eleparams.set<FLD::BoundaryAction>("action", FLD::boundary_calc_node_normal);
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -862,7 +862,8 @@ std::map<int, double> FLD::Utils::compute_flow_rates(Core::FE::Discretization& d
         &local_flowrate, &flowrate, 1, Core::Communication::unpack_epetra_comm(dofrowmap->Comm()));
 
     // if(dofrowmap->Comm().MyPID()==0)
-    // std::cout << "gobal flow rate = " << flowrate << "\t condition ID = " << condID << std::endl;
+    // std::cout << "global flow rate = " << flowrate << "\t condition ID = " << condID <<
+    // std::endl;
 
     // ATTENTION: new definition: outflow is positive and inflow is negative
     volumeflowrateperline[condID] = flowrate;

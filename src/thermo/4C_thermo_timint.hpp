@@ -61,7 +61,7 @@ namespace Thermo
    * is needed in environments in which a independent time loop is provided.
    * This happens e.g. in fluid-structure-interaction.
    *
-   * <h3> Responsibilties </h3>
+   * <h3> Responsibilities </h3>
    * Most importantly the base integrator manages the system state vectors and
    * matrices. It also deals with the output to files and offers method to
    * determine forces and tangents.
@@ -156,14 +156,14 @@ namespace Thermo
     //! Update configuration after time step
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
-    //! becomes impossible. We are ready and keen awating the next
+    //! becomes impossible. We are ready and keen awaiting the next
     //! time step.
     virtual void update_step_state() = 0;
 
     //! Update everything on element level after time step and after output
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
-    //! becomes impossible. We are ready and keen awating the next time step.
+    //! becomes impossible. We are ready and keen awaiting the next time step.
     virtual void update_step_element() = 0;
 
     //! Update time and step counter
@@ -178,7 +178,7 @@ namespace Thermo
     //! Reset configuration after time step
     //!
     //! Thus the last converged state is copied back on the predictor
-    //! for current time step. This applies only to elemet-wise
+    //! for current time step. This applies only to element-wise
     //! quantities
     void reset_step() override;
 
@@ -233,7 +233,7 @@ namespace Thermo
     //! Write internal and external forces (if necessary for restart)
     virtual void write_restart_force(std::shared_ptr<Core::IO::DiscretizationWriter> output) = 0;
 
-    //! Check wether energy output file is attached
+    //! Check whether energy output file is attached
     bool attached_energy_file()
     {
       if (energyfile_)
@@ -521,7 +521,7 @@ namespace Thermo
     int myrank_;                                           //!< ID of actual processor in parallel
     std::shared_ptr<Core::LinAlg::Solver> solver_;         //!< linear algebraic solver
     bool solveradapttol_;                                  //!< adapt solver tolerance
-    double solveradaptolbetter_;                           //!< tolerance to which is adpated ????
+    double solveradaptolbetter_;                           //!< tolerance to which is adapted ????
     std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;  //!< map extractor object
                                                            //!< containing non-overlapping
                                                            //!< map of global DOFs on Dirichlet

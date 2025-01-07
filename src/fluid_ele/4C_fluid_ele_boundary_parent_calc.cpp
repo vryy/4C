@@ -2692,7 +2692,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
           {
             /*
             // This linearisation has only to be included if
-            // u*n is negative --- otherwise it's nonesense
+            // u*n is negative --- otherwise it's nonsense
             //
             // factor: afgdt
             //
@@ -3028,7 +3028,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
           {
             /*
             // These linearisations have only to be included if
-            // u*n is negative --- otherwise they're nonesense
+            // u*n is negative --- otherwise they're nonsense
             //
             // factor: afgdt
             //
@@ -3345,7 +3345,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
           {
             /*
             // This linearisation has only to be included if
-            // u*n is negative --- otherwise it's nonesense
+            // u*n is negative --- otherwise it's nonsense
             //
             // factor: afgdt
             //
@@ -3629,7 +3629,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
           {
             /*
             // These linearisations have only to be included if
-            // u*n is negative --- otherwise they're nonesense
+            // u*n is negative --- otherwise they're nonsense
             //
             // factor: afgdt
             //

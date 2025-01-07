@@ -234,7 +234,7 @@ void EnsightWriter::write_geo_file(const std::string& geofilename)
 
   // append index table
   // TODO: ens_checker complains if this is turned!!!! but I can't see, whats wrong here a.ger 11/07
-  // it is also correct to ommit write_index_table, however the EnsightGold Format manual says,
+  // it is also correct to omit write_index_table, however the EnsightGold Format manual says,
   // it would improve performance to have it on...
   // Writing the index for the result fields is fine. Complains only for the geometry-file  gb 02/10
   // write_index_table(geofile, resultfilepos["geo"]);
@@ -466,7 +466,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
             // write subelements
             for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::hex16); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
-                if (myrank_ == 0)  // proc0 can write its elements immidiately
+                if (myrank_ == 0)  // proc0 can write its elements immediately
                   write(geofile, proc0map->LID(nodes[subhex16map[isubele][isubnode]]->id()) + 1);
                 else  // elements on other procs have to store their global node ids
                   nodevector.push_back(nodes[subhex16map[isubele][isubnode]]->id());
@@ -477,7 +477,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
             // write subelements
             for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::hex18); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
-                if (myrank_ == 0)  // proc0 can write its elements immidiately
+                if (myrank_ == 0)  // proc0 can write its elements immediately
                   write(geofile, proc0map->LID(nodes[subhex18map[isubele][isubnode]]->id()) + 1);
                 else  // elements on other procs have to store their global node ids
                   nodevector.push_back(nodes[subhex18map[isubele][isubnode]]->id());
@@ -488,7 +488,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
             // write subelements
             for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::hex27); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
-                if (myrank_ == 0)  // proc0 can write its elements immidiately
+                if (myrank_ == 0)  // proc0 can write its elements immediately
                   write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->id()) + 1);
                 else  // elements on other procs have to store their global node ids
                   nodevector.push_back(nodes[subhexmap[isubele][isubnode]]->id());
@@ -499,7 +499,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
             // write subelements
             for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::quad9); ++isubele)
               for (int isubnode = 0; isubnode < 4; ++isubnode)
-                if (myrank_ == 0)  // proc0 can write its elements immidiately
+                if (myrank_ == 0)  // proc0 can write its elements immediately
                   write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->id()) + 1);
                 else  // elements on other procs have to store their global node ids
                   nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->id());
@@ -510,7 +510,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
             // write subelements
             for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::line3); ++isubele)
               for (int isubnode = 0; isubnode < 2; ++isubnode)
-                if (myrank_ == 0)  // proc0 can write its elements immidiately
+                if (myrank_ == 0)  // proc0 can write its elements immediately
                   write(geofile, proc0map->LID(nodes[sublinemap[isubele][isubnode]]->id()) + 1);
                 else  // elements on other procs have to store their global node ids
                   nodevector.push_back(nodes[sublinemap[isubele][isubnode]]->id());
@@ -543,7 +543,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
               // write subelements
               for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::quad9); ++isubele)
                 for (int isubnode = 0; isubnode < 4; ++isubnode)
-                  if (myrank_ == 0)  // proc0 can write its elements immidiately
+                  if (myrank_ == 0)  // proc0 can write its elements immediately
                     write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->id()) + 1);
                   else  // elements on other procs have to store their global node ids
                     nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->id());
@@ -559,7 +559,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
               // write subelements
               for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::hex27); ++isubele)
                 for (int isubnode = 0; isubnode < 8; ++isubnode)
-                  if (myrank_ == 0)  // proc0 can write its elements immidiately
+                  if (myrank_ == 0)  // proc0 can write its elements immediately
                     write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->id()) + 1);
                   else  // elements on other procs have to store their global node ids
                     nodevector.push_back(nodes[subhexmap[isubele][isubnode]]->id());
@@ -597,7 +597,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
   // now we have communicated the connectivity infos from proc 1...proc n to proc 0
 
   std::vector<char> sblock;  // sending block
-  std::vector<char> rblock;  // recieving block
+  std::vector<char> rblock;  // receiving block
 
   // create an exporter for communication
   Core::Communication::Exporter exporter(dis.get_comm());
@@ -648,7 +648,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
     {
       std::vector<int> nodeids;
       Core::Communication::UnpackBuffer buffer(rblock);
-      // extract data from recieved package
+      // extract data from received package
       while (!buffer.at_end())
       {
         extract_from_pack(buffer, nodeids);
@@ -806,7 +806,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
 
     // no we have to communicate everything from proc 1...proc n to proc 0
     std::vector<char> sblock;  // sending block
-    std::vector<char> rblock;  // recieving block
+    std::vector<char> rblock;  // receiving block
 
     // create an exporter for communication
     Core::Communication::Exporter exporter(dis.get_comm());
@@ -856,7 +856,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
       if (myrank_ == 0)
       {
         std::vector<int> elegids;
-        // extract data from recieved package
+        // extract data from received package
         Core::Communication::UnpackBuffer buffer(rblock);
         while (!buffer.at_end())
         {
@@ -936,7 +936,7 @@ void EnsightWriter::write_result(const std::string groupname, const std::string 
   // new for file continuation
   bool multiple_files = false;
 
-  // For NURBS control point output filename is extened by "_cp"
+  // For NURBS control point output filename is extended by "_cp"
   std::string aux = "";
   if (writecp_)
   {
@@ -1129,7 +1129,7 @@ void EnsightWriter::write_result_one_time_step(PostResult& result, const std::st
   // adaptation for variable geometry
   bool multiple_files = false;
 
-  // For NURBS control point output filename is extened by "_cp"
+  // For NURBS control point output filename is extended by "_cp"
   std::string aux = "";
   if (writecp_)
   {
@@ -2327,7 +2327,7 @@ std::string EnsightWriter::get_file_section_string_from_filesets(
 /*----------------------------------------------------------------------*/
 /*
     Write the coordinates for a Polynomial discretization
-    The ccordinates of the vizualisation points (i.e. the corner
+    The coordinates of the visualisation points (i.e. the corner
     nodes of elements displayed in paraview) are just the node
     coordinates of the nodes in the discretization.
 */

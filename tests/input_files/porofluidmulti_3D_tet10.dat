@@ -21,11 +21,11 @@ FDCHECK                         none
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 ITEMAX                          50
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 NUMSTEP                         2
 MAXTIME                         2.0
 TIMESTEP                        0.1
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 FLUX_PROJ_METHOD                L2_projection
 FLUX_PROJ_SOLVER                1
 OUTPUT_POROSITY                 no

@@ -43,7 +43,7 @@ namespace Core::GeometricSearch
     if (primitives.size() == 0 or predicates.size() == 0)
     {
       // This is the special case, where we can a priori say that there are no collisions. ArborX
-      // produces a floating point exception if primitves.size() == 0, therefore, we take care of
+      // produces a floating point exception if primitives.size() == 0, therefore, we take care of
       // this special case here.
 
       // Indices stays empty, as there are no collisions.
@@ -56,7 +56,7 @@ namespace Core::GeometricSearch
     {
       using memory_space = Kokkos::HostSpace;
 
-      // Build tree structure containting all primitives.
+      // Build tree structure containing all primitives.
       ArborX::BoundingVolumeHierarchy<memory_space> bounding_volume_hierarchy(
           Kokkos::DefaultExecutionSpace{}, primitives);
 

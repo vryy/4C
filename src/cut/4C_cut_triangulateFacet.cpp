@@ -397,18 +397,18 @@ void Cut::TriangulateFacet::split_general_facet(std::vector<int> ptConcavity)
 *-------------------------------------------------------------------------------------------------------*/
 bool Cut::TriangulateFacet::has_two_continuous_concave_pts(std::vector<int> ptConcavity)
 {
-  int siz = ptConcavity.size();
-  if (siz < 2) return false;
+  int size = ptConcavity.size();
+  if (size < 2) return false;
 
-  for (int i = 0; i < siz; i++)
+  for (int i = 0; i < size; i++)
   {
     int firstPt = ptConcavity[i];
-    int seconPt = ptConcavity[(i + 1) % siz];
-    if (firstPt != siz - 1)
+    int secondPt = ptConcavity[(i + 1) % size];
+    if (firstPt != size - 1)
     {
-      if ((seconPt - firstPt) == 1) return true;
+      if ((secondPt - firstPt) == 1) return true;
     }
-    else if ((seconPt - firstPt) == siz - 1)
+    else if ((secondPt - firstPt) == size - 1)
       return true;
   }
   return false;
@@ -456,7 +456,7 @@ unsigned int Cut::TriangulateFacet::find_second_best_ear(
   unsigned int counter = 0;
 
   // first try to find ears, that do not contain other points,
-  // using precice checks and ignoring 'inline' info
+  // using precise checks and ignoring 'inline' info
   for (auto& ear : ears)
   {
     std::vector<Point*> tri = ear.first;
@@ -482,11 +482,11 @@ unsigned int Cut::TriangulateFacet::find_second_best_ear(
       Core::LinAlg::Matrix<3, 1> point_cord(ptlist_[reflInd]);
       std::shared_ptr<Cut::Position> pos =
           Cut::Position::create(tri_coord, point_cord, Core::FE::CellType::tri3);
-      // precice computation if it is inside
+      // precise computation if it is inside
       bool is_inside = pos->compute(0.0);
       if (is_inside)
       {
-        // another check if it is not the same point as triangle's vertexes
+        // another check if it is not the same point as triangle's vertices
         if (ptlist_[reflInd] != ptlist_[ind0] and ptlist_[reflInd] != ptlist_[i] and
             ptlist_[reflInd] != ptlist_[ind2])
         {
@@ -570,7 +570,7 @@ void Cut::TriangulateFacet::ear_clipping(std::vector<int> ptConcavity,  // list 
   }
 
 
-  // to fix cases, with vertexes on one line and no possiblity of triangulation
+  // to fix cases, with vertices on one line and no possibility of triangulation
   std::vector<Point*> last_added_ear;
   int last_added_ear_head = -1;
 
@@ -732,7 +732,7 @@ void Cut::TriangulateFacet::ear_clipping(std::vector<int> ptConcavity,  // list 
         {
           // recover last added ear
           if (discarded_ears.size() == 0) restore_last_ear(last_added_ear_head, ptConcavity);
-          // use discareded one
+          // use discarded one
           else
             last_added_ear_head = discarded_ears[0].second;
 

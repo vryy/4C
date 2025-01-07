@@ -304,7 +304,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
     }
 
     /* The first time we reach this place we had just used the main
-     * control table. But from now on we are interessted in the
+     * control table. But from now on we are interested in the
      * previous control files we read. */
     table = &temp_table;
 
@@ -804,7 +804,7 @@ int PostResult::next_result()
       /* In case of FSI everything else hurts even more. */
       const int step = map_read_int(map, "step");
 
-      /* we are only interessted if the result matches the slice */
+      /* we are only interested if the result matches the slice */
       if ((step >= problem->start()) && ((step <= problem->end()) || (problem->end() == -1)) &&
           ((step - problem->start()) % problem->step() == 0))
       {

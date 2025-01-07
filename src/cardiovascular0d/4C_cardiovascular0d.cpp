@@ -296,7 +296,7 @@ void Utils::Cardiovascular0D::evaluate_d_struct_dp(
     gindex_syspulperiphcirculation[j] = gindex_syspulperiphcirculation[0] + j;
 
   // loop over cardiovascular0d structure coupling conditions
-  /* here we do tge loop to assemble the offdiagonal stiffness block dfext/dcvdof (0,1 block)
+  /* here we do the loop to assemble the offdiagonal stiffness block dfext/dcvdof (0,1 block)
   this is the derivative of the orthopressure Neumann load (external load vector fext) w.r.t. the
   pressure*/
   for (auto* coupcond : cardiovascular0dstructcoupcond_)

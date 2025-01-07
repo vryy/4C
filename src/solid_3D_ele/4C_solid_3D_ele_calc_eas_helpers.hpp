@@ -84,7 +84,7 @@ namespace Discret::Elements
     Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>, num_eas> Kda{
         true};
 
-    /// EAS enhacement vector s
+    /// EAS enhancement vector s
     Core::LinAlg::Matrix<num_eas, 1> s{true};
 
     /// discrete enhanced strain scalars increment

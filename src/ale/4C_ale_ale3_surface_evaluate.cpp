@@ -61,7 +61,7 @@ int Discret::Elements::Ale3Surface::evaluate(Teuchos::ParameterList& params,
 
   switch (act)
   {
-    case Ale3::ba_calc_ale_node_normal:
+    case Ale3::boundary_calc_ale_node_normal:
     {
       std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp;
       std::vector<double> mydispnp;

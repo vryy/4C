@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 // Project the integration rule available in the local coordinates of the
-// integation-cells to the local coordinates of background element
+// integration-cells to the local coordinates of background element
 /*----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 std::shared_ptr<Core::FE::GaussPoints> Cut::ElementHandle::create_projected(
@@ -368,7 +368,7 @@ void Cut::ElementHandle::boundary_cell_gauss_points_lin(
     //      bool is_ls_side = wizard->HasLSCuttingSide( sid );
     //      if ( side==nullptr and !is_ls_side )
     //      {
-    //        FOUR_C_THROW( "no side with given id available fo combined mesh and
+    //        FOUR_C_THROW( "no side with given id available for combined mesh and
     //        level-set cut" );
     //      }
     //    }

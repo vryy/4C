@@ -416,7 +416,7 @@ namespace Cut
       xei = 0.1;  // the determinant of the Jacobian is independent of the considered point (true
                   // only for linear elements???)
 
-      // get coordiantes of parent Quad element
+      // get coordinates of parent Quad element
       if (shadow) coordinates_quad(xyze.data());
       // get coordinates of linear shadow element
       else
@@ -515,7 +515,7 @@ namespace Cut
    protected:
     // const std::vector<Side*> & Sides() { return sides_; }
 
-    /*! @name All these functions have to be implemented in the dervied classes!
+    /*! @name All these functions have to be implemented in the derived classes!
      *
      *  \remark Please note, that none of these functions has any inherent
      *          dimension checks! Be careful if you access them directly. Each of

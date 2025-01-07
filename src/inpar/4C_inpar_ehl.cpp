@@ -21,22 +21,22 @@ void Inpar::EHL::set_valid_parameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
 
   Teuchos::ParameterList& ehldyn = list.sublist("ELASTO HYDRO DYNAMIC", false,
-      "Elastohydrodynamic paramters for elastohydrodynamic lubrication (lubrication structure "
+      "Elastohydrodynamic parameters for elastohydrodynamic lubrication (lubrication structure "
       "interaction)");
 
   // Output type
   Core::Utils::double_parameter(
-      "RESTARTEVRYTIME", 0, "write restart possibility every RESTARTEVRY steps", &ehldyn);
+      "RESTARTEVERYTIME", 0, "write restart possibility every RESTARTEVERY steps", &ehldyn);
   Core::Utils::int_parameter(
-      "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &ehldyn);
+      "RESTARTEVERY", 1, "write restart possibility every RESTARTEVERY steps", &ehldyn);
   // Time loop control
   Core::Utils::int_parameter("NUMSTEP", 200, "maximum number of Timesteps", &ehldyn);
   Core::Utils::double_parameter("MAXTIME", 1000.0, "total simulation time", &ehldyn);
   Core::Utils::double_parameter("TIMESTEP", -1, "time step size dt", &ehldyn);
   Core::Utils::bool_parameter(
       "DIFFTIMESTEPSIZE", "No", "use different step size for lubrication and solid", &ehldyn);
-  Core::Utils::double_parameter("RESULTSEVRYTIME", 0, "increment for writing solution", &ehldyn);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "increment for writing solution", &ehldyn);
+  Core::Utils::double_parameter("RESULTSEVERYTIME", 0, "increment for writing solution", &ehldyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "increment for writing solution", &ehldyn);
   Core::Utils::int_parameter("ITEMAX", 10, "maximum number of iterations over fields", &ehldyn);
   Core::Utils::int_parameter("ITEMIN", 1, "minimal number of iterations over fields", &ehldyn);
 
@@ -73,11 +73,12 @@ void Inpar::EHL::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<ConvNorm>(convnorm_abs, convnorm_rel, convnorm_mix), &ehldynmono);
 
 
-  setStringToIntegralParameter<BinaryOp>("NORMCOMBI_RESFINC", "Coupl_And_Singl",
+  setStringToIntegralParameter<BinaryOp>("NORMCOMBI_RESFINC", "Coupl_And_Single",
       "binary operator to combine primary variables and residual force values",
-      tuple<std::string>("And", "Or", "Coupl_Or_Singl", "Coupl_And_Singl", "And_Singl", "Or_Singl"),
-      tuple<BinaryOp>(
-          bop_and, bop_or, bop_coupl_or_singl, bop_coupl_and_singl, bop_and_singl, bop_or_singl),
+      tuple<std::string>(
+          "And", "Or", "Coupl_Or_Single", "Coupl_And_Single", "And_Single", "Or_Single"),
+      tuple<BinaryOp>(bop_and, bop_or, bop_coupl_or_single, bop_coupl_and_single, bop_and_single,
+          bop_or_single),
       &ehldynmono);
 
   setStringToIntegralParameter<VectorNorm>("ITERNORM", "Rms",

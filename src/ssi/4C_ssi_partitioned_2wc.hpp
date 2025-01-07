@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace SSI
 {
-  //! base class to deal with partioned 2WC SSI. Mainly it is the same as for thermo-structure
+  //! base class to deal with partitioned 2WC SSI. Mainly it is the same as for thermo-structure
   //! interaction (TSI)
   class SSIPart2WC : public SSIPart
   {
@@ -134,7 +134,8 @@ namespace SSI
     int itmax_ = -1;
   };
 
-  //! class to deal with displacement relaxated partioned 2WC SSI. Relaxation parameter is constant
+  //! class to deal with displacement relaxated partitioned 2WC SSI. Relaxation parameter is
+  //! constant
   class SSIPart2WCSolidToScatraRelax : public SSIPart2WC
   {
    public:
@@ -170,7 +171,7 @@ namespace SSI
     double omega_;
   };
 
-  //! class to deal with displacement relaxated 2WC partioned SSI. Relaxation parameter is
+  //! class to deal with displacement relaxated 2WC partitioned SSI. Relaxation parameter is
   //! calculated via Aitken
   class SSIPart2WCSolidToScatraRelaxAitken : public SSIPart2WCSolidToScatraRelax
   {
@@ -210,7 +211,7 @@ namespace SSI
     std::shared_ptr<Core::LinAlg::Vector<double>> dispincnpold_;
   };
 
-  //! class to deal with scalar relaxated 2WC partioned SSI. Relaxation parameter is constant
+  //! class to deal with scalar relaxated 2WC partitioned SSI. Relaxation parameter is constant
   class SSIPart2WCScatraToSolidRelax : public SSIPart2WC
   {
    public:
@@ -246,8 +247,8 @@ namespace SSI
     double omega_;
   };
 
-  //! class to deal with scalar relaxated 2WC partioned SSI. Relaxation parameter is calculated via
-  //! Aitken
+  //! class to deal with scalar relaxated 2WC partitioned SSI. Relaxation parameter is calculated
+  //! via Aitken
   class SSIPart2WCScatraToSolidRelaxAitken : public SSIPart2WCScatraToSolidRelax
   {
    public:

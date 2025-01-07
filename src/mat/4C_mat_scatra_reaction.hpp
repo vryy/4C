@@ -392,7 +392,7 @@ namespace Mat
          or not (see Mat::PAR::ScatraReactionMat::isdistrfunctreaccoeff_ ), the reaction coefficient
        defined by <CODE> REACCOEFF </CODE> (see Mat::PAR::ScatraReactionMat::reaccoeff_ ) is either
        updated by evaluating the distribution function <CODE> DISTRFUNCT </CODE> (see
-       Mat::PAR::ScatraReactionMat::distrfunctreaccoeffid_ ) at the Gauss-point coodinates, or left
+       Mat::PAR::ScatraReactionMat::distrfunctreaccoeffid_ ) at the Gauss-point coordinates, or left
        as is.
 
          \return reaction coefficient at Gauss-point (double)

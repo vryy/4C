@@ -26,8 +26,8 @@ FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      GenAlpha
-RESULTSEVRY                     1
-RESTARTEVRY                     20
+RESULTSEVERY                     1
+RESTARTEVERY                     20
 NLNSOL                          fullnewton
 TIMESTEP                        0.0001
 NUMSTEP                         10
@@ -54,8 +54,8 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      fixed_point_like
 ITEMAX                          5
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           1
-RESTARTEVRY                     20
+RESULTSEVERY                           1
+RESTARTEVERY                     20
 NUMSTEP                         200
 NUMSTASTEPS                     0
 MAXTIME                         1000.0
@@ -95,7 +95,7 @@ TIMESTEP                        0.1
 NUMSTEP                         200
 MAXTIME                         5.0
 ALE_TYPE                        solid
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Belos

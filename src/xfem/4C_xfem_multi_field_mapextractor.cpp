@@ -66,9 +66,9 @@ void XFEM::MultiFieldMapExtractor::reset(unsigned num_dis, bool full)
   // reset the interface coupling objects
   interface_couplings_.clear();
   interface_couplings_.resize(num_dis, nullptr);
-  std::vector<std::shared_ptr<XFEM::XFieldField::Coupling>>::iterator iit;
-  for (iit = interface_couplings_.begin(); iit != interface_couplings_.end(); ++iit)
-    (*iit) = std::make_shared<XFEM::XFieldField::Coupling>();
+  std::vector<std::shared_ptr<XFEM::XFieldField::Coupling>>::iterator it2;
+  for (it2 = interface_couplings_.begin(); it2 != interface_couplings_.end(); ++it2)
+    (*it2) = std::make_shared<XFEM::XFieldField::Coupling>();
 
   // --------------------------------------------------------------------------
   // reset the element map extractor

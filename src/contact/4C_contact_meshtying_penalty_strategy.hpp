@@ -110,7 +110,7 @@ namespace CONTACT
     /*!
     \brief Initialize Uzawa step
 
-    LM is updated to z = zuzawa - pp * gap. This mehtod is called at the
+    LM is updated to z = zuzawa - pp * gap. This method is called at the
     beginning of the second, third, ... Uzawa iterarion in order to
     create an out-of-balance force again.
 
@@ -119,7 +119,7 @@ namespace CONTACT
         std::shared_ptr<Core::LinAlg::Vector<double>>& feff) override;
 
     /*!
-    \brief Reset penalty parameter to intial value
+    \brief Reset penalty parameter to initial value
 
     When applying an Augmented Lagrangian version of the penalty approach,
     the penalty parameter is sometimes updated during the Uzawa steps in
@@ -198,7 +198,7 @@ namespace CONTACT
     /*! \brief Evaluate residual
      *
      * @param[in] dis Current displacement field
-     * @return Boolean flag indicating successfull evaluation
+     * @return Boolean flag indicating successful evaluation
      */
     bool evaluate_force(const std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override;
 
@@ -208,14 +208,14 @@ namespace CONTACT
      * so we do nothing in here.
      *
      * @param[in] dis Current displacement field
-     * @return Boolean flag indicating successfull evaluation
+     * @return Boolean flag indicating successful evaluation
      */
     bool evaluate_stiff(const std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override;
 
     /*! \brief Evaluate residual and stiffness matrix
      *
      * @param[in] dis Current displacement field
-     * @return Boolean flag indicating successfull evaluation
+     * @return Boolean flag indicating successful evaluation
      */
     bool evaluate_force_stiff(
         const std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override;

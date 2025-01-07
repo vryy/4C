@@ -93,7 +93,7 @@ int next_map_node(MAP_ITERATOR* iterator)
     if (iterator->stack.head.map_node == nullptr)
     {
       /* we actually dont need the map->root information, we just use it
-       * to show that the iterator is finally initalized*/
+       * to show that the iterator is finally initialized*/
       iterator->stack.head.map_node = &iterator->map->root;
 
       if (iterator->map->root.rhs != nullptr) push_map_node(iterator, iterator->map->root.rhs);

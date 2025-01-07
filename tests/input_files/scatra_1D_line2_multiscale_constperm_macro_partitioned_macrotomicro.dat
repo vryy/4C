@@ -20,8 +20,8 @@ TIMEINTEGR                      One_Step_Theta
 NUMSTEP                         250
 TIMESTEP                        0.1
 THETA                           0.5
-RESULTSEVRY                     50
-RESTARTEVRY                     50
+RESULTSEVERY                     50
+RESTARTEVERY                     50
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 LINEAR_SOLVER                   1

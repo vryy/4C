@@ -299,11 +299,11 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
   Discret::Elements::Fluid* ffluidele = dynamic_cast<Discret::Elements::Fluid*>(fluidele);
   // 1 // get element states
   {
-    Core::Elements::LocationArray laf(1);
-    fluidele->location_vector(*fluiddis_, fluid_nds, laf, false);
+    Core::Elements::LocationArray la_f(1);
+    fluidele->location_vector(*fluiddis_, fluid_nds, la_f, false);
     std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
         fluiddis_->get_state("velaf");
-    Core::FE::extract_my_values(*matrix_state, velpres, laf[0].lm_);
+    Core::FE::extract_my_values(*matrix_state, velpres, la_f[0].lm_);
 
     std::vector<int> lmdisp;
     lmdisp.resize(fluid_nds.size() * 3);
@@ -311,27 +311,27 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
     if (ffluidele->is_ale())
     {
       for (std::size_t n = 0; n < fluid_nds.size(); ++n)
-        for (int dof = 0; dof < 3; ++dof) lmdisp[n * 3 + dof] = laf[0].lm_[n * 4 + dof];
+        for (int dof = 0; dof < 3; ++dof) lmdisp[n * 3 + dof] = la_f[0].lm_[n * 4 + dof];
       std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state_disp =
           fluiddis_->get_state("dispnp");
       Core::FE::extract_my_values(*matrix_state_disp, disp, lmdisp);
     }
   }
   {
-    Core::Elements::LocationArray las(1);
-    sele->location_vector(*mc_[mcidx_]->get_cutter_dis(), las, false);
+    Core::Elements::LocationArray la_s(1);
+    sele->location_vector(*mc_[mcidx_]->get_cutter_dis(), la_s, false);
     std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
         mc_[mcidx_]->get_cutter_dis()->get_state("ivelnp");
-    Core::FE::extract_my_values(*matrix_state, ivel, las[0].lm_);
+    Core::FE::extract_my_values(*matrix_state, ivel, la_s[0].lm_);
   }
   static std::vector<double> ipfvel;
   if (isporo_)
   {
-    Core::Elements::LocationArray las(1);
-    sele->location_vector(*mcfpi_ps_pf_->get_cutter_dis(), las, false);
+    Core::Elements::LocationArray la_s(1);
+    sele->location_vector(*mcfpi_ps_pf_->get_cutter_dis(), la_s, false);
     std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
         mcfpi_ps_pf_->get_cutter_dis()->get_state("ivelnp");
-    Core::FE::extract_my_values(*matrix_state, ipfvel, las[0].lm_);
+    Core::FE::extract_my_values(*matrix_state, ipfvel, la_s[0].lm_);
   }
 
   // 2 // get element xyze
@@ -357,7 +357,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
       // find element local position of gauss point
       std::shared_ptr<Cut::Position> pos =
           Cut::PositionFactory::build_position<3, Core::FE::CellType::hex8>(xyze, x);
-      if (!pos->compute(1e-1))  // if we are a litte bit outside of the element we don't care ...
+      if (!pos->compute(1e-1))  // if we are a little bit outside of the element we don't care ...
       {
         pos->local_coordinates(fluidele_xsi);
         std::cout << "fluidele_xsi: " << fluidele_xsi << std::endl;
@@ -698,7 +698,7 @@ bool XFEM::XFluidContactComm::get_volumecell(Discret::Elements::StructuralSurfac
       Core::LinAlg::Matrix<2, 1> tmp2xsi(tmpxsi.data(), true);
       s->normal(tmp2xsi, elenormal, true);
       elenormal.scale(-1.0);          // flip direction
-      if (fabs(tmpxsi(2, 0)) < 1e-1)  // do not search for better canidates anymore
+      if (fabs(tmpxsi(2, 0)) < 1e-1)  // do not search for better candidates anymore
         break;
     }
   }
@@ -714,7 +714,7 @@ bool XFEM::XFluidContactComm::get_volumecell(Discret::Elements::StructuralSurfac
         Core::LinAlg::Matrix<2, 1> tmp2xsi(tmpxsi.data(), true);
         s->normal(tmp2xsi, elenormal, true);
         elenormal.scale(-1.0);          // flip direction
-        if (fabs(tmpxsi(2, 0)) < 1e-1)  // do not search for better canidates anymore
+        if (fabs(tmpxsi(2, 0)) < 1e-1)  // do not search for better candidates anymore
           break;
       }
     }
@@ -722,7 +722,7 @@ bool XFEM::XFluidContactComm::get_volumecell(Discret::Elements::StructuralSurfac
   if (found_side == -1)
   {
     std::ofstream file("DEBUG_OUT_D001.pos");
-    Cut::Output::gmsh_new_section(file, "The point to idenity");
+    Cut::Output::gmsh_new_section(file, "The point to identity");
     Cut::Output::gmsh_coord_dump(file, x, -1);
     Cut::Output::gmsh_end_section(file);
     Cut::Output::gmsh_write_section(file, "All subsides", subsides, true);
@@ -795,7 +795,7 @@ bool XFEM::XFluidContactComm::get_volumecell(Discret::Elements::StructuralSurfac
           else
           {
             std::ofstream file("DEBUG_OUT_D003.pos");
-            Cut::Output::gmsh_new_section(file, "The point to idenity");
+            Cut::Output::gmsh_new_section(file, "The point to identity");
             Cut::Output::gmsh_coord_dump(file, x, -1);
             Cut::Output::gmsh_new_section(file, "facet", true);
             Cut::Output::gmsh_facet_dump(file, afacet, "sides", true);
@@ -840,7 +840,7 @@ bool XFEM::XFluidContactComm::get_volumecell(Discret::Elements::StructuralSurfac
         else if (!facet)
         {
           std::ofstream file("DEBUG_OUT_D004.pos");
-          Cut::Output::gmsh_new_section(file, "The point to idenity");
+          Cut::Output::gmsh_new_section(file, "The point to identity");
           Cut::Output::gmsh_coord_dump(file, x, -1);
           Cut::Output::gmsh_new_section(file, "The selected subside", true);
           Cut::Output::gmsh_side_dump(file, subsides[found_side]);
@@ -869,7 +869,7 @@ bool XFEM::XFluidContactComm::get_volumecell(Discret::Elements::StructuralSurfac
       }
 
       std::ofstream file("DEBUG_OUT_D005.pos");
-      Cut::Output::gmsh_new_section(file, "The point to idenity");
+      Cut::Output::gmsh_new_section(file, "The point to identity");
       Cut::Output::gmsh_coord_dump(file, x, -1);
       Cut::Output::gmsh_new_section(file, "The selected subside", true);
       Cut::Output::gmsh_side_dump(file, side);
@@ -888,7 +888,7 @@ bool XFEM::XFluidContactComm::get_volumecell(Discret::Elements::StructuralSurfac
         if (volumecell)
         {
           std::ofstream file("DEBUG_OUT_D006.pos");
-          Cut::Output::gmsh_new_section(file, "The point to idenity");
+          Cut::Output::gmsh_new_section(file, "The point to identity");
           Cut::Output::gmsh_coord_dump(file, x, -1);
           Cut::Output::gmsh_new_section(file, "The selected subside", true);
           Cut::Output::gmsh_side_dump(file, subsides[found_side]);
@@ -994,10 +994,10 @@ double XFEM::XFluidContactComm::distanceto_side(
     Core::LinAlg::Matrix<3, 1>& x, Cut::Side* side, Core::LinAlg::Matrix<3, 1>& closest_x)
 {
   double distance = 1e200;
-  for (std::vector<Cut::Edge*>::const_iterator eit = side->edges().begin();
-      eit != side->edges().end(); ++eit)
+  for (std::vector<Cut::Edge*>::const_iterator it = side->edges().begin();
+      it != side->edges().end(); ++it)
   {
-    Cut::Edge* e = *eit;
+    Cut::Edge* e = *it;
     Core::LinAlg::Matrix<3, 2> xyzl;
     e->coordinates(xyzl);
     std::shared_ptr<Cut::Position> pos =

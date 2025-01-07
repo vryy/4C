@@ -82,8 +82,8 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(std::shared_ptr<Core::FE::Discretiza
       dtsolve_(0.0),
       iternum_(0),
       itemax_(poroparams_.get<int>("ITEMAX")),
-      upres_(params_.get<int>("RESULTSEVRY")),
-      uprestart_(params_.get<int>("RESTARTEVRY")),
+      upres_(params_.get<int>("RESULTSEVERY")),
+      uprestart_(params_.get<int>("RESTARTEVERY")),
       vectornormfres_(Teuchos::getIntegralValue<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
           poroparams_, "VECTORNORM_RESF")),
       vectornorminc_(Teuchos::getIntegralValue<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
@@ -554,7 +554,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_mesh_movement(
 
   if (nds_disp_ == -1)
     FOUR_C_THROW(
-        "Dof set number of displacment related dofs"
+        "Dof set number of displacement related dofs"
         " has not been set!");
 
   // check existence of displacement vector
@@ -1822,7 +1822,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_error_compared_to_analytical_sol(
     {
       const int errorfunctnumber = poroparams_.get<int>("CALCERRORNO");
       if (errorfunctnumber < 1)
-        FOUR_C_THROW("invalid value of paramter CALCERRORNO for error function evaluation!");
+        FOUR_C_THROW("invalid value of parameter CALCERRORNO for error function evaluation!");
 
       eleparams.set<int>("error function number", errorfunctnumber);
       break;
@@ -2070,7 +2070,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::set_initial_field(
         if (condmaxnumdofpernode != 0) numdofpernode.insert(condmaxnumdofpernode);
       }
 
-      if (numdofpernode.empty()) FOUR_C_THROW("No DOFs defined on initial field condtion!");
+      if (numdofpernode.empty()) FOUR_C_THROW("No DOFs defined on initial field condition!");
 
       const int maxnumdofpernode = *(numdofpernode.rbegin());
 

@@ -36,7 +36,7 @@ namespace CONSTRAINTS
   constraints in the usual parallel fashion. That is there is a
   dof_row_map() and a DofColMap() that return the maps of the global FE
   system of equation in row and column setting respectively. These maps
-  are used by the algorithm's Core::LinAlg::Vector<double> classes amoung others.
+  are used by the algorithm's Core::LinAlg::Vector<double> classes among others.
 
   It is not connected to elements or nodes.
   <h3>Invariants</h3>

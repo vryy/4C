@@ -16,8 +16,8 @@ TIMESTEP                        0.1
 TAU                             1
 NUMSTEP                         10
 MAXTIME                         0.99
-RESULTSEVRY                     1
-RESTARTEVRY                     5
+RESULTSEVERY                     1
+RESTARTEVERY                     5
 LINEAR_SOLVER                   1
 STARTFUNCNO                     1
 SOURCEFUNCNO                    2

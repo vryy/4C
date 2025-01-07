@@ -29,11 +29,11 @@ namespace ScaTra
   // forward declarations
   class ScaTraTimIntImpl;
 
-  class HomIsoTurbScalarForcing
+  class HomoIsoTurbScalarForcing
   {
    public:
     //! constructor
-    HomIsoTurbScalarForcing(ScaTraTimIntImpl* timeint);
+    HomoIsoTurbScalarForcing(ScaTraTimIntImpl* timeint);
 
     //! initialize with initial spectrum
     void set_initial_spectrum(Inpar::ScaTra::InitialField init_field_type);

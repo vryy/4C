@@ -243,16 +243,17 @@ void Solid::ModelEvaluator::BeamInteraction::post_setup_submodels()
   check_init();
 
   // post setup submodel loop
-  Vector::iterator sme_iter;
-  for (Vector::iterator sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->post_setup();
+  Vector::iterator some_iter;
+  for (Vector::iterator some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end();
+      ++some_iter)
+    (*some_iter)->post_setup();
 
   if (beaminteraction_params_ptr_->get_repartition_strategy() ==
       Inpar::BeamInteraction::repstr_adaptive)
   {
     // submodel loop to determine half interaction radius
-    for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-      (*sme_iter)->get_half_interaction_distance(half_interaction_distance_);
+    for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+      (*some_iter)->get_half_interaction_distance(half_interaction_distance_);
 
     if (global_state().get_my_rank() == 0)
       std::cout << " half min bin size " << 0.5 * binstrategy_->get_min_bin_size() << std::endl;
@@ -360,20 +361,22 @@ void Solid::ModelEvaluator::BeamInteraction::init_and_setup_sub_model_evaluators
   // build and sort submodel vector
   me_vec_ptr_ = transform_to_vector(*me_map_ptr_, sorted_submodeltypes);
 
-  Vector::iterator sme_iter;
-  for (sme_iter = (*me_vec_ptr_).begin(); sme_iter != (*me_vec_ptr_).end(); ++sme_iter)
+  Vector::iterator some_iter;
+  for (some_iter = (*me_vec_ptr_).begin(); some_iter != (*me_vec_ptr_).end(); ++some_iter)
   {
-    (*sme_iter)->init(ia_discret_, bindis_, global_state_ptr(), global_in_output_ptr(),
-        ia_state_ptr_, beam_crosslinker_handler_, binstrategy_,
-        tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(),
-        std::dynamic_pointer_cast<FourC::BeamInteraction::Utils::MapExtractor>(eletypeextractor_));
-    (*sme_iter)->setup();
+    (*some_iter)
+        ->init(ia_discret_, bindis_, global_state_ptr(), global_in_output_ptr(), ia_state_ptr_,
+            beam_crosslinker_handler_, binstrategy_,
+            tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(),
+            std::dynamic_pointer_cast<FourC::BeamInteraction::Utils::MapExtractor>(
+                eletypeextractor_));
+    (*some_iter)->setup();
   }
 
   // submodels build their pointer to other submodel objects to enable submodel dependencies
   // this is not particularly nice, at least the nicest way to handle such dependencies
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->init_submodel_dependencies(me_map_ptr_);
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->init_submodel_dependencies(me_map_ptr_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -503,9 +506,9 @@ bool Solid::ModelEvaluator::BeamInteraction::post_partition_problem()
 
   bool repartition = false;
 
-  Vector::iterator sme_iter;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    repartition = (*sme_iter)->post_partition_problem() ? true : repartition;
+  Vector::iterator some_iter;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    repartition = (*some_iter)->post_partition_problem() ? true : repartition;
 
   return repartition;
 }
@@ -534,7 +537,7 @@ void Solid::ModelEvaluator::BeamInteraction::extend_ghosting()
       it != ia_state_ptr_->get_bin_to_row_ele_map().end(); ++it)
   {
     // not doing the following if is only valid if you ensure that the largest element
-    // in the discretization (in deformed state) is smaller than the smalles bin size
+    // in the discretization (in deformed state) is smaller than the smallest bin size
     // which is not necessarily needed e.g. for beam contact
     //    if( boundcolbins.find( it->first ) != boundcolbins.end() )
     {
@@ -545,9 +548,9 @@ void Solid::ModelEvaluator::BeamInteraction::extend_ghosting()
   }
 
   // enable submodel specific ghosting contributions to bin col map
-  Vector::iterator sme_iter;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->add_bins_to_bin_col_map(colbins);
+  Vector::iterator some_iter;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->add_bins_to_bin_col_map(colbins);
 
   // 1) extend ghosting of bin discretization
   // todo: think about if you really need to assign degrees of freedom for crosslinker
@@ -555,8 +558,8 @@ void Solid::ModelEvaluator::BeamInteraction::extend_ghosting()
   binstrategy_->extend_ghosting_of_binning_discretization(*rowbins_, colbins, true);
 
   // add submodel specific bins whose content should be ghosted in problem discret
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->add_bins_with_relevant_content_for_ia_discret_col_map(colbins);
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->add_bins_with_relevant_content_for_ia_discret_col_map(colbins);
 
   // build auxiliary bin col map
   std::vector<int> auxgids(colbins.begin(), colbins.end());
@@ -605,9 +608,9 @@ void Solid::ModelEvaluator::BeamInteraction::reset(const Core::LinAlg::Vector<do
   }
 
   // submodel loop
-  Vector::iterator sme_iter;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->reset();
+  Vector::iterator some_iter;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->reset();
 
   // Zero out force and stiffness contributions
   force_beaminteraction_->PutScalar(0.0);
@@ -636,9 +639,9 @@ bool Solid::ModelEvaluator::BeamInteraction::evaluate_force()
 {
   check_init_setup();
 
-  Vector::iterator sme_iter;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->evaluate_force();
+  Vector::iterator some_iter;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->evaluate_force();
 
   // do communication
   if (ia_state_ptr_->get_force_np()->GlobalAssemble(Add, false) != 0)
@@ -661,9 +664,9 @@ bool Solid::ModelEvaluator::BeamInteraction::evaluate_stiff()
 
   ia_state_ptr_->get_stiff()->un_complete();
 
-  Vector::iterator sme_iter;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->evaluate_stiff();
+  Vector::iterator some_iter;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->evaluate_stiff();
 
   if (not ia_state_ptr_->get_stiff()->filled()) ia_state_ptr_->get_stiff()->complete();
 
@@ -682,9 +685,9 @@ bool Solid::ModelEvaluator::BeamInteraction::evaluate_force_stiff()
 
   ia_state_ptr_->get_stiff()->un_complete();
 
-  Vector::iterator sme_iter;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->evaluate_force_stiff();
+  Vector::iterator some_iter;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->evaluate_force_stiff();
 
   // do communication
   if (ia_state_ptr_->get_force_np()->GlobalAssemble(Add, false) != 0)
@@ -758,9 +761,9 @@ void Solid::ModelEvaluator::BeamInteraction::write_restart(
   bin_writer->clear_map_cache();
 
   // sub model loop
-  Vector::iterator sme_iter;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->write_restart(*ia_writer, *bin_writer);
+  Vector::iterator some_iter;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->write_restart(*ia_writer, *bin_writer);
 }
 
 /*----------------------------------------------------------------------------*
@@ -773,9 +776,9 @@ void Solid::ModelEvaluator::BeamInteraction::read_restart(Core::IO::Discretizati
   auto input_control_file = Global::Problem::instance()->input_control_file();
 
   // pre sub model loop
-  Vector::iterator sme_iter;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->pre_read_restart();
+  Vector::iterator some_iter;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->pre_read_restart();
 
   // read interaction discretization
   Core::IO::DiscretizationReader ia_reader(ia_discret_, input_control_file, stepn);
@@ -797,12 +800,12 @@ void Solid::ModelEvaluator::BeamInteraction::read_restart(Core::IO::Discretizati
   partition_problem();
 
   // sub model loop
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->read_restart(ia_reader, bin_reader);
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->read_restart(ia_reader, bin_reader);
 
   // post sub model loop
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->post_read_restart();
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->post_read_restart();
 
   // Check if we need to store the restart displacement in the data state container.
   const Teuchos::ParameterList& beam_interaction_params =
@@ -835,9 +838,9 @@ void Solid::ModelEvaluator::BeamInteraction::run_post_iterate(const ::NOX::Solve
   check_init_setup();
 
   // submodel loop
-  Vector::iterator sme_iter;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->run_post_iterate(solver);
+  Vector::iterator some_iter;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->run_post_iterate(solver);
 }
 
 /*----------------------------------------------------------------------------*
@@ -853,9 +856,9 @@ void Solid::ModelEvaluator::BeamInteraction::update_step_state(const double& tim
   fstructold_ptr->Update(timefac_n, *force_beaminteraction_, 1.0);
 
   // submodel loop
-  Vector::iterator sme_iter;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->update_step_state(timefac_n);
+  Vector::iterator some_iter;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->update_step_state(timefac_n);
 }
 
 /*----------------------------------------------------------------------------*
@@ -864,7 +867,7 @@ void Solid::ModelEvaluator::BeamInteraction::update_step_element()
 {
   check_init_setup();
 
-  Vector::iterator sme_iter;
+  Vector::iterator some_iter;
 
   /* the idea is the following: redistribution of elements is only necessary if
    * one node on any proc has moved "too far" compared to the time step of the
@@ -879,8 +882,8 @@ void Solid::ModelEvaluator::BeamInteraction::update_step_element()
 
   // submodel loop
   bool binning_redist = false;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    binning_redist = (*sme_iter)->pre_update_step_element(beam_redist) ? true : binning_redist;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    binning_redist = (*some_iter)->pre_update_step_element(beam_redist) ? true : binning_redist;
 
   if (beam_redist)
   {
@@ -937,12 +940,12 @@ void Solid::ModelEvaluator::BeamInteraction::update_step_element()
   update_coupling_adapter_and_matrix_transformation();
 
   // submodel loop update
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->update_step_element(binning_redist || beam_redist);
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->update_step_element(binning_redist || beam_redist);
 
   // submodel post update
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->post_update_step_element();
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->post_update_step_element();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1039,9 +1042,9 @@ void Solid::ModelEvaluator::BeamInteraction::output_step_state(
 {
   check_init_setup();
 
-  Vector::iterator sme_iter;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->output_step_state(iowriter);
+  Vector::iterator some_iter;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->output_step_state(iowriter);
 
   // visualize bins according to specification in input file ( MESHFREE -> WRITEBINS "" )
   binstrategy_->write_bin_output(global_state().get_step_n(), global_state().get_time_n());
@@ -1053,9 +1056,9 @@ void Solid::ModelEvaluator::BeamInteraction::runtime_output_step_state() const
 {
   check_init_setup();
 
-  Vector::iterator sme_iter;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->runtime_output_step_state();
+  Vector::iterator some_iter;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->runtime_output_step_state();
 
   tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->runtime_output_step_state(
       global_state().get_time_n(), global_state().get_step_n());
@@ -1101,9 +1104,9 @@ void Solid::ModelEvaluator::BeamInteraction::post_output()
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BeamInteraction::reset_step_state()
 {
-  Vector::iterator sme_iter;
-  for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->reset_step_state();
+  Vector::iterator some_iter;
+  for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+    (*some_iter)->reset_step_state();
 }
 
 /*----------------------------------------------------------------------------*

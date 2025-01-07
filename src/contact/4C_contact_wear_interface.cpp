@@ -269,7 +269,7 @@ void Wear::WearInterface::assemble_te_master(
           ++k;
         }
         else
-          FOUR_C_THROW("Choosen wear shape function not supported!");
+          FOUR_C_THROW("Chosen wear shape function not supported!");
       }
 
       if (k != colsize) FOUR_C_THROW("AssembleTE: k = %i but colsize = %i", k, colsize);
@@ -1880,7 +1880,7 @@ void Wear::WearInterface::assemble_lin_slip_w(Core::LinAlg::SparseMatrix& linsli
         }
       }
 
-      // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+      // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
       std::vector<double> sum1(n_dim() - 1, 0);
       sum1[0] = ztxi + ct * jumptxi;
       if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
@@ -1894,7 +1894,7 @@ void Wear::WearInterface::assemble_lin_slip_w(Core::LinAlg::SparseMatrix& linsli
       // check of euclidean norm
       if (euclidean == 0.0) FOUR_C_THROW("AssemblelinSlip: Euclidean norm is zero");
 
-      // this is not evaluated if "FRICTIONLESSFIRST" is flaged on AND the node
+      // this is not evaluated if "FRICTIONLESSFIRST" is flagged on AND the node
       // is just coming into contact
       if (friclessandfirst == false)
       {
@@ -2068,7 +2068,7 @@ void Wear::WearInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipL
         }
       }
 
-      // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+      // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
       std::vector<double> sum1(n_dim() - 1, 0);
       sum1[0] = ztxi + ct * jumptxi;
       if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
@@ -2946,7 +2946,7 @@ void Wear::WearInterface::assemble_lin_w_lm_sl(Core::LinAlg::SparseMatrix& sglob
 #ifdef CONSISTENTSLIP
 
     double euclidean = 0;
-    // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+    // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
     std::vector<double> sum1(Dim() - 1, 0);
     sum1[0] = ztxi + ct * jumptxi;
     if (Dim() == 3) sum1[1] = zteta + ct * jumpteta;
@@ -4205,7 +4205,7 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
   Core::Communication::sum_all(localnumwdof.data(), globalnumlmdof.data(),
       Core::Communication::num_mpi_ranks(get_comm()), get_comm());
 
-  // compute offet for LM dof initialization for all procs
+  // compute offset for LM dof initialization for all procs
   int offset = 0;
   for (int k = 0; k < Core::Communication::my_mpi_rank(get_comm()); ++k)
     offset += globalnumlmdof[k];
@@ -4238,7 +4238,7 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
     Core::Communication::sum_all(localnumwdof.data(), globalnumlmdof.data(),
         Core::Communication::num_mpi_ranks(get_comm()), get_comm());
 
-    // compute offet for LM dof initialization for all procs
+    // compute offset for LM dof initialization for all procs
     int offset = 0;
     for (int k = 0; k < Core::Communication::my_mpi_rank(get_comm()); ++k)
       offset += globalnumlmdof[k];

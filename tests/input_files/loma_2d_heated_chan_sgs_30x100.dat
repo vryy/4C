@@ -24,8 +24,8 @@ TIMESTEP                        1.0
 MAXTIME                         350.0
 ITEMAX                          1
 CONVTOL                         1.0E-4
-RESULTSEVRY                           1
-RESTARTEVRY                     10
+RESULTSEVERY                           1
+RESTARTEVERY                     10
 CONSTHERMPRESS                  Yes
 SGS_MATERIAL_UPDATE             No
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -37,8 +37,8 @@ TIMEINTEGR                      Af_Gen_Alpha
 NONLINITER                      fixed_point_like
 ITEMAX                          1
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           1
-RESTARTEVRY                     2000
+RESULTSEVERY                           1
+RESTARTEVERY                     2000
 NUMSTEP                         20
 NUMSTASTEPS                     0
 MAXTIME                         350.0
@@ -91,7 +91,7 @@ INITFUNCNO                      3
 INITIALFIELD                    field_by_function
 MAXTIME                         350.0
 NUMSTEP                         20
-RESTARTEVRY                     2000
+RESTARTEVERY                     2000
 THETA                           0.50
 ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
@@ -101,7 +101,7 @@ TIMESTEP                        1.0
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 CALCFLUX_BOUNDARY               diffusive
-RESULTSEVRY                     10
+RESULTSEVERY                     10
 CONVFORM                        convective
 MATID                           1
 OUTPUTSCALARS                   entire_domain

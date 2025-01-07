@@ -32,7 +32,7 @@ namespace Discret
   namespace Elements
   {
     // finally this parameter list should go and all interface relevant parameters should be
-    // stored in the condition mangager or coupling objects
+    // stored in the condition manager or coupling objects
     class FluidEleParameterXFEM;
   }  // namespace Elements
 }  // namespace Discret

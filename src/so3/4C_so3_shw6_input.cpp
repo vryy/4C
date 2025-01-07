@@ -51,7 +51,7 @@ bool Discret::Elements::SoShw6::read_element(const std::string& eletype, const s
 
   buffer = container.get<std::string>("EAS");
 
-  // full sohw6 EAS technology
+  // full show6 EAS technology
   if (buffer == "soshw6")
   {
     eastype_ = soshw6_easpoisthick;  // EAS to allow linear thickness strain

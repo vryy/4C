@@ -36,9 +36,9 @@ NODE_GID                        yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     1
 TIMESTEP                        0.1
 NUMSTEP                         30
 MAXTIME                         3

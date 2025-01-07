@@ -26,8 +26,8 @@ void Inpar::LevelSet::set_valid_parameters(Teuchos::ParameterList& list)
   Core::Utils::int_parameter("NUMSTEP", 24, "Total number of time steps", &levelsetcontrol);
   Core::Utils::double_parameter("TIMESTEP", 0.1, "Time increment dt", &levelsetcontrol);
   Core::Utils::double_parameter("MAXTIME", 1000.0, "Total simulation time", &levelsetcontrol);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &levelsetcontrol);
-  Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &levelsetcontrol);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "Increment for writing solution", &levelsetcontrol);
+  Core::Utils::int_parameter("RESTARTEVERY", 1, "Increment for writing restart", &levelsetcontrol);
 
   setStringToIntegralParameter<Inpar::ScaTra::CalcErrorLevelSet>("CALCERROR", "No",
       "compute error compared to analytical solution", tuple<std::string>("No", "InitialField"),

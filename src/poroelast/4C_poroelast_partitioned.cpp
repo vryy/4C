@@ -207,7 +207,7 @@ bool PoroElast::Partitioned::convergence_check(int itnum)
   {
     stopnonliniter = true;
     if ((Core::Communication::my_mpi_rank(get_comm()) ==
-            0))  // and print_screen_evry() and (Step()%print_screen_evry()==0))
+            0))  // and print_screen_every() and (Step()%print_screen_evry()==0))
     {
       printf(
           "|     >>>>>> not converged in itemax steps!                                       |\n");

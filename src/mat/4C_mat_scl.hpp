@@ -45,7 +45,7 @@ namespace Mat
       const double cmax_;
 
       //! strategy for extrapolation of diffusion coefficient
-      const int extrapolation_diffussion_coeff_strategy_;
+      const int extrapolation_diffusion_coeff_strategy_;
 
       //! limit concentration for extrapolation strategy
       const double clim_;

@@ -510,7 +510,7 @@ namespace Adapter
         std::shared_ptr<Core::LinAlg::Vector<double>> struct_growth_disp) = 0;
 
     /// Write Gmsh output for structural field
-    virtual void write_gmsh_struc_output_step() = 0;
+    virtual void write_gmsh_struct_output_step() = 0;
 
     /// \brief Returns true if the final state has been written
     [[nodiscard]] virtual bool has_final_state_been_written() const = 0;

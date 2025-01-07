@@ -98,7 +98,7 @@ namespace Discret
       //! total gauss points per element
       int numgpt_;
 
-      //! @name Acess methods
+      //! @name Access methods
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy

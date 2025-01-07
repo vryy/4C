@@ -6,8 +6,8 @@ Gauss-point-to-segment coupling method is employed
 PROBLEMTYPE                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 NUMSTEP                         10
 MAXTIME                         1.0
 TIMESTEP                        0.1

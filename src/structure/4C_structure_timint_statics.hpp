@@ -100,7 +100,7 @@ namespace Solid
     void setup() override;
 
     //! Resize #TimIntMStep<T> multi-step quantities
-    //! Single-step method: nothing to do here exept when doing optimization
+    //! Single-step method: nothing to do here except when doing optimization
     void resize_m_step() override { ; }
 
     //@}

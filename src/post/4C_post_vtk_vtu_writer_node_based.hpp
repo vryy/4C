@@ -110,7 +110,7 @@ class PostVtuWriterNode : public PostVtuWriter
       std::vector<double>& coordinates) override;
 
   //! Write a single result step for one Nurbs Element
-  virtual void wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele, int ncomponents,
+  virtual void write_dof_result_step_nurbs_ele(const Core::Elements::Element* ele, int ncomponents,
       const int numdf, std::vector<double>& solution,
       std::shared_ptr<Core::LinAlg::Vector<double>> ghostedData, const int from,
       const bool fillzeros);

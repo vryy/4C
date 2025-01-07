@@ -30,7 +30,7 @@ FLD::Utils::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
   // extract the womersley boundary dof
   //--------------------------------------------------------------------
 
-  // Get the surfaces to whome the Womersley flow profile must be applied
+  // Get the surfaces to whom the Womersley flow profile must be applied
   std::vector<Core::Conditions::Condition*> womersleycond;
   discret_->get_condition("VolumetricSurfaceFlowCond", womersleycond);
   int num_of_wom_conds = womersleycond.size();
@@ -330,7 +330,7 @@ FLD::Utils::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   this->eval_local_normalized_radii(ds_condname, dl_condname);
 
   // -------------------------------------------------------------------
-  // create cond_velocities and codition traction velocity terms
+  // create cond_velocities and condition traction velocity terms
   // -------------------------------------------------------------------
   cond_velocities_ = Core::LinAlg::create_vector(*cond_dofrowmap_, true);
   cond_traction_vel_ = Core::LinAlg::create_vector(*dofrowmap, true);
@@ -369,14 +369,14 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::center_of_mass_calculation(
   std::vector<double> par_coord(3, 0.0);
   for (unsigned int i = 0; i < par_coord.size(); i++)
   {
-    // get the actaul area on the local processor
+    // get the actual area on the local processor
     double act_area = eleparams.get<double>("total area");
 
-    // get the actaul coordinate values on the local processor
+    // get the actual coordinate values on the local processor
     double act_val = (*coords)[i] * act_area;
     double act_n_val = (*normal)[i] * act_area;
 
-    // define the parallel values that will be summed ove all of the processors
+    // define the parallel values that will be summed over all of the processors
     double par_area = 0.0;
     double par_val = 0.0;
     double par_n_val = 0.0;
@@ -386,7 +386,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::center_of_mass_calculation(
     Core::Communication::sum_all(&act_n_val, &par_n_val, 1, discret_->get_comm());
     Core::Communication::sum_all(&act_area, &par_area, 1, discret_->get_comm());
 
-    // finally evaluate the actual center of mass and avarage normal
+    // finally evaluate the actual center of mass and average normal
     (*coords)[i] = par_val / par_area;
     (*normal)[i] = par_n_val / par_area;
   }
@@ -403,8 +403,8 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::center_of_mass_calculation(
     }
     printf("\n");
 
-    // print the avarage normal
-    printf("avarage normal of cond(%d) surface is:\n", condid_);
+    // print the average normal
+    printf("average normal of cond(%d) surface is:\n", condid_);
     for (unsigned int i = 0; i < coords->size(); i++)
     {
       printf("| %f |", (*normal)[i]);
@@ -551,7 +551,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
       // check if the node is not a gohst node
       if (discret_->g_node(gid)->owner() == myrank)
       {
-        double border_raduis = 0.0;
+        double border_radius = 0.0;
         const auto& curr_xyze = discret_->g_node(gid)->x();
 
         //----------------------------------------------------------------
@@ -578,9 +578,9 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
             c_bnd(index) = bord_xyze[index] - (*cmass_)[index];
           }
 
-          // calculate the raduis of the border node
+          // calculate the radius of the border node
           R = c_cnd.norm2();
-          border_raduis = c_bnd.norm2();
+          border_radius = c_bnd.norm2();
 
           if (it->first == gid)
           {
@@ -612,7 +612,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
             if (diff.norm2() <= diff_error_l)
             {
               diff_error_l = diff.norm2();
-              R_l = border_raduis;
+              R_l = border_radius;
               v_left = c_bnd;
             }
           }
@@ -621,16 +621,16 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
             if (diff.norm2() <= diff_error_r)
             {
               diff_error_r = diff.norm2();
-              R_r = border_raduis;
+              R_r = border_radius;
               v_right = c_bnd;
             }
           }
         }
         // ---------------------------------------------------------------
-        // calculate the local raduis of the node
+        // calculate the local radius of the node
         //  1- Calculate the angle between R_right and [center  curr-node]
         //  2- Calculate the angle between R_left and R_right
-        //  3- Calculate the local Raduis by interpolation
+        //  3- Calculate the local Radius by interpolation
         //  P.S: intersection method might be more accurate. But since
         //       some nodes might be slightly out of the plane, such a
         //       method might fail.
@@ -643,35 +643,35 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
 
           double angle_rl = 0.0;
           double angle_r = 0.0;
-          double border_raduis = 0.0;
+          double border_radius = 0.0;
 
           if (cos_r >= 1.0 || cos_r <= -1.0)
           {
-            border_raduis = R_r;
+            border_radius = R_r;
           }
           else if (cos_rl >= 1.0 || cos_rl <= -1.0)
           {
-            border_raduis = R_l;
+            border_radius = R_l;
           }
           else
           {
             angle_rl = acos(v_right.dot(v_left));
             angle_r = acos(v_right.dot(c_cnd));
-            border_raduis = R_r + (R_l - R_r) * angle_r / angle_rl;
+            border_radius = R_r + (R_l - R_r) * angle_r / angle_rl;
           }
 
-          // update local raduis
-          R /= border_raduis;
+          // update local radius
+          R /= border_radius;
         }
         else
         {
           R = 1.0;
         }
-        // update local raduis
+        // update local radius
         local_radii_->ReplaceGlobalValues(1, &R, &gid);
 
-        // update border raduis
-        border_radii_->ReplaceGlobalValues(1, &border_raduis, &gid);
+        // update border radius
+        border_radii_->ReplaceGlobalValues(1, &border_radius, &gid);
       }
     }
   }
@@ -912,7 +912,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::evaluate_velocities(
 }  // FLD::Utils::FluidWomersleyBc::EvaluateVelocities
 
 /*----------------------------------------------------------------------*
- |  Evaluates the Velocity componets of the traction        ismail 05/11|
+ |  Evaluates the Velocity components of the traction        ismail 05/11|
  *----------------------------------------------------------------------*/
 void FLD::Utils::FluidVolumetricSurfaceFlowBc::reset_traction_velocity_comp()
 {
@@ -921,7 +921,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::reset_traction_velocity_comp()
 
 
 /*----------------------------------------------------------------------*
- |  Evaluates the Velocity componets of the traction        ismail 05/11|
+ |  Evaluates the Velocity components of the traction        ismail 05/11|
  *----------------------------------------------------------------------*/
 void FLD::Utils::FluidVolumetricSurfaceFlowBc::evaluate_traction_velocity_comp(
     Teuchos::ParameterList eleparams, std::string condname, double flowrate, int condid_,
@@ -1007,7 +1007,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::velocities(Core::FE::Discretizati
 
   // condition id
   int condid = params.get<int>("Condition ID");
-  // history of avarage velocities at the outlet
+  // history of average velocities at the outlet
   std::shared_ptr<std::vector<double>> flowrates =
       params.get<std::shared_ptr<std::vector<double>>>("Flowrates");
   std::shared_ptr<std::vector<double>> velocities =
@@ -1075,7 +1075,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::velocities(Core::FE::Discretizati
   }
 
   // -------------------------------------------------------------------
-  // evaluate the avarage velocity and apply it to the design surface
+  // evaluate the average velocity and apply it to the design surface
   // -------------------------------------------------------------------
   // loop over all of the nodes
   for (int lid = 0; lid < cond_noderowmap.NumMyElements(); lid++)
@@ -1229,7 +1229,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
   params->set<int>("Number of Harmonics", 0);
   // condition id
   params->set<int>("Condition ID", condid_);
-  // history of avarage velocities at the outlet
+  // history of average velocities at the outlet
   std::shared_ptr<std::vector<double>> flowrates = std::make_shared<std::vector<double>>();
   flowrates->push_back(1.0 * area_);
   params->set<std::shared_ptr<std::vector<double>>>("Flowrates", flowrates);
@@ -1392,7 +1392,7 @@ double FLD::Utils::FluidVolumetricSurfaceFlowBc::pressure_calculation(
 }  // FluidImplicitTimeInt::pressure_calculation
 
 /*----------------------------------------------------------------------*
- |  Parabolic velocity at certain raduis and time         mueller 04/10 |
+ |  Parabolic velocity at certain radius and time         mueller 04/10 |
  *----------------------------------------------------------------------*/
 double FLD::Utils::FluidVolumetricSurfaceFlowBc::polynomail_velocity(double r, int order)
 {
@@ -1402,7 +1402,7 @@ double FLD::Utils::FluidVolumetricSurfaceFlowBc::polynomail_velocity(double r, i
 
 
 /*----------------------------------------------------------------------*
- |  Womersley velocity at certain raduis and time         mueller 04/10 |
+ |  Womersley velocity at certain radius and time         mueller 04/10 |
  *----------------------------------------------------------------------*/
 double FLD::Utils::FluidVolumetricSurfaceFlowBc::womersley_velocity(double r, double R, double Bn,
     double Phi,
@@ -1620,7 +1620,7 @@ double FLD::Utils::FluidVolumetricSurfaceFlowBc::area(
 }  // FLD::Utils::FluidVolumetricSurfaceFlowBc::Area
 
 /*----------------------------------------------------------------------*
- |  Womersley: Discrete Fourier Transfomation              ismail 10/10 |
+ |  Womersley: Discrete Fourier Transformation              ismail 10/10 |
  *----------------------------------------------------------------------*/
 void FLD::Utils::FluidVolumetricSurfaceFlowBc::dft(std::shared_ptr<std::vector<double>> f,
     std::shared_ptr<std::vector<std::complex<double>>>& F, int starting_pos)
@@ -1784,7 +1784,7 @@ FLD::Utils::TotalTractionCorrector::TotalTractionCorrector(
   // extract the womersley boundary dof
   //--------------------------------------------------------------------
 
-  // Get the surfaces to whome the traction flow profile must be applied
+  // Get the surfaces to whom the traction flow profile must be applied
   std::vector<Core::Conditions::Condition*> tractioncond;
   discret_->get_condition("TotalTractionCorrectionCond", tractioncond);
   int num_of_tr_conds = tractioncond.size();

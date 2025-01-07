@@ -24,21 +24,21 @@ void Inpar::SSI::set_valid_parameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
 
   Teuchos::ParameterList& ssidyn =
-      list.sublist("SSI CONTROL", false, "Control paramters for scatra structure interaction");
+      list.sublist("SSI CONTROL", false, "Control parameters for scatra structure interaction");
 
   // Output type
   Core::Utils::double_parameter(
-      "RESTARTEVRYTIME", 0, "write restart possibility every RESTARTEVRY steps", &ssidyn);
+      "RESTARTEVERYTIME", 0, "write restart possibility every RESTARTEVERY steps", &ssidyn);
   Core::Utils::int_parameter(
-      "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &ssidyn);
+      "RESTARTEVERY", 1, "write restart possibility every RESTARTEVERY steps", &ssidyn);
   // Time loop control
   Core::Utils::int_parameter("NUMSTEP", 200, "maximum number of Timesteps", &ssidyn);
   Core::Utils::double_parameter("MAXTIME", 1000.0, "total simulation time", &ssidyn);
   Core::Utils::double_parameter("TIMESTEP", -1, "time step size dt", &ssidyn);
   Core::Utils::bool_parameter(
       "DIFFTIMESTEPSIZE", "No", "use different step size for scatra and solid", &ssidyn);
-  Core::Utils::double_parameter("RESULTSEVRYTIME", 0, "increment for writing solution", &ssidyn);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "increment for writing solution", &ssidyn);
+  Core::Utils::double_parameter("RESULTSEVERYTIME", 0, "increment for writing solution", &ssidyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "increment for writing solution", &ssidyn);
   Core::Utils::int_parameter("ITEMAX", 10, "maximum number of iterations over fields", &ssidyn);
   Core::Utils::bool_parameter("SCATRA_FROM_RESTART_FILE", "No",
       "read scatra result from restart files (use option 'restartfromfile' during execution of "
@@ -205,7 +205,7 @@ void Inpar::SSI::set_valid_parameters(Teuchos::ParameterList& list)
       "ADD_MANIFOLD", "no", "activate additional manifold?", &ssidynmanifold);
 
   Core::Utils::bool_parameter("MESHTYING_MANIFOLD", "no",
-      "activate meshtying betweeen all manifold fields in case they intersect?", &ssidynmanifold);
+      "activate meshtying between all manifold fields in case they intersect?", &ssidynmanifold);
 
   setStringToIntegralParameter<Inpar::ScaTra::InitialField>("INITIALFIELD", "zero_field",
       "Initial field for scalar transport on manifold",

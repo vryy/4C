@@ -323,7 +323,7 @@ namespace FLD
    public:
     WeaklyCompressibleEtienneFSIFluidFunction(
         const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
-        const Mat::PAR::StVenantKirchhoff& fparams_struc);
+        const Mat::PAR::StVenantKirchhoff& fparams_struct);
 
     double evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -347,7 +347,7 @@ namespace FLD
    public:
     WeaklyCompressibleEtienneFSIFluidForceFunction(
         const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
-        const Mat::PAR::StVenantKirchhoff& fparams_struc);
+        const Mat::PAR::StVenantKirchhoff& fparams_struct);
 
     double evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -371,7 +371,7 @@ namespace FLD
    public:
     WeaklyCompressibleEtienneFSIFluidViscosityFunction(
         const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
-        const Mat::PAR::StVenantKirchhoff& fparams_struc);
+        const Mat::PAR::StVenantKirchhoff& fparams_struct);
 
     double evaluate(const double* x, double t, std::size_t component) const override;
 

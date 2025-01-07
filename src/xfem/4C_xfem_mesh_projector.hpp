@@ -119,7 +119,7 @@ namespace XFEM
     //! search radius factor
     double searchradius_fac_;
 
-    //! 3D seach tree for embedded discretization
+    //! 3D search tree for embedded discretization
     std::shared_ptr<Core::Geo::SearchTree> search_tree_;
 
     //! min. radius needed for the search tree

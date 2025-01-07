@@ -29,8 +29,8 @@ LINEAR_SOLVER                   2
 DYNAMICTYPE                      Statics
 PRESTRESS                       mulf
 PRESTRESSTIME                   0.00101
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TOLDISP                         1.0E-07
 MAXITER                         50
 PREDICT                         ConstDisVelAcc
@@ -53,8 +53,8 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          5
 CONVCHECK                       L_2_norm
-RESULTSEVRY                     1
-RESTARTEVRY                     20
+RESULTSEVERY                     1
+RESTARTEVERY                     20
 NUMSTASTEPS                     0
 THETA                           0.66
 START_THETA                     0.67
@@ -75,8 +75,8 @@ STRUCTURE DIS structure NODE 1734 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-15
 MAXTIME                         1000.0
 TIMESTEP                        0.0001
 NUMSTEP                         5
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 COUPALGO                        iter_stagg_AITKEN_rel_param
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 BASETOL                         1.0E-6

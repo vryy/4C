@@ -44,8 +44,8 @@ PROBLEMTYPE                      Structure
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     10
-RESTARTEVRY                     10
+RESULTSEVERY                     10
+RESTARTEVERY                     10
 NLNSOL                          fullnewton
 DIVERCONT                       adapt_step
 TIMESTEP                        0.0001

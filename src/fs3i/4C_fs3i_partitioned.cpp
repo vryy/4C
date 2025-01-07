@@ -156,7 +156,7 @@ void FS3I::PartFS3I::init()
     if (not(impltype_fluid == Inpar::ScaTra::impltype_undefined))
       FOUR_C_THROW(
           "Be aware that your FLUIDSCAL_SCATRATYPE will be ignored and the impltype from the "
-          "TRANSPORT ELMENTS section will be utilized. Use FLUIDSCAL_SCATRATYPE 'Undefined'!");
+          "TRANSPORT ELEMENTS section will be utilized. Use FLUIDSCAL_SCATRATYPE 'Undefined'!");
 
     volume_coupling_objects_.push_back(create_vol_mortar_object(fluiddis, fluidscatradis));
 
@@ -209,7 +209,7 @@ void FS3I::PartFS3I::init()
       {
         FOUR_C_THROW(
             "Be aware that the ImplType defined for the STRUCTURE Elements will be ignored and the "
-            "ImplType from the TRANSPORT2 ELMENTS section will be utilized. Use TYPE 'Undefined' "
+            "ImplType from the TRANSPORT2 ELEMENTS section will be utilized. Use TYPE 'Undefined' "
             "if "
             "cloning the scatra discretization from structure discretization is not intended!");
       }
@@ -447,7 +447,7 @@ void FS3I::PartFS3I::read_restart()
         currscatra->scatra_field()->read_restart(restart);
       }
     }
-    else  // we do not want to read the scatras values and the lagrange multiplyer, since we start
+    else  // we do not want to read the scatras values and the lagrange multiplier, since we start
           // from a partitioned FSI
     {
       fsi_->read_restart(restart);

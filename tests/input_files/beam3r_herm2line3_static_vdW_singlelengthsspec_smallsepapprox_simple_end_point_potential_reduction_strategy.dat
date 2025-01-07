@@ -37,7 +37,7 @@ NUMTHERMDIS                     0
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 FILESTEPS                       1000
-STDOUTEVRY                      1000
+STDOUTEVERY                      1000
 VERBOSITY                       Standard
 --------------------------------------------------IO/MONITOR STRUCTURE DBC
 INTERVAL_STEPS                  1
@@ -61,9 +61,9 @@ INTERNAL_ENERGY_ELEMENT         Yes
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     100
-RESEVRYERGY                     1
-RESTARTEVRY                     100
+RESULTSEVERY                     100
+RESEVERYERGY                     1
+RESTARTEVERY                     100
 NLNSOL                          fullnewton
 TIMESTEP                        0.1
 NUMSTEP                         10

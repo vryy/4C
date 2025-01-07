@@ -204,7 +204,7 @@ namespace Thermo
 
     //@}
 
-    //! @name Acess methods
+    //! @name Access methods
 
     //! \brief Get number of degrees of freedom of a certain node
     //!        (implements pure virtual Core::Elements::Element)
@@ -346,7 +346,7 @@ namespace Thermo
 
    private:
     //! number of dofs per node (for systems of thermo equations)
-    //! (storage neccessary because we don't know the material in the post filters anymore)
+    //! (storage necessary because we don't know the material in the post filters anymore)
     static constexpr int numdofpernode_ = 1;
     //! the element discretization type
     Core::FE::CellType distype_;
@@ -483,7 +483,7 @@ namespace Thermo
 
     //@}
 
-    //! @name Acess methods
+    //! @name Access methods
 
     //! \brief Get number of degrees of freedom of a certain node
     //!       (implements pure virtual Core::Elements::Element)
@@ -536,7 +536,7 @@ namespace Thermo
     //!                         and elements
     //! \param discretization (in): A reference to the underlying discretization
     //! \param la (in):         location array of this element, vector of
-    //!                         degrees of freedom adressed by this element
+    //!                         degrees of freedom addressed by this element
     //! \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
     //!                         the controlling method does not expect the element to fill
     //!                         this matrix.

@@ -86,7 +86,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannDisp::struct_
       structure_field()->apply_interface_forces_temporary_deprecated(
           iforce);  // todo remove this line as soon as possible!
     structure_field()->solve();
-    structure_field()->write_gmsh_struc_output_step();
+    structure_field()->write_gmsh_struct_output_step();
     return structure_field()->extract_interface_dispnp();
   }
 }

@@ -24,13 +24,13 @@ FLUID_STRESS                    No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         2.0
 TIMESTEP                        0.025
 NUMSTEP                         3
-RESULTSEVRY                           1
-RESTARTEVRY                     5
+RESULTSEVERY                           1
+RESTARTEVERY                     5
 COUPALGO                        iter_xfem_monolithic
 SECONDORDER                     no
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
@@ -58,8 +58,8 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           1
-RESTARTEVRY                     5
+RESULTSEVERY                           1
+RESTARTEVERY                     5
 NUMSTEP                         80
 NUMSTASTEPS                     1
 MAXTIME                         2.0

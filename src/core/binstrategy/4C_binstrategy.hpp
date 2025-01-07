@@ -316,7 +316,7 @@ namespace Core::Binstrategy
     /*!
      * \brief convert a position to its corresponding bin
      *
-     * \param[in] pos position that is cecked in which bin it resides
+     * \param[in] pos position that is checked in which bin it resides
      *
      * \return global id of corresponding bin
      */

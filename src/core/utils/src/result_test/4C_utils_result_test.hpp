@@ -126,7 +126,7 @@ namespace Core::Utils
     /// add field specific result test object
     void add_field_test(std::shared_ptr<ResultTest> test);
 
-    /// do all tests of all fields including appropiate output
+    /// do all tests of all fields including appropriate output
     void test_all(MPI_Comm comm);
 
     /// Store the parsed @p results.

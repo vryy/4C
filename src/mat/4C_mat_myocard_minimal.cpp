@@ -179,7 +179,7 @@ MyocardMinimal::MyocardMinimal(const double eps_deriv_myocard, const std::string
     tau_winf_ = 4.97;
     w_infs_ = 1.0;
   }
-  else if (tissue == "pAtria")  // Lenk et al. 2015, "Initation of atrial fibrillation..." (JTB)
+  else if (tissue == "pAtria")  // Lenk et al. 2015, "Initiation of atrial fibrillation..." (JTB)
   {
     u_o_ = 0.0;
     u_u_ = 0.9205;
@@ -210,7 +210,7 @@ MyocardMinimal::MyocardMinimal(const double eps_deriv_myocard, const std::string
     tau_winf_ = 0.05;
     w_infs_ = 1.0;
   }
-  else if (tissue == "pAtriaRe")  // Lenk et al. 2015, "Initation of atrial fibrillation..." (JTB)
+  else if (tissue == "pAtriaRe")  // Lenk et al. 2015, "Initiation of atrial fibrillation..." (JTB)
   {
     u_o_ = 0.0;
     u_u_ = 0.9205;
@@ -242,7 +242,7 @@ MyocardMinimal::MyocardMinimal(const double eps_deriv_myocard, const std::string
     w_infs_ = 1.0;
   }
   else if (tissue == "rAtria")
-  // Lenk et al. 2015, "Initation of atrial fibrillation..." (JTB);
+  // Lenk et al. 2015, "Initiation of atrial fibrillation..." (JTB);
   // Richter et al. 2016, "Anatomical and spiral wave..." (JTB)
   {
     u_o_ = 0.00;

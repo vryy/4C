@@ -56,7 +56,7 @@ namespace FLD
     void init() override;
 
     /*!
-    \brief evaluate problem-dependent bounadry consitions: update the 3D-to-reduced_D coupling data
+    \brief evaluate problem-dependent boundary consitions: update the 3D-to-reduced_D coupling data
     for dirichlet bc in this context
 
     */

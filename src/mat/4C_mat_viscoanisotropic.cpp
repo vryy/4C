@@ -520,7 +520,7 @@ void Mat::ViscoAnisotropic::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     fib2_tension = 0.;
   }
 
-  // PK2 fiber part in splitted formulation, see Holzapfel p. 271
+  // PK2 fiber part in split formulation, see Holzapfel p. 271
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> SisoEla_fib1(A1);  // first compute Sfbar1 = dWf/dJ4 A1
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> SisoEla_fib2(A2);  // first compute Sfbar2 = dWf/dJ6 A2
   const double exp1 = exp(k2 * (J4 - 1.) * (J4 - 1.));
@@ -545,7 +545,7 @@ void Mat::ViscoAnisotropic::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     SisoEla_fib2(i) = incJ * (SisoEla_fib2(i) - third * traceCSfbar2 * Cinv(i));
   }
 
-  // Elasticity fiber part in splitted formulation, see Holzapfel p. 255 and 272
+  // Elasticity fiber part in split formulation, see Holzapfel p. 255 and 272
   const double delta7bar1 =
       fib1_tension * 4. *
       (k1 * exp1 + 2. * k1 * k2 * (J4 - 1.) * (J4 - 1.) * exp1);  // 4 d^2Wf/dJ4dJ4

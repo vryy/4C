@@ -13,7 +13,7 @@ ALE_TYPE                        springs_spatial
 MAXTIME                         10000.0
 NUMSTEP                         41
 NUM_INITSTEP                    0
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 TIMESTEP                        10
 LINEAR_SOLVER                   1
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -34,7 +34,7 @@ NUMSTASTEPS                     0
 NUMSTEP                         5
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
-RESTARTEVRY                     100
+RESTARTEVERY                     100
 STARTFUNCNO                     -1
 START_THETA                     1
 THETA                           0.66
@@ -62,10 +62,10 @@ VSTAB                           no_vstab
 COUPALGO                        iter_monolithicfluidsplit
 MAXTIME                         10000.0
 NUMSTEP                         5
-RESTARTEVRY                     100
+RESTARTEVERY                     100
 SECONDORDER                     yes
 TIMESTEP                        10
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 BASETOL                         1.0e-07
 CONVTOL                         1.0e-07
@@ -96,8 +96,8 @@ SHAPEFCT                        Polynomial
 MAXTIME                         10000.0
 TIMESTEP                        10
 NUMSTEP                         5
-RESTARTEVRY                     100
-RESULTSEVRY                           1
+RESTARTEVERY                     100
+RESULTSEVERY                           1
 INF_PERM                        Yes
 SCATRA_SOLVERTYPE               nonlinear
 COUPLED_LINEAR_SOLVER           2
@@ -123,13 +123,13 @@ INITIALFIELD                    field_by_function
 MAXTIME                         10000.0
 NUMSTEP                         5
 OUTPUT_GMSH                     No
-RESTARTEVRY                     100
+RESTARTEVERY                     100
 SKIPINITDER                     yes
 SOLVERTYPE                      nonlinear
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        10.0
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 CALCFLUX_BOUNDARY               diffusive
@@ -180,8 +180,8 @@ NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         2000
 PREDICT                         ConstDisVelAcc
-RESULTSEVRY                     1
-RESTARTEVRY                     100
+RESULTSEVERY                     1
+RESTARTEVERY                     100
 TIMESTEP                        10.0
 TOLCONSTR                       1e-07
 TOLDISP                         1e-07
@@ -226,10 +226,10 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra2 NODE 3715 QUANTITY phi VALUE 8.24024845153686458e-01 TOLERANCE 1e-6
 SCATRA DIS scatra1 NODE 319 QUANTITY phi VALUE 8.24004503868230764e-01 TOLERANCE 1e-6
-SCATRA DIS scatra2 NODE 3715 QUANTITY scstr_growth_displx VALUE 9.03783592865415319e-02 TOLERANCE 1e-6
-SCATRA DIS scatra2 NODE 3715 QUANTITY scstr_growth_disply VALUE -1.88983488396876635e-05 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_displx VALUE 9.00428192031614977e-02 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_disply VALUE -7.10584704640784479e-03 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 3715 QUANTITY scstr_growth_displ_x VALUE 9.03783592865415319e-02 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 3715 QUANTITY scstr_growth_displ_y VALUE -1.88983488396876635e-05 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_displ_x VALUE 9.00428192031614977e-02 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_displ_y VALUE -7.10584704640784479e-03 TOLERANCE 1e-6
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           5
 //                              bottom

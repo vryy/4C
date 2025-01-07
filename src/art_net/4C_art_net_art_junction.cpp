@@ -45,7 +45,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                                      |
  |                                                                      |
  |    The junction (bifurcation in this case) is connected to the       |
- |    design points [2], [3], and [5], usinf the following definition   |
+ |    design points [2], [3], and [5], using the following definition   |
  |    of the junction boundary contion:                                 |
  |       E [design nodes number] - [junction number (ID)] [options]     |
  |    we will end up with the following expression:                     |
@@ -205,10 +205,10 @@ Arteries::Utils::ArtJunctionWrapper::ArtJunctionWrapper(
         ajunmap_.insert(std::make_pair(condid, junbc));
 
         // -------------------------------------------------------------------
-        // Creat the nodes' parameters (material prameters, geometric
+        // Creat the nodes' parameters (material parameters, geometric
         // parameters, n-1 values) in map, and export all the values so that
         // elements could access them.
-        // Finally check wheather a node has multiple BC, which is not allowed
+        // Finally check whether a node has multiple BC, which is not allowed
         // -------------------------------------------------------------------
         bool inserted;
         // create an empty map associated to the std::shared_ptr nodalParams_
@@ -273,7 +273,7 @@ Arteries::Utils::ArtJunctionBc::ArtJunctionBc(std::shared_ptr<Core::FE::Discreti
     : condid_(condid), discret_(actdis), output_(output), io_art_flag_(IOart_flag)
 {
   //----------------------------------------------------------------------
-  // Check whether all the nodes have simillar flow direction
+  // Check whether all the nodes have similar flow direction
   // i.e. whether they all are inlets or all are outlets for the junctions
   //----------------------------------------------------------------------
   int IOartFlag = io_art_flag_[0];
@@ -298,14 +298,14 @@ Arteries::Utils::ArtJunctionBc::ArtJunctionBc(std::shared_ptr<Core::FE::Discreti
 
   //----------------------------------------------------------------------
   // Find the size of the nonlinear problem. In this case each nodes is
-  // supossed to have two degrees of freedom, i.e. a junction with "N"
+  // supposed to have two degrees of freedom, i.e. a junction with "N"
   // nodes must have 2*N degrees of freedom to be solved, which in turn
   // is the size of the nonlinear problem
   //----------------------------------------------------------------------
   prob_size_ = 2 * io_art_flag_.size();
 
   //----------------------------------------------------------------------
-  // Extracting the nodes to whome the junction is connected
+  // Extracting the nodes to whom the junction is connected
   //----------------------------------------------------------------------
   for (unsigned int i = 0; i < conds.size(); i++) nodes_.push_back((*(conds[i]->get_nodes()))[0]);
 }
@@ -320,7 +320,7 @@ Arteries::Utils::ArtJunctionBc::ArtJunctionBc(std::shared_ptr<Core::FE::Discreti
  |                                                                      |
  |                                                                      |
  |                                                                      |
- | Implimenting the junction boundary condition such that:              |
+ | Implementing the junction boundary condition such that:              |
  |                                                                      |
  |                                                                      |
  | Parent 1    ______________             _______________  Daughter 1   |
@@ -364,7 +364,7 @@ Arteries::Utils::ArtJunctionBc::ArtJunctionBc(std::shared_ptr<Core::FE::Discreti
  | Solving the nonlinear system:                                        |
  | -----------------------------                                        |
  | Solving this nonlinear system is possible with the help of           |
- | Neuton-Raphson method, which can be implimented as following:        |
+ | Newton-Raphson method, which can be implemented as following:        |
  |                                                                      |
  |   1- The previous equations can generate the residual                |
  |                                                                      |
@@ -445,7 +445,7 @@ int Arteries::Utils::ArtJunctionBc::solve(Teuchos::ParameterList& params)
     rho[i] = (*nodalMap)[local_id]->rho_;
     beta[i] = (*nodalMap)[local_id]->beta_;
     Pext[i] = (*nodalMap)[local_id]->Pext_;
-    // Intializing x vector; x = [U1 U2 ... Un A1 A2 ... An]^T
+    // Initializing x vector; x = [U1 U2 ... Un A1 A2 ... An]^T
     x[i] = Q[i] / A[i];
     x[i + nodes_.size()] = A[i];
   }

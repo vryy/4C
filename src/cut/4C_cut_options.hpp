@@ -155,25 +155,25 @@ namespace Cut
     /** \brief Indicator if QUAD4 integrations cells are going to be used or not
      *
      *  If TRUE a QUAD4 element is used as integration cell or otherwise the
-     *  QUAD4 is splitted into 2 TRI3 elements. */
+     *  QUAD4 is split into 2 TRI3 elements. */
     bool genquad4_;
 
     /** \brief Indicator if HEX8 integrations cells are going to be used or not
      *
      *  If TRUE a HEX8 element is used as integration cell or otherwise the
-     *  HEX8 is splitted into 5 TRI4 elements. */
+     *  HEX8 is split into 5 TRI4 elements. */
     bool genhex8_;
 
     /** \brief Indicator if WEDGE6 integrations cells are going to be used or not
      *
      *  If TRUE a WEDGE6 element is used as integration cell or otherwise the
-     *  WEDGE6 is splitted into 3 TRI4 elements. */
+     *  WEDGE6 is split into 3 TRI4 elements. */
     bool genwedge6_;
 
     /** \brief Indicator if PYRAMID5 integrations cells are going to be used or not
      *
      *  If TRUE a PYRAMID5 element is used as integration cell or otherwise the
-     *  PYRAMID5 is splitted into 2 TRI4 elements. */
+     *  PYRAMID5 is split into 2 TRI4 elements. */
     bool genpyramid5_;
 
     /** \brief Run the SelfCut Algorithm*/

@@ -28,7 +28,7 @@ STRUCT_SURFACTANT               No
 FLUID_STRESS                    Yes
 FLUID_WALL_SHEAR_STRESS         Yes
 FILESTEPS                       1000
-//STDOUTEVRY                      0 //25
+//STDOUTEVERY                      0 //25
 WRITE_TO_SCREEN                 Yes
 // WRITE_TO_FILE                   No
 // PREFIX_GROUP_ID                 No
@@ -37,8 +37,8 @@ WRITE_TO_SCREEN                 Yes
 MAXTIME                         10000.0
 TIMESTEP                        0.01
 NUMSTEP                         6
-RESTARTEVRY                     2
-RESULTSEVRY                           1
+RESTARTEVERY                     2
+RESULTSEVERY                           1
 INF_PERM                        Yes
 SCATRA_SOLVERTYPE               nonlinear
 COUPLED_LINEAR_SOLVER           4
@@ -63,13 +63,13 @@ INITIALFIELD                    zero_field
 MAXTIME                         10000
 NUMSTEP                         10
 OUTPUT_GMSH                     No
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 SKIPINITDER                     yes
 SOLVERTYPE                      nonlinear
 THETA                           0.666666
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        25.0
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 LINEAR_SOLVER                   -1
@@ -101,8 +101,8 @@ MAXITER                         50
 M_DAMP                          0.001
 NLNSOL                          fullnewton
 PREDICT                         ConstDisVelAcc
-RESULTSEVRY                     1
-RESTARTEVRY                     500
+RESULTSEVERY                     1
+RESTARTEVERY                     500
 TOLDISP                         1e-06
 TOLRES                          1e-06
 LINEAR_SOLVER                   1
@@ -119,7 +119,7 @@ NORM_PRES                       Abs
 PRESTRESS                       none
 PRESTRESSTIME                   1.00000001
 PTCDT                           1.000e-01
-RESEVRYERGY                     0
+RESEVERYERGY                     0
 STC_LAYER                       1
 STC_SCALING                     no
 TOLCONSTR                       1.000e-08
@@ -159,8 +159,8 @@ CALCERROR                       no
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No
-RESULTSEVRY                           1
-RESTARTEVRY                     500
+RESULTSEVERY                           1
+RESTARTEVERY                     500
 NUMSTEP                         3000
 STEADYSTEP                      -1
 NUMSTASTEPS                     0
@@ -208,15 +208,15 @@ NUMSTEP                         3000
 MAXTIME                         3
 ALE_TYPE                        solid
 NUM_INITSTEP                    0
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 LINEAR_SOLVER                   1
 --------------------------------------------------------FSI DYNAMIC
 COUPALGO                        iter_monolithicfluidsplit
 DEBUGOUTPUT                     No
 SECONDORDER                     No
 NUMSTEP                         3000
-RESULTSEVRY                           1
-RESTARTEVRY                     20
+RESULTSEVERY                           1
+RESTARTEVERY                     20
 TIMESTEP                        0.01
 MAXTIME                         3
 SLIDEALEPROJ                    None

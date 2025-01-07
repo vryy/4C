@@ -24,8 +24,8 @@ INTERVAL_STEPS                  1
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESTARTEVRY                     30
+RESULTSEVERY                     1
+RESTARTEVERY                     30
 TIMESTEP                        12.5e1
 NUMSTEP                         100
 MAXTIME                         12.5e3

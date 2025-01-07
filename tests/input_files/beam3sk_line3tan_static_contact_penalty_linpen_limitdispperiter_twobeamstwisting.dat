@@ -19,8 +19,8 @@ VERBOSITY                       standard
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESTARTEVRY                     10
+RESULTSEVERY                     1
+RESTARTEVERY                     10
 NLNSOL                          noxnln
 TIMESTEP                        0.5
 NUMSTEP                         10

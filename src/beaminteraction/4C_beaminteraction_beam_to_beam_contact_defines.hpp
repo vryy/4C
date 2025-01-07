@@ -86,7 +86,7 @@ NEIGHBORTOL ca. 3, since the sum of |xi1| and |xi2| has to be larger than three 
 #define DAMPTOL 1.0e-8  // Tolerance for minimal difference of the damping regularization parameter
 
 #define NEIGHBORNORMALTOL \
-  5  // tolerance necessary in order to calcualte normal_old_ out of the neighbor element pair!
+  5  // tolerance necessary in order to calculate normal_old_ out of the neighbor element pair!
 
 #define MAXDELTADFAC \
   0.8  // Maximal allowed nodal displacement per time step as multiple bounding box increment

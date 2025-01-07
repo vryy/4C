@@ -244,7 +244,7 @@ namespace Mat
 
     /// @name Flags to specify the viscous formulations
     //@{
-    bool isovisco_;     ///< global indicator for isotropic splitted viscous formulation
+    bool isovisco_;     ///< global indicator for isotropic split viscous formulation
     bool viscogenmax_;  ///< global indicator for viscous contribution according the SLS-Model
     bool viscogeneralizedgenmax_;  ///< global indicator for viscous contribution of the branches
                                    ///< according to the generalized Maxwell model

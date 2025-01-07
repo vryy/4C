@@ -310,8 +310,8 @@ void PARTICLEENGINE::ParticleEngine::transfer_particles()
   // check particles for periodic boundaries/leaving domain
   check_particles_at_boundaries(particlestoremove);
 
-  // determine particles that need to be transfered
-  determine_particles_to_be_transfered(particlestoremove, particlestosend);
+  // determine particles that need to be transferred
+  determine_particles_to_be_transferred(particlestoremove, particlestosend);
 
   // remove particles from containers
   remove_particles_from_containers(particlestoremove);
@@ -1151,7 +1151,7 @@ void PARTICLEENGINE::ParticleEngine::determine_bin_dis_dependent_maps_and_sets()
   // get corresponding owned bin ids in ijk range
   binstrategy_->gids_in_ijk_range(ijk_range, innerbinids, true);
 
-  // substract non-boundary bins from all owned bins to obtain boundary bins
+  // subtract non-boundary bins from all owned bins to obtain boundary bins
   for (int currbin : innerbinids) boundarybins_.erase(currbin);
 }
 
@@ -1476,7 +1476,7 @@ void PARTICLEENGINE::ParticleEngine::determine_particles_to_be_distributed(
   particlestodistribute.clear();
 }
 
-void PARTICLEENGINE::ParticleEngine::determine_particles_to_be_transfered(
+void PARTICLEENGINE::ParticleEngine::determine_particles_to_be_transferred(
     std::vector<std::set<int>>& particlestoremove,
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend)
 {

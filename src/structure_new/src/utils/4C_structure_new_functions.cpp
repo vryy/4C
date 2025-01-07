@@ -39,14 +39,14 @@ namespace
     if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE", false))
     {
       // read data
-      int mat_id_struc = function_lin_def.container().get_or<int>("MAT_STRUC", -1);
+      int mat_id_struct = function_lin_def.container().get_or<int>("MAT_STRUCT", -1);
 
-      if (mat_id_struc <= 0)
+      if (mat_id_struct <= 0)
         FOUR_C_THROW(
-            "Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE");
+            "Please give a (reasonable) 'MAT_STRUCT' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE");
 
       // get materials
-      auto fparams = get_svk_mat_pars(mat_id_struc);
+      auto fparams = get_svk_mat_pars(mat_id_struct);
 
       return std::make_shared<Solid::WeaklyCompressibleEtienneFSIStructureFunction>(fparams);
     }
@@ -54,17 +54,17 @@ namespace
                  "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE", false))
     {
       // read data
-      int mat_id_struc = function_lin_def.container().get_or<int>("MAT_STRUC", -1);
+      int mat_id_struct = function_lin_def.container().get_or<int>("MAT_STRUCT", -1);
 
-      if (mat_id_struc <= 0)
+      if (mat_id_struct <= 0)
       {
         FOUR_C_THROW(
-            "Please give a (reasonable) 'MAT_STRUC' in "
+            "Please give a (reasonable) 'MAT_STRUCT' in "
             "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE");
       }
 
       // get materials
-      auto fparams = get_svk_mat_pars(mat_id_struc);
+      auto fparams = get_svk_mat_pars(mat_id_struct);
 
       return std::make_shared<Solid::WeaklyCompressibleEtienneFSIStructureForceFunction>(fparams);
     }
@@ -83,11 +83,11 @@ void Solid::add_valid_structure_functions(Core::Utils::FunctionManager& function
   std::vector<Input::LineDefinition> lines;
   lines.emplace_back(Input::LineDefinition::Builder()
           .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
-          .add_named_int("MAT_STRUC")
+          .add_named_int("MAT_STRUCT")
           .build());
   lines.emplace_back(Input::LineDefinition::Builder()
           .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
-          .add_named_int("MAT_STRUC")
+          .add_named_int("MAT_STRUCT")
           .build());
 
   function_manager.add_function_definition(std::move(lines), create_structure_function);

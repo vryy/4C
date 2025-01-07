@@ -119,7 +119,7 @@ namespace Cut
         Point* source);
 
     /// Add all topological connections of intersection of this edge and other edge ( all
-    /// necessery pairs, etc)
+    /// necessary pairs, etc)
     void add_edge_intersection(Edge* first, Edge* second,
         const std::pair<Side*, Edge*>& original_cut_pair, const std::string& extra_msg = "");
 
@@ -224,7 +224,7 @@ namespace Cut
     /// Same as above.
     /// But it can happen that origanl intersection point is merged into different location.
     /// However, we want to obtain position of the cut_point
-    /// on the edge based on the real intersection( before mergin),to be consistest with rest of
+    /// on the edge based on the real intersection( before merging),to be consistest with rest of
     /// the code
     double t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& coord);
 
@@ -289,10 +289,10 @@ namespace Cut
 
     void remove_pair(std::pair<Side*, Edge*>& pair) { cut_pairs_.erase(pair); };
 
-    // move point slighlty (used for merging)
+    // move point slightly (used for merging)
     virtual void move_point(const double* new_coord) = 0;
 
-    // Merge point into anothe r
+    // Merge point into another r
     void merge(Point* dest);
 
     /// Dump all information of how this point was created, edges x sides intersections. Useful to
@@ -329,7 +329,7 @@ namespace Cut
 
 
     // for particular cut pair gives info if it is really cut or added later on during topology
-    // identification (e.g. because of neigboring edges )
+    // identification (e.g. because of neighboring edges )
     bool IsReallyCut(const std::pair<Side*, Edge*>& pair)
     {
       std::map<std::pair<Side*, Edge*>, std::pair<std::pair<Side*, Edge*>, Point*>>::iterator it =
@@ -381,7 +381,7 @@ namespace Cut
 
     std::map<Edge*, double> t_;
 
-    // precicion of the point
+    // precision of the point
     double tol_;
 
     plain_edge_set cut_edges_;
@@ -419,7 +419,7 @@ namespace Cut
     // additional creation info that might be cut pair independent
     std::string additional_creation_info_;
 
-    // Indicates actuall real points, that were merged here (due to mergin in pointpool)
+    // Indicates actual real points, that were merged here (due to merging in pointpool)
     std::vector<Point*> real_merged_points_;
 
     // point that this point got merged into

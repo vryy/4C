@@ -79,7 +79,7 @@ void Discret::Elements::FluidEleParameterIntFace::set_face_general_fluid_paramet
   if (set_face_general_fluid_parameter_ == false) set_face_general_fluid_parameter_ = true;
   // For turbulent inflow generation,
   // this function is indeed two times called.
-  // In this sepcial case, calling this function twice
+  // In this special case, calling this function twice
   // is ok!
   else
   {

@@ -1136,7 +1136,7 @@ namespace FLD
     // resolved turbulent kinetic energy from velocity fluctuations per unit mass
     double q_u = 0.0;
     // mean-flow kinetic energy  per unit mass
-    double mke = 0.0;
+    double make = 0.0;
     // velocity fluctuations
     double u_prime = 0.0;
     // Taylor scale
@@ -1158,7 +1158,7 @@ namespace FLD
       for (int rr = 0; rr < 3; rr++)
         q_u += 0.5 * ((*sumvelvel_)[rr] - (*sumvel_)[rr] * (*sumvel_)[rr]);
 
-      for (int rr = 0; rr < 3; rr++) mke += 0.5 * (*sumvel_)[rr] * (*sumvel_)[rr];
+      for (int rr = 0; rr < 3; rr++) make += 0.5 * (*sumvel_)[rr] * (*sumvel_)[rr];
     }
 
     if (type_ == forced_homogeneous_isotropic_turbulence)
@@ -1226,7 +1226,7 @@ namespace FLD
 
           (*log_k) << "# Statistics record ";
           (*log_k) << " (Steps " << step - numsamp_ + 1 << "--" << step << ")\n";
-          (*log_k) << "# tke = " << q_E << "    Taylor scale = " << lambda
+          (*log_k) << "# take = " << q_E << "    Taylor scale = " << lambda
                    << "    Re_lambda = " << Re_lambda << "\n";
           (*log_k) << std::scientific;
           (*log_k) << "#     k              E              D\n";
@@ -1285,13 +1285,13 @@ namespace FLD
 
         log_t = std::make_shared<std::ofstream>(s_t.c_str(), std::ios::app);
 
-        if (step == 0) (*log_t) << "#     t               q(E)          q(u'u')          MKE\n";
+        if (step == 0) (*log_t) << "#     t               q(E)          q(u'u')          MAKE\n";
 
         (*log_t) << std::scientific;
         (*log_t) << " " << std::setw(11) << std::setprecision(4) << step * dt_;
         (*log_t) << "     " << std::setw(11) << std::setprecision(4) << q_E;
         (*log_t) << "     " << std::setw(11) << std::setprecision(4) << q_u;
-        (*log_t) << "     " << std::setw(11) << std::setprecision(4) << mke;
+        (*log_t) << "     " << std::setw(11) << std::setprecision(4) << make;
 
         (*log_t) << "\n";
         log_t->flush();
@@ -1366,7 +1366,7 @@ namespace FLD
 
       (*log_k) << "# Statistics record ";
       (*log_k) << " (Steps " << step - numsamp_ + 1 << "--" << step << ")\n";
-      (*log_k) << "# tke = " << q_E << "    Taylor scale = " << lambda
+      (*log_k) << "# take = " << q_E << "    Taylor scale = " << lambda
                << "    Re_lambda = " << Re_lambda << "\n";
       (*log_k) << std::scientific;
       (*log_k) << "#     k              E              E_phi\n";

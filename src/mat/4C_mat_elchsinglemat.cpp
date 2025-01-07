@@ -22,8 +22,8 @@ Mat::PAR::ElchSingleMat::ElchSingleMat(const Core::Mat::PAR::Parameter::Data& ma
           matdata.parameters.get<int>("DIFF_COEF_CONC_DEP_FUNCT")),
       diffusion_coefficient_temperature_scaling_funct_num_(
           matdata.parameters.get<int>("DIFF_COEF_TEMP_SCALE_FUNCT")),
-      number_diffusion_coefficent_params_(matdata.parameters.get<int>("DIFF_PARA_NUM")),
-      diffusion_coefficent_params_(matdata.parameters.get<std::vector<double>>("DIFF_PARA")),
+      number_diffusion_coefficient_params_(matdata.parameters.get<int>("DIFF_PARA_NUM")),
+      diffusion_coefficient_params_(matdata.parameters.get<std::vector<double>>("DIFF_PARA")),
       number_diffusion_temp_scale_funct_params_(
           matdata.parameters.get<int>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM")),
       diffusion_temp_scale_funct_params_(
@@ -41,7 +41,8 @@ Mat::PAR::ElchSingleMat::ElchSingleMat(const Core::Mat::PAR::Parameter::Data& ma
       R_(Global::Problem::instance()->elch_control_params().get<double>("GAS_CONSTANT"))
 {
   // safety checks
-  if (number_diffusion_coefficent_params_ != static_cast<int>(diffusion_coefficent_params_.size()))
+  if (number_diffusion_coefficient_params_ !=
+      static_cast<int>(diffusion_coefficient_params_.size()))
     FOUR_C_THROW("Mismatch in number of parameters for diffusion coefficient!");
   if (number_conductivity_params_ != static_cast<int>(conductivity_params_.size()))
     FOUR_C_THROW("Mismatch in number of parameters for conductivity!");
@@ -53,7 +54,7 @@ Mat::PAR::ElchSingleMat::ElchSingleMat(const Core::Mat::PAR::Parameter::Data& ma
       static_cast<int>(conductivity_temp_scale_funct_params_.size()))
     FOUR_C_THROW("Mismatch in number of parameters for temp scale function for conductivity!");
   check_provided_params(
-      diffusion_coefficient_concentration_dependence_funct_num_, diffusion_coefficent_params_);
+      diffusion_coefficient_concentration_dependence_funct_num_, diffusion_coefficient_params_);
   check_provided_params(conductivity_concentration_dependence_funct_num_, conductivity_params_);
   check_provided_params(
       diffusion_coefficient_temperature_scaling_funct_num_, diffusion_temp_scale_funct_params_);
@@ -804,7 +805,7 @@ double Mat::ElchSingleMat::eval_first_deriv_pre_defined_funct(
     }
     case INVERSE_LINEAR:
     {
-      // Temperature dependent faktor for electric conductivity (sigma)
+      // Temperature dependent factor for electric conductivity (sigma)
       // electric conductivity is the inverse  electric resistivity (rho)
       // for "small" temperature differences the temperature dependence of the specific electric
       // resistivity follows rho = rho_0 * (1 + alpha(T - T_0)) sigma(c,T) = sigma(c) * sigma(T) =

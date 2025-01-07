@@ -123,7 +123,7 @@ namespace Discret
         \param epn              (i) nodal pressure at n
         \param dt               (i) timestep
         */
-      void compute_pext(RedAirway* ele, const Core::LinAlg::Vector<double>& pn,
+      void compute_pext(RedAirway* ele, const Core::LinAlg::Vector<double>& on,
           const Core::LinAlg::Vector<double>& pnp, Teuchos::ParameterList& params);
 
 
@@ -151,7 +151,7 @@ namespace Discret
           std::shared_ptr<const Core::Mat::Material> material) override;
 
       /*!
-       \Essential functions to compute the results of essentail matrices
+       \Essential functions to compute the results of essential matrices
       */
       void calc_flow_rates(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,

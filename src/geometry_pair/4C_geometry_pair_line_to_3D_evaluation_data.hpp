@@ -89,7 +89,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Returns the number of integration points along the circumference of the line cross
      * section.
-     * @return number of integration points in circumferencial direction.
+     * @return number of integration points in circumferential direction.
      */
     inline unsigned int get_number_of_integration_points_circumference() const
     {
@@ -121,7 +121,7 @@ namespace GEOMETRYPAIR
     //! Gauss rule for Gauss point projection method.
     Core::FE::GaussRule1D gauss_rule_;
 
-    //! Number of integration points in the circumferencial direction of the line cross section.
+    //! Number of integration points in the circumferential direction of the line cross section.
     unsigned int integration_points_circumference_;
 
     //! Gauss point projection tracking vector.

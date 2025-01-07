@@ -213,7 +213,7 @@ void Cut::QuadratureCompression::form_matrix_system(Core::FE::GaussPointsComposi
  *
  * Read the following paper for the details of the method:
  * L. Bos, S. De Marchi, A. Sommariva, and M. Vianello. Computing multivariate Fekete and Leja
- *points by numerical linear algebra. SIAM J Numer Anal. 48:1984--1999, 2010.
+ *points by numerical linear algebra. SIAM J Number Anal. 48:1984--1999, 2010.
  *-----------------------------------------------------------------------------------------------------------------*/
 bool Cut::QuadratureCompression::compress_leja_points(Core::FE::GaussPointsComposite& gin,
     std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& mat,
@@ -376,7 +376,7 @@ int Cut::QuadratureCompression::get_correct_index(
 }
 
 /*--------------------------------------------------------------------------------------------------------------------*
- * Compute error between original and compressed quadrature points to evalute defined      sudhakar
+ * Compute error between original and compressed quadrature points to evaluate defined      sudhakar
  *08/15 base functions (either Chebyshev or monomial) and print the maximum absolute error
  *--------------------------------------------------------------------------------------------------------------------*/
 void Cut::QuadratureCompression::compute_and_print_error(Core::FE::GaussPointsComposite& gin,

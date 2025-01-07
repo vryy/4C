@@ -16,8 +16,8 @@ NUMALEDIS                       0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      One_Step_Theta
-RESULTSEVRY                           1
-RESTARTEVRY                     5
+RESULTSEVERY                           1
+RESTARTEVERY                     5
 MAXTIME                         1000.0
 NUMSTEP                         30
 TIMESTEP                        0.05

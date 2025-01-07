@@ -649,7 +649,7 @@ namespace CONTACT
       /* no need to pack, since terms are re-evaluated after parallel communication */
     };
 
-    //! unpack and re-init after parallel comunication
+    //! unpack and re-init after parallel communication
     virtual void unpack(Core::Communication::UnpackBuffer& buffer) {
       /* no need to pack, since terms are re-evaluated after parallel communication */
     };

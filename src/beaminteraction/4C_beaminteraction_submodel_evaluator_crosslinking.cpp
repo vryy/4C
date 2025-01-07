@@ -246,8 +246,6 @@ void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::set_filament_types()
 {
   check_init();
 
-  std::set<int> examined_fils;
-
   // loop over all col nodes
   for (int coln = 0; coln < discret().num_my_col_nodes(); ++coln)
   {
@@ -260,7 +258,7 @@ void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::set_filament_types()
     if (cond == nullptr) continue;
 
     // get filament type
-    Inpar::BeamInteraction::FilamentType filtype = Inpar::BeamInteraction::string_to_filament_type(
+    Inpar::BeamInteraction::FilamentType filetype = Inpar::BeamInteraction::string_to_filament_type(
         (cond->parameters().get<std::string>("TYPE")));
 
     for (int i = 0; i < currnode->num_element(); ++i)
@@ -273,7 +271,7 @@ void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::set_filament_types()
         FOUR_C_THROW(" DESIGN LINE BEAM FILAMENT CONDITIONS only suitable for beam elements.");
 #endif
 
-      beamele->set_filament_type(filtype);
+      beamele->set_filament_type(filetype);
     }
   }
 }
@@ -328,8 +326,8 @@ void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
 
     BeamInteraction::Data::BeamData const* beamdata_i = beam_data_[beamele->lid()].get();
 
-    // exclude current element/filament if filtype_none
-    if (beamele->get_filament_type() == Inpar::BeamInteraction::filtype_none) continue;
+    // exclude current element/filament if filetype_none
+    if (beamele->get_filament_type() == Inpar::BeamInteraction::filetype_none) continue;
 
     // loop over all binding spot types of current filament
     for (auto const& iter : beamdata_i->get_b_spot_status())
@@ -371,8 +369,8 @@ void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
           // exclude linking of touching elements
           if (BeamInteraction::Utils::do_beam_elements_share_nodes(beamele, nb_beamele)) continue;
 
-          // exclude neighbor element/filament if filtype_none
-          if (nb_beamele->get_filament_type() == Inpar::BeamInteraction::filtype_none) continue;
+          // exclude neighbor element/filament if filetype_none
+          if (nb_beamele->get_filament_type() == Inpar::BeamInteraction::filetype_none) continue;
 
           // loop over binding spots of neighboring element
           for (unsigned int nb_locbspot_i = 0;
@@ -1985,7 +1983,7 @@ void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::
 {
   check_init();
 
-  // update postion
+  // update position
   const int collidoccbeam =
       discret_ptr()->element_col_map()->LID(cldata->get_b_spots()[stayoccpotid].first);
 
@@ -2733,7 +2731,7 @@ bool BeamInteraction::SUBMODELEVALUATOR::Crosslinking::check_linker_and_filament
     }
     case Inpar::BeamInteraction::linkertype_actin:
     {
-      if (filamenttype == Inpar::BeamInteraction::filtype_actin)
+      if (filamenttype == Inpar::BeamInteraction::filetype_actin)
         return true;
       else
         return false;
@@ -2741,7 +2739,7 @@ bool BeamInteraction::SUBMODELEVALUATOR::Crosslinking::check_linker_and_filament
     }
     case Inpar::BeamInteraction::linkertype_collagen:
     {
-      if (filamenttype == Inpar::BeamInteraction::filtype_collagen)
+      if (filamenttype == Inpar::BeamInteraction::filetype_collagen)
         return true;
       else
         return false;

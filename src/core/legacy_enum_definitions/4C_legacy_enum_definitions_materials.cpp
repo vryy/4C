@@ -92,15 +92,15 @@ std::string_view Core::Materials::to_string(Core::Materials::MaterialType materi
     case m_stvenant:
       return "MAT_Struct_StVenantKirchhoff";
     case m_thermostvenant:
-      return "MAT_Struct_ThrStVenantK";
+      return "MAT_Struct_ThermoStVenantK";
     case m_pldruckprag:
       return "MAT_Struct_DruckerPrager";
     case m_thermopllinelast:
-      return "MAT_Struct_ThrPlasticLinElast";
+      return "MAT_Struct_ThermoPlasticLinElast";
     case m_superelast:
       return "MAT_Struct_SuperElastSMA";
     case m_thermoplhyperelast:
-      return "MAT_Struct_ThrPlasticHyperElast";
+      return "MAT_Struct_ThermoPlasticHyperElast";
     case m_plnlnlogneohooke:
       return "MAT_Struct_PlasticNlnLogNeoHooke";
     case m_pllinelast:

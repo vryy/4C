@@ -37,7 +37,7 @@ int Discret::Elements::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
   const auto* val = &condition.parameters().get<std::vector<double>>("VAL");
   const auto* spa_func = &condition.parameters().get<std::vector<int>>("FUNCT");
 
-  // time curve buisiness
+  // time curve business
   // find out whether we will use a time curve
   double time = -1.0;
   if (parent_element()->is_params_interface())
@@ -55,7 +55,7 @@ int Discret::Elements::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
     if ((*onoff)[checkdof] != 0)
     {
       FOUR_C_THROW(
-          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+          "Number of Dimensions in Neumann_Evaluation is 3. Further DoFs are not considered.");
     }
   }
 

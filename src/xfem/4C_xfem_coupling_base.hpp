@@ -29,7 +29,7 @@ namespace Discret
   namespace Elements
   {
     // finally this parameter list should go and all interface relevant parameters should be stored
-    // in the condition mangager or coupling objects
+    // in the condition manager or coupling objects
     class FluidEleParameterXFEM;
   }  // namespace Elements
 }  // namespace Discret
@@ -404,14 +404,14 @@ namespace XFEM
       FOUR_C_THROW("get_penalty_scaling_slave not implemented for this coupling object!");
     }
 
-    /// get weighting paramters
+    /// get weighting parameters
     void get_average_weights(Core::Elements::Element* xfele,  ///< xfluid ele
         Core::Elements::Element* coup_ele,                    ///< coup_ele ele
         double& kappa_m,  ///< Weight parameter (parameter +/master side)
         double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
         bool& non_xfluid_coupling);
 
-    /// get coupling specific weighting paramters (should be overload, whenever required)
+    /// get coupling specific weighting parameters (should be overload, whenever required)
     virtual void get_coupling_specific_average_weights(
         Core::Elements::Element* xfele,     ///< xfluid ele
         Core::Elements::Element* coup_ele,  ///< coup_ele ele
@@ -520,7 +520,7 @@ namespace XFEM
 
     //! @name Sets up a projection matrix
     /*!
-    \brief Is utilized for seperating Dirichlet and Neumann conditions
+    \brief Is utilized for separating Dirichlet and Neumann conditions
      */
     template <class M1, class M2>
     inline void setup_projection_matrix(M1& proj_matrix, const M2& normal)
@@ -582,7 +582,7 @@ namespace XFEM
     ///< only boundary terms are evaluated
     std::shared_ptr<Core::FE::Discretization> coupl_dis_;
 
-    // TODO: be aware of the fact, that accesing the coupling object via Name is unsafe, it assumes
+    // TODO: be aware of the fact, that accessing the coupling object via Name is unsafe, it assumes
     // that only one coupling of that type is available < name of the mesh/levelset coupling object
     std::string coupl_name_;
 

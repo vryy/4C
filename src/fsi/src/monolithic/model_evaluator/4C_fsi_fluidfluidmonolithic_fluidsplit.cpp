@@ -131,8 +131,8 @@ void FSI::FluidFluidMonolithicFluidSplit::output()
         fluid_field()->x_fluid_fluid_map_extractor()->extract_fluid_vector(*lambdafull);
 
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-    const int uprestart = fsidyn.get<int>("RESTARTEVRY");
-    const int upres = fsidyn.get<int>("RESULTSEVRY");
+    const int uprestart = fsidyn.get<int>("RESTARTEVERY");
+    const int upres = fsidyn.get<int>("RESULTSEVERY");
     if ((uprestart != 0 && fluid_field()->step() % uprestart == 0) ||
         fluid_field()->step() % upres == 0)
       fluid_field()->disc_writer()->write_vector("fsilambda", lambdaemb);

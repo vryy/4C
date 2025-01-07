@@ -5459,7 +5459,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
         if (n_dim() == 3) jumpteta = cnode->fri_data().jump_var()[1];
       }
 
-      // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+      // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
       std::vector<double> sum1(n_dim() - 1, 0);
       sum1[0] = ztxi + ct * jumptxi;
       if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
@@ -5479,7 +5479,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
       refCteta[i] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
     }
     else
-      FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
+      FOUR_C_THROW("Friction law is neither Tresca nor Coulomb");
 
     refCtxi[i] =
         euclidean * ztxi - (frcoeff * (znor - cn * cnode->data().getg())) * (ztxi + ct * jumptxi);
@@ -5589,7 +5589,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
           if (n_dim() == 3) jumpteta = kcnode->fri_data().jump_var()[1];
         }
 
-        // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+        // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
         std::vector<double> sum1(n_dim() - 1, 0);
         sum1[0] = ztxi + ct * jumptxi;
         if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
@@ -5609,7 +5609,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
+        FOUR_C_THROW("Friction law is neither Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->data().getg())) * (ztxi + ct * jumptxi);
@@ -5825,7 +5825,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
           if (n_dim() == 3) jumpteta = kcnode->fri_data().jump_var()[1];
         }
 
-        // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+        // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
         std::vector<double> sum1(n_dim() - 1, 0);
         sum1[0] = ztxi + ct * jumptxi;
         if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
@@ -5846,7 +5846,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
+        FOUR_C_THROW("Friction law is neither Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->data().getg())) * (ztxi + ct * jumptxi);
@@ -6064,7 +6064,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
           if (n_dim() == 3) jumpteta = kcnode->fri_data().jump_var()[1];
         }
 
-        // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+        // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
         std::vector<double> sum1(n_dim() - 1, 0);
         sum1[0] = ztxi + ct * jumptxi;
         if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
@@ -6084,7 +6084,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
+        FOUR_C_THROW("Friction law is neither Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->data().getg())) * (ztxi + ct * jumptxi);
@@ -6517,7 +6517,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-    // get some informatiom form the node
+    // get some information form the node
     double gap = cnode->data().getg();
     int dim = cnode->num_dof();
     double kappa = cnode->data().kappa();
@@ -6673,7 +6673,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
       if (!node) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
-      // get some informatiom form the node
+      // get some information form the node
       double gap = kcnode->data().getg();
       int dim = kcnode->num_dof();
       double kappa = kcnode->data().kappa();
@@ -6893,7 +6893,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
       if (!node) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
-      // get some informatiom form the node
+      // get some information form the node
       double gap = kcnode->data().getg();
       int dim = kcnode->num_dof();
       double kappa = kcnode->data().kappa();

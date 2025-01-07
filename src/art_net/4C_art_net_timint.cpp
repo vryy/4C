@@ -39,8 +39,8 @@ Arteries::TimInt::TimInt(std::shared_ptr<Core::FE::Discretization> actdis,
       dtsolve_(0.0),
       time_(0.0),
       step_(0),
-      uprestart_(params_.get<int>("RESTARTEVRY")),
-      upres_(params_.get<int>("RESULTSEVRY")),
+      uprestart_(params_.get<int>("RESTARTEVERY")),
+      upres_(params_.get<int>("RESULTSEVERY")),
       linsolvernumber_(linsolvernumber),
       coupledTo3D_(false)
 {

@@ -98,7 +98,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     int find_periodic_rve_corner_nodes(const std::vector<int>* surf1, const std::vector<int>* surf2,
         const std::vector<int>* surf3);
 
-    //! find the nodes containted i a mpc for the pbcs
+    //! find the nodes contained i a mpc for the pbcs
     int find_opposite_edge_node(const int nodeID, Inpar::RveMpc::RveEdgeIdentifiers edge,
         std::map<std::string, const std::vector<int>*>& rveBoundaryNodeIdMap_);
 
@@ -107,7 +107,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
         std::map<std::string, const std::vector<int>*>& rveBoundaryNodeIdMap,
         std::map<std::string, int>& rveCornerNodeIdMap_);
 
-    //! retrive design line periodic rve boundary condition
+    //! retrieve design line periodic rve boundary condition
     void build_periodic_rve_boundary_node_map(
         std::map<std::string, const std::vector<int>*>& rveBoundaryNodeIdMap_);
     //@}

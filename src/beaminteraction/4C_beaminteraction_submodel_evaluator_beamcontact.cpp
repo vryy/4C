@@ -935,36 +935,36 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamContact::
   check_init();
 
   // sort out elements that should not be considered in contact evaluation
-  std::set<Core::Elements::Element*>::iterator eiter;
-  for (eiter = neighbors.begin(); eiter != neighbors.end();)
+  std::set<Core::Elements::Element*>::iterator either;
+  for (either = neighbors.begin(); either != neighbors.end();)
   {
     bool toerase = false;
     // 1) ensure that an element will not be in contact with it self
-    if (currele->id() == (*eiter)->id())
+    if (currele->id() == (*either)->id())
     {
       toerase = true;
     }
     // 2) ensure each contact only evaluated once (keep in mind that we are
-    //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
+    //    using FEMatrices and FEvectors -> || (*either)->Owner() != myrank not necessary)
     // note: as we are only looping over beam elements, only beam to beam contact needs id check
     // here
-    else if (dynamic_cast<Discret::Elements::Beam3Base*>(*eiter) != nullptr and
-             not(currele->id() < (*eiter)->id()))
+    else if (dynamic_cast<Discret::Elements::Beam3Base*>(*either) != nullptr and
+             not(currele->id() < (*either)->id()))
     {
       toerase = true;
     }
     // 3) ensure that two elements sharing the same node do not get into contact
     else
     {
-      for (int i = 0; i < (*eiter)->num_node(); ++i)
+      for (int i = 0; i < (*either)->num_node(); ++i)
         for (int j = 0; j < currele->num_node(); ++j)
-          if ((*eiter)->node_ids()[i] == currele->node_ids()[j]) toerase = true;
+          if ((*either)->node_ids()[i] == currele->node_ids()[j]) toerase = true;
     }
 
     if (toerase)
-      neighbors.erase(eiter++);
+      neighbors.erase(either++);
     else
-      ++eiter;
+      ++either;
   }
 }
 
@@ -1057,18 +1057,18 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamContact::set_restart_displacement_i
     for (auto& pair : contact_elepairs_)
     {
       // Element Dof values at the restart state.
-      std::vector<std::vector<double>> element_restart_dispalcement_(2);
+      std::vector<std::vector<double>> element_restart_displacement_(2);
 
       for (unsigned int i_element = 0; i_element < 2; ++i_element)
       {
         // Extract the Dof values of this element from the restart vector
         BeamInteraction::Utils::extract_pos_dof_vec_values(discret(), pair->get_element(i_element),
             *beam_interaction_data_state_ptr()->get_dis_restart_col(),
-            element_restart_dispalcement_[i_element]);
+            element_restart_displacement_[i_element]);
       }
 
       // Set the displacement state in the pair.
-      pair->set_restart_displacement(element_restart_dispalcement_);
+      pair->set_restart_displacement(element_restart_displacement_);
     }
   }
 }

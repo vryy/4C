@@ -377,7 +377,7 @@ void Core::Conditions::LocsysManager::update(const double time,
       warning_thrown_ = true;
 
       printf("Locsys warning:\n");
-      printf("A zero diagonal element on the transformation matrix occured.\n");
+      printf("A zero diagonal element on the transformation matrix occurred.\n");
       printf("This will probably cause a crash in the preconditioner.\n");
       printf("Try not to rotate your local coordinate system by 90 degrees \n");
       printf("or more or use the slow version.\n");
@@ -390,7 +390,7 @@ void Core::Conditions::LocsysManager::update(const double time,
   //**********************************************************************
 
   // create unique/row map of DOFs subjected to local co-ordinate change
-  // transformation matrix for relevent DOFs with local system
+  // transformation matrix for relevant DOFs with local system
   int nummyentries = 0;
   int* myglobalentries = nullptr;
   std::vector<int> locsysdofs;

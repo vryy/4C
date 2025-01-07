@@ -98,7 +98,7 @@ namespace Core::DOFSets
           <h3>Usage</h3>
 
           An important feature of this dofset proxy is, that portions of source and
-          target discretizations, whic hare supposed to be coupled by this dofset do
+          target discretizations, which hare supposed to be coupled by this dofset do
           not necessarily need to have the same number of nodes, as long as the mapping
           is still unique. We give an example to show what this means:
 

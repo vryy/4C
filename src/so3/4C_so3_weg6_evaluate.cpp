@@ -933,7 +933,7 @@ void Discret::Elements::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
         if (solid_material()->varying_density())
         {
           /*
-           If the density, i.e. the mass matrix, is not constant, a linearization is neccessary.
+           If the density, i.e. the mass matrix, is not constant, a linearization is necessary.
            In general, the mass matrix can be dependent on the displacements, the velocities and the
            accelerations. We write all the additional terms into the mass matrix, hence, conversion
            from accelerations to velocities and displacements are needed. As those conversions
@@ -1088,9 +1088,9 @@ void Discret::Elements::SoWeg6::sow6_shapederiv(
 
   if (fdf_eval == true)
   {                             // if true f,df already evaluated
-    *shapefct = &f;             // return adress of static object to target of pointer
-    *deriv = &df;               // return adress of static object to target of pointer
-    *weights = &weightfactors;  // return adress of static object to target of pointer
+    *shapefct = &f;             // return address of static object to target of pointer
+    *deriv = &df;               // return address of static object to target of pointer
+    *weights = &weightfactors;  // return address of static object to target of pointer
     return;
   }
   else
@@ -1119,10 +1119,10 @@ void Discret::Elements::SoWeg6::sow6_shapederiv(
         weightfactors(igp) = intpoints.qwgt[igp];
       }
     }
-    // return adresses of just evaluated matrices
-    *shapefct = &f;             // return adress of static object to target of pointer
-    *deriv = &df;               // return adress of static object to target of pointer
-    *weights = &weightfactors;  // return adress of static object to target of pointer
+    // return addresses of just evaluated matrices
+    *shapefct = &f;             // return address of static object to target of pointer
+    *deriv = &df;               // return address of static object to target of pointer
+    *weights = &weightfactors;  // return address of static object to target of pointer
     fdf_eval = true;            // now all arrays are filled statically
   }
   return;
@@ -1261,7 +1261,7 @@ void Discret::Elements::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location 
   if ((material()->material_type() == Core::Materials::m_constraintmixture) ||
       (material()->material_type() == Core::Materials::m_elasthyper))
   {
-    // in a first step ommit everything with prestress and EAS!!
+    // in a first step omit everything with prestress and EAS!!
     const static std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs = sow6_derivs();
 
     // update element geometry
@@ -1403,7 +1403,7 @@ void Discret::Elements::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location 
 
       // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
       double newgamma = atan2(lambda(1, 1), lambda(2, 2));
-      // compression in 2nd max direction, thus fibers are alligned to max principal direction
+      // compression in 2nd max direction, thus fibers are aligned to max principal direction
       if (lambda(1, 1) < 0) newgamma = 0.0;
 
       // new fiber vectors

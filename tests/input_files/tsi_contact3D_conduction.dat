@@ -45,8 +45,8 @@ NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
 PREDICT                         ConstDis
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        2.5e-3
 TOLCONSTR                       1e-08
 TOLDISP                         1e-08
@@ -67,8 +67,8 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         1
 PREDICT                         ConstTemp
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        2.5e-3
 TOLRES                          1e-08
 TOLTEMP                         1e-10
@@ -76,9 +76,9 @@ LINEAR_SOLVER                   1
 --------------------------------------------------------TSI DYNAMIC
 MAXTIME                         1.5
 NUMSTEP                         20000
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 TIMESTEP                        1.5
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 ITEMAX                          10
 COUPALGO                        tsi_monolithic
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
@@ -86,13 +86,13 @@ CONVTOL                         1e-04
 TOLINC                          1e-07
 ITERNORM                        Rms
 LINEAR_SOLVER                   1
-NORMCOMBI_RESFINC               Coupl_Or_Singl
+NORMCOMBI_RESFINC               Coupl_Or_Single
 NORM_RESF                       Abs
 MERGE_TSI_BLOCK_MATRIX          yes
 ------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 4000 NUE 0.0 DENS 0.0 THEXPANS 0.0 INITTEMP 20 CAPA 0 CONDUCT 52
+MAT 1 MAT_Struct_ThermoStVenantK YOUNGNUM 1 YOUNG 4000 NUE 0.0 DENS 0.0 THEXPANS 0.0 INITTEMP 20 CAPA 0 CONDUCT 52
 MAT 2 THERM_FourierIso   CAPA 0 CONDUCT 52
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2

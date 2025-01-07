@@ -251,7 +251,7 @@ void Discret::Elements::ScaTraEleCalcLoma<distype>::get_rhs_int(
 
 
 /*------------------------------------------------------------------------------------------*
- |  re-implementatio: calculation of convective element matrix: add conservative contributions  ehrl
+ |  re-implementation: calculation of convective element matrix: add conservative contributions ehrl
  11/13 |
  *------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
@@ -281,7 +281,7 @@ void Discret::Elements::ScaTraEleCalcLoma<distype>::calc_mat_conv_add_cons(
 
 
 /*------------------------------------------------------------------- *
- | re-implementatio: adaption of convective term for rhs   ehrl 11/13 |
+ | re-implementation: adaption of convective term for rhs   ehrl 11/13 |
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcLoma<distype>::recompute_conv_phi_for_rhs(double& conv_phi,

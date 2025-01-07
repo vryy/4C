@@ -1183,10 +1183,10 @@ void SSTI::AssembleStrategyBase::apply_meshtying_sys_mat(
 void SSTI::AssembleStrategyBlock::apply_structural_dbc_system_matrix(
     std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix)
 {
-  // locsys manager of strucutre
+  // locsys manager of structure
   const auto& locsysmanager_structure = structure_field()->locsys_manager();
 
-  // map of strucutral Dirichlet BCs
+  // map of structural Dirichlet BCs
   const auto dbcmap_structure = structure_field()->get_dbc_map_extractor()->cond_map();
 
   if (locsysmanager_structure == nullptr)
@@ -1215,10 +1215,10 @@ void SSTI::AssembleStrategyBlock::apply_structural_dbc_system_matrix(
 void SSTI::AssembleStrategySparse::apply_structural_dbc_system_matrix(
     std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix)
 {
-  // locsys manager of strucutre
+  // locsys manager of structure
   const auto& locsysmanager_structure = structure_field()->locsys_manager();
 
-  // map of strucutral Dirichlet BCs
+  // map of structural Dirichlet BCs
   const auto& dbcmap_structure = structure_field()->get_dbc_map_extractor()->cond_map();
 
   // structural dof row map
@@ -1294,7 +1294,7 @@ void SSTI::AssembleStrategyBase::assemble_rhs(std::shared_ptr<Core::LinAlg::Vect
       coupling_map_extractor->put_scalar(residual_structure, 1, 0.0);
     }
 
-    // locsys manager of strucutre
+    // locsys manager of structure
     const auto& locsysmanager_structure = ssti_mono_->structure_field()->locsys_manager();
 
     // apply pseudo Dirichlet conditions to transformed slave-side part of structural right-hand

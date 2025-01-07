@@ -409,7 +409,7 @@ void Discret::Elements::Ale2::static_ke_spring(Core::LinAlg::SerialDenseMatrix* 
       break;
     default:
       numcnd = 0;
-      FOUR_C_THROW("distype unkown");
+      FOUR_C_THROW("distype unknown");
       break;
   }
 
@@ -851,12 +851,12 @@ void Discret::Elements::Ale2::static_ke_laplace(Core::FE::Discretization& dis, s
     {
       for (int j = 0; j < 2; ++j)
       {
-        double dum = 0.;
+        double inv_det = 0.;
         for (int l = 0; l < iel; ++l)
         {
-          dum += deriv(i, l) * xyze(j, l);
+          inv_det += deriv(i, l) * xyze(j, l);
         }
-        xjm(i, j) = dum;
+        xjm(i, j) = inv_det;
       }
     }
 
@@ -865,11 +865,11 @@ void Discret::Elements::Ale2::static_ke_laplace(Core::FE::Discretization& dis, s
     const double fac = intpoints.qwgt[iquad] * det;
 
     // inverse of jacobian
-    const double dum = 1.0 / det;
-    xji(0, 0) = xjm(1, 1) * dum;
-    xji(0, 1) = -xjm(0, 1) * dum;
-    xji(1, 0) = -xjm(1, 0) * dum;
-    xji(1, 1) = xjm(0, 0) * dum;
+    const double inv_det = 1.0 / det;
+    xji(0, 0) = xjm(1, 1) * inv_det;
+    xji(0, 1) = -xjm(0, 1) * inv_det;
+    xji(1, 0) = -xjm(1, 0) * inv_det;
+    xji(1, 1) = xjm(0, 0) * inv_det;
 
     for (int isd = 0; isd < 2; isd++)
       for (int jsd = 0; jsd < 2; jsd++)
@@ -905,14 +905,14 @@ void Discret::Elements::Ale2::calc_b_op_lin(Core::LinAlg::SerialDenseMatrix& bop
     Core::LinAlg::SerialDenseMatrix& deriv, Core::LinAlg::SerialDenseMatrix& xjm, double& det,
     const int iel)
 {
-  double dum;
+  double inv_det;
   double xji[2][2];
   /*---------------------------------------------- inverse of jacobian ---*/
-  dum = 1.0 / det;
-  xji[0][0] = xjm(1, 1) * dum;
-  xji[0][1] = -xjm(0, 1) * dum;
-  xji[1][0] = -xjm(1, 0) * dum;
-  xji[1][1] = xjm(0, 0) * dum;
+  inv_det = 1.0 / det;
+  xji[0][0] = xjm(1, 1) * inv_det;
+  xji[0][1] = -xjm(0, 1) * inv_det;
+  xji[1][0] = -xjm(1, 0) * inv_det;
+  xji[1][1] = xjm(0, 0) * inv_det;
   /*----------------------------- get operator boplin of global derivatives -*/
   /*-------------- some comments, so that even fluid people are able to
    understand this quickly :-)
@@ -1124,7 +1124,7 @@ void Discret::Elements::Ale2::call_mat_geo_nonl(
 
       break;
     }
-    case Core::Materials::m_elasthyper:  // general hyperelastic matrial (bborn, 06/09)
+    case Core::Materials::m_elasthyper:  // general hyperelastic material (bborn, 06/09)
     {
       material_response3d_plane(stress, C, strain, params, gp);
       break;

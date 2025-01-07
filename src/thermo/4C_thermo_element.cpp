@@ -201,7 +201,7 @@ Thermo::FaceElementType& Thermo::FaceElementType::instance() { return instance_;
 Thermo::Element::Element(int id, int owner)
     : Core::Elements::Element(id, owner), distype_(Core::FE::CellType::dis_none)
 {
-  // default: geometrically linear, also including purely thermal probelm
+  // default: geometrically linear, also including purely thermal problem
   kintype_ = Inpar::Solid::KinemType::linear;
   return;
 }  // ctor
@@ -333,7 +333,7 @@ bool Thermo::Element::vis_data(const std::string& name, std::vector<double>& dat
 }  // vis_data()
 
 /*----------------------------------------------------------------------------*
- | ENDE Thermo::Element
+ | END Thermo::Element
  *----------------------------------------------------------------------------*/
 
 

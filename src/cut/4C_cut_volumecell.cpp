@@ -639,7 +639,7 @@ void Cut::VolumeCell::new_pyramid5_cell(Mesh& mesh, const std::vector<Point*>& p
 }
 
 /*--------------------------------------------------------------------*
- * Check wheter the point is inside, outside or on the boundary
+ * Check whether the point is inside, outside or on the boundary
  * of this volumecelll                                    sudhakar 07/12
  *--------------------------------------------------------------------*/
 std::string Cut::VolumeCell::is_this_point_inside(Point* pt)
@@ -1053,12 +1053,12 @@ std::shared_ptr<Core::FE::GaussPoints> Cut::VolumeCell::gauss_points_fitting()
   std::shared_ptr<Core::FE::CollectedGaussPoints> cgp =
       std::make_shared<Core::FE::CollectedGaussPoints>(0);
 
-  for (unsigned i = 0; i < gaus_pts_.size(); i++)
+  for (unsigned i = 0; i < gauss_pts_.size(); i++)
   {
     Core::LinAlg::Matrix<3, 1> xe, xei;
-    xe(0, 0) = gaus_pts_[i][0];
-    xe(1, 0) = gaus_pts_[i][1];
-    xe(2, 0) = gaus_pts_[i][2];
+    xe(0, 0) = gauss_pts_[i][0];
+    xe(1, 0) = gauss_pts_[i][1];
+    xe(2, 0) = gauss_pts_[i][2];
 
     cgp->append(xe, weights_(i));
   }
@@ -1102,7 +1102,7 @@ void Cut::VolumeCell::generate_boundary_cells(Mesh& mesh, const Cut::Point::Poin
     const std::vector<Node*>& par_nodes = parside->nodes();
 
     std::vector<double> eqnpar(4), eqnfac(4);
-    bool rever = false;
+    bool reverse = false;
 
     std::vector<Point*> pts_par(par_nodes.size());
     for (unsigned parnode = 0; parnode < par_nodes.size(); parnode++)
@@ -1118,13 +1118,13 @@ void Cut::VolumeCell::generate_boundary_cells(Mesh& mesh, const Cut::Point::Poin
     if (cornersTemp.size() != 0)
     {
       eqnfac = Kernel::eqn_plane_of_polygon(corners);
-      rever = to_reverse(posi, eqnpar, eqnfac);
+      reverse = to_reverse(posi, eqnpar, eqnfac);
     }
 
     // For Marked sides the boundary-cells on outside vc's need to be the same as for inside.
-    if (fac->on_marked_background_side() and posi == Cut::Point::outside) rever = !rever;
+    if (fac->on_marked_background_side() and posi == Cut::Point::outside) reverse = !reverse;
 
-    if (rever)  // normal from facet is in wrong direction
+    if (reverse)  // normal from facet is in wrong direction
     {
       std::reverse(corners.begin(), corners.end());  // change ordering to correct this
       std::reverse(cornersTemp.begin(),
@@ -1347,34 +1347,34 @@ normal
 bool Cut::VolumeCell::to_reverse(const Cut::Point::PointPosition posi,
     const std::vector<double>& parEqn, const std::vector<double>& facetEqn)
 {
-  bool rever = false;
+  bool reverse = false;
 
   // position is inside
   if (posi == Cut::Point::outside)  //-3 before...
   {
     if (fabs(parEqn[0]) > TOL_EQN_PLANE && parEqn[0] * facetEqn[0] > 0.0)
-      rever = true;
+      reverse = true;
     else if (fabs(parEqn[1]) > TOL_EQN_PLANE && parEqn[1] * facetEqn[1] > 0.0)
-      rever = true;
+      reverse = true;
     else if (fabs(parEqn[2]) > TOL_EQN_PLANE && parEqn[2] * facetEqn[2] > 0.0)
-      rever = true;
+      reverse = true;
     else
-      rever = false;
+      reverse = false;
   }
 
   // position is outside
   else if (posi == Cut::Point::inside)  //-2 before...
   {
     if (fabs(parEqn[0]) > TOL_EQN_PLANE && parEqn[0] * facetEqn[0] < 0.0)
-      rever = true;
+      reverse = true;
     else if (fabs(parEqn[1]) > TOL_EQN_PLANE && parEqn[1] * facetEqn[1] < 0.0)
-      rever = true;
+      reverse = true;
     else if (fabs(parEqn[2]) > TOL_EQN_PLANE && parEqn[2] * facetEqn[2] < 0.0)
-      rever = true;
+      reverse = true;
     else
-      rever = false;
+      reverse = false;
   }
-  return rever;
+  return reverse;
 }
 
 /*------------------------------------------------------------------------------------------*
@@ -1455,8 +1455,8 @@ void Cut::VolumeCell::moment_fit_gauss_weights(
   int BaseNos = 84;  // number of base functions to be used in the integration
   VolumeIntegration vc_inte(this, elem, Position(), BaseNos);
 
-  weights_ = vc_inte.compute_weights();           // obtain the integration weight at all points
-  gausPts_ = vc_inte.get_gauss_point_location();  // get the coordinates of all the Gauss points
+  weights_ = vc_inte.compute_weights();            // obtain the integration weight at all points
+  gaussPts_ = vc_inte.get_gauss_point_location();  // get the coordinates of all the Gauss points
 
   gp_ = gauss_points_fitting();  // convert the weight and the location to Gauss rule
 
@@ -1484,7 +1484,7 @@ void Cut::VolumeCell::direct_divergence_gauss_rule(
     Element* elem, Mesh& mesh, bool include_inner, Cut::BCellGaussPts BCellgausstype)
 {
   if (elem->shape() != Core::FE::CellType::hex8 && elem->shape() != Core::FE::CellType::hex20)
-    FOUR_C_THROW("direct_divergence_gauss_rule: Just hex8 and hex20 avaiable yet in DD!");
+    FOUR_C_THROW("direct_divergence_gauss_rule: Just hex8 and hex20 available yet in DD!");
 
   if (BCellgausstype != Cut::BCellGaussPts_Tessellation)
     FOUR_C_THROW(
@@ -1546,9 +1546,9 @@ void Cut::VolumeCell::direct_divergence_gauss_rule(
 
 #else
     // we have generated the integration rule in global coordinates of the element
-    // Now we map this rule to local coodinates since the weak form evaluation is done on local
+    // Now we map this rule to local coordinates since the weak form evaluation is done on local
     // coord
-    project_gauss_points_to_local_coodinates();
+    project_gauss_points_to_local_coordinates();
 #endif
   }
   // generate boundary cells -- when using tessellation this is automatically done
@@ -1559,7 +1559,7 @@ void Cut::VolumeCell::direct_divergence_gauss_rule(
  * Project the integration rule generated on global coordinate system of sudhakar 05/15 the
  *background element to its local coordinates
  *----------------------------------------------------------------------------------------------------*/
-void Cut::VolumeCell::project_gauss_points_to_local_coodinates()
+void Cut::VolumeCell::project_gauss_points_to_local_coordinates()
 {
   if (element_->shape() != Core::FE::CellType::hex8)
     FOUR_C_THROW(
@@ -1730,10 +1730,10 @@ bool Cut::VolumeCell::set_position_cut_side_based()
         for (std::map<Facet*, bool>::iterator on = outsidenormal.begin(); on != outsidenormal.end();
             ++on)
         {
-          bool consistant_normal = false;
-          if (ff->have_consistant_normal(on->first, consistant_normal))
+          bool consistent_normal = false;
+          if (ff->have_consistent_normal(on->first, consistent_normal))
           {
-            if (consistant_normal)
+            if (consistent_normal)
               outsidenormal[ff] = outsidenormal[on->first];
             else
               outsidenormal[ff] = !outsidenormal[on->first];

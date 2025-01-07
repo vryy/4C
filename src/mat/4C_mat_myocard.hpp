@@ -47,7 +47,7 @@ namespace Mat
       const double diff2;
       const double diff3;
 
-      /// Pertubation for calculation of derivative
+      /// Perturbation for calculation of derivative
       const double dt_deriv;
 
       /// Model type. Possibilities are: "MV", "FHN", "INADA", "TNNP", "SAN"

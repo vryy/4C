@@ -71,7 +71,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   // TODO: TAW use of solverparams???
   // change input parameter to solver number instead of parameter list?
-  // -> no default paramter possible any more
+  // -> no default parameter possible any more
   auto solver = std::make_shared<Core::LinAlg::Solver>(solverparams, discret->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -94,9 +94,9 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // maximum number of timesteps
   scatratimeparams->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   // restart
-  scatratimeparams->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
+  scatratimeparams->set<int>("RESTARTEVERY", prbdyn.get<int>("RESTARTEVERY"));
   // solution output
-  scatratimeparams->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
+  scatratimeparams->set<int>("RESULTSEVERY", prbdyn.get<int>("RESULTSEVERY"));
 
   // -------------------------------------------------------------------
   // overrule flags for solid-based scalar transport!
@@ -291,9 +291,9 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         // maximum number of timesteps
         lsparams->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
         // restart
-        lsparams->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
+        lsparams->set<int>("RESTARTEVERY", prbdyn.get<int>("RESTARTEVERY"));
         // solution output
-        lsparams->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
+        lsparams->set<int>("RESULTSEVERY", prbdyn.get<int>("RESULTSEVERY"));
 
         break;
       }

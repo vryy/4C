@@ -73,8 +73,8 @@ UPDATEMATRIX                    no
 MAXTIME                         0.2
 TIMESTEP                        0.1
 NUMSTEP                         2
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 COUPALGO                        iter_stagg_steep_desc
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 DIVPROJECTION                   yes

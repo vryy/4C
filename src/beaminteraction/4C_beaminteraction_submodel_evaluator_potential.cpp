@@ -724,15 +724,15 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamPotential::
   check_init();
 
   // sort out elements that should not be considered in potential evaluation
-  std::set<Core::Elements::Element*>::iterator eiter;
-  for (eiter = neighbors.begin(); eiter != neighbors.end();)
+  std::set<Core::Elements::Element*>::iterator either;
+  for (either = neighbors.begin(); either != neighbors.end();)
   {
     bool toerase = false;
 
-    Core::Elements::Element* currneighborele = *eiter;
+    Core::Elements::Element* currneighborele = *either;
 
     // 1) ensure each interaction is only evaluated once (keep in mind that we are
-    //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
+    //    using FEMatrices and FEvectors -> || (*either)->Owner() != myrank not necessary)
     if (not(currele->id() < currneighborele->id()))
     {
       toerase = true;
@@ -793,9 +793,9 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamPotential::
 
 
     if (toerase)
-      neighbors.erase(eiter++);
+      neighbors.erase(either++);
     else
-      ++eiter;
+      ++either;
   }
 }
 
@@ -817,7 +817,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamPotential::setup_potential_reductio
 
     int left_node_gid = *ele_ptr->node_ids();
     // n_right is the local node-ID of the elements right node (at xi = 1) whereas the elements left
-    // node (at xi = -1) allways has the local ID 1
+    // node (at xi = -1) always has the local ID 1
     const int n_right = (ele_ptr->num_node() == 2) ? 1 : (ele_ptr->num_node() - 2);
     int right_node_gid = *(ele_ptr->node_ids() + n_right);
 

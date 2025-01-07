@@ -85,7 +85,7 @@ Mat::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions()
 }
 
 /*----------------------------------------------------------------------*
- | construct the material object given material paramete     vuong 08/16 |
+ | construct the material object given material parameter     vuong 08/16 |
  *----------------------------------------------------------------------*/
 Mat::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
     Mat::PAR::FluidPoroMultiPhaseReactions* params)

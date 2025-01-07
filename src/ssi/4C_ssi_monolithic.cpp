@@ -1187,7 +1187,7 @@ void SSI::SsiMono::calc_initial_potential_field()
                            ? std::dynamic_pointer_cast<ScaTra::ScaTraTimIntElch>(scatra_manifold())
                            : nullptr;
   if (scatra_elch == nullptr or (is_scatra_manifold() and manifold_elch == nullptr))
-    FOUR_C_THROW("Cast to Elch time integrator faild. Scatra is not an Elch problem");
+    FOUR_C_THROW("Cast to Elch time integrator failed. Scatra is not an Elch problem");
 
   // prepare specific time integrators
   scatra_elch->pre_calc_initial_potential_field();
@@ -1528,7 +1528,7 @@ void SSI::SsiMono::calc_initial_time_derivative()
   solver_params.reset = true;
   solver_->solve(massmatrix_system->epetra_operator(), phidtnp_system, rhs_system, solver_params);
 
-  // copy solution to sub problmes
+  // copy solution to sub problems
   auto phidtnp_scatra = maps_sub_problems()->extract_vector(
       *phidtnp_system, Utils::SSIMaps::get_problem_position(Subproblem::scalar_transport));
   scatra_field()->phidtnp()->Update(1.0, *phidtnp_scatra, 0.0);

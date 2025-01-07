@@ -205,7 +205,7 @@ namespace Core::LinAlg::Voigt
      * \brief Compute the product of three matrix entries
      *
      * The entries are correctly scaled depending on the VoigtNotation type of the tensor.
-     * @param vtensor the tensor in voigt notaion
+     * @param vtensor the tensor in voigt notation
      * @param i first entry's Voigt index
      * @param j second entry's Voigt inde
      * @param k third entry's Voigt index

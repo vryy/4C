@@ -23,8 +23,8 @@ FILESTEPS                       1000
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      GenAlpha
-RESULTSEVRY                     1
-RESTARTEVRY                     2
+RESULTSEVERY                     1
+RESTARTEVERY                     2
 TIMESTEP                        0.01
 NUMSTEP                         7
 MAXTIME                         0.07

@@ -27,8 +27,8 @@ ADAPTCONV_BETTER                0.1
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No
-RESULTSEVRY                           1
-RESTARTEVRY                     20
+RESULTSEVERY                           1
+RESTARTEVERY                     20
 NUMSTEP                         5
 STEADYSTEP                      -1
 NUMSTASTEPS                     1

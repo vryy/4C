@@ -67,8 +67,8 @@ UPDATEMATRIX                    no
 MAXTIME                         1000.0
 TIMESTEP                        0.1
 NUMSTEP                         2
-RESULTSEVRY                           1
-RESTARTEVRY                     1
+RESULTSEVERY                           1
+RESTARTEVERY                     1
 COUPALGO                        iter_stagg_MFNK_FSI
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-11

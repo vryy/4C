@@ -85,8 +85,8 @@ namespace FLD
   class FluidImplicitTimeInt : public TimInt
   {
     friend class TurbulenceStatisticManager;
-    friend class HomIsoTurbInitialField;
-    friend class HomIsoTurbForcing;
+    friend class HomoIsoTurbInitialField;
+    friend class HomoIsoTurbForcing;
     friend class PeriodicHillForcing;
     friend class FluidResultTest;
 
@@ -639,7 +639,7 @@ namespace FLD
         sep_multiply();
       }
 
-      // set fine-scale velocity for parallel nigthly tests
+      // set fine-scale velocity for parallel nightly tests
       // separation matrix depends on the number of proc here
       if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales and
           params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<bool>("SET_FINE_SCALE_VEL"))
@@ -1075,7 +1075,7 @@ namespace FLD
     virtual void setup_meshtying();
 
     /*!
-    \brief velocity required for evaluation of related quantites required on element level
+    \brief velocity required for evaluation of related quantities required on element level
 
     */
     virtual std::shared_ptr<const Core::LinAlg::Vector<double>> evaluation_vel() = 0;
@@ -1408,7 +1408,7 @@ namespace FLD
      */
     void setup_locsys_dirichlet_bc(const double time);
 
-    /// prepares and evalutes egde-based internal face integrals
+    /// prepares and evaluates edge-based internal face integrals
     void evaluate_fluid_edge_based(std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
         Core::LinAlg::Vector<double>& systemvector1, Teuchos::ParameterList edgebasedparams);
 

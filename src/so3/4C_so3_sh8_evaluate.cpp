@@ -372,7 +372,7 @@ int Discret::Elements::SoSh8::evaluate(Teuchos::ParameterList& params,
 
     // in case of multi-scale problems, possible EAS internal data on microscale
     // have to be stored in every macroscopic Gauss point
-    // allocation and initializiation of these data arrays can only be
+    // allocation and initialization of these data arrays can only be
     // done in the elements that know the number of EAS parameters
     case Core::Elements::multi_init_eas:
     {
@@ -412,7 +412,7 @@ int Discret::Elements::SoSh8::evaluate(Teuchos::ParameterList& params,
       if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW(
             "Action demands to calculate the STC (Scaled Thickness "
-            "Conditiong) matrix, but not suitable scaling has been provided.");
+            "Conditioning) matrix, but not suitable scaling has been provided.");
       else
       {
         do_calc_stc_matrix(
@@ -427,7 +427,7 @@ int Discret::Elements::SoSh8::evaluate(Teuchos::ParameterList& params,
       if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW(
             "Action demands to calculate the STC (Scaled Thickness "
-            "Conditiong) matrix, but not suitable scaling has been provided.");
+            "Conditioning) matrix, but not suitable scaling has been provided.");
       else
       {
         do_calc_stc_matrix(
@@ -540,7 +540,7 @@ double Discret::Elements::SoSh8::sosh8_calc_energy(
   }
 
   // ------------------- EAS-SETUP --------------------------------------------
-  /* EAS Technology: declare, intialize, set up, and alpha history */
+  /* EAS Technology: declare, initialize, set up, and alpha history */
   // in any case declare variables, sizes etc. only in eascase
   Core::LinAlg::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
   std::vector<Core::LinAlg::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
@@ -656,7 +656,7 @@ double Discret::Elements::SoSh8::sosh8_calc_energy(
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone)
     {
-      // map local M to global, also enhancement is refered to element origin
+      // map local M to global, also enhancement is referred to element origin
       // M = detJ0/detJ T0^{-T} . M
       Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
           soh8_eassosh8>(M.data(), detJ0 / detJ, T0invT.data(), M_GP->at(gp).values());
@@ -738,7 +738,7 @@ void Discret::Elements::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
   }
 
   // -------- EAS-SETUP -------------------------------------------------------
-  /* EAS Technology: declare, intialize, set up, and alpha history */
+  /* EAS Technology: declare, initialize, set up, and alpha history */
   // in any case declare variables, sizes etc. only in eascase
   Core::LinAlg::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
   std::vector<Core::LinAlg::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
@@ -817,7 +817,7 @@ void Discret::Elements::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
       // ============================== DEPRECATED ==============================
       /* end of EAS Update ******************/
 
-      // EAS portion of internal forces, also called enhacement vector s or Rtilde
+      // EAS portion of internal forces, also called enhancement vector s or Rtilde
       feas.size(neas_);
 
       // EAS matrix K_{alpha alpha}, also called Dtilde
@@ -921,7 +921,7 @@ void Discret::Elements::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone)
     {
-      // map local M to global, also enhancement is refered to element origin
+      // map local M to global, also enhancement is referred to element origin
       // M = detJ0/detJ T0^{-T} . M
       Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
           soh8_eassosh8>(M.data(), detJ0 / detJ, T0invT.data(), M_GP->at(gp).values());
@@ -1035,7 +1035,7 @@ void Discret::Elements::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
       cb.multiply(cmat, bop);  // temporary C . B
       stiffmatrix->multiply_tn(detJ_w, bop, cb, 1.0);
 
-      // intergrate `geometric' stiffness matrix and add to keu *****************
+      // integrate `geometric' stiffness matrix and add to keu *****************
       // here also the ANS interpolation comes into play
       for (int inod = 0; inod < NUMNOD_SOH8; ++inod)
       {
@@ -1095,7 +1095,7 @@ void Discret::Elements::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
           (*stiffmatrix)(NUMDIM_SOH8* inod + 1, NUMDIM_SOH8 * jnod + 1) += Gij;
           (*stiffmatrix)(NUMDIM_SOH8* inod + 2, NUMDIM_SOH8 * jnod + 2) += Gij;
         }
-      }  // end of intergrate `geometric' stiffness ******************************
+      }  // end of integrate `geometric' stiffness ******************************
 
       // EAS technology: integrate matrices --------------------------------- EAS
       if (eastype_ != soh8_easnone)
@@ -1201,7 +1201,7 @@ void Discret::Elements::SoSh8::sosh8_anssetup(
 
   if (dfsp_eval != 0)
   {                      // if true f,df already evaluated
-    *deriv_sp = &df_sp;  // return adress of static object to target of pointer
+    *deriv_sp = &df_sp;  // return address of static object to target of pointer
   }
   else
   {
@@ -1268,8 +1268,8 @@ void Discret::Elements::SoSh8::sosh8_anssetup(
       df_sp[i](2, 7) = (1.0 - r[i]) * (1.0 + s[i]) * 0.125;
     }
 
-    // return adresses of just evaluated matrices
-    *deriv_sp = &df_sp;  // return adress of static object to target of pointer
+    // return addresses of just evaluated matrices
+    *deriv_sp = &df_sp;  // return address of static object to target of pointer
     dfsp_eval = true;    // now all arrays are filled statically
   }
 
@@ -1796,14 +1796,14 @@ void Discret::Elements::SoSh8::do_calc_stc_matrix(
 
     std::vector<Core::Conditions::Condition*> cond0;
     std::vector<Core::Conditions::Condition*> condFSI0;
-    int condnum0 = 1000;    // minimun STCid of layer with nodes 0..3
+    int condnum0 = 1000;    // minimum STCid of layer with nodes 0..3
     bool current0 = false;  // layer with nodes 0..4 to be scaled
     (nodes[0])->get_condition("STC Layer", cond0);
     (nodes[0])->get_condition("FSICoupling", condFSI0);
     std::vector<Core::Conditions::Condition*> cond1;
     std::vector<Core::Conditions::Condition*> condFSI1;
-    int condnum1 = 1000;    // minimun STCid of layer with nodes 4..7
-    bool current1 = false;  // minimun STCid of layer with nodes 4..7
+    int condnum1 = 1000;    // minimum STCid of layer with nodes 4..7
+    bool current1 = false;  // minimum STCid of layer with nodes 4..7
     (nodes[NUMNOD_SOH8 / 2])->get_condition("STC Layer", cond1);
     (nodes[NUMNOD_SOH8 / 2])->get_condition("FSICoupling", condFSI1);
 
@@ -2034,7 +2034,7 @@ int Discret::Elements::SoSh8Type::initialize(Core::FE::Discretization& dis)
           FOUR_C_THROW("This should have been replaced by auto(r|s|t)");
           break;
         }
-        case Discret::Elements::SoSh8::autor:
+        case Discret::Elements::SoSh8::author:
         case Discret::Elements::SoSh8::enfor:
         {
           // resorting of nodes,
@@ -2155,9 +2155,6 @@ int Discret::Elements::SoSh8Type::initialize(Core::FE::Discretization& dis)
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
     actele->init_jacobian_mapping();
   }
-
-  // **************** debug printout ot gmesh **********************************
-  // sosh8_gmshplotdis(dis);
 
   return 0;
 }

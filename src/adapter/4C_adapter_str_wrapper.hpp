@@ -287,7 +287,7 @@ namespace Adapter
     /// start new time step
     void prepare_time_step() override { structure_->prepare_time_step(); }
 
-    /// update displacment
+    /// update displacement
     void update_state_incrementally(
         std::shared_ptr<const Core::LinAlg::Vector<double>> disi  ///< iterative solution increment
         ) override
@@ -356,7 +356,7 @@ namespace Adapter
     }
 
     /// Write Gmsh output for structural field
-    void write_gmsh_struc_output_step() override { structure_->write_gmsh_struc_output_step(); }
+    void write_gmsh_struct_output_step() override { structure_->write_gmsh_struct_output_step(); }
 
     /// output results to screen
     void print_step() override { structure_->print_step(); }

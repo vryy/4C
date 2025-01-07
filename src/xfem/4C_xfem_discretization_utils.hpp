@@ -152,7 +152,7 @@ namespace XFEM
           const std::vector<Core::Conditions::Condition*>& boundary_conds,
           const std::vector<std::string>& conditions_to_copy) const;
 
-      /** \brief remove conditions which are no longer part of the splitted
+      /** \brief remove conditions which are no longer part of the split
        *         partial discretizations, respectively
        *
        *  \author  hiermeier \date 10/16 */

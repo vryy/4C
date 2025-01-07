@@ -23,7 +23,7 @@ LIFTDRAG                        No
 CONVFORM                        convective
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 THETA                           1
 NUMSTEP                         100
 ITEMAX                          10
@@ -52,7 +52,7 @@ EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 NUMSTEP                         5
 MAXTIME                         5.0   // originally: T=1.0/(0.005) for Str=0.005, U=1cm/s, b=1cm
 TIMESTEP                        0.1   // originally: dt=T/175 or dt=T/200
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 --------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        1.0
 NUMSTEP                         1

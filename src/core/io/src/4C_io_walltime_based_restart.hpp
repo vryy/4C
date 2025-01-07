@@ -42,7 +42,7 @@ namespace Core::IO
     void setup_restart_manager(const double restartinterval, const int restartevry);
 
     /// return whether it is time for a restart
-    /// \param step [in] : current time step for multi-field syncronisation
+    /// \param step [in] : current time step for multi-field synchronisation
     /// \param comm [in] : get access to involved procs
     bool restart(const int step, MPI_Comm comm);
 

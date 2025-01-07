@@ -451,24 +451,24 @@ void BeamInteraction::BeamToSolidConditionSurface::setup(
   }
 
   // Loop over all pairs and add the needed face elements.
-  std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>> pair_face_elemets;
-  pair_face_elemets.clear();
+  std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>> pair_face_elements;
+  pair_face_elements.clear();
   for (const auto& pair : condition_contact_pairs_)
   {
     const int solid_id = pair->element2()->id();
     auto find_in_condition = surface_ids_.find(solid_id);
     if (find_in_condition != surface_ids_.end())
     {
-      // Check if the face is already in the pair_face_elemets map.
-      auto find_in_pair = pair_face_elemets.find(solid_id);
-      if (find_in_pair == pair_face_elemets.end())
+      // Check if the face is already in the pair_face_elements map.
+      auto find_in_pair = pair_face_elements.find(solid_id);
+      if (find_in_pair == pair_face_elements.end())
       {
         // The face element has to be created and added to the contact pair.
         std::shared_ptr<GEOMETRYPAIR::FaceElement> new_face_element =
             GEOMETRYPAIR::face_element_factory(find_in_condition->second, fad_order,
                 line_to_surface_evaluation_data->get_surface_normal_strategy());
         new_face_element->set_part_of_pair(true);
-        pair_face_elemets[solid_id] = new_face_element;
+        pair_face_elements[solid_id] = new_face_element;
         pair->set_face_element(new_face_element);
       }
       else
@@ -484,11 +484,11 @@ void BeamInteraction::BeamToSolidConditionSurface::setup(
     }
   }
 
-  // Now all faces of contact pairs are in pair_face_elemets, we still need to add faces that are
+  // Now all faces of contact pairs are in pair_face_elements, we still need to add faces that are
   // needed for averaged normal calculation, but are not contained in any pair.
   std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>> face_elements_needed;
-  face_elements_needed = pair_face_elemets;
-  for (const auto& face_element_iterator : pair_face_elemets)
+  face_elements_needed = pair_face_elements;
+  for (const auto& face_element_iterator : pair_face_elements)
   {
     // Loop over the nodes of the face element.
     const Core::Nodes::Node* const* nodes = face_element_iterator.second->get_element()->nodes();

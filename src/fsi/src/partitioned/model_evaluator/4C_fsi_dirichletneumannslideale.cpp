@@ -147,7 +147,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannSlideale::ini
 {
   if (get_kinematic_coupling())
   {
-    // real displacement of slave side at time step begin on master side --> for calcualtion of
+    // real displacement of slave side at time step begin on master side --> for calculation of
     // FluidOp
     ft_stemp_ = fluid_to_struct(islave_);
     // predict displacement

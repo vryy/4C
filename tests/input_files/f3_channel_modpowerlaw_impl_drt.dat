@@ -23,13 +23,13 @@ MAXTIME                         1000
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         10
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 STARTFUNCNO                     -1
 START_THETA                     0.67
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
-RESULTSEVRY                           10
+RESULTSEVERY                           10
 PREDICTOR                       explicit_second_order_midpoint
 INCONSISTENT_RESIDUAL           yes
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES

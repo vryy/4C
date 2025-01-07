@@ -13,8 +13,8 @@ MAXITER                         50
 MAXTIME                         5000
 NLNSOL                          fullnewton
 NUMSTEP                         10
-RESULTSEVRY                     1
-RESTARTEVRY                     5
+RESULTSEVERY                     1
+RESTARTEVERY                     5
 TIMESTEP                        1.0
 TOLDISP                         1e-08
 TOLRES                          1e-06

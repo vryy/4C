@@ -29,8 +29,8 @@ void Inpar::ArtDyn::set_valid_parameters(Teuchos::ParameterList& list)
   Core::Utils::double_parameter("TIMESTEP", 0.01, "Time increment dt", &andyn);
   Core::Utils::int_parameter("NUMSTEP", 0, "Number of Time Steps", &andyn);
   Core::Utils::double_parameter("MAXTIME", 1000.0, "total simulation time", &andyn);
-  Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &andyn);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &andyn);
+  Core::Utils::int_parameter("RESTARTEVERY", 1, "Increment for writing restart", &andyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "Increment for writing solution", &andyn);
 
   Core::Utils::bool_parameter(
       "SOLVESCATRA", "no", "Flag to (de)activate solving scalar transport in blood", &andyn);
@@ -318,8 +318,8 @@ void Inpar::ReducedLung::set_valid_parameters(Teuchos::ParameterList& list)
 
   Core::Utils::double_parameter("TIMESTEP", 0.01, "Time increment dt", &redawdyn);
   Core::Utils::int_parameter("NUMSTEP", 0, "Number of Time Steps", &redawdyn);
-  Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &redawdyn);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &redawdyn);
+  Core::Utils::int_parameter("RESTARTEVERY", 1, "Increment for writing restart", &redawdyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "Increment for writing solution", &redawdyn);
   Core::Utils::double_parameter("THETA", 1.0, "One-step-theta time integration factor", &redawdyn);
 
   Core::Utils::int_parameter("MAXITERATIONS", 1, "maximum iteration steps", &redawdyn);

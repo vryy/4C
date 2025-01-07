@@ -1123,7 +1123,7 @@ void Coupling::VolMortar::VolMortarCoupl::check_initial_residuum()
   int err = p21_->multiply(false, *var_A, *result_A);
   if (err != 0) FOUR_C_THROW("error");
 
-  // substract both results
+  // subtract both results
   result_A->Update(-1.0, *var_B, 1.0);
 
   std::cout << "Result of init check= " << std::endl;
@@ -1592,7 +1592,7 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
   // elements, we build two auxiliary discretizations. The first holds only a copy of the master
   // element, acting as background mesh, and the other one is build of the surface elements of the
   // slave element, being the interface discretization. We use temporary copies of all elements and
-  // nodes, as we only need the geometrie to perform the cut, but want to make sure that the gids
+  // nodes, as we only need the geometry to perform the cut, but want to make sure that the gids
   // and dofs of the original elements are kept untouched.
 
   std::shared_ptr<Core::FE::Discretization> sauxdis =
@@ -3817,7 +3817,7 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
   if ((int)poly1.size() < 3 || (int)poly2.size() < 3)
     FOUR_C_THROW("ERROR: Input Polygons must consist of min. 3 vertices each");
 
-  // check for rotation of polygon1 (slave) and polgon 2 (master)
+  // check for rotation of polygon1 (slave) and polygon 2 (master)
   // note that we implicitly already rely on convexity here!
   // first get geometric centers of polygon1 and polygon2
   std::array<double, 3> center1 = {0.0, 0.0, 0.0};

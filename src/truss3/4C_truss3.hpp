@@ -109,7 +109,7 @@ namespace Discret
           const std::map<std::string, std::vector<double>>& ele_state,
           Core::LinAlg::SerialDenseVector& forcevec, Core::LinAlg::SerialDenseMatrix& stiffmat);
 
-      //! calcluate stresses at Gauss point
+      //! calculate stresses at Gauss point
       //! \param[in] params      parameter list
       //! \param[in] ele_state   elemental states (depending on the instantiated element)
       virtual void calc_gp_stresses(Teuchos::ParameterList& params,
@@ -265,7 +265,7 @@ namespace Discret
       void lump_mass(Core::LinAlg::SerialDenseMatrix* emass);
 
       //! calculation of nonlinear stiffness and mass matrix switching between total lagrange
-      //! and enginerring strains
+      //! and engineering strains
       //!
       //! \param[in] ele_state     elemental states (depending on the instantiated element)
       //! \param[out] stiffmatrix  elemental sitffness matrix

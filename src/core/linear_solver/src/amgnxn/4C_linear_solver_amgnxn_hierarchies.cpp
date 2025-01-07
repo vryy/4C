@@ -343,7 +343,7 @@ Core::LinearSolver::AMGNxN::Hierarchies::build_mue_lu_hierarchy(
 
   if (not create_uncoarsened_hierarchy)
   {
-    // Some cheks
+    // Some checks
     if (numdf < 1 or dimns < 1) FOUR_C_THROW("Error: PDE equations or null space dimension wrong.");
     if (nsdata == nullptr) FOUR_C_THROW("Error: null space data is empty");
 

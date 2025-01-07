@@ -71,7 +71,7 @@ Cut::Impl::PointGraph::PointGraph(
     }
   }
 
-  // Simplified graph strategy for three points as ther is anyway just one way of creating the
+  // Simplified graph strategy for three points as there is anyway just one way of creating the
   // facets! ager 09/19: this is a very good idea to do that but changed results of the testcase
   // xfluid_moving_torus* Thus, should be activated in a separate commit!
 
@@ -106,8 +106,8 @@ Cut::Impl::PointGraph::PointGraph(
 }
 
 /*-------------------------------------------------------------------------------------*
- * Graph is filled wihl all edges of the selfcut: uncutted edges, selfcutedges
- * and new splitted edges; but no the cutted edges                          wirtz 05/13
+ * Graph is filled wihl all edges of the selfcut: uncut edges, selfcutedges
+ * and new split edges; but no the cut edges                          wirtz 05/13
  *-------------------------------------------------------------------------------------*/
 void Cut::Impl::PointGraph::fill_graph(Side* side, Cycle& cycle)
 {
@@ -197,7 +197,7 @@ void Cut::Impl::PointGraph::fill_graph(
       Point* p1 = edge_points[i - 1];
       Point* p2 = edge_points[i];
 #if DEBUG_POINTGRAPH
-      std::cout << "Adding line betweeen points with ids " << p1->Id() << " and " << p2->Id()
+      std::cout << "Adding line between points with ids " << p1->Id() << " and " << p2->Id()
                 << std::endl;
 #endif
       get_graph().add_edge(p1, p2);
@@ -341,7 +341,7 @@ bool Cut::Impl::find_cycles(graph_t& g, Cut::Cycle& cycle,
   {
     const Core::LinAlg::Matrix<3, 1>& pos = local[*vi];
 #if DEBUG_POINTGRAPH
-    std::cout << "First coordinate before substraction " << std::setprecision(16) << pos
+    std::cout << "First coordinate before subtraction " << std::setprecision(16) << pos
               << std::endl;
 #endif
 
@@ -379,7 +379,7 @@ bool Cut::Impl::find_cycles(graph_t& g, Cut::Cycle& cycle,
 
       if (j != arcs.end())
       {
-        // this can occure once when more than one nodes of the background element
+        // this can occur once when more than one nodes of the background element
         // has same coordinates (sudhakar)
         // check input file for two nodes (in same domain) having same coordinates
         std::stringstream err_msg;
@@ -951,7 +951,7 @@ bool Cut::Impl::PointGraph::Graph::has_touching_edge(Element* element, Side* sid
           edge_vector.update(-1.0, cut_pointxyz, 1.0);
           for (plain_side_set::const_iterator s = ed->sides().begin(); s != ed->sides().end(); ++s)
           {
-            // getting side normal with respect to resp(0,0) by default local coordiantes
+            // getting side normal with respect to resp(0,0) by default local coordinates
             Core::LinAlg::Matrix<2, 1> resp;
             Core::LinAlg::Matrix<3, 1> norm_vec;
             Side* sd = *s;

@@ -377,7 +377,7 @@ std::ostream& NOX::FSI::GenericNormUpdate::print(std::ostream& stream, int inden
   stream << " = " << ::NOX::Utils::sciformat(norm_update_, 3) << " < "
          << ::NOX::Utils::sciformat(tolerance_, 3) << "\n";
 
-  // Note: All norms are hard-coded absolute norms. So, we do not neet to print
+  // Note: All norms are hard-coded absolute norms. So, we do not need to print
   // this.                                                      mayt.mt 01/2012
 
   return stream;

@@ -14,8 +14,8 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          20
 CONVCHECK                       L_2_norm
-RESULTSEVRY                     1
-RESTARTEVRY                     10
+RESULTSEVERY                     1
+RESTARTEVERY                     10
 NUMSTEP                         30
 NUMSTASTEPS                     0
 MAXTIME                         1000.0
@@ -45,14 +45,14 @@ INITFUNCNO                      3
 INITIALFIELD                    field_by_function
 MAXTIME                         10000
 NUMSTEP                         15
-RESTARTEVRY                     1000
+RESTARTEVERY                     1000
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
 VELOCITYFIELD                   Navier_Stokes
 CALCFLUX_BOUNDARY               total
 WRITEFLUX_IDS                   1 2
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 MATID                           5
 SOLVERTYPE                      nonlinear
 OUTPUTSCALARS                   entire_domain

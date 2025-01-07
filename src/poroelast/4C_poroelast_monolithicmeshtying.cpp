@@ -79,7 +79,7 @@ void PoroElast::MonolithicMeshtying::evaluate(
   // convert velocity map to structure displacement map
   modfpres = fluid_structure_coupling().slave_to_master(*modfpres);
 
-  // for the set_state() methods in EvaluatePoroMt() non const state vectores are needed
+  // for the set_state() methods in EvaluatePoroMt() non const state vectors are needed
   // ->WriteAccess... methods are used (even though we will not change the states ...)
   std::shared_ptr<Core::LinAlg::Vector<double>> svel = structure_field()->write_access_velnp();
   std::shared_ptr<Core::LinAlg::Vector<double>> sdisp = structure_field()->write_access_dispnp();

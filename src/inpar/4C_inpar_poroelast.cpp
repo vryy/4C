@@ -50,7 +50,7 @@ void Inpar::PoroElast::set_valid_parameters(Teuchos::ParameterList& list)
 
   // Output type
   Core::Utils::int_parameter(
-      "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &poroelastdyn);
+      "RESTARTEVERY", 1, "write restart possibility every RESTARTEVERY steps", &poroelastdyn);
 
   // Time loop control
   Core::Utils::int_parameter("NUMSTEP", 200, "maximum number of Timesteps", &poroelastdyn);
@@ -60,7 +60,7 @@ void Inpar::PoroElast::set_valid_parameters(Teuchos::ParameterList& list)
       "ITEMAX", 10, "maximum number of iterations over fields", &poroelastdyn);
   Core::Utils::int_parameter(
       "ITEMIN", 1, "minimal number of iterations over fields", &poroelastdyn);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "increment for writing solution", &poroelastdyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "increment for writing solution", &poroelastdyn);
 
   // Iterationparameters
   Core::Utils::double_parameter("TOLRES_GLOBAL", 1e-8,

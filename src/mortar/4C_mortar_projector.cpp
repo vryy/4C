@@ -770,7 +770,7 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::check_projection4_auxp
                      P(0, 2) * (globgp[2] - auxc[2]);
     double lambda2 = P(1, 0) * (globgp[0] - auxc[0]) + P(1, 1) * (globgp[1] - auxc[1]) +
                      P(1, 2) * (globgp[2] - auxc[2]);
-    // double alph= P(2,0)*(globgp[0]-auxc[0]) + P(2,1)*(globgp[1]-auxc[1]) +
+    // double alpha= P(2,0)*(globgp[0]-auxc[0]) + P(2,1)*(globgp[1]-auxc[1]) +
     // P(2,2)*(globgp[2]-auxc[2]);
 
     proj_gp[0] = lambda1 * t0[0] + lambda2 * t1[0] + auxc[0];

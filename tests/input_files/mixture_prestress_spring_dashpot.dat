@@ -30,8 +30,8 @@ DYNAMICTYPE                      Statics
 PRESTRESS                       material_iterative
 PRESTRESSTIME                   100
 PRESTRESSTOLDISP                1e-9
-RESULTSEVRY                     5
-RESTARTEVRY                     5
+RESULTSEVERY                     5
+RESTARTEVERY                     5
 TIMESTEP                        0.1
 NUMSTEP                         1000
 MAXTIME                         100

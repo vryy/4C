@@ -26,7 +26,7 @@ namespace CONTACT
   {
    public:
     //! Shared data constructor
-    NitscheStrategySsiElch(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategySsiElch(const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
         std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, const MPI_Comm& comm,

@@ -1945,7 +1945,7 @@ void Discret::Elements::Beam3r::
       Itilde, xi);
 }
 
-// explicit template instantations (some compilers do not export symboles defined above)
+// explicit template instantiations (some compilers do not export symbols defined above)
 template void Discret::Elements::Beam3r::set_up_reference_geometry<2, 2, 1>(
     const std::vector<double>&, const std::vector<double>&);
 template void Discret::Elements::Beam3r::set_up_reference_geometry<2, 2, 2>(

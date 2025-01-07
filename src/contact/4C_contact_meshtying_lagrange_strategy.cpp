@@ -642,7 +642,7 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
     // add s submatrices to kteffnew
     if (systype == Inpar::CONTACT::system_condensed)
     {
-      // add identitiy for slave increments
+      // add identity for slave increments
       kteffnew->add(*onesdiag, false, 1.0, 1.0);
     }
     else
@@ -843,7 +843,7 @@ void CONTACT::MtLagrangeStrategy::build_saddle_point_system(
   //**********************************************************************
   else
   {
-    FOUR_C_THROW("Invalid system type in SaddlePontSolve");
+    FOUR_C_THROW("Invalid system type in SaddlePointSolve");
   }
 }
 

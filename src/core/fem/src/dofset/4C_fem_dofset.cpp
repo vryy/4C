@@ -264,7 +264,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
         }
         if (!allononeproc)
           FOUR_C_THROW(
-              "ERRROR: Nodes in point coupling condition must all be on same processsor (for now)");
+              "ERROR: Nodes in point coupling condition must all be on same processor (for now)");
 
         // do nothing for first (master) node in coupling condition
         // do something for second, third, ... (slave) node

@@ -103,7 +103,7 @@ PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       explicit_second_order_midpoint
 //
 // Increment for writing restart
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 //
 // Assemble fluid system matrix into a block system
 //                              Yes,No,yes,no,YES,NO
@@ -133,7 +133,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 //
 // Increment for writing solution
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 //
 LINEAR_SOLVER                   1
 --------------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES

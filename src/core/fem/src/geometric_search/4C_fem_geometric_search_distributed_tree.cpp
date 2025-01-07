@@ -41,7 +41,7 @@ namespace Core::GeometricSearch
 
     using memory_space = Kokkos::HostSpace;
 
-    // Build tree structure containting all primitives.
+    // Build tree structure containing all primitives.
     ArborX::DistributedTree<memory_space> distributed_tree(
         comm, Kokkos::DefaultExecutionSpace{}, primitives);
 

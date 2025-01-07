@@ -19,7 +19,7 @@ OUTPUT_GMSH                     No
 OUTPUT_BIN                      No
 STRUCT_DISP                     Yes
 FILESTEPS                       1000
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 WRITE_TO_SCREEN                 Yes
 ---------------------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE                   Oseen
@@ -36,8 +36,8 @@ CALCERROR                       byfunct
 CALCERRORFUNCNO                 1
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-RESULTSEVRY                     1
-RESTARTEVRY                     0
+RESULTSEVERY                     1
+RESTARTEVERY                     0
 NUMSTEP                         1
 ITEMAX                          3
 TIMESTEP                        1.0

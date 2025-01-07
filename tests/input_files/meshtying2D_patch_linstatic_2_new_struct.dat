@@ -26,8 +26,8 @@ STRUCT_STRAIN                   Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESTARTEVRY                     10
+RESULTSEVERY                     1
+RESTARTEVERY                     10
 NLNSOL                          fullnewton
 TIMESTEP                        1.0
 NUMSTEP                         1

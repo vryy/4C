@@ -1193,12 +1193,12 @@ void Cut::Output::gmsh_element_cut_test(
   for (std::vector<Side*>::const_iterator sit = ele->sides().begin(); sit != ele->sides().end();
       ++sit)
   {
-    for (plain_element_set::const_iterator eit = (*sit)->elements().begin();
-        eit != (*sit)->elements().end(); ++eit)
+    for (plain_element_set::const_iterator it = (*sit)->elements().begin();
+        it != (*sit)->elements().end(); ++it)
     {
-      eles.insert(*eit);
-      for (plain_side_set::const_iterator csit = (*eit)->cut_sides().begin();
-          csit != (*eit)->cut_sides().end(); ++csit)
+      eles.insert(*it);
+      for (plain_side_set::const_iterator csit = (*it)->cut_sides().begin();
+          csit != (*it)->cut_sides().end(); ++csit)
         csides.insert(*csit);
     }
   }
@@ -1253,9 +1253,9 @@ void Cut::Output::gmsh_element_cut_test(
 
   // -- 3 -- add background element -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
   const plain_element_set& elements = eles;
-  for (plain_element_set::const_iterator eit = elements.begin(); eit != elements.end(); ++eit)
+  for (plain_element_set::const_iterator it = elements.begin(); it != elements.end(); ++it)
   {
-    Element* aele = *eit;
+    Element* aele = *it;
     file << "  {"
          << "\n";
     file << "  LinAlg::SerialDenseMatrix hex" << aele->nodes().size() << "_xyze( 3, "
@@ -1446,11 +1446,11 @@ void Cut::Output::debug_dump_more_than_two_intersection_points(
     Cut::Output::GmshCutPairDump(file, or_pair, 0, std::string("added_from"));
     if (or_pair != cu_pair)
     {
-      file << "// original added becase: " << (*it)->GetCreationInfo(or_pair) << "\n";
+      file << "// original added because: " << (*it)->GetCreationInfo(or_pair) << "\n";
       file << "// common added because: " << (*it)->GetCreationInfo(cu_pair) << "\n";
     }
     else
-      file << "// original added becase: " << (*it)->GetCreationInfo(cu_pair) << "\n";
+      file << "// original added because: " << (*it)->GetCreationInfo(cu_pair) << "\n";
 #endif
 
     (*it)->dump_connectivity_info();
@@ -1464,7 +1464,7 @@ void Cut::Output::debug_dump_more_than_two_intersection_points(
     {
       if (*it != *jt)
       {
-        std::cout << "Diference between " << (*it)->id() << " and " << (*jt)->id() << " is "
+        std::cout << "Difference between " << (*it)->id() << " and " << (*jt)->id() << " is "
                   << Cut::distance_between_points(*jt, *it) << std::endl;
       }
     }

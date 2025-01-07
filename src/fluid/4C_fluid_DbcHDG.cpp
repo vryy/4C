@@ -179,7 +179,7 @@ void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
   // and first existent system vector to apply DBC to
   unsigned deg = 0;  // highest degree of requested time derivative
   std::shared_ptr<Core::LinAlg::Vector<double>> systemvectoraux =
-      nullptr;  // auxiliar system vector
+      nullptr;  // auxiliary system vector
   if (systemvectors[0] != nullptr)
   {
     deg = 0;
@@ -272,7 +272,7 @@ void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
             // get discretization type
             const Core::FE::CellType distype = ele->shape();
 
-            // evaluate pressure average     //TODO als make it valid for every discretization type
+            // evaluate pressure average     //TODO also make it valid for every discretization type
             Core::LinAlg::SerialDenseVector elevec = Core::LinAlg::SerialDenseVector(1);
             if (distype == Core::FE::CellType::quad4)
               Discret::Elements::FluidEleCalcHDG<Core::FE::CellType::quad4>::instance()

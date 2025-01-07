@@ -2,7 +2,7 @@
 PROBLEMTYPE                      Particle
 RANDSEED                        1
 --------------------------------------------------------------------------IO
-STDOUTEVRY                      100
+STDOUTEVERY                      100
 VERBOSITY                       standard
 ------------------------------------------------------------BINNING STRATEGY
 BIN_SIZE_LOWER_BOUND            0.1
@@ -12,8 +12,8 @@ WRITEBINS                       none
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYPE                      VelocityVerlet
 INTERACTION                     None
-RESULTSEVRY                     10
-RESTARTEVRY                     100
+RESULTSEVERY                     10
+RESTARTEVERY                     100
 WRITE_GHOSTED_PARTICLES         no
 TIMESTEP                        1e-3
 NUMSTEP                         1000

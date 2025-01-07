@@ -35,7 +35,7 @@ MAXTIME                         1000
 NONLINITER                      Newton
 NUMSTASTEPS                     1
 NUMSTEP                         5
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 STARTFUNCNO                     -1
 THETA                           1.00
 TIMEINTEGR                      One_Step_Theta

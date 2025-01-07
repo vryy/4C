@@ -31,7 +31,7 @@ namespace Mat
     //! dependent term
     //!
     //! <h3>Input line</h3>
-    //! MAT 1 MAT_Struct_ThrStVenantK YOUNG 400 NUE 0.3 DENS 1 THEXPANS 1 INITTEMP 20
+    //! MAT 1 MAT_Struct_ThermoStVenantK YOUNG 400 NUE 0.3 DENS 1 THEXPANS 1 INITTEMP 20
     class ThermoStVenantKirchhoff : public Core::Mat::PAR::Parameter
     {
      public:

@@ -214,7 +214,7 @@ namespace Solid
 
     /*! \brief Apply the DBC to the Jacobian in the local coordinate system
      *
-     *  \note This does not rotate the resutl back to the global coordinate system.
+     *  \note This does not rotate the result back to the global coordinate system.
      *
      *  \param[in/out] A Jacobian matrix
      */

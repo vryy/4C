@@ -212,20 +212,20 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   //----------------------------------------------------------- THIRD LINE
 
   // compute replacement for block sn      - (T * D^(-1) * A_sn)
-  std::shared_ptr<Core::LinAlg::SparseMatrix> Asn_mod_interm =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Asn_mod_intermediate =
       matrix_multiply(*d_inv_, false, sysmatnew->matrix(2, 0), false, false, false, true);
   std::shared_ptr<Core::LinAlg::SparseMatrix> Asn_mod =
-      matrix_multiply(*T, false, *Asn_mod_interm, false, false, false, true);
+      matrix_multiply(*T, false, *Asn_mod_intermediate, false, false, false, true);
 
   // Replace sn block with (negative) modification block
   sysmatnew->matrix(2, 0).un_complete();
   sysmatnew->matrix(2, 0).add(*Asn_mod, false, -1.0, 0.0);
 
   // compute replacement for block sm      - (T * D^(-1) * A_sm)   +  N_m
-  std::shared_ptr<Core::LinAlg::SparseMatrix> Asm_mod_interm =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Asm_mod_intermediate =
       matrix_multiply(*d_inv_, false, sysmatnew->matrix(2, 1), false, false, false, true);
   std::shared_ptr<Core::LinAlg::SparseMatrix> Asm_mod =
-      matrix_multiply(*T, false, *Asm_mod_interm, false, false, false, true);
+      matrix_multiply(*T, false, *Asm_mod_intermediate, false, false, false, true);
 
   // Replace sm block with (negative) modification block
   sysmatnew->matrix(2, 1).un_complete();
@@ -233,10 +233,10 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   sysmatnew->matrix(2, 1).add(*N_m, false, 1.0, 1.0);
 
   // compute replacement for block ss      (- T * D^(-1) *A_ss)   +  H  +  N_s
-  std::shared_ptr<Core::LinAlg::SparseMatrix> Ass_mod_interm =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> Ass_mod_intermediate =
       matrix_multiply(*d_inv_, false, sysmatnew->matrix(2, 2), false, false, false, true);
   std::shared_ptr<Core::LinAlg::SparseMatrix> Ass_mod =
-      matrix_multiply(*T, false, *Ass_mod_interm, false, false, false, true);
+      matrix_multiply(*T, false, *Ass_mod_intermediate, false, false, false, true);
 
   // Replace ss block with (negative) modification block
   sysmatnew->matrix(2, 2).un_complete();
@@ -274,10 +274,10 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   residual->Update(-1.0, rs_delete, 1.0);
 
   // r_s: add - T*D^(-1)*r_s
-  Core::LinAlg::Vector<double> rs_mod_interm(*gsdofrowmap_, true);
-  d_inv_->multiply(false, *rs_, rs_mod_interm);
+  Core::LinAlg::Vector<double> rs_mod_intermediate(*gsdofrowmap_, true);
+  d_inv_->multiply(false, *rs_, rs_mod_intermediate);
   Core::LinAlg::Vector<double> rs_mod(*gsdofrowmap_, true);
-  T->multiply(false, rs_mod_interm, rs_mod);
+  T->multiply(false, rs_mod_intermediate, rs_mod);
 
   // export and subtract rs_mod from residual
   Core::LinAlg::Vector<double> rs_modexp(*dofrowmap_);

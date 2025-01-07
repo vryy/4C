@@ -264,7 +264,7 @@ namespace Core::IO
     */
     void write_double(const std::string name, const double value);
 
-    //! write a result integer to constrol file
+    //! write a result integer to control file
     /*!
       There will be an entry in the current result step in the control
       file that points to this vector

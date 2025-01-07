@@ -95,7 +95,7 @@ namespace Adapter
     void print_header();
 
     /// return printscreen_
-    int print_screen_evry() { return printscreen_; }
+    int print_screen_every() { return printscreen_; }
 
    private:
     /// communication (mainly for screen output)

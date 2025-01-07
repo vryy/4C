@@ -1532,7 +1532,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
         if (n_dim() == 3) jumpteta = cnode->fri_data().jump_var()[1];
       }
 
-      // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+      // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
       std::vector<double> sum1(n_dim() - 1, 0);
       sum1[0] = ztxi + ct * jumptxi;
       if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
@@ -1552,7 +1552,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
       refCteta[i] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
     }
     else
-      FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
+      FOUR_C_THROW("Friction law is neither Tresca nor Coulomb");
 
     refCtxi[i] =
         euclidean * ztxi - (frcoeff * (znor - cn * cnode->data().getg())) * (ztxi + ct * jumptxi);
@@ -1662,7 +1662,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
           if (n_dim() == 3) jumpteta = kcnode->fri_data().jump_var()[1];
         }
 
-        // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+        // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
         std::vector<double> sum1(n_dim() - 1, 0);
         sum1[0] = ztxi + ct * jumptxi;
         if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
@@ -1682,7 +1682,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
+        FOUR_C_THROW("Friction law is neither Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->data().getg())) * (ztxi + ct * jumptxi);
@@ -1898,7 +1898,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
           if (n_dim() == 3) jumpteta = kcnode->fri_data().jump_var()[1];
         }
 
-        // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+        // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
         std::vector<double> sum1(n_dim() - 1, 0);
         sum1[0] = ztxi + ct * jumptxi;
         if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
@@ -1919,7 +1919,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
+        FOUR_C_THROW("Friction law is neither Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->data().getg())) * (ztxi + ct * jumptxi);
@@ -2137,7 +2137,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
           if (n_dim() == 3) jumpteta = kcnode->fri_data().jump_var()[1];
         }
 
-        // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+        // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
         std::vector<double> sum1(n_dim() - 1, 0);
         sum1[0] = ztxi + ct * jumptxi;
         if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
@@ -2158,7 +2158,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
+        FOUR_C_THROW("Friction law is neither Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->data().getg())) * (ztxi + ct * jumptxi);
@@ -2365,7 +2365,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
           if (n_dim() == 3) jumpteta = kcnode->fri_data().jump_var()[1];
         }
 
-        // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+        // evaluate euclidean norm ||vec(zt)+ct*vec(jump)||
         std::vector<double> sum1(n_dim() - 1, 0);
         sum1[0] = ztxi + ct * jumptxi;
         if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
@@ -2386,7 +2386,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
+        FOUR_C_THROW("Friction law is neither Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->data().getg())) * (ztxi + ct * jumptxi);

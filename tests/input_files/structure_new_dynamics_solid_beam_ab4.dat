@@ -27,8 +27,8 @@ INT_STRATEGY                     Standard
 DYNAMICTYPE                       AdamsBashforth4
 PREDICT                          ConstDis
 LUMPMASS                         Yes
-RESULTSEVRY                      100
-RESTARTEVRY                      100
+RESULTSEVERY                      100
+RESTARTEVERY                      100
 TIMESTEP                         0.01
 NUMSTEP                          100
 TIMEINIT                         0.0

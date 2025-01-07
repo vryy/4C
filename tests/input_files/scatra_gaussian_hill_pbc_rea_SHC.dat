@@ -23,8 +23,8 @@ NUMTHERMDIS                     0
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      BDF2
-RESULTSEVRY                           1
-RESTARTEVRY                     10
+RESULTSEVERY                           1
+RESTARTEVERY                     10
 NUMSTEP                         5
 MAXTIME                         1.0
 TIMESTEP                        0.01

@@ -22,7 +22,7 @@ DIM           3
 -------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
-STDOUTEVRY                      0
+STDOUTEVERY                      0
 STRUCT_STRESS                   Cauchy
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYPE                      OneStepTheta
@@ -52,7 +52,7 @@ NUMSTEP                         10
 TIMESTEP                        1.0
 COUPALGO                        ssi_Monolithic
 SCATRATIMINTTYPE                Elch
-RESTARTEVRY                     2
+RESTARTEVERY                     2
 FIELDCOUPLING                   volumeboundary_matching
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1

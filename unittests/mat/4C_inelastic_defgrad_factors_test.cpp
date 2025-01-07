@@ -268,7 +268,7 @@ namespace
       // setup pointer to InelasticDefgradLinScalarIso object
       lin_temp_iso_ = std::make_shared<Mat::InelasticDefgradLinTempIso>(params_lin_temp_iso_.get());
 
-      // parameter list for pre_evaluate call with gp temerature
+      // parameter list for pre_evaluate call with gp temperature
       Teuchos::ParameterList params_temp{};
       params_temp.set<double>("temperature", 280.0);
       // call pre_evaluate to set the temperature
@@ -1139,7 +1139,7 @@ namespace
     // substepping)
     std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast>
         transv_isotrop_elast_viscoplast_;
-    // pointer to InelasticDefgradTransvIsotropElastViscoplast (isotropic, logaritmic substepping)
+    // pointer to InelasticDefgradTransvIsotropElastViscoplast (isotropic, logarithmic substepping)
     std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> isotrop_elast_viscoplast_;
     // pointer to parameters of InelasticDefgradTransvIsotropElastViscoplast (transversely
     // isotropic, logarithmic substepping)

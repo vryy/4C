@@ -123,7 +123,7 @@ NOX::Nln::LinSystem::LinearSystemType NOX::Nln::Aux::get_linear_system_type(
       {
         return NOX::Nln::LinSystem::linear_system_structure_cardiovascular0d;
       }
-      // --- Structure/Lagrange|Penalty Constaint case (+ spring dashpot)
+      // --- Structure/Lagrange|Penalty Constraint case (+ spring dashpot)
       else if (linsolvers.find(NOX::Nln::sol_structure) != ci_end and
                linsolvers.find(NOX::Nln::sol_lag_pen_constraint) != ci_end)
       {

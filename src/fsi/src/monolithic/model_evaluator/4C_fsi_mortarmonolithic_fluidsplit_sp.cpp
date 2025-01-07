@@ -234,7 +234,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system()
     // Switch fluid to interface split block matrix
     fluid_field()->use_block_matrix(true);
 
-    // build ale system matrix in splitted system
+    // build ale system matrix in split system
     ale_field()->create_system_matrix(ale_field()->interface());
 
     aleresidual_ =
@@ -629,46 +629,46 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_lambda(Core::LinAlg::
   lag_mult_step_increment.Update(1.0, *lag_mult_, -1.0, *lag_mult_old_, 0.0);
 
   // helper variables
-  Core::LinAlg::Vector<double> lag_mult_old_rhs_struc_interf(mortar_m_transf->domain_map(), true);
+  Core::LinAlg::Vector<double> lag_mult_old_rhs_struct_interf(mortar_m_transf->domain_map(), true);
   Core::LinAlg::Vector<double> lag_mult_old_rhs_fluid_interf(mortar_d_transf->domain_map(), true);
 
-  mortar_m_transf->multiply(true, *lag_mult_old_, lag_mult_old_rhs_struc_interf);
+  mortar_m_transf->multiply(true, *lag_mult_old_, lag_mult_old_rhs_struct_interf);
   mortar_d_transf->multiply(true, *lag_mult_old_, lag_mult_old_rhs_fluid_interf);
 
-  std::shared_ptr<Core::LinAlg::Vector<double>> lag_mult_old_rhs_struc_interf_full =
-      structure_field()->interface()->insert_fsi_cond_vector(lag_mult_old_rhs_struc_interf);
+  std::shared_ptr<Core::LinAlg::Vector<double>> lag_mult_old_rhs_struct_interf_full =
+      structure_field()->interface()->insert_fsi_cond_vector(lag_mult_old_rhs_struct_interf);
   std::shared_ptr<Core::LinAlg::Vector<double>> lag_mult_old_rhs_fluid_interf_full =
       fluid_field()->interface()->insert_fsi_cond_vector(lag_mult_old_rhs_fluid_interf);
 
   lag_mult_old_rhs_fluid_interf_full->Scale(-1.0 / fluid_res_scale);
 
   // add lagrange multiplier
-  extractor().add_vector(*lag_mult_old_rhs_struc_interf_full, 0, f);
+  extractor().add_vector(*lag_mult_old_rhs_struct_interf_full, 0, f);
   extractor().add_vector(*lag_mult_old_rhs_fluid_interf_full, 1, f);
 
   // helper variables
-  Core::LinAlg::Vector<double> lag_mult_step_increment_rhs_struc_interf(
+  Core::LinAlg::Vector<double> lag_mult_step_increment_rhs_struct_interf(
       mortar_m_transf->domain_map(), true);
   Core::LinAlg::Vector<double> lag_mult_step_increment_rhs_fluid_interf(
       mortar_d_transf->domain_map(), true);
 
   mortar_m_transf->multiply(
-      true, lag_mult_step_increment, lag_mult_step_increment_rhs_struc_interf);
+      true, lag_mult_step_increment, lag_mult_step_increment_rhs_struct_interf);
   mortar_d_transf->multiply(
       true, lag_mult_step_increment, lag_mult_step_increment_rhs_fluid_interf);
 
-  std::shared_ptr<Core::LinAlg::Vector<double>> lag_mult_step_increment_rhs_struc_interf_full =
+  std::shared_ptr<Core::LinAlg::Vector<double>> lag_mult_step_increment_rhs_struct_interf_full =
       structure_field()->interface()->insert_fsi_cond_vector(
-          lag_mult_step_increment_rhs_struc_interf);
+          lag_mult_step_increment_rhs_struct_interf);
   std::shared_ptr<Core::LinAlg::Vector<double>> lag_mult_step_increment_rhs_fluid_interf_full =
       fluid_field()->interface()->insert_fsi_cond_vector(lag_mult_step_increment_rhs_fluid_interf);
 
-  lag_mult_step_increment_rhs_struc_interf_full->Scale(1.0 * (1. - solid_time_int_param));
+  lag_mult_step_increment_rhs_struct_interf_full->Scale(1.0 * (1. - solid_time_int_param));
   lag_mult_step_increment_rhs_fluid_interf_full->Scale(
       -1.0 * (1. - fluid_time_int_param) / fluid_res_scale);
 
   // add lagrange multiplier
-  extractor().add_vector(*lag_mult_step_increment_rhs_struc_interf_full, 0, f);
+  extractor().add_vector(*lag_mult_step_increment_rhs_struct_interf_full, 0, f);
   extractor().add_vector(*lag_mult_step_increment_rhs_fluid_interf_full, 1, f);
 }
 
@@ -928,7 +928,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
     Core::LinAlg::SparseMatrix& fluid_mesh_inner_interf = fluid_shape_deriv->matrix(0, 1);
     Core::LinAlg::SparseMatrix& fluid_mesh_interf_interf = fluid_shape_deriv->matrix(1, 1);
 
-    // Adressing contribution to block (3,4)
+    // Addressing contribution to block (3,4)
     Core::LinAlg::SparseMatrix aux_fluid_mesh_inner_interf(
         fluid_mesh_inner_interf.row_map(), 81, false);
     aux_fluid_mesh_inner_interf.add(fluid_mesh_inner_interf, false, 1.0, 0.0);
@@ -936,12 +936,12 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
         fluidblock->domain_map(), aux_fluid_mesh_inner_interf.range_map(), true);
     aux_fluidblock.add(aux_fluid_mesh_inner_interf, false, 1. / fluid_timescale, 1.0);
 
-    // Adressing contribution to block (3,5)
+    // Addressing contribution to block (3,5)
     (*fluid_mesh_inner_inner_transform_)(fluid_shape_deriv->full_row_map(),
         fluid_shape_deriv->full_col_map(), fluid_mesh_inner_inner, 1.,
         Coupling::Adapter::CouplingSlaveConverter(coup_fluid_ale), mat.matrix(1, 2), false);
 
-    // Adressing contribution to block (4,4)
+    // Addressing contribution to block (4,4)
     Core::LinAlg::SparseMatrix aux_fluid_mesh_interf_interf(
         fluid_mesh_interf_interf.row_map(), 81, false);
     aux_fluid_mesh_interf_interf.add(fluid_mesh_interf_interf, false, 1.0, 0.0);
@@ -949,7 +949,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
         fluidblock->domain_map(), aux_fluid_mesh_interf_interf.range_map(), true);
     aux_fluidblock.add(aux_fluid_mesh_interf_interf, false, 1. / fluid_timescale, 1.0);
 
-    // Adressing contribution to block (4,5)
+    // Addressing contribution to block (4,5)
     (*fluid_mesh_inner_inner_transform_)(fluid_shape_deriv->full_row_map(),
         fluid_shape_deriv->full_col_map(), fluid_mesh_interf_inner, 1.,
         Coupling::Adapter::CouplingMasterConverter(coup_fluid_ale), mat.matrix(1, 2), false);
@@ -1282,8 +1282,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::output_lambda()
   copy.ReplaceMap(*fluid_field()->interface()->fsi_cond_map());
   std::shared_ptr<Core::LinAlg::Vector<double>> lambdafull =
       fluid_field()->interface()->insert_fsi_cond_vector(copy);
-  const int uprestart = timeparams_.get<int>("RESTARTEVRY");
-  const int upres = timeparams_.get<int>("RESULTSEVRY");
+  const int uprestart = timeparams_.get<int>("RESTARTEVERY");
+  const int upres = timeparams_.get<int>("RESULTSEVERY");
   if ((uprestart != 0 and fluid_field()->step() % uprestart == 0) or
       (upres != 0 and fluid_field()->step() % upres == 0))
     fluid_field()->disc_writer()->write_vector("fsilambda", lambdafull);

@@ -24,11 +24,11 @@ namespace CONTACT
    *
    *  \author  hiermeier
    *  \date 05/16 */
-  class AbstractStratDataContainer : public Mortar::StratDataContainer
+  class AbstractStrategyDataContainer : public Mortar::StrategyDataContainer
   {
    public:
     //! constructor
-    AbstractStratDataContainer();
+    AbstractStrategyDataContainer();
 
     //! @name Accessors
     //!@{
@@ -309,7 +309,7 @@ namespace CONTACT
     std::shared_ptr<Core::LinAlg::Vector<double>>& tang_rhs_ptr() { return tangrhs_; };
     std::shared_ptr<const Core::LinAlg::Vector<double>> tang_rhs_ptr() const { return tangrhs_; };
 
-    //! return gloabl inactive rhs vector
+    //! return global inactive rhs vector
     std::shared_ptr<Core::LinAlg::Vector<double>>& inactive_rhs_ptr() { return inactiverhs_; };
     std::shared_ptr<const Core::LinAlg::Vector<double>> inactive_rhs_ptr() const
     {
@@ -603,7 +603,7 @@ namespace CONTACT
     //! @name Parallel redistribution
     //!@{
 
-    /*! Max-to-min ratio of evaluation time across all processes for currnet time step \f$t_{n+1}\f$
+    /*! Max-to-min ratio of evaluation time across all processes for current time step \f$t_{n+1}\f$
      */
     std::vector<double> unbalance_evaluation_time_;
 
@@ -652,7 +652,7 @@ namespace CONTACT
     //! global tangential right-hand side vector (formulation with incremental #z_)
     std::shared_ptr<Core::LinAlg::Vector<double>> tangrhs_;
 
-    /*! \brief Gloabl inactive right-hand side vector
+    /*! \brief Global inactive right-hand side vector
      *
      * This is used for the formulation with incremental #z_ and saddle point system.
      */
@@ -773,7 +773,7 @@ namespace CONTACT
     //! direction in which the contact constraints are formulated
     Inpar::CONTACT::ConstraintDirection constr_direction_;
 
-  };  // class AbstractStratDataContainer
+  };  // class AbstractStrategyDataContainer
 
 
 }  // namespace CONTACT

@@ -122,7 +122,7 @@ void Mat::ThermoPlasticHyperElast::pack(Core::Communication::PackBuffer& data) c
     add_to_pack(data, bebarlast_->at(var));
     add_to_pack(data, accplstrainlast_->at(var));
 
-    // variables corresponding to temperture-dependency
+    // variables corresponding to temperature-dependency
     add_to_pack(data, mechdiss_->at(var));
     add_to_pack(data, mechdiss_k_tt_->at(var));
     add_to_pack(data, mechdiss_k_td_->at(var));
@@ -169,7 +169,7 @@ void Mat::ThermoPlasticHyperElast::unpack(Core::Communication::UnpackBuffer& buf
   int histsize;
   extract_from_pack(buffer, histsize);
 
-  // if system is not yet initialised, the history vectors have to be intialized
+  // if system is not yet initialised, the history vectors have to be initialized
   if (histsize == 0) isinit_ = false;
 
   defgrdlast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 3>>>();
@@ -808,7 +808,7 @@ void Mat::ThermoPlasticHyperElast::evaluate(const Core::LinAlg::Matrix<3, 3>* de
       //                         + Dgamma . dsigma_y0_temp/dT_{n+1} ]
 
       // with sigma_y0_temp = sigma_y0 . (1.0 - omega_0 . (scalartemp - inittemp) )
-      // calculate the derivativ of sigma_y0(T_{n+1}) w.r.t. T_{n+1}
+      // calculate the derivative of sigma_y0(T_{n+1}) w.r.t. T_{n+1}
       // derivative of mechanical Dissipation w.r.t. temperatures
       mechdiss_k_tt_->at(gp) =
           sqrt(2.0 / 3.0) * (dDgamma_dT * sigma_y0_temp + Dgamma * dsigma_y0_temp_dT);
@@ -998,7 +998,7 @@ void Mat::ThermoPlasticHyperElast::setup_cmat_elasto_plastic(
     int gp        // current Gauss point
 ) const
 {
-  // ---------------------------------------------- intialise material tangents
+  // ---------------------------------------------- initialise material tangents
   Core::LinAlg::Matrix<6, 6> Cmat(true);
   Core::LinAlg::Matrix<6, 6> Cbar_trialMaterial(true);
 
@@ -1216,7 +1216,7 @@ void Mat::ThermoPlasticHyperElast::evaluate(const Core::LinAlg::Matrix<1, 1>& Nt
   std::cout << "Evaluate Material: thermal stress stresstemp\n" << stresstemp << std::endl;
 #endif  // DEBUGMATERIAL
 
-}  // THREvaluate()
+}  // THERMOEvaluate()
 
 /*----------------------------------------------------------------------*
  | computes temperature-dependent isotropic                  dano 09/13 |

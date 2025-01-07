@@ -104,7 +104,7 @@ void ScaTra::TimIntGenAlpha::setup()
   {
     if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") == "isotropic")
     {
-      homisoturb_forcing_ = std::make_shared<ScaTra::HomIsoTurbScalarForcing>(this);
+      homisoturb_forcing_ = std::make_shared<ScaTra::HomoIsoTurbScalarForcing>(this);
       // initialize forcing algorithm
       homisoturb_forcing_->set_initial_spectrum(
           Teuchos::getIntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
@@ -241,7 +241,7 @@ void ScaTra::TimIntGenAlpha::avm3_separation()
   // AVM3 separation
   Sep_->multiply(false, *phiaf_, *fsphiaf_);
 
-  // set fine-scale velocity for parallel nigthly tests
+  // set fine-scale velocity for parallel nightly tests
   // separation matrix depends on the number of proc here
   if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales and
       extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES").get<bool>("SET_FINE_SCALE_VEL"))

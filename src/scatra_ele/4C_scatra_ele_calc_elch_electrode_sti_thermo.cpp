@@ -44,7 +44,7 @@ void Discret::Elements::ScaTraEleCalcElchElectrodeSTIThermo<
   // call base class routine to extract scatra-related quantities
   myelch::extract_element_and_node_values(ele, params, discretization, la);
 
-  // call base class routine to extract thermo-related quantitites
+  // call base class routine to extract thermo-related quantities
   mythermo::extract_element_and_node_values(ele, params, discretization, la);
 }
 

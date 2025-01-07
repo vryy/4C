@@ -190,7 +190,7 @@ namespace CONTACT
 
     /*!
     \brief Change the sign of the normal vector: This has to be done at the end of a time step when
-    the remainig penetration is larger that the sum of the beam radii (R1+R2). Otherwise, the beams
+    the remaining penetration is larger that the sum of the beam radii (R1+R2). Otherwise, the beams
     could cross in the next time step when the new gap function definition (ngf_=true) for slender
     beams is applied!
     */

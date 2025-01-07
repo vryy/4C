@@ -73,7 +73,7 @@ namespace Inpar
 
     enum SwitchingStrategy
     {
-      switch_preasymptotic /**< switch between two stratgies.
+      switch_preasymptotic /**< switch between two strategies.
                             *   One for the pre- and one for the asymptotic
                             *   solution phase */
     };
@@ -136,14 +136,14 @@ namespace Inpar
       NitWgt_slave,
       NitWgt_master,
       NitWgt_harmonic,
-      NitWgt_phyiscal
+      NitWgt_physical
     };
 
     /// Constraint enfrocement method method for thermal conduction and frictional dissipation
     enum NitscheThermoMethod
     {
-      NitThr_substitution,
-      NitThr_nitsche
+      NitThermo_substitution,
+      NitThermo_nitsche
     };
 
     /// Assemble strategy for the augmented Lagrangian framework

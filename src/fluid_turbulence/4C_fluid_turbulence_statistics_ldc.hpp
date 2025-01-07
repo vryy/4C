@@ -143,7 +143,7 @@ namespace FLD
     //! name of statistics output file, despite the ending
     const std::string statistics_outfilename_;
 
-    //! toogle vectors: sums are computed by scalarproducts
+    //! toggle vectors: sums are computed by scalarproducts
     std::shared_ptr<Core::LinAlg::Vector<double>> toggleu_;
     std::shared_ptr<Core::LinAlg::Vector<double>> togglev_;
     std::shared_ptr<Core::LinAlg::Vector<double>> togglew_;

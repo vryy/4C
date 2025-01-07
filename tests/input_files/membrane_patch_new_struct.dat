@@ -14,9 +14,9 @@ STRUCT_OPTIONAL_QUANTITY        membranethickness
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      OneStepTheta
-RESULTSEVRY                     2
-RESEVRYERGY                     2
-RESTARTEVRY                     5
+RESULTSEVERY                     2
+RESEVERYERGY                     2
+RESTARTEVERY                     5
 TIMESTEP                        0.1
 NUMSTEP                         10
 MAXTIME                         1.0

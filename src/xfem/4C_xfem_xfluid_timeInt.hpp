@@ -151,7 +151,7 @@ namespace XFEM
     void find_surrounding_ghost_dofsets(
         std::map<int, std::set<int>>&
             ghostDofsets,  /// surrounding ghost dofsets to be filled, map of ghost nodes and
-                           /// correponding ghost nds index w.r.t given std nodal dofset
+                           /// corresponding ghost nds index w.r.t given std nodal dofset
         const Core::Nodes::Node* node,  /// node
         const int nds_new  /// dofset of node used for finding the surrounding ghost dofs
     );
@@ -223,7 +223,7 @@ namespace XFEM
     bool special_check_interface_tips_space_time(
         bool& changed_side,  /// did the node change the side ?
         Core::Elements::Element* side, const int coup_sid,
-        const Core::LinAlg::Matrix<3, 1>& n_coord  /// node coodinates
+        const Core::LinAlg::Matrix<3, 1>& n_coord  /// node coordinates
     );
 
     /// check if the node is within the space time side
@@ -231,7 +231,7 @@ namespace XFEM
         Core::FE::CellType space_time_distype>
     bool within_space_time_side(bool& within_space_time_side,  /// within the space time side
         Core::Elements::Element* side, const int coup_sid,
-        const Core::LinAlg::Matrix<3, 1>& n_coord  /// node coodinates
+        const Core::LinAlg::Matrix<3, 1>& n_coord  /// node coordinates
     );
 
     /// check the volume of the space time side, distorted space-time side ?

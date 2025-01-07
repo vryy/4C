@@ -448,7 +448,7 @@ int Discret::Elements::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
       // Clear matrix for shape functions
       N_i.clear();
 
-// evaluation of shape funcitons at Gauss points
+// evaluation of shape functions at Gauss points
 #if (NODALDOFS == 2)
       // Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
       Core::FE::shape_function_hermite_1d(N_i, xi, jacobi_ * 2.0, distype);
@@ -465,7 +465,7 @@ int Discret::Elements::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
       // position vector at the gauss point at reference configuration needed for function
       // evaluation
       std::vector<double> X_ref(3, 0.0);
-      // calculate coordinates of corresponding Guass point in reference configuration
+      // calculate coordinates of corresponding Gauss point in reference configuration
       for (int node = 0; node < 2; node++)
       {
 #if (NODALDOFS == 2)
@@ -538,7 +538,7 @@ int Discret::Elements::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
       // Clear matrix for shape functions
       N_i.clear();
 
-      // evaluation of shape funcitons at Gauss points
+      // evaluation of shape functions at Gauss points
 #if (NODALDOFS == 2)
       // Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
       Core::FE::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
@@ -931,7 +931,7 @@ void Discret::Elements::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
         R_tension.scale(EA * wgt);
 #else
         // attention: in epsilon_ANS and lin_epsilon_ANS the corresponding jacobi factors are
-        // allready considered, all the other jacobi factors due to differentiation and integration
+        // already considered, all the other jacobi factors due to differentiation and integration
         // cancel out!!!
         R_tension_ANS.update(epsilon_ANS / jacobi_, NTildex, 1.0);
         R_tension_ANS.scale(EA * wgt);
@@ -1555,7 +1555,7 @@ void Discret::Elements::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 #else
 #ifndef CONSISTENTANSBEAM3EB
         // attention: in epsilon_ANS and lin_epsilon_ANS the corresponding jacobi factors are
-        // allready considered, all the other jacobi factors due to differentiation and integration
+        // already considered, all the other jacobi factors due to differentiation and integration
         // cancel out!!!
         for (int i = 0; i < nnode * dofpn; i++)
           for (int j = 0; j < nnode * dofpn; j++)
@@ -1659,7 +1659,7 @@ void Discret::Elements::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 #ifdef ANS_BEAM3EB
 #ifndef CONSISTENTANSBEAM3EB
         // attention: in epsilon_ANS and lin_epsilon_ANS the corresponding jacobi factors are
-        // allready considered, all the other jacobi factors due to differentiation and integration
+        // already considered, all the other jacobi factors due to differentiation and integration
         // cancel out!!!
         Res_tension_ANS.update(EA * wgt * epsilon_ANS / std::pow(rxrx, 0.5), NxTrx, 0.0);
 #else
@@ -2256,7 +2256,7 @@ double Discret::Elements::Beam3eb::get_axial_strain(
 
 /*----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
-// explicit template instantations
+// explicit template instantiations
 template void Discret::Elements::Beam3eb::evaluate_ptc<2>(
     Teuchos::ParameterList&, Core::LinAlg::SerialDenseMatrix&);
 

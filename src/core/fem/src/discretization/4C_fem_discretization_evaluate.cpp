@@ -677,6 +677,6 @@ void Core::FE::Discretization::evaluate_initial_field(
 {
   Core::FE::Utils::evaluate_initial_field(
       function_manager, *this, fieldstring, fieldvector, locids);
-}  // Core::FE::Discretization::EvaluateIntialField
+}  // Core::FE::Discretization::EvaluateInitialField
 
 FOUR_C_NAMESPACE_CLOSE

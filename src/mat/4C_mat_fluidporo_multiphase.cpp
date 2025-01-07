@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- | constructor of paramter class                            vuong 08/16 |
+ | constructor of parameter class                            vuong 08/16 |
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(const Core::Mat::PAR::Parameter::Data& matdata)
     : MatList(matdata),

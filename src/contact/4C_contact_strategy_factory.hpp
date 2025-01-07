@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  class AbstractStratDataContainer;
+  class AbstractStrategyDataContainer;
   class AbstractStrategy;
   class Element;
   class Interface;
@@ -98,7 +98,8 @@ namespace CONTACT
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces,
           const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map, const int dim,
-          const MPI_Comm& comm_ptr, std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr,
+          const MPI_Comm& comm_ptr,
+          std::shared_ptr<CONTACT::AbstractStrategyDataContainer> data_ptr,
           CONTACT::ParamsInterface* cparams_interface = nullptr);
 
       //! Create the desired search tree object

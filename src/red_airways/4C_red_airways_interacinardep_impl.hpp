@@ -143,7 +143,7 @@ namespace Discret
         */
       void initial(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Core::LinAlg::SerialDenseVector& n_intr_acn_l,
+          Core::LinAlg::SerialDenseVector& n_inter_acinar_l,
           std::shared_ptr<const Core::Mat::Material> material) override;
 
       /*!

@@ -59,14 +59,14 @@ namespace Mortar
    *
    *  \author  hiermeier
    *  \date 05/16 */
-  class StratDataContainer
+  class StrategyDataContainer
   {
    public:
     //! constructor
-    StratDataContainer();
+    StrategyDataContainer();
 
     //! destructor
-    virtual ~StratDataContainer() = default;
+    virtual ~StrategyDataContainer() = default;
 
     //! Return underlying problem dof row map (not only interfaces)
     std::shared_ptr<Epetra_Map>& prob_dofs_ptr() { return probdofs_; }
@@ -202,7 +202,7 @@ namespace Mortar
     \param maxdof (in): Highest dof number in global problem
 
     */
-    StrategyBase(const std::shared_ptr<Mortar::StratDataContainer>& data_ptr,
+    StrategyBase(const std::shared_ptr<Mortar::StrategyDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params, const int spatialDim, const MPI_Comm& comm,
         const double alphaf, const int maxdof);
@@ -396,7 +396,7 @@ namespace Mortar
      *
      * \author hiermeier
      * \date 05/16 */
-    Mortar::StratDataContainer& data() { return *data_ptr_; }
+    Mortar::StrategyDataContainer& data() { return *data_ptr_; }
 
    public:
     /*! return the read-only mortar data container
@@ -405,7 +405,7 @@ namespace Mortar
      *
      * \author hiermeier
      * \date 05/16 */
-    const Mortar::StratDataContainer& data() const { return *data_ptr_; }
+    const Mortar::StrategyDataContainer& data() const { return *data_ptr_; }
 
    protected:
     // don't want cctor (= operator impossible anyway for abstract class)
@@ -414,7 +414,7 @@ namespace Mortar
     /*! @name References to the data container content
      *
      * \remark Please add no new member variables to the strategy base! Use
-     *  the corresponding data container instead (--> Mortar::StratDataContainer).
+     *  the corresponding data container instead (--> Mortar::StrategyDataContainer).
      *  If you have any questions concerning this, do not hesitate and ask me.
      *                                                          hiermeier 05/16 */
     //! @{
@@ -434,7 +434,7 @@ namespace Mortar
 
    private:
     //! pointer to the data container object
-    std::shared_ptr<Mortar::StratDataContainer> data_ptr_;
+    std::shared_ptr<Mortar::StrategyDataContainer> data_ptr_;
 
   };  // class StrategyBase
 }  // namespace Mortar

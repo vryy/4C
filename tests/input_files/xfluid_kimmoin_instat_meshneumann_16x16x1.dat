@@ -30,8 +30,8 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           1
-RESTARTEVRY                     0
+RESULTSEVERY                           1
+RESTARTEVERY                     0
 NUMSTEP                         3
 NUMSTASTEPS                     1
 MAXTIME                         0.03

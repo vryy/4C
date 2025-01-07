@@ -66,7 +66,7 @@ namespace FSI
     void extract_previous_interface_solution() override;
 
     /// structure to ale mapping
-    std::shared_ptr<Core::LinAlg::Vector<double>> stucture_to_ale(
+    std::shared_ptr<Core::LinAlg::Vector<double>> structure_to_ale(
         std::shared_ptr<Core::LinAlg::Vector<double>> iv) const;
 
     /// structure to ale mapping

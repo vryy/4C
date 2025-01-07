@@ -427,7 +427,7 @@ void Solid::ModelEvaluator::Meshtying::apply_mesh_initialization(
   {
     int gid = allreduceslavemap->GID(index);
 
-    // only do someting for nodes in my column map
+    // only do something for nodes in my column map
     int ilid = node_colmap->LID(gid);
     if (ilid < 0) continue;
 

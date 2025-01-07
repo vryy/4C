@@ -279,7 +279,7 @@ void FPSI::Monolithic::setup_system()
 void FPSI::Monolithic::setup_system_fsi()
 {
   // create local FPSI MapExtractors as the MapExtractors of the single Fields are nonoverlapping
-  // and therefore not the whole FPSI Interface Map is availlable for FSI, FPSI Interface overlap!!!
+  // and therefore not the whole FPSI Interface Map is available for FSI, FPSI Interface overlap!!!
 
   // right now we use matching meshes at the interface
 
@@ -829,7 +829,7 @@ void FPSI::Monolithic::line_search(Core::LinAlg::SparseMatrix& sparse)
                 << std::setprecision(4) << pow(0.5, linesearch_counter)
                 << "   residual = " << normofrhs_ << " > " << normofrhsold_ << std::endl;
 
-      // substract the old interinc_ from all fields (undo the update)
+      // subtract the old interinc_ from all fields (undo the update)
       std::shared_ptr<Core::LinAlg::Vector<double>> sx;
       std::shared_ptr<Core::LinAlg::Vector<double>> pfx;
       std::shared_ptr<Core::LinAlg::Vector<double>> fx;
@@ -980,7 +980,7 @@ bool FPSI::Monolithic::converged()
       break;
     case Inpar::FPSI::absoluteconvergencenorm_sys_split:
       FOUR_C_THROW(
-          "Check for convergence of primary variables with type <absolut sys split> not "
+          "Check for convergence of primary variables with type <absolute sys split> not "
           "implemented yet!");
       break;
     case Inpar::FPSI::relativconvergencenorm_sys:
@@ -1021,7 +1021,7 @@ bool FPSI::Monolithic::converged()
       break;
     case Inpar::FPSI::relativconvergencenorm_sys:
       FOUR_C_THROW(
-          "Check for convergence of residual forces with type <relativ_sys> not implemented yet!");
+          "Check for convergence of residual forces with type <relative_sys> not implemented yet!");
       break;
     default:
       FOUR_C_THROW("Cannot check for convergence of residual forces for any reason :-P !");
@@ -1771,7 +1771,7 @@ void FPSI::Monolithic::fpsifd_check()
         }
       }
     }
-  }  // loop over dofs of succes check
+  }  // loop over dofs of success check
 
   if (success)
   {

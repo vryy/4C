@@ -18,9 +18,9 @@ OUTPUT_BIN                      Yes
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      GenAlpha
-RESULTSEVRY                     1
-RESTARTEVRY                     1
-RESEVRYERGY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
+RESEVERYERGY                     1
 NLNSOL                          fullnewton
 TIMESTEP                        0.01
 NUMSTEP                         1

@@ -42,7 +42,7 @@ namespace Mat
         double c_;
         /// angle between circumferential and fiber direction
         double gamma_;
-        /// initalization modus;
+        /// initialization modus;
         int init_;
         /// adapt angle during remodeling
         bool adapt_angle_;
@@ -137,9 +137,9 @@ namespace Mat
       /// Indicator for formulation
       void specify_formulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
-          bool& isomod,       ///< global indicator for isotropic splitted formulation
+          bool& isomod,       ///< global indicator for isotropic split formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
-          bool& anisomod,     ///< global indicator for anisotropic splitted formulation
+          bool& anisomod,     ///< global indicator for anisotropic split formulation
           bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
           ) override
       {

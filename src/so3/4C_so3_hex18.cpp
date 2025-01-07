@@ -542,7 +542,7 @@ int Discret::Elements::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
   {
     if ((*onoff)[checkdof] != 0)
       FOUR_C_THROW(
-          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+          "Number of Dimensions in Neumann_Evaluation is 3. Further DoFs are not considered.");
   }
 
   // (SPATIAL) FUNCTION BUSINESS
@@ -712,7 +712,7 @@ void Discret::Elements::SoHex18::nlnstiffmass(std::vector<int>& lm,  ///< locati
     // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     defgrd.multiply_tt(xcurr, N_XYZ);
 
-    // calcualte total rcg
+    // calculate total rcg
     Core::LinAlg::Matrix<3, 3> cauchygreen(false);
     cauchygreen.multiply_tn(defgrd, defgrd);
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}

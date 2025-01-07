@@ -18,8 +18,8 @@ PREDICTOR                       steady_state
 CONVCHECK                       L_2_norm
 INITIALFIELD                    field_by_function
 CONVFORM                        convective
-RESULTSEVRY                           1
-RESTARTEVRY                     50000
+RESULTSEVERY                           1
+RESTARTEVERY                     50000
 NUMSTEP                         5
 STEADYSTEP                      -1
 STARTFUNCNO                     1

@@ -39,7 +39,7 @@ namespace Cut
    * this class is an OcTree-based pool that stores all points in tree-structure
    * Each node of this tree is represented by a bounding box and a RCPPointSet (a set of pointer
    * to nodes) that lie within this bounding box, and has 8 children nodes. Pointers of nodes are
-   * contained on more levels of this tree, also the leafs of this tree is a node with the
+   * contained on more levels of this tree, also the leaves of this tree is a node with the
    * additional info IsLeaf (no children) Points between 2 or more bounding boxes are strictly
    * related to one of these boxes
    */

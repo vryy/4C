@@ -29,8 +29,8 @@ STRUCT_STRESS                   No
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      GenAlpha
-RESULTSEVRY                     1
-RESTARTEVRY                     20
+RESULTSEVERY                     1
+RESTARTEVERY                     20
 NLNSOL                          fullnewton
 TIMESTEP                        0.05
 NUMSTEP                         3

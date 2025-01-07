@@ -189,28 +189,28 @@ namespace
     {
       // read data
       int mat_id_fluid = function_lin_def.container().get_or<int>("MAT_FLUID", -1);
-      int mat_id_struc = function_lin_def.container().get_or<int>("MAT_STRUC", -1);
+      int mat_id_struct = function_lin_def.container().get_or<int>("MAT_STRUCT", -1);
 
       if (mat_id_fluid <= 0)
         FOUR_C_THROW(
             "Please give a (reasonable) 'MAT_FLUID' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
-      if (mat_id_struc <= 0)
+      if (mat_id_struct <= 0)
         FOUR_C_THROW(
-            "Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
+            "Please give a (reasonable) 'MAT_STRUCT' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
 
       // get materials
       auto fparams_fluid = get_weakly_compressible_fluid_mat_pars(mat_id_fluid);
-      auto fparams_struc = get_svk_mat_pars(mat_id_struc);
+      auto fparams_struct = get_svk_mat_pars(mat_id_struct);
 
       return std::make_shared<FLD::WeaklyCompressibleEtienneFSIFluidFunction>(
-          fparams_fluid, fparams_struc);
+          fparams_fluid, fparams_struct);
     }
     else if (function_lin_def.container().get_or(
                  "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE", false))
     {
       // read data
       int mat_id_fluid = function_lin_def.container().get_or<int>("MAT_FLUID", -1);
-      int mat_id_struc = function_lin_def.container().get_or<int>("MAT_STRUC", -1);
+      int mat_id_struct = function_lin_def.container().get_or<int>("MAT_STRUCT", -1);
 
       if (mat_id_fluid <= 0)
       {
@@ -218,26 +218,26 @@ namespace
             "Please give a (reasonable) 'MAT_FLUID' in "
             "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE");
       }
-      if (mat_id_struc <= 0)
+      if (mat_id_struct <= 0)
       {
         FOUR_C_THROW(
-            "Please give a (reasonable) 'MAT_STRUC' in "
+            "Please give a (reasonable) 'MAT_STRUCT' in "
             "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE");
       }
 
       // get materials
       auto fparams_fluid = get_weakly_compressible_fluid_mat_pars(mat_id_fluid);
-      auto fparams_struc = get_svk_mat_pars(mat_id_struc);
+      auto fparams_struct = get_svk_mat_pars(mat_id_struct);
 
       return std::make_shared<FLD::WeaklyCompressibleEtienneFSIFluidForceFunction>(
-          fparams_fluid, fparams_struc);
+          fparams_fluid, fparams_struct);
     }
     else if (function_lin_def.container().get_or(
                  "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY", false))
     {
       // read data
       int mat_id_fluid = function_lin_def.container().get_or<int>("MAT_FLUID", -1);
-      int mat_id_struc = function_lin_def.container().get_or<int>("MAT_STRUC", -1);
+      int mat_id_struct = function_lin_def.container().get_or<int>("MAT_STRUCT", -1);
 
       if (mat_id_fluid <= 0)
       {
@@ -245,19 +245,19 @@ namespace
             "Please give a (reasonable) 'MAT_FLUID' in "
             "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY");
       }
-      if (mat_id_struc <= 0)
+      if (mat_id_struct <= 0)
       {
         FOUR_C_THROW(
-            "Please give a (reasonable) 'MAT_STRUC' in "
+            "Please give a (reasonable) 'MAT_STRUCT' in "
             "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY");
       }
 
       // get materials
       auto fparams_fluid = get_weakly_compressible_fluid_mat_pars(mat_id_fluid);
-      auto fparams_struc = get_svk_mat_pars(mat_id_struc);
+      auto fparams_struct = get_svk_mat_pars(mat_id_struct);
 
       return std::make_shared<FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction>(
-          fparams_fluid, fparams_struc);
+          fparams_fluid, fparams_struct);
     }
     else if (function_lin_def.container().get_or("BELTRAMI-UP", false))
     {
@@ -389,21 +389,21 @@ void FLD::add_valid_fluid_functions(Core::Utils::FunctionManager& function_manag
   auto weaklycompressibleetiennefsifluid = Input::LineDefinition::Builder()
                                                .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID")
                                                .add_named_int("MAT_FLUID")
-                                               .add_named_int("MAT_STRUC")
+                                               .add_named_int("MAT_STRUCT")
                                                .build();
 
   auto weaklycompressibleetiennefsifluidforce =
       Input::LineDefinition::Builder()
           .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE")
           .add_named_int("MAT_FLUID")
-          .add_named_int("MAT_STRUC")
+          .add_named_int("MAT_STRUCT")
           .build();
 
   auto weaklycompressibleetiennefsifluidviscosity =
       Input::LineDefinition::Builder()
           .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY")
           .add_named_int("MAT_FLUID")
-          .add_named_int("MAT_STRUC")
+          .add_named_int("MAT_STRUCT")
           .build();
 
   auto beltramiup = Input::LineDefinition::Builder()
@@ -2338,7 +2338,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDViscosityFunction::evaluate
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneFSIFluidFunction::WeaklyCompressibleEtienneFSIFluidFunction(
     const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
-    const Mat::PAR::StVenantKirchhoff& fparams_struc)
+    const Mat::PAR::StVenantKirchhoff& fparams_struct)
     : refdensity_(0.0),
       refpressure_(0.0),
       comprcoeff_(0.0),
@@ -2351,9 +2351,9 @@ FLD::WeaklyCompressibleEtienneFSIFluidFunction::WeaklyCompressibleEtienneFSIFlui
   refpressure_ = fparams_fluid.refpressure_;
   comprcoeff_ = fparams_fluid.comprcoeff_;
 
-  youngmodulus_ = fparams_struc.youngs_;
-  poissonratio_ = fparams_struc.poissonratio_;
-  strucdensity_ = fparams_struc.density_;
+  youngmodulus_ = fparams_struct.youngs_;
+  poissonratio_ = fparams_struct.poissonratio_;
+  strucdensity_ = fparams_struct.density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -2691,7 +2691,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidFunction::evaluate_tim
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::WeaklyCompressibleEtienneFSIFluidForceFunction(
     const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
-    const Mat::PAR::StVenantKirchhoff& fparams_struc)
+    const Mat::PAR::StVenantKirchhoff& fparams_struct)
     : refdensity_(0.0),
       refpressure_(0.0),
       comprcoeff_(0.0),
@@ -2704,9 +2704,9 @@ FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::WeaklyCompressibleEtienneFS
   refpressure_ = fparams_fluid.refpressure_;
   comprcoeff_ = fparams_fluid.comprcoeff_;
 
-  youngmodulus_ = fparams_struc.youngs_;
-  poissonratio_ = fparams_struc.poissonratio_;
-  strucdensity_ = fparams_struc.density_;
+  youngmodulus_ = fparams_struct.youngs_;
+  poissonratio_ = fparams_struct.poissonratio_;
+  strucdensity_ = fparams_struct.density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -6529,7 +6529,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::evaluat
 FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::
     WeaklyCompressibleEtienneFSIFluidViscosityFunction(
         const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
-        const Mat::PAR::StVenantKirchhoff& fparams_struc)
+        const Mat::PAR::StVenantKirchhoff& fparams_struct)
     : refdensity_(0.0),
       refpressure_(0.0),
       comprcoeff_(0.0),
@@ -6542,9 +6542,9 @@ FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::
   refpressure_ = fparams_fluid.refpressure_;
   comprcoeff_ = fparams_fluid.comprcoeff_;
 
-  youngmodulus_ = fparams_struc.youngs_;
-  poissonratio_ = fparams_struc.poissonratio_;
-  strucdensity_ = fparams_struc.density_;
+  youngmodulus_ = fparams_struct.youngs_;
+  poissonratio_ = fparams_struct.poissonratio_;
+  strucdensity_ = fparams_struct.density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -7490,7 +7490,7 @@ std::vector<double> FLD::KimMoinRHS::evaluate_time_derivative(
 
     // in case of instationary: du/dt - \nu \laplacian(u) = 0
 
-    // NOTE: likely wrong given that we fall through the switch statments
+    // NOTE: likely wrong given that we fall through the switch statements
     switch (component)
     {
       case 0:

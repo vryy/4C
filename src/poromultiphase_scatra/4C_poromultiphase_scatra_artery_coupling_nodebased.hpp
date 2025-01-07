@@ -135,10 +135,10 @@ namespace PoroMultiPhaseScaTra
     //! name of the condition
     const std::string condname_;
 
-    //! dof row map splitted in (field) blocks
+    //! dof row map split in (field) blocks
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
-    //! extractors for continous field and artery field, maps(0) -> Coupled Dofs, maps(1) uncoupled
+    //! extractors for continuous field and artery field, maps(0) -> Coupled Dofs, maps(1) uncoupled
     //! Dofs
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> contfieldex_;
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> artex_;

@@ -16,8 +16,8 @@ SOLVER                          UMFPACK
 LINEAR_SOLVER                   2
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 NUMSTEP                         9000
 MAXTIME                         0.5
 TIMESTEP                        0.1
@@ -42,7 +42,7 @@ CONVTOL                         1e-08
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 101
 -------------------------------------------------------------------MATERIALS
-MAT 101 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
+MAT 101 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTURBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (0.5*tanh((t)/0.01)+0.5)*tanh((t)/0.1)*exp(-(((t)/500.0)^10))
 ----------------------------------------------------------------------FUNCT2

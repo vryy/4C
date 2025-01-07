@@ -435,7 +435,7 @@ void Utils::Cardiovascular0DManager::evaluate_force_stiff(const double time,
 
 void Utils::Cardiovascular0DManager::update_time_step()
 {
-  if (t_period_ > 0.0 and modulo_is_realtive_zero(totaltime_, t_period_, totaltime_))
+  if (t_period_ > 0.0 and modulo_is_relative_zero(totaltime_, t_period_, totaltime_))
   {
     cv0ddof_t_np_->Update(1.0, *cv0ddof_np_, 0.0);
     check_periodic();
@@ -491,7 +491,7 @@ void Utils::Cardiovascular0DManager::check_periodic()  // not yet thoroughly tes
 /*----------------------------------------------------------------------*
  | Compare if two doubles are relatively equal               Thon 08/15 |
  *----------------------------------------------------------------------*/
-bool Utils::Cardiovascular0DManager::is_realtive_equal_to(
+bool Utils::Cardiovascular0DManager::is_relative_equal_to(
     const double A, const double B, const double Ref)
 {
   return ((fabs(A - B) / Ref) < 1e-12);
@@ -500,10 +500,10 @@ bool Utils::Cardiovascular0DManager::is_realtive_equal_to(
 /*----------------------------------------------------------------------*
  | Compare if A mod B is relatively equal to zero            Thon 08/15 |
  *----------------------------------------------------------------------*/
-bool Utils::Cardiovascular0DManager::modulo_is_realtive_zero(
+bool Utils::Cardiovascular0DManager::modulo_is_relative_zero(
     const double value, const double modulo, const double Ref)
 {
-  return is_realtive_equal_to(fmod(value + modulo / 2, modulo) - modulo / 2, 0.0, Ref);
+  return is_relative_equal_to(fmod(value + modulo / 2, modulo) - modulo / 2, 0.0, Ref);
 }
 
 
@@ -984,7 +984,7 @@ int Utils::Cardiovascular0DManager::solve(Core::LinAlg::SparseMatrix& mat_struct
   {
     // reduce linear system
     std::shared_ptr<Core::LinAlg::SparseMatrix> mat_structstiff_R =
-        mor_->reduce_diagnoal(mat_structstiff);
+        mor_->reduce_diagonal(mat_structstiff);
     std::shared_ptr<Core::LinAlg::SparseMatrix> mat_dcardvasc0d_dd_R =
         mor_->reduce_off_diagonal(*mat_dcardvasc0d_dd);
     std::shared_ptr<Core::LinAlg::SparseMatrix> mat_dstruct_dcv0ddof_R =
@@ -1056,7 +1056,7 @@ int Utils::Cardiovascular0DManager::solve(Core::LinAlg::SparseMatrix& mat_struct
     Core::LinAlg::export_to(rhsstruct, *mergedrhs);
   }
 
-  // ONLY compatability
+  // ONLY compatibility
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != nullptr)
     dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(*dirichtoggle_);

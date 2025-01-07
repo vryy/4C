@@ -1431,7 +1431,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_3d(
     // double jaccell = cell->Jacobian(eta);
     double jacslave = sele.jacobian(sxi);
 
-    // evaluate Lagrange mutliplier shape functions (on slave element)
+    // evaluate Lagrange multiplier shape functions (on slave element)
     if (lmquadtype_ == Inpar::Mortar::lagmult_const)
       Utils::evaluate_shape_lm_const(shapefcn_, sxi, lmval, sele, nrow);
     else
@@ -1649,7 +1649,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane(
       }
     }
 
-    // evaluate Lagrange mutliplier shape functions (on slave element)
+    // evaluate Lagrange multiplier shape functions (on slave element)
     Utils::evaluate_shape_lm(shapefcn_, sxi, lmval, sele, nrow);
 
     // transform shape functions for bound case

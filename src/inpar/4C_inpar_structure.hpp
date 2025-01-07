@@ -172,7 +172,7 @@ namespace Inpar
       else if (name == "Multiscale")
         type = model_multiscale;
       else
-        FOUR_C_THROW("Unkonwn Inpar::Solid::ModelType with name '%s'.", name.c_str());
+        FOUR_C_THROW("Unknown Inpar::Solid::ModelType with name '%s'.", name.c_str());
 
       return type;
     };
@@ -190,7 +190,7 @@ namespace Inpar
       int_old, /**< old structure (FixMe deprecated and should be deleted, as soon as the clean-up
                 * is finished!) */
       int_standard,  ///< standard time integration (implicit or explicit)
-      int_loca       ///< path following with LOCA
+      int_local      ///< path following with LOCAL
     };
 
     /// Type of time integrator including statics
@@ -517,7 +517,7 @@ namespace Inpar
     enum class PreStress : char
     {
       none,  ///<  none
-      mulf,  ///<  Modifed Updated Lagrangian Formulation (cf. Gee et al. (2010)). Be careful, this
+      mulf,  ///<  Modified Updated Lagrangian Formulation (cf. Gee et al. (2010)). Be careful, this
              ///<  prestress algorithm does not ensure equilibrium
       material_iterative  ///< Iterative prestress algorithm on the material level
     };

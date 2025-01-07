@@ -627,7 +627,7 @@ int Discret::Elements::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
     xrefe_cross(1) = dXds1(2) * dXds2(0) - dXds1(0) * dXds2(2);
     xrefe_cross(2) = dXds1(0) * dXds2(1) - dXds1(1) * dXds2(0);
 
-    // euclidian norm of xref_cross
+    // euclidean norm of xref_cross
     double xrefe_cn = xrefe_cross.norm2();
 
     // integration factor
@@ -1435,7 +1435,7 @@ void Discret::Elements::Membrane<distype>::mem_g_lto_ea(
   // check determinant of deformation gradient
   if (defgrd.determinant() == 0)
     FOUR_C_THROW(
-        "Inverse of Deformation Gradient can not be calcualated due to a zero determinant.");
+        "Inverse of Deformation Gradient can not be calculated due to a zero determinant.");
 
   // inverse of deformation gradient
   Core::LinAlg::Matrix<noddof_, noddof_> invdefgrd(true);

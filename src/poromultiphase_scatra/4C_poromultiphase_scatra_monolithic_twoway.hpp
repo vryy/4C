@@ -199,10 +199,10 @@ namespace PoroMultiPhaseScaTra
     //! current iteration step
     int itnum_;
 
-    //! dof row map (not splitted)
+    //! dof row map (not split)
     std::shared_ptr<Epetra_Map> fullmap_;
 
-    //! dof row map splitted in (field) blocks
+    //! dof row map split in (field) blocks
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! all equilibration of global system matrix and RHS is done in here
@@ -224,7 +224,7 @@ namespace PoroMultiPhaseScaTra
     std::shared_ptr<Core::LinAlg::Vector<double>> rhs_;  //!< rhs of struct-fluid-scatra system
 
     std::shared_ptr<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
-    double solveradaptolbetter_;                    //!< tolerance to which is adpated ?
+    double solveradaptolbetter_;                    //!< tolerance to which is adapted ?
     bool solveradapttol_;                           //!< adapt solver tolerance
 
     // do we solve the structure?
@@ -351,16 +351,16 @@ namespace PoroMultiPhaseScaTra
     //! build norms for convergence check
     void build_convergence_norms() override;
 
-    //! dof row map (not splitted), only artery and porofluid
+    //! dof row map (not split), only artery and porofluid
     std::shared_ptr<Epetra_Map> fullmap_artporo_;
 
-    //! dof row map splitted in (field) blocks, only artery and porofluid
+    //! dof row map split in (field) blocks, only artery and porofluid
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_artporo_;
 
-    //! dof row map (not splitted), only artery and artery-scatra
+    //! dof row map (not split), only artery and artery-scatra
     std::shared_ptr<Epetra_Map> fullmap_artscatra_;
 
-    //! dof row map splitted in (field) blocks, only artery and artery-scatra
+    //! dof row map split in (field) blocks, only artery and artery-scatra
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_artscatra_;
 
     //! artscatra-artery coupling matrix

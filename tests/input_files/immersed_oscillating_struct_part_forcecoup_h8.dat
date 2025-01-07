@@ -35,8 +35,8 @@ TOLDISP                         1.0E-07
 TOLRES                          1.0E-07
 MAXITER                         50
 TIMESTEP                        0.01
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 NLNSOL                          fullnewton
 PREDICT                         ConstDisVelAcc
 -----------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
@@ -95,8 +95,8 @@ EVALUATION_MAT                  integration_point
 MAXTIME                         0.02
 TIMESTEP                        0.01
 NUMSTEP                         2
-RESULTSEVRY                           1
-RESTARTEVRY                     1
+RESULTSEVERY                           1
+RESTARTEVERY                     1
 COUPALGO                        iter_stagg_fixed_rel_param
 -------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 PREDICTOR                       d(n)
@@ -110,7 +110,7 @@ ITEMAX                          100
 COUPALGO                        partitioned
 SCHEME                          dirichletneumann
 DIVERCONT                       stop
-OUTPUT_EVRY_NLNITER             no
+OUTPUT_EVERY_NLNITER             no
 CORRECT_BOUNDARY_VELOCITIES     no
 FLD_SRCHRADIUS_FAC              1
 STRCT_SRCHRADIUS_FAC            0.5

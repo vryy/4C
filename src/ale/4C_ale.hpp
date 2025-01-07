@@ -303,7 +303,7 @@ namespace ALE
             nullptr,  //!< interface for creation of additional, application-specific
                       //!< Dirichlet map extractors
         std::shared_ptr<const ALE::Utils::XFluidFluidMapExtractor> xff_interface =
-            nullptr  //!< interface for creation of a Dirichlet map extractor, taylored to
+            nullptr  //!< interface for creation of a Dirichlet map extractor, tailored to
                      //!< XFFSI
         ) override;
 
@@ -417,7 +417,7 @@ namespace ALE
      *
      *  We update this variable only right after the discret_->evaluate() call.
      *
-     *  \warning DO NOT TOUCH THIS VARIBALE AT OTHER PLACES!!!
+     *  \warning DO NOT TOUCH THIS VARIABLE AT OTHER PLACES!!!
      *
      *  \author mayr.mt \date 10/2014
      */
@@ -512,7 +512,7 @@ namespace ALE
   };  // class Ale
 
   /*! \class AleLinear
-   *  \brief Ale time integrator for linear mesh motion algorihtms
+   *  \brief Ale time integrator for linear mesh motion algorithms
    *
    *  Simplification of nonlinear ALE::Ale class in case of a linear mesh motion
    *  algorithm. Only functions related to nonlinear solution techniques must be

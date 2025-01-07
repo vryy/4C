@@ -42,8 +42,8 @@ MAXTIME                         0.01
 NLNSOL                          fullnewton
 NUMSTEP                         200
 PREDICT                         ConstDisVelAcc
-RESULTSEVRY                     1
-RESTARTEVRY                     100
+RESULTSEVERY                     1
+RESTARTEVERY                     100
 TIMESTEP                        5e-5
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike

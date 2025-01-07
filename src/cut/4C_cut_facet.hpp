@@ -141,7 +141,7 @@ namespace Cut
     \brief If this Facet has a CommonEdge with another facet, based on this edge the point
     ordering is checked
     */
-    bool have_consistant_normal(Facet* f,  // f ... facetpointer to facet to compare with!
+    bool have_consistent_normal(Facet* f,  // f ... facetpointer to facet to compare with!
         bool& result);  // result == true --> normal points in the same direction!
 
     VolumeCell* neighbor(VolumeCell* cell);
@@ -215,7 +215,7 @@ namespace Cut
 
     /*!
     \brief Create new arbitrary boundary cell associated with this facet. These cells are to be
-    dealt with when moment fitting is used for boun.cell integration
+    dealt with when moment fitting is used for bound.cell integration
      */
     void new_arbitrary_cell(Mesh& mesh, VolumeCell* volume, const std::vector<Point*>& points,
         plain_boundarycell_set& bcells, const Core::FE::GaussIntegration& gp,

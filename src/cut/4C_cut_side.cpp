@@ -295,7 +295,7 @@ bool Cut::Side::is_touched_at(Side* other, Point* p)
       return false;
     case 1:
       // if touched only by one edge it can be edge-edge intersection, so we need to check current
-      // side on itersection with other side, however we test it later on
+      // side on intersection with other side, however we test it later on
       return false;
     case 2:
       // this is touching point then
@@ -411,7 +411,7 @@ bool Cut::Side::find_parallel_intersection(
           {
             Cut::Output::debug_dump_three_points_on_edge(this, &side, e, c[0], cut);
             FOUR_C_THROW(
-                "Uknown case of three intersection point lying on side's edge in side-side "
+                "Unknown case of three intersection point lying on side's edge in side-side "
                 "intersection, this case should be reported");
           }
         }
@@ -577,7 +577,7 @@ bool Cut::Side::find_ambiguous_cut_lines(
 }
 
 
-// Create paralel cut surface based on intersection with the other side, and "cut" cut_points
+// Create parallel cut surface based on intersection with the other side, and "cut" cut_points
 bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& other,
     const PointSet& cut, std::vector<Point*>* cut_point_for_lines_out)
 {
@@ -613,7 +613,7 @@ bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& 
   // (since PointPositionSet on the edge is sorted (-1,1) = (BeginPoint(), EndPoint() )
   // we add points into the cycles based on orientation of first edge begin_edge1->end_edge1
   // if end_edge1 == begin_edge2 we add point in same direction as we collected,
-  // Simiarly done for all  check and possibly reverse direction of inserting for remaining edges
+  // Similarly done for all  check and possibly reverse direction of inserting for remaining edges
   std::vector<Point*> cut_points_for_lines;
   Edge* first_edge = *edges_cycle.begin();
   Point* first_edge_start = first_edge->begin_node()->point();
@@ -692,19 +692,19 @@ bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& 
         /* */)
     {
       int counter = std::distance(cut_points_for_lines.begin(), it);
-      Point* dublicate = *it;
+      Point* duplicate = *it;
       std::pair<unique_points_map::iterator, bool> inserted =
-          unique_points.insert(std::make_pair(dublicate, counter));
-      // we found dublicate
+          unique_points.insert(std::make_pair(duplicate, counter));
+      // we found duplicate
       if (not inserted.second)
       {
 #ifdef DEBUG_PARALLEL_CUT_SURFACE
-        std::cout << "Found dublicate!" << std::endl;
-        std::cout << "Dublicate has id of" << dublicate->Id() << std::endl;
+        std::cout << "Found duplicate!" << std::endl;
+        std::cout << "Duplicate has id of" << duplicate->Id() << std::endl;
 #endif
 
         bool erased = false;
-        // get exisiting point
+        // get existing point
         const std::pair<Point*, unsigned int>& existing_el = *(inserted.first);
         bool current_erased = false;
 
@@ -734,8 +734,8 @@ bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& 
                 ++e_next;
               }
               // is cut by the last edge, and next edges is first edge of the cycle
-              // Then number of points in betwen is distance to the end of cycle from duplicate id +
-              // distance from the beginning to the existing point
+              // Then number of points in between is distance to the end of cycle from duplicate id
+              // + distance from the beginning to the existing point
               else
               {
                 n_cuts_between = (existing_el.second + (cut_points_for_lines.size() - counter - 1));
@@ -755,7 +755,7 @@ bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& 
                 // NOTE: we only handle the case, when the point in between existing is a single
                 // nodal point From what it seems we can also erase even if there is other cut point
                 // in between, but only if it touches both edges. If it touches just one edge
-                // something different shoudl be done...
+                // something different should be done...
                 if ((n_cuts_between > 0) and
                     (!((n_cuts_between == 1) and (cut_points_for_lines[next_cut] == nodal))))
                   FOUR_C_THROW(
@@ -781,7 +781,7 @@ bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& 
 #ifdef DEBUG_PARALLEL_CUT_SURFACE
                     std::cout << "Erasing points from beginning to end" << std::endl;
 #endif
-                    // we want to be pointintg to the next point after the dublicate now
+                    // we want to be pointintg to the next point after the duplicate now
                     it = cut_points_for_lines.erase(
                         cut_points_for_lines.begin() + existing_el.second, it);
                     ++it;
@@ -931,7 +931,7 @@ void Cut::Side::simplify_mixed_parallel_cut_surface(Mesh& mesh, Element* element
         if (Cut::distance_between_points(p_delete, p_keep) > 10.0 * MERGING_TOLERANCE)
           FOUR_C_THROW("Trying to merge points, that are too far");
 
-        std::cout << "WARNING: Perfoming simplification of the parallel surface geometry by "
+        std::cout << "WARNING: Performing simplification of the parallel surface geometry by "
                      "merging point "
                   << p_delete->id() << " into " << p_keep->id() << std::endl;
 
@@ -1181,10 +1181,10 @@ void Cut::Side::make_internal_facets(
 
 
         std::cout << "\n\n -- Distance between element points and cut_points --- " << std::endl;
-        for (std::vector<Point*>::const_iterator eit = element->points().begin();
-            eit != element->points().end(); ++eit)
+        for (std::vector<Point*>::const_iterator it = element->points().begin();
+            it != element->points().end(); ++it)
         {
-          Point* element_point = *eit;
+          Point* element_point = *it;
           for (std::vector<Point*>::const_iterator cit = points().begin(); cit != points().end();
               ++cit)
           {
@@ -1210,7 +1210,7 @@ void Cut::Side::make_internal_facets(
       //    FOUR_C_THROW("must have matching facet on side");
     }
   }
-  // if comon side is null, meaning cut_side does not lie on the element_side
+  // if common side is null, meaning cut_side does not lie on the element_side
   else
   {
     // insert new internal facet
@@ -1545,7 +1545,7 @@ bool Cut::Side::hole_of_facet(Facet& facet, const std::vector<Cycle>& hole)
 
 /*--------------------------------------------------------------------------*
  * replace the Node "nod" with the new node "replwith"         sudhakar 10/13
- * Modify also the edge informations correspondingly
+ * Modify also the edge information correspondingly
  *--------------------------------------------------------------------------*/
 void Cut::Side::replace_nodes(Node* nod, Node* replwith)
 {
@@ -1689,7 +1689,7 @@ bool Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::is_closer_side(
     {
       // the found intersection point on the other is the midpoint of the fist side
       // in that case both sides lie within one plane
-      // this case is catched in SameNormal afterwards
+      // this case is caught in SameNormal afterwards
 
       // std::cout << "line_xi " << line_xi << std::endl;
       // std::cout << "check if both sides lie in one plane " << std::endl;

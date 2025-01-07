@@ -34,7 +34,7 @@ void Adapter::FBIPenaltyConstraintenforcer::setup(
   if ((Core::Communication::my_mpi_rank(get_discretizations()[1]->get_comm()) == 0) &&
       (bridge()
               ->get_params()
-              ->get_visualization_ouput_params_ptr()
+              ->get_visualization_output_params_ptr()
               ->get_constraint_violation_output_flag()))
   {
     std::string s = Global::Problem::instance()->output_control_file()->file_name();
@@ -110,7 +110,7 @@ void Adapter::FBIPenaltyConstraintenforcer::print_violation(double time, int ste
 {
   if (bridge()
           ->get_params()
-          ->get_visualization_ouput_params_ptr()
+          ->get_visualization_output_params_ptr()
           ->get_constraint_violation_output_flag())
   {
     double penalty_parameter = bridge()->get_params()->get_penalty_parameter();

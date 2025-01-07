@@ -1327,7 +1327,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
       // get the processor local node
       Core::Nodes::Node* lnode = scatradiscret_->l_row_node(lnodeid);
       std::vector<int> nodedofs = scatradiscret_->dof(ndsvel, lnode);
-      // get the corresponding porcessor local fluid node
+      // get the corresponding processor local fluid node
       Core::Nodes::Node* fluidlnode = discret_->l_row_node(lnodeid);
 
       // do we have a dirichlet boundary conditions in the fluid

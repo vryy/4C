@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Cut::Kernel
 {
-  // functions to compare determinant ot zero, e.g when computing the condition_number
+  // functions to compare determinant to zero, e.g when computing the condition_number
   bool close_to_zero(const double a);
 
   bool close_to_zero(const Core::CLN::ClnWrapper& a);
@@ -304,7 +304,7 @@ namespace Cut::Kernel
 
   /// withinlimits with 3 manually specified (independent from each other) tolerances
   template <Core::FE::CellType element_type, class T, class FloatType, unsigned int dim>
-  bool within_limits_splitted_quad(const T& xsi, const Core::LinAlg::Matrix<dim, 1, FloatType>& tol)
+  bool within_limits_split_quad(const T& xsi, const Core::LinAlg::Matrix<dim, 1, FloatType>& tol)
   {
     if (element_type == Core::FE::CellType::tri3)
     {
@@ -695,7 +695,7 @@ namespace Cut::Kernel
    *
    *  Quad is split into two triangles and area of tri are summed up
    *
-   *  \param poly (in): vector containting four pointers to the quad points
+   *  \param poly (in): vector containing four pointers to the quad points
    *
    *  \author sudhakar
    *  \date 11/14 */
@@ -759,8 +759,8 @@ namespace Cut::Kernel
     std::stringstream string_buffer;
     int nsize = Core::CLN::ClnWrapper::get_precision();
     string_buffer << nsize;
-    // construct string that represent 1e^-(current_cln_precision - 2) explicitely
-    // otherwise cln might thinkg it too close to zero, and convert to short float zero and mess
+    // construct string that represent 1e^-(current_cln_precision - 2) explicitly
+    // otherwise cln might think it too close to zero, and convert to short float zero and mess
     // the whole computation up
     std::string clnumstr = "0." + std::string(nsize - 2, '0') + "1" + "e+1_" + string_buffer.str();
     cln::cl_F cln_tol = clnumstr.c_str();
@@ -1189,7 +1189,7 @@ namespace Cut::Kernel
     FloatType get_local_tolerance(const FloatType& real_tolerance)
     {
       FOUR_C_THROW(
-          "Not impelemented! Have a look at  GetLocalTolerance for compute_distance strategy to "
+          "Not implemented! Have a look at  GetLocalTolerance for compute_distance strategy to "
           "find out the idea of implementation!");
       return real_tolerance;
     }
@@ -1413,7 +1413,7 @@ namespace Cut::Kernel
 
       bool conv;
       int iter = 0;
-      int prec = CLN_START_PRECISION;  // standart initial precision
+      int prec = CLN_START_PRECISION;  // standard initial precision
       Core::CLN::ClnWrapper err;
       Core::CLN::ClnWrapper cond_number;
       cond_infinity_ = false;  // test check if condition number is equal to infinity
@@ -1457,7 +1457,7 @@ namespace Cut::Kernel
           Cut::MemorySingleton::getinstance().StartRecord();
         }
 #endif
-        // convertion to correspondent precison
+        // conversion to correspondent precision
         Core::CLN::conv_double_cln(xyze, clnxyze_, prec);
         Core::CLN::conv_double_cln(px, clnpx_, prec);
 
@@ -1539,7 +1539,7 @@ namespace Cut::Kernel
     PointOnSurfaceLoc get_side_location() { return location_; }
 
    private:
-    // Evaluate difference between inital global coordinates passed to ComputePosition and
+    // Evaluate difference between initial global coordinates passed to ComputePosition and
     // and global coordinates based on loc coordinates calculated in the ComputePosition,
     // using conversion to very high reference precision
     Core::CLN::ClnWrapper compute_error(
@@ -1555,7 +1555,7 @@ namespace Cut::Kernel
       Core::LinAlg::Matrix<prob_dim, 1, Core::CLN::ClnWrapper> cln_glob_init;
       Core::LinAlg::Matrix<prob_dim, 1, Core::CLN::ClnWrapper> cln_loc_calc;
 
-      Core::CLN::update_presicion(loc_calc, cln_loc_calc, prec);
+      Core::CLN::update_precision(loc_calc, cln_loc_calc, prec);
       Core::CLN::conv_double_cln(ref_shape_xyz, cln_ref_shape_xyz, prec);
       Core::CLN::conv_double_cln(glob_init, cln_glob_init, prec);
 
@@ -2484,11 +2484,11 @@ namespace Cut::Kernel
         FOUR_C_THROW(
             "This type of element (%s)  is not tested for the CLN calculation. You are welcome "
             "to edit ../fem_general/utils_fem_shapefunctions.H file to fix it. Just "
-            "change all the integers occuring there double for CLN to work.",
+            "change all the integers occurring there double for CLN to work.",
             Core::FE::cell_type_to_string(side_type).c_str());
       }
 
-      int prec = CLN_START_PRECISION;  // standart initial precision
+      int prec = CLN_START_PRECISION;  // standard initial precision
       bool conv;
       Core::CLN::ClnWrapper err;
       Core::CLN::ClnWrapper cond_number;
@@ -2496,7 +2496,7 @@ namespace Cut::Kernel
       cond_infinity_ = false;
       bool zero_area = false;
 
-      // converting everythign to the cln precision
+      // converting everything to the cln precision
 #ifdef CUSTOM_MEMORY_ALLOCATOR
       if (all_distance_done_once_ and all_intersections_done_once_ and all_position_done_once_ and
           (!custom_allocator_run_))
@@ -2666,7 +2666,7 @@ namespace Cut::Kernel
     bool is_condition_infinity() { return cond_infinity_; }
 
    private:
-    // Evaluate difference between inital global coordinates passed to compute_distance and
+    // Evaluate difference between initial global coordinates passed to compute_distance and
     // and global coordinates based on loc coordinates and distance  calculated in the
     // compute_distance, using conversion to very high reference precision
     Core::CLN::ClnWrapper compute_error(
@@ -2694,7 +2694,7 @@ namespace Cut::Kernel
       clndistance = cln::cl_float(distance[0].Value(), cln::float_format(prec));
       Core::CLN::conv_double_cln(refshape_xyze, xyze_side, prec);
       Core::CLN::conv_double_cln(p, clnpx, prec);
-      Core::CLN::update_presicion(loc_calc, clnxi, prec);
+      Core::CLN::update_precision(loc_calc, clnxi, prec);
 
       for (unsigned int i = 0; i < prob_dim; ++i)
       {
@@ -2782,7 +2782,7 @@ namespace Cut::Kernel
             Core::CLN::ClnWrapper min_dist;
             for (unsigned int inode = 0; inode < num_nodes_side; ++inode)
             {
-              // acess raw responsible for that node
+              // access raw responsible for that node
               Core::LinAlg::Matrix<prob_dim, 1, Core::CLN::ClnWrapper> coord(
                   clnxyze_side_latest.data() + inode * prob_dim, true);
               dist.update(1.0, coord, -1.0, xsi_global);
@@ -2796,7 +2796,7 @@ namespace Cut::Kernel
             if (min_dist > NON_TOPOLOGICAL_TOLERANCE)
             {
               // then it will not be merged to this point in the pointpool. Hence we remove the
-              // topological connection and change location of the point to outisde
+              // topological connection and change location of the point to outside
               touched_edges_ids_.clear();
               // toggle the bit off,
               location_ = PointOnSurfaceLoc(false, location_.on_side());
@@ -3071,8 +3071,8 @@ namespace Cut::Kernel
 
 
     // Get location of the point, based on the extended tolerance of 1e-14 for the diagonal
-    // edge of the splitted triangle, and tolerance 0.0 for the normal edges, used
-    // to avoid possibility of middle point of the quad4 split ot be missed because of
+    // edge of the split triangle, and tolerance 0.0 for the normal edges, used
+    // to avoid possibility of middle point of the quad4 split to be missed because of
     // numerical errors
     PointOnSurfaceLoc get_side_location_triangle_split()
     {
@@ -3089,7 +3089,7 @@ namespace Cut::Kernel
       real_tolerance(0) = 0.0;
       real_tolerance(1) = scaled_tolerance(1);
       real_tolerance(2) = 0.0;
-      if (within_limits_splitted_quad<side_type>(xsi_ref_, real_tolerance))
+      if (within_limits_split_quad<side_type>(xsi_ref_, real_tolerance))
         side_location_triangle_split_ = PointOnSurfaceLoc(true, true);
       else
         side_location_triangle_split_ = PointOnSurfaceLoc(false, true);
@@ -3118,7 +3118,7 @@ namespace Cut::Kernel
       // clear previous and get edges nearby
       touched_edges_ids_.clear();
       touched_nodes_ids_.clear();
-      // if on side, get neigboring edges
+      // if on side, get neighboring edges
       if (location_.on_side())
       {
         get_edges_at<side_type>(xsi, touched_edges_ids_, scaled_tolerance);
@@ -3129,7 +3129,7 @@ namespace Cut::Kernel
 
     void write_to_gmsh(std::ofstream& file) { Strategy::write_to_gmsh(file); }
 
-    // Evaluate difference between inital global coordinates passed to compute_distance and
+    // Evaluate difference between initial global coordinates passed to compute_distance and
     // and global coordinates based on loc coordinates and distance  calculated in the
     // compute_distance
     double compute_error(
@@ -3617,7 +3617,7 @@ namespace Cut::Kernel
     bool newton_failed()
     {
 #ifdef DEBUG_CUTKERNEL_OUTPUT
-      // If it is not edge-edge interseciton we explicitely notify, that Newton's method failed
+      // If it is not edge-edge intersections we explicitly notify, that Newton's method failed
       if (probDim == dimEdge + dimSide)
       {
         std::cout << "Current type is " << typeid(floatType).name() << std::endl;
@@ -3762,7 +3762,7 @@ namespace Cut::Kernel
      *  \f[
      *    b = x(\xi) - x(\tilde{\xi}),
      *  \f]
-     *  where \f$\xi \in \mathbb{R}^{dimEgde}\f$ is the parameter space
+     *  where \f$\xi \in \mathbb{R}^{dimEdge}\f$ is the parameter space
      *  coordinate of the edge-element and \f$ \tilde{\xi} \in \mathbb{R}^{dimSide} \f$
      *  are the parameter space coordinates of the side element.
      *
@@ -3927,7 +3927,7 @@ namespace Cut::Kernel
         FOUR_C_THROW(
             "This type of element (%s)  is not tested for the CLN calculation. You are welcome "
             "to edit ../fem_general/utils_fem_shapefunctions.H file to fix it. Just "
-            "change all the integers occuring there double for CLN to work.",
+            "change all the integers occurring there double for CLN to work.",
             Core::FE::cell_type_to_string(side_type).c_str());
       }
 
@@ -4158,7 +4158,7 @@ namespace Cut::Kernel
 
       Core::CLN::conv_double_cln(refside_xyz, cln_refside_xyz, prec);
       Core::CLN::conv_double_cln(refedge_xyz, cln_refedge_xyz, prec);
-      Core::CLN::update_presicion(loc_calc, cln_loc_calc, prec);
+      Core::CLN::update_precision(loc_calc, cln_loc_calc, prec);
 
       // Calculating interpolation from the shapefunction of the side
       Core::LinAlg::Matrix<Core::FE::num_nodes<side_type>, 1, Core::CLN::ClnWrapper> sideFunct;
@@ -4234,7 +4234,7 @@ namespace Cut::Kernel
             Core::CLN::ClnWrapper min_dist;
             for (unsigned int inode = 0; inode < num_nodes_side; ++inode)
             {
-              // acess raw responsible for that node
+              // access raw responsible for that node
               Core::LinAlg::Matrix<prob_dim, 1, Core::CLN::ClnWrapper> coord(
                   clnxyze_side_latest.data() + inode * prob_dim, true);
               dist.update(1.0, coord, -1.0, xsi_global);
@@ -4456,8 +4456,8 @@ namespace Cut::Kernel
     }
 
     // Get location of the point, based on the extended tolerance of 1e-14 for the diagonal
-    // edge of the splitted triangle, and tolerance 0.0 for the normal edges.
-    // Used to avoid possibility of middle point of the quad4 split ot be missed because of
+    // edge of the split triangle, and tolerance 0.0 for the normal edges.
+    // Used to avoid possibility of middle point of the quad4 split to be missed because of
     // numerical errors
     PointOnSurfaceLoc get_side_location_triangle_split()
     {
@@ -4475,7 +4475,7 @@ namespace Cut::Kernel
       real_tolerance(0) = scaled_tolerance(0);
       real_tolerance(1) = 0.0;
       real_tolerance(2) = 0.0;
-      if (within_limits_splitted_quad<side_type>(xsi_, real_tolerance))
+      if (within_limits_split_quad<side_type>(xsi_, real_tolerance))
         side_location_triangle_split_ = PointOnSurfaceLoc(true, true);
       else
         side_location_triangle_split_ = PointOnSurfaceLoc(false, true);
@@ -4594,7 +4594,7 @@ namespace Cut::Kernel
     // if condition number is infinity or not
     bool cond_infinity_;
 
-    // holds distance between lines in case of edge-edge interesection
+    // holds distance between lines in case of edge-edge intersection
     double distance_between_;
 
     // holds reference to original value passed

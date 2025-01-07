@@ -296,7 +296,7 @@ namespace CONTACT
     //! vector of contact pairs of last time step. After update() oldpairs_ is identical with pairs_
     //! until a new time
     // step starts. Therefore oldpairs_ can be used for output at the end of a time step after
-    // Upadte() is called.
+    // Update() is called.
     std::vector<std::shared_ptr<Beam3contactinterface>> oldpairs_;
 
     //! vector of close beam to solid contact pairs (pairs of elements, which might get in contact)
@@ -304,7 +304,7 @@ namespace CONTACT
     //! vector of beam to solid contact pairs of last time step. After update() oldpairs_ is
     //! identical with btsolpairs_ until a
     // new time step starts. Therefore oldbtsolpairs_ can be used for output at the end of a time
-    // step after Upadte() is called.
+    // step after Update() is called.
     std::vector<std::shared_ptr<Beam3tosolidcontactinterface>> oldbtsolpairs_;
     //! total vector of solid contact elements
     std::vector<std::shared_ptr<CONTACT::Element>> solcontacteles_;
@@ -318,7 +318,7 @@ namespace CONTACT
 
     //! 2D-map with pointers on the contact pairs_. This map is necessary, to call a contact pair
     //! directly by the two element-iD's of the pair.
-    // It is not needed at the moment due to the direct neigbour determination in the constructor
+    // It is not needed at the moment due to the direct neighbour determination in the constructor
     // but may be useful for future operations
     // beam-to-beam pair map
     std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>> contactpairmap_;
@@ -453,7 +453,7 @@ namespace CONTACT
     // accumulated evaluation time of all contact pairs of total simulation time
     double contactevaluationtime_;
 
-    // maximum curvature occuring in one of the potential contact elements
+    // maximum curvature occurring in one of the potential contact elements
     double global_kappa_max_;
 
     // output file counter needed for PRINTGAPSOVERLENGTHFILE
@@ -497,7 +497,7 @@ namespace CONTACT
     \brief Get maximum element radius
 
     Finds minimum and maximum element radius in the whole discretization for circular cross
-    sections. Stores the values in corresponing class variables.
+    sections. Stores the values in corresponding class variables.
 
     */
     void set_min_max_ele_radius();
@@ -517,9 +517,9 @@ namespace CONTACT
     void set_element_type_and_distype(Core::Elements::Element* ele1);
 
     /*!
-    \brief Check, if pair with given element IDs is allready existing in the vector pairs_!
+    \brief Check, if pair with given element IDs is already existing in the vector pairs_!
     */
-    bool pair_allready_existing(int currid1, int currid2);
+    bool pair_already_existing(int currid1, int currid2);
 
     /*!
     \brief Get maximum element length
@@ -567,14 +567,14 @@ namespace CONTACT
     void init_beam_contact_discret();
 
     /*!
-    \brief Store current displacment state in currentpositions
+    \brief Store current displacement state in currentpositions
 
     */
     void set_current_positions(std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
         const Core::LinAlg::Vector<double>& disccol);
 
     /*!
-    \brief Set displacment state on contact element pair level
+    \brief Set displacement state on contact element pair level
 
     The contact element pairs are updated with these current positions and also with
     the current tangent vectors in case of Kirchhoff beam elements

@@ -482,7 +482,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
 
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
   // remark: operations must not be performed on 'convel', because the vector is accessed by both
-  //         master and slave nodes, if periodic bounday conditions are present
+  //         master and slave nodes, if periodic boundary conditions are present
   std::shared_ptr<Core::LinAlg::Vector<double>> conveltmp =
       std::make_shared<Core::LinAlg::Vector<double>>(*discret_->dof_row_map(nds_vel()), true);
 

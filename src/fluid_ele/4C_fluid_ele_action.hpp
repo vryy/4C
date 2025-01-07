@@ -81,8 +81,8 @@ namespace FLD
   enum BoundaryAction
   {
     Outletimpedance,
-    ba_calc_node_normal,
-    ba_none,
+    boundary_calc_node_normal,
+    boundary_none,
     calc_Neumann_inflow,
     calc_area,
     calc_flowrate,

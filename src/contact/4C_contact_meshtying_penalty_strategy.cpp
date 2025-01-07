@@ -275,7 +275,7 @@ void CONTACT::MtPenaltyStrategy::evaluate_meshtying(
 }
 
 /*----------------------------------------------------------------------*
- | intialize Uzawa step 2,3...                                popp 12/09|
+ | initialize Uzawa step 2,3...                                popp 12/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtPenaltyStrategy::initialize_uzawa(
     std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
@@ -314,7 +314,7 @@ void CONTACT::MtPenaltyStrategy::initialize_uzawa(
 }
 
 /*----------------------------------------------------------------------*
- | reset penalty parameter to intial value                    popp 08/09|
+ | reset penalty parameter to initial value                    popp 08/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtPenaltyStrategy::reset_penalty()
 {
@@ -330,7 +330,7 @@ void CONTACT::MtPenaltyStrategy::reset_penalty()
 }
 
 /*----------------------------------------------------------------------*
- | modify penalty parameter to intial value                    mhv 03/16|
+ | modify penalty parameter to initial value                    mhv 03/16|
  *----------------------------------------------------------------------*/
 void CONTACT::MtPenaltyStrategy::modify_penalty()
 {

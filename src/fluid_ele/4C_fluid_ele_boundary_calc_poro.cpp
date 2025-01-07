@@ -189,7 +189,7 @@ void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 {
   /*
    * Evaluate all Terms for the FPSI Boundary & Neumann Integration. The both conditions should be
-   * splited into to methods later to avoid ifs in case of Neumann Integration!
+   * split into to methods later to avoid ifs in case of Neumann Integration!
    */
 
   /*
@@ -565,7 +565,7 @@ void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
       pxsi(idim) = pqxg(gpid, idim);
     }
 
-    // evalute parent element shape function at current integration point in parent coordinate
+    // evaluate parent element shape function at current integration point in parent coordinate
     // system
     Core::FE::shape_function<pdistype>(pxsi, pfunct);
     // evaluate derivatives of parent element shape functions at current integration point in parent
@@ -678,7 +678,7 @@ void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 
     //                                         _              _
     //                                        | u1,1 u1,2 u1,3 |
-    // dudxi = u_i,alhpa = N_A,alpha u^A_i =  | u2,1 u2,2 u2,3 |
+    // dudxi = u_i,alpha = N_A,alpha u^A_i =  | u2,1 u2,2 u2,3 |
     //                                        |_u3,1 u3,2 u3,3_|
     //
     dudxi.multiply_nt(pevelnp, pderiv_loc);  // corrected: switched pevelnp and pderiv
@@ -690,7 +690,7 @@ void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //                                            3|_u3,x1 u3,x2 u3,x3_|
     //
     dudxioJinv.multiply_nt(dudxi, xji);
-    dudxioJinv_n.multiply_nt(dudxi_n, xji_n);  // at previus time step n
+    dudxioJinv_n.multiply_nt(dudxi_n, xji_n);  // at previous time step n
 
     Core::LinAlg::Matrix<1, nsd_> graduon(true);
     Core::LinAlg::Matrix<1, nsd_> graduon_n(true);  // from previous time step
@@ -1603,7 +1603,7 @@ void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
         /*
                     (2)  N * (tau - pf I) o n   << from last iteration at time n+1
 
-                    evaluated on fluid_field(); Base::unitnormal_ opposite to strucutral unitnormal
+                    evaluated on fluid_field(); Base::unitnormal_ opposite to structural unitnormal
            -> application of nanson's formula yields structural normal -> * (-1)
          */
         for (int idof2 = 0; idof2 < nsd_; idof2++)
@@ -1623,8 +1623,8 @@ void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
         /*
                   evaluated on PoroFluidField()
 
-                  (3+4) - N*n * 1/rhof * (pf) + N*t*tangentialfac*[u- (vs + phi(vf-vs))]ot  << from
-           last iteration at time n+1
+                  (3+4) - N*n * 1/rhof * (pf) + N*t*tangentialfac*[u- (vs + phi(vf-vs))] o t  <<
+           from last iteration at time n+1
          */
         for (int idof2 = 0; idof2 < nsd_; idof2++)
         {
@@ -1646,7 +1646,7 @@ void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
       else if (block == "fluidfluid")  // rhs of fluid evaluated on fluidfield
       {
         /*
-                    (4)  N*t*tangentialfac*[u]ot  << from last iteration at time n+1
+                    (4)  N*t*tangentialfac*[u] o t  << from last iteration at time n+1
          */
         for (int idof2 = 0; idof2 < nsd_; idof2++)
         {
@@ -2008,7 +2008,7 @@ void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
         (Base::velint_.dot(Base::unitnormal_) - gridvelint.dot(Base::unitnormal_)) * porosity_gp;
 
     // store flowrate at first dof of each node
-    // use negative value so that inflow is positiv
+    // use negative value so that inflow is positive
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
     {
       // see "A better consistency for low order stabilized finite element methods"

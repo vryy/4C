@@ -58,7 +58,7 @@ namespace Adapter
     StructureFSITimIntAda(std::shared_ptr<Solid::TimAda> sta, std::shared_ptr<Structure> sti);
 
     //! Do one time step with auxiliary time integration scheme
-    virtual void time_step_auxiliar();
+    virtual void time_step_auxiliary();
 
     //! Indicate norms of local discretization error
     virtual void indicate_error_norms(

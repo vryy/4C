@@ -47,7 +47,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCondSTIThermo<
   // call base class routine to extract scatra-related quantities
   mydiffcond::extract_element_and_node_values(ele, params, discretization, la);
 
-  // call base class routine to extract thermo-related quantitites
+  // call base class routine to extract thermo-related quantities
   mythermo::extract_element_and_node_values(ele, params, discretization, la);
 }
 

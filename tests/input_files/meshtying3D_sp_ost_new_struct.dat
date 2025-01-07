@@ -22,8 +22,8 @@ STRUCT_STRESS                   Yes
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      OneStepTheta
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 NLNSOL                          fullnewton
 TIMESTEP                        0.5
 NUMSTEP                         3

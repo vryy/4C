@@ -25,8 +25,8 @@ LINEAR_SOLVER                    1
 INT_STRATEGY                     Standard
 DYNAMICTYPE                       Statics
 PREDICT                          TangDis
-RESULTSEVRY                      1
-RESTARTEVRY                      1
+RESULTSEVERY                      1
+RESTARTEVERY                      1
 NLNSOL                           fullnewton
 TIMESTEP                         5e-3
 NUMSTEP                          20

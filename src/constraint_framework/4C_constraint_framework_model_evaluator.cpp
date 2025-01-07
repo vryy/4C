@@ -119,9 +119,9 @@ void Solid::ModelEvaluator::Constraints::create_sub_model_evaluators()
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Constraints::reset(const Core::LinAlg::Vector<double>& x)
 {
-  for (auto& sme_iter : sub_model_vec_ptr_)
+  for (auto& some_iter : sub_model_vec_ptr_)
   {
-    sme_iter->reset();
+    some_iter->reset();
   }
   constraint_stiff_ptr_->zero();
 }
@@ -131,9 +131,9 @@ void Solid::ModelEvaluator::Constraints::reset(const Core::LinAlg::Vector<double
 bool Solid::ModelEvaluator::Constraints::evaluate_force()
 {
   pre_evaluate();
-  for (auto& sme_iter : sub_model_vec_ptr_)
+  for (auto& some_iter : sub_model_vec_ptr_)
   {
-    sme_iter->evaluate_force_stiff(
+    some_iter->evaluate_force_stiff(
         *global_state().get_dis_np().get(), global_state_ptr(), nullptr, constraint_force_ptr_);
   }
 
@@ -147,9 +147,9 @@ bool Solid::ModelEvaluator::Constraints::evaluate_stiff()
   pre_evaluate();
 
   constraint_stiff_ptr_->un_complete();
-  for (auto& sme_iter : sub_model_vec_ptr_)
+  for (auto& some_iter : sub_model_vec_ptr_)
   {
-    sme_iter->evaluate_force_stiff(
+    some_iter->evaluate_force_stiff(
         *global_state().get_dis_np().get(), global_state_ptr(), constraint_stiff_ptr_, nullptr);
   }
   if (not constraint_stiff_ptr_->filled()) constraint_stiff_ptr_->complete();
@@ -163,9 +163,9 @@ bool Solid::ModelEvaluator::Constraints::evaluate_force_stiff()
   pre_evaluate();
 
   constraint_stiff_ptr_->un_complete();
-  for (auto& sme_iter : sub_model_vec_ptr_)
+  for (auto& some_iter : sub_model_vec_ptr_)
   {
-    sme_iter->evaluate_force_stiff(*global_state().get_dis_np().get(), global_state_ptr(),
+    some_iter->evaluate_force_stiff(*global_state().get_dis_np().get(), global_state_ptr(),
         constraint_stiff_ptr_, constraint_force_ptr_);
   }
   if (not constraint_stiff_ptr_->filled()) constraint_stiff_ptr_->complete();
@@ -176,9 +176,9 @@ bool Solid::ModelEvaluator::Constraints::evaluate_force_stiff()
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Constraints::pre_evaluate()
 {
-  for (auto& sme_iter : sub_model_vec_ptr_)
+  for (auto& some_iter : sub_model_vec_ptr_)
   {
-    sme_iter->evaluate_coupling_terms(*global_state_ptr());
+    some_iter->evaluate_coupling_terms(*global_state_ptr());
   }
 }
 /*----------------------------------------------------------------------------*
@@ -287,9 +287,9 @@ void Solid::ModelEvaluator::Constraints::runtime_output_step_state() const
         visualization_params_, global_state().get_time_n(), global_state().get_step_n());
   }
 
-  for (auto& sme_iter : sub_model_vec_ptr_)
+  for (auto& some_iter : sub_model_vec_ptr_)
   {
-    sme_iter->runtime_output_step_state(output_time_and_step);
+    some_iter->runtime_output_step_state(output_time_and_step);
   }
 }
 

@@ -164,7 +164,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   // Vectors passed to the element
   // Pressures at time n+1, n and n-1
   pnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
-  pn_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  on_ = Core::LinAlg::create_vector(*dofrowmap, true);
   pnm_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   p_nonlin_ = Core::LinAlg::create_vector(*dofrowmap, true);
@@ -187,7 +187,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   p_extn_ = Core::LinAlg::create_vector(*elementcolmap, true);
 
   pnp_colmap_ = Core::LinAlg::create_vector(*elementcolmap, true);
-  pn_colmap_ = Core::LinAlg::create_vector(*elementcolmap, true);
+  on_colmap_ = Core::LinAlg::create_vector(*elementcolmap, true);
 
   // Outlet volumetric flow rates at time n+1, n and n-1
   qout_np_ = Core::LinAlg::create_vector(*elementcolmap, true);
@@ -247,7 +247,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
   evaluation_data.p0np = pnp_;
-  evaluation_data.p0n = pn_;
+  evaluation_data.p0n = on_;
   evaluation_data.p0nm = pnm_;
 
   evaluation_data.generations = generations_;
@@ -853,7 +853,7 @@ void Airway::RedAirwayImplicitTimeInt::solve(
     // Set vector values needed by elements
     discret_->clear_state();
     discret_->set_state("pnp", pnp_);
-    discret_->set_state("pn", pn_);
+    discret_->set_state("on", on_);
     discret_->set_state("pnm", pnm_);
     discret_->set_state("intr_ac_link", n_intr_ac_ln_);
 
@@ -939,7 +939,7 @@ void Airway::RedAirwayImplicitTimeInt::solve(
     // Set vector values needed by elements
     discret_->clear_state();
     discret_->set_state("pnp", pnp_);
-    discret_->set_state("pn", pn_);
+    discret_->set_state("on", on_);
     discret_->set_state("pnm", pnm_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
@@ -1049,7 +1049,7 @@ void Airway::RedAirwayImplicitTimeInt::solve(
     // Create the parameters for the discretization
     Teuchos::ParameterList eleparams;
 
-    // Set action for elements: claculate flow rates
+    // Set action for elements: calculate flow rates
     eleparams.set("action", "calc_flow_rates");
 
     // Set solution type
@@ -1059,7 +1059,7 @@ void Airway::RedAirwayImplicitTimeInt::solve(
     // Set vector values needed by elements
     discret_->clear_state();
     discret_->set_state("pnp", pnp_);
-    discret_->set_state("pn", pn_);
+    discret_->set_state("on", on_);
     discret_->set_state("pnm", pnm_);
     discret_->set_state("intr_ac_link", n_intr_ac_ln_);
 
@@ -1195,15 +1195,15 @@ void Airway::RedAirwayImplicitTimeInt::assemble_mat_and_rhs()
 /*----------------------------------------------------------------------*
  | Current solution becomes most recent solution of next timestep       |
  |                                                                      |
- |  pnm_  =  pn_                                                        |
- |  pn_   =  pnp_                                                       |
+ |  pnm_  =  on_                                                        |
+ |  on_   =  pnp_                                                       |
  |                                                          ismail 06/09|
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::time_update()
 {
   // Volumetric Flow rate and acini volume of this step become most recent
-  pnm_->Update(1.0, *pn_, 0.0);
-  pn_->Update(1.0, *pnp_, 0.0);
+  pnm_->Update(1.0, *on_, 0.0);
+  on_->Update(1.0, *pnp_, 0.0);
 
   qin_nm_->Update(1.0, *qin_n_, 0.0);
   qin_n_->Update(1.0, *qin_np_, 0.0);
@@ -1241,7 +1241,7 @@ void Airway::RedAirwayImplicitTimeInt::init_save_state()
 
   // saving vector for pressure
   saved_pnm_ = Core::LinAlg::create_vector(*dofrowmap, true);
-  saved_pn_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  saved_on_ = Core::LinAlg::create_vector(*dofrowmap, true);
   saved_pnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // saving vector for inflow rate
@@ -1274,9 +1274,9 @@ void Airway::RedAirwayImplicitTimeInt::init_save_state()
 /*----------------------------------------------------------------------*
  | Saves and backs up the current state.                                |
  |                                                                      |
- |  This is currently needed for stronly coupling 3D-0D fields          |
+ |  This is currently needed for strongly coupling 3D-0D fields          |
  |  example:                                                            |
- |  saved_pn_   =  pn_                                                  |
+ |  saved_on_   =  on_                                                  |
  |  saved_qn_   =  qn_                                                  |
  |                                                                      |
  |                                                          ismail 04/14|
@@ -1285,7 +1285,7 @@ void Airway::RedAirwayImplicitTimeInt::save_state()
 {
   // save pressure vectors
   saved_pnm_->Update(1.0, *pnm_, 0.0);
-  saved_pn_->Update(1.0, *pn_, 0.0);
+  saved_on_->Update(1.0, *on_, 0.0);
   saved_pnp_->Update(1.0, *pnp_, 0.0);
 
   // save inflow rate vectors
@@ -1319,9 +1319,9 @@ void Airway::RedAirwayImplicitTimeInt::save_state()
 /*----------------------------------------------------------------------*
  | Loads backed up states.                                              |
  |                                                                      |
- |  This is currently needed for stronly coupling 3D-0D fields          |
+ |  This is currently needed for strongly coupling 3D-0D fields          |
  |  example:                                                            |
- |  pn_   =  saved_pn_                                                  |
+ |  on_   =  saved_on_                                                  |
  |  qn_   =  saved_qn_                                                  |
  |                                                                      |
  |                                                          ismail 04/14|
@@ -1330,7 +1330,7 @@ void Airway::RedAirwayImplicitTimeInt::load_state()
 {
   // save pressure vectors
   pnm_->Update(1.0, *saved_pnm_, 0.0);
-  pn_->Update(1.0, *saved_pn_, 0.0);
+  on_->Update(1.0, *saved_on_, 0.0);
   pnp_->Update(1.0, *saved_pnp_, 0.0);
 
   // save inflow rate vectors
@@ -1389,7 +1389,7 @@ void Airway::RedAirwayImplicitTimeInt::output(
 
     // "pressure" vectors
     output_.write_vector("pnm", pnm_);
-    output_.write_vector("pn", pn_);
+    output_.write_vector("on", on_);
     output_.write_vector("pnp", pnp_);
     output_.write_vector("p_nonlin", p_nonlin_);
 
@@ -1490,7 +1490,7 @@ void Airway::RedAirwayImplicitTimeInt::output(
 
     // "pressure" vectors
     output_.write_vector("pnm", pnm_);
-    output_.write_vector("pn", pn_);
+    output_.write_vector("on", on_);
     output_.write_vector("pnp", pnp_);
     output_.write_vector("p_nonlin", p_nonlin_);
 
@@ -1583,7 +1583,7 @@ void Airway::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
   }
 
   reader.read_vector(pnp_, "pnp");
-  reader.read_vector(pn_, "pn");
+  reader.read_vector(on_, "on");
   reader.read_vector(pnm_, "pnm");
   reader.read_vector(p_nonlin_, "p_nonlin");
 
@@ -1667,7 +1667,7 @@ void Airway::RedAirwayImplicitTimeInt::eval_residual(
     // set vector values needed by elements
     discret_->clear_state();
     discret_->set_state("pnp", pnp_);
-    discret_->set_state("pn", pn_);
+    discret_->set_state("on", on_);
     discret_->set_state("pnm", pnm_);
     discret_->set_state("intr_ac_link", n_intr_ac_ln_);
 
@@ -1749,7 +1749,7 @@ void Airway::RedAirwayImplicitTimeInt::eval_residual(
     // set vector values needed by elements
     discret_->clear_state();
     discret_->set_state("pnp", pnp_);
-    discret_->set_state("pn", pn_);
+    discret_->set_state("on", on_);
     discret_->set_state("pnm", pnm_);
     //    discret_->set_state("qcnp",qcnp_);
     //    discret_->set_state("qcn" ,qcn_ );

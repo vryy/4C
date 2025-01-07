@@ -72,7 +72,8 @@ FLD::Utils::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
   if (numcondlines != couplingcond2.size())
   {
     FOUR_C_THROW(
-        "coupled problem beween reduced-D and 3D must have equal number of condition on both sides "
+        "coupled problem between reduced-D and 3D must have equal number of condition on both "
+        "sides "
         "of the discretization boundaries");
   }
 
@@ -483,7 +484,7 @@ void FLD::Utils::FluidCouplingWrapperBase::apply_boundary_conditions(
   // -------------------------------------------------------------------
   // Get the reduced-D results from all of the processors
   // if a processor doesn't have any reduced-D results then it must
-  // return values equivelant to zero
+  // return values equivalent to zero
   // -------------------------------------------------------------------
 
   for (unsigned int i = 0; i < conds3D.size(); i++)
@@ -748,7 +749,7 @@ FLD::Utils::FluidCouplingBc::FluidCouplingBc(std::shared_ptr<Core::FE::Discretiz
   //              velocity                             velocity
   //
   //              Q|
-  //               |calcutated
+  //               |calculated
   //      alfa = --------
   //              Q|
   //               |applied
@@ -976,7 +977,7 @@ double FLD::Utils::FluidCouplingBc::flow_rate_calculation(double time, double dt
   (1) calculated for single element surfaces
   (2) added up over the elements of the single procs
   (3) communicated and added over the procs
-  (4) devide the integrated pressure over the cross-sectional area
+  (4) divide the integrated pressure over the cross-sectional area
   (4) and finally stored within the vector 'pressures_'
 
   The vector of the flowrates holds the flow rate history of the
@@ -1044,7 +1045,7 @@ void FLD::Utils::FluidCouplingBc::outflow_boundary(
   Teuchos::ParameterList eleparams;
   // action for elements
   // the reason we have Outlet impedance as action is because we don't
-  // want to rewrite the implimented code
+  // want to rewrite the implemented code
   eleparams.set<FLD::BoundaryAction>("action", FLD::Outletimpedance);
 
   eleparams.set("total time", time);
@@ -1086,7 +1087,7 @@ void FLD::Utils::FluidCouplingBc::inflow_boundary(
   Teuchos::ParameterList eleparams;
   // action for elements
   // the reason we have Outlet impedance as action is because we don't
-  // want to rewrite the implimented code
+  // want to rewrite the implemented code
 
 
   if (myrank_ == 0)

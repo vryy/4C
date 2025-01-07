@@ -475,7 +475,7 @@ namespace CONTACT
     //! second node of dual edge
     std::shared_ptr<SelfBinaryTreeNode> node2_;
 
-    //! cost function value fo dual edge
+    //! cost function value of dual edge
     double costs_;
 
     //! reference to dim. of problem

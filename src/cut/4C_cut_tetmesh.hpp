@@ -215,7 +215,7 @@ namespace Cut
       }
 
       /// create all my children
-      /// This creats from, for instance a tet, 4 surfaces and also stores handle to access
+      /// This creates from, for instance a tet, 4 surfaces and also stores handle to access
       /// "parent" element. Same thing is done for a surface where lines are created as children.
       /// Or at least as far as my understanding goes.... //m.w
       void create_children(std::map<Handle<length - 1>, Entity<length - 1>>& entities)

@@ -218,7 +218,7 @@ namespace
             }
           }
 
-          // aquire weights from nodes
+          // acquire weights from nodes
           Core::LinAlg::SerialDenseVector weights(iel);
 
           for (int inode = 0; inode < iel; ++inode)

@@ -110,7 +110,7 @@ Cut::Point* Cut::OctTreeNode::get_point(const double* x, Edge* cut_edge, Side* c
         // safety check
 #ifdef NODAL_POINT_TOLERANCE_SCALE
         // this should happen with both cut_side and cut_edge equal to nullptr
-        // note: be carefull with other cases, apart from mesh loading
+        // note: be careful with other cases, apart from mesh loading
         if (cut_side and cut_edge)
         {
           FOUR_C_THROW(
@@ -130,7 +130,7 @@ Cut::Point* Cut::OctTreeNode::get_point(const double* x, Edge* cut_edge, Side* c
     }
 
     // linear search for the node in the current leaf
-    std::vector<Point*> merge_candidates;  // canditates for merge
+    std::vector<Point*> merge_candidates;  // candidates for merge
 
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
     {
@@ -148,7 +148,7 @@ Cut::Point* Cut::OctTreeNode::get_point(const double* x, Edge* cut_edge, Side* c
     // if there are merge candidates
     if (merge_candidates.size() > 0)
     {
-      // first consider topologically connnected points
+      // first consider topologically connected points
       // and try to find any candidate there
       std::vector<Point*> topological_candidates;
       Point* mymerge = nullptr;
@@ -227,7 +227,7 @@ Cut::Point* Cut::OctTreeNode::get_point(const double* x, Edge* cut_edge, Side* c
         {
           std::cout << "NOTE: More then one merge candidate in the pointpool that fit into the "
                        "tolerance. There are possibly"
-                    << merge_candidates.size() << "merging candidates. Mergin it into "
+                    << merge_candidates.size() << "merging candidates. Merging it into "
                     << mymerge->Id() << std::endl;
 
           // do gmsh side and edge dump for analysis
@@ -264,7 +264,7 @@ Cut::Point* Cut::OctTreeNode::get_point(const double* x, Edge* cut_edge, Side* c
           if (cut_edge != nullptr)
           {
             // Here we need to set this point local coordinates on the edge, based on the unmerged
-            // point, that it why "t" is called explicitely before AddEdge
+            // point, that it why "t" is called explicitly before AddEdge
             mymerge->t(cut_edge, px);
             mymerge->add_edge(cut_edge);
           }

@@ -562,7 +562,7 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
           std::cout << std::endl;
         }
 
-        // print last error in a seperate file
+        // print last error in a separate file
 
         // append error of the last time step to the error file
         if ((step_ == stepmax_) or (time_ == maxtime_))  // write results to file

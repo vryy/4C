@@ -66,10 +66,10 @@ namespace Inpar
     /// type of filament
     enum FilamentType
     {
-      filtype_arbitrary,  ///< no special type
-      filtype_actin,      ///< actin type
-      filtype_collagen,   ///< collagen type
-      filtype_none        ///< filament which does not bind
+      filetype_arbitrary,  ///< no special type
+      filetype_actin,      ///< actin type
+      filetype_collagen,   ///< collagen type
+      filetype_none        ///< filament which does not bind
     };
 
     /// type of crosslinker
@@ -119,15 +119,15 @@ namespace Inpar
     //! Map type std::string to enum
     inline enum FilamentType string_to_filament_type(const std::string& name)
     {
-      FilamentType type = filtype_arbitrary;
+      FilamentType type = filetype_arbitrary;
       if (name == "arbitrary")
-        type = filtype_arbitrary;
+        type = filetype_arbitrary;
       else if (name == "actin")
-        type = filtype_actin;
+        type = filetype_actin;
       else if (name == "collagen")
-        type = filtype_collagen;
+        type = filetype_collagen;
       else if (name == "none")
-        type = filtype_none;
+        type = filetype_none;
       else
         FOUR_C_THROW("invalid filament type std::string ");
 

@@ -19,8 +19,8 @@ TIMEINTEGR                      Stationary
 NONLINITER                      Newton
 ITEMAX                          20
 CONVCHECK                       L_2_norm
-RESULTSEVRY                     1
-RESTARTEVRY                     10
+RESULTSEVERY                     1
+RESTARTEVERY                     10
 CONVFORM                        convective
 PREDICTOR                       steady_state
 MAXTIME                         1

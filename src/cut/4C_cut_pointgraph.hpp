@@ -143,8 +143,8 @@ namespace Cut
        *  cut points and cut lines */
       void fill_graph(Element* element, Side* side, Cycle& cycle, Strategy strategy);
 
-      /** Graph is filled with all edges of the selfcut: uncutted edges,
-       *  selfcutedges and new splitted edges; but no the cutted edges */
+      /** Graph is filled with all edges of the selfcut: uncut edges,
+       *  selfcutedges and new split edges; but no the cut edges */
       void fill_graph(Side* side, Cycle& cycle);
 
       /** \brief add cut lines to graph

@@ -316,7 +316,7 @@ namespace PoroElast
     }
 
     //! build map containing dofs with no penetration condition (fluid)
-    void buid_no_penetration_map(MPI_Comm comm, std::shared_ptr<const Epetra_Map> dofRowMap);
+    void build_no_penetration_map(MPI_Comm comm, std::shared_ptr<const Epetra_Map> dofRowMap);
 
     //! apply rhs terms of no penetration condition to global rhs vector
     void apply_cond_rhs(Core::LinAlg::Vector<double>& iterinc, Core::LinAlg::Vector<double>& rhs);
@@ -339,7 +339,7 @@ namespace PoroElast
     //! clear everything that is needed for coupling
     void clear(PoroElast::Coupltype coupltype = PoroElast::undefined);
 
-    //! setup coupling matrixes and vecors
+    //! setup coupling matrixes and vectors
     void setup(const Epetra_Map& dofRowMap, const Epetra_Map* dofRowMapFluid);
 
     //! return constraint matrix, that fits to coupling type

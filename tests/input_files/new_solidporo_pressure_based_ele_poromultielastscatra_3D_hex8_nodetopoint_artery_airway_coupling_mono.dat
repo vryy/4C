@@ -6,8 +6,8 @@ between 1D arteries, 1D airways and corresponding phases in the
 PROBLEMTYPE                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
-RESULTSEVRY                     2
-RESTARTEVRY                     3
+RESULTSEVERY                     2
+RESTARTEVERY                     3
 NUMSTEP                         25
 MAXTIME                         2.5
 TIMESTEP                        0.1

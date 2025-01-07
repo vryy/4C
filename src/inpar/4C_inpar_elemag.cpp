@@ -30,9 +30,9 @@ void Inpar::EleMag::set_valid_parameters(Teuchos::ParameterList& list)
 
   // additional parameters
   Core::Utils::int_parameter(
-      "RESULTSEVRY", 1, "Increment for writing solution", &electromagneticdyn);
+      "RESULTSEVERY", 1, "Increment for writing solution", &electromagneticdyn);
   Core::Utils::int_parameter(
-      "RESTARTEVRY", 1, "Increment for writing restart", &electromagneticdyn);
+      "RESTARTEVERY", 1, "Increment for writing restart", &electromagneticdyn);
   Core::Utils::int_parameter("LINEAR_SOLVER", -1,
       "Number of linear solver used for electromagnetic problem", &electromagneticdyn);
   Core::Utils::int_parameter("STARTFUNCNO", -1, "Function for initial field", &electromagneticdyn);

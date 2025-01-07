@@ -104,7 +104,7 @@ namespace ScaTra
         const std::vector<Core::Conditions::Condition*>& cccvhalfcycleconditions,
         bool adaptivetimestepping, int num_dofs);
 
-    //! true, when all half cylces are completed
+    //! true, when all half cycles are completed
     bool not_finished() const { return nhalfcycles_ >= ihalfcycle_; };
 
     //! phase of active half cycle

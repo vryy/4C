@@ -20,8 +20,8 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           1
-RESTARTEVRY                     10
+RESULTSEVERY                           1
+RESTARTEVERY                     10
 NUMSTEP                         10
 NUMSTASTEPS                     0
 MAXTIME                         1000.0
@@ -44,13 +44,13 @@ INITFUNCNO                      2
 INITIALFIELD                    field_by_function
 MAXTIME                         0.1
 NUMSTEP                         40
-RESTARTEVRY                     1000
+RESTARTEVERY                     1000
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.005
 VELOCITYFIELD                   zero
 CALCFLUX_DOMAIN                 total
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 CALCERROR                       Kwok_Wu
 MATID                           4
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

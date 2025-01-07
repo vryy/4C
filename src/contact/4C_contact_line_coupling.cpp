@@ -974,7 +974,7 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
       if (master_vertices()[j].nodeids().size() > 1)
         FOUR_C_THROW("Only one node id per master vertex allowed!");
 
-      // store master node ids in set to guarantee uniquness
+      // store master node ids in set to guarantee uniqueness
       std::pair<int, int> actIDs = std::pair<int, int>(
           master_vertices()[j].next()->nodeids()[0], master_vertices()[j].nodeids()[0]);
       std::pair<int, int> actIDsTw = std::pair<int, int>(

@@ -29,8 +29,8 @@ LINEAR_SOLVER                    1
 INT_STRATEGY                     Standard
 DYNAMICTYPE                       GenAlpha
 PREDICT                          ConstDis
-RESULTSEVRY                      1
-RESTARTEVRY                      1
+RESULTSEVERY                      1
+RESTARTEVERY                      1
 NLNSOL                           fullnewton
 TIMESTEP                         0.1
 NUMSTEP                          12

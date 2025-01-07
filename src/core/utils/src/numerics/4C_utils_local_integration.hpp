@@ -39,7 +39,7 @@ namespace Core::Utils
    * @brief Integrate the interval of 3 datapoints using the Simpson's rule.
    *
    * @tparam StepData A tuple or pair holding the time and the value of the evaluated function.
-   * @param step_data_a Left end of the integration inverval.
+   * @param step_data_a Left end of the integration interval.
    * @param step_data_b Point between left and right end of the integration point
    * @param step_data_c Right point of the integration interval.
    * @return ValueType Result of the integration
@@ -69,7 +69,7 @@ namespace Core::Utils
    *
    * @tparam StepData A type with the tuple<TimeType, ValueType>.
    * @param step_data_a Point left of the beginning of the integration interval.
-   * @param step_data_b Left end of the integration inverval.
+   * @param step_data_b Left end of the integration interval.
    * @param step_data_c Right point of the integration interval.
    * @return std::tuple<ValueType, DerivativeType> Result of the integration and the derivative of
    * the integration rule w.r.t. the integrand.
@@ -124,8 +124,8 @@ namespace Core::Utils
    * rule.
    *
    * @tparam StepData A tuple containing the time and the value of the integrand
-   * @param step_data_a Left end of the integration inverval.
-   * @param step_data_b Right end of the integration inverval.
+   * @param step_data_a Left end of the integration interval.
+   * @param step_data_b Right end of the integration interval.
    * @return A function object that takes @p StepData and returns a tuple of the time and
    * the value.
    * @return std::tuple<ValueType, DerivativeType> Result of the integration and the derivative of

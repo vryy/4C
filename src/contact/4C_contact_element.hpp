@@ -136,7 +136,7 @@ namespace CONTACT
 
      An element derived from this class uses the Evaluate method to receive commands
      and parameters from some control routine in params and evaluates element matrices and
-     vectors accoring to the command in params.
+     vectors according to the command in params.
 
      \note This class implements a dummy of this method that prints a dserror and
      returns false.

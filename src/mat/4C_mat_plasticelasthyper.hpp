@@ -387,7 +387,7 @@ namespace Mat
     void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
 
     /*!
-     * \brief Post setup routine, will be called after the complete inout is already befire the
+     * \brief Post setup routine, will be called after the complete inout is already before the
      * first evaluate call
      *
      * \param params Container for additional information

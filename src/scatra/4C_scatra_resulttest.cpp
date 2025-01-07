@@ -149,22 +149,22 @@ double ScaTra::ScaTraResultTest::result_node(
   }
 
   // test result values for biofilm growth (scatra structure and scatra fluid)
-  else if (quantity == "scstr_growth_displx")
+  else if (quantity == "scstr_growth_displ_x")
     result = ((*scatratimint_->str_growth())(
         0))[phinpmap.LID(scatratimint_->discretization()->dof(0, node, 0))];
-  else if (quantity == "scstr_growth_disply")
+  else if (quantity == "scstr_growth_displ_y")
     result = ((*scatratimint_->str_growth())(
         1))[phinpmap.LID(scatratimint_->discretization()->dof(0, node, 0))];
-  else if (quantity == "scstr_growth_displz")
+  else if (quantity == "scstr_growth_displ_z")
     result = ((*scatratimint_->str_growth())(
         2))[phinpmap.LID(scatratimint_->discretization()->dof(0, node, 0))];
-  else if (quantity == "scfld_growth_displx")
+  else if (quantity == "scfld_growth_displ_x")
     result = ((*scatratimint_->fld_growth())(
         0))[phinpmap.LID(scatratimint_->discretization()->dof(0, node, 0))];
-  else if (quantity == "scfld_growth_disply")
+  else if (quantity == "scfld_growth_displ_y")
     result = ((*scatratimint_->fld_growth())(
         1))[phinpmap.LID(scatratimint_->discretization()->dof(0, node, 0))];
-  else if (quantity == "scfld_growth_displz")
+  else if (quantity == "scfld_growth_displ_z")
     result = ((*scatratimint_->fld_growth())(
         2))[phinpmap.LID(scatratimint_->discretization()->dof(0, node, 0))];
 

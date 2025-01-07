@@ -213,8 +213,8 @@ void Adapter::FluidAle::output()
   if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::fsi)
   {
     // we want to be able to restart monolithically from an partitioned fsi scheme
-    const int uprestart = timeparams_.get<int>("RESTARTEVRY");
-    const int upres = timeparams_.get<int>("RESULTSEVRY");
+    const int uprestart = timeparams_.get<int>("RESTARTEVERY");
+    const int upres = timeparams_.get<int>("RESULTSEVERY");
 
     if ((uprestart != 0 && fluid_field()->step() % uprestart == 0) ||
         fluid_field()->step() % upres == 0)

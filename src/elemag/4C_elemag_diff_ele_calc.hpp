@@ -171,7 +171,7 @@ namespace Discret
          * \brief Projection of a given field on the interior variables for testing purposes.
          *
          * This is a debug utility necessary for code development and prototyping. The selection
-         * of the field to project is hard-coded whithin the method itself with the flags
+         * of the field to project is hard-coded within the method itself with the flags
          * do_internal and do_postprocess. The flags are used as follows:
          *  - do_internal projects the field in the internal dofs of the element
          *  - do_postprocess projects the field in the postprocessed internal dofs of the element
@@ -248,7 +248,7 @@ namespace Discret
 
         /// Chosen dynamics/time integrator
         Inpar::EleMag::DynamicType& dyna_;
-      };  // stuct LocalSolver
+      };  // struct LocalSolver
 
       /// Updates interior variables and calculates residual.
       void update_interior_variables_and_compute_residual(Teuchos::ParameterList& params,

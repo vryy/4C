@@ -124,7 +124,7 @@ namespace Adapter
             interface,  //!< interface for creation of additional, application-specific Dirichlet
                         //!< map extractors
         std::shared_ptr<const ALE::Utils::XFluidFluidMapExtractor>
-            xff_interface  //!< interface for creation of a Dirichlet map extractor, taylored to
+            xff_interface  //!< interface for creation of a Dirichlet map extractor, tailored to
                            //!< XFFSI
         ) = 0;
 

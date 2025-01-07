@@ -1307,9 +1307,9 @@ void Adapter::FluidBaseAlgorithm::set_general_parameters(
   // ----------------------------------------------- restart and output
   const Teuchos::ParameterList& ioflags = Global::Problem::instance()->io_params();
   // restart
-  fluidtimeparams->set<int>("write restart every", prbdyn.get<int>("RESTARTEVRY"));
+  fluidtimeparams->set<int>("write restart every", prbdyn.get<int>("RESTARTEVERY"));
   // solution output
-  fluidtimeparams->set<int>("write solution every", prbdyn.get<int>("RESULTSEVRY"));
+  fluidtimeparams->set<int>("write solution every", prbdyn.get<int>("RESULTSEVERY"));
   // flag for writing stresses
   fluidtimeparams->set<bool>("write stresses", ioflags.get<bool>("FLUID_STRESS"));
   // flag for writing wall shear stress
@@ -1318,7 +1318,7 @@ void Adapter::FluidBaseAlgorithm::set_general_parameters(
   // flag for writing element data in every step and not only once (i.e. at step == 0 or step ==
   // upres)
   fluidtimeparams->set<bool>(
-      "write element data in every step", ioflags.get<bool>("FLUID_ELEDATA_EVRY_STEP"));
+      "write element data in every step", ioflags.get<bool>("FLUID_ELEDATA_EVERY_STEP"));
   // flag for writing node data in the first time step
   fluidtimeparams->set<bool>(
       "write node data in first step", ioflags.get<bool>("FLUID_NODEDATA_FIRST_STEP"));

@@ -270,10 +270,10 @@ namespace Discret
       \param discretization (in): A reference to the underlying discretization
       \param lm (in):         location vector of this element
       \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
@@ -297,7 +297,7 @@ namespace Discret
 
       An element derived from this class uses the Evaluate method to receive commands
       and parameters from some control routine in params and evaluates element matrices and
-      vectors accoring to the command in params.
+      vectors according to the command in params.
 
       \note This class implements a dummy of this method that prints a warning and
             returns false.
@@ -365,7 +365,7 @@ namespace Discret
 
       /*!
        * \brief number of dofs per node (for systems of transport equations)
-       * (storage neccessary because we dont know the material in the post filters anymore)
+       * (storage necessary because we dont know the material in the post filters anymore)
        */
       int numdofpernode_;
 
@@ -579,10 +579,10 @@ namespace Discret
       \param discretization (in): A reference to the underlying discretization
       \param lm (in):         location vector of this element
       \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
@@ -606,7 +606,7 @@ namespace Discret
 
       An element derived from this class uses the Evaluate method to receive commands
       and parameters from some control routine in params and evaluates element matrices and
-      vectors accoring to the command in params.
+      vectors according to the command in params.
 
       \note This class implements a dummy of this method that prints a warning and
             returns false.
@@ -675,10 +675,10 @@ namespace Discret
       This version is intended to fill the LocationArray with the dofs
       the element will assemble into. In the standard case these dofs are
       the dofs of the element itself. For some special conditions (e.g.
-      the weak dirichlet boundary condtion) a surface element will assemble
+      the weak dirichlet boundary condition) a surface element will assemble
       into the dofs of a volume element.<br>
 
-      \note The degrees of freedom returned are not neccessarily only nodal dofs.
+      \note The degrees of freedom returned are not necessarily only nodal dofs.
             Depending on the element implementation, output might also include
             element dofs.
 

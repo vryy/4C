@@ -41,13 +41,13 @@ MAXTIME                         1000
 NUMSTEP                         18
 OUTPUTSCALARS                   entire_domain
 OUTPUT_GMSH                     No
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 SKIPINITDER                     yes
 SOLVERTYPE                      nonlinear
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 VELFUNCNO                       2
 VELOCITYFIELD                   function
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR

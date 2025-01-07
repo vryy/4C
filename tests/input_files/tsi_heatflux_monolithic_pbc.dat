@@ -22,7 +22,7 @@ NUMTHERMDIS                     1
 FILESTEPS                       1000
 FLUID_STRESS                    No
 OUTPUT_BIN                      Yes
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 STRUCT_DISP                     Yes
 STRUCT_STRAIN                   no
 STRUCT_STRESS                   2PK
@@ -58,9 +58,9 @@ NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
 PREDICT                         ConstDis
-RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     1
 STC_LAYER                       1
 STC_SCALING                     no
 TIMESTEP                        0.01
@@ -91,9 +91,9 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
 PREDICT                         ConstTemp
-RESEVRYERGY                     0
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESEVERYERGY                     0
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        0.01
 TOLRES                          1e-06
 TOLTEMP                         1e-08
@@ -104,9 +104,9 @@ COUPALGO                        tsi_monolithic
 ITEMAX                          15
 MAXTIME                         10
 NUMSTEP                         20
-RESTARTEVRY                     15
+RESTARTEVERY                     15
 TIMESTEP                        0.01
-RESULTSEVRY                           15
+RESULTSEVERY                           15
 ITEMIN                          1
 NORM_INC                        Abs
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
@@ -125,7 +125,7 @@ AZPREC                          Teko
 TEKO_XML_FILE                   xml/block_preconditioner/thermo_solid.xml
 AZREUSE                         10
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.2e3 NUE 0.0 DENS 7.6e-3 THEXPANS 1.0e-4 CAPA 3.4715e-2 CONDUCT 48.9e-04 INITTEMP 273.0
+MAT 1 MAT_Struct_ThermoStVenantK YOUNGNUM 1 YOUNG 2.2e3 NUE 0.0 DENS 7.6e-3 THEXPANS 1.0e-4 CAPA 3.4715e-2 CONDUCT 48.9e-04 INITTEMP 273.0
 MAT 2 THERM_FourierIso CAPA 3.4715e-2 CONDUCT 48.9e-04
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2

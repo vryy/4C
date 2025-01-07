@@ -67,7 +67,7 @@ namespace Core::GeometricSearch
 
     The number maxeleperleaf specifies the upper bound for the number of
     eleids attached to a octree leaf. If the number would be higher, the
-    octree element would be split into two children (which could be leafs
+    octree element would be split into two children (which could be leaves
     on their own)
 
     If an entity id is associated with a child of an octree element, it is
@@ -226,7 +226,7 @@ namespace Core::GeometricSearch
     //@}
 
    protected:
-    //! \brief all nodes in leafs are nodes of this discretization
+    //! \brief all nodes in leaves are nodes of this discretization
     const Core::FE::Discretization* discret_;
     //! \brief order of magnitude of smallest element size (used for tolerances)
     double tol_;
@@ -443,7 +443,7 @@ namespace Core::GeometricSearch
     /*! \brief Question if octree element is leaf
 
 
-    is the octree element a leaf, i.e. does it posess a vector
+    is the octree element a leaf, i.e. does it possess a vector
     of nodes attached to it?                         gammi 05/07
 
 

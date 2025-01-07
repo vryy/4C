@@ -216,7 +216,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_robin(std::shared_ptr<Core::LinAlg::Sp
         if (truss_ele == nullptr)
         {
           FOUR_C_THROW(
-              "Currently, only Truss Elements are allowed to evaluate point Robin Conditon. Cast "
+              "Currently, only Truss Elements are allowed to evaluate point Robin Condition. Cast "
               "to "
               "Truss Element failed.");
         }

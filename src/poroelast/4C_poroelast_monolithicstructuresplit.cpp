@@ -56,7 +56,7 @@ void PoroElast::MonolithicStructureSplit::setup_system()
     blockrowdofmap_->setup(*fullmap_, vecSpaces);
   }
 
-  // Use splitted structure matrix
+  // Use split structure matrix
   structure_field()->use_block_matrix();
 
   setup_coupling_and_matrices();
@@ -326,7 +326,7 @@ void PoroElast::MonolithicStructureSplit::recover_lagrange_multiplier_after_time
     // compute the above mentioned product
     sggcur_->multiply(false, *ddginc_, *sggddg);
 
-    // store the prodcut C_{\Gamma\Gamma} \Delta u_\Gamma^{n+1} in here
+    // store the product C_{\Gamma\Gamma} \Delta u_\Gamma^{n+1} in here
     std::shared_ptr<Core::LinAlg::Vector<double>> cggddg =
         Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map(), true);
     // compute the above mentioned product

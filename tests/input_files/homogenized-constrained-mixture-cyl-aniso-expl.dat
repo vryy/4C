@@ -5,8 +5,8 @@ PROBLEMTYPE                      Structure
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     3
-RESTARTEVRY                     3
+RESULTSEVERY                     3
+RESTARTEVERY                     3
 TIMESTEP                        10.0
 NUMSTEP                         6
 MAXTIME                         2500000

@@ -31,20 +31,20 @@ namespace Core::Materials
                                   ///< stored energy function
     m_beam_reissner_elast_hyper_bymodes,   ///< material parameters for a Simo-Reissner beam:
                                            ///< hyperelastic stored energy function, specified for
-                                           ///< indivual deformation modes
+                                           ///< individual deformation modes
     m_beam_reissner_elast_plastic,         ///< material for a Simo-Reissner beam: elasto-plastic
     m_beam_kirchhoff_elast_hyper,          ///< material parameters for a Kirchhoff-Love beam:
                                            ///< hyperelastic stored energy function
     m_beam_kirchhoff_elast_hyper_bymodes,  ///< material parameters for a Kirchhoff-Love beam:
                                            ///< hyperelastic stored energy function, specified for
-                                           ///< indivual deformation modes
+                                           ///< individual deformation modes
     m_beam_kirchhoff_torsionfree_elast_hyper,  ///< material parameters for a torsion-free,
                                                ///< isotropic Kirchhoff-Love beam: hyperelastic
                                                ///< stored energy function
     m_beam_kirchhoff_torsionfree_elast_hyper_bymodes,  ///< material parameters for a
                                                        ///< torsion-free, isotropic Kirchhoff-Love
                                                        ///< beam: hyperelastic stored energy
-                                                       ///< function, specified for indivual
+                                                       ///< function, specified for individual
                                                        ///< deformation modes
     m_shell_kirchhoff_love,                            ///< material for a Kirchhoff-Love shell
     m_carreauyasuda,       ///< fluid with nonlinear viscosity according to Carreau-Yasuda

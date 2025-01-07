@@ -286,8 +286,8 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::print_trace(Core::Elements::
   std::cout << "Local trace of element: " << ele->lid() << std::endl;
   std::cout << "Number of entries: " << localtrace_.size() << std::endl;
   std::cout << "Number of spatial dimensions: " << nsd_ << std::endl;
-  std::cout << "Numer of faces: " << nfaces_ << std::endl;
-  std::cout << "Numer of DOF per face: " << ele->num_dof_per_face(0) << std::endl;
+  std::cout << "Number of faces: " << nfaces_ << std::endl;
+  std::cout << "Number of DOF per face: " << ele->num_dof_per_face(0) << std::endl;
   unsigned int index = 0;
   unsigned int second_index = 0;
   for (std::vector<double>::iterator iter = localtrace_.begin(); iter != localtrace_.end();
@@ -315,7 +315,7 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::initialize_shapes(
     shapes_ = std::make_shared<Core::FE::ShapeValues<distype>>(
         ele->degree(), usescompletepoly_, 2 * ele->degree());
 
-    // TODO: Check wheter 2 * (ele->Degree()+1) is required as exact integration degree
+    // TODO: Check whether 2 * (ele->Degree()+1) is required as exact integration degree
     postproc_shapes_ = std::make_shared<Core::FE::ShapeValues<distype>>(
         ele->degree() + 1, usescompletepoly_, 2 * (ele->degree() + 1));
   }
@@ -1139,7 +1139,7 @@ int Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::project_field_te
       Core::LinAlg::SerialDenseVector trace(nsd_);
       Core::LinAlg::Matrix<nsd_, 1> xyz;
 
-      // Temporary variable to store the jacobian of the face (contains the weigth)
+      // Temporary variable to store the jacobian of the face (contains the weight)
       const double fac = shapesface_->jfac(q);
       // Coordinates of quadrature point in real coordinates from the face to
       // the temporary variable. It is just to make the code easier to handle
@@ -1240,7 +1240,7 @@ int Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::project_dirich_f
     Core::LinAlg::SerialDenseVector trace(nsd_);
     Core::LinAlg::Matrix<nsd_, 1> xyz;
 
-    // Temporary variable to store the jacobian of the face (contains the weigth)
+    // Temporary variable to store the jacobian of the face (contains the weight)
     const double fac = shapesface_->jfac(q);
     // Coordinates of quadrature point in real coordinates from the face to
     // the temporary variable. It is just to make the code easier to handle
@@ -1309,7 +1309,7 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::evaluate_all(co
         "provided, every component of the field will be initialized with the same values.");
 
   // If there is on component for each entry of the vector use une for each
-  // If the vector is half the number of the component only use the firt half
+  // If the vector is half the number of the component only use the first half
   // If the number of component is half of the vector, repeat the first half twice
   // If there is only one component always use it
   for (int d = 0; d < v.numRows(); ++d)
@@ -1340,7 +1340,7 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
         "components the field will be initialized componentwise, if only one component is "
         "provided, every component of the field will be initialized with the same values.");
   // If there is on component for each entry of the vector use une for each
-  // If the vector is half the number of the component only use the firt half
+  // If the vector is half the number of the component only use the first half
   // If the number of component is half of the vector, repeat the first half twice
   // If there is only one component always use it
   for (int d = 0; d < v.numRows(); ++d)
@@ -1376,7 +1376,7 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
         "provided, every component of the field will be initialized with the same values.");
 
   // If there is on component for each entry of the vector use one for each
-  // If the vector is half the number of the component only use the firt half
+  // If the vector is half the number of the component only use the first half
   // If the number of component is half of the vector, repeat the first half twice
   // If there is only one component always use it
   for (int d = 0; d < v.numRows(); ++d)
@@ -1411,7 +1411,7 @@ int Discret::Elements::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes
       Core::FE::get_ele_node_numbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
-  // certain coordinate. In fact the lenght of the vector is given by the number
+  // certain coordinate. In fact the length of the vector is given by the number
   // of shape functions, that is the same of the number of degrees of freedom of
   // an element.
   Core::LinAlg::SerialDenseVector values(shapes_->ndofs_);
@@ -1470,9 +1470,9 @@ int Discret::Elements::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes
 
   // Storing the number of nodes for each face of the element as vector
   // NumberCornerNodes
-  std::vector<int> ncn = Core::FE::get_number_of_face_element_corner_nodes(distype);
+  std::vector<int> n_corner_nodes = Core::FE::get_number_of_face_element_corner_nodes(distype);
   // NumberInternalNodes
-  std::vector<int> nin = Core::FE::get_number_of_face_element_internal_nodes(distype);
+  std::vector<int> n_internal_nodes = Core::FE::get_number_of_face_element_internal_nodes(distype);
 
   // Cycling the faces of the element
   Core::LinAlg::SerialDenseVector fvalues(shapesface_->nfdofs_);
@@ -1489,7 +1489,7 @@ int Discret::Elements::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes
     // The dimension of the coordinate matrix is now nsd_ times the number of nodes in the face.
     Core::LinAlg::Matrix<nsd_ - 1, nfn> xsishuffle(true);
 
-    // Cycling throught the nodes of the face to store the node positions in the
+    // Cycling through the nodes of the face to store the node positions in the
     // correct order using xsishuffle as a temporary vector
     for (int i = 0; i < nfn; ++i)
     {
@@ -1547,11 +1547,11 @@ int Discret::Elements::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes
           sum += fvalues(k) * temptrace[d * shapesface_->nfdofs_ + k];
         // Ordering the results of the interpolation in the vector being careful
         // about the ordering of the nodes in the faces.
-        if (i < ncn[f])
+        if (i < n_corner_nodes[f])
         {
           elevec1((nsd_ * 3 + d) * nen_ + shapesface_->faceNodeOrder[f][i]) += sum / nsd_;
         }
-        else if (i < nfn - nin[f])
+        else if (i < nfn - n_internal_nodes[f])
         {
           elevec1((nsd_ * 3 + d) * nen_ + shapesface_->faceNodeOrder[f][i]) += sum / (nsd_ - 1);
         }
@@ -1596,7 +1596,7 @@ Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::LocalSolver(
   // shape all matrices
   // Each one of these matrices is related to one equation of the formulation,
   // therefore ndofs equations in FEM terms) and one variable.
-  // The number of entries is then given by ndofs time sthe dimension of the
+  // The number of entries is then given by ndofs time the dimension of the
   // space where the unknown lies. For vectorial field nsd_ gives the dimension.
   Amat.shape(nsd_ * ndofs_, nsd_ * ndofs_);
   invAmat.shape(nsd_ * ndofs_, nsd_ * ndofs_);
@@ -1884,7 +1884,7 @@ Core::Utils::shared_ptr_from_ref(localMat)); inverseMass.solve();
   // MIXED SHAPE FUNCTIONS
   // The matrix that are going to be build here are D,I and J
   // loop over number of internal shape functions
-  // Here we need to create only the first part of tghe D and H matrix to be multiplied by the
+  // Here we need to create only the first part of the D and H matrix to be multiplied by the
   // transformation matrices and then put in the real D and H matrices
   Core::LinAlg::SerialDenseMatrix tempI(shapesface_->nfdofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
   Core::LinAlg::SerialDenseMatrix tempJ(shapesface_->nfdofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
@@ -1892,7 +1892,7 @@ Core::Utils::shared_ptr_from_ref(localMat)); inverseMass.solve();
   {
     // If the shape function is zero on the face we can just skip it. Remember
     // that the matrix have already been set to zero and therefore if nothing
-    // is done the value ramains zero
+    // is done the value remains zero
     // loop over number of face shape functions
     for (unsigned int j = 0; j < shapesface_->nfdofs_; ++j)
     {
@@ -2005,7 +2005,7 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_interio
     double dt, double sigma, double mu, double epsilon)
 {
   // The definitions of the matrices created here can be found in the internal
-  // paper from Berardocco "A hybridizable discontinous Galerkin method for
+  // paper from Berardocco "A hybridizable discontinuous Galerkin method for
   // electromagnetics in subsurface applications".
   // The explicit form of these matrices is reported for convenience?
   TEUCHOS_FUNC_TIME_MONITOR("Discret::Elements::ElemagDiffEleCalc::compute_interior_matrices");
@@ -2024,10 +2024,10 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_interio
   }
 
   Core::LinAlg::SerialDenseMatrix tmpMat(ndofs_, ndofs_);
-  // this temorary matrix is used to compute the numerical integration and the
+  // this temporary matrix is used to compute the numerical integration and the
   // values are then copied in the right places. Probably it is also possible
   // to have the matrix multiplication to obtain directly the correct matrices
-  // but it would mean to compute three time sthe same value for each shape
+  // but it would mean to compute three time the same value for each shape
   // function instead of computing it only omnce and then directly copying it.
   Core::LinAlg::multiply_nt(tmpMat, massPart, massPartW);
   double alpha;
@@ -2113,7 +2113,7 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_residua
   //  y = ((E + G) - F A^{-1} B)^{-1} (^E - I_s^{n+2})
 
   const unsigned int intdofs = ndofs_ * nsd_;
-  // All the vectors are initilized to zero
+  // All the vectors are initialized to zero
   Core::LinAlg::SerialDenseVector tempVec1(intdofs);
   Core::LinAlg::SerialDenseVector tempVec2(intdofs);
   // Once the compute source is ready we will need to delete these
@@ -2209,7 +2209,7 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_face_ma
   // space where we are looking for solutions) and therefore there will be three
   // big groups of nested for loops
 
-  // Be carefull about the fact that this routin is calld once per each face of
+  // Be careful about the fact that this routine is called once per each face of
   // the element and the convention of grouping the shape functions per spatial
   // dimension (first all those for x, then those for y and so on) is respected
   // on a face basis. Therefore expect to have submatrices of
@@ -2229,7 +2229,7 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_face_ma
   // MIXED SHAPE FUNCTIONS
   // The matrix that are going to be build here are D,I and J
   // loop over number of internal shape functions
-  // Here we need to create only the first part of tghe D and H matrix to be multiplied by the
+  // Here we need to create only the first part of the D and H matrix to be multiplied by the
   // transformation matrices and then put in the real D and H matrices
   Core::LinAlg::SerialDenseMatrix tempC(ndofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
   Core::LinAlg::SerialDenseMatrix tempH(ndofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
@@ -2237,7 +2237,7 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_face_ma
   {
     // If the shape function is zero on the face we can just skip it. Remember
     // that the matrix have already been set to zero and therefore if nothing
-    // is done the value ramains zero
+    // is done the value remains zero
     if (shapesface_->shfunctI.nonzero_on_face(i))
     {
       // loop over number of face shape functions
@@ -2365,7 +2365,7 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::condense_local_
   const unsigned int onfdofs = eleMat.numRows();
   const unsigned int intdofs = ndofs_ * nsd_;
 
-  // Thi can be useful to remember when coding
+  // This can be useful to remember when coding
   // int 	Multiply (char TransA, char TransB, double ScalarAB, Matrix &A, Matrix &B, double
   // ScalarThis) this = ScalarThis*this + ScalarAB*A*B
   Core::LinAlg::SerialDenseMatrix tempMat1(intdofs, intdofs);
@@ -2449,7 +2449,7 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_matrice
     const double tau)
 {
   // The material properties change elementwise or can also be computed pointwise?
-  // Check current_informations, \chapter{Elements and materials for electromagnetics},
+  // Check current_information, \chapter{Elements and materials for electromagnetics},
   // \section{Remarks}
   const Mat::ElectromagneticMat* elemagmat = static_cast<const Mat::ElectromagneticMat*>(mat.get());
   double sigma = elemagmat->sigma(ele.id());

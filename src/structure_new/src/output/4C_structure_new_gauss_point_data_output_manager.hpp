@@ -35,7 +35,7 @@ namespace Solid
      public:
       explicit GaussPointDataOutputManager(Inpar::Solid::GaussPointDataOutputType output_type);
 
-      void add_quantity_if_not_existant(const std::string& name, int size);
+      void add_quantity_if_not_existent(const std::string& name, int size);
 
       void merge_quantities(const std::unordered_map<std::string, int>& quantities);
 
@@ -119,7 +119,7 @@ namespace Solid
       std::unique_ptr<std::unordered_map<std::string, int>> receive_quantities_from_proc(
           const Core::Communication::Exporter& exporter, int from_proc) const;
 
-      void broadcast_my_quantitites(const Core::Communication::Exporter& exporter);
+      void broadcast_my_quantities(const Core::Communication::Exporter& exporter);
 
       void pack_my_quantities(std::vector<char>& data) const;
 

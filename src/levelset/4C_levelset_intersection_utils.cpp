@@ -321,7 +321,7 @@ void ScaTra::LevelSet::Intersection::prepare_cut(const Core::Elements::Element* 
       break;
     default:
       FOUR_C_THROW(
-          "Unknown elmenet type ( type = %s )", Core::FE::cell_type_to_string(distype).c_str());
+          "Unknown element type ( type = %s )", Core::FE::cell_type_to_string(distype).c_str());
       break;
   }
 

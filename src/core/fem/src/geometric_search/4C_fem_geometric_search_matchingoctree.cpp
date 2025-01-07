@@ -199,7 +199,7 @@ void Core::GeometricSearch::MatchingOctree::create_global_entity_matching(
 
   //--------------------------------------------------------------------
   // -> 2) round robin loop
-  // create an exporter for point to point comunication
+  // create an exporter for point to point communication
   Core::Communication::Exporter exporter(discret_->get_comm());
 
   for (int np = 0; np < numprocs; np++)
@@ -438,7 +438,7 @@ void Core::GeometricSearch::MatchingOctree::find_match(const Core::FE::Discretiz
   //--------------------------------------------------------------------
   // -> 2) round robin loop
 
-  // create an exporter for point to point comunication
+  // create an exporter for point to point communication
   // We do all communication with the communicator of the original
   // discretization.
   Core::Communication::Exporter exporter(discret_->get_comm());
@@ -591,7 +591,7 @@ void Core::GeometricSearch::MatchingOctree::fill_slave_to_master_gid_mapping(
   //--------------------------------------------------------------------
   // -> 2) round robin loop
 
-  // create an exporter for point to point comunication
+  // create an exporter for point to point communication
   // We do all communication with the communicator of the original
   // discretization.
   Core::Communication::Exporter exporter(discret_->get_comm());

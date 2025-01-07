@@ -44,7 +44,7 @@ void BeamInteraction::SphereBeamLinkingParams::init(
   const Teuchos::ParameterList& spherebeamlink_params_list =
       Global::Problem::instance()->beam_interaction_params().sublist("SPHERE BEAM LINK");
 
-  // time step for stochastic events concering crosslinking
+  // time step for stochastic events concerning crosslinking
   deltatime_ = spherebeamlink_params_list.get<double>("TIMESTEP");
 
   // safety check

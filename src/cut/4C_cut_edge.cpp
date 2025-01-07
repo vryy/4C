@@ -125,7 +125,7 @@ bool Cut::Edge::find_cut_points_mesh_cut(
         p->add_element(element);
       }
     }
-    // else we need to check for paralelism
+    // else we need to check for parallelism
     else
     {
       /* \   /
@@ -861,7 +861,7 @@ bool Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::compute_c
       case intersect_no_cut_point:
       case intersect_newton_failed:
       {
-        // if newton fails for edge-edge intersetion, it means least-square failed => no
+        // if newton fails for edge-edge intersection, it means least-square failed => no
         // intersection point
         retstatus = intersect_no_cut_point;
         /* do nothing */

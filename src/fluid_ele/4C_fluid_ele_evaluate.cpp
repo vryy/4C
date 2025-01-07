@@ -629,7 +629,7 @@ int Discret::Elements::Fluid::evaluate(Teuchos::ParameterList& params,
 
         if (myinflowcond.size() == 1) is_inflow_ele = true;
 
-        // exclude elemenets of inflow section
+        // exclude elements of inflow section
         if (not is_inflow_ele)
         {
           switch (distype)

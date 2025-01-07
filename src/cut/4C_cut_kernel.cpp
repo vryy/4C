@@ -156,7 +156,7 @@ bool Cut::Kernel::is_on_line(Point*& pt1, Point*& pt2, Point*& pt3, bool DeleteI
 /*----------------------------------------------------------------------------*
   Check whether the list of points given forms a convex polygon
   If any 3 points fall along the line, this will delete the middle point and
-  return new ptr. Intially the polygon is projected into the given plane
+  return new ptr. Initially the polygon is projected into the given plane
                                                                 Sudhakar 04/12
  *----------------------------------------------------------------------------*/
 std::vector<int> Cut::Kernel::check_convexity(const std::vector<Point*>& ptlist,

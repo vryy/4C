@@ -98,7 +98,7 @@ void Discret::Elements::FluidXWallBoundary::location_vector(const Core::FE::Disc
       //       as input in the respective evaluate routines
       parent_element()->location_vector(dis, la, doDirichlet);
       break;
-    case FLD::ba_none:
+    case FLD::boundary_none:
       FOUR_C_THROW("No action supplied");
       break;
     default:

@@ -179,7 +179,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   for (int i = 1; i < element2_->num_node(); i++)
     if (numdof_cont_ != element2_->num_dof_per_node(*contnodes[i]))
       FOUR_C_THROW(
-          "It is not possible to have different number of Dofs in continuos discretization");
+          "It is not possible to have different number of Dofs in continuous discretization");
   dim2_ = numdof_cont_ * element2_->num_node();
 
   // safety check

@@ -626,11 +626,11 @@ void STI::Monolithic::output_matrix_to_file(
         entries[indices[j]] = values[j];
 
       // loop over all sorted entries in current matrix row
-      for (auto& entrie : entries)
+      for (auto& entry : entries)
       {
         // write current matrix entry to file
-        if (std::abs(entrie.second) > tolerance)
-          file << rowgid << "," << entrie.first << "," << entrie.second << std::endl;
+        if (std::abs(entry.second) > tolerance)
+          file << rowgid << "," << entry.first << "," << entry.second << std::endl;
       }
     }
 

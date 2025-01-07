@@ -96,7 +96,7 @@ namespace XFEM
     //"XFEMSurfFluidFluid"
     const std::string cond_name_;
 
-    // Global Index in the blockmatrix of the coupled sytem [0] = fluid-, [1] = ale- block,
+    // Global Index in the blockmatrix of the coupled system [0] = fluid-, [1] = ale- block,
     // [2]struct- block
     std::vector<int> idx_;
   };

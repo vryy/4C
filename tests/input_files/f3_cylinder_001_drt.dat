@@ -24,8 +24,8 @@ FLUID_STRESS                    No
 LINEAR_SOLVER                   1
 TIMEINTEGR                      Af_Gen_Alpha
 LIFTDRAG                        Yes
-RESULTSEVRY                           5
-RESTARTEVRY                     25
+RESULTSEVERY                           5
+RESTARTEVERY                     25
 MAXTIME                         100.0
 NUMSTEP                         2
 NUMSTASTEPS                     1

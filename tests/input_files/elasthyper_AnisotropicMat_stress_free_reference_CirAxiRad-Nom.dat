@@ -7,8 +7,8 @@ PROBLEMTYPE                      Structure
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYPE                      GenAlpha
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        0.01
 NUMSTEP                         1
 MAXTIME                         5

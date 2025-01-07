@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace PoroElast
 {
-  //! base class for monolithic approaches, when the system is splitted for some reason
+  //! base class for monolithic approaches, when the system is split for some reason
   //! (most of the time this means some dofs are condensed)
   class MonolithicSplit : public Monolithic
   {
@@ -26,13 +26,13 @@ namespace PoroElast
     explicit MonolithicSplit(MPI_Comm comm, const Teuchos::ParameterList& timeparams,
         std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
-    //! Setup the monolithic system (depends on which field is splitted)
+    //! Setup the monolithic system (depends on which field is split)
     void setup_system() override = 0;
 
-    //! setup composed right hand side from field solvers (depends on which field is splitted)
+    //! setup composed right hand side from field solvers (depends on which field is split)
     void setup_rhs(bool firstcall = false) override = 0;
 
-    //! setup composed system matrix from field solvers (depends on which field is splitted)
+    //! setup composed system matrix from field solvers (depends on which field is split)
     void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override = 0;
 
     //! start a new time step

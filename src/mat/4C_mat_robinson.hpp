@@ -205,7 +205,7 @@ namespace Mat
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>&
             strain_p,  //!< (i) viscous strain \f$\varepsilon^v_n\f$ at t_n
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>&
-            strain_pn,  //!< (i) viscous strain \f$\varepsilon^v_{n+1}\f$ at t_n at t_{n+1}^<i>
+            strain_on,  //!< (i) viscous strain \f$\varepsilon^v_{n+1}\f$ at t_n at t_{n+1}^<i>
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>&
             devstress,  //!< (i) stress deviator \f$s_n\f$ at t_{n+1}^<i>
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>&
@@ -230,7 +230,7 @@ namespace Mat
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>&
             strain_p,  //!< (i) viscous strain \f$\varepsilon_{n}\f$ at t_n^i
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>&
-            strain_pn,  //!< (i) viscous strain \f$\varepsilon_{n+1}\f$ at t_{n+1}^i
+            strain_on,  //!< (i) viscous strain \f$\varepsilon_{n+1}\f$ at t_{n+1}^i
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>&
             devstress,  //!< (i) deviatoric stress \f$s_{n+1}\f$ at t_{n+1}^i
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>&
@@ -266,7 +266,7 @@ namespace Mat
                             [  0  ]  and at each Gauss point gp
 
     with - total strain increment/residual strains  iinc eps   -->  straininc
-         - viscous strain increment                 iinc eps^v -->  strain_pn
+         - viscous strain increment                 iinc eps^v -->  strain_on
          - back stress increment                    iinc al    -->  backstress
          - material tangent                         kee        -->  cmat
 

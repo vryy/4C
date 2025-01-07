@@ -28,7 +28,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | constructor                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  HomIsoTurbInitialField::HomIsoTurbInitialField(
+  HomoIsoTurbInitialField::HomoIsoTurbInitialField(
       FluidImplicitTimeInt& timeint, const Inpar::FLUID::InitialField initfield)
       : discret_(timeint.discret_),
         velnp_(timeint.velnp_),
@@ -192,7 +192,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | calculate initial field using fft            rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbInitialField::calculate_initial_field()
+  void HomoIsoTurbInitialField::calculate_initial_field()
   {
 #ifdef FOUR_C_WITH_FFTW
 
@@ -539,7 +539,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | set and non-dimensionalize experimental data rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbInitialField::prepare_exparimental_data()
+  void HomoIsoTurbInitialField::prepare_exparimental_data()
   {
     //----------------------------------------
     // set-up wave numbers
@@ -621,7 +621,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | get energy for given wave number             rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  double HomIsoTurbInitialField::interpolate_energy_from_spectrum(double k)
+  double HomoIsoTurbInitialField::interpolate_energy_from_spectrum(double k)
   {
     double energy = 0.0;
 
@@ -664,7 +664,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | get energy for given wave number             rasthofer 05/13 |
    *--------------------------------------------------------------*/
-  double HomIsoTurbInitialField::calculate_energy_from_spectrum(double k)
+  double HomoIsoTurbInitialField::calculate_energy_from_spectrum(double k)
   {
     // remark: k>0 here!
 
@@ -816,9 +816,9 @@ namespace FLD
   /*--------------------------------------------------------------*
    | constructor                                         bk 03/15 |
    *--------------------------------------------------------------*/
-  HomIsoTurbInitialFieldHDG::HomIsoTurbInitialFieldHDG(
+  HomoIsoTurbInitialFieldHDG::HomoIsoTurbInitialFieldHDG(
       FluidImplicitTimeInt& timeint, const Inpar::FLUID::InitialField initfield)
-      : HomIsoTurbInitialField(timeint, initfield)
+      : HomoIsoTurbInitialField(timeint, initfield)
   {
     // here we are using the interior velocity
     TimIntHDG* hdgfluid = dynamic_cast<TimIntHDG*>(&timeint);
@@ -870,7 +870,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | calculate initial field using fft                   bk 03/15 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbInitialFieldHDG::calculate_initial_field()
+  void HomoIsoTurbInitialFieldHDG::calculate_initial_field()
   {
 #ifdef FOUR_C_WITH_FFTW
 

@@ -115,7 +115,7 @@ namespace TSI
 
     //! communicate displacement vector to thermal field to enable their
     //! visualisation on the deformed body
-    void output_deformation_in_thr(std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp,
+    void output_deformation_in_thermo(std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp,
         Core::FE::Discretization& structdis);
 
     //@}

@@ -170,23 +170,23 @@ namespace
 
   template <typename Number>
   void update_base_delta_time(
-      Mixture::DepositionHistoryInterval<Number>& deposition_history_inverval, const double dt)
+      Mixture::DepositionHistoryInterval<Number>& deposition_history_interval, const double dt)
   {
-    if (deposition_history_inverval.base_dt <= 0)
+    if (deposition_history_interval.base_dt <= 0)
     {
       // timestep is set for the first time
-      deposition_history_inverval.base_dt = dt;
+      deposition_history_interval.base_dt = dt;
       return;
     }
 
-    if (!is_near(deposition_history_inverval.base_dt, dt))
+    if (!is_near(deposition_history_interval.base_dt, dt))
     {
       FOUR_C_THROW(
           "The timestep is not constant within the interval. The interval currently relies on a "
           "constant timestep of %f. You are stepping with %f (err = %f). You need to extend the "
           "implementation such that it can also handle adaptive/non equidistant timestepping.",
-          deposition_history_inverval.base_dt, dt,
-          std::abs(deposition_history_inverval.base_dt - dt));
+          deposition_history_interval.base_dt, dt,
+          std::abs(deposition_history_interval.base_dt - dt));
     }
   }
 
@@ -848,7 +848,7 @@ void Mixture::FullConstrainedMixtureFiber<Number>::update()
                   optimize_history_integration(interval.adaptivity_info, interval.timesteps.size(),
                       [&](const std::array<std::optional<unsigned int>, 5>& indices)
                       {
-                        // here I need to do a 5th order integration and compare it with 3rd oder
+                        // here I need to do a 5th order integration and compare it with 3rd order
                         auto ComputeIntegrationError = [&](auto integrand)
                         {
                           std::array<std::tuple<double, Number>, 5> values{};

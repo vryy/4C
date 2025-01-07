@@ -72,8 +72,8 @@ Lubrication::TimIntImpl::TimIntImpl(std::shared_ptr<Core::FE::Discretization> ac
       increment_(nullptr),
       prei_(nullptr),
       // Initialization of
-      upres_(params->get<int>("RESULTSEVRY")),
-      uprestart_(params->get<int>("RESTARTEVRY")),
+      upres_(params->get<int>("RESULTSEVERY")),
+      uprestart_(params->get<int>("RESTARTEVERY")),
 
       roughness_deviation_(params->get<double>("ROUGHNESS_STD_DEVIATION"))
 {
@@ -1055,7 +1055,7 @@ void Lubrication::TimIntImpl::evaluate_error_compared_to_analytical_sol()
     {
       const int errorfunctnumber = params_->get<int>("CALCERRORNO");
       if (errorfunctnumber < 1)
-        FOUR_C_THROW("invalid value of paramter CALCERRORNO for error function evaluation!");
+        FOUR_C_THROW("invalid value of parameter CALCERRORNO for error function evaluation!");
 
       eleparams.set<int>("error function number", errorfunctnumber);
       break;

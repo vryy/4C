@@ -53,7 +53,7 @@ Mat::MatListChemoReac::MatListChemoReac()
 
 
 /*----------------------------------------------------------------------*
- | construct the material object given material paramete     thon 06/15 |
+ | construct the material object given material parameter     thon 06/15 |
  *----------------------------------------------------------------------*/
 Mat::MatListChemoReac::MatListChemoReac(Mat::PAR::MatListChemoReac* params)
     : MatList(params), MatListChemotaxis(params), MatListReactions(params), paramsreachemo_(params)

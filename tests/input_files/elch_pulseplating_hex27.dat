@@ -14,14 +14,14 @@ INITFUNCNO                      3
 INITIALFIELD                    field_by_function
 MAXTIME                         0.02
 NUMSTEP                         7
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.0006
 VELFUNCNO                       1
 VELOCITYFIELD                   function
 CALCFLUX_BOUNDARY               total
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 MATID                           5
 SOLVERTYPE                      nonlinear
 OUTPUTSCALARS                   entire_domain

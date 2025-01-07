@@ -24,8 +24,8 @@ CONSTRAINT_VIOLATION                  yes
 MAXTIME                               0.002
 TIMESTEP                              0.001
 NUMSTEP                               2
-RESULTSEVRY                           5
-RESTARTEVRY                           5
+RESULTSEVERY                           5
+RESTARTEVERY                           5
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                               1.0E-07
 ITEMAX                                100
@@ -101,7 +101,7 @@ NONLINITER                            Newton
 NUMSTASTEPS                           0
 PHYSICAL_TYPE                         Incompressible
 PREDICTOR                             steady_state
-RESTARTEVRY                           20
+RESTARTEVERY                           20
 STARTFUNCNO                           -1
 START_THETA                           1
 STEADYSTEP                            -1

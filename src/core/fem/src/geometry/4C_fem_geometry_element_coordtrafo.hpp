@@ -577,7 +577,7 @@ namespace Core::Geo
 
   */
   template <FE::CellType distype, int dim, class M1, class V, class M2>
-  static inline void update_a_for_nwe(M1& A,  ///< system matrix
+  static inline void update_a_for_new(M1& A,  ///< system matrix
       const V& xsi,                           ///< vector of element coordinates
       const M2& xyze                          ///< nodal position array (3,numNodes)
   )
@@ -600,7 +600,7 @@ namespace Core::Geo
   */
   template <FE::CellType distype,  ///< shape of the element
       int dim, class V1, class V2, class V3, class M1>
-  static inline void update_rhs_for_nwe(V1& b,  ///< right-hand-sid
+  static inline void update_rhs_for_new(V1& b,  ///< right-hand-sid
       const V2& xsi,                            ///< vector of element coordinates
       const V3& x,                              ///< node in physical coordinates (x,y,z)
       const M1& xyze  ///< nodal coordinates of an element with shape DISTYPE
@@ -634,7 +634,7 @@ namespace Core::Geo
       const M1& xyze,                   ///< nodal position array
       const V3& x,                      ///< (x,y,z)
       Core::LinAlg::Matrix<3, 1>& xsi,  ///< (r,s,t)
-      bool fastinitguess)               ///< enhanced intitial guess
+      bool fastinitguess)               ///< enhanced initial guess
   {
     // REMARK: This function seemed to deliver wrong results!
     // It seems that some matrices (especially dx) were not cleared at the beginning!
@@ -707,12 +707,12 @@ namespace Core::Geo
       x_scaled(j) *= scale_vector(j);
     }
 
-    update_rhs_for_nwe<distype, dim>(b, xsi, x_scaled, xyze_scaled);
+    update_rhs_for_new<distype, dim>(b, xsi, x_scaled, xyze_scaled);
 
     int iter = 0;
     while (residual > Core::Geo::TOL14)
     {
-      update_a_for_nwe<distype, dim>(A, xsi, xyze_scaled);
+      update_a_for_new<distype, dim>(A, xsi, xyze_scaled);
 
       double det = Core::LinAlg::gauss_elimination<true, 3>(A, b, dx);
 
@@ -722,7 +722,7 @@ namespace Core::Geo
       }
 
       xsi += dx;
-      update_rhs_for_nwe<distype, dim>(b, xsi, x_scaled, xyze_scaled);
+      update_rhs_for_new<distype, dim>(b, xsi, x_scaled, xyze_scaled);
 
       residual = b.norm2();
       iter++;

@@ -182,7 +182,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
 
       /*!
@@ -411,7 +411,7 @@ namespace Discret
       void so_tet10_lumpmass(Core::LinAlg::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10>* emass);
 
       // These functions are basically copied from the So_integrator,
-      // along with the rather inconsitent matrix sizes.
+      // along with the rather inconsistent matrix sizes.
 
       //! Evaluate Tet10 Shapefcts at 4 gausspoints to keep them static
       std::vector<Core::LinAlg::Matrix<NUMNOD_SOTET10, 1>> so_tet10_4gp_shapefcts();

@@ -27,7 +27,7 @@ CALCERROR                       no
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 NUMSTEP                         5
 STEADYSTEP                      -1
 NUMSTASTEPS                     0

@@ -31,7 +31,7 @@ namespace Mortar
         int& minOverAllRanks, int& maxOverAllRanks, double& meanOverAllRanks);
 
     /*!
-    \brief Compute and print one row of statisitcs on parallel distribution table
+    \brief Compute and print one row of statistics on parallel distribution table
 
     \param[in] nameOfQuantity Name describing the quantity to be printed
     \param[in] quantityAcrossAllRanks Vector with number of nodes/elements per rank

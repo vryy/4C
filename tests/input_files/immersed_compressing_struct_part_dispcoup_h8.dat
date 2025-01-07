@@ -26,8 +26,8 @@ STRUCT_STRESS                   no
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      OneStepTheta
-RESULTSEVRY                     1
-RESTARTEVRY                     2
+RESULTSEVERY                     1
+RESTARTEVERY                     2
 TIMESTEP                        0.01
 NUMSTEP                         20000
 MAXTIME                         100.0
@@ -74,8 +74,8 @@ CONVCHECK                       L_2_norm
 INCONSISTENT_RESIDUAL           no
 INITIALFIELD                    zero_field
 CONVFORM                        convective
-RESULTSEVRY                           1
-RESTARTEVRY                     2
+RESULTSEVERY                           1
+RESTARTEVERY                     2
 NUMSTEP                         2
 ITEMAX                          10
 TIMESTEP                        0.01
@@ -109,8 +109,8 @@ EVALUATION_MAT                  integration_point
 COUPALGO                        iter_stagg_fixed_rel_param
 DEBUGOUTPUT                     No
 SECONDORDER                     No
-RESULTSEVRY                     1
-RESTARTEVRY                     2
+RESULTSEVERY                     1
+RESTARTEVERY                     2
 NUMSTEP                         3
 TIMESTEP                        0.01
 MAXTIME                         0.03
@@ -126,7 +126,7 @@ ITEMAX                          1
 COUPALGO                        partitioned
 SCHEME                          dirichletneumann
 DIVERCONT                       continue
-OUTPUT_EVRY_NLNITER             no
+OUTPUT_EVERY_NLNITER             no
 CORRECT_BOUNDARY_VELOCITIES     yes
 FLD_SRCHRADIUS_FAC              1
 STRCT_SRCHRADIUS_FAC            0.5

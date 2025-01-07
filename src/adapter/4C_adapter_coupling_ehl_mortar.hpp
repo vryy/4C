@@ -234,7 +234,7 @@ namespace Adapter
     double contact_LM_incr_norm_;
     std::shared_ptr<Core::LinAlg::Vector<double>>
         fscn_;  // structural contact forces of last time step (needed for time integration)
-    std::shared_ptr<Core::LinAlg::Vector<double>> z_;  //  contact lagrange mulitplier
+    std::shared_ptr<Core::LinAlg::Vector<double>> z_;  //  contact lagrange multiplier
 
     // recovery of contact LM
     std::shared_ptr<Core::LinAlg::SparseMatrix>

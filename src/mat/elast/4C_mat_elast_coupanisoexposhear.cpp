@@ -96,7 +96,7 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_element_data
   if (init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_EXTERNAL ||
       init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_FIBERS)
   {
-    // this is the initalization method for element fibers, so do nothing here
+    // this is the initialization method for element fibers, so do nothing here
     return;
   }
 
@@ -138,7 +138,7 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_gp_data_init
   if (init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_ELEMENT_EXTERNAL ||
       init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_ELEMENT_FIBERS)
   {
-    // this is the initalization method for nodal fibers, so do nothing here
+    // this is the initialization method for nodal fibers, so do nothing here
     return;
   }
 

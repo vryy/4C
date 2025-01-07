@@ -338,7 +338,7 @@ void Discret::Elements::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH18> cb;
       cb.multiply(cmat, bop);
       stiffmatrix->multiply_tn(detJ_w, bop, cb, 1.0);  // standard hex8 evaluation
-      // intergrate `geometric' stiffness matrix and add to keu *****************
+      // integrate `geometric' stiffness matrix and add to keu *****************
       calculate_geo_stiff(shapefunct_q9, deriv_q9, TinvT, gp, detJ_w, stress, stiffmatrix);
 
       // EAS technology: integrate matrices --------------------------------- EAS
@@ -868,7 +868,7 @@ void Discret::Elements::SoSh18::calculate_geo_stiff(const Core::LinAlg::Matrix<9
     const double detJ_w, const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& stress,
     Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix)
 {
-  // intergrate `geometric' stiffness matrix and add to keu *****************
+  // integrate `geometric' stiffness matrix and add to keu *****************
   for (int k = 0; k < 9; ++k)
     for (int l = 0; l < 9; ++l)
     {

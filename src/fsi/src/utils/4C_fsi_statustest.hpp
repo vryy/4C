@@ -59,7 +59,7 @@ namespace NOX
         Scaled
       };
 
-      //! Type that determines whether the norm is absolute or relative to the intial guess
+      //! Type that determines whether the norm is absolute or relative to the initial guess
       enum ToleranceType
       {
         //! Relative to starting guess

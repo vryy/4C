@@ -465,7 +465,7 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::project_field(
 
   if (elevec2.numRows() > 0)
   {
-    // Create the local matrix from starting at the addres where elevec2 is with the right shape
+    // Create the local matrix from starting at the address where elevec2 is with the right shape
     Core::LinAlg::SerialDenseMatrix localMat(
         Teuchos::View, elevec2.values(), shapes_->ndofs_, shapes_->ndofs_, msd_ + 1 + nsd_);
     // Initialize matrix to zeros
@@ -476,7 +476,7 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::project_field(
     {
       // jfac is a vector containing the jacobian times the weight of the quadrature points
       const double fac = shapes_->jfac(q);
-      // xyz is a vector containing the coordiantes of the quadrature points in real coordinates
+      // xyz is a vector containing the coordinates of the quadrature points in real coordinates
       Core::LinAlg::Matrix<nsd_, 1> xyz(false);
       // Filling xyz with the values take from the element xyzreal matrix
       for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_->xyzreal(d, q);
@@ -670,7 +670,7 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to
       Core::FE::get_ele_node_numbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
-  // certain coordinate. In fact the lenght of the vector is given by the number
+  // certain coordinate. In fact the length of the vector is given by the number
   // of shape functions, that is the same of the number of degrees of freedom of
   // an element.
   Core::LinAlg::SerialDenseVector values(shapes_->ndofs_);
@@ -738,9 +738,9 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to
 
   // Storing the number of nodes for each face of the element as vector
   // NumberCornerNodes
-  std::vector<int> ncn = Core::FE::get_number_of_face_element_corner_nodes(distype);
+  std::vector<int> n_corner_nodes = Core::FE::get_number_of_face_element_corner_nodes(distype);
   // NumberInternalNodes
-  std::vector<int> nin = Core::FE::get_number_of_face_element_internal_nodes(distype);
+  std::vector<int> n_internal_nodes = Core::FE::get_number_of_face_element_internal_nodes(distype);
 
   // Now the vector "matrix_state" contains the trace velocity values following
   // the local id numbers
@@ -769,7 +769,7 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to
     // times the number of nodes in the face.
     Core::LinAlg::Matrix<nsd_ - 1, nfn> xsishuffle(true);
 
-    // Cycling throught the nodes of the face to store the node positions in the
+    // Cycling through the nodes of the face to store the node positions in the
     // correct order using xsishuffle as a temporary vector
     for (int i = 0; i < nfn; ++i)
     {
@@ -802,10 +802,10 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to
         double sum_trace_density = 0.0;
         for (unsigned int k = 0; k < shapesface_->nfdofs_; ++k)
           sum_trace_density += fvalues(k) * solvalues[f * shapesface_->nfdofs_ * (1 + nsd_) + k];
-        if (i < ncn[f])
+        if (i < n_corner_nodes[f])
           elevec1((msd_ + 1 + nsd_) * nen_ + shapesface_->faceNodeOrder[f][i]) +=
               sum_trace_density / nsd_;
-        else if (i < nfn - nin[f])
+        else if (i < nfn - n_internal_nodes[f])
           elevec1((msd_ + 1 + nsd_) * nen_ + shapesface_->faceNodeOrder[f][i]) +=
               sum_trace_density / (nsd_ - 1);
         else
@@ -820,10 +820,10 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to
               fvalues(k) *
               solvalues[f * shapesface_->nfdofs_ * (1 + nsd_) + (1 + d) * shapesface_->nfdofs_ + k];
         }
-        if (i < ncn[f])
+        if (i < n_corner_nodes[f])
           elevec1((msd_ + 1 + nsd_ + 1 + d) * nen_ + shapesface_->faceNodeOrder[f][i]) +=
               sum_trace_momentum / nsd_;
-        else if (i < nfn - nin[f])
+        else if (i < nfn - n_internal_nodes[f])
           elevec1((msd_ + 1 + nsd_ + 1 + d) * nen_ + shapesface_->faceNodeOrder[f][i]) +=
               sum_trace_momentum / (nsd_ - 1);
         else

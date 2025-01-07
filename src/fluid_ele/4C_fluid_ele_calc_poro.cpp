@@ -81,7 +81,7 @@ Discret::Elements::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
   // change pointer to parameter list in base class to poro parameters
   Base::fldpara_ = Discret::Elements::FluidEleParameterPoro::instance();
   // this is just for convenience. The same pointer as above to circumvent casts when accessing poro
-  // specific paramters
+  // specific parameters
   porofldpara_ = Discret::Elements::FluidEleParameterPoro::instance();
 }
 
@@ -1212,7 +1212,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::gauss_point_loop(Teuchos::Par
     // parameters at integration point
     //----------------------------------------------------------------------
     // get material parameters at integration point
-    get_material_paramters(material);
+    get_material_parameters(material);
 
     // set viscous term from previous iteration to zero (required for
     // using routine for evaluation of momentum rhs/residual as given)
@@ -1668,7 +1668,8 @@ void Discret::Elements::FluidEleCalcPoro<distype>::gauss_point_loop_od(
         epren, epressnp_timederiv, epressam_timederiv, epressn_timederiv, eaccam, edispnp, edispn,
         egridv, egridvn, escaaf, emhist, echist, eporositynp);
 
-    //************************************************auxilary variables for computing the porosity_
+    //************************************************auxiliary variables for computing the
+    // porosity_
 
     // compute scalar at n+alpha_F or n+1
     std::shared_ptr<std::vector<double>> scalars = std::make_shared<std::vector<double>>(0);
@@ -1728,7 +1729,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::gauss_point_loop_od(
     // parameters at integration point
     //----------------------------------------------------------------------
     // get material parameters at integration point
-    get_material_paramters(material);
+    get_material_parameters(material);
 
     compute_spatial_reaction_terms(material, defgrd_inv);
 
@@ -5108,7 +5109,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::reac_stab(
 }
 
 template <Core::FE::CellType distype>
-void Discret::Elements::FluidEleCalcPoro<distype>::get_material_paramters(
+void Discret::Elements::FluidEleCalcPoro<distype>::get_material_parameters(
     std::shared_ptr<const Core::Mat::Material> material)
 {
   if (Base::fldpara_->mat_gp())
@@ -5493,7 +5494,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::compute_stabilization_paramet
 
       const double scaling = porofldpara_->stab_biot_scaling();
       const double effective_stiffness = compute_effective_stiffness();
-      // note: I do not know if the stabilization parameter should be devided by TimeFac(). It seems
+      // note: I do not know if the stabilization parameter should be divided by TimeFac(). It seems
       // to work, though...
       tau_struct_ =
           scaling * ((h_p) * (h_p)) / 12.0 / effective_stiffness / Base::fldparatimint_->time_fac();
@@ -6041,7 +6042,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_p
   else
     press_ = Base::funct_.dot(epreaf);
 
-  // fluid pressure at gradient w.r.t to paramater space coordinates at gauss point
+  // fluid pressure at gradient w.r.t to parameter space coordinates at gauss point
   refgrad_press_.multiply(Base::deriv_, epreaf);
 
   // get pressure time derivative at integration point

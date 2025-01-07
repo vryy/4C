@@ -20,29 +20,29 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 Core::IO::VisualizationParameters Core::IO::visualization_parameters_factory(
-    const Teuchos::ParameterList& visualization_ouput_parameter_list,
+    const Teuchos::ParameterList& visualization_output_parameter_list,
     const Core::IO::OutputControl& output_control, const double restart_time)
 {
   Core::IO::VisualizationParameters parameters;
 
   // Data format
   parameters.data_format_ = Teuchos::getIntegralValue<OutputDataFormat>(
-      visualization_ouput_parameter_list, "OUTPUT_DATA_FORMAT");
+      visualization_output_parameter_list, "OUTPUT_DATA_FORMAT");
 
   // Number of digits to reserve for time step count
   parameters.digits_for_time_step_ =
-      visualization_ouput_parameter_list.get<int>("TIMESTEP_RESERVE_DIGITS");
+      visualization_output_parameter_list.get<int>("TIMESTEP_RESERVE_DIGITS");
 
   parameters.directory_name_ = output_control.directory_name();
 
   // Parameters for output during the nonlinear solver
   parameters.every_iteration_virtual_time_increment_ =
-      visualization_ouput_parameter_list.get<double>("EVERY_ITERATION_VIRTUAL_TIME_INCREMENT");
+      visualization_output_parameter_list.get<double>("EVERY_ITERATION_VIRTUAL_TIME_INCREMENT");
   parameters.digits_for_iteration_ =
-      visualization_ouput_parameter_list.get<int>("EVERY_ITERATION_RESERVE_DIGITS");
+      visualization_output_parameter_list.get<int>("EVERY_ITERATION_RESERVE_DIGITS");
 
   // This value can be overwritten from the physical field
-  parameters.every_iteration_ = visualization_ouput_parameter_list.get<bool>("EVERY_ITERATION");
+  parameters.every_iteration_ = visualization_output_parameter_list.get<bool>("EVERY_ITERATION");
 
   parameters.file_name_prefix_ = output_control.file_name_only_prefix();
 
@@ -52,7 +52,7 @@ Core::IO::VisualizationParameters Core::IO::visualization_parameters_factory(
 
   // Type of output writer
   const auto output_writer =
-      Teuchos::getIntegralValue<OutputWriter>(visualization_ouput_parameter_list, "OUTPUT_WRITER");
+      Teuchos::getIntegralValue<OutputWriter>(visualization_output_parameter_list, "OUTPUT_WRITER");
   if (output_writer == OutputWriter::none)
   {
     FOUR_C_THROW(

@@ -186,7 +186,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::pre_evaluate_c
       active_coupl_elepairs.push_back(coupl_elepairs_[i]);
   }
 
-  // the following case takes care of the special occurence where the 1D element lies exactly in
+  // the following case takes care of the special occurrence where the 1D element lies exactly in
   // between two 2D/3D-elements which are owned by different processors
 
   // fill the GID-to-segment vector
@@ -1013,7 +1013,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::apply_mesh_mov
   // no need to do this
   if (porofluidprob_) return;
 
-  // only if we evalute in current configuration
+  // only if we evaluate in current configuration
   if (!evaluate_in_ref_config_)
   {
     // safety

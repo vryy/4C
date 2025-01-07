@@ -41,7 +41,7 @@ namespace Discret::Elements
    * where \f$n\f$ is the number of nodes of the element and \f$N^i\f$ is the \f$i\f$-th shape
    * function of the element.
    *
-   * @note This function determines the shape of the element at runtime and calles the respective
+   * @note This function determines the shape of the element at runtime and calls the respective
    * templated version of @p evaluate_neumann. If you already know the Core::FE::CellType
    * of the element at compile-time, you could directly call @evaluate_neumann.
    *

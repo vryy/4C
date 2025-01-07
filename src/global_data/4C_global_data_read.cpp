@@ -72,7 +72,7 @@ void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, c
 
   // the basic mesh reader. now add desired node and element readers to it!
   Core::IO::MeshReader meshreader(input, "NODE COORDS",
-      {.mesh_paritioning_parameters = Problem::instance()->mesh_partitioning_params(),
+      {.mesh_partitioning_parameters = Problem::instance()->mesh_partitioning_params(),
           .geometric_search_parameters = Problem::instance()->geometric_search_params(),
           .io_parameters = Problem::instance()->io_params()});
 
@@ -1598,7 +1598,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
         read_materials(*micro_problem, micro_reader);
 
         Core::IO::MeshReader micromeshreader(micro_reader, "NODE COORDS",
-            {.mesh_paritioning_parameters = Problem::instance()->mesh_partitioning_params(),
+            {.mesh_partitioning_parameters = Problem::instance()->mesh_partitioning_params(),
                 .geometric_search_parameters = Problem::instance()->geometric_search_params(),
                 .io_parameters = Problem::instance()->io_params()});
 
@@ -1731,7 +1731,7 @@ void Global::read_microfields_np_support(Global::Problem& problem)
     read_materials(*micro_problem, micro_reader);
 
     Core::IO::MeshReader micromeshreader(micro_reader, "NODE COORDS",
-        {.mesh_paritioning_parameters = Problem::instance()->mesh_partitioning_params(),
+        {.mesh_partitioning_parameters = Problem::instance()->mesh_partitioning_params(),
             .geometric_search_parameters = Problem::instance()->geometric_search_params(),
             .io_parameters = Problem::instance()->io_params()});
     micromeshreader.add_element_reader(
@@ -2010,7 +2010,7 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::InputFile& input
 
   // Set restart time based on walltime
   const double restartinterval = problem.io_params().get<double>("RESTARTWALLTIMEINTERVAL");
-  const int restartevry = problem.io_params().get<int>("RESTARTEVRY");
+  const int restartevry = problem.io_params().get<int>("RESTARTEVERY");
   problem.restart_manager()->setup_restart_manager(restartinterval, restartevry);
 
   // 4) set random seed

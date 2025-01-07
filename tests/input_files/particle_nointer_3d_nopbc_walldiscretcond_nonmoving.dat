@@ -1,7 +1,7 @@
 -----------------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Particle
 --------------------------------------------------------------------------IO
-STDOUTEVRY                      100
+STDOUTEVERY                      100
 VERBOSITY                       standard
 -------------------------------------------------------IO/RUNTIME VTK OUTPUT
 TIMESTEP_RESERVE_DIGITS         6
@@ -12,8 +12,8 @@ WRITEBINS                       none
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYPE                      VelocityVerlet
 INTERACTION                     None
-RESULTSEVRY                     10
-RESTARTEVRY                     100
+RESULTSEVERY                     10
+RESTARTEVERY                     100
 WRITE_GHOSTED_PARTICLES         yes
 TIMESTEP                        1e-3
 NUMSTEP                         400

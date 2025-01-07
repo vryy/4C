@@ -15,7 +15,7 @@ INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 MAXTIME                         10
 NUMSTEP                         20
-RESTARTEVRY                     10
+RESTARTEVERY                     10
 THETA                           0.66
 TIMEINTEGR                      Gen_Alpha
 ALPHA_M                         0.83333333333333
@@ -23,7 +23,7 @@ ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 TIMESTEP                        0.1
 VELOCITYFIELD                   zero
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 MATID                           1
 OUTPUTSCALARS                   entire_domain
 SKIPINITDER                     Yes

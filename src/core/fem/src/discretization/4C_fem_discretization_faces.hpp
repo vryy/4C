@@ -258,7 +258,7 @@ namespace Core::FE
     Will not return any ghosted element.
     This is an individual call and Filled()=true is a prerequisite
 
-    \return Adress of internal face element if element is owned by calling proc
+    \return Address of internal face element if element is owned by calling proc
     */
     virtual inline Core::Elements::Element* l_row_face(int lid) const
     {

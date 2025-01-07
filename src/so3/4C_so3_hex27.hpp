@@ -178,7 +178,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
 
       /*!
@@ -278,7 +278,7 @@ namespace Discret
 
       Evaluate So_hex27 element stiffness, mass, internal forces, etc.
 
-      If nullptr on input, the controling method does not expect the element
+      If nullptr on input, the controlling method does not expect the element
       to fill these matrices or vectors.
 
       \return 0 if successful, negative otherwise

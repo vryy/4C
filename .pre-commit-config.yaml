@@ -78,7 +78,6 @@ repos:
       - id: typos
         name: Check for typos
         types_or: [c++, c]
-        files: '^apps/'
         exclude: 'mm$'
 
   - repo: local

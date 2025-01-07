@@ -52,7 +52,7 @@ int NOX::Nln::FloatingPointException::check_and_print(std::ostream& os)
   }
   if (fetestexcept(FE_DIVBYZERO))
   {
-    os << "Floating Point Exception: DIVISON BY ZERO\n";
+    os << "Floating Point Exception: DIVISION BY ZERO\n";
     ++exception_occurred;
   }
 #endif

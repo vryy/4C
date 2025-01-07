@@ -31,7 +31,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  None
 THERM_TEMPGRAD                  None
 FILESTEPS                       100
-STDOUTEVRY                      10
+STDOUTEVERY                      10
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
@@ -46,8 +46,8 @@ THETA                           0.5
 ALPHA_M                         0.833333333333330
 ALPHA_F                         0.666666666666660
 GAMMA                           0.666666666666667
-RESULTSEVRY                     10
-RESTARTEVRY                     10000
+RESULTSEVERY                     10
+RESTARTEVERY                     10000
 MATID                           -1
 VELOCITYFIELD                   zero
 VELFUNCNO                       2

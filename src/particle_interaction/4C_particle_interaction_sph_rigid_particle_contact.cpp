@@ -54,7 +54,7 @@ void ParticleInteraction::SPHRigidParticleContactBase::setup(
   // set particle container bundle
   particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
-  // set interface to particle wall hander
+  // set interface to particle wall handler
   particlewallinterface_ = particlewallinterface;
 
   // set particle interaction writer

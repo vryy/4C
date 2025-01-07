@@ -37,7 +37,7 @@ Immersed::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
       globalproblem_(nullptr),
       displacementcoupling_(false),
       multibodysimulation_(false),
-      output_evry_nlniter_(false),
+      output_every_nlniter_(false),
       is_relaxation_(false),
       correct_boundary_velocities_(0),
       degree_gp_fluid_bound_(0),
@@ -121,7 +121,8 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::setup()
       globalproblem_->immersed_method_params().get<bool>("CORRECT_BOUNDARY_VELOCITIES");
 
   // set switch for output in every nln. iteration (for debugging)
-  output_evry_nlniter_ = globalproblem_->immersed_method_params().get<bool>("OUTPUT_EVRY_NLNITER");
+  output_every_nlniter_ =
+      globalproblem_->immersed_method_params().get<bool>("OUTPUT_EVERY_NLNITER");
 
   // print acceleration method
   if (globalproblem_->fsi_dynamic_params().get<FsiCoupling>("COUPALGO") ==
@@ -323,7 +324,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
   // write output after every solve of fluid and structure
   // current limitations:
   // max 100 partitioned iterations and max 100 timesteps in total
-  if (output_evry_nlniter_)
+  if (output_every_nlniter_)
   {
     int iter = ((FSI::Partitioned::iteration_counter())[0]);
     constexpr bool force_prepare = false;

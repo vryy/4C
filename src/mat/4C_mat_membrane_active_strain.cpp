@@ -277,15 +277,15 @@ void Mat::MembraneActiveStrain::evaluate_membrane(const Core::LinAlg::Matrix<3, 
   for (int i = 0; i < 3; i++) defgrd_active_inv_loc(i, i) = 1.0;
 
   // create full active def-grd
-  double voltage_theshold = params_->voltage_threshold_;
+  double voltage_threshold = params_->voltage_threshold_;
   double beta1 = params_->beta1_;
   double beta2 = params_->beta2_;
 
   double gamma = 0;
-  if (gpvoltage > voltage_theshold)
+  if (gpvoltage > voltage_threshold)
   {
-    gamma = (1 - std::exp(-beta1 * (gpvoltage - voltage_theshold))) *
-            (1 - std::exp(-beta2 * (gpvoltage - voltage_theshold)));
+    gamma = (1 - std::exp(-beta1 * (gpvoltage - voltage_threshold))) *
+            (1 - std::exp(-beta2 * (gpvoltage - voltage_threshold)));
   }
 
   activation_->at(gp) = gamma;

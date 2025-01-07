@@ -107,7 +107,7 @@ namespace NOX
 
       //! Clone a ::NOX::Abstract::Group derived object and use the computeF() method of that group
       //! for the perturbation instead of the ::NOX::Epetra::Interface::Required::computeF() method.
-      //! This is required for LOCA to get the operators correct during homotopy.
+      //! This is required for LOCAL to get the operators correct during homotopy.
       void set_group_for_compute_f(const ::NOX::Abstract::Group& group);
 
      protected:

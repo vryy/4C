@@ -764,7 +764,7 @@ void Mat::GrowthRemodelElastHyper::setup_g_r_3d(Core::LinAlg::Matrix<3, 3> const
   gp_ax_[gp] = axdir.dot(gp_reference_coordinates);
   gp_rad_[gp] = raddir.dot(gp_reference_coordinates);
 
-  // TODO: BE CAREFULL! So far, this prestretching procedure is only valid for certain materials and
+  // TODO: BE CAREFUL! So far, this prestretching procedure is only valid for certain materials and
   // a cylindrical geometry.
   //       The principle of the prestretching routine can easily be adapted to other materials or
   //       general geometries!!!

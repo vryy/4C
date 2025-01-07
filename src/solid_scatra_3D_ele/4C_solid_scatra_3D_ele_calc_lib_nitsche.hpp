@@ -49,7 +49,7 @@ namespace Discret::Elements
 
     return linearization_dependencies;
   }
-  /// Check wheter a solid-scatra variant can evaluate the Cauchy stress at xi in a specifc
+  /// Check whether a solid-scatra variant can evaluate the Cauchy stress at xi in a specific
   /// direction including the derivatives
   template <typename T, int dim, typename AlwaysVoid = void>
   constexpr bool can_evaluate_solid_scatra_cauchy_n_dir_at_xi = false;

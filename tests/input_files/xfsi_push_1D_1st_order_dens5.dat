@@ -30,8 +30,8 @@ FILESTEPS                       1000
 MAXTIME                         0.4
 TIMESTEP                        0.1
 NUMSTEP                         20
-RESULTSEVRY                           1
-RESTARTEVRY                     5
+RESULTSEVERY                           1
+RESTARTEVERY                     5
 COUPALGO                        iter_stagg_AITKEN_rel_param
 SECONDORDER                     No
 ----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
@@ -47,8 +47,8 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           1
-RESTARTEVRY                     5
+RESULTSEVERY                           1
+RESTARTEVERY                     5
 NUMSTEP                         2
 NUMSTASTEPS                     1
 MAXTIME                         0.4

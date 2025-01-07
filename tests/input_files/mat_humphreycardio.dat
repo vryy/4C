@@ -18,7 +18,7 @@ M_DAMP                          0.25
 NLNSOL                          fullnewton
 NUMSTEP                         20
 PREDICT                         ConstDis
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 TIMESTEP                        0.25
 TOLDISP                         1e-10
 TOLRES                          1e-08

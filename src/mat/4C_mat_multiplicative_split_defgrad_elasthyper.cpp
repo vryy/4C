@@ -373,12 +373,12 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_cauchy_n_dir_and_deriva
 
   if (d_cauchyndir_dF)
   {
-    static Core::LinAlg::Matrix<6, 1> d_I1_dbe(true);
-    d_I1_dbe = idV;
-    static Core::LinAlg::Matrix<6, 1> d_I2_dbe(true);
-    d_I2_dbe.update(prinv(0), idV, -1.0, beV_stress);
-    static Core::LinAlg::Matrix<6, 1> d_I3_dbe(true);
-    d_I3_dbe.update(prinv(2), ibeV_stress, 0.0);
+    static Core::LinAlg::Matrix<6, 1> d_I1_be(true);
+    d_I1_be = idV;
+    static Core::LinAlg::Matrix<6, 1> d_I2_be(true);
+    d_I2_be.update(prinv(0), idV, -1.0, beV_stress);
+    static Core::LinAlg::Matrix<6, 1> d_I3_be(true);
+    d_I3_be.update(prinv(2), ibeV_stress, 0.0);
 
     // calculation of \partial b_{el} / \partial F (elastic left cauchy-green w.r.t. deformation
     // gradient)
@@ -396,9 +396,9 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_cauchy_n_dir_and_deriva
     static Core::LinAlg::Matrix<9, 1> d_I1_dF(true);
     static Core::LinAlg::Matrix<9, 1> d_I2_dF(true);
     static Core::LinAlg::Matrix<9, 1> d_I3_dF(true);
-    d_I1_dF.multiply_tn(1.0, d_be_dF, d_I1_dbe, 0.0);
-    d_I2_dF.multiply_tn(1.0, d_be_dF, d_I2_dbe, 0.0);
-    d_I3_dF.multiply_tn(1.0, d_be_dF, d_I3_dbe, 0.0);
+    d_I1_dF.multiply_tn(1.0, d_be_dF, d_I1_be, 0.0);
+    d_I2_dF.multiply_tn(1.0, d_be_dF, d_I2_be, 0.0);
+    d_I3_dF.multiply_tn(1.0, d_be_dF, d_I3_be, 0.0);
 
     // add d_cauchyndir_dI1 \odot d_I1_dF and clear static matrix
     d_cauchyndir_dF->update(prefac * (prinv(1) * ddPII(5) * nddir + prinv(2) * ddPII(4) * nddir +

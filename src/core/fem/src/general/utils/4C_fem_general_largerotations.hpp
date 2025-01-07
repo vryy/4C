@@ -79,7 +79,7 @@ namespace Core::LargeRotations
     // absolute value of rotation angle theta
     const T abs_theta = Core::FADUtils::vector_norm(theta);
 
-    // computing quaterion for rotation by angle theta, Crisfield, Vol. 2, equation (16.67)
+    // computing quaternion for rotation by angle theta, Crisfield, Vol. 2, equation (16.67)
     if (abs_theta > 1e-12)
     {
       q(0) = theta(0) * sin(abs_theta / 2) / abs_theta;

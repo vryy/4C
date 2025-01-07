@@ -2179,7 +2179,7 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::calc_error(
           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func - 1)
           .number_components() != 1)
     FOUR_C_THROW(
-        "The number of component must be one. The grandient is computed with forward auomatic "
+        "The number of component must be one. The gradient is computed with forward auomatic "
         "differentiation.");
 
   Core::LinAlg::Matrix<3, 1> xsi;

@@ -50,10 +50,10 @@ VSTAB                           no_vstab
 COUPALGO                        iter_stagg_AITKEN_rel_param
 MAXTIME                         100
 NUMSTEP                         4
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 SECONDORDER                     No
 TIMESTEP                        0.05
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 BASETOL                         0.001
 CONVTOL                         1.0E-06

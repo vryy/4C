@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*
     Write the coordinates for a Nurbs discretization
-    The ccordinates of the vizualisation points (i.e. the corner
+    The coordinates of the visualisation points (i.e. the corner
     nodes of elements displayed in paraview) are not the control point
     coordinates of the nodes in the discretization but the points the
     knot values are mapped to.
@@ -112,7 +112,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(
       // connectivity, and everything looks nice and smooth again.
       // Note: This work-around will not work in parallel (or a
       //       special ghosting for elements along interpolated
-      //       boundries has to be applied)
+      //       boundaries has to be applied)
       // Note: The following element will be plotted twice
 
       actele = nurbsdis->g_element(knotvec->return_next_nonzero_ele_gid(actele->id()));
@@ -131,7 +131,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(
     // access elements knot span
     zero_size = (*knotvec).get_ele_knots(knots, actele->id());
 
-    // aquire weights from nodes
+    // acquire weights from nodes
     Core::LinAlg::SerialDenseVector weights(numnp);
 
     for (int inode = 0; inode < numnp; ++inode)
@@ -1343,7 +1343,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(
   vispointmap_ = std::make_shared<Epetra_Map>(numvispoints, local_vis_point_ids.size(),
       local_vis_point_ids.data(), 0, Core::Communication::as_epetra_comm(nurbsdis->get_comm()));
 
-  // allocate the coordinates of the vizualisation points
+  // allocate the coordinates of the visualisation points
   nodecoords = std::make_shared<Core::LinAlg::MultiVector<double>>(*vispointmap_, 3);
 
   // loop over the nodes on this proc and store the coordinate information
@@ -1397,7 +1397,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(
          Write the cells for a Nurbs discretization
          quadratic nurbs split one element in knot space into
          four(2d)/eight(3d) cells. The global numbering of the
-         vizualisation points (i.e. the corner points of the
+         visualisation points (i.e. the corner points of the
          cells) is computed from the local patch numbering and
          the patch offset.                             (gammi)
 ----------------------------------------------------------------------*/
@@ -1695,7 +1695,7 @@ void EnsightWriter::write_nurbs_cell(const Core::FE::CellType distype, const int
 
     This element data is communicated in such a way that
     all elements have access to their (dof-accessible) data.
-    Here we seperate velocity/displacement and pressure
+    Here we separate velocity/displacement and pressure
     output, since for velocity/displacement and pressure
     different dofs are required.
 
@@ -1733,7 +1733,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   // equal to spatial dimension
   int dim = (int)(nurbsdis->return_nele_x_mele_x_lele(0)).size();
 
-  // the number of vizualisation points
+  // the number of visualisation points
   int numvispoints = 0;
 
   for (int np = 0; np < npatches; ++np)
@@ -1941,7 +1941,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
       // connectivity, and everything looks nice and smooth again.
       // Note: This work-around will not work in parallel (or a
       //       special ghosting for elements along interpolated
-      //       boundries has to be applied)
+      //       boundaries has to be applied)
       // Note: The following element will be plotted twice
 
       actele = nurbsdis->g_element(knotvec->return_next_nonzero_ele_gid(actele->id()));
@@ -1953,7 +1953,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
     // number of all control points of the element
     const int numnp = actele->num_node();
 
-    // aquire weights from nodes
+    // acquire weights from nodes
     Core::LinAlg::SerialDenseVector weights(numnp);
 
     for (int inode = 0; inode < numnp; ++inode)
@@ -2147,7 +2147,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
     Perform interpolation of result data to visualization points.
     This routine is used for dofmap-based as well as for nodemap-based
     data. The results for the current element have to be provided in
-    my_data acoordingly.
+    my_data accordingly.
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::interpolate_nurbs_result_to_viz_points(Core::LinAlg::MultiVector<double>& idata,
@@ -3460,7 +3460,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
       // connectivity, and everything looks nice and smooth again.
       // Note: This work-around will not work in parallel (or a
       //       special ghosting for elements along interpolated
-      //       boundries has to be applied)
+      //       boundaries has to be applied)
       // Note: The following element will be plotted twice
 
       actele = nurbsdis->g_element(knotvec->return_next_nonzero_ele_gid(actele->id()));
@@ -3472,7 +3472,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
     // number of all control points of the element
     const int numnp = actele->num_node();
 
-    // aquire weights from nodes
+    // acquire weights from nodes
     Core::LinAlg::SerialDenseVector weights(numnp);
 
     for (int inode = 0; inode < numnp; ++inode)

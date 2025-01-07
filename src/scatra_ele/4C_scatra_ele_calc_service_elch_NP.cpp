@@ -200,7 +200,7 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::get_conductivity(
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcElchNP<distype>::calculate_flux(
     Core::LinAlg::Matrix<nsd_, 1>& q,        //!< flux of species k
-    const Inpar::ScaTra::FluxType fluxtype,  //!< type fo flux
+    const Inpar::ScaTra::FluxType fluxtype,  //!< type of flux
     const int k                              //!< index of current scalar
 )
 {

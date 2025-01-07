@@ -65,7 +65,7 @@ namespace Mat
       //! @name stretch dependent activation contribution
       const double lambdaMin_;  ///< minimal active fiber stretch
       const double
-          lambdaOpt_;  ///< optimal active fiber stretch related active nominal stress maximimum
+          lambdaOpt_;  ///< optimal active fiber stretch related active nominal stress maximum
       //! @}
 
       //! @name velocity dependent activation contribution: slight modification of original function

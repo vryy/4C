@@ -47,9 +47,9 @@ PREDICT                         ConstDisVelAcc
 PRESTRESS                       none
 PRESTRESSTIME                   0
 PTCDT                           0.1
-RESEVRYERGY                     0
-RESTARTEVRY                     0
-RESULTSEVRY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     0
+RESULTSEVERY                     1
 STC_LAYER                       1
 STC_SCALING                     no
 TIMESTEP                        0.05
@@ -67,8 +67,8 @@ LINEAR_SOLVER                   2
 MAXTIME                         20.0
 TIMESTEP                        0.01
 NUMSTEP                         4
-RESULTSEVRY                           1
-RESTARTEVRY                     2
+RESULTSEVERY                           1
+RESTARTEVERY                     2
 COUPALGO                        iter_xfem_monolithic
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
@@ -100,7 +100,7 @@ PREDICTOR                       d(n)+dt*v(n)
 RELAX                           0.825
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
-RESTARTEVRY                     0
+RESTARTEVERY                     0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 INITIALFIELD                    zero_field

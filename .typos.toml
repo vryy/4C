@@ -6,3 +6,12 @@ ele = "ele" # "element"
 eles = "eles" # "elements"
 nd = "nd"  # "number of dimensions"
 mor = "mor" # "model order reduction"
+ba = "ba" # frequently used as indices or a product of two matrices B and A
+ue = "ue" # elastic stretch tensor
+ser = "ser" # "switched evolution relaxation" (used for pseudo transient continuation)
+ded = "ded" # derivative w.r.t. electrode variables
+uncomplete = "uncomplete" # used in the context of the uncomplete() call fo a sparse matrix
+
+# German words we want to keep as is.
+Interaktion = "Interaktion"
+Elemente = "Elemente"

@@ -41,7 +41,7 @@ INT_STRATEGY                          Standard
 DYNAMICTYPE                            Statics
 PRESTRESS                             none
 PRESTRESSTIME                         0
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 NLNSOL                                fullnewton
 PREDICT                               TangDis
 TIMESTEP                              0.1

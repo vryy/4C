@@ -36,7 +36,7 @@
 // #define BEAM3EBAUTOMATICDIFF      // is Sacado used or not?
 //  Default: off
 
-// #define CONSISTENTANSBEAM3EB   //Decide wether the variational correct or the simplified ANS
+// #define CONSISTENTANSBEAM3EB   //Decide whether the variational correct or the simplified ANS
 //  approach should be applied Default: off
 
 // #define INEXTENSIBLE 1.0        //apply inextensibility constraint. only possible in combination
@@ -204,7 +204,7 @@ namespace Discret::Elements
       Tref_i = tref()[i];
     }
 
-    //! \brief Get maximal bending curvature occuring in this element
+    //! \brief Get maximal bending curvature occurring in this element
     const double& get_kappa_max() const { return kappa_max_; }
 
     //! \brief Get material cross-section deformation measures, i.e. strain resultants
@@ -331,7 +331,7 @@ namespace Discret::Elements
 
     An element derived from this class uses the Evaluate method to receive commands
     and parameters from some control routine in params and evaluates element matrices and
-    vectors accoring to the command in params.
+    vectors according to the command in params.
 
     \note This class implements a dummy of this method that prints a warning and
           returns false.
@@ -521,9 +521,9 @@ namespace Discret::Elements
     Core::LinAlg::Matrix<3, 2> t0_;
     //! nodal tangents of current time step (necessary for PTC scheme)
     Core::LinAlg::Matrix<3, 2> t_;
-    //! norm of maximal curvature occuring in this element
+    //! norm of maximal curvature occurring in this element
     double kappa_max_;
-    //! norm of maximal axial tension occuring in this element
+    //! norm of maximal axial tension occurring in this element
     double epsilon_max_;
 
     //! strain resultant values at GPs

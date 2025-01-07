@@ -78,7 +78,7 @@ void CONTACT::IntegratorNitscheFsi::integrate_gp_3d(Mortar::Element& sele, Morta
     std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
     std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi)
 {
-  // Here the consistent element normal is use to allow for a continous transition between FSI and
+  // Here the consistent element normal is use to allow for a continuous transition between FSI and
   // Contact
   double n[3];
   sele.compute_unit_normal_at_xi(sxi, n);

@@ -26,7 +26,7 @@ namespace
    * eigenpairs have to be ordered properly w.r.t. reference eigenpairs
    * For further information, refer to:
    *    -# Satheesh et al., Structure-Preserving Invariant Interpolation Schemes for
-   * Invertible Second-Order Tensors, Int J Numer Methods Eng. 2024, 125, 10.1002/nme.7373,
+   * Invertible Second-Order Tensors, Int J Number Methods Eng. 2024, 125, 10.1002/nme.7373,
    * Section 5.1
    *
    * @param[in]  ref_eigenpairs  eigenpairs of the reference matrix
@@ -141,7 +141,7 @@ namespace
     double min_distance = -1.0;
     std::vector<unsigned int> closest_matrix_inds;
 
-    // vector of maximum relevant eigenvalues (for which the corresonding base eigenvalues have a
+    // vector of maximum relevant eigenvalues (for which the corresponding base eigenvalues have a
     // multiplicity higher than 1)
     std::vector<double> max_eigenval(spectral_pairs.size(), 0.0);
 

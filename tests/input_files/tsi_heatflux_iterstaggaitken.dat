@@ -51,9 +51,9 @@ NORM_DISP                       Abs
 NORM_RESF                       Mix
 NUMSTEP                         200
 PREDICT                         ConstDis
-RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     1
 TIMESTEP                        1
 TOLDISP                         1e-10
 TOLRES                          1e-04
@@ -73,8 +73,8 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         5
 PREDICT                         ConstTemp
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        1.0
 TOLRES                          1e-08
 TOLTEMP                         1e-10
@@ -86,9 +86,9 @@ ITEMAX                          100
 MAXTIME                         5.0
 NUMSTEP                         2000
 NORM_INC                        Abs
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 TIMESTEP                        1.0
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 -----------------------------------------------------TSI DYNAMIC/PARTITIONED
 CONVTOL                         1e-06
 COUPVARIABLE                    Displacement
@@ -100,7 +100,7 @@ SOLVER                          UMFPACK
 NAME                            STRUCTURAL_SOLVER
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 21000 NUE 0.3 DENS 1.0 THEXPANS 1.2e-05 CAPA 3297000.0 CONDUCT 52.0 INITTEMP 0.0
+MAT 1 MAT_Struct_ThermoStVenantK YOUNGNUM 1 YOUNG 21000 NUE 0.3 DENS 1.0 THEXPANS 1.2e-05 CAPA 3297000.0 CONDUCT 52.0 INITTEMP 0.0
 // CAPA = C_V* rho = 420* = 420
 MAT 2 THERM_FourierIso CAPA 420 CONDUCT 52
 --------------------------------------------------------CLONING MATERIAL MAP

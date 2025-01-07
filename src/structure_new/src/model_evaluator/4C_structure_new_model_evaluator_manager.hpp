@@ -368,10 +368,10 @@ namespace Solid
     //! calculation of stresses and strains
     void determine_stress_strain();
 
-    //! calculation of engery
+    //! calculation of energy
     void determine_energy();
 
-    //! calculation of an optional quantitiy
+    //! calculation of an optional quantity
     void determine_optional_quantity();
 
     //! Write the current step state
@@ -391,7 +391,7 @@ namespace Solid
     /*!
      * \brief Reset the current state variables to the ones of the previous timestep
      *
-     * This is used for example to output the last successfull timestep.
+     * This is used for example to output the last successful timestep.
      */
     void reset_step_state();
 

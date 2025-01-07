@@ -542,7 +542,7 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
     if (!found) continue;
 
     // if at least one of the element's nodes holds a xfem condition,
-    // add all node gids to the adjecent node sets
+    // add all node gids to the adjacent node sets
     for (int n = 0; n < numnode; ++n)
     {
       const int node_gid(nodeids[n]);
@@ -997,7 +997,7 @@ void XFEM::MeshCouplingWeakDirichlet::evaluate_coupling_conditions_old_state(
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingWeakDirichlet::prepare_solve()
 {
-  // set the new interface displacements where DBCs or Neumann BCs have to be evaluted
+  // set the new interface displacements where DBCs or Neumann BCs have to be evaluated
   set_interface_displacement();
 
   // set or compute the current prescribed interface velocities, just for XFEM WDBC
@@ -1178,7 +1178,7 @@ void XFEM::MeshCouplingNeumann::evaluate_coupling_conditions_old_state(
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingNeumann::prepare_solve()
 {
-  // set the new interface displacements where DBCs or Neumann BCs have to be evaluted
+  // set the new interface displacements where DBCs or Neumann BCs have to be evaluated
   set_interface_displacement();
 }
 
@@ -1353,7 +1353,7 @@ void XFEM::MeshCouplingNavierSlip::evaluate_coupling_conditions_old_state(
 
 void XFEM::MeshCouplingNavierSlip::prepare_solve()
 {
-  // set the new interface displacements where DBCs or Neumann BCs have to be evaluted
+  // set the new interface displacements where DBCs or Neumann BCs have to be evaluated
   set_interface_displacement();
 
   //  // set the initial interface velocity and possible initialization function
@@ -1853,7 +1853,7 @@ void XFEM::MeshCouplingFSI::set_condition_specific_parameters()
     }
     case Inpar::XFEM::noslip_splitpen:
     {
-      std::cout << " no-slip with splitted normal and tangential penalty contribution! |=="
+      std::cout << " no-slip with split normal and tangential penalty contribution! |=="
                 << std::endl;
       break;
     }
@@ -1995,7 +1995,7 @@ void XFEM::MeshCouplingFSI::setup_configuration_map()
         configuration_map_[Inpar::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
         configuration_map_[Inpar::XFEM::X_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
 
-        // to guarantee correct scaling, terms are not evaluted
+        // to guarantee correct scaling, terms are not evaluated
         configuration_map_[Inpar::XFEM::F_Pen_Col] = std::pair<bool, double>(false, 1.0);
         configuration_map_[Inpar::XFEM::X_Pen_Col] = std::pair<bool, double>(false, 1.0);
         configuration_map_[Inpar::XFEM::F_Adj_n_Col] = std::pair<bool, double>(false, 1.0);
@@ -2265,7 +2265,7 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp_contact(
   }
 #endif
 
-  if (pure_fsi)  // standard FSI with gernal Navier-slip --> Case I
+  if (pure_fsi)  // standard FSI with general Navier-slip --> Case I
   {
     xf_c_comm_->inc_gp(3);
     configuration_map_[Inpar::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
@@ -2408,7 +2408,7 @@ void XFEM::MeshCouplingFSI::get_stress_tangent_slave(
   //    FOUR_C_THROW("get_coupling_specific_average_weights: Slave Material not a Elasthyper
   //    material?");
 
-  // this is a temporal hack as we calculate "E/h" directely with the generalized eigenvalue problem
+  // this is a temporal hack as we calculate "E/h" directly with the generalized eigenvalue problem
   // ... need to work on the input section to clarify this ...
   e_s = timefac_;
 

@@ -223,14 +223,14 @@ void FSI::MonolithicStructureSplit::setup_system()
   // create combined map
   create_combined_dof_row_map();
 
-  // Use normal matrix for fluid equations but build (splitted) mesh movement
+  // Use normal matrix for fluid equations but build (split) mesh movement
   // linearization (if requested in the input file)
   fluid_field()->use_block_matrix(false);
 
-  // Use splitted structure matrix
+  // Use split structure matrix
   structure_field()->use_block_matrix();
 
-  // build ale system matrix in splitted system
+  // build ale system matrix in split system
   ale_field()->create_system_matrix(ale_field()->interface());
 
   aleresidual_ =
@@ -647,7 +647,7 @@ void FSI::MonolithicStructureSplit::setup_system_matrix(Core::LinAlg::BlockSpars
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here.
 
-  // Uncomplete fluid matrix to be able to deal with slightly defective
+  // Incomplete fluid matrix to be able to deal with slightly defective
   // interface meshes.
   f->un_complete();
 
@@ -1176,8 +1176,8 @@ void FSI::MonolithicStructureSplit::output_lambda()
    */
   std::shared_ptr<Core::LinAlg::Vector<double>> lambdafull =
       structure_field()->interface()->insert_fsi_cond_vector(*lambda_);
-  const int uprestart = timeparams_.get<int>("RESTARTEVRY");
-  const int upres = timeparams_.get<int>("RESULTSEVRY");
+  const int uprestart = timeparams_.get<int>("RESTARTEVERY");
+  const int upres = timeparams_.get<int>("RESULTSEVERY");
   if ((uprestart != 0 && fluid_field()->step() % uprestart == 0) or
       (upres != 0 and fluid_field()->step() % upres == 0))
     structure_field()->disc_writer()->write_vector("fsilambda", lambdafull);

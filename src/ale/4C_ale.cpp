@@ -48,8 +48,8 @@ ALE::Ale::Ale(std::shared_ptr<Core::FE::Discretization> actdis,
       time_(0.0),
       maxtime_(params_->get<double>("MAXTIME")),
       dt_(params_->get<double>("TIMESTEP")),
-      writerestartevery_(params->get<int>("RESTARTEVRY")),
-      writeresultsevery_(params->get<int>("RESULTSEVRY")),
+      writerestartevery_(params->get<int>("RESTARTEVERY")),
+      writeresultsevery_(params->get<int>("RESULTSEVERY")),
       sysmat_(nullptr),
       residual_(nullptr),
       rhs_(nullptr),
@@ -842,7 +842,7 @@ bool ALE::Ale::evaluate_element_quality()
   }
   else
   {
-    // no assesment of mesh quality. Return true to assume that everything is fine.
+    // no assessment of mesh quality. Return true to assume that everything is fine.
     return true;
   }
 }

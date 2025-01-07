@@ -48,8 +48,9 @@ void Inpar::ALE::set_valid_parameters(Teuchos::ParameterList& list)
       "TOLDISP", 1.0e-06, "Absolute tolerance for length scaled L2 increment norm ", &adyn);
 
   Core::Utils::int_parameter("NUM_INITSTEP", 0, "", &adyn);
-  Core::Utils::int_parameter("RESTARTEVRY", 1, "write restart data every RESTARTEVRY steps", &adyn);
-  Core::Utils::int_parameter("RESULTSEVRY", 0, "write results every RESULTSTEVRY steps", &adyn);
+  Core::Utils::int_parameter(
+      "RESTARTEVERY", 1, "write restart data every RESTARTEVERY steps", &adyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 0, "write results every RESULTSTEVERY steps", &adyn);
   setStringToIntegralParameter<Inpar::ALE::DivContAct>("DIVERCONT", "continue",
       "What to do if nonlinear solver does not converge?", tuple<std::string>("stop", "continue"),
       tuple<Inpar::ALE::DivContAct>(divcont_stop, divcont_continue), &adyn);

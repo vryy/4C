@@ -79,10 +79,10 @@ namespace FLD
     // initialize
     withscatra_ = false;
 
-    // toogle statistics output for turbulent inflow
+    // toggle statistics output for turbulent inflow
     inflow_ = params_->sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW") == true;
 
-    // toogle output of mean velocity for paraview
+    // toggle output of mean velocity for paraview
     out_mean_ = params_->sublist("TURBULENCE MODEL").get<bool>("OUTMEAN");
 
     // the flow parameter will control for which geometry the

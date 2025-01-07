@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// Prestress stragegy factory generates the prestress strategy for a specific material id
+// Prestress strategy factory generates the prestress strategy for a specific material id
 Mixture::PAR::PrestressStrategy* Mixture::PAR::PrestressStrategy::factory(int matid)
 {
   // for the sake of safety

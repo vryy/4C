@@ -44,7 +44,7 @@ Mixture::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
   // cast to an So3Material
   material_ = std::dynamic_pointer_cast<Mat::So3Material>(mat);
 
-  // ensure cast was successfull
+  // ensure cast was successful
   if (!(mat))
     FOUR_C_THROW(
         "The solid material constituent with ID %d needs to be an So3Material.", params_->matid_);

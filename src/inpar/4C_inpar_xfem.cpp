@@ -357,7 +357,7 @@ void Inpar::XFEM::set_valid_parameters(Teuchos::ParameterList& list)
       "Maximal porofluid pressure increment to apply full newton --> otherwise damp newton",
       &xfsi_monolithic);
   Core::Utils::double_parameter("CUT_EVALUATE_MINTOL", 0.0,
-      "Minimal value of the maximal strucutral displacement for which the CUT is evaluate in this "
+      "Minimal value of the maximal structural displacement for which the CUT is evaluate in this "
       "iteration!",
       &xfsi_monolithic);
   Core::Utils::int_parameter("CUT_EVALUATE_MINITER", 0,

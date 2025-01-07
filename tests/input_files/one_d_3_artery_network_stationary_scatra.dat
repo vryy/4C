@@ -21,8 +21,8 @@ SOLVESCATRA                     yes
 NUMSTEP                         10
 TIMESTEP                        0.1
 MAXTIME                         1.0
-RESTARTEVRY                     2
-RESULTSEVRY                     2
+RESTARTEVERY                     2
+RESULTSEVERY                     2
 INITIALFIELD                    field_by_condition
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
@@ -33,8 +33,8 @@ VELFUNCNO                       -1
 INITIALFIELD                    field_by_condition
 INITFUNCNO                      2
 SKIPINITDER                     yes
-RESTARTEVRY                     20
-RESULTSEVRY                     20
+RESTARTEVERY                     20
+RESULTSEVERY                     20
 CONVFORM                        convective
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG

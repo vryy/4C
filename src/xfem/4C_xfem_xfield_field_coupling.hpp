@@ -58,7 +58,7 @@ namespace XFEM
       /** \name Conversion between master and slave
        *
        *  In contradiction to the base class versions, nodal distributed as well
-       *  as dof distributed vectors can be transfered. */
+       *  as dof distributed vectors can be transferred. */
       //@{
       /// There are different versions to satisfy all needs. The basic
       /// idea is the same for all of them.

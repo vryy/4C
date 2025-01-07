@@ -46,8 +46,8 @@ PARTICLEALGORITHM::ParticleAlgorithm::ParticleAlgorithm(
       params_(params),
       numparticlesafterlastloadbalance_(0),
       transferevery_(params_.get<bool>("TRANSFER_EVERY")),
-      writeresultsevery_(params.get<int>("RESULTSEVRY")),
-      writerestartevery_(params.get<int>("RESTARTEVRY")),
+      writeresultsevery_(params.get<int>("RESULTSEVERY")),
+      writerestartevery_(params.get<int>("RESTARTEVERY")),
       writeresultsthisstep_(true),
       writerestartthisstep_(false),
       isrestarted_(false)

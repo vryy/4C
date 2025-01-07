@@ -70,7 +70,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<Scal
   unsigned int n_integration_points_circ =
       this->line_to_3d_evaluation_data_->get_number_of_integration_points_circumference();
 
-  // Initilaize variables for the projection.
+  // Initialize variables for the projection.
   ScalarType eta;
   double alpha;
   Core::LinAlg::Matrix<3, 1, ScalarType> r_line;

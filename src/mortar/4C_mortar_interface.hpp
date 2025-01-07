@@ -1126,7 +1126,7 @@ namespace Mortar
     \brief Update interface Lagrange multiplier sets
 
     This update is usually only done ONCE in the initialization phase
-    and sets up the Lagrange mutliplier set (only dofs) for the whole
+    and sets up the Lagrange multiplier set (only dofs) for the whole
     simulation. Yet, in the case of self contact the sets need to be
     updated again and again during simulation time, as the slave/master
     status and thus the LM set is assigned dynamically.
@@ -1380,7 +1380,7 @@ namespace Mortar
     \note This is purely for visualization. Writing/reading restart data is still dealt with by the
     structure discretization.
 
-    \param[in] ouputParams Parameter list with stuff required by interfaces to write output
+    \param[in] outputParams Parameter list with stuff required by interfaces to write output
     */
     virtual void postprocess_quantities(const Teuchos::ParameterList& outputParams) const;
 

@@ -161,7 +161,7 @@ namespace Discret
       /*!
         \brief Set number of dofs
 
-        \param numdofpernode: number of degress of freedom for one node
+        \param numdofpernode: number of degrees of freedom for one node
        */
       virtual void set_num_dof_per_node(int numdofpernode) { numdofpernode_ = numdofpernode; }
 
@@ -372,7 +372,7 @@ namespace Discret
       /*!
         \brief Set number of dofs
 
-        \param numdofpernode: number of degress of freedom for one node
+        \param numdofpernode: number of degrees of freedom for one node
        */
       virtual void set_num_dof_per_node(int numdofpernode) { numdofpernode_ = numdofpernode; }
 
@@ -389,7 +389,7 @@ namespace Discret
       Bele3Line& operator=(const Bele3Line& old);
 
 
-      //! compute infintesimal line element dr for integration along the line
+      //! compute infinitesimal line element dr for integration along the line
       double f2_substitution(const Core::LinAlg::SerialDenseMatrix xye,
           const Core::LinAlg::SerialDenseMatrix deriv, const int iel);
 

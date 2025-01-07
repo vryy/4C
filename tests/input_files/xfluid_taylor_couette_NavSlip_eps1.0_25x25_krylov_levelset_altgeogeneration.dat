@@ -51,8 +51,8 @@ TIMEINTEGR                      Stationary
 NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           1
-RESTARTEVRY                     10
+RESULTSEVERY                           1
+RESTARTEVERY                     10
 NUMSTASTEPS                     0
 THETA                           1.0
 START_THETA                     1.0
@@ -138,14 +138,14 @@ INITFUNCNO                      2
 INITIALFIELD                    field_by_function
 MAXTIME                         1
 NUMSTEP                         1
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 THETA                           0.5
 TIMEINTEGR                      Stationary
 TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 CALCFLUX_DOMAIN                 total
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No

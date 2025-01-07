@@ -53,10 +53,10 @@ namespace Cut
     /*!
     \brief Returns the location of Gauss points distributed over the volumecell
     */
-    std::vector<std::vector<double>> get_gauss_point_location() { return gaus_pts_; }
+    std::vector<std::vector<double>> get_gauss_point_location() { return gauss_pts_; }
 
     /*!
-    \brief Check whether the point with this element Local coordinates is inside, outisde or
+    \brief Check whether the point with this element Local coordinates is inside, outside or
     boundary of this volumecell. The output std::string will be either "outside", "inside" or
     "onBoundary"
     */
@@ -124,7 +124,7 @@ namespace Cut
     int num_func_;
 
     //! position of Gauss points
-    std::vector<std::vector<double>> gaus_pts_;
+    std::vector<std::vector<double>> gauss_pts_;
 
     //! equations of plane in which facets of volumecell are contained
     std::vector<std::vector<double>> eqn_facets_;

@@ -1571,7 +1571,7 @@ void Discret::Elements::Beam3r::calc_stiffmat_analytic_force_contributions(
 
   /* computation of stiffness matrix according to Jelenic 1999, eq. (4.7); computation split up with
    * respect to single blocks of matrix in eq. (4.7). note: again, jacobi factor cancels out in
-   * terms whith I^{i'}=I_i_s=I_i_xi*(dxi/ds) (see comment above) but be careful: Itildeprime and
+   * terms with I^{i'}=I_i_s=I_i_xi*(dxi/ds) (see comment above) but be careful: Itildeprime and
    * rprime are indeed derivatives with respect to arc-length parameter in reference configuration s
    */
 
@@ -1633,7 +1633,7 @@ void Discret::Elements::Beam3r::calc_stiffmat_analytic_force_contributions(
       // upper right block
       auxmatrix2.multiply(cn, r_s_hat);
       Core::LargeRotations::computespin(auxmatrix1, stressn);
-      auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parantheses
+      auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parentheses
 
       auxmatrix3.multiply(auxmatrix2, Itilde[nodej]);
       for (unsigned int i = 0; i < 3; ++i)
@@ -1647,10 +1647,10 @@ void Discret::Elements::Beam3r::calc_stiffmat_analytic_force_contributions(
         }
 
       // lower right block
-      // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses
+      // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parentheses
       // should be \hat{\Lambda N} instead of \Lambda N
       auxmatrix1.multiply(
-          auxmatrix2, Itilde[nodej]);  // term in parantheses is the same as in upper right block
+          auxmatrix2, Itilde[nodej]);  // term in parentheses is the same as in upper right block
                                        // but with opposite sign (note '-=' below)
 
       auxmatrix3.multiply(r_s_hat, auxmatrix1);
@@ -1666,7 +1666,7 @@ void Discret::Elements::Beam3r::calc_stiffmat_analytic_force_contributions(
       // upper right block
       auxmatrix2.multiply(cn, r_s_hat);
       Core::LargeRotations::computespin(auxmatrix1, stressn);
-      auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parantheses
+      auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parentheses
 
       auxmatrix3.multiply(auxmatrix2, Itilde[nodej]);
       for (unsigned int i = 0; i < 3; ++i)
@@ -1682,10 +1682,10 @@ void Discret::Elements::Beam3r::calc_stiffmat_analytic_force_contributions(
         }
 
       // lower right block
-      // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses
+      // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parentheses
       // should be \hat{\Lambda N} instead of \Lambda N
       auxmatrix1.multiply(
-          auxmatrix2, Itilde[nodej]);  // term in parantheses is the same as in upper right block
+          auxmatrix2, Itilde[nodej]);  // term in parentheses is the same as in upper right block
                                        // but with opposite sign (note '-=' below)
 
       auxmatrix3.multiply(r_s_hat, auxmatrix1);
@@ -1720,14 +1720,14 @@ void Discret::Elements::Beam3r::calc_stiffmat_analytic_force_contributions(
         }
 
       // lower right block
-      // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses
+      // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parentheses
       // should be \hat{\Lambda N} instead of \Lambda N
       auxmatrix2.multiply(cn, r_s_hat);
       Core::LargeRotations::computespin(auxmatrix1, stressn);
-      auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parantheses
+      auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parentheses
 
       auxmatrix1.multiply(
-          auxmatrix2, Itilde[nodej]);  // term in parantheses is the same as in upper right block
+          auxmatrix2, Itilde[nodej]);  // term in parentheses is the same as in upper right block
                                        // but with opposite sign (note '-=' below)
 
       auxmatrix3.multiply(r_s_hat, auxmatrix1);
@@ -1740,14 +1740,14 @@ void Discret::Elements::Beam3r::calc_stiffmat_analytic_force_contributions(
     for (unsigned int nodej = nnodecl; nodej < nnodetriad; nodej++)
     {
       // lower right block
-      // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses
+      // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parentheses
       // should be \hat{\Lambda N} instead of \Lambda N
       auxmatrix2.multiply(cn, r_s_hat);
       Core::LargeRotations::computespin(auxmatrix1, stressn);
-      auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parantheses
+      auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parentheses
 
       auxmatrix1.multiply(
-          auxmatrix2, Itilde[nodej]);  // term in parantheses is the same as in upper right block
+          auxmatrix2, Itilde[nodej]);  // term in parentheses is the same as in upper right block
                                        // but with opposite sign (note '-=' below)
 
       auxmatrix3.multiply(r_s_hat, auxmatrix1);

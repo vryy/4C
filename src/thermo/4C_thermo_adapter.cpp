@@ -99,9 +99,9 @@ void Thermo::BaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& prbdyn,
   // maximum number of timesteps
   tdyn->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   // restart
-  tdyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
-  // write results every <RESULTSEVRY> steps
-  tdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
+  tdyn->set<int>("RESTARTEVERY", prbdyn.get<int>("RESTARTEVERY"));
+  // write results every <RESULTSEVERY> steps
+  tdyn->set<int>("RESULTSEVERY", prbdyn.get<int>("RESULTSEVERY"));
 
   // get the solver number used for thermal solver
   const int linsolvernumber = tdyn->get<int>("LINEAR_SOLVER");
