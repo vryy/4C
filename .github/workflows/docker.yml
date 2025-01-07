@@ -21,22 +21,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check-if-ubuntu20_04-build-is-required:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
-    outputs:
-      dependencies_hash: ${{ steps.check-docker-build-required.outputs.dependencies_hash }}
-      build_docker_image: ${{ steps.check-docker-build-required.outputs.build }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: check-docker-build-required
-        uses: ./.github/actions/check_docker_build_required
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          image-name: ${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu20.04
-
   check-if-ubuntu24_04-build-is-required:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch'
@@ -52,33 +36,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           image-name: ${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu24.04
-
-  build-and-push-ubuntu20_04:
-    runs-on: ubuntu-latest
-    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
-      #
-    needs: check-if-ubuntu20_04-build-is-required
-    if: github.event_name == 'workflow_dispatch' && ${{ needs.check-if-ubuntu20_04-build-is-required.outputs.build_docker_image
-      == 'true' }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Build and push image
-        uses: ./.github/actions/build_dependencies
-        with:
-          docker-file: docker/dependencies/Dockerfile
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          image-name: ${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu20.04
-          dependencies-hash: ${{ needs.check-if-ubuntu20_04-build-is-required.outputs.dependencies_hash
-            }}
-          ubuntu-version: "20.04"
 
   build-and-push-ubuntu24_04:
     runs-on: ubuntu-latest
@@ -125,12 +82,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Pull current Ubuntu 20.04 dependencies image and tag it with latest
-        run: |
-          IMAGE_NAME="${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu20.04"
-          docker pull $IMAGE_NAME:${{ steps.compute-dependencies-hash.outputs.computed_dependencies_hash }}
-          docker image tag $IMAGE_NAME:${{ steps.compute-dependencies-hash.outputs.computed_dependencies_hash }} $IMAGE_NAME:latest
-          docker push $IMAGE_NAME:latest
       - name: Pull current Ubuntu 24.04 dependencies image and tag it with latest
         run: |
           IMAGE_NAME="${{ env.REGISTRY }}/${{ env.PROJECT_NAMESPACE }}/4c-dependencies-ubuntu24.04"
