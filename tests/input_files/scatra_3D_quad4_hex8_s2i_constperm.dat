@@ -69,7 +69,7 @@ E 2 - 1 Master S2I_KINETICS_ID  1
 -------------------------------DESIGN S2I KINETICS LINE CONDITIONS
 DLINE  2
 // coupling_surface
-E 1 - 1 Slave KINETIC_MODEL ConstantPermeability NUMSCAL 2 PERMEABILITIES 1.0 0.1 IS_PSEUDO_CONTACT 0
+E 1 - 1 Slave KINETIC_MODEL ConstantPermeability NUMSCAL 2 PERMEABILITIES 1.0 0.1 IS_PSEUDO_CONTACT False
 // coupling_block
 E 2 - 1 Master
 -----------------------------------------------DLINE-NODE TOPOLOGY

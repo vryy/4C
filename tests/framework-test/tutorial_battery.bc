@@ -120,7 +120,7 @@ sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
 description="0 Slave S2I_KINETICS_ID  0"
 *ns2="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
-description="0 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF 0 1 RESISTANCE 1.0e-5 E- 1 IS_PSEUDO_CONTACT 0"
+description="0 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF 0 1 RESISTANCE 1.0e-5 E- 1 IS_PSEUDO_CONTACT False"
 
 Node Set, named: an-side_(ma)_of_an-cc_interface
 Property Name: none
@@ -140,7 +140,7 @@ sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
 description="1 Slave S2I_KINETICS_ID  1"
 *ns4="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
-description="1 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1 E- 1 K_R 1.036426957e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0"
+description="1 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1 E- 1 K_R 1.036426957e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT False"
 
 Node Set, named: el-side_(ma)_of_an-el_interface
 Property Name: none
@@ -170,7 +170,7 @@ sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
 description="2 Slave S2I_KINETICS_ID  2"
 *ns7="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
-description="2 Slave KINETIC_MODEL Butler-Volmer NUMSCAL 1 STOICHIOMETRIES -1 E- 1 K_R 2.07e-5 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0"
+description="2 Slave KINETIC_MODEL Butler-Volmer NUMSCAL 1 STOICHIOMETRIES -1 E- 1 K_R 2.07e-5 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT False"
 
 Node Set, named: cat-side_(ma)_of_cat-cc_interfac
 Property Name: none
@@ -190,7 +190,7 @@ sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
 description="3 Slave S2I_KINETICS_ID  3"
 *ns9="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
-description="3 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF 0 1 RESISTANCE 1.0e-5 E- 1 IS_PSEUDO_CONTACT 0"
+description="3 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF 0 1 RESISTANCE 1.0e-5 E- 1 IS_PSEUDO_CONTACT False"
 
 Node Set, named: sol-el-side_(ma)_of_comp_cat-cc_
 Property Name: none

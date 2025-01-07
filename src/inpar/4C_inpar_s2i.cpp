@@ -229,7 +229,7 @@ void Inpar::S2I::set_valid_conditions(
 
             constlinperm.emplace_back(
                 std::make_shared<Input::SeparatorComponent>("IS_PSEUDO_CONTACT"));
-            constlinperm.emplace_back(std::make_shared<Input::IntComponent>("IS_PSEUDO_CONTACT"));
+            constlinperm.emplace_back(std::make_shared<Input::BoolComponent>("IS_PSEUDO_CONTACT"));
 
             kinetic_model_choices.emplace(Inpar::S2I::kinetics_constperm,
                 std::make_pair("ConstantPermeability", constlinperm));
@@ -257,7 +257,7 @@ void Inpar::S2I::set_valid_conditions(
             butlervolmer.emplace_back(std::make_shared<Input::RealComponent>("ALPHA_C"));
             butlervolmer.emplace_back(
                 std::make_shared<Input::SeparatorComponent>("IS_PSEUDO_CONTACT"));
-            butlervolmer.emplace_back(std::make_shared<Input::IntComponent>("IS_PSEUDO_CONTACT"));
+            butlervolmer.emplace_back(std::make_shared<Input::BoolComponent>("IS_PSEUDO_CONTACT"));
 
             // same components can be reused for multiple models
             kinetic_model_choices.emplace(
@@ -294,7 +294,7 @@ void Inpar::S2I::set_valid_conditions(
             butlervolmerpeltier.emplace_back(
                 std::make_shared<Input::SeparatorComponent>("IS_PSEUDO_CONTACT"));
             butlervolmerpeltier.emplace_back(
-                std::make_shared<Input::IntComponent>("IS_PSEUDO_CONTACT"));
+                std::make_shared<Input::BoolComponent>("IS_PSEUDO_CONTACT"));
             butlervolmerpeltier.emplace_back(
                 std::make_shared<Input::SeparatorComponent>("PELTIER"));
             butlervolmerpeltier.emplace_back(std::make_shared<Input::RealComponent>("PELTIER"));
@@ -339,7 +339,7 @@ void Inpar::S2I::set_valid_conditions(
             butlervolmerreducedcapacitance.emplace_back(
                 std::make_shared<Input::SeparatorComponent>("IS_PSEUDO_CONTACT"));
             butlervolmerreducedcapacitance.emplace_back(
-                std::make_shared<Input::IntComponent>("IS_PSEUDO_CONTACT"));
+                std::make_shared<Input::BoolComponent>("IS_PSEUDO_CONTACT"));
 
             kinetic_model_choices.emplace(kinetics_butlervolmerreducedcapacitance,
                 std::make_pair(
@@ -371,7 +371,7 @@ void Inpar::S2I::set_valid_conditions(
             butlervolmerresistance.emplace_back(
                 std::make_shared<Input::SeparatorComponent>("IS_PSEUDO_CONTACT"));
             butlervolmerresistance.emplace_back(
-                std::make_shared<Input::IntComponent>("IS_PSEUDO_CONTACT"));
+                std::make_shared<Input::BoolComponent>("IS_PSEUDO_CONTACT"));
             butlervolmerresistance.emplace_back(
                 std::make_shared<Input::SeparatorComponent>("RESISTANCE"));
             butlervolmerresistance.emplace_back(
@@ -422,7 +422,7 @@ void Inpar::S2I::set_valid_conditions(
             butlervolmerreducedwithresistance.emplace_back(
                 std::make_shared<Input::SeparatorComponent>("IS_PSEUDO_CONTACT"));
             butlervolmerreducedwithresistance.emplace_back(
-                std::make_shared<Input::IntComponent>("IS_PSEUDO_CONTACT"));
+                std::make_shared<Input::BoolComponent>("IS_PSEUDO_CONTACT"));
             butlervolmerreducedwithresistance.emplace_back(
                 std::make_shared<Input::SeparatorComponent>("RESISTANCE"));
             butlervolmerreducedwithresistance.emplace_back(
@@ -470,7 +470,7 @@ void Inpar::S2I::set_valid_conditions(
             butlervolmerreducedthermo.emplace_back(
                 std::make_shared<Input::SeparatorComponent>("IS_PSEUDO_CONTACT"));
             butlervolmerreducedthermo.emplace_back(
-                std::make_shared<Input::IntComponent>("IS_PSEUDO_CONTACT"));
+                std::make_shared<Input::BoolComponent>("IS_PSEUDO_CONTACT"));
             butlervolmerreducedthermo.emplace_back(
                 std::make_shared<Input::SeparatorComponent>("THERMOPERM"));
             butlervolmerreducedthermo.emplace_back(
@@ -501,7 +501,7 @@ void Inpar::S2I::set_valid_conditions(
             constantinterfaceresistance.emplace_back(
                 std::make_shared<Input::SeparatorComponent>("IS_PSEUDO_CONTACT"));
             constantinterfaceresistance.emplace_back(
-                std::make_shared<Input::IntComponent>("IS_PSEUDO_CONTACT"));
+                std::make_shared<Input::BoolComponent>("IS_PSEUDO_CONTACT"));
 
             kinetic_model_choices.emplace(
                 kinetics_constantinterfaceresistance, std::make_pair("ConstantInterfaceResistance",

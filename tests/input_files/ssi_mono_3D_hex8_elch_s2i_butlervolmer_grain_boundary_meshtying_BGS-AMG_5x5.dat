@@ -194,13 +194,13 @@ E 1 - 0 Slave KINETIC_MODEL NoInterfaceFlux
 // master-side_cc-el
 E 2 - 0 Master
 // slave-side_cc-cath
-E 3 - 1 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF 0 1 RESISTANCE 2.0e-5  E- 1 IS_PSEUDO_CONTACT 0
+E 3 - 1 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF 0 1 RESISTANCE 2.0e-5  E- 1 IS_PSEUDO_CONTACT False
 // master-side_cc-cath
 E 4 - 1 Master
 // master-side_el-cath
 E 5 - 2 Master
 // slave-side_el-cath
-E 6 - 2 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.036426957e3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
+E 6 - 2 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.036426957e3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT False
 --------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  6
 // slave-side_cc-el

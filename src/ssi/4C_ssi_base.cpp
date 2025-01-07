@@ -874,7 +874,7 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
     if ((s2ikinetics_cond->parameters().get<int>("interface side") == Inpar::S2I::side_slave) and
         (s2ikinetics_cond->parameters().get<int>("KINETIC_MODEL") !=
             Inpar::S2I::kinetics_nointerfaceflux) and
-        (s2ikinetics_cond->parameters().get<int>("IS_PSEUDO_CONTACT") == 1))
+        s2ikinetics_cond->parameters().get<bool>("IS_PSEUDO_CONTACT"))
     {
       is_s2i_kinetic_with_pseudo_contact = true;
       const int s2i_kinetics_condition_id = s2ikinetics_cond->parameters().get<int>("ConditionID");
@@ -885,8 +885,8 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
         {
           FOUR_C_THROW(
               "Pseudo contact formulation of s2i kinetics conditions does not make sense in "
-              "combination with resolved contact formulation. Set the respective is_pseudo_contact "
-              "flag to '0'");
+              "combination with resolved contact formulation. Set the respective IS_PSEUDO_CONTACT "
+              "flag to 'False'");
         }
       }
     }

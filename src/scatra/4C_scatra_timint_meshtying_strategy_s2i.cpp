@@ -3034,8 +3034,8 @@ void ScaTra::MeshtyingStrategyS2I::write_s2_i_kinetics_specific_scatra_parameter
               "NUMSCAL", s2ikinetics_cond.parameters().get<int>("NUMSCAL"));
           s2icouplingparameters.set<const std::vector<double>*>("PERMEABILITIES",
               &s2ikinetics_cond.parameters().get<std::vector<double>>("PERMEABILITIES"));
-          s2icouplingparameters.set<int>(
-              "IS_PSEUDO_CONTACT", s2ikinetics_cond.parameters().get<int>("IS_PSEUDO_CONTACT"));
+          s2icouplingparameters.set<bool>(
+              "IS_PSEUDO_CONTACT", s2ikinetics_cond.parameters().get<bool>("IS_PSEUDO_CONTACT"));
           break;
         }
 
@@ -3047,8 +3047,8 @@ void ScaTra::MeshtyingStrategyS2I::write_s2_i_kinetics_specific_scatra_parameter
               "ONOFF", &s2ikinetics_cond.parameters().get<std::vector<int>>("ONOFF"));
           s2icouplingparameters.set<int>(
               "numelectrons", s2ikinetics_cond.parameters().get<int>("E-"));
-          s2icouplingparameters.set<int>(
-              "IS_PSEUDO_CONTACT", s2ikinetics_cond.parameters().get<int>("IS_PSEUDO_CONTACT"));
+          s2icouplingparameters.set<bool>(
+              "IS_PSEUDO_CONTACT", s2ikinetics_cond.parameters().get<bool>("IS_PSEUDO_CONTACT"));
           break;
         }
 
@@ -3080,8 +3080,8 @@ void ScaTra::MeshtyingStrategyS2I::write_s2_i_kinetics_specific_scatra_parameter
               "ALPHA_A", s2ikinetics_cond.parameters().get<double>("ALPHA_A"));
           s2icouplingparameters.set<double>(
               "ALPHA_C", s2ikinetics_cond.parameters().get<double>("ALPHA_C"));
-          s2icouplingparameters.set<int>(
-              "IS_PSEUDO_CONTACT", s2ikinetics_cond.parameters().get<int>("IS_PSEUDO_CONTACT"));
+          s2icouplingparameters.set<bool>(
+              "IS_PSEUDO_CONTACT", s2ikinetics_cond.parameters().get<bool>("IS_PSEUDO_CONTACT"));
 
           if (kineticmodel == Inpar::S2I::kinetics_butlervolmerreducedcapacitance)
             s2icouplingparameters.set<double>(
@@ -3115,7 +3115,6 @@ void ScaTra::MeshtyingStrategyS2I::write_s2_i_kinetics_specific_scatra_parameter
         default:
         {
           FOUR_C_THROW("Not implemented for this kinetic model: %i", kineticmodel);
-          break;
         }
       }
       break;
@@ -3156,7 +3155,6 @@ void ScaTra::MeshtyingStrategyS2I::write_s2_i_kinetics_specific_scatra_parameter
         default:
         {
           FOUR_C_THROW("Not implemented for this kinetic model: %i", kineticmodel);
-          break;
         }
       }
       break;
@@ -3165,7 +3163,6 @@ void ScaTra::MeshtyingStrategyS2I::write_s2_i_kinetics_specific_scatra_parameter
     default:
     {
       FOUR_C_THROW("Not implemented for this condition type: %i", conditiontype);
-      break;
     }
   }
 }

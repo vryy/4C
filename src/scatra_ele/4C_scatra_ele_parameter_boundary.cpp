@@ -138,7 +138,6 @@ void Discret::Elements::ScaTraEleParameterBoundary::set_parameters(
         default:
         {
           FOUR_C_THROW("Not implemented for this kinetic model: %i", kineticmodel_);
-          break;
         }
       }
 
@@ -169,7 +168,6 @@ void Discret::Elements::ScaTraEleParameterBoundary::set_parameters(
         default:
         {
           FOUR_C_THROW("Not implemented for this kinetic model: %i", kineticmodel_);
-          break;
         }
       }
       break;
@@ -178,7 +176,6 @@ void Discret::Elements::ScaTraEleParameterBoundary::set_parameters(
     default:
     {
       FOUR_C_THROW("Not implemented for this condition type: %i", conditiontype_);
-      break;
     }
   }
 }
@@ -243,8 +240,7 @@ void Discret::Elements::ScaTraEleParameterBoundary::set_energy_substance_ratio(
 void Discret::Elements::ScaTraEleParameterBoundary::set_is_pseudo_contact(
     Teuchos::ParameterList& parameters)
 {
-  is_pseudo_contact_ =
-      (parameters.get<int>("IS_PSEUDO_CONTACT", std::numeric_limits<int>::infinity()) == 1);
+  is_pseudo_contact_ = parameters.get<bool>("IS_PSEUDO_CONTACT", false);
 }
 
 /*----------------------------------------------------------------------*

@@ -182,13 +182,13 @@ E 5 - 1 Slave S2I_KINETICS_ID  1
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  4
 // anode_side_of_an-el_interface
-E 2 - 0 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.036426957e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
+E 2 - 0 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.036426957e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT False
 // electrolyte_side_of_an-el_interf
 E 3 - 0 Master
 // electrolyte_side_of_cat-el_inter
 E 4 - 1 Master
 // cathode_side_of_cat-el_interface
-E 5 - 1 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.036426957e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
+E 5 - 1 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.036426957e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT False
 -----------------------DESIGN TOTAL AND MEAN SCALAR VOL CONDITIONS
 DVOL   3
 // anode
