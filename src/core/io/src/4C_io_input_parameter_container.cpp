@@ -11,65 +11,19 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
-std::ostream& operator<<(std::ostream& os, const Core::IO::InputParameterContainer& cont)
-{
-  cont.print(os);
-  return os;
-}
-
-namespace
-{
-  //! Print various types that occurr in the Container
-  struct PrintHelper
-  {
-    //! Base case: print the object directly.
-    template <typename T>
-    void operator()(const T& object)
-    {
-      os << object << " ";
-    }
-
-    //! Print elements of a vector.
-    template <typename T>
-    void operator()(const std::vector<T>& vector)
-    {
-      for (const auto& v : vector)
-      {
-        (*this)(v);
-      }
-    }
-
-    //! Print elements of a map.
-    template <typename Key, typename Value>
-    void operator()(const std::map<Key, Value>& map)
-    {
-      for (const auto& [key, value] : map)
-      {
-        os << key << " : ";
-        (*this)(value);
-      }
-    }
-
-    //! Print any data.
-    void operator()(const std::any& /*unused*/) { os << "non-printable data of type std::any"; }
-
-    std::ostream& os;
-  };
-}  // namespace
-
-
 void Core::IO::InputParameterContainer::print(std::ostream& os) const
 {
-  PrintHelper printer{os};
-  printer(intdata_);
-  printer(doubledata_);
-  printer(booldata_);
-  printer(vecintdata_);
-  printer(vecdoubledata_);
-  printer(mapdata_);
-  printer(stringdata_);
-  printer(anydata_);
+  for (const auto& [key, entry] : entries_)
+  {
+    os << key << " : ";
+    entry.print(os, entry.data);
+  }
+
+  for (const auto& [key, group] : groups_)
+  {
+    os << key << " : ";
+    group.print(os);
+  }
 }
 
 
@@ -99,20 +53,13 @@ void Core::IO::InputParameterContainer::merge(const Core::IO::InputParameterCont
     {
       if (map1.count(key) > 0)
       {
-        FOUR_C_THROW("Key %s already exists in the container!", key.c_str());
+        FOUR_C_THROW("Duplicate key '%s' encountered while merging two containers.", key.c_str());
       }
       map1[key] = value;
     }
   };
 
-  combine_maps(intdata_, other.intdata_);
-  combine_maps(doubledata_, other.doubledata_);
-  combine_maps(booldata_, other.booldata_);
-  combine_maps(vecintdata_, other.vecintdata_);
-  combine_maps(vecdoubledata_, other.vecdoubledata_);
-  combine_maps(mapdata_, other.mapdata_);
-  combine_maps(stringdata_, other.stringdata_);
-  combine_maps(anydata_, other.anydata_);
+  combine_maps(entries_, other.entries_);
   combine_maps(groups_, other.groups_);
 }
 
