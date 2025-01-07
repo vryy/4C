@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   checkcode:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       SKIP: no-commit-to-branch
     steps:
