@@ -229,21 +229,21 @@ E 5 - ScaTra 4
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  10
 // cc-side_(sl)_of_an-cc_interface
-E 2 - 0 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF  0 1 RESISTANCE 8.0e-3  E- 1 IS_PSEUDO_CONTACT 0
+E 2 - 0 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF  0 1 RESISTANCE 8.0e-3  E- 1 IS_PSEUDO_CONTACT False
 // an-side_(ma)_of_an-cc_interface
 E 3 - 0 Master
 // an-side_(sl)_of_an-el_interface
-E 4 - 1 Slave KINETIC_MODEL Butler-VolmerReduced_ThermoResistance NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.036426957e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0  THERMOPERM  1.0e-4 MOLAR_HEAT_CAPACITY 0.0
+E 4 - 1 Slave KINETIC_MODEL Butler-VolmerReduced_ThermoResistance NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.036426957e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT False  THERMOPERM  1.0e-4 MOLAR_HEAT_CAPACITY 0.0
 // el-side_(ma)_of_an-el_interface
 E 5 - 1 Master
 // el-side_(ma)_of_cat-el_interface
 E 6 - 2 Master
 // cat-side_(sl)_of_cat-el_interfac
-E 7 - 2 Slave KINETIC_MODEL Butler-VolmerReduced_ThermoResistance NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  2.07e-5 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0  THERMOPERM  1.0e-4 MOLAR_HEAT_CAPACITY 0.0
+E 7 - 2 Slave KINETIC_MODEL Butler-VolmerReduced_ThermoResistance NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  2.07e-5 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT False  THERMOPERM  1.0e-4 MOLAR_HEAT_CAPACITY 0.0
 // cat-side_(ma)_of_cat-cc_interfac
 E 8 - 3 Master
 // cc-side_(sl)_of_cat-comp_cat-cc_
-E 9 - 3 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF  0 1  RESISTANCE 2.0e-3  E- 1 IS_PSEUDO_CONTACT 0
+E 9 - 3 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF  0 1  RESISTANCE 2.0e-3  E- 1 IS_PSEUDO_CONTACT False
 // sol-el-side_(ma)_of_comp_cat-cc_
 E 10 - 4 Master
 // cc-side_(sl)_of_sol-el-comp_cat-

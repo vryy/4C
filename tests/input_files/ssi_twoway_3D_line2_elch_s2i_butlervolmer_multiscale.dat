@@ -138,7 +138,7 @@ E 4 - 0 Master S2I_KINETICS_ID  0
 ------------------------------DESIGN S2I KINETICS POINT CONDITIONS
 DPOINT  2
 // anode_side_of_an-el_interface
-E 3 - 0 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
+E 3 - 0 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT False
 // electrolyte_side_of_an-el_interf
 E 4 - 0 Master
 ------------------------------DESIGN CELL VOLTAGE POINT CONDITIONS

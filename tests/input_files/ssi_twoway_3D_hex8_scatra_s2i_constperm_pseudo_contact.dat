@@ -87,7 +87,7 @@ E 2 - ScaTra 2
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  2
 // left_block_side_of_interface
-E 2 - 0 Slave KINETIC_MODEL ConstantPermeability NUMSCAL 1 PERMEABILITIES 1.0 IS_PSEUDO_CONTACT 1
+E 2 - 0 Slave KINETIC_MODEL ConstantPermeability NUMSCAL 1 PERMEABILITIES 1.0 IS_PSEUDO_CONTACT True
 // right_block_side_of_interface
 E 3 - 0 Master
 --------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS

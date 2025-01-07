@@ -130,7 +130,7 @@ E 3 - ScaTra 1
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  6
 // cathode_electrolyte
-E 2 - 0 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-5 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
+E 2 - 0 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-5 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT False
 // electrolyte_cathode
 E 3 - 0 Master
 // electrolyte_grain_boundary_1 (coupling between/over grain boundary with manifold conditions)
@@ -140,7 +140,7 @@ E 5 - 2 Slave KINETIC_MODEL NoInterfaceFlux
 // electrolyte_anode
 E 6 - 1 Master
 // anode_electrolyte
-E 7 - 1 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-5 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
+E 7 - 1 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-5 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT False
 --------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  6
 // cathode_electrolyte
