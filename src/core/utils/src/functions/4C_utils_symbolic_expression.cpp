@@ -218,7 +218,8 @@ namespace Core::Utils::SymbolicExpressionDetails
      * to evaluate the parsed expression
      * @return  Derivative of the parsed expression with respect to the variables
      */
-    template <typename T2, std::enable_if_t<IsFAD<T2>::value, void*> = nullptr>
+    template <typename T2>
+      requires IsFAD<T2>::value
     T evaluate_derivative(const std::map<std::string, T2>& variable_values,
         const std::map<std::string, double>& constants = {}) const;
 
@@ -475,7 +476,8 @@ namespace Core::Utils::SymbolicExpressionDetails
 
 
   template <class T>
-  template <typename T2, std::enable_if_t<IsFAD<T2>::value, void*>>
+  template <typename T2>
+    requires IsFAD<T2>::value
   T Parser<T>::evaluate_derivative(const std::map<std::string, T2>& variable_values,
       const std::map<std::string, double>& constants) const
   {

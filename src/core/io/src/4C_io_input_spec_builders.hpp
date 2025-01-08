@@ -125,7 +125,8 @@ namespace Core::IO
     template <typename T>
     struct InputSpecTypeErasedImplementation : public InputSpecTypeErasedInterface
     {
-      template <typename T2, std::enable_if_t<!std::is_same_v<std::decay_t<T>, InputSpec>, int> = 0>
+      template <typename T2>
+        requires(!std::common_with<InputSpec, T2>)
       explicit InputSpecTypeErasedImplementation(T2&& wrapped) : wrapped(std::forward<T2>(wrapped))
       {
       }
@@ -234,7 +235,8 @@ namespace Core::IO
      * Construct a InputSpec. This constructor is not intended to be used directly. Use the
      * helper functions in the InputSpecBuilders namespace instead.
      */
-    template <typename T, std::enable_if_t<!std::is_same_v<std::decay_t<T>, InputSpec>, int> = 0>
+    template <typename T>
+      requires(!std::common_with<InputSpec, T>)
     InputSpec(T&& spec, CommonData data);
 
     InputSpec(const InputSpec& other) : data_(other.data_), spec_(other.spec_->clone()) {}
@@ -791,7 +793,8 @@ void Core::IO::InputSpecBuilders::Internal::BasicSpec<DataType>::parse(
 }
 
 
-template <typename T, std::enable_if_t<!std::is_same_v<std::decay_t<T>, Core::IO::InputSpec>, int>>
+template <typename T>
+  requires(!std::common_with<Core::IO::InputSpec, T>)
 Core::IO::InputSpec::InputSpec(T&& spec, CommonData data)
     : data_(std::move(data)),
       spec_(std::make_unique<Internal::InputSpecTypeErasedImplementation<std::decay_t<T>>>(

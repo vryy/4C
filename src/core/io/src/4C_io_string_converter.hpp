@@ -76,7 +76,7 @@ namespace Core::IO
    *
    * @note More supported types may be added via template specialisation.
    */
-  template <typename T, class Enable = void>
+  template <typename T>
   struct StringConverter
   {
     static T Parse(const std::string& str) = delete;
@@ -113,11 +113,8 @@ namespace Core::IO
     /**
      * A helper struct to figure out whether a type behaves like a list or a map and determine
      * the associated rank.
-     *
-     * @tparam T The relevant type.
-     * @tparam Enable A parameter to leverage SFINAE and selectively enable specializations.
      */
-    template <typename T, typename Enable = void>
+    template <typename T>
     struct StringPatternTraits;
 
     /**
@@ -168,7 +165,8 @@ namespace Core::IO
      * Arithmetic types are neither lists nor maps and have no associated rank.
      */
     template <typename T>
-    struct StringPatternTraits<T, std::enable_if_t<std::is_arithmetic_v<T>>>
+      requires std::is_arithmetic_v<T>
+    struct StringPatternTraits<T>
     {
       static constexpr int list_rank = 0;
       static constexpr int map_rank = 0;
@@ -220,8 +218,8 @@ namespace Core::IO
     /**
      * @brief Parse the split string into an std::vector or std::list.
      */
-    template <class T,
-        std::enable_if_t<Internal::StringPatternTraits<T>::is_list_compatible, int> = 0>
+    template <class T>
+      requires Internal::StringPatternTraits<T>::is_list_compatible
     void parse_split_string(T& t, const std::vector<std::string>& split_str)
     {
       for (const auto& str : split_str)
@@ -354,7 +352,8 @@ namespace Core::IO
    * T (std::array, std::pair, std::tuple).
    */
   template <class T>
-  struct StringConverter<T, std::enable_if_t<Internal::StringPatternTraits<T>::is_list_compatible>>
+    requires Internal::StringPatternTraits<T>::is_list_compatible
+  struct StringConverter<T>
   {
     static T parse(const std::string& str)
     {
@@ -379,7 +378,8 @@ namespace Core::IO
    * definition.
    */
   template <class T>
-  struct StringConverter<T, std::enable_if_t<Internal::StringPatternTraits<T>::is_map_compatible>>
+    requires Internal::StringPatternTraits<T>::is_map_compatible
+  struct StringConverter<T>
   {
     static T parse(const std::string& str)
     {

@@ -796,12 +796,12 @@ template <Core::FE::CellType... celltypes>
 struct VerifyPackable
 {
   static constexpr bool are_all_packable =
-      (Core::Communication::is_packable<Discret::Elements::SolidScatraEleCalc<celltypes,
+      (Core::Communication::Packable<Discret::Elements::SolidScatraEleCalc<celltypes,
               Discret::Elements::DisplacementBasedFormulation<celltypes>>> &&
           ...);
 
   static constexpr bool are_all_unpackable =
-      (Core::Communication::is_unpackable<Discret::Elements::SolidScatraEleCalc<celltypes,
+      (Core::Communication::Unpackable<Discret::Elements::SolidScatraEleCalc<celltypes,
               Discret::Elements::DisplacementBasedFormulation<celltypes>>> &&
           ...);
 

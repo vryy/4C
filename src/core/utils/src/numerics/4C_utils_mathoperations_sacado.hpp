@@ -19,7 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core
 {
   template <typename T>
-  struct MathOperations<T, std::enable_if_t<Sacado::IsFad<std::decay_t<T>>::value>>
+    requires(Sacado::IsFad<T>::value || Sacado::IsExpr<T>::value)
+  struct MathOperations<T>
   {
     template <typename T2>
     static constexpr std::decay_t<T2> abs(T2&& t)

@@ -17,21 +17,15 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::FADUtils
 {
-  namespace Internal
-  {
-    template <typename T, typename AlwaysVoid = void>
-    constexpr bool is_double_convertible = false;
-
-    template <typename T>
-    constexpr bool is_double_convertible<T,
-        std::void_t<decltype(static_cast<double>(std::declval<std::remove_cv_t<T>>()))>> = true;
-  }  // namespace Internal
+  template <typename T>
+  concept ExplicitlyConvertibleToDouble = requires(T a) {
+    { static_cast<double>(a) };
+  };
 
   /*!
    * \brief Overload of CastToDouble() for any type that is convertible to double.
    */
-  template <typename ScalarType,
-      std::enable_if_t<Internal::is_double_convertible<ScalarType>, bool> = true>
+  template <ExplicitlyConvertibleToDouble ScalarType>
   inline double cast_to_double(ScalarType a)
   {
     return static_cast<double>(a);
@@ -46,9 +40,8 @@ namespace Core::FADUtils
    * @note We recursively call this function with the value of the FAD variable @p a until we reach
    * the innermost double value.
    */
-  template <typename FADType,
-      typename =
-          std::enable_if_t<Sacado::IsFad<FADType>::value || Sacado::IsExpr<FADType>::value, void*>>
+  template <typename FADType>
+    requires(Sacado::IsFad<FADType>::value || Sacado::IsExpr<FADType>::value)
   inline double cast_to_double(FADType a)
   {
     return cast_to_double(a.val());

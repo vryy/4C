@@ -24,7 +24,8 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  template <Core::FE::CellType distype, std::enable_if_t<Core::FE::is_tet<distype>, bool> = true>
+  template <Core::FE::CellType distype>
+    requires(Core::FE::is_tet<distype>)
   inline Core::FE::CellType get_gauss_point_extrapolation_base_distype(unsigned numgp)
   {
     if (numgp < 4) return Core::FE::CellType::point1;
@@ -32,7 +33,8 @@ namespace
     return Core::FE::CellType::tet10;
   }
 
-  template <Core::FE::CellType distype, std::enable_if_t<Core::FE::is_hex<distype>, bool> = true>
+  template <Core::FE::CellType distype>
+    requires(Core::FE::is_hex<distype>)
   inline Core::FE::CellType get_gauss_point_extrapolation_base_distype(unsigned numgp)
   {
     if (numgp < 8) return Core::FE::CellType::point1;
@@ -41,14 +43,16 @@ namespace
     return Core::FE::CellType::hex27;
   }
 
-  template <Core::FE::CellType distype, std::enable_if_t<Core::FE::is_nurbs<distype>, bool> = true>
+  template <Core::FE::CellType distype>
+    requires(Core::FE::is_nurbs<distype>)
   inline Core::FE::CellType get_gauss_point_extrapolation_base_distype(unsigned numgp)
   {
     if (numgp < 8) return Core::FE::CellType::point1;
     return Core::FE::CellType::nurbs27;
   }
 
-  template <Core::FE::CellType distype, std::enable_if_t<Core::FE::is_quad<distype>, bool> = true>
+  template <Core::FE::CellType distype>
+    requires(Core::FE::is_quad<distype>)
   inline Core::FE::CellType get_gauss_point_extrapolation_base_distype(unsigned numgp)
   {
     if (numgp < 4) return Core::FE::CellType::point1;
@@ -57,7 +61,8 @@ namespace
     return Core::FE::CellType::quad9;
   }
 
-  template <Core::FE::CellType distype, std::enable_if_t<Core::FE::is_tri<distype>, bool> = true>
+  template <Core::FE::CellType distype>
+    requires(Core::FE::is_tri<distype>)
   inline Core::FE::CellType get_gauss_point_extrapolation_base_distype(unsigned numgp)
   {
     if (numgp < 3) return Core::FE::CellType::point1;
@@ -65,7 +70,8 @@ namespace
     return Core::FE::CellType::tri6;
   }
 
-  template <Core::FE::CellType distype, std::enable_if_t<Core::FE::is_wedge<distype>, bool> = true>
+  template <Core::FE::CellType distype>
+    requires(Core::FE::is_wedge<distype>)
   inline Core::FE::CellType get_gauss_point_extrapolation_base_distype(unsigned numgp)
   {
     if (numgp < 6) return Core::FE::CellType::point1;
@@ -73,8 +79,8 @@ namespace
     return Core::FE::CellType::wedge15;
   }
 
-  template <Core::FE::CellType distype,
-      std::enable_if_t<Core::FE::is_pyramid<distype>, bool> = true>
+  template <Core::FE::CellType distype>
+    requires(Core::FE::is_pyramid<distype>)
   inline Core::FE::CellType get_gauss_point_extrapolation_base_distype(unsigned numgp)
   {
     if (numgp < 5) return Core::FE::CellType::point1;

@@ -30,6 +30,8 @@ Checks: >-
   -bugprone-assert-side-effect,
   -bugprone-multiple-statement-macro
 CheckOptions:
+  - key: readability-identifier-naming.ConceptCase
+    value: CamelCase
   - key: readability-identifier-naming.StructCase
     value: CamelCase
   - key: readability-identifier-naming.ClassCase

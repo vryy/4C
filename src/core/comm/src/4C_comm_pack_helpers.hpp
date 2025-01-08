@@ -38,35 +38,18 @@ namespace Core::Communication
 
 
   }
-  /*!
-   * @brief A type trait to check whether the type T supports the
-   * pack(Core::Communication::PackBuffer&) method.
-   *
-   * @note T does not necessarily need to derive from some interface class
-   * @{
+
+  /**
+   * A concept to check whether a type T supports the pack(PackBuffer&) method.
    */
-  template <typename T, typename AlwaysVoid = void>
-  constexpr bool is_packable = false;
-
   template <typename T>
-  constexpr bool is_packable<T, std::void_t<decltype(std::declval<const std::decay_t<T>>().pack(
-                                    std::declval<Core::Communication::PackBuffer&>()))>> = true;
-  ///@}
+  concept Packable = requires(T t, PackBuffer& buffer) { t.pack(buffer); };
 
-  /*!
-   * @brief A type trait to check whether the type T supports the
-   * unpack(std::vector<char>::size_type&, const std::vector<char>&) method.
-   *
-   * @note T does not necessarily need to derive from some interface class
-   * @{
+  /**
+   * A concept to check whether a type T supports the unpack(UnpackBuffer&) method.
    */
-  template <typename T, typename AlwaysVoid = void>
-  constexpr bool is_unpackable = false;
-
   template <typename T>
-  constexpr bool is_unpackable<T, std::void_t<decltype(std::declval<std::decay_t<T>>().unpack(
-                                      std::declval<Core::Communication::UnpackBuffer&>()))>> = true;
-  ///@}
+  concept Unpackable = requires(T t, UnpackBuffer& buffer) { t.unpack(buffer); };
 
   //! @name Routines to help pack stuff into a char vector
 
@@ -76,7 +59,8 @@ namespace Core::Communication
    * This function works for all trivially copyable types, i.e. types that can be copied with
    * memcpy(). This includes all POD types, but also some user-defined types.
    */
-  template <typename T, std::enable_if_t<std::is_trivially_copyable_v<T>, int> = 0>
+  template <typename T>
+    requires std::is_trivially_copyable_v<T>
   inline void add_to_pack(PackBuffer& data, const T& stuff)
   {
     data.add_to_pack(stuff);
@@ -90,7 +74,8 @@ namespace Core::Communication
    * \param[in] stuff  ptr to stuff that has length stuffsize (in byte)
    * \param[in] stuffsize length of stuff in byte
    */
-  template <typename T, std::enable_if_t<std::is_trivially_copyable_v<T>, int> = 0>
+  template <typename T>
+    requires std::is_trivially_copyable_v<T>
   void add_to_pack(PackBuffer& data, const T* stuff, const int stuffsize)
   {
     data.add_to_pack(stuff, stuffsize);
@@ -99,11 +84,7 @@ namespace Core::Communication
   /**
    * Add an object that implements a `pack()` method to the buffer.
    */
-  template <typename T, std::enable_if_t<is_packable<T>, int> = 0>
-  void add_to_pack(PackBuffer& data, const T& obj)
-  {
-    obj.pack(data);
-  }
+  void add_to_pack(PackBuffer& data, const Packable auto& obj) { obj.pack(data); }
 
   /*!
    * \brief Add stuff to the end of a char vector data
@@ -326,7 +307,8 @@ namespace Core::Communication
   /**
    * Template to forward to the implementation on UnpackBuffer.
    */
-  template <typename T, std::enable_if_t<std::is_trivially_copyable_v<T>, int> = 0>
+  template <typename T>
+    requires std::is_trivially_copyable_v<T>
   void extract_from_pack(UnpackBuffer& buffer, T& stuff)
   {
     buffer.extract_from_pack(stuff);
@@ -335,7 +317,8 @@ namespace Core::Communication
   /**
    * Template to forward to the implementation on UnpackBuffer.
    */
-  template <typename T, std::enable_if_t<std::is_trivially_copyable_v<T>, int> = 0>
+  template <typename T>
+    requires std::is_trivially_copyable_v<T>
   void extract_from_pack(UnpackBuffer& buffer, T* stuff, std::size_t stuff_size)
   {
     buffer.extract_from_pack(stuff, stuff_size);
@@ -344,11 +327,7 @@ namespace Core::Communication
   /**
    * Extract an object that implements an `unpack()` method from the buffer.
    */
-  template <typename T, std::enable_if_t<is_unpackable<T>, int> = 0>
-  void extract_from_pack(UnpackBuffer& data, T& obj)
-  {
-    obj.unpack(data);
-  }
+  void extract_from_pack(UnpackBuffer& data, Unpackable auto& obj) { obj.unpack(data); }
 
   /*!
    * \brief Extract stuff from a char vector data and increment position
