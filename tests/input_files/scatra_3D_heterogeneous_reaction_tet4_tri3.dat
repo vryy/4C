@@ -97,11 +97,11 @@ E 2 -
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  1
 // surface
-E 2 - ScaTra 1
+E 2 - FIELD ScaTra FUNCT 1
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   1
 // scatra_volume
-E 1 - ScaTra 2
+E 1 - FIELD ScaTra FUNCT 2
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    73 DNODE 1
 NODE    84 DNODE 2

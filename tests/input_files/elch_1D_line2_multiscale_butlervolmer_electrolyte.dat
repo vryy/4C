@@ -82,9 +82,9 @@ E 1 - ID 0
 E 2 - ID 1
 ------------------------------DESIGN LINE INITIAL FIELD CONDITIONS
 DLINE  3
-E 1 - ScaTra 1
-E 2 - ScaTra 2
-E 3 - ScaTra 3
+E 1 - FIELD ScaTra FUNCT 1
+E 2 - FIELD ScaTra FUNCT 2
+E 3 - FIELD ScaTra FUNCT 3
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 30 DNODE 2

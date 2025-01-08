@@ -139,7 +139,7 @@ E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 FUNCT 2 2 2 0 0 0
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL 1
 // fluid_volume
-E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
+E 1 - DIS fluid NUMMODES 4 ONOFF 0 0 0 1 WEIGHTVECDEF integration
 --------------------------DESIGN XFEM LEVELSET WEAK DIRICHLET VOL CONDITIONS
 DVOL 1
 // fluid_volume

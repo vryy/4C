@@ -53,8 +53,8 @@ SCATRA DIS scatra SPECIAL QUANTITY s2inumdof_int0_proc1 VALUE 77.0 TOLERANCE 1.e
 SCATRA DIS scatra SPECIAL QUANTITY s2inumdof_int0_proc2 VALUE 82.0 TOLERANCE 1.e-20   // number of degrees of freedom owned by second processor at zeroth scatra-scatra coupling interface
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
-E 1 - ScaTra 1
-E 2 - ScaTra 2
+E 1 - FIELD ScaTra FUNCT 1
+E 2 - FIELD ScaTra FUNCT 2
 ------------------------------DESIGN S2I MESHTYING SURF CONDITIONS
 DSURF  2
 E 1 - 0 Master S2I_KINETICS_ID  0

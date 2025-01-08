@@ -55,14 +55,14 @@ E 1 - NUMDOF 1 ONOFF 1 VAL 2.261946710584651e+03 FUNCT 7
 -----------------------------DESIGN POINT INITIAL FIELD CONDITIONS
 // just to test initial conditions
 DPOINT   3
-E 1 - ScaTra 2
-E 3 - ScaTra 3
-E 3 - Artery 5
+E 1 - FIELD ScaTra FUNCT 2
+E 3 - FIELD ScaTra FUNCT 3
+E 3 - FIELD Artery FUNCT 5
 -----------------------------DESIGN LINE INITIAL FIELD CONDITIONS
 // just to test initial conditions
 DLINE   2
-E 1 - ScaTra 4
-E 1 - Artery 6
+E 1 - FIELD ScaTra FUNCT 4
+E 1 - FIELD Artery FUNCT 6
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 6 DNODE 2

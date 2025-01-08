@@ -239,9 +239,9 @@ void CONSTRAINTS::MPConstraint2::reorder_constraint_nodes(
   std::vector<int> temp = nodeids;
   if (nodeids.size() == 3)
   {
-    nodeids[0] = temp[cond->parameters().get<int>("constrNode 1") - 1];
-    nodeids[1] = temp[cond->parameters().get<int>("constrNode 2") - 1];
-    nodeids[2] = temp[cond->parameters().get<int>("constrNode 3") - 1];
+    nodeids[0] = temp[cond->parameters().get<int>("constrNode1") - 1];
+    nodeids[1] = temp[cond->parameters().get<int>("constrNode2") - 1];
+    nodeids[2] = temp[cond->parameters().get<int>("constrNode3") - 1];
   }
   else
   {

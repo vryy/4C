@@ -243,7 +243,7 @@ E 1 - ROBIN_DIRICHLET_ID 2 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 FUNCT 5 5 0
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
 //                              fluid_volume
-E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
+E 1 - DIS fluid NUMMODES 4 ONOFF 0 0 0 1 WEIGHTVECDEF integration
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 CORNER fluid x- y- z+ DNODE 1
 CORNER fluid x- y- z- DNODE 2

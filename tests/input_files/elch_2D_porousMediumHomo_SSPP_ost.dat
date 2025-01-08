@@ -105,9 +105,6 @@ E 4 - ID 1 POT 0.00 FUNCT none NUMSCAL 1 STOICH -1  E- 1 EPSILON -1 ZERO_CUR 0 B
 DLINE  2
 E 3 -
 E 4 -
----------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
-//DSURF   1
-//E 1 - scatra NUMMODES 2 ONOFF 0 1 integration
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    3 DLINE 1
 NODE    4 DLINE 1

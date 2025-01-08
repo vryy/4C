@@ -195,9 +195,9 @@ E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 590.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
 // all_nodes
-E 1 - PoroMultiFluid 1
+E 1 - FIELD PoroMultiFluid FUNCT 1
 // all_nodes
-E 1 - ScaTra 3
+E 1 - FIELD ScaTra FUNCT 3
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1601 DSURFACE 1
 NODE    1602 DSURFACE 1

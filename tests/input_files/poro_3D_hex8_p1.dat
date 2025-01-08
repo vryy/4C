@@ -230,7 +230,7 @@ E 1 -
 -----------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL                            1
 //                              Volume
-E 1 - Porosity 1
+E 1 - FIELD Porosity FUNCT 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 212 DNODE 1
 NODE 62 DNODE 2

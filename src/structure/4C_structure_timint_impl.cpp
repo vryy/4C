@@ -261,7 +261,7 @@ void Solid::TimIntImpl::setup()
   // check if for solid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
-    const std::string& name = KSPcond[icond]->parameters().get<std::string>("discretization");
+    const std::string& name = KSPcond[icond]->parameters().get<std::string>("DIS");
     if (name == "solid")
     {
       numsolid++;
@@ -769,8 +769,7 @@ void Solid::TimIntImpl::setup_krylov_space_projection(Core::Conditions::Conditio
   }
 
   // get from dat-file definition how weights are to be computed
-  const std::string* weighttype =
-      &kspcond->parameters().get<std::string>("weight vector definition");
+  const std::string* weighttype = &kspcond->parameters().get<std::string>("WEIGHTVECDEF");
 
   // since we only use total Lagrange, no update necessary.
   updateprojection_ = false;

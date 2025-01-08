@@ -92,16 +92,16 @@ SCATRA DIS scatra NODE 461 QUANTITY phi3 VALUE 5.02644236601208161e-01 TOLERANCE
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           2
 //                              inflow
-E 1 - 1 Master PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
+E 1 - ID 1 MASTER_OR_SLAVE Master PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 //                              outflow
-E 2 - 1 Slave PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
+E 2 - ID 1 MASTER_OR_SLAVE Slave PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
 // ensure that integral of electric potential in domain is equal the initial integral value of 0.5
-E 1 - scatra NUMMODES 3 ONOFF 0 0 1 integration
+E 1 - DIS scatra NUMMODES 3 ONOFF 0 0 1 WEIGHTVECDEF integration
 -----------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL                            1
-E 1 - ScaTra 2
+E 1 - FIELD ScaTra FUNCT 2
 // surface 1 equals the whole computational domain!
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1

@@ -77,9 +77,9 @@ SCATRA DIS scatra NODE 540 QUANTITY flux_domain_1_x VALUE 1.53600780692469702e-0
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           2
 //                              inflow
-E 1 - 1 Master PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
+E 1 - ID 1 MASTER_OR_SLAVE Master PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 //                              outflow
-E 2 - 1 Slave PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
+E 2 - ID 1 MASTER_OR_SLAVE Slave PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           1
 // measure total mass flux through boundary

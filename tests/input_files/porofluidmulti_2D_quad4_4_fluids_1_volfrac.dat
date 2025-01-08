@@ -133,11 +133,11 @@ E 1 - NUMDOF 6 ONOFF 0 0 0 0 0 1 VAL 0.0 0.0 0.0 0.0 0.0 0.2 FUNCT 0 0 0 0 0 0
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  1
 // all_nodes
-E 1 - PoroMultiFluid 1
+E 1 - FIELD PoroMultiFluid FUNCT 1
 ------------------------------DESIGN LINE INITIAL FIELD CONDITIONS
 DLINE  1
 // right_EC
-E 2 - PoroMultiFluid 5
+E 2  - FIELD PoroMultiFluid FUNCT 5
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    101 DLINE 1
 NODE    102 DLINE 1

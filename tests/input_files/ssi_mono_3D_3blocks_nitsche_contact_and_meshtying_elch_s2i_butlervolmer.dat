@@ -151,9 +151,9 @@ DSURF  1
 E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT none none
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   3
-E 1 - ScaTra 1
-E 2 - ScaTra 2
-E 3 - ScaTra 3
+E 1 - FIELD ScaTra FUNCT 1
+E 2 - FIELD ScaTra FUNCT 2
+E 3 - FIELD ScaTra FUNCT 3
 --------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 E 4 - 1 Master Inactive

@@ -693,8 +693,7 @@ void FLD::XWall::setup_l2_projection()
           for (unsigned numcondper = 0; numcondper < periodiccond.size(); ++numcondper)
           {
             const std::string& mymasterslavetoggle =
-                periodiccond[numcondper]->parameters().get<std::string>(
-                    "Is slave periodic boundary condition");
+                periodiccond[numcondper]->parameters().get<std::string>("MASTER_OR_SLAVE");
             if (mymasterslavetoggle == "Slave")
             {
               includedofs = false;
@@ -1474,8 +1473,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
         for (unsigned numcondper = 0; numcondper < periodiccond.size(); ++numcondper)
         {
           const std::string& mymasterslavetoggle =
-              periodiccond[numcondper]->parameters().get<std::string>(
-                  "Is slave periodic boundary condition");
+              periodiccond[numcondper]->parameters().get<std::string>("MASTER_OR_SLAVE");
           if (mymasterslavetoggle == "Slave")
           {
             includedofs = false;

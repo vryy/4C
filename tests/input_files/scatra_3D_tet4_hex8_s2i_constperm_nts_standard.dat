@@ -51,8 +51,8 @@ SCATRA DIS scatra NODE 702 QUANTITY flux_boundary_1_z VALUE -2.77594827420468288
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 2.0 TOLERANCE 1.e-20
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
-E 1 - ScaTra 1
-E 2 - ScaTra 2
+E 1 - FIELD ScaTra FUNCT 1
+E 2 - FIELD ScaTra FUNCT 2
 ------------------------------DESIGN S2I MESHTYING SURF CONDITIONS
 DSURF  2
 E 1 - 0 Master S2I_KINETICS_ID  0

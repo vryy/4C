@@ -233,13 +233,13 @@ E 1 - SCALARID 1 n 2.2 Pb50 40.4 CaO2_max 0.225 alpha_bl_eff 3.1e-5 rho_oxy 1.42
 ------------------------------DESIGN LINE INITIAL FIELD CONDITIONS
 DLINE  1
 // 1D_curve
-E 1 - ScaTra 12
+E 1 - FIELD ScaTra FUNCT 12
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
 // designvol
-E 1 - PoroMultiFluid 1
+E 1 - FIELD PoroMultiFluid FUNCT 1
 // designvol
-E 1 - ScaTra 6
+E 1 - FIELD ScaTra FUNCT 6
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    82 DNODE 2

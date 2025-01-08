@@ -114,9 +114,9 @@ DLINE  1
 E 2 - NUMDOF 2  ONOFF 0 1 VAL 0.0 0.0119 FUNCT 0 0
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  3
-E 1 - ScaTra 1
-E 2 - ScaTra 2
-E 3 - ScaTra 3
+E 1 - FIELD ScaTra FUNCT 1
+E 2 - FIELD ScaTra FUNCT 2
+E 3 - FIELD ScaTra FUNCT 3
 ------------------------------DESIGN S2I MESHTYING LINE CONDITIONS
 DLINE  4
 E 4 - 1 Slave S2I_KINETICS_ID  1

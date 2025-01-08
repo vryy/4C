@@ -106,11 +106,11 @@ E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL                            3
 //
-E 1 - ScaTra 1
+E 1 - FIELD ScaTra FUNCT 1
 //
-E 2 - ScaTra 2
+E 2 - FIELD ScaTra FUNCT 2
 //
-E 3 - ScaTra 3
+E 3 - FIELD ScaTra FUNCT 3
 ----------------------------------------DESIGN S2I MESHTYING SURF CONDITIONS
 DSURF                           4
 E 2 - 0 Slave S2I_KINETICS_ID  0
@@ -152,17 +152,17 @@ E 2 - ID 0 Function 2
 E 3 - ID 1 Function 3
 ---------------------------------------DESIGN DOMAIN INTEGRAL VOL CONDITIONS
 DVOL                            3
-E 1 - ID 0
-E 2 - ID 1
-E 3 - ID 2
+E 1 - ConditionID 0
+E 2 - ConditionID 1
+E 3 - ConditionID 2
 ------------------------------------DESIGN BOUNDARY INTEGRAL SURF CONDITIONS
 DSURF                           6
-E 1 - ID 0
-E 2 - ID 1
-E 3 - ID 2
-E 4 - ID 3
-E 5 - ID 4
-E 6 - ID 5
+E 1 - ConditionID 0
+E 2 - ConditionID 1
+E 3 - ConditionID 2
+E 4 - ConditionID 3
+E 5 - ConditionID 4
+E 6 - ConditionID 5
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE    104 DSURFACE 1
 NODE    106 DSURFACE 1

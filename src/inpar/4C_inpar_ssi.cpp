@@ -363,10 +363,9 @@ void Inpar::SSI::set_valid_conditions(
       "Surface ScaTra Manifold Initfield", Core::Conditions::SurfaceInitfield, false,
       Core::Conditions::geometry_type_surface);
 
-  surfmanifoldinitfields->add_component(std::make_shared<Input::SelectionComponent>("Field",
-      "ScaTra", Teuchos::tuple<std::string>("ScaTra"), Teuchos::tuple<std::string>("ScaTra")));
-
-  surfmanifoldinitfields->add_component(std::make_shared<Input::IntComponent>("funct"));
+  add_named_selection_component(surfmanifoldinitfields, "FIELD", "init field", "ScaTra",
+      Teuchos::tuple<std::string>("ScaTra"), Teuchos::tuple<std::string>("ScaTra"));
+  add_named_int(surfmanifoldinitfields, "FUNCT");
 
   condlist.emplace_back(surfmanifoldinitfields);
 

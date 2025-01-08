@@ -173,20 +173,20 @@ E 7 - 1 structure
 --------------------------------------------------------DESIGN VOL STC LAYER
 DVOL 2
 // exth3
-E 1 - 1
+E 1 - ConditionID 1
 // exth4
-E 2 - 2
+E 2 - ConditionID 2
 -------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
 DSURF 1
-E 7 - 1 0 0.0
+E 7 - ConditionID 1 curve 0 activeTime 0.0
 --------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
 DSURF 1
 // base_nodes24
-E 7 - 3
+E 7 - ConditionID 3
 ----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
 DSURF 1
 // base_nodes24
-E 7 - 1
+E 7 - ConditionID 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 113 DNODE 1
 NODE 560 DNODE 2

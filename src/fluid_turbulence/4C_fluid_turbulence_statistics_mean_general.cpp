@@ -312,8 +312,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
           if (active)
           {
             // see whether we have a slave node
-            const auto mymasterslavetoggle =
-                pbc->parameters().get<std::string>("Is slave periodic boundary condition");
+            const auto mymasterslavetoggle = pbc->parameters().get<std::string>("MASTER_OR_SLAVE");
 
             if (mymasterslavetoggle == "Slave")
             {
@@ -572,7 +571,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
             {
               // see whether we have a slave node
               const std::string& mymasterslavetoggle =
-                  pbc->parameters().get<std::string>("Is slave periodic boundary condition");
+                  pbc->parameters().get<std::string>("MASTER_OR_SLAVE");
 
               if (mymasterslavetoggle == "Slave")
               {
@@ -856,7 +855,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
           {
             // see whether we have a slave node
             const std::string& mymasterslavetoggle =
-                pbc->parameters().get<std::string>("Is slave periodic boundary condition");
+                pbc->parameters().get<std::string>("MASTER_OR_SLAVE");
 
             if (mymasterslavetoggle == "Slave")
             {

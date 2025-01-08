@@ -1842,8 +1842,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
       params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
 
   // type of consistency (default: adjoint-consistent)
-  const std::string& consistency =
-      (*wdbc_cond).parameters().get<std::string>("Choice of gamma parameter");
+  const std::string& consistency = (*wdbc_cond).parameters().get<std::string>("GAMMATYPE");
   double wd_gamma = 0.0;
   if (consistency == "adjoint-consistent")
     wd_gamma = 1.0;
@@ -1853,19 +1852,18 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
     FOUR_C_THROW("unknown type of consistency for weak DBC: %s", consistency.c_str());
 
   // decide whether to use it or not
-  const std::string& deftauB =
-      (*wdbc_cond).parameters().get<std::string>("Definition of penalty parameter");
+  const std::string& deftauB = (*wdbc_cond).parameters().get<std::string>("PENTYPE");
   bool spalding = false;
   if (deftauB == "Spalding")
     spalding = true;
   else if (deftauB == "constant")
     spalding = false;
   else
-    FOUR_C_THROW("unknown definition of penalty parameter tauB for weak DBC: %s", deftauB.c_str());
+    FOUR_C_THROW("unknown PENTYPE tauB for weak DBC: %s", deftauB.c_str());
 
   // linearisation of adjoint convective flux
   const std::string& linearisation_approach =
-      (*wdbc_cond).parameters().get<std::string>("Linearisation");
+      (*wdbc_cond).parameters().get<std::string>("LINEARISATION");
   bool complete_linearisation = false;
   if (linearisation_approach == "lin_all")
     complete_linearisation = true;
@@ -1888,8 +1886,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
 
   // find out whether to apply weak DBC only in normal direction
   bool onlynormal = false;
-  const std::string& active_components =
-      wdbc_cond->parameters().get<std::string>("Directions to apply weak dbc");
+  const std::string& active_components = wdbc_cond->parameters().get<std::string>("DIR");
   if (active_components == "all_directions")
     onlynormal = false;
   else if (active_components == "only_in_normal_direction")

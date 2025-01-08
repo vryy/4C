@@ -83,7 +83,7 @@ namespace Input
             "Layer for Multilayered STC", Core::Conditions::VolSTCLayer, true,
             Core::Conditions::geometry_type_volume);
 
-    stclayer->add_component(std::make_shared<IntComponent>("ConditionID"));
+    add_named_int(stclayer, "ConditionID");
 
     condlist.push_back(stclayer);
   }
@@ -379,15 +379,14 @@ Input::valid_conditions()
 
   for (const auto& cond : {pointinitfields, lineinitfields, surfinitfields, volinitfields})
   {
-    cond->add_component(std::make_shared<SelectionComponent>("Field", "Undefined",
+    add_named_selection_component(cond, "FIELD", "init field", "Undefined",
         Teuchos::tuple<std::string>("Undefined", "Velocity", "Pressure", "Temperature", "ScaTra",
             "Porosity", "PoroMultiFluid", "Artery"),
         Teuchos::tuple<std::string>("Undefined", "Velocity", "Pressure", "Temperature", "ScaTra",
-            "Porosity", "PoroMultiFluid", "Artery")));
+            "Porosity", "PoroMultiFluid", "Artery"));
 
-    // give function id - always one single integer
-    // (for initial vector fields, use the COMPONENT option of our functions)
-    cond->add_component(std::make_shared<IntComponent>("funct"));
+    // for initial vector fields, use the COMPONENT option of our functions
+    add_named_int(cond, "FUNCT");
 
     condlist.push_back(cond);
   }
@@ -425,12 +424,10 @@ Input::valid_conditions()
   for (const auto& cond :
       {pointthermoinitfields, linethermoinitfields, surfthermoinitfields, volthermoinitfields})
   {
-    cond->add_component(std::make_shared<SelectionComponent>("Field", "Undefined",
+    add_named_selection_component(cond, "FIELD", "init field", "Undefined",
         Teuchos::tuple<std::string>("Undefined", "ScaTra"),
-        Teuchos::tuple<std::string>("Undefined", "ScaTra")));
-
-    // give function id - always one single integer
-    cond->add_component(std::make_shared<IntComponent>("funct"));
+        Teuchos::tuple<std::string>("Undefined", "ScaTra"));
+    add_named_int(cond, "FUNCT");
 
     condlist.push_back(cond);
   }
@@ -455,8 +452,7 @@ Input::valid_conditions()
   for (const auto& cond : {domainintegralsurf, domainintegralvol})
   {
     // add input file line components to condition definitions
-    cond->add_component(std::make_shared<SeparatorComponent>("ID"));
-    cond->add_component(std::make_shared<IntComponent>("ConditionID"));
+    add_named_int(cond, "ConditionID");
 
     // insert condition definitions into global list of valid condition definitions
     condlist.push_back(cond);
@@ -472,8 +468,7 @@ Input::valid_conditions()
           Core::Conditions::BoundaryIntegral, true, Core::Conditions::geometry_type_surface);
 
   // add input file line components to condition definition
-  boundaryintegralsurf->add_component(std::make_shared<SeparatorComponent>("ID"));
-  boundaryintegralsurf->add_component(std::make_shared<IntComponent>("ConditionID"));
+  add_named_int(boundaryintegralsurf, "ConditionID");
 
   // insert condition definition into global list of valid condition definitions
   condlist.push_back(boundaryintegralsurf);
@@ -548,11 +543,10 @@ Input::valid_conditions()
 
   for (const auto& cond : {lineperiodic, surfperiodic})
   {
-    cond->add_component(std::shared_ptr<LineComponent>(
-        new IntComponent("Id of periodic boundary condition", {0, true, false, false})));
-    cond->add_component(std::make_shared<SelectionComponent>("Is slave periodic boundary condition",
-        "Master", Teuchos::tuple<std::string>("Master", "Slave"),
-        Teuchos::tuple<std::string>("Master", "Slave")));
+    add_named_int(cond, "ID", "periodic boundary condition id", 0, false, false, true);
+    add_named_selection_component(cond, "MASTER_OR_SLAVE", "master-slave toggle", "Master",
+        Teuchos::tuple<std::string>("Master", "Slave"),
+        Teuchos::tuple<std::string>("Master", "Slave"));
     add_named_selection_component(cond, "PLANE", "degrees of freedom for the pbc plane", "xy",
         Teuchos::tuple<std::string>("xy", "yx", "yz", "zy", "xz", "zx", "xyz"),
         Teuchos::tuple<std::string>("xy", "xy", "yz", "yz", "xz", "xz", "xyz"));
@@ -580,44 +574,42 @@ Input::valid_conditions()
   for (const auto& cond : {lineweakdirichlet, surfweakdirichlet})
   {
     // weak DBCs can be imposed adjoint consistent or adjoint inconsistent
-    cond->add_component(
-        std::make_shared<SelectionComponent>("Choice of gamma parameter", "adjoint-consistent",
-            Teuchos::tuple<std::string>("adjoint-consistent", "diffusive-optimal"),
-            Teuchos::tuple<std::string>("adjoint-consistent", "diffusive-optimal")));
+    add_named_selection_component(cond, "GAMMATYPE", "Choice of gamma parameter",
+        "adjoint-consistent",
+        Teuchos::tuple<std::string>("adjoint-consistent", "diffusive-optimal"),
+        Teuchos::tuple<std::string>("adjoint-consistent", "diffusive-optimal"));
 
     // weak DBCs can be imposed in all directions or only in normal direction
     // (SCATRA: not checked, only in all_directions so far)
-    cond->add_component(std::make_shared<SelectionComponent>("Directions to apply weak dbc",
-        "all_directions", Teuchos::tuple<std::string>("all_directions", "only_in_normal_direction"),
-        Teuchos::tuple<std::string>("all_directions", "only_in_normal_direction")));
+    add_named_selection_component(cond, "DIR", "Directions to apply weak dbc", "all_directions",
+        Teuchos::tuple<std::string>("all_directions", "only_in_normal_direction"),
+        Teuchos::tuple<std::string>("all_directions", "only_in_normal_direction"));
 
     // FLUID: penalty parameter either computed dynamically (using Spaldings law of
     // the wall) or by a fixed value; SCATRA: not checked, only constant value so far
-    cond->add_component(std::make_shared<SelectionComponent>("Definition of penalty parameter",
-        "constant", Teuchos::tuple<std::string>("constant", "Spalding"),
-        Teuchos::tuple<std::string>("constant", "Spalding")));
+    add_named_selection_component(cond, "PENTYPE", "Definition of penalty parameter", "constant",
+        Teuchos::tuple<std::string>("constant", "Spalding"),
+        Teuchos::tuple<std::string>("constant", "Spalding"));
 
     // scaling factor for penalty parameter tauB or
     // stabilization parameter alpha for Nitsche term
     // (SCATRA: if stabilization parameter negative -> mixed-hybrid formulation)
-    cond->add_component(std::make_shared<RealComponent>("TauBscaling"));
+    add_named_real(cond, "TauBscaling");
 
     // linearisation strategies --- the linearisation (i.e. the matrix
     // contribution) of the convective term on the inflow could be
     // suppressed, since the flux is a kink function and including this one
     // might result in even worse convergence behaviour
     // (SCATRA: not checked)
-    cond->add_component(std::make_shared<SelectionComponent>("Linearisation", "lin_all",
+    add_named_selection_component(cond, "LINEARISATION", "Linearisation", "lin_all",
         Teuchos::tuple<std::string>("lin_all", "no_lin_conv_inflow"),
-        Teuchos::tuple<std::string>("lin_all", "no_lin_conv_inflow")));
+        Teuchos::tuple<std::string>("lin_all", "no_lin_conv_inflow"));
 
     // we provide a vector of 3 values for velocities
-    cond->add_component(std::make_shared<RealVectorComponent>("VAL", 3));
+    add_named_real_vector(cond, "VAL", "values", 3);
 
     // and optional spatial functions
-    cond->add_component(
-        std::make_shared<IntVectorComponent>("FUNCT", 3, IntComponentData{0, false, false, true}));
-
+    add_named_int_vector(cond, "FUNCT", "function ids", 3, 0, true, false);
     // append the condition to the list of all conditions
     condlist.push_back(cond);
   }
@@ -645,13 +637,13 @@ Input::valid_conditions()
           "VolumeConstraint_3D", "Surface Volume Constraint", Core::Conditions::VolumeConstraint_3D,
           true, Core::Conditions::geometry_type_surface);
 
-  volumeconstraint->add_component(std::make_shared<IntComponent>("ConditionID"));
-  volumeconstraint->add_component(
-      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  volumeconstraint->add_component(std::make_shared<RealComponent>("activeTime"));
-  volumeconstraint->add_component(std::make_shared<SelectionComponent>("projection", "none",
+  add_named_int(volumeconstraint, "ConditionID");
+  add_named_int(volumeconstraint, "curve", "id of the curve", 0, false, true, true);
+  add_named_real(volumeconstraint, "activeTime");
+  add_named_selection_component(volumeconstraint, "projection", "projection", "none",
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
-      Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true));
+      Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true);
+
 
   condlist.push_back(volumeconstraint);
 
@@ -664,15 +656,14 @@ Input::valid_conditions()
           "Surface Volume Constraint Penalty", Core::Conditions::VolumeConstraint_3D_pen, true,
           Core::Conditions::geometry_type_surface);
 
-  volumeconstraintpen->add_component(std::make_shared<IntComponent>("ConditionID"));
-  volumeconstraintpen->add_component(
-      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  volumeconstraintpen->add_component(std::make_shared<RealComponent>("activeTime"));
-  volumeconstraintpen->add_component(std::make_shared<RealComponent>("penalty"));
-  volumeconstraintpen->add_component(std::make_shared<RealComponent>("rho"));
-  volumeconstraintpen->add_component(std::make_shared<SelectionComponent>("projection", "none",
+  add_named_int(volumeconstraintpen, "ConditionID");
+  add_named_int(volumeconstraintpen, "curve", "id of the curve", 0, false, true, true);
+  add_named_real(volumeconstraintpen, "activeTime");
+  add_named_real(volumeconstraintpen, "penalty");
+  add_named_real(volumeconstraintpen, "rho");
+  add_named_selection_component(volumeconstraintpen, "projection", "projection", "none",
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
-      Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true));
+      Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true);
 
   condlist.push_back(volumeconstraintpen);
 
@@ -684,10 +675,9 @@ Input::valid_conditions()
           "AreaConstraint_3D", "Surface Area Constraint", Core::Conditions::AreaConstraint_3D, true,
           Core::Conditions::geometry_type_surface);
 
-  areaconstraint->add_component(std::make_shared<IntComponent>("ConditionID"));
-  areaconstraint->add_component(
-      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  areaconstraint->add_component(std::make_shared<RealComponent>("activeTime"));
+  add_named_int(areaconstraint, "ConditionID");
+  add_named_int(areaconstraint, "curve", "id of the curve", 0, false, true, true);
+  add_named_real(areaconstraint, "activeTime");
 
   condlist.push_back(areaconstraint);
 
@@ -700,7 +690,7 @@ Input::valid_conditions()
           "VolumeMonitor_3D", "Surface Volume Monitor", Core::Conditions::VolumeMonitor_3D, true,
           Core::Conditions::geometry_type_surface);
 
-  volumemonitor->add_component(std::make_shared<IntComponent>("ConditionID"));
+  add_named_int(volumemonitor, "ConditionID");
 
   condlist.push_back(volumemonitor);
 
@@ -712,10 +702,10 @@ Input::valid_conditions()
           "AreaMonitor_3D", "Surface Area Monitor", Core::Conditions::AreaMonitor_3D, true,
           Core::Conditions::geometry_type_surface);
 
-  areamonitor->add_component(std::make_shared<IntComponent>("ConditionID"));
-  areamonitor->add_component(std::make_shared<SelectionComponent>("projection", "none",
+  add_named_int(areamonitor, "ConditionID");
+  add_named_selection_component(areamonitor, "projection", "projection", "none",
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
-      Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true));
+      Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true);
 
   condlist.push_back(areamonitor);
 
@@ -727,10 +717,10 @@ Input::valid_conditions()
           "AreaConstraint_2D", "Line Area Constraint", Core::Conditions::AreaConstraint_2D, true,
           Core::Conditions::geometry_type_line);
 
-  areaconstraint2D->add_component(std::make_shared<IntComponent>("ConditionID"));
-  areaconstraint2D->add_component(
-      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  areaconstraint2D->add_component(std::make_shared<RealComponent>("activeTime"));
+  add_named_int(areaconstraint2D, "ConditionID");
+  add_named_int(areaconstraint2D, "curve", {}, 0, false, true, true);
+  add_named_real(areaconstraint2D, "activeTime");
+
   condlist.push_back(areaconstraint2D);
 
   /*--------------------------------------------------------------------*/
@@ -741,7 +731,8 @@ Input::valid_conditions()
           "AreaMonitor_2D", "Line Area Monitor", Core::Conditions::AreaMonitor_2D, true,
           Core::Conditions::geometry_type_line);
 
-  areamonitor2D->add_component(std::make_shared<IntComponent>("ConditionID"));
+  add_named_int(areamonitor2D, "ConditionID");
+
   condlist.push_back(areamonitor2D);
 
   /*--------------------------------------------------------------------*/
@@ -752,14 +743,15 @@ Input::valid_conditions()
           "DESIGN SURFACE MULTIPNT CONSTRAINT 3D", "MPC_NodeOnPlane_3D", "Node on Plane Constraint",
           Core::Conditions::MPC_NodeOnPlane_3D, false, Core::Conditions::geometry_type_surface);
 
-  nodeonplaneconst3D->add_component(std::make_shared<IntComponent>("ConditionID"));
-  nodeonplaneconst3D->add_component(std::make_shared<RealComponent>("amplitude"));
-  nodeonplaneconst3D->add_component(
-      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  nodeonplaneconst3D->add_component(std::make_shared<RealComponent>("activeTime"));
-  nodeonplaneconst3D->add_component(std::make_shared<IntVectorComponent>("planeNodes", 3));
-  nodeonplaneconst3D->add_component(std::make_shared<SelectionComponent>("control", "rel",
-      Teuchos::tuple<std::string>("rel", "abs"), Teuchos::tuple<std::string>("rel", "abs"), true));
+  add_named_int(nodeonplaneconst3D, "ConditionID");
+  add_named_real(nodeonplaneconst3D, "amplitude");
+  add_named_int(nodeonplaneconst3D, "curve", {}, 0, false, true, true);
+  add_named_real(nodeonplaneconst3D, "activeTime");
+  add_named_int_vector(nodeonplaneconst3D, "planeNodes", "ids of the nodes spanning the plane", 3);
+  add_named_selection_component(nodeonplaneconst3D, "control", "relative or absolute control",
+      "rel", Teuchos::tuple<std::string>("rel", "abs"), Teuchos::tuple<std::string>("rel", "abs"),
+      true);
+
   condlist.push_back(nodeonplaneconst3D);
 
   /*--------------------------------------------------------------------*/
@@ -771,17 +763,17 @@ Input::valid_conditions()
           "Node on Plane Constraint", Core::Conditions::MPC_NormalComponent_3D, false,
           Core::Conditions::geometry_type_surface);
 
-  nodemasterconst3D->add_component(std::make_shared<IntComponent>("ConditionID"));
-  nodemasterconst3D->add_component(std::make_shared<RealComponent>("amplitude"));
-  nodemasterconst3D->add_component(
-      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  nodemasterconst3D->add_component(std::make_shared<RealComponent>("activeTime"));
-  nodemasterconst3D->add_component(std::make_shared<IntComponent>("masterNode"));
-  nodemasterconst3D->add_component(std::make_shared<RealVectorComponent>("direction", 3));
-  nodemasterconst3D->add_component(std::make_shared<SelectionComponent>("value", "disp",
-      Teuchos::tuple<std::string>("disp", "x"), Teuchos::tuple<std::string>("disp", "x"), true));
-  nodemasterconst3D->add_component(std::make_shared<SelectionComponent>("control", "rel",
-      Teuchos::tuple<std::string>("rel", "abs"), Teuchos::tuple<std::string>("rel", "abs"), true));
+  add_named_int(nodemasterconst3D, "ConditionID");
+  add_named_real(nodemasterconst3D, "amplitude");
+  add_named_int(nodemasterconst3D, "curve", {}, 0, false, true, true);
+  add_named_real(nodemasterconst3D, "activeTime");
+  add_named_int(nodemasterconst3D, "masterNode");
+  add_named_real_vector(nodemasterconst3D, "direction", "direction", 3);
+  add_named_selection_component(nodemasterconst3D, "value", "value", "disp",
+      Teuchos::tuple<std::string>("disp", "x"), Teuchos::tuple<std::string>("disp", "x"), true);
+  add_named_selection_component(nodemasterconst3D, "control", "relative or absolute control", "rel",
+      Teuchos::tuple<std::string>("rel", "abs"), Teuchos::tuple<std::string>("rel", "abs"), true);
+
   condlist.push_back(nodemasterconst3D);
 
   /*--------------------------------------------------------------------*/
@@ -793,18 +785,20 @@ Input::valid_conditions()
           "Node on Plane Constraint Penalty", Core::Conditions::MPC_NormalComponent_3D_pen, false,
           Core::Conditions::geometry_type_surface);
 
-  nodemasterconst3Dpen->add_component(std::make_shared<IntComponent>("ConditionID"));
-  nodemasterconst3Dpen->add_component(std::make_shared<RealComponent>("amplitude"));
-  nodemasterconst3Dpen->add_component(
-      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  nodemasterconst3Dpen->add_component(std::make_shared<RealComponent>("activeTime"));
-  nodemasterconst3Dpen->add_component(std::make_shared<RealComponent>("penalty"));
-  nodemasterconst3Dpen->add_component(std::make_shared<IntComponent>("masterNode"));
-  nodemasterconst3Dpen->add_component(std::make_shared<RealVectorComponent>("direction", 3));
-  nodemasterconst3Dpen->add_component(std::make_shared<SelectionComponent>("value", "disp",
-      Teuchos::tuple<std::string>("disp", "x"), Teuchos::tuple<std::string>("disp", "x"), true));
-  nodemasterconst3Dpen->add_component(std::make_shared<SelectionComponent>("control", "rel",
-      Teuchos::tuple<std::string>("rel", "abs"), Teuchos::tuple<std::string>("rel", "abs"), true));
+
+  add_named_int(nodemasterconst3Dpen, "ConditionID");
+  add_named_real(nodemasterconst3Dpen, "amplitude");
+  add_named_int(nodemasterconst3Dpen, "curve", {}, 0, false, true, true);
+  add_named_real(nodemasterconst3Dpen, "activeTime");
+  add_named_real(nodemasterconst3Dpen, "penalty");
+  add_named_int(nodemasterconst3Dpen, "masterNode");
+  add_named_int_vector(nodemasterconst3Dpen, "direction", "direction", 3);
+  add_named_selection_component(nodemasterconst3Dpen, "value", "value", "disp",
+      Teuchos::tuple<std::string>("disp", "x"), Teuchos::tuple<std::string>("disp", "x"), true);
+  add_named_selection_component(nodemasterconst3Dpen, "control", "relative or absolute control",
+      "rel", Teuchos::tuple<std::string>("rel", "abs"), Teuchos::tuple<std::string>("rel", "abs"),
+      true);
+
   condlist.push_back(nodemasterconst3Dpen);
   /*--------------------------------------------------------------------*/
   // Multi point constraint in 2D for a node on a line
@@ -813,17 +807,18 @@ Input::valid_conditions()
           "MPC_NodeOnLine_2D", "Node on Line Constraint", Core::Conditions::MPC_NodeOnLine_2D,
           false, Core::Conditions::geometry_type_line);
 
-  nodeonlineconst2D->add_component(std::make_shared<IntComponent>("ConditionID"));
-  nodeonlineconst2D->add_component(std::make_shared<RealComponent>("amplitude"));
-  nodeonlineconst2D->add_component(
-      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  nodeonlineconst2D->add_component(std::make_shared<IntComponent>("constrNode 1"));
-  nodeonlineconst2D->add_component(std::make_shared<IntComponent>("constrNode 2"));
-  nodeonlineconst2D->add_component(std::make_shared<IntComponent>("constrNode 3"));
-  nodeonlineconst2D->add_component(std::make_shared<SelectionComponent>("control value", "dist",
+  add_named_int(nodeonlineconst2D, "ConditionID");
+  add_named_real(nodeonlineconst2D, "amplitude");
+  add_named_int(nodeonlineconst2D, "curve", {}, 0, false, true, true);
+  add_named_int(nodeonlineconst2D, "constrNode1");
+  add_named_int(nodeonlineconst2D, "constrNode2");
+  add_named_int(nodeonlineconst2D, "constrNode3");
+  ;
+  add_named_selection_component(nodeonlineconst2D, "control", "distance or angle control", "dist",
       Teuchos::tuple<std::string>("dist", "angle"), Teuchos::tuple<std::string>("dist", "angle"),
-      true));
-  nodeonlineconst2D->add_component(std::make_shared<RealComponent>("activeTime"));
+      true);
+  add_named_real(nodeonlineconst2D, "activeTime");
+
   condlist.push_back(nodeonlineconst2D);
 
   /*--------------------------------------------------------------------*/
@@ -861,14 +856,14 @@ Input::valid_conditions()
 
   for (const auto& cond : {surfrigidbodymode, volrigidbodymode})
   {
-    cond->add_component(std::make_shared<SelectionComponent>("discretization", "fluid",
+    add_named_selection_component(cond, "DIS", "discretization", "fluid",
         Teuchos::tuple<std::string>("fluid", "scatra", "solid"),
-        Teuchos::tuple<std::string>("fluid", "scatra", "solid")));
+        Teuchos::tuple<std::string>("fluid", "scatra", "solid"));
     add_named_int(cond, "NUMMODES");
     add_named_int_vector(cond, "ONOFF", "", "NUMMODES");
-    cond->add_component(std::make_shared<SelectionComponent>("weight vector definition",
-        "integration", Teuchos::tuple<std::string>("integration", "pointvalues"),
-        Teuchos::tuple<std::string>("integration", "pointvalues")));
+    add_named_selection_component(cond, "WEIGHTVECDEF", "weight vector definition", "integration",
+        Teuchos::tuple<std::string>("integration", "pointvalues"),
+        Teuchos::tuple<std::string>("integration", "pointvalues"));
 
     condlist.push_back(cond);
   }
