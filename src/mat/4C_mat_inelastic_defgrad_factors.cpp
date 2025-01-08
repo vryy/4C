@@ -1832,7 +1832,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   // calculate equivalent plastic strain rate using the viscoplastic law
   state_quantities.curr_equiv_plastic_strain_rate_ =
       viscoplastic_law_->evaluate_plastic_strain_rate(state_quantities.curr_equiv_stress_,
-          plastic_strain, check_dt, parameter()->bool_log_substepping(), err_status,
+          plastic_strain, int_dt, parameter()->bool_log_substepping(), err_status,
           update_hist_var_);
 
   // return if we get an error, all other calculations are useless since substepping is triggered
@@ -1936,7 +1936,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
   if (eval_state)
   {
     relevant_state_quantities =
-        evaluate_state_quantities(CM, iFinM, plastic_strain, err_status, int_dt, check_dt);
+        evaluate_state_quantities(CM, iFinM, plastic_strain, err_status, int_dt, int_dt);
   }
 
   // get the state quantities
@@ -2199,7 +2199,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
   // compute the relevant derivatives of the plastic strain rate
   Core::LinAlg::Matrix<2, 1> evoEqFunctionDers =
       viscoplastic_law_->evaluate_derivatives_of_plastic_strain_rate(
-          equiv_stress, plastic_strain, check_dt, parameter()->bool_log_substepping(), err_status);
+          equiv_stress, plastic_strain, int_dt, parameter()->bool_log_substepping(), err_status);
 
   // return if we get an error, all other calculations are useless since substepping is triggered
   if (err_status != Mat::ViscoplastErrorType::NoErrors)
@@ -2658,7 +2658,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::calculate_local_newton_loop_r
 
   // evaluate state variables
   state_quantities_ =
-      evaluate_state_quantities(CM, iFinM, plastic_strain, err_status, int_dt, check_dt);
+      evaluate_state_quantities(CM, iFinM, plastic_strain, err_status, int_dt, int_dt);
 
   // declare residuals of the LNL
   Core::LinAlg::Matrix<3, 3> resFM(true);
@@ -2728,8 +2728,8 @@ Core::LinAlg::Matrix<10, 10> Mat::InelasticDefgradTransvIsotropElastViscoplast::
 
   // evaluate state derivatives
   state_quantity_derivatives_ = evaluate_state_quantity_derivatives(CM, iFinM, plastic_strain,
-      err_status, int_dt, check_dt);  // we do not reevaluate the state quantities, this
-                                      // was done in the residual computation already
+      err_status, int_dt, int_dt);  // we do not reevaluate the state quantities, this
+                                    // was done in the residual computation already
 
   // get derivative of update tensor wrt inverse inelastic defgrad (in FourTensor form)
   Core::LinAlg::FourTensor<3> dEpdiFin_FourTensor(true);

@@ -101,7 +101,7 @@ namespace
     // compute solution from the viscoplasticity law
     double plastic_strain_rate_reformulated_JC =
         vplast_law_reformulated_JC_->evaluate_plastic_strain_rate(
-            equiv_stress_, equiv_plastic_strain_, 0.0, check_overflow, err_status, false);
+            equiv_stress_, equiv_plastic_strain_, 1.0, !check_overflow, err_status, false);
 
     if (err_status != Mat::ViscoplastErrorType::NoErrors)
       FOUR_C_THROW("Error encountered during testing of TestEvaluatePlasticStrainRate");
@@ -126,7 +126,7 @@ namespace
     // compute solution from the viscoplasticity law
     Core::LinAlg::Matrix<2, 1> deriv_plastic_strain_rate_reformulated_JC =
         vplast_law_reformulated_JC_->evaluate_derivatives_of_plastic_strain_rate(
-            equiv_stress_, equiv_plastic_strain_, 0.0, check_overflow, err_status, false);
+            equiv_stress_, equiv_plastic_strain_, 1.0, !check_overflow, err_status, false);
 
     if (err_status != Mat::ViscoplastErrorType::NoErrors)
       FOUR_C_THROW("Error encountered during testing of TestEvaluatePlasticStrainRateDerivatives");

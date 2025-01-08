@@ -88,7 +88,7 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
 
     // check if characteristic term too large, throw error overflow error if so
     if (((!log_substep) && (std::log(dt) + log_temp > std::log(10.0 + const_pars_.p * dt))) ||
-        ((log_substep) && (std::log(dt) + log_temp > std::log(2.0e4 + const_pars_.p * dt))))
+        ((log_substep) && (std::log(dt) + log_temp > std::log(2.0e30 + const_pars_.p * dt))))
     {
       err_status = Mat::ViscoplastErrorType::OverflowError;
       return -1;
@@ -161,7 +161,7 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
 
     // check overflow error using these logarithms
     if ((!log_substep && (log_dt + log_deriv_sigma > 10.0) && (log_dt + log_deriv_eps > 10.0)) &&
-        (log_substep && (log_dt + log_deriv_sigma > 2.0e4) && (log_dt + log_deriv_eps > 2.0e4)))
+        (log_substep && (log_dt + log_deriv_sigma > 2.0e30) && (log_dt + log_deriv_eps > 2.0e30)))
     {
       err_status = Mat::ViscoplastErrorType::OverflowError;
       return Core::LinAlg::Matrix<2, 1>{true};
