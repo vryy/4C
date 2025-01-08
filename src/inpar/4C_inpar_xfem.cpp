@@ -424,16 +424,11 @@ void Inpar::XFEM::set_valid_conditions(
 
   // optional
   neumanncomponents.emplace_back(std::make_shared<SelectionComponent>("TYPE", "Live",
-      Teuchos::tuple<std::string>("Live", "Dead", "PrescribedDomainLoad", "constHydro_z",
-          "increaseHydro_z", "pseudo_orthopressure", "orthopressure", "LAS", "PressureGrad",
-          "Torque"),
-      Teuchos::tuple<std::string>("neum_live", "neum_dead", "pres_domain_load", "neum_consthydro_z",
-          "neum_increhydro_z", "neum_pseudo_orthopressure", "neum_orthopressure", "neum_LAS",
-          "neum_pgrad", "neum_torque"),
+      Teuchos::tuple<std::string>(
+          "Live", "Dead", "pseudo_orthopressure", "orthopressure", "PressureGrad"),
+      Teuchos::tuple<std::string>("neum_live", "neum_dead", "neum_pseudo_orthopressure",
+          "neum_orthopressure", "neum_pgrad"),
       true));
-  neumanncomponents.emplace_back(std::make_shared<SelectionComponent>("surface", "Mid",
-      Teuchos::tuple<std::string>("Mid", "Top", "Bot"),
-      Teuchos::tuple<std::string>("mid", "top", "bot"), true));
 
   std::shared_ptr<Core::Conditions::ConditionDefinition> movingfluid =
       std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN FLUID MESH VOL CONDITIONS",

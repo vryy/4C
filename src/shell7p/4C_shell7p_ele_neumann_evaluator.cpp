@@ -72,12 +72,8 @@ void Discret::Elements::Shell::evaluate_neumann(Core::Elements::Element& ele,
   {
     neum_none,
     neum_live,
-    neum_live_FSI,
     neum_orthopressure,
     neum_pseudo_orthopressure,
-    neum_consthydro_z,
-    neum_increhydro_z,
-    neum_opres_FSI
   };
   LoadType ltype = neum_none;
 
@@ -98,11 +94,6 @@ void Discret::Elements::Shell::evaluate_neumann(Core::Elements::Element& ele,
     ltype = neum_live;
     config = config_material;
   }
-  else if (type == "neum_live_FSI")
-  {
-    ltype = neum_live_FSI;
-    config = config_material;
-  }
   else if (type == "neum_pseudo_orthopressure")
   {
     ltype = neum_pseudo_orthopressure;
@@ -112,16 +103,6 @@ void Discret::Elements::Shell::evaluate_neumann(Core::Elements::Element& ele,
   {
     ltype = neum_orthopressure;
     config = config_spatial;
-  }
-  else if (type == "neum_consthydro_z")
-  {
-    ltype = neum_consthydro_z;
-    config = config_lastconverged;
-  }
-  else if (type == "neum_increhydro_z")
-  {
-    ltype = neum_increhydro_z;
-    config = config_lastconverged;
   }
   else
   {
@@ -254,36 +235,14 @@ void Discret::Elements::Shell::evaluate_neumann(Core::Elements::Element& ele,
       switch (ltype)
       {
         case neum_live:  // uniform load on reference configuration
-        case neum_live_FSI:
         {
           value_times_integration_factor =
               value[dim] * function_scale_factors[dim] * gpweights * ds;
         }
         break;
-        // hydrostatic pressure dependent on z-coordinate of gaussian point
-        case neum_consthydro_z:
-        {
-          if (onoff[2] != 1) FOUR_C_THROW("hydropressure must be on third dof");
-          value_times_integration_factor =
-              -value[2] * function_scale_factors[2] * gpweights * g3(dim, 0);
-        }
-        break;
-        // hydrostatic pressure dependent on z-coord of gaussian point increasing with time in
-        // height
-        case neum_increhydro_z:
-        {
-          if (onoff[2] != 1) FOUR_C_THROW("hydropressure must be on third dof");
-          double height = total_time * 10.0;
-          double pressure = 0.0;
-          if (gauss_point_current_coordinates(2, 0) <= height)
-            pressure = -value[2] * (height - gauss_point_current_coordinates(2, 0));
-          value_times_integration_factor = pressure * gpweights * g3(dim, 0);
-        }
-        break;
         // pressure orthogonal to surface
         case neum_pseudo_orthopressure:
         case neum_orthopressure:
-        case neum_opres_FSI:
         {
           if (onoff[2] != 1) FOUR_C_THROW("orthopressure must be on third dof");
           value_times_integration_factor =
